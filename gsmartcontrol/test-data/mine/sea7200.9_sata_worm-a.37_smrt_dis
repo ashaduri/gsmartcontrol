@@ -1,0 +1,17 @@
+smartctl version 5.37 [i686-suse-linux-gnu] Copyright (C) 2002-6 Bruce Allen
+Home page is http://smartmontools.sourceforge.net/
+
+=== START OF INFORMATION SECTION ===
+Model Family:     Seagate Barracuda 7200.9 family
+Device Model:     ST3250824A
+Serial Number:    5ND2QZMQ
+Firmware Version: 3.AAE
+User Capacity:    250,059,350,016 bytes
+Device is:        In smartctl database [for details use: -P show]
+ATA Version is:   7
+ATA Standard is:  Exact ATA specification draft version not indicated
+Local Time is:    Fri Jun 27 21:18:41 2008 GST
+SMART support is: Available - device has SMART capability.
+SMART support is: Disabled
+
+SMART Disabled. Use option -s with argument 'on' to enable it.

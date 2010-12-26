@@ -1,0 +1,15 @@
+[root@linux ~]# smartctl -l selftest /dev/sda
+smartctl 5.39 2008-05-08 21:56 [i686-pc-linux-gnu] (local build)
+Copyright (C) 2002-8 by Bruce Allen, http://smartmontools.sourceforge.net
+
+=== START OF READ SMART DATA SECTION ===
+SMART Self-test log structure revision number 1
+Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA_of_first_error
+# 1  Extended offline    Self-test routine in progress 20%      1918         -
+# 2  Short offline       Completed without error       00%      1911         -
+# 3  Short offline       Completed without error       00%      1911         -
+# 4  Extended offline    Completed without error       00%      1706         -
+# 5  Short offline       Completed without error       00%      1356         -
+# 6  Extended offline    Completed without error       00%       971         -
+# 7  Short offline       Completed without error       00%       968         -
+

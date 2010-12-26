@@ -1,0 +1,7 @@
+smartctl version 5.33 [i686-pc-linux-gnu] Copyright (C) 2002-4 Bruce Allen
+Home page is http://smartmontools.sourceforge.net/
+
+Device: MegaRAID LD 0 RAID1   69G Version: 521S
+scsiModePageOffset: response length too short, resp_len=1 offset=4 bd_len=0
+>> Terminate command early due to bad response to IEC mode page
+A mandatory SMART command failed: exiting. To continue, add one or more '-T permissive' options.

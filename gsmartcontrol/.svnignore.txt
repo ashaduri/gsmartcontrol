@@ -1,0 +1,12 @@
+0*
+*.pcs
+autom4te.cache
+Makefile.in
+configure
+depcomp
+config.guess
+config.sub
+aclocal.m4
+config.h.in
+missing
+install-sh

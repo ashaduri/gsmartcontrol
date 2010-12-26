@@ -1,0 +1,12 @@
+# smartctl --test=long /dev/sda
+smartctl version 5.37 [i686-suse-linux-gnu] Copyright (C) 2002-6 Bruce Allen
+Home page is http://smartmontools.sourceforge.net/
+
+=== START OF OFFLINE IMMEDIATE AND SELF-TEST SECTION ===
+Sending command: "Execute SMART Extended self-test routine immediately in off-line mode".
+Drive command "Execute SMART Extended self-test routine immediately in off-line mode" successful.
+Testing has begun.
+Please wait 227 minutes for test to complete.
+Test will complete after Tue Aug 19 15:59:15 2008
+
+Use smartctl -X to abort test.
