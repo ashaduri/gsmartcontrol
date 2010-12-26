@@ -28,8 +28,8 @@ dist_doc_DATA = AUTHORS.txt ChangeLog NEWS README.txt \
 # Extra files bundled with distribution.
 # file2csource.sh is needed for building but not installed.
 EXTRA_DIST = COPYING TODO INSTALL configure autogen.sh \
-	0test_binary.sh baqup gsmartcontrol.kdevelop \
-	templates test-data \
+	baqup gsmartcontrol.kdevelop \
+	templates \
 	file2csource.sh \
 	gsmartcontrol.spec
 
