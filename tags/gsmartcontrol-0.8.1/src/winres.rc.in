@@ -1,0 +1,29 @@
+//#include <winver.h>
+
+biocalcon           ICON          "gsmartcontrol.ico"
+
+1 VERSIONINFO
+    FILEVERSION     0,0,0,0
+    PRODUCTVERSION  0,0,0,0
+//    FILEOS          VOS__WINDOWS32
+//    FILETYPE        VFT_FONT
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "04090025"
+        BEGIN
+            VALUE "FileDescription", "GSmartControl - Hard disk drive health inspection tool"
+            VALUE "FileVersion", "@VERSION@"
+            VALUE "InternalName", "gsmartcontrol.exe"
+            VALUE "LegalCopyright", "Copyright (C) 2008  Alexander Shaduri"
+            VALUE "OriginalFilename", "gsmartcontrol.exe"
+            VALUE "ProductName", "GSmartControl"
+            VALUE "ProductVersion", "@VERSION@"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 1033, 37
+    END
+END
+
