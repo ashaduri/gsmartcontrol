@@ -10,3 +10,7 @@ aclocal.m4
 config.h.in
 missing
 install-sh
+*.glade.cpp
+*.ui.cpp
+*.txt.cpp
+gsmartcontrol.spec
