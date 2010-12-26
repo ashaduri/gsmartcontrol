@@ -82,13 +82,13 @@ GscHelpWindow::GscHelpWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 
 	std::string readme = hz::string_any_to_unix_copy(ReadmeTextResData().get_string());
 
-	// split by double-newlines
 
+	// Paragraphs are delimited by 3 empty lines
 	std::vector<std::string> topics;
-	hz::string_split(readme, "\n\n\n", topics, true);  // skip empty
+	hz::string_split(readme, "\n\n\n\n", topics, true);  // skip empty
 
 
-	// add to treeview and textview
+	// Add to treeview and textview
 
 	Gtk::TextView* content = this->lookup_widget<Gtk::TextView*>("content_textview");
 

@@ -322,21 +322,25 @@ bool app_init_and_loop(int& argc, char**& argv)
 	// set default icon for all windows.
 	// set_default_icon_name is available since 2.12 in gtkmm, but since 2.6 in gtk.
 
-	// we load it via icontheme to provide multi-size version.
-	GtkIconTheme* default_icon_theme = gtk_icon_theme_get_default();
+#ifndef _WIN32  // win32 version has its icon compiled-in.
+	{
+		// we load it via icontheme to provide multi-size version.
+		GtkIconTheme* default_icon_theme = gtk_icon_theme_get_default();
 
-	// application-installed, /usr/share/icons/<theme_name>/apps/<size>
-	if (gtk_icon_theme_has_icon(default_icon_theme, "gsmartcontrol")) {
-		gtk_window_set_default_icon_name("gsmartcontrol");
+		// application-installed, /usr/share/icons/<theme_name>/apps/<size>
+		if (gtk_icon_theme_has_icon(default_icon_theme, "gsmartcontrol")) {
+			gtk_window_set_default_icon_name("gsmartcontrol");
 
-	// try the gnome icon, it's higher quality / resolution
-	} else if (gtk_icon_theme_has_icon(default_icon_theme, "gnome-dev-harddisk")) {
-		gtk_window_set_default_icon_name("gnome-dev-harddisk");
+		// try the gnome icon, it's higher quality / resolution
+		} else if (gtk_icon_theme_has_icon(default_icon_theme, "gnome-dev-harddisk")) {
+			gtk_window_set_default_icon_name("gnome-dev-harddisk");
 
-	// gtk built-in, always available
-	} else {
-		gtk_window_set_default_icon_name("gtk-harddisk");
+		// gtk built-in, always available
+		} else {
+			gtk_window_set_default_icon_name("gtk-harddisk");
+		}
 	}
+#endif
 
 
 	// Export some command line arguments to rmn

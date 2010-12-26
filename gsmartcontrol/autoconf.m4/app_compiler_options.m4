@@ -54,6 +54,7 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 				# mingw gcc options:
 				# -mno-cygwin - generate non-cygwin executables in cygwin's mingw.
 				# -mwindows - hide console window. possibly suppresses any std output / error.
+				# -mconsole - opposite of -mwindows, default.
 				# -mms-bitfields - make structures compatible with msvc. recommended default for non-cygwin.
 
 				app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -mms-bitfields -mwindows"
@@ -118,6 +119,13 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 
 		# gcc, mingw
 		if test "x$app_cv_compiler_debug_options" = "xgnu"; then
+			if test "x$app_cv_target_os_env" = "xmingw" || test "x$app_cv_target_os_env" = "xcygwin"; then
+				# Enable console window for debug builds
+				app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -mconsole"
+				app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -mconsole"
+				app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -mconsole"
+			fi
+
 			# We could put libstdc++ debug options here, but it generates binary-incompatible
 			# C++ code, which leads to runtime errors with e.g. libsigc++.
 			app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -g3 -O0";

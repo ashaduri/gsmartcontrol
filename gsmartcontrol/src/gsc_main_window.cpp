@@ -77,7 +77,7 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 		ex.create_running_dialog(this);
 		ex.set_running_msg("Checking if smartctl is executable...");
 
-		ex.set_command(smartctl_binary, smartctl_def_options + "-V");  // --version
+		ex.set_command(Glib::shell_quote(smartctl_binary), smartctl_def_options + " -V");  // --version
 
 		if (!ex.execute() || !ex.get_error_msg().empty()) {
 			error_msg = ex.get_error_msg();
@@ -637,6 +637,7 @@ void GscMainWindow::on_action_enable_aodc_toggled(Gtk::ToggleAction* action)
 			enable_button.set_flags(enable_button.get_flags() | Gtk::CAN_DEFAULT);
 			enable_button.show_all();
 			dialog.add_action_widget(enable_button, Gtk::RESPONSE_YES);
+			enable_button.grab_default();  // make it the default widget
 
 			dialog.set_position(Gtk::WIN_POS_CENTER_ON_PARENT);
 
@@ -989,6 +990,7 @@ void GscMainWindow::rescan_devices()
 
 bool GscMainWindow::add_device(const std::string& file)
 {
+#ifndef _WIN32  	// win32 doesn't have device files, so skip the check
 	hz::File f(file);
 	if (!f.exists()) {
 		std::string msg = f.get_error_utf8();  // only errors are reported
@@ -996,6 +998,7 @@ bool GscMainWindow::add_device(const std::string& file)
 				(msg.empty() ? ("Device \"" + file + "\" doesn't exist.") : msg), this);
 		return false;
 	}
+#endif
 
 	StorageDeviceRefPtr d(new StorageDevice(file));
 	d->set_is_manually_added(true);
@@ -1143,11 +1146,30 @@ GscInfoWindow* GscMainWindow::show_device_info_window(StorageDeviceRefPtr drive)
 
 void GscMainWindow::show_add_device_chooser()
 {
+#ifdef _WIN32
+
+	// A simple text entry dialog, since there are no device files on win32.
+
+	static std::string last_str;
+	if (last_str.empty())
+		last_str = "pd0";
+
+	std::string dev;
+	if (gui_show_text_entry_dialog("Add Device", "Enter a device name",
+			"For example, pd0 means the first physical drive",
+			dev, last_str, this, false)) {
+		last_str = dev;  // safe for the future
+		this->add_device(dev);
+	}
+
+
+#else  // non-win32:
+
+	// Show a file chooser
+
 	static std::string last_dir;
-#ifndef _WIN32
 	if (last_dir.empty())
 		last_dir = "/dev";
-#endif
 
 	Gtk::FileChooserDialog dialog(*this, "Choose Device File...",
 			Gtk::FILE_CHOOSER_ACTION_OPEN);
@@ -1181,6 +1203,9 @@ void GscMainWindow::show_add_device_chooser()
 			debug_out_error("app", DBG_FUNC_MSG << "Unknown dialog response code: " << result << ".\n");
 			break;
 	}
+
+#endif  // non-win32
+
 }
 
 

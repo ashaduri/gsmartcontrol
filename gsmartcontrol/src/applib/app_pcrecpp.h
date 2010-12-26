@@ -194,6 +194,12 @@ inline bool app_pcre_replace_once(const pcrecpp::RE& re, const std::string& repl
 
 
 
+// Escape a string to be used as a regular expression
+inline std::string app_pcre_escape(const std::string& str)
+{
+	return pcrecpp::RE::QuoteMeta(str);
+}
+
 
 
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Thu Oct  2 14:13:19 2008 -->
+<!--Generated with glade3 3.4.5 on Mon Nov 10 21:09:06 2008 -->
 <glade-interface>
   <widget class="GtkWindow" id="gsc_preferences_window">
     <child>
@@ -144,8 +144,8 @@
                                       <widget class="GtkEntry" id="smartctl_options_entry">
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
-                                        <property name="tooltip_text">Global parameters for smartctl. These parameters will be used every time the progam invokes smartctl.</property>
-                                        <property name="tooltip" translatable="yes">Global parameters for smartctl. These parameters will be used every time the progam invokes smartctl.</property>
+                                        <property name="tooltip_text">Global parameters for smartctl. These parameters will be used every time the progam invokes smartctl. Must be shell-escaped.</property>
+                                        <property name="tooltip" translatable="yes">Global parameters for smartctl. These parameters will be used every time the progam invokes smartctl. Must be shell-escaped.</property>
                                       </widget>
                                       <packing>
                                         <property name="left_attach">1</property>
@@ -185,8 +185,8 @@
                                       <widget class="GtkEntry" id="smartctl_binary_entry">
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
-                                        <property name="tooltip_text">A path to smartctl binary. If the path is not absolute, the binary will be looked for in user's $PATH.</property>
-                                        <property name="tooltip" translatable="yes">A path to smartctl binary. If the path is not absolute, the binary will be looked for in user's $PATH.</property>
+                                        <property name="tooltip_text">A path to smartctl binary. If the path is not absolute, the binary will be looked for in user's PATH.</property>
+                                        <property name="tooltip" translatable="yes">A path to smartctl binary. If the path is not absolute, the binary will be looked for in user's PATH.</property>
                                       </widget>
                                       <packing>
                                         <property name="left_attach">1</property>
@@ -448,8 +448,8 @@
                                               <widget class="GtkEntry" id="device_options_parameter_entry">
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">True</property>
-                                                <property name="tooltip_text">Smartctl parameters for this device. For example, to use older smartctl versions with libata devices, use "-d ata".</property>
-                                                <property name="tooltip" translatable="yes">Smartctl parameters for this device. For example, to use older smartctl versions with libata devices, use "-d ata".</property>
+                                                <property name="tooltip_text">Smartctl parameters for this device. For example, to use older smartctl versions with libata devices, use "-d ata". Must be shell-escaped.</property>
+                                                <property name="tooltip" translatable="yes">Smartctl parameters for this device. For example, to use older smartctl versions with libata devices, use "-d ata". Must be shell-escaped.</property>
                                               </widget>
                                               <packing>
                                                 <property name="left_attach">1</property>

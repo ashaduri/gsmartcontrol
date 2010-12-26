@@ -60,7 +60,7 @@ the drive is idle, and repair the defects, reallocating the data to more safe
 areas.
 
 While having SMART sounds really good, there are some nuances to consider. One
-of the commond pitfalls is that it may create a false sense of security. That
+of the common pitfalls is that it may create a false sense of security. That
 is, a perfectly good SMART data is NOT an indication that the drive won't fail
 the next minute. The reverse is also true - some drives may function perfectly
 even with not-so-good-looking SMART data. However, as studies indicate, given
@@ -99,16 +99,33 @@ You need to have the following software installed:
 * Gtkmm, version 2.6 or higher - see http://www.gtkmm.org .
 
 * libglademm, version 2.4 or higher - see http://www.gtkmm.org .
-libglademm is not needed when using GTK 2.12 and Gtkmm 2.12.
+Note: libglademm is not needed when using GTK 2.12 and Gtkmm 2.12.
 
 Note that GTK+ 2.12 and Gtkmm 2.12 are HIGHLY recommended. While earlier
 versions may work, they may produce ugly results and buggy behaviour.
 Libglademm is not needed when using GTK / Gtkmm 2.12.
 
-Most of these packages are probably already provided by your distribution. For
-example, to build this program on OpenSUSE, you just need to install
-smartmontools, gtkmm2-devel and pcre-devel - the rest is installed
-automatically by the package manager's dependency resolver.
+Most of these packages are probably already provided by your distribution.
+Here are the packages you need to have to build GSmartControl on some Linux
+distributions:
+
+OpenSUSE, SLES, SLED:
+gcc-c++, pcre-devel, gtkmm2-devel, (possibly) libglademm-devel.
+
+Fedora, CentOS, RHEL:
+gcc-c++, pcre-devel, gtkmm24-devel, (possibly) libglademm24-devel.
+
+Mandriva:
+gcc-c++, gcc-cpp, libpcre-devel, libgtkmm2.4-devel, (possibly)
+libglademm2.4_1-devel.
+
+Ubuntu, Debian GNU/Linux:
+g++, libpcre3-dev, libgtkmm-2.4-dev, (possibly) libglademm-2.4-dev.
+
+Note that usually you need to specify only these packages - the rest is
+installed automatically by the package manager's dependency resolver. Keep in
+mind that you also need smartmontools to run the program.
+
 
 The following operating systems are supported:
 
@@ -120,6 +137,10 @@ The following operating systems are supported:
 
 * OpenBSD - Tested with OpenBSD 4.3 / x86-64 / gcc-3.3.5.
 
+* Windows (XP or higher) - Tested with Windows XP. Windows 2000 does not work
+for some unknown reason. The Windows port uses pd0, pd1, etc... for physical
+drives 0, 1, etc... .
+
 * Solaris - Tested with Solaris 10 / x86 / gcc-3.4.3 / blastwave,
 Solaris 10 / x86 / sunstudio12 / sunfreeware. OpenSolaris should work but has
 not been tested yet. Note that until either smartctl gets ATA support under
@@ -128,10 +149,6 @@ essentially useless.
 
 * DragonFlyBSD - Code written but no testing has been performed yet. Expected
 to work without any issues.
-
-* Windows (NT line only) - Only minimal testing has been performed. Expected
-to work. The Windows port uses /dev/pd0, /dev/pd1, etc... for physical drives
-0, 1, etc... .
 
 * Mac OS X - Code written but no testing has been performed yet.
 

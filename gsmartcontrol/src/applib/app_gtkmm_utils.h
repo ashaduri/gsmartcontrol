@@ -22,7 +22,6 @@
 
 
 
-
 // Note: This works only if the column has custom widget set.
 Gtk::Widget* app_gtkmm_get_column_header(Gtk::TreeViewColumn& column);
 

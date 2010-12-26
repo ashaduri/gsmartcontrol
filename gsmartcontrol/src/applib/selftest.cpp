@@ -262,7 +262,8 @@ std::string SelfTest::update(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 				poll_in_seconds_ = std::max(int64_t(1*60), int64_t(gran / 10.));  // that's 2 min for 180min extended test
 
 			debug_out_dump("app", DBG_FUNC_MSG << "total: " << total << ", gran: " << gran
-					<< ", poll_in: " << poll_in_seconds_ << ", remaining: " << get_remaining_seconds() << ".\n");
+					<< ", poll in: " << poll_in_seconds_ << ", remaining secs: " << get_remaining_seconds()
+					<< ", remaining %: " << int(remaining_percent_) << ", last seen %: " << int(last_seen_percent_) << ".\n");
 		}
 
 	} else {

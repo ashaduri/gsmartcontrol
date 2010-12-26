@@ -28,10 +28,10 @@ Summary:	GSmartControl - Hard Disk Health Inspection Tool
 
 %if 0%{?%suse_version} >= 1030
 Requires: smartmontools, pcre, gtkmm2 >= 2.12.0
-BuildRequires: gcc-c++ libstdc++-devel pcre-devel, gtkmm2-devel >= 2.12.0
+BuildRequires: gcc-c++, libstdc++-devel, pcre-devel, gtkmm2-devel >= 2.12.0
 %else
 Requires: smartmontools, pcre, gtkmm2 >= 2.6.0, libglademm >= 2.4.0
-BuildRequires: gcc-c++ libstdc++-devel pcre-devel, gtkmm2-devel >= 2.6.0, libglademm-devel >= 2.4.0
+BuildRequires: gcc-c++, libstdc++-devel, pcre-devel, gtkmm2-devel >= 2.6.0, libglademm-devel >= 2.4.0
 %endif
 
 %endif
@@ -43,10 +43,10 @@ BuildRequires: gcc-c++ libstdc++-devel pcre-devel, gtkmm2-devel >= 2.6.0, libgla
 # I'm not sure about centos and rhel versions
 %if 0%{?fedora_version} >= 8 || 0%{?rhel_version} >= 600 || 0%{?centos_version} >= 600
 Requires: smartmontools, pcre, gtkmm24 >= 2.12.0
-BuildRequires: gcc-c++ pcre-devel, gtkmm24-devel >= 2.12.0
+BuildRequires: gcc-c++, pcre-devel, gtkmm24-devel >= 2.12.0
 %else
 Requires: smartmontools, pcre, gtkmm24 >= 2.6.0, libglademm24 >= 2.4.0
-BuildRequires: gcc-c++ pcre-devel, gtkmm24-devel >= 2.6.0, libglademm24-devel >= 2.4.0
+BuildRequires: gcc-c++, pcre-devel, gtkmm24-devel >= 2.6.0, libglademm24-devel >= 2.4.0
 %endif
 
 %endif
@@ -57,10 +57,10 @@ BuildRequires: gcc-c++ pcre-devel, gtkmm24-devel >= 2.6.0, libglademm24-devel >=
 
 %if 0%{?mandriva_version} >= 2008
 Requires: smartmontools, libpcre0, libgtkmm2.4_1 >= 2.12.0
-BuildRequires: gcc-c++ gcc-cpp libpcre-devel, libgtkmm2.4-devel >= 2.12.0
+BuildRequires: gcc-c++, gcc-cpp, libpcre-devel, libgtkmm2.4-devel >= 2.12.0
 %else
 Requires: smartmontools, libpcre0, libgtkmm2.4_1 >= 2.6.0, libglademm2.4_1 >= 2.4.0
-BuildRequires: gcc-c++ gcc-cpp libpcre-devel, libgtkmm2.4-devel >= 2.6.0, libglademm2.4_1-devel >= 2.4.0
+BuildRequires: gcc-c++, gcc-cpp, libpcre-devel, libgtkmm2.4-devel >= 2.6.0, libglademm2.4_1-devel >= 2.4.0
 %endif
 
 %endif

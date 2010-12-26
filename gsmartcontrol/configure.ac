@@ -1,5 +1,5 @@
 
-AC_INIT([GSmartControl], [0.8.0rc4], [], [gsmartcontrol])
+AC_INIT([GSmartControl], [0.8.1], [], [gsmartcontrol])
 
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_HEADERS([config.h])
@@ -27,8 +27,10 @@ AC_PROG_CXX
 #AC_LANG([C])
 AC_LANG([C++])
 
-# to be able to generate static libs
+# Needed for generating static libs
 AC_CHECK_TOOL(RANLIB, ranlib)
+# Win32 resource file compilation
+AC_CHECK_TOOL(WINDRES, windres)
 
 
 # -------------------------------------------------------------------------------------
@@ -403,7 +405,7 @@ AC_SUBST(AUTODIRS)
 
 
 AC_CONFIG_FILES([ data/gsmartcontrol_gnome.desktop data/gsmartcontrol_kde.desktop \
-	data/gsmartcontrol_other.desktop \
+	data/gsmartcontrol_other.desktop src/winres.rc \
 	gsmartcontrol.spec version compilation_flags ])
 
 
@@ -415,7 +417,7 @@ AC_CONFIG_FILES([data/gsmartcontrol_root.sh], [chmod +x data/gsmartcontrol_root.
 AC_CONFIG_FILES([Makefile src/Makefile src/applib/Makefile src/res/Makefile src/hz/Makefile \
 	src/libdebug/Makefile src/pcrecpp/Makefile src/rconfig/Makefile src/rmn/Makefile \
 	data/Makefile data/16/Makefile data/22/Makefile data/24/Makefile data/32/Makefile \
-	data/48/Makefile data/64/Makefile data/128/Makefile])
+	data/48/Makefile data/64/Makefile data/128/Makefile data/256/Makefile])
 
 
 AC_OUTPUT
