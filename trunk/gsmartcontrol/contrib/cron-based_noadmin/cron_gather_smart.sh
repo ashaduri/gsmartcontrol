@@ -1,8 +1,8 @@
 #!/bin/bash
 ############################################################################
 # Copyright:
-#      (C) 2008  Alex Butcher <alex dot butcher 'at' assursys.co.uk>
-#      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+#      (C) 2008 - 2009  Alex Butcher <alex dot butcher 'at' assursys.co.uk>
+#      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
 # License: See LICENSE_whatever.txt file
 ############################################################################
 

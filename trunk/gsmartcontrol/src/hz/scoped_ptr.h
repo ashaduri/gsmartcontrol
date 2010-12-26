@@ -1,8 +1,8 @@
 /**************************************************************************
  Copyright:
-      (C) 1998 - 2008  Greg Colvin and Beman Dawes
-      (C) 2001 - 2008  Peter Dimov
-      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 1998 - 2009  Greg Colvin and Beman Dawes
+      (C) 2001 - 2009  Peter Dimov
+      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_boost_1_0.txt file
 ***************************************************************************/
 

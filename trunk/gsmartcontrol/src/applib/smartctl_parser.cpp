@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
@@ -148,23 +148,34 @@ bool SmartctlParser::parse_full(const std::string& full)
 
 	// version info
 
-	std::string version = parse_version(s);
-	if (version.empty()) {
+	std::string version, version_full;
+	if (!parse_version(s, version, version_full)) {
 		set_error_msg("Cannot extract smartctl version information.");
 		debug_out_warn("app", DBG_FUNC_MSG << "Cannot extract version information. Returning.\n");
 		return false;
 
 	} else {
-		StorageProperty p;
-		p.set_name("Smartctl version", "smartctl_version");
-		p.reported_value = version;
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
-		p.section = StorageProperty::section_info;  // add to info section
-		add_property(p);
+		{
+			StorageProperty p;
+			p.set_name("Smartctl version", "smartctl_version");
+			p.reported_value = version;
+			p.value_type = StorageProperty::value_type_string;
+			p.value_string = p.reported_value;
+			p.section = StorageProperty::section_info;  // add to info section
+			add_property(p);
+		}
+		{
+			StorageProperty p;
+			p.set_name("Smartctl version", "smartctl_version_full");
+			p.reported_value = version_full;
+			p.value_type = StorageProperty::value_type_string;
+			p.value_string = p.reported_value;
+			p.section = StorageProperty::section_info;  // add to info section
+			add_property(p);
+		}
 	}
 
-	if (!check_version(version)) {
+	if (!check_version(version, version_full)) {
 		set_error_msg("Incompatible smartctl version.");
 		debug_out_warn("app", DBG_FUNC_MSG << "Incompatible smartctl version. Returning.\n");
 		return false;
@@ -210,25 +221,24 @@ bool SmartctlParser::parse_full(const std::string& full)
 
 
 // Supply output of "smartctl --version" here.
-// returns empty string on failure. Non-unix newlines in s are ok.
-std::string SmartctlParser::parse_version(const std::string& s)
+// returns false on failure. Non-unix newlines in s are ok.
+bool SmartctlParser::parse_version(const std::string& s, std::string& version, std::string& version_full)
 {
-	std::string version;
-
 	// e.g. "smartctl version 5.37" or "smartctl 5.39"
-	if (!app_pcre_match("/^smartctl (?:version )?([0-9][^ \\t\\n\\r]+)/mi", s, &version)) {
+	if (!app_pcre_match("/^smartctl (?:version )?(([0-9][^ \\t\\n\\r]+)(?: [0-9 :-]+)?)/mi", s, &version_full, &version)) {
 		debug_out_error("app", DBG_FUNC_MSG << "No smartctl version information found in supplied string.\n");
-		return std::string();
+		return false;
 	}
+	hz::string_trim(version_full);
 
-	return version;
+	return true;
 }
 
 
 
 
 // check that the version of smartctl output can be parsed with this parser.
-bool SmartctlParser::check_version(const std::string& version_str)
+bool SmartctlParser::check_version(const std::string& version_str, const std::string& version_full_str)
 {
 	// tested with 5.1-xx versions (1 - 18), and 5.[20 - 38].
 	// note: 5.1-11 (maybe others too) with scsi disk gives non-parsable output (why?).
@@ -352,7 +362,7 @@ bool SmartctlParser::parse_section_info(const std::string& body)
 
 	// split by lines.
 	// e.g. Device Model:     ST3500630AS
-	pcrecpp::RE re = app_pcre_re("/^([^:\\n]+):[ \\t]*(.*)$/mi");
+	pcrecpp::RE re = app_pcre_re("/^([^\\n]+): [ \\t]*(.*)$/miU");  // ungreedy
 
 	std::string name, value;
 	pcrecpp::StringPiece input(body);  // position tracker
@@ -467,6 +477,9 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 	} else {
 		debug_out_warn("app", DBG_FUNC_MSG << "Unknown attribute \"" << p.reported_name << "\"\n");
 		// this is not an error, just unknown attribute. treat it as string.
+		// Don't highlight it with warning, it may just be a new smartctl feature.
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
 	}
 
 	return true;

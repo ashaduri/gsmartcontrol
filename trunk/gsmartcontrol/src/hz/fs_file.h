@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
 
@@ -541,16 +541,21 @@ inline bool File::move(const std::string& to)
 		return false;
 	}
 
-	// win32 rename() doesn't replace contents if newpath exists and says "file exists".
+	bool success = (rename(path_.c_str(), to.c_str()) == 0);
+
 #ifdef _WIN32
-/// FIXME: Try to rename first, unlink/rename again later. This way we have at least some atomicity.
-	// try remove it if it's a file. no error checks here - rename() will report the needed messages.
-	File dest_file(to);
-	if (dest_file.is_file())
-		dest_file.remove();
+	// win32 rename() doesn't replace contents if newpath exists and says "file exists".
+	// Try to rename first, then unlink/rename again. This way we have at least some atomicity.
+	if (!success && errno == EACCES) {
+		File dest_file(to);
+		if (dest_file.is_file()) {
+			dest_file.remove();  // no error tracking here, rename() will report the needed error.
+			success = (rename(path_.c_str(), to.c_str()) == 0);
+		}
+	}
 #endif
 
-	if (rename(path_.c_str(), to.c_str()) != 0)
+	if (!success)
 		set_error(HZ__("Unable to move filesystem entry \"/path1/\" to \"/path2/\": /errno/."), errno, path_, to);
 
 	return ok();

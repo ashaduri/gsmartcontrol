@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2003 - 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2003 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
 
@@ -71,7 +71,7 @@ inline bool win32_get_registry_value_string(std::string& put_here, HKEY base,
 
 	if (status) {
 		char* result = new char[nbytes + 1];
-		status = RegQueryValueEx(reg_key, key.c_str(), 0, &type, (BYTE*)result, &nbytes);
+		status = (RegQueryValueEx(reg_key, key.c_str(), 0, &type, (BYTE*)result, &nbytes) == ERROR_SUCCESS);
 		result[nbytes] = '\0';
 		put_here = result;
 		delete[] result;

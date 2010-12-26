@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
@@ -18,7 +18,7 @@
 #include "applib/smartctl_executor.h"  // get_smartctl_binary()
 #include "applib/smartctl_executor_gui.h"
 #include "applib/app_gtkmm_utils.h"  // app_gtkmm_*
-#include "applib/storage_property_colors.h"  // app_property_get_label_hilight_color
+#include "applib/storage_property_colors.h"  // app_property_get_label_highlight_color
 #include "applib/app_pcrecpp.h"  // app_pcre_match
 
 #include "gsc_init.h"  // app_quit()
@@ -96,7 +96,8 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 			break;
 		}
 
-		if (SmartctlParser::parse_version(output).empty()) {
+		std::string version, version_full;
+		if (!SmartctlParser::parse_version(output, version, version_full)) {
 			error_msg = "Smartctl returned invalid output.";
 			break;
 		}
@@ -905,7 +906,7 @@ void GscMainWindow::update_status_widgets()
 		if (health_prop.generic_name == "overall_health") {
 			health_label->set_text(health_prop.format_value());
 			std::string fg;
-			if (app_property_get_label_hilight_color(health_prop.warning, fg)) {
+			if (app_property_get_label_highlight_color(health_prop.warning, fg)) {
 				health_label->set_markup("<span color=\"" + fg + "\">"+ health_label->get_text() + "</span>");
 			}
 			// don't set description tooltip - we already have the basic one.

@@ -1,7 +1,13 @@
 
-Version 0.8.4, released on ---------
-	Blacklist Linux Software RAID devices (backported from Debian).
-	Win32: Use smartmontools-supplied smartctl-nc.exe by default (if found).
+Version 0.8.4, released on 2009-03-23
+	Linux Software RAID devices are blacklisted now. (backported from Debian).
+	Attributes tab is before the capabilities tab now.
+	A man page has been generously contributed by Giuseppe Iuculano
+		<giuseppe@iuculano.it>.
+	Smartctl version now includes the CVS snapshot date (if available).
+	Windows: Look for "smartctl-nc.exe" instead of "smartctl.exe" by default.
+	Windows: Use smartmontools-supplied smartctl-nc.exe by default (if found).
+	Other minor changes (mainly Debian backports).
 
 Version 0.8.3, released on 2008-12-27
 	A random "Smartctl returned an empty output" error on Windows was fixed.

@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2009 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_whatever.txt
 ***************************************************************************/
 

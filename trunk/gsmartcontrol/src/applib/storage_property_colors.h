@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
@@ -12,7 +12,7 @@
 
 
 // colors for tree rows
-inline bool app_property_get_row_hilight_colors(StorageProperty::warning_t warning, std::string& fg, std::string& bg)
+inline bool app_property_get_row_highlight_colors(StorageProperty::warning_t warning, std::string& fg, std::string& bg)
 {
 	// Note: we're setting both fg and bg, to avoid theme conflicts.
 	if (warning == StorageProperty::warning_notice) {
@@ -34,7 +34,7 @@ inline bool app_property_get_row_hilight_colors(StorageProperty::warning_t warni
 
 
 // colors for labels
-inline bool app_property_get_label_hilight_color(StorageProperty::warning_t warning, std::string& fg)
+inline bool app_property_get_label_highlight_color(StorageProperty::warning_t warning, std::string& fg)
 {
 	if (warning == StorageProperty::warning_notice) {
 		fg = "#770000";  // very dark red
@@ -56,7 +56,7 @@ inline bool app_property_get_label_hilight_color(StorageProperty::warning_t warn
 inline std::string storage_property_get_warning_reason(const StorageProperty& p)
 {
 	std::string fg, start, stop;
-	if (app_property_get_label_hilight_color(p.warning, fg)) {
+	if (app_property_get_label_highlight_color(p.warning, fg)) {
 		start = "<span color=\"" + fg + "\">";
 		stop = "</span>";
 	}

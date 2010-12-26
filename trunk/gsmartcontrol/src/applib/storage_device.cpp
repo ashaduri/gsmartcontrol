@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
@@ -55,8 +55,8 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 		return "Cannot read information from an empty string.";
 	}
 
-	std::string version = SmartctlParser::parse_version(this->info_output_);
-	if (version.empty())  // is this smartctl data at all?
+	std::string version, version_full;
+	if (!SmartctlParser::parse_version(this->info_output_, version, version_full))  // is this smartctl data at all?
 		return "Cannot get smartctl version information.";
 
 	// detect type. note: we can't distinguish between sata and scsi (on linux, for -d ata switch).

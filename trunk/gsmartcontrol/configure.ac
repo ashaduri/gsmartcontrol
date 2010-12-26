@@ -36,6 +36,9 @@ AC_CHECK_TOOL(WINDRES, windres)
 # Win32 external dll stripping (already detected by autoconf)
 # AC_CHECK_TOOL(STRIP, strip)
 
+# Defines LN_S, needed for man page installation.
+AC_PROG_LN_S
+
 
 # -------------------------------------------------------------------------------------
 

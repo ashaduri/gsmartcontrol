@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
@@ -194,7 +194,7 @@ inline void app_print_version_info()
 	std::string warningtext = std::string("\nWarning: GSmartControl");
 	warningtext += " comes with ABSOLUTELY NO WARRANTY.\n";
 	warningtext += "See LICENSE_gsmartcontrol.txt file for details.\n";
-	warningtext += "\nCopyright (C) 2008  Alexander Shaduri <ashaduri" "" "@" "" "" "gmail.com>\n\n";
+	warningtext += "\nCopyright (C) 2008 - 2009  Alexander Shaduri <ashaduri" "" "@" "" "" "gmail.com>\n\n";
 
 	std::printf("%s%s", versiontext.c_str(), warningtext.c_str());
 }

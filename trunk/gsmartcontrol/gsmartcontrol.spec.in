@@ -126,6 +126,7 @@ rm -rf %buildroot
 # %attr(0644,root,root) %config(noreplace) %{_sysconfdir}/*
 
 %doc %{_datadir}/doc/gsmartcontrol
+%doc %{_mandir}/man1/*
 
 %{_datadir}/gsmartcontrol
 # %{_datadir}/gsmartcontrol/*

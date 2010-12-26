@@ -2,7 +2,7 @@
  Copyright:
       (C) 1992, 1993  The Regents of the University of California
  License: See LICENSE_bsd-ucb.txt file
-      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
 

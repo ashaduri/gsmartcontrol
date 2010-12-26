@@ -1,12 +1,23 @@
 
 SUBDIRS = 16 22 24 32 48 64 128 256 nsis
 
+
+dist_man_MANS = gsmartcontrol.1
+
+install-extra-mans:
+	cd $(DESTDIR)$(mandir)/man1 && $(LN_S) -f gsmartcontrol.1 gsmartcontrol-root.1
+
+uninstall-extra-mans:
+	cd $(DESTDIR)$(mandir)/man1 && rm -f gsmartcontrol-root.1
+
+
 # This command is needed if installing with make install (the cache
 # file is ignored for rpms).
 gtk_update_icon_cache = gtk-update-icon-cache -f -t $(datadir)/icons/hicolor
 
-install-data-hook: update-icon-cache
-uninstall-hook: update-icon-cache
+install-data-hook: install-extra-mans update-icon-cache
+uninstall-hook: uninstall-extra-mans update-icon-cache
+
 update-icon-cache:
 	@-if test -z "$(DESTDIR)"; then \
 		echo "Updating GTK icon cache."; \

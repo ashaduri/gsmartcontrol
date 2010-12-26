@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2009 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
 
@@ -188,7 +188,7 @@ GOptionGroup* debug_get_option_group()
 	debug_internal::DebugCmdArgs* args = debug_internal::debug_get_args_holder();
 
 	GOptionGroup* group = g_option_group_new("debug",
-			"LibDebug Logging options", "Show LibDebug Options",
+			"Libdebug Logging Options", "Show libdebug options",
 			args, NULL);
 
 	static const GOptionEntry entries[] =
