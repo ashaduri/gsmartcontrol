@@ -281,12 +281,13 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 				return;
 			}
 
-		} else {
-			std::string error_msg = drive->parse_data();
-			if (!error_msg.empty()) {
-				gui_show_error_dialog("Cannot interpret SMART data", error_msg, this);
-				return;
-			}
+		// it's already parsed
+// 		} else {
+// 			std::string error_msg = drive->parse_data();
+// 			if (!error_msg.empty()) {
+// 				gui_show_error_dialog("Cannot interpret SMART data", error_msg, this);
+// 				return;
+// 			}
 		}
 	}
 
@@ -1024,7 +1025,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			row = *(test_combo_model->append());
 			row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::type_long);
 			row[test_combo_col_description] =
-				"Extended self-test examines complete disk surface and performs various test routines "
+				"Extended self-test examines complete disk surface and performs various test routines"
 				" built into the drive. Its result is reported in the Self-test Log.";
 			row[test_combo_col_self_test] = test_long;
 		}
@@ -1251,7 +1252,17 @@ void GscInfoWindow::on_view_output_button_clicked()
 {
 	GscTextWindow<SmartctlOutputInstance>* win = GscTextWindow<SmartctlOutputInstance>::create();
 	// make save visible and enable monospace font
-	win->set_text("Smartctl Output", this->drive->get_full_output(), true, true);
+
+	std::string buf_text = this->drive->get_full_output();
+	// We receive locale'd thousands separators in win32, so convert them.
+	#ifdef _WIN32
+	try {
+		buf_text = Glib::locale_to_utf8(buf_text);
+	} catch (Glib::ConvertError& e) {
+		buf_text = "";  // inserting invalid utf8 may trigger a segfault, so empty better.
+	}
+	#endif
+	win->set_text("Smartctl Output", buf_text, true, true);
 
 	std::string filename = drive->get_save_filename();
 	if (!filename.empty())
@@ -1600,7 +1611,7 @@ void GscInfoWindow::on_drive_changed(StorageDevice* pdrive)
 
 	// test_active is also checked in delete_event handler, because this call may not
 	// succeed - the window manager may refuse to do it.
-#if !APP_GTKMM_CHECK_VERSION(2, 10, 0)
+#if APP_GTKMM_CHECK_VERSION(2, 10, 0)
 	this->set_deletable(!test_active);  // since 2.10
 #endif
 }

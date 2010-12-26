@@ -128,17 +128,30 @@ bool Cmdex::execute()
 
 
 
-	// Reset the locale - otherwise it may mangle the output.
-
+	// Set the locale for a child to Classic - otherwise it may mangle the output.
+	// LANG is posix-only, so it has no effect on win32.
+	// Unfortunately, I was unable to find a way to execute a child with a different
+	// locale in win32. Locale seems to be non-inheritable, so setting it here won't help.
+#ifndef _WIN32
 	// TODO: make this controllable.
 	const gchar* old_lang_gchar = g_getenv("LANG");
 	bool old_lang_set = (old_lang_gchar);
 	std::string old_lang = (old_lang_gchar ? old_lang_gchar : "");
 	if (old_lang_set)
 		g_setenv("LANG", "C", true);
+#endif
+
 
 	debug_out_info("app", DBG_FUNC_MSG << "Executing \"" << cmd << "\".\n");
 
+	if (argvp) {
+		debug_out_dump("app", DBG_FUNC_MSG << "Dumping argvp:\n");
+		gchar** elem = argvp;
+		while (*elem) {
+			debug_out_dump("app", *elem << "\n");
+			++elem;
+		}
+	}
 
 
 	// Execute the command
@@ -157,17 +170,21 @@ bool Cmdex::execute()
 		g_free(curr_dir);
 		g_strfreev(argvp);
 
+#ifndef _WIN32
 		if (old_lang_set)
 			g_setenv("LANG", old_lang.c_str(), true);
+#endif
+
 		return false;
 	}
 
 	g_free(curr_dir);
 	g_strfreev(argvp);
 
+#ifndef _WIN32
 	if (old_lang_set)
 		g_setenv("LANG", old_lang.c_str(), true);
-
+#endif
 
 	g_timer_start(timer_);  // start the timer
 

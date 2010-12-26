@@ -2,13 +2,18 @@ Name:		gsmartcontrol
 Version:	@VERSION@
 Release:	1as
 License:	GPLv2, GPLv3
-Vendor:		Alexander Shaduri <ashaduri 'at' gmail.com>
 Url:		http://gsmartcontrol.berlios.de
+Vendor:		Alexander Shaduri <ashaduri 'at' gmail.com>
 Packager:	Alexander Shaduri <ashaduri 'at' gmail.com>
-Group:		Hardware/Other
 Source:		gsmartcontrol-%{version}.tar.bz2
 BuildRoot:	%{_tmppath}/%{name}-%{version}-build
 Summary:	GSmartControl - Hard Disk Health Inspection Tool
+
+%if 0%{?mandriva_version}
+Group:		System/Kernel and hardware
+%else
+Group:		Hardware/Other
+%endif
 
 # Support build service rpmlint. Disabled - the build service
 # stopped recognizing the flag for some architectures.
@@ -21,6 +26,9 @@ Summary:	GSmartControl - Hard Disk Health Inspection Tool
 # smartmontools, pcre, (gtkmm2 >= 2.12 || (gtkmm2 >= 2.6.0 && libglademm >= 2.4.0))
 # (with the respective -devel packages of the libraries for build requirements).
 # For non-specified distributions we don't specify any dependencies to avoid errors.
+
+# For mandriva, these contain the su programs.
+# Suggests:	libgnomesu, gksu, kdebase-progs
 
 
 # SUSE / OpenSUSE. SLES also defines the correct suse_version.
@@ -56,11 +64,11 @@ BuildRequires: gcc-c++, pcre-devel, gtkmm24-devel >= 2.6.0, libglademm24-devel >
 %if 0%{?mandriva_version}
 
 %if 0%{?mandriva_version} >= 2008
-Requires: smartmontools, libpcre0, libgtkmm2.4_1 >= 2.12.0
-BuildRequires: gcc-c++, gcc-cpp, libpcre-devel, libgtkmm2.4-devel >= 2.12.0
+Requires: smartmontools, libpcre0, gtkmm2.4 >= 2.12.0
+BuildRequires: gcc-c++, gcc-cpp, pcre-devel, gtkmm2.4-devel >= 2.12.0, desktop-file-utils
 %else
-Requires: smartmontools, libpcre0, libgtkmm2.4_1 >= 2.6.0, libglademm2.4_1 >= 2.4.0
-BuildRequires: gcc-c++, gcc-cpp, libpcre-devel, libgtkmm2.4-devel >= 2.6.0, libglademm2.4_1-devel >= 2.4.0
+Requires: smartmontools, libpcre0, gtkmm2.4 >= 2.6.0, libglademm2.4 >= 2.4.0
+BuildRequires: gcc-c++, gcc-cpp, pcre-devel, gtkmm2.4-devel >= 2.6.0, libglademm2.4-devel >= 2.4.0, desktop-file-utils
 %endif
 
 %endif
@@ -76,13 +84,11 @@ SMART data to determine its health, as well as run various tests on it.
 
 
 %setup -q
-%configure
-# Don't use configure parameters - let rpm set them.
-# --prefix=/usr --enable-default-gcc-options --enable-gcc-optimize
+%configure --enable-optimize-options=auto
 
 
 %build
-# Setup for parallel builds
+# Set up for parallel builds
 numprocs=`egrep -c ^cpu[0-9]+ /proc/stat || :`
 if [ "$numprocs" = "0" ]; then
 	numprocs=1
@@ -94,7 +100,15 @@ make -j$numprocs
 
 %install
 # %makeinstall
-make DESTDIR=%buildroot install
+make DESTDIR=%buildroot install-strip
+
+%if 0%{?mandriva_version}
+desktop-file-install --vendor="" \
+	--remove-category="Application" \
+	--add-category="System" \
+	--add-category="X-MandrivaLinux-System-Configuration-Hardware;Settings;HardwareSettings" \
+	--dir $RPM_BUILD_ROOT%{_datadir}/applications $RPM_BUILD_ROOT%{_datadir}/applications/%{name}.desktop
+%endif
 
 
 %clean
@@ -116,7 +130,11 @@ rm -rf %buildroot
 %{_datadir}/pixmaps/*
 
 
+
 %changelog
+* Fri Nov 14 2008 Alexander Shaduri <ashaduri 'at' gmail.com>
+- Updated .spec file to incorporate changes from the official Mandriva package.
+
 * Mon Oct 06 2008 Alexander Shaduri <ashaduri 'at' gmail.com>
 - Updated .spec file to support OpenSUSE < 10.3, Fedora and friends,
 	Mandriva (for OpenSUSE Build Service).

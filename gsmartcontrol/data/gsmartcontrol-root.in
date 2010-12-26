@@ -14,14 +14,31 @@ DESKTOP="$1";
 
 # This works for --help too
 if [ "$DESKTOP" = "" ]; then
-	DESKTOP="other";  # default
+	DESKTOP="auto";  # default
 
-elif [ "$DESKTOP" != "kde" ] && [ "$DESKTOP" != "gnome" ] && [ "$DESKTOP" != "other" ]; then
-	echo "Usage: $0 <desktop_name> [<${prog_name}_options>]";
-	echo "Desktop name may be kde, gnome, other.";
+elif [ "$DESKTOP" != "auto" ] && [ "$DESKTOP" != "kde" ] && \
+		[ "$DESKTOP" != "gnome" ] && [ "$DESKTOP" != "other" ]; then
+	echo "Usage: $0 [<auto|kde|gnome|other> [<${prog_name}_options>] ]";
 	exit 1;
 fi
 shift;  # remove $1
+
+
+# Auto-detect current desktop if auto was specified.
+if [ "$DESKTOP" = "auto" ]; then
+	# KDE_SESSION_UID is present on kde3 and kde4.
+	# Note that it may be empty (but still set)
+	if [ "${KDE_SESSION_UID+set}" = "set" ]; then
+		DESKTOP="kde";
+	# same with gnome
+	elif [ "${GNOME_DESKTOP_SESSION_ID+set}" = "set" ]; then
+		DESKTOP="gnome";
+	else
+		DESKTOP="other";
+	fi
+fi
+
+# echo $DESKTOP;
 
 
 # They're basically the same, only the order is different.
@@ -53,12 +70,24 @@ done
 
 if [ "$found_su" = "" ]; then
 	xmessage "Error launching ${prog_name}: No suitable su mechanism found.
-Try installing gnomesu, kdesu or sux first.";
+Try installing kdesu, gnomesu, gksu or sux first.";
 	exit 1;
 fi
 
+
+# gnomesu and gksu (but not kdesu, not sure about others) fail to adopt
+# root's PATH. Since the user's PATH may not contain /usr/sbin (with smartctl)
+# on some distributions (e.g. mandriva), add it manually. We also add
+# /usr/local/sbin, since that's the default location of custom-compiled smartctl.
+# Add these directories _before_ existing PATH, so that the user is not
+# tricked into running it from some other path (we're running as root with
+# the user's env after all).
+export PATH="/usr/sbin:/usr/local/sbin:$PATH"
+
+
 # echo $found_su;
 
+# Examples:
 # gnomesu -c 'gsmartcontrol --no-scan'
 # kdesu -c 'gsmartcontrol --no-scan'
 # xterm -e sux -c 'gsmartcontrol --no-scan'  # sux asks for password in a terminal

@@ -1,5 +1,5 @@
 
-SUBDIRS = 16 22 24 32 48 64 128 256
+SUBDIRS = 16 22 24 32 48 64 128 256 nsis
 
 gtk_update_icon_cache = gtk-update-icon-cache -f -t $(datadir)/icons/hicolor
 
@@ -25,20 +25,20 @@ appdata_DATA = icon_cddvd.png icon_hdd.png
 
 # Desktop files
 desktopdir = $(datadir)/applications
-desktop_DATA = gsmartcontrol_gnome.desktop gsmartcontrol_kde.desktop \
-    gsmartcontrol_other.desktop
+desktop_DATA = gsmartcontrol.desktop
 
 
-# Application pixmap (fallback icon for desktop files)
-# Same as 48/gsmartcontrol.png
+# Application pixmap (fallback icon for desktop files).
+# Same as 48/gsmartcontrol.png.
+# Also, xpm for debian menu, 32x32.
 pixmapsdir = $(datadir)/pixmaps
-pixmaps_DATA = 48/gsmartcontrol.png
+pixmaps_DATA = 48/gsmartcontrol.png gsmartcontrol.xpm
 
 
 # Put everything inside the distribution
-EXTRA_DIST = $(appdata_DATA) gsmartcontrol.ico
+EXTRA_DIST = $(appdata_DATA) gsmartcontrol.ico gsmartcontrol.xpm
 
 
-bin_SCRIPTS = gsmartcontrol_root.sh
+bin_SCRIPTS = gsmartcontrol-root
 CLEANFILES = $(bin_SCRIPTS)
 

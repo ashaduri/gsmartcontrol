@@ -2,7 +2,7 @@
 # Add autoconf.m4 directory to local macro search path
 ACLOCAL_AMFLAGS = -I autoconf.m4
 
-SUBDIRS = src data
+SUBDIRS = data debian.dist src
 
 
 # These files are actually needed for compilation.
@@ -46,7 +46,6 @@ gch: global_macros.h.gch
 gch-clean:
 	rm -f global_macros.h.gch
 
-distclean-local: gch-clean
 
 
 # rpm support
@@ -58,5 +57,72 @@ src-rpm: dist
 # Don't use this - it does something weird, and gcc errors out with "long long long" errors, etc...
 #rpm: dist
 #	rpmbuild -ta $(distdir).tar.bz2
+
+
+
+# NSIS installer support.
+# Requires wine, installed NSIS, gtkmm dlls, pcre dlls, smartctl.exe, smartctl_console.exe.
+# dos2unix on build machine.
+# Execute only with win32 build present.
+
+WIN_ZIP_NAME = $(PACKAGE)-$(VERSION)-win32
+
+win-dist: win-dist-prepare nsis-dist-nocleanup win-zip-dist
+
+win-dist-clean:
+	rm -rf gsmartcontrol-*.exe gsmartcontrol-*.zip nsis-dist $(WIN_ZIP_NAME)
+
+
+win-dist-prepare: all win-dist-clean
+	$(MKDIR_P) nsis-dist
+
+	cp data/nsis/gsmartcontrol.nsi $(top_srcdir)/data/nsis/nsi_* nsis-dist/
+	cp $(top_srcdir)/data/gsmartcontrol.ico $(top_srcdir)/data/icon_*.png nsis-dist/
+
+	$(MKDIR_P) nsis-dist/doc
+	cp data/nsis/distribution.txt nsis-dist/doc/
+	cp $(top_srcdir)/AUTHORS.txt $(top_srcdir)/LICENSE_* $(top_srcdir)/README.txt nsis-dist/doc/
+	cp $(top_srcdir)/NEWS nsis-dist/doc/NEWS.txt
+
+	unix2dos nsis-dist/*.nsi nsis-dist/doc/*.txt
+
+	cp "@WIN32_ENV@"/libatkmm-*.dll "@WIN32_ENV@"/libcairomm-*.dll "@WIN32_ENV@"/libgdkmm-*.dll nsis-dist/
+	cp "@WIN32_ENV@"/libgiomm-*.dll "@WIN32_ENV@"/libglibmm-*.dll "@WIN32_ENV@"/libgtkmm-*.dll nsis-dist/
+	cp "@WIN32_ENV@"/libpangomm-*.dll "@WIN32_ENV@"/libsigc-*.dll "@WIN32_ENV@"/pcre3.dll nsis-dist/
+	cp "@WIN32_ENV@"/mingwm10.dll "@WIN32_ENV@"/smartctl.exe "@WIN32_ENV@"/smartctl_console.exe nsis-dist/
+
+	cp src/gsmartcontrol.exe nsis-dist/
+
+	$(STRIP) nsis-dist/*.exe
+	mv nsis-dist/mingwm10.dll nsis-dist/mingwm10.dll_
+	$(STRIP) --strip-debug --strip-unneeded nsis-dist/*.dll
+	mv nsis-dist/mingwm10.dll_ nsis-dist/mingwm10.dll
+
+
+nsis-dist: nsis-dist-nocleanup nsis-cleanup
+
+nsis-dist-nocleanup: win-dist-prepare
+	cd nsis-dist && @NSIS_EXEC@ gsmartcontrol.nsi
+	mv nsis-dist/$(PACKAGE)-$(VERSION).exe .
+
+nsis-cleanup:
+	rm -rf nsis-dist
+
+
+win-zip-dist: win-zip-dist-nocleanup win-zip-dist-cleanup
+
+win-zip-dist-nocleanup: win-dist-prepare
+	mv nsis-dist $(WIN_ZIP_NAME)
+	rm -rf $(WIN_ZIP_NAME)/gsmartcontrol.ico $(WIN_ZIP_NAME)/nsi_* $(WIN_ZIP_NAME)/*.nsi
+	zip -9r $(WIN_ZIP_NAME).zip $(WIN_ZIP_NAME)
+
+win-zip-dist-cleanup:
+	rm -rf $(WIN_ZIP_NAME)
+
+
+
+
+distclean-local: gch-clean win-dist-clean
+
 
 

@@ -7,6 +7,7 @@
 #ifndef GSC_MAIN_WINDOW_H
 #define GSC_MAIN_WINDOW_H
 
+#include <map>
 #include <gtkmm/window.h>
 #include <gtkmm/menu.h>
 #include <gtkmm/uimanager.h>
@@ -105,7 +106,7 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 
 		bool create_widgets();  // iconview, gtkuimanager stuff (menus), custom labels
 
-		void populate_iconview();  // scan and populate iconview widget with drive icons
+		void populate_iconview(bool smartctl_valid);  // scan and populate iconview widget with drive icons
 
 
 		void show_add_device_chooser();
@@ -121,6 +122,7 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 		Glib::RefPtr<Gtk::ActionGroup> actiongroup_main;
 		Glib::RefPtr<Gtk::ActionGroup> actiongroup_device;
 		bool action_handling_enabled_;
+		std::map<action_t, Glib::RefPtr<Gtk::Action> > action_map;  // used by on_action_activated().
 
 		WrappingLabel* name_label;
 		WrappingLabel* health_label;
@@ -139,7 +141,8 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 		// ---------- other callbacks
 
 
-		void on_action_activated(Glib::RefPtr<Gtk::Action> action, action_t action_type);
+// 		void on_action_activated(Glib::RefPtr<Gtk::Action> action, action_t action_type);
+		void on_action_activated(action_t action_type);
 
 		void on_action_enable_smart_toggled(Gtk::ToggleAction* action);
 

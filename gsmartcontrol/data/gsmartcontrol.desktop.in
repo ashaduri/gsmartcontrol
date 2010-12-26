@@ -1,8 +1,5 @@
 [Desktop Entry]
 
-# Desktop file for non-gnome and non-kde only.
-NotShowIn=GNOME;KDE;
-
 # desktop file version
 Version=1.0
 Type=Application
@@ -20,8 +17,13 @@ Comment=Monitor and control SMART data on hard disks
 # An absolute file path is also supported.
 Icon=gsmartcontrol
 
+# Run with root permissions. This should work with newer GNOME too.
+# It _should_ work with kde, but it hangs on mine, so use plain kdesu.
+#X-KDE-SubstituteUID=true
+#X-KDE-RootOnly=true
+
 # Run with root permissions.
-Exec="@prefix@/bin/gsmartcontrol_root.sh" other
+Exec="@prefix@/bin/gsmartcontrol-root"
 
 # Build service rpmlint gives errors without this
 X-SuSE-translate=false

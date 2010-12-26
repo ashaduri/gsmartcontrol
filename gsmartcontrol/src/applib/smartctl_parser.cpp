@@ -5,6 +5,7 @@
 ***************************************************************************/
 
 #include <stdint.h>  // uint64_t
+#include <clocale>  // setlocale, localeconv
 
 #include "hz/string_algo.h"  // string_*
 #include "hz/string_num.h"  // string_is_numeric, number_to_string
@@ -249,10 +250,45 @@ bool SmartctlParser::check_version(const std::string& version_str)
 // Note: this property is present since 5.33.
 std::string SmartctlParser::parse_byte_size(const std::string& str, uint64_t& bytes, bool extended)
 {
-	// e.g. "500,107,862,016" bytes or "80'060'424'192 bytes" or "80 026 361 856 bytes"
-	// (locale-dependent?). added '.'-separated too, just in case.
-	std::string s = hz::string_replace_copy(hz::string_replace_copy(hz::string_trim_copy(str), ",", ""), "'", "");
-	s = hz::string_replace_copy(hz::string_replace_copy(hz::string_replace_copy(s, " bytes", ""), " ", ""), ".", "");
+	// E.g. "500,107,862,016" bytes or "80'060'424'192 bytes" or "80 026 361 856 bytes".
+	// French locale inserts 0xA0 as a separator (non-breaking space, _not_ a valid utf8 char).
+	// Added '.'-separated too, just in case.
+	// Smartctl uses system locale's thousands_sep explicitly.
+
+	// When launching smartctl, we use LANG=C for it, but it works only on POSIX.
+	// Also, loading smartctl output files from different locales doesn't really work.
+
+	debug_out_dump("app", "Size reported as: " << str << "\n");
+
+	std::vector<std::string> to_replace;
+	to_replace.push_back(" ");
+	to_replace.push_back("'");
+	to_replace.push_back(",");
+	to_replace.push_back(".");
+	to_replace.push_back(std::string(1, 0xa0));
+
+#ifdef _WIN32
+	// if current locale is C, then probably we didn't change it at application
+	// startup, so set it now (temporarily). Otherwise, just use the current locale's
+	// thousands separator.
+
+	std::string old_locale = std::setlocale(LC_ALL, NULL);
+	bool locale_is_c = (old_locale == "C");
+	if (locale_is_c) {
+		std::setlocale(LC_ALL, "");  // set system locale
+	}
+	struct lconv* lc = std::localeconv();
+	if (lc && lc->thousands_sep && *(lc->thousands_sep)) {
+		to_replace.push_back(lc->thousands_sep);
+	}
+
+	if (locale_is_c) {
+		std::setlocale(LC_ALL, "C");  // restore it
+	}
+#endif
+
+	to_replace.push_back("bytes");
+	std::string s = hz::string_replace_array_copy(hz::string_trim_copy(str), to_replace, "");
 
 	uint64_t v = 0;
 	if (hz::string_is_numeric(s, v, false)) {
@@ -1295,9 +1331,9 @@ bool SmartctlParser::parse_section_data_subsection_selftest_log(const std::strin
 
 	// individual entries
 	{
-		// split by columns (minimum 2 spaces between them)
-		// num, type, status, remaining, hours, lba
-		pcrecpp::RE re("^(#[ \\t]*([0-9]+)[ \\t]*(\\S.*)  [ \\t]*(\\S.*)  [ \\t]*([0-9]+%)  [ \\t]*([0-9]+)  [ \\t]*(\\S.*))$", re_options);
+		// split by columns.
+		// num, type, status, remaining, hours, lba (optional).
+		pcrecpp::RE re("^(#[ \\t]*([0-9]+)[ \\t]+(\\S+(?: \\S+)*)  [ \\t]*(\\S.*) [ \\t]*([0-9]+%)  [ \\t]*([0-9]+)[ \\t]*((?:  [ \\t]*\\S.*)?))$", re_options);
 
 		std::string line, num, type, status_str, remaining, hours, lba;
 		pcrecpp::StringPiece input(sub);  // position tracker
@@ -1316,6 +1352,9 @@ bool SmartctlParser::parse_section_data_subsection_selftest_log(const std::strin
 
 			p.value_selftest_entry.type = hz::string_trim_copy(type);
 			p.value_selftest_entry.lba_of_first_error = hz::string_trim_copy(lba);
+			// old smartctls didn't print anything for lba if none, but newer ones print "-". normalize.
+			if (p.value_selftest_entry.lba_of_first_error == "")
+				p.value_selftest_entry.lba_of_first_error = "-";
 
 			hz::string_trim(status_str);
 			StorageSelftestEntry::status_t status = StorageSelftestEntry::status_unknown;

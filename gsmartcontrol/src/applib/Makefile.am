@@ -13,9 +13,9 @@ noinst_HEADERS = app_gtkmm_features.h app_gtkmm_utils.h app_pango_utils.h \
 # don't use absolute path for the current dir's .a, because the make
 # dependency resolver won't get it (needed for parallel builds)
 
-storage_detector_test_SOURCES = storage_detector_test.cpp
-storage_detector_test_LDADD = libapplib.a \
-	$(top_builddir)/src/pcrecpp/libpcrecpp.a $(top_builddir)/src/libdebug/libdebug.a
+app_ui_res_utils_test_SOURCES = app_ui_res_utils_test.cpp app_ui_res_utils_test_data.cpp
+app_ui_res_utils_test_LDADD = libapplib.a \
+	$(top_builddir)/src/libdebug/libdebug.a
 
 smartctl_executor_test_SOURCES = smartctl_executor_test.cpp
 smartctl_executor_test_LDADD = libapplib.a \
@@ -23,6 +23,10 @@ smartctl_executor_test_LDADD = libapplib.a \
 
 smartctl_parser_test_SOURCES = smartctl_parser_test.cpp
 smartctl_parser_test_LDADD = libapplib.a \
+	$(top_builddir)/src/pcrecpp/libpcrecpp.a $(top_builddir)/src/libdebug/libdebug.a
+
+storage_detector_test_SOURCES = storage_detector_test.cpp
+storage_detector_test_LDADD = libapplib.a \
 	$(top_builddir)/src/pcrecpp/libpcrecpp.a $(top_builddir)/src/libdebug/libdebug.a
 
 spawn_test_SOURCES = spawn_test.cpp
@@ -34,7 +38,7 @@ SUBDIRS=../libdebug ../pcrecpp
 # we don't list them in a separate variable because otherwise kdevelop won't see them.
 noinst_PROGRAMS =
 if ENABLE_TESTS
-noinst_PROGRAMS += smartctl_executor_test smartctl_parser_test \
+noinst_PROGRAMS += app_ui_res_utils_test smartctl_executor_test smartctl_parser_test \
 	storage_detector_test spawn_test
 endif
 

@@ -36,14 +36,16 @@ std::string StorageDevice::fetch_basic_data_and_parse(hz::intrusive_ptr<CmdexSyn
 		return error_msg;
 
 	this->info_output_ = output;
-	return this->parse_basic_data();
+
+	// Set some properties too - they are needed for e.g. AODC status, etc...
+	return this->parse_basic_data(true);
 }
 
 
 
 
 // note: this will clear the non-basic properties!
-std::string StorageDevice::parse_basic_data(bool emit_signal)
+std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_signal)
 {
 	this->clear_fetched(false);  // clear everything fetched before, except outputs
 
@@ -115,11 +117,12 @@ std::string StorageDevice::parse_basic_data(bool emit_signal)
 
 
 	// try to parse the properties. ignore its errors - we already got what we came for.
-	SmartctlParser ps;
-	if (ps.parse_full(this->info_output_)) {  // try to parse it
-		this->set_properties(ps.get_properties());  // copy to our drive, overwriting old data
+	if (do_set_properties) {
+		SmartctlParser ps;
+		if (ps.parse_full(this->info_output_)) {  // try to parse it
+			this->set_properties(ps.get_properties());  // copy to our drive, overwriting old data
+		}
 	}
-
 
 	if (emit_signal)
 		signal_changed.emit(this);  // notify listeners
@@ -138,7 +141,13 @@ std::string StorageDevice::fetch_data_and_parse(hz::intrusive_ptr<CmdexSync> sma
 	this->clear_fetched();  // clear everything fetched before, including outputs
 
 	std::string output;
-	std::string error_msg = execute_smartctl("-a", smartctl_ex, output);  // --all
+//	std::string error_msg = execute_smartctl("-a", smartctl_ex, output);  // --all
+	// instead of -a, we use all the individual options -a encompasses, so that
+	// an addition to default -a output won't affect us.
+	// IDE equivalent of -a:
+	std::string error_msg = execute_smartctl("-H -i -c -A -l error -l selftest -l selective", smartctl_ex, output);
+	// SCSI equivalent of -a:
+// 	std::string error_msg = execute_smartctl("-H -i -A -l error -l selftest", smartctl_ex, output);
 	if (!error_msg.empty())
 		return error_msg;
 
@@ -156,13 +165,15 @@ std::string StorageDevice::parse_data()
 	this->clear_fetched(false);  // clear everything fetched before, except outputs
 
 	SmartctlParser ps;
-	if (ps.parse_full(this->full_output_)) {  // try to parse it
+	if (ps.parse_full(this->full_output_)) {  // try to parse it (parse only, set the properties after basic parsing).
 
 		// refresh basic info too
 		this->info_output_ = ps.get_data_full();  // put data including version information
 
 		// note: this will clear the non-basic properties!
-		this->parse_basic_data(false);  // don't emit signal, we're not complete yet.
+		// this will parse some info that is already parsed by SmartctlParser::parse_full(),
+		// but this one sets the StorageDevice class members, not properties.
+		this->parse_basic_data(false, false);  // don't emit signal, we're not complete yet.
 
 		// set the full properties
 		this->set_fully_parsed(true);
@@ -182,7 +193,7 @@ std::string StorageDevice::parse_data()
 
 	// proper parsing failed. try to at least extract info section
 	this->info_output_ = this->full_output_;  // complete output here. sometimes it's only the info section
-	if (!this->parse_basic_data().empty()) {  // this will emit signal_changed
+	if (!this->parse_basic_data(true).empty()) {  // will add some properties too. this will emit signal_changed.
 		return ps.get_error_msg();  // return full parser's error messages - they are more detailed.
 	}
 

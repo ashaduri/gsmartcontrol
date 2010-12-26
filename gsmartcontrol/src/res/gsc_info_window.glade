@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Sat Sep 13 02:07:28 2008 -->
+<!--Generated with glade3 3.4.5 on Fri Nov 28 23:41:27 2008 -->
 <glade-interface>
   <widget class="GtkWindow" id="gsc_info_window">
     <property name="border_width">5</property>
@@ -45,6 +45,32 @@
                   <widget class="GtkVBox" id="identity_tab_vbox">
                     <property name="visible">True</property>
                     <child>
+                      <widget class="GtkHBox" id="identity_focus_taker_hbox">
+                        <property name="visible">True</property>
+                        <child>
+                          <widget class="GtkLabel" id="label7">
+                            <property name="height_request">1</property>
+                            <property name="visible">True</property>
+                          </widget>
+                        </child>
+                        <child>
+                          <widget class="GtkLabel" id="label3">
+                            <property name="height_request">1</property>
+                            <property name="visible">True</property>
+                            <property name="xalign">0</property>
+                            <property name="selectable">True</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                      </packing>
+                    </child>
+                    <child>
                       <widget class="GtkTable" id="identity_table">
                         <property name="visible">True</property>
                         <property name="border_width">8</property>
@@ -61,6 +87,7 @@
                       </widget>
                       <packing>
                         <property name="fill">False</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                   </widget>
@@ -86,6 +113,32 @@
                   <widget class="GtkVBox" id="capabilities_tab_vbox">
                     <property name="visible">True</property>
                     <child>
+                      <widget class="GtkHBox" id="capabilities_focus_taker_hbox">
+                        <property name="visible">True</property>
+                        <child>
+                          <widget class="GtkLabel" id="label6">
+                            <property name="height_request">1</property>
+                            <property name="visible">True</property>
+                          </widget>
+                        </child>
+                        <child>
+                          <widget class="GtkLabel" id="label9">
+                            <property name="height_request">1</property>
+                            <property name="visible">True</property>
+                            <property name="xalign">0</property>
+                            <property name="selectable">True</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                      </packing>
+                    </child>
+                    <child>
                       <widget class="GtkScrolledWindow" id="capabilities_scrolledwindow">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -101,6 +154,9 @@
                           </widget>
                         </child>
                       </widget>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
                     </child>
                   </widget>
                   <packing>
@@ -128,6 +184,32 @@
                   <widget class="GtkVBox" id="attributes_tab_vbox">
                     <property name="visible">True</property>
                     <child>
+                      <widget class="GtkHBox" id="attributes_focus_taker_hbox">
+                        <property name="visible">True</property>
+                        <child>
+                          <widget class="GtkLabel" id="label10">
+                            <property name="height_request">1</property>
+                            <property name="visible">True</property>
+                          </widget>
+                        </child>
+                        <child>
+                          <widget class="GtkLabel" id="label11">
+                            <property name="height_request">1</property>
+                            <property name="visible">True</property>
+                            <property name="xalign">0</property>
+                            <property name="selectable">True</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                      </packing>
+                    </child>
+                    <child>
                       <widget class="GtkVBox" id="attributes_label_vbox">
                         <property name="visible">True</property>
                         <property name="spacing">3</property>
@@ -138,6 +220,7 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="padding">4</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                     <child>
@@ -157,7 +240,7 @@
                         </child>
                       </widget>
                       <packing>
-                        <property name="position">1</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                   </widget>
@@ -185,6 +268,32 @@
                   <widget class="GtkVBox" id="error_log_tab_vbox">
                     <property name="visible">True</property>
                     <child>
+                      <widget class="GtkHBox" id="error_log_focus_taker_hbox">
+                        <property name="visible">True</property>
+                        <child>
+                          <widget class="GtkLabel" id="label12">
+                            <property name="height_request">1</property>
+                            <property name="visible">True</property>
+                          </widget>
+                        </child>
+                        <child>
+                          <widget class="GtkLabel" id="label13">
+                            <property name="height_request">1</property>
+                            <property name="visible">True</property>
+                            <property name="xalign">0</property>
+                            <property name="selectable">True</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                      </packing>
+                    </child>
+                    <child>
                       <widget class="GtkVBox" id="error_log_label_vbox">
                         <property name="visible">True</property>
                         <property name="spacing">3</property>
@@ -195,62 +304,68 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="padding">4</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkVPaned" id="vpaned1">
+                      <widget class="GtkVBox" id="vbox5">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="position">170</property>
-                        <property name="position_set">True</property>
                         <child>
-                          <widget class="GtkScrolledWindow" id="error_log_scrolledwindow">
+                          <widget class="GtkVPaned" id="vpaned1">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                            <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                            <property name="shadow_type">GTK_SHADOW_IN</property>
+                            <property name="position">170</property>
+                            <property name="position_set">True</property>
                             <child>
-                              <widget class="GtkTreeView" id="error_log_treeview">
+                              <widget class="GtkScrolledWindow" id="error_log_scrolledwindow">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="headers_clickable">True</property>
-                                <property name="enable_grid_lines">GTK_TREE_VIEW_GRID_LINES_BOTH</property>
+                                <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+                                <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+                                <property name="shadow_type">GTK_SHADOW_IN</property>
+                                <child>
+                                  <widget class="GtkTreeView" id="error_log_treeview">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="headers_clickable">True</property>
+                                    <property name="enable_grid_lines">GTK_TREE_VIEW_GRID_LINES_BOTH</property>
+                                  </widget>
+                                </child>
                               </widget>
+                              <packing>
+                                <property name="resize">False</property>
+                                <property name="shrink">True</property>
+                              </packing>
                             </child>
-                          </widget>
-                          <packing>
-                            <property name="resize">False</property>
-                            <property name="shrink">True</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkScrolledWindow" id="scrolledwindow1">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                            <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                            <property name="shadow_type">GTK_SHADOW_IN</property>
                             <child>
-                              <widget class="GtkTextView" id="error_log_textview">
+                              <widget class="GtkScrolledWindow" id="scrolledwindow1">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="tooltip_text">Complete error log information</property>
-                                <property name="tooltip" translatable="yes">Complete error log information</property>
-                                <property name="editable">False</property>
-                                <property name="left_margin">5</property>
-                                <property name="right_margin">5</property>
+                                <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+                                <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+                                <property name="shadow_type">GTK_SHADOW_IN</property>
+                                <child>
+                                  <widget class="GtkTextView" id="error_log_textview">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="tooltip_text">Complete error log information</property>
+                                    <property name="tooltip" translatable="yes">Complete error log information</property>
+                                    <property name="editable">False</property>
+                                    <property name="left_margin">5</property>
+                                    <property name="right_margin">5</property>
+                                  </widget>
+                                </child>
                               </widget>
+                              <packing>
+                                <property name="resize">True</property>
+                                <property name="shrink">True</property>
+                              </packing>
                             </child>
                           </widget>
-                          <packing>
-                            <property name="resize">True</property>
-                            <property name="shrink">True</property>
-                          </packing>
                         </child>
                       </widget>
                       <packing>
-                        <property name="position">160</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                   </widget>
@@ -279,6 +394,32 @@
                   <widget class="GtkVBox" id="selftest_log_tab_vbox">
                     <property name="visible">True</property>
                     <child>
+                      <widget class="GtkHBox" id="selftest_log_focus_taker_hbox">
+                        <property name="visible">True</property>
+                        <child>
+                          <widget class="GtkLabel" id="label14">
+                            <property name="height_request">1</property>
+                            <property name="visible">True</property>
+                          </widget>
+                        </child>
+                        <child>
+                          <widget class="GtkLabel" id="label15">
+                            <property name="height_request">1</property>
+                            <property name="visible">True</property>
+                            <property name="xalign">0</property>
+                            <property name="selectable">True</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                      </packing>
+                    </child>
+                    <child>
                       <widget class="GtkVBox" id="selftest_log_label_vbox">
                         <property name="visible">True</property>
                         <property name="spacing">3</property>
@@ -289,80 +430,86 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="padding">4</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkVPaned" id="vpaned2">
+                      <widget class="GtkVBox" id="vbox3">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="position">200</property>
-                        <property name="position_set">True</property>
                         <child>
-                          <widget class="GtkScrolledWindow" id="scrolledwindow3">
+                          <widget class="GtkVPaned" id="vpaned2">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                            <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                            <property name="shadow_type">GTK_SHADOW_IN</property>
+                            <property name="position">200</property>
+                            <property name="position_set">True</property>
                             <child>
-                              <widget class="GtkTreeView" id="selftest_log_treeview">
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="headers_clickable">True</property>
-                                <property name="enable_grid_lines">GTK_TREE_VIEW_GRID_LINES_BOTH</property>
-                              </widget>
-                            </child>
-                          </widget>
-                          <packing>
-                            <property name="resize">False</property>
-                            <property name="shrink">True</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkFrame" id="frame1">
-                            <property name="visible">True</property>
-                            <property name="label_xalign">0</property>
-                            <property name="shadow_type">GTK_SHADOW_NONE</property>
-                            <child>
-                              <widget class="GtkScrolledWindow" id="scrolledwindow2">
+                              <widget class="GtkScrolledWindow" id="scrolledwindow3">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
                                 <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
                                 <property name="shadow_type">GTK_SHADOW_IN</property>
                                 <child>
-                                  <widget class="GtkTextView" id="selective_selftest_log_textview">
+                                  <widget class="GtkTreeView" id="selftest_log_treeview">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
-                                    <property name="tooltip_text">Complete selective self-test log information</property>
-                                    <property name="tooltip" translatable="yes">Complete selective self-test log information</property>
-                                    <property name="editable">False</property>
-                                    <property name="left_margin">5</property>
-                                    <property name="right_margin">5</property>
+                                    <property name="headers_clickable">True</property>
+                                    <property name="enable_grid_lines">GTK_TREE_VIEW_GRID_LINES_BOTH</property>
                                   </widget>
                                 </child>
                               </widget>
+                              <packing>
+                                <property name="resize">False</property>
+                                <property name="shrink">True</property>
+                              </packing>
                             </child>
                             <child>
-                              <widget class="GtkLabel" id="label4">
+                              <widget class="GtkFrame" id="frame1">
                                 <property name="visible">True</property>
-                                <property name="tooltip" translatable="yes">Selective self-test is a type of self-test which is performed only on selected ares of a drive</property>
-                                <property name="label" translatable="yes">Selective self-test log</property>
-                                <property name="use_markup">True</property>
+                                <property name="label_xalign">0</property>
+                                <property name="shadow_type">GTK_SHADOW_NONE</property>
+                                <child>
+                                  <widget class="GtkScrolledWindow" id="scrolledwindow2">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+                                    <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+                                    <property name="shadow_type">GTK_SHADOW_IN</property>
+                                    <child>
+                                      <widget class="GtkTextView" id="selective_selftest_log_textview">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">True</property>
+                                        <property name="tooltip_text">Complete selective self-test log information</property>
+                                        <property name="tooltip" translatable="yes">Complete selective self-test log information</property>
+                                        <property name="editable">False</property>
+                                        <property name="left_margin">5</property>
+                                        <property name="right_margin">5</property>
+                                      </widget>
+                                    </child>
+                                  </widget>
+                                </child>
+                                <child>
+                                  <widget class="GtkLabel" id="label4">
+                                    <property name="visible">True</property>
+                                    <property name="tooltip" translatable="yes">Selective self-test is a type of self-test which is performed only on selected ares of a drive</property>
+                                    <property name="label" translatable="yes">Selective self-test log</property>
+                                    <property name="use_markup">True</property>
+                                  </widget>
+                                  <packing>
+                                    <property name="type">label_item</property>
+                                  </packing>
+                                </child>
                               </widget>
                               <packing>
-                                <property name="type">label_item</property>
+                                <property name="resize">True</property>
+                                <property name="shrink">True</property>
                               </packing>
                             </child>
                           </widget>
-                          <packing>
-                            <property name="resize">True</property>
-                            <property name="shrink">True</property>
-                          </packing>
                         </child>
                       </widget>
                       <packing>
-                        <property name="position">200</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                   </widget>
@@ -378,7 +525,7 @@
 Selective self-test log is also presented here.</property>
                     <property name="tooltip" translatable="yes">Self-test log contains information about (usually twenty) most recent manually performed SMART self-tests.
 Selective self-test log is also presented here.</property>
-                    <property name="label" translatable="yes">_Self-test Log</property>
+                    <property name="label" translatable="yes">_Self-test Logs</property>
                     <property name="use_markup">True</property>
                     <property name="use_underline">True</property>
                   </widget>
@@ -416,6 +563,119 @@ Selective self-test log is also presented here.</property>
                             <property name="n_columns">2</property>
                             <property name="column_spacing">8</property>
                             <property name="row_spacing">10</property>
+                            <child>
+                              <widget class="GtkHBox" id="test_result_hbox">
+                                <property name="spacing">5</property>
+                                <child>
+                                  <widget class="GtkImage" id="test_result_image">
+                                    <property name="visible">True</property>
+                                    <property name="stock">gtk-dialog-info</property>
+                                    <property name="icon_size">5</property>
+                                  </widget>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <widget class="GtkLabel" id="test_result_label">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">0</property>
+                                    <property name="label" translatable="yes">Test result text</property>
+                                    <property name="use_markup">True</property>
+                                    <property name="width_chars">70</property>
+                                  </widget>
+                                  <packing>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </widget>
+                              <packing>
+                                <property name="right_attach">2</property>
+                                <property name="top_attach">3</property>
+                                <property name="bottom_attach">4</property>
+                                <property name="y_padding">20</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkProgressBar" id="test_completion_progressbar">
+                                <property name="visible">True</property>
+                                <property name="tooltip_text">Test progress</property>
+                                <property name="tooltip" translatable="yes">Test progress</property>
+                                <property name="show_text">True</property>
+                                <property name="text" translatable="yes">Test completion: 90%; ETA: 12 minutes</property>
+                                <property name="ellipsize">PANGO_ELLIPSIZE_END</property>
+                              </widget>
+                              <packing>
+                                <property name="top_attach">2</property>
+                                <property name="bottom_attach">3</property>
+                                <property name="y_padding">10</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkButton" id="test_stop_button">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="tooltip_text">Abort the test</property>
+                                <property name="tooltip" translatable="yes">Abort the test</property>
+                                <property name="label" translatable="yes">gtk-stop</property>
+                                <property name="use_stock">True</property>
+                                <property name="response_id">0</property>
+                              </widget>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="right_attach">2</property>
+                                <property name="top_attach">2</property>
+                                <property name="bottom_attach">3</property>
+                                <property name="x_options">GTK_FILL</property>
+                                <property name="y_padding">10</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkScrolledWindow" id="scrolledwindow5">
+                                <property name="height_request">85</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+                                <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+                                <property name="shadow_type">GTK_SHADOW_IN</property>
+                                <child>
+                                  <widget class="GtkTextView" id="test_description_textview">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="tooltip_text">Test description</property>
+                                    <property name="tooltip" translatable="yes">Test description</property>
+                                    <property name="editable">False</property>
+                                    <property name="wrap_mode">GTK_WRAP_WORD</property>
+                                    <property name="left_margin">5</property>
+                                    <property name="right_margin">5</property>
+                                    <property name="cursor_visible">False</property>
+                                  </widget>
+                                </child>
+                              </widget>
+                              <packing>
+                                <property name="right_attach">2</property>
+                                <property name="top_attach">1</property>
+                                <property name="bottom_attach">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkButton" id="test_execute_button">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="tooltip_text">Perform selected test</property>
+                                <property name="tooltip" translatable="yes">Perform selected test</property>
+                                <property name="label" translatable="yes">gtk-execute</property>
+                                <property name="use_stock">True</property>
+                                <property name="response_id">0</property>
+                              </widget>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="right_attach">2</property>
+                                <property name="x_options">GTK_FILL</property>
+                              </packing>
+                            </child>
                             <child>
                               <widget class="GtkHBox" id="test_execution_hbox">
                                 <property name="visible">True</property>
@@ -489,119 +749,6 @@ Conveyance</property>
                                 </child>
                               </widget>
                             </child>
-                            <child>
-                              <widget class="GtkButton" id="test_execute_button">
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                                <property name="tooltip_text">Perform selected test</property>
-                                <property name="tooltip" translatable="yes">Perform selected test</property>
-                                <property name="label" translatable="yes">gtk-execute</property>
-                                <property name="use_stock">True</property>
-                                <property name="response_id">0</property>
-                              </widget>
-                              <packing>
-                                <property name="left_attach">1</property>
-                                <property name="right_attach">2</property>
-                                <property name="x_options">GTK_FILL</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkScrolledWindow" id="scrolledwindow5">
-                                <property name="height_request">85</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                                <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                                <property name="shadow_type">GTK_SHADOW_IN</property>
-                                <child>
-                                  <widget class="GtkTextView" id="test_description_textview">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="tooltip_text">Test description</property>
-                                    <property name="tooltip" translatable="yes">Test description</property>
-                                    <property name="editable">False</property>
-                                    <property name="wrap_mode">GTK_WRAP_WORD</property>
-                                    <property name="left_margin">5</property>
-                                    <property name="right_margin">5</property>
-                                    <property name="cursor_visible">False</property>
-                                  </widget>
-                                </child>
-                              </widget>
-                              <packing>
-                                <property name="right_attach">2</property>
-                                <property name="top_attach">1</property>
-                                <property name="bottom_attach">2</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkButton" id="test_stop_button">
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                                <property name="tooltip_text">Abort the test</property>
-                                <property name="tooltip" translatable="yes">Abort the test</property>
-                                <property name="label" translatable="yes">gtk-stop</property>
-                                <property name="use_stock">True</property>
-                                <property name="response_id">0</property>
-                              </widget>
-                              <packing>
-                                <property name="left_attach">1</property>
-                                <property name="right_attach">2</property>
-                                <property name="top_attach">2</property>
-                                <property name="bottom_attach">3</property>
-                                <property name="x_options">GTK_FILL</property>
-                                <property name="y_padding">10</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkProgressBar" id="test_completion_progressbar">
-                                <property name="visible">True</property>
-                                <property name="tooltip_text">Test progress</property>
-                                <property name="tooltip" translatable="yes">Test progress</property>
-                                <property name="show_text">True</property>
-                                <property name="text" translatable="yes">Test completion: 90%; ETA: 12 minutes</property>
-                                <property name="ellipsize">PANGO_ELLIPSIZE_END</property>
-                              </widget>
-                              <packing>
-                                <property name="top_attach">2</property>
-                                <property name="bottom_attach">3</property>
-                                <property name="y_padding">10</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkHBox" id="test_result_hbox">
-                                <property name="spacing">5</property>
-                                <child>
-                                  <widget class="GtkImage" id="test_result_image">
-                                    <property name="visible">True</property>
-                                    <property name="stock">gtk-dialog-info</property>
-                                    <property name="icon_size">5</property>
-                                  </widget>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <widget class="GtkLabel" id="test_result_label">
-                                    <property name="visible">True</property>
-                                    <property name="xalign">0</property>
-                                    <property name="label" translatable="yes">Test result text</property>
-                                    <property name="use_markup">True</property>
-                                    <property name="width_chars">70</property>
-                                  </widget>
-                                  <packing>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                              </widget>
-                              <packing>
-                                <property name="right_attach">2</property>
-                                <property name="top_attach">3</property>
-                                <property name="bottom_attach">4</property>
-                                <property name="y_padding">20</property>
-                              </packing>
-                            </child>
                           </widget>
                           <packing>
                             <property name="position">1</property>
@@ -656,8 +803,8 @@ Conveyance</property>
                 <property name="label" translatable="yes">gtk-refresh</property>
                 <property name="use_stock">True</property>
                 <property name="response_id">0</property>
-                <accelerator key="F5" modifiers="" signal="clicked"/>
                 <accelerator key="R" modifiers="GDK_CONTROL_MASK" signal="clicked"/>
+                <accelerator key="F5" modifiers="" signal="clicked"/>
               </widget>
             </child>
             <child>

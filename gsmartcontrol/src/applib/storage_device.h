@@ -155,7 +155,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 
 		// detects type, smart support, smart status (on / off).
 		// note: this will clear the non-basic properties!
-		std::string parse_basic_data(bool emit_signal = true);
+		std::string parse_basic_data(bool do_set_properties = true, bool emit_signal = true);
 
 
 		// execute smartctl --all (all sections), get output, parse it, fill properties.
