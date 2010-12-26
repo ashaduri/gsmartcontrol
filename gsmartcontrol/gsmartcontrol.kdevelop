@@ -22,7 +22,7 @@
   <kdevautoproject>
     <general>
       <activetarget>src/gsmartcontrol</activetarget>
-      <useconfiguration>win32</useconfiguration>
+      <useconfiguration>open64</useconfiguration>
     </general>
     <run>
       <mainprogram>/10/devel/projects/gsmartcontrol/current/gsmartcontrol/debuggy</mainprogram>
@@ -111,20 +111,20 @@
       </icc>
       <win32>
         <envvars/>
-        <configargs>--with-windows-gtk-name=gtk2-runtime-2.16.6-2010-02-21-ash --disable-user-flags --enable-optimize-options --enable-tests --build=i686-linux --host=i386-pc-mingw32 PKG_CONFIG_PATH=/cross/w32/target/lib/pkgconfig PKG_CONFIG_LIBDIR=&quot;&quot; PATH=&quot;/cross/w32/gcc-bin:/cross/w32/target/bin:$PATH&quot;</configargs>
+        <configargs>--with-windows-gtk-name=gtk2-runtime-2.16.6-2010-02-24-ash --disable-user-flags --enable-optimize-options --enable-tests --build=i686-linux --host=i386-pc-mingw32 PKG_CONFIG_PATH=/cross/w32/target/lib/pkgconfig PKG_CONFIG_LIBDIR=&quot;&quot; PATH=&quot;/cross/w32/gcc-bin:/cross/w32/target/bin:$PATH&quot;</configargs>
         <builddir>win32</builddir>
-        <topsourcedir></topsourcedir>
-        <cppflags></cppflags>
-        <ldflags></ldflags>
+        <topsourcedir/>
+        <cppflags/>
+        <ldflags/>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
         <ccompilerbinary>i386-pc-mingw32-gcc</ccompilerbinary>
         <cxxcompilerbinary>i386-pc-mingw32-g++</cxxcompilerbinary>
-        <f77compilerbinary></f77compilerbinary>
-        <cflags></cflags>
-        <cxxflags></cxxflags>
-        <f77flags></f77flags>
+        <f77compilerbinary/>
+        <cflags/>
+        <cxxflags/>
+        <f77flags/>
       </win32>
       <suncc>
         <envvars>
@@ -196,6 +196,40 @@
         <cxxflags/>
         <f77flags/>
       </win64-debug>
+      <default>
+        <envvars/>
+        <configargs/>
+        <builddir/>
+        <topsourcedir/>
+        <cppflags/>
+        <ldflags/>
+        <ccompiler>kdevgccoptions</ccompiler>
+        <cxxcompiler>kdevgppoptions</cxxcompiler>
+        <f77compiler>kdevg77options</f77compiler>
+        <ccompilerbinary/>
+        <cxxcompilerbinary/>
+        <f77compilerbinary/>
+        <cflags/>
+        <cxxflags/>
+        <f77flags/>
+      </default>
+      <open64>
+        <envvars/>
+        <configargs>--enable-tests</configargs>
+        <builddir>open64</builddir>
+        <topsourcedir/>
+        <cppflags/>
+        <ldflags/>
+        <ccompiler>kdevgccoptions</ccompiler>
+        <cxxcompiler>kdevgppoptions</cxxcompiler>
+        <f77compiler>kdevg77options</f77compiler>
+        <ccompilerbinary>/opt/open64/bin/opencc</ccompilerbinary>
+        <cxxcompilerbinary>/opt/open64/bin/openCC</cxxcompilerbinary>
+        <f77compilerbinary/>
+        <cflags/>
+        <cxxflags>-Wall</cxxflags>
+        <f77flags/>
+      </open64>
     </configurations>
     <make>
       <envvars>

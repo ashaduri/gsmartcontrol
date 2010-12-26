@@ -274,7 +274,7 @@ LIBS="$LIBS $PCRE_LIBS"
 AC_ARG_WITH([nsis], [AS_HELP_STRING([--with-nsis=<location>|auto],
 		[specify makensis.exe location to support making NSIS packages]
 		[ (default: "C:\Program Files\NSIS\makensis.exe" for windows, ]
-		["~/.wine/drive_c/Program Files/NSIS/makensis.exe" for others)])],
+		["~/.wine/drive_c/Program Files/NSIS/Unicode/makensis.exe" for others)])],
 		[with_nsis=${withval}], [with_nsis=auto])
 
 AC_ARG_ENABLE([nsis-wine], [AS_HELP_STRING([--enable-nsis-wine=yes|no|auto],
@@ -294,7 +294,7 @@ if test "x$with_nsis" = "xauto" || test "x$with_nsis" = "x"; then
 	if test "x$app_cv_build_os_kernel" = "xwindows32" || test "x$app_cv_build_os_kernel" = "xwindows64"; then
 		with_nsis="\"C:\\Program Files\\NSIS\\makensis.exe\"";
 	else
-		with_nsis="~/\".wine/drive_c/Program Files/NSIS/makensis.exe\"";
+		with_nsis="~/\".wine/drive_c/Program Files/NSIS/Unicode/makensis.exe\"";
 	fi
 fi
 

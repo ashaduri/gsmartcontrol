@@ -143,8 +143,9 @@ The following operating systems are supported:
 
 * OpenBSD - Tested with OpenBSD 4.3 / x86-64 / gcc-3.3.5.
 
-* Windows (2000 SP4 or newer) - Tested with Windows 2000 SP4, XP SP2 and Vista
-SP1. The Windows port uses pd0, pd1, etc... for physical drives 0, 1, etc... .
+* Windows (2000 SP4 or newer) - Tested with Windows 2000 SP4, Windows XP SP3,
+Windows Vista SP2, Windows 7. The Windows port uses pd0, pd1, etc... for
+physical drives 0, 1, etc... .
 
 * Solaris - Tested with Solaris 10 / x86 / gcc-3.4.3 / blastwave,
 Solaris 10 / x86 / sunstudio12 / sunfreeware. OpenSolaris should work but has

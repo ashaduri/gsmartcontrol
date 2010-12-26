@@ -11,6 +11,8 @@
 
 #include <string>
 #include <locale>
+#include <clocale>  // std::setlocale
+#include <stdexcept>  // std::runtime_error
 
 
 namespace hz {
@@ -22,6 +24,10 @@ namespace hz {
 
 // However, for glibc, libstdc++ uses the "uselocale" extension, which
 // sets locale on per-thread basis.
+
+// FIXME: catch std::runtime_error exceptions. no-exceptions mode?
+// FIXME: Set C locale too.
+// FIXME: add bad() status in case the change failed.
 
 
 // Temporarily change to indicated locale.
