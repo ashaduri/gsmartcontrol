@@ -550,7 +550,7 @@ inline Dir& Dir::operator= (Dir& other)
 inline bool Dir::open()
 {
 	if (dir_) {  // already open
-		set_error(std::string(HZ__("Error while opening directory \"/path/\": "))
+		set_error(std::string(HZ__("Error while opening directory \"/path1/\": "))
 				+ HZ__("Another directory is open already. Close it first."), 0, path_);
 		return false;
 	}
@@ -564,7 +564,7 @@ inline bool Dir::open()
 
 	dir_ = opendir(path_.c_str());
 	if (!dir_) {
-		set_error(HZ__("Error while opening directory \"/path/\": /errno/."), errno, path_);
+		set_error(HZ__("Error while opening directory \"/path1/\": /errno/."), errno, path_);
 		return false;
 	}
 
@@ -588,7 +588,7 @@ inline bool Dir::close()
 	clear_error();
 
 	if (dir_ && closedir(dir_) != 0) {  // error
-		set_error(HZ__("Error while closing directory \"/path/\": /errno/."), errno, path_);
+		set_error(HZ__("Error while closing directory \"/path1/\": /errno/."), errno, path_);
 		dir_ = NULL;
 		entry_ = NULL;
 		return false;
@@ -628,7 +628,7 @@ inline bool Dir::entry_next()
 	entry_ = readdir(dir_);
 
 	if (errno != 0) {
-		set_error(HZ__("Error while reading directory entry of \"/path/\": /errno/."), errno, path_);
+		set_error(HZ__("Error while reading directory entry of \"/path1/\": /errno/."), errno, path_);
 		return true;  // you may continue reading anyway
 	}
 
@@ -666,13 +666,13 @@ inline std::string Dir::entry_get_name()
 {
 	clear_error();
 	if (!dir_) {
-		set_error(std::string(HZ__("Error while reading directory entry of \"/path/\": "))
+		set_error(std::string(HZ__("Error while reading directory entry of \"/path1/\": "))
 				+ HZ__("Directory is not open."), 0, path_);
 		return std::string();
 	}
 
 	if (!entry_) {
-		set_error(std::string(HZ__("Error while reading directory entry of \"/path/\": "))
+		set_error(std::string(HZ__("Error while reading directory entry of \"/path1/\": "))
 				+ HZ__("Entry is not set."), 0, path_);
 		return std::string();
 	}

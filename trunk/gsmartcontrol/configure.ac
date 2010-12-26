@@ -1,5 +1,5 @@
 
-AC_INIT([GSmartControl], [0.8.0rc2], [], [gsmartcontrol])
+AC_INIT([GSmartControl], [0.8.0rc3], [], [gsmartcontrol])
 
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_HEADERS([config.h])

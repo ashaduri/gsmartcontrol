@@ -41,6 +41,30 @@ namespace hz {
 #endif
 
 
+/*
+TODO
+
+Seekless read support in hz::File. should be able to accept a fixed buffer,
+an std::string of max length, optional ticker callback.
+e.g.
+
+// callback
+inline bool append_func(std::string& put_here, const std::string& chunk, bool last)
+{
+	put_here += chunk;
+	return true;  // continue
+}
+
+// user code
+void f (hz::File& file)
+{
+	std::string put_here;
+	file.get_contents(put_here, 1024, append_func);  // 3rd param should have a default func.
+}
+
+Should have similar thing with static buffers.
+*/
+
 
 
 class File : public FsPath {

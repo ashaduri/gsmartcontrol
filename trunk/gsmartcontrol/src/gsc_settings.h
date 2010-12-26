@@ -34,8 +34,9 @@ inline void init_default_settings()
 	rconfig::set_default_data("system/smartctl_options", "");  // default options on ALL commands
 	rconfig::set_default_data("system/smartctl_device_options", "");  // dev1:val1;dev2:val2;... format, each bin2ascii-encoded.
 
-	rconfig::set_default_data("system/device_scan_path", "/dev/disk/by-id");  // hard disk device links here
-	rconfig::set_default_data("system/device_match_patterns", "");  // semicolon-separated PCRE patterns
+	rconfig::set_default_data("system/linux_udev_byid_path", "/dev/disk/by-id");  // hard disk device links here
+	rconfig::set_default_data("system/linux_proc_partitions_path", "/proc/partitions");  // file in /proc/partitions format
+// 	rconfig::set_default_data("system/device_match_patterns", "");  // semicolon-separated PCRE patterns
 	rconfig::set_default_data("system/device_blacklist_patterns", "");  // semicolon-separated PCRE patterns
 
 	rconfig::set_default_data("gui/show_smart_capable_only", false);  // show smart-capable drives only

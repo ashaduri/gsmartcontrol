@@ -1,4 +1,3 @@
-Summary:	GSmartControl - Hard Disk Health Inspection Tool
 Name:		gsmartcontrol
 Version:	@VERSION@
 Release:	1as
@@ -8,15 +7,58 @@ Url:		http://gsmartcontrol.berlios.de
 Packager:	Alexander Shaduri <ashaduri 'at' gmail.com>
 Group:		Hardware/Other
 Source:		gsmartcontrol-%{version}.tar.bz2
-
-# We need (gtkmm2 >= 2.12 || (gtkmm2 >= 2.6.0 && libglademm >= 2.4.0))
-# Anyone knows how to specify that?
-#Requires:	smartmontools, pcre, gtkmm2 >= 2.6.0, libglademm >= 2.4.0
-Requires:	smartmontools, pcre, gtkmm2 >= 2.12.0
-#BuildRequires:	pcre-devel, gtkmm2-devel >= 2.6.0, libglademm-devel >= 2.4.0
-BuildRequires:	pcre-devel, gtkmm2-devel >= 2.12.0
-
 BuildRoot:	%{_tmppath}/%{name}-%{version}-build
+Summary:	GSmartControl - Hard Disk Health Inspection Tool
+
+
+# Dependencies for various distributions. The actual deps are:
+# smartmontools, pcre, (gtkmm2 >= 2.12 || (gtkmm2 >= 2.6.0 && libglademm >= 2.4.0))
+# (with the respective -devel packages of the libraries for build requirements).
+# For non-specified distributions we don't specify any dependencies to avoid errors.
+
+
+# SUSE, OpenSUSE. SLES also defines the correct suse_version.
+%if 0%{?suse_version}
+
+%if %suse_version >= 1030
+Requires: smartmontools, pcre, gtkmm2 >= 2.12.0
+BuildRequires: gcc-c++ libstdc++-devel pcre-devel, gtkmm2-devel >= 2.12.0
+%else
+Requires: smartmontools, pcre, gtkmm2 >= 2.6.0, libglademm >= 2.4.0
+BuildRequires: gcc-c++ libstdc++-devel pcre-devel, gtkmm2-devel >= 2.6.0, libglademm-devel >= 2.4.0
+%endif
+
+%endif
+
+
+# Fedora, CentOS, RHEL
+%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
+
+# I'm not sure about centos and rhel versions
+%if 0%{?fedora_version} >= 8 || 0%{?rhel_version} >= 600 || 0%{?centos_version} >= 600
+Requires: smartmontools, pcre, gtkmm24 >= 2.12.0
+BuildRequires: gcc-c++ pcre-devel, gtkmm24-devel >= 2.12.0
+%else
+Requires: smartmontools, pcre, gtkmm24 >= 2.6.0, libglademm24 >= 2.4.0
+BuildRequires: gcc-c++ pcre-devel, gtkmm24-devel >= 2.6.0, libglademm24-devel >= 2.4.0
+%endif
+
+%endif
+
+
+# Mandriva
+%if 0%{?mandriva_version}
+
+%if 0%{?mandriva_version} >= 2008
+Requires: smartmontools, libpcre0, libgtkmm2.4_1 >= 2.12.0
+BuildRequires: gcc-c++ gcc-cpp libpcre-devel, libgtkmm2.4-devel >= 2.12.0
+%else
+Requires: smartmontools, libpcre0, libgtkmm2.4_1 >= 2.6.0, libglademm2.4_1 >= 2.4.0
+BuildRequires: gcc-c++ gcc-cpp libpcre-devel, libgtkmm2.4-devel >= 2.6.0, libglademm2.4_1-devel >= 2.4.0
+%endif
+
+%endif
+
 
 %description
 GSmartControl is a graphical user interface for smartctl, which is a tool for
@@ -45,12 +87,12 @@ make -j$numprocs
 
 
 %install
-#make install-strip DESTDIR=$RPM_BUILD_ROOT
-%makeinstall
+# %makeinstall
+make DESTDIR=%buildroot install
 
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+rm -rf %buildroot
 
 
 %files
@@ -69,6 +111,10 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon Oct 06 2008 Alexander Shaduri <ashaduri 'at' gmail.com>
+- Updated .spec file to support OpenSUSE < 10.3, Fedora and friends,
+	Mandriva (for OpenSUSE Build Service).
+
 * Mon Sep 15 2008 Alexander Shaduri <ashaduri 'at' gmail.com>
 - Initial .spec file.
 

@@ -35,7 +35,7 @@ namespace debug_internal {
 #ifdef DEBUG_BUILD
 			verbosity_level(5),  // all
 #else
-			verbosity_level(2),  // dump, info
+			verbosity_level(3),  // warn, error, fatal
 #endif
 	// 		debug_levels(),
 #ifndef _WIN32
@@ -125,11 +125,11 @@ static gboolean debug_internal_post_parse_func(GOptionContext* context,
 	} else {
 		args->levels_enabled = debug_level::none;
 
-		if (args->verbosity_level > 0) args->levels_enabled |= debug_level::dump;
-		if (args->verbosity_level > 1) args->levels_enabled |= debug_level::info;
+		if (args->verbosity_level > 0) args->levels_enabled |= debug_level::fatal;
+		if (args->verbosity_level > 1) args->levels_enabled |= debug_level::error;
 		if (args->verbosity_level > 2) args->levels_enabled |= debug_level::warn;
-		if (args->verbosity_level > 3) args->levels_enabled |= debug_level::error;
-		if (args->verbosity_level > 4) args->levels_enabled |= debug_level::fatal;
+		if (args->verbosity_level > 3) args->levels_enabled |= debug_level::info;
+		if (args->verbosity_level > 4) args->levels_enabled |= debug_level::dump;
 	}
 
 	bool color_enabled = args->debug_colorize;

@@ -96,6 +96,18 @@ int main()
 	}
 
 
+	// error handling
+	{
+		hz::Dir dir("/nonexistent/directory");
+
+		if (!dir.open()) {
+			std::cerr << dir.get_error_locale() << "\n";
+		} else {
+			std::cerr << "Directory \"" << dir.get_path() << "\" opened successfully.\n";
+		}
+	}
+
+
 	return 0;
 }
 

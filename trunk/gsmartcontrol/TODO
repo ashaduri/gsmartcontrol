@@ -23,18 +23,11 @@ with existing model, which should be unset
 
 GTKMM problems:
 
-no pango_parse_markup:
-	gchar* no_markup = 0;
-	if (pango_parse_markup(markup_string, -1, 0, NULL, &no_markup, NULL, NULL)) {
-		// use no_markup
-		g_free(no_markup);
-	}
-
 
 Lots of gtk_, GTK_, g_ in documentation.
 
 
-no unset_model() on combobox and iconview.
+no ComboBox::unset_model()  and IconView::unset_model().
 
 
 
@@ -46,6 +39,30 @@ TODO:
 
 Drive detection - any cross-platform way to do it?
 
+
+FreeBSD: /dev/ad[0-3], partitions - /dev/ad[]
+http://www.freebsd.org/doc/en/books/handbook/disks-naming.html
+Non-existent devices give ENXIO (6, Device not configured).
+	In Linux ENXIO has name (6, No such device or address).
+/dev/ad0s1b             none            swap    sw              0       0
+/dev/ad0s1a             /               ufs     rw              1       1
+/dev/acd0c              /cdrom          cd9660  ro,noauto       0       0
+Do NOT open cd devices - it may cause hang on music cd, etc... .
+
+In the slice case the drive will be added as /dev/da1s1e. This is read as:
+SCSI disk, unit number 1 (second SCSI disk), slice 1 (PC BIOS partition 1),
+and e BSD partition. In the dedicated case, the drive will be added simply as /dev/da1e.
+
+
+iphone:
+	/dev/disk0
+	/dev/disk0s1, /dev/disk0s2
+
+
+
+
+desktop files: gnomesu / gtksu wrapper.
+desktop_other - find suitable su.
 
 
 
