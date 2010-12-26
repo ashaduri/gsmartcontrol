@@ -7,7 +7,7 @@
 #ifndef LIBDEBUG_DEXCEPT_H
 #define LIBDEBUG_DEXCEPT_H
 
-#include <cstring>  // strcpy / strlen
+#include <cstring>  // strncpy / strlen
 #include <exception>  // std::exception
 
 
@@ -18,7 +18,8 @@ struct debug_internal_error : virtual public std::exception {  // from <exceptio
 
 	debug_internal_error(const char* msg)
 	{
-		msg_ = std::strcpy(new char[std::strlen(msg) + 1], msg);
+		std::size_t buf_len = std::strlen(msg) + 1;
+		msg_ = std::strncpy(new char[buf_len], msg, buf_len);
 	}
 
 	virtual ~debug_internal_error() throw()
@@ -46,7 +47,8 @@ struct debug_usage_error : virtual public std::exception {  // from <exception>
 
 	debug_usage_error(const char* msg)
 	{
-		msg_ = std::strcpy(new char[std::strlen(msg) + 1], msg);
+		std::size_t buf_len = std::strlen(msg) + 1;
+		msg_ = std::strncpy(new char[buf_len], msg, buf_len);
 	}
 
 	virtual ~debug_usage_error() throw()

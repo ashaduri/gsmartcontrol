@@ -10,6 +10,7 @@
 #include "hz_config.h"  // feature macros
 
 #include <string>
+#include <vector>
 #include <sys/types.h>  // dirent needs this
 #include <dirent.h>
 
@@ -131,9 +132,23 @@ namespace internal {
 // No filtering - leave all entries.
 
 struct DirFilterNone {
-	bool operator() (const std::string& dir, const std::string& entry_name)
+
+	// whether to use operator() with FsPaths instead of strings.
+	bool use_path_objects()
 	{
-		return true;  // no filtering
+		return false;
+	}
+
+	// no filtering
+	bool operator() (const std::string& entry_name)
+	{
+		return true;
+	}
+
+	// dummy
+	bool operator() (FsPath& path)
+	{
+		return true;
 	}
 };
 
@@ -157,18 +172,27 @@ struct DirFilterByFlags {
 	DirFilterByFlags(int flags) : flags_(flags)
 	{ }
 
-	bool operator() (const std::string& dir, const std::string& entry_name)
+	// whether to use operator() with FsPaths instead of strings.
+	bool use_path_objects()
 	{
-		FsPath p(dir);
-		p.append(entry_name);
+		return true;
+	}
 
-		if ((flags_ & DIR_LEAVE_FILE) && p.is_file())
+	// dummy
+	bool operator() (const std::string& entry_name)
+	{
+		return false;
+	}
+
+	bool operator() (FsPath& path)
+	{
+		if ((flags_ & DIR_LEAVE_FILE) && path.is_file())
 			return true;
-		if ((flags_ & DIR_LEAVE_DIR) && p.is_dir())
+		if ((flags_ & DIR_LEAVE_DIR) && path.is_dir())
 			return true;
-		if ((flags_ & DIR_LEAVE_REGULAR) && p.is_regular())
+		if ((flags_ & DIR_LEAVE_REGULAR) && path.is_regular())
 			return true;
-		if ((flags_ & DIR_LEAVE_SYMLINK) && p.is_symlink())
+		if ((flags_ & DIR_LEAVE_SYMLINK) && path.is_symlink())
 			return true;
 
 		return false;
@@ -187,9 +211,21 @@ struct DirFilterWc {
 	DirFilterWc(const std::string pattern) : pattern_(pattern)
 	{ }
 
-	bool operator() (const std::string& dir, const std::string& entry_name)
+	// whether to use operator() with FsPaths instead of strings.
+	bool use_path_objects()
+	{
+		return false;
+	}
+
+	bool operator() (const std::string& entry_name)
 	{
 		return hz::string_wcmatch(pattern_, entry_name);
+	}
+
+	// dummy
+	bool operator() (FsPath& path)
+	{
+		return true;
 	}
 
 	private:
@@ -216,8 +252,20 @@ struct DirSortNone {
 	void set_dir(const std::string& dir)
 	{ }
 
-	// "less" function
+	// whether to use operator() with FsPaths instead of strings.
+	bool use_path_objects()
+	{
+		return false;
+	}
+
+	// "less" function using entry names
 	bool operator() (const std::string& entry_name1, const std::string& entry_name2)
+	{
+		return true;  // always return "less", which should cause no sorting.
+	}
+
+	// "less" function using path objects
+	bool operator() (FsPath& path1, FsPath& path2)
 	{
 		return true;  // always return "less", which should cause no sorting.
 	}
@@ -228,6 +276,7 @@ struct DirSortNone {
 // Base class for various sorters
 template<class Child>
 struct DirSortBase {
+
 	DirSortBase(int flag) : flag_(flag)
 	{ }
 
@@ -237,20 +286,22 @@ struct DirSortBase {
 		dir_ = dir;
 	}
 
+
 	// "less" function
+	// for  DIR_SORT_MIXED only!
 	bool operator() (const std::string& entry_name1, const std::string& entry_name2)
 	{
-		if (flag_ == DIR_SORT_MIXED)
-			return static_cast<Child*>(this)->compare(entry_name1, entry_name2);
+		return static_cast<Child*>(this)->compare(entry_name1, entry_name2);
+	}
 
-		FsPath p1(dir_), p2(dir_);
-		p1.append(entry_name1);
-		p2.append(entry_name2);
 
-		bool e1_dir = p1.is_dir(), e2_dir = p2.is_dir();
+	// "less" function using path objects
+	bool operator() (FsPath& path1, FsPath& path2)
+	{
+		bool e1_dir = path1.is_dir(), e2_dir = path2.is_dir();
 
 		if (e1_dir == e2_dir)  // same type
-			return static_cast<Child*>(this)->compare(entry_name1, entry_name2);
+			return static_cast<Child*>(this)->compare(path1, path2);
 
 		if (flag_ == DIR_SORT_DIRS_FIRST)
 			return e1_dir;  // (e1 < e2) if e1 is dir
@@ -261,10 +312,12 @@ struct DirSortBase {
 		return true;  // won't reach this
 	}
 
+
 	protected:
 		int flag_;
 		std::string dir_;
 };
+
 
 
 // Alphanumeric sorting
@@ -273,12 +326,24 @@ struct DirSortAlpha : public DirSortBase<DirSortAlpha> {
 	DirSortAlpha(int flag = DIR_SORT_DIRS_FIRST) : DirSortBase<DirSortAlpha>(flag)
 	{ }
 
+	// whether to use operator() with FsPaths instead of strings.
+	bool use_path_objects()
+	{
+		// for mixed comparison we don't need to construct the FsPaths.
+		return (flag_ != DIR_SORT_MIXED);
+	}
+
 	// "less" function (called by parent)
 	bool compare(const std::string& entry_name1, const std::string& entry_name2)
 	{
 		return entry_name1 < entry_name2;
 	}
 
+	// "less" function (called by parent)
+	bool compare(FsPath& path1, FsPath& path2)
+	{
+		return path1.str() < path2.str();
+	}
 };
 
 
@@ -288,16 +353,24 @@ struct DirSortMTime : public DirSortBase<DirSortMTime> {
 	DirSortMTime(int flag = DIR_SORT_DIRS_FIRST) : DirSortBase<DirSortMTime>(flag)
 	{ }
 
-	// "less" function (called by parent)
+	// whether to use operator() with FsPaths instead of strings.
+	bool use_path_objects()
+	{
+		return true;
+	}
+
+	// dummy
 	bool compare(const std::string& entry_name1, const std::string& entry_name2)
 	{
-		FsPath p1(dir_), p2(dir_);
-		p1.append(entry_name1);
-		p2.append(entry_name2);
+		return true;
+	}
 
+	// "less" function (called by parent)
+	bool compare(FsPath& path1, FsPath& path2)
+	{
 		time_t e1_ts = 0, e2_ts = 0;
-		if (!p1.get_last_modified(e1_ts) || !p2.get_last_modified(e2_ts) || (e1_ts == e2_ts))
-			entry_name1 < entry_name2;  // error or similar timestamps, fall back to this.
+		if (!path1.get_last_modified(e1_ts) || !path2.get_last_modified(e2_ts) || (e1_ts == e2_ts))
+			path1.str() < path2.str();  // error or similar timestamps, fall back to this.
 
 		return e1_ts < e2_ts;
 	}
@@ -339,6 +412,18 @@ class Dir : public FsPath {
 		}
 
 
+	private:
+		// Between move semantics (confusing and error-prone) and denying copying,
+		// I choose to deny.
+
+		Dir(const Dir& other);  // copy constructor. needed to override Dir(const FsPath&).
+
+		Dir& operator= (const Dir& other);
+
+
+	public:
+
+/*
 		// Copy constructor. Move semantics are implemented -
 		// the handle ownership is transferred exclusively.
 		Dir(Dir& other) : dir_(NULL), entry_(NULL)
@@ -348,7 +433,7 @@ class Dir : public FsPath {
 
 		// Move semantics, as with copy constructor.
 		inline Dir& operator= (Dir& other);
-
+*/
 
 		// Destructor which invokes close() if needed.
 		~Dir()
@@ -448,9 +533,11 @@ class Dir : public FsPath {
 
 	private:
 
-		Dir(const Dir& other);  // don't allow it. allow only from non-const.
+		// for move semantics:
 
-		const Dir& operator=(const Dir& other);  // don't allow it. allow only from non-const.
+// 		Dir(const Dir& other);  // don't allow it. allow only from non-const.
+
+// 		const Dir& operator=(const Dir& other);  // don't allow it. allow only from non-const.
 
 
 		handle_type dir_;  // DIR handle
@@ -529,7 +616,7 @@ namespace internal {
 
 // --------------------------------------------
 
-
+/*
 // move semantics, as with copy constructor.
 inline Dir& Dir::operator= (Dir& other)
 {
@@ -544,7 +631,7 @@ inline Dir& Dir::operator= (Dir& other)
 
 	return *this;
 }
-
+*/
 
 
 inline bool Dir::open()
@@ -702,38 +789,82 @@ bool Dir::entry_list(Container& put_here, bool put_with_path, SortFunctor sort_f
 	clear_error();
 
 	if (!dir_) {  // open if needed
-		if (!open())
+		if (!open())  // this sets the error if needed
 			return false;
 	}
 
-// 	if (!dir_) {
-// 		set_error(HZ__("Error while reading directory entry: Directory is not open.");
-// 		return false;
-// 	}
-
 	entry_reset();
 
-	Container v;
+
+	bool filter_using_paths = filter_func.use_path_objects();
+	bool sort_using_paths = sort_func.use_path_objects();
+
+	typedef std::vector<FsPath> entry_list_path_list_t;
+	typedef std::vector<std::string> entry_list_string_list_t;
+	entry_list_path_list_t path_results;  // for FsPaths
+	entry_list_string_list_t string_results;  // for strings
+
+
 	while (entry_next()) {
 		if (bad())
 			continue;
 
 		std::string name = entry_get_name();
-		if (!bad() && filter_func(path_, name))
-			v.push_back(name);
+		if (bad())
+			continue;
+
+		if (filter_using_paths) {
+			FsPath p(path_);
+			p.append(name);
+
+			if (filter_func(p)) {
+				if (sort_using_paths) {
+					path_results.push_back(p);
+				} else {
+					string_results.push_back(name);
+				}
+			}
+
+		} else {  // string-based filtering
+			if (filter_func(name)) {
+				if (sort_using_paths) {
+					FsPath p(path_);
+					p.append(name);
+					path_results.push_back(p);
+				} else {
+					string_results.push_back(name);
+				}
+			}
+		}
+
 	}
 
+
 	sort_func.set_dir(path_);
-	shell_sort(v.begin(), v.end(), sort_func);
 
-	for(typename Container::const_iterator iter = v.begin(); iter != v.end(); ++iter) {
-		if (put_with_path) {
-			FsPath p(path_);
-			p.append(*iter);
-			put_here.push_back(p.str());
+	if (sort_using_paths) {
+		hz::shell_sort(path_results.begin(), path_results.end(), sort_func);
 
-		} else {
-			put_here.push_back(*iter);
+		for (entry_list_path_list_t::const_iterator iter = path_results.begin(); iter != path_results.end(); ++iter) {
+			if (put_with_path) {
+				put_here.push_back(iter->str());
+			} else {
+				put_here.push_back(iter->get_basename());
+			}
+		}
+
+	} else {
+		hz::shell_sort(string_results.begin(), string_results.end(), sort_func);
+
+		for (entry_list_string_list_t::const_iterator iter = string_results.begin(); iter != string_results.end(); ++iter) {
+			if (put_with_path) {
+				FsPath p(path_);
+				p.append(*iter);
+				put_here.push_back(p.str());
+
+			} else {
+				put_here.push_back(*iter);
+			}
 		}
 	}
 

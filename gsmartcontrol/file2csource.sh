@@ -1,9 +1,13 @@
-#!/bin/sh
+#!/bin/bash
 ############################################################################
 # Copyright:
 #      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
 # License: See LICENSE_zlib.txt file
 ############################################################################
+
+# We use #!/bin/bash of #!/bin/sh because freebsd (tested with 6.3) in its
+# infinite wisdom has csh-like /bin/sh (even though the SUS says it
+# must be bourne-compatible).
 
 
 if [ "$1" == "" ] | [ "$2" == "" ] | [ "$3" == "" ]; then

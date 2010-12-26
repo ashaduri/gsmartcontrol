@@ -48,7 +48,7 @@
 		const unsigned char* buf; \
 		unsigned int size; \
 		const char* root_name; \
-	};
+	}
 
 
 // Same as above, with the default name as ResData.
@@ -97,7 +97,7 @@
 		const unsigned char* buf; \
 		unsigned int size; \
 		const char* root_name; \
-	};
+	}
 
 
 #define HZ_RES_DATA_LOADED_INIT(res_name, data_file) \
@@ -118,7 +118,7 @@
 		const unsigned char* buf; \
 		unsigned int size; \
 		const char* root_name; \
-	};
+	}
 
 #define HZ_RES_DATA_DUMMY_INIT(res_name, dummy) \
 	HZ_RES_DATA_DUMMY_INIT_NAMED(res_name, (dummy), ResData)

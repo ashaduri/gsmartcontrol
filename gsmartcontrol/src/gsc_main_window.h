@@ -97,7 +97,7 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 			action_permission_problems,
 			action_how_to_enable_smart,
 			action_report_bug,
-			action_about,
+			action_about
 		};
 
 

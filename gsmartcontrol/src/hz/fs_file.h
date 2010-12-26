@@ -103,6 +103,19 @@ class File : public FsPath {
 			open(open_mode);
 		}
 
+
+	private:
+		// Between move semantics (confusing and error-prone) and denying copying,
+		// I choose to deny.
+
+		File(const File& other);  // copy constructor. needed to override File(const FsPath&).
+
+		File& operator= (const File& other);
+
+
+	public:
+
+/*
 		// Copy constructor. Move semantics are implemented - the ownership is transferred
 		// exclusively.
 		File(File& other) : file_(NULL)
@@ -110,15 +123,17 @@ class File : public FsPath {
 			*this = other;  // operator=
 		}
 
+		// move semantics, as with copy constructor.
+		inline File& operator= (File& other);
+*/
+
+
+		// Destructor which invokes close() if needed.
 		~File()
 		{
 			if (file_)
 				close();
 		}
-
-		// move semantics, as with copy constructor.
-		inline File& operator= (File& other);
-
 
 
 		// --- these may set bad() status
@@ -160,7 +175,7 @@ class File : public FsPath {
 
 
 		// Do NOT assign the result to int - you'll break LFS support.
-		inline bool get_size(file_size_t& put_here);
+		inline bool get_size(file_size_t& put_here, bool use_read = false);
 
 
 		// Move (rename) a file to "to". The destination will be overwritten (if it exists and
@@ -178,6 +193,13 @@ class File : public FsPath {
 
 	private:
 
+		// for move semantics:
+
+// 		File(const File& other);  // don't allow it. allow only from non-const.
+
+// 		const File& operator=(const File& other);  // don't allow it. allow only from non-const.
+
+
 		handle_type file_;  // FILE*
 
 };
@@ -189,7 +211,7 @@ class File : public FsPath {
 // ------------------------------------------- Implementation
 
 
-
+/*
 // move semantics, as with copy constructor.
 inline File& File::operator= (File& other)
 {
@@ -202,7 +224,7 @@ inline File& File::operator= (File& other)
 
 	return *this;
 }
-
+*/
 
 
 // Open the file with open_mode.
@@ -262,6 +284,7 @@ inline bool File::get_contents(unsigned char*& put_data_here,
 // If the buffer is of insufficient size, false is returned and buffer is left untouched.
 // If any other error occurs, the buffer may be left in unspecified state.
 // Internal usage only: If buf_size is -1, the buffer will be automatically allocated.
+// FIXME: Support files which can't be seeked and don't have a size attribute (e.g. /proc/*).
 inline bool File::get_contents_noalloc(unsigned char*& put_data_here, file_size_t buf_size,
 		file_size_t& put_size_here, file_size_t max_size)
 {
@@ -312,8 +335,9 @@ inline bool File::get_contents_noalloc(unsigned char*& put_data_here, file_size_
 
 		unsigned char* buf = put_data_here;
 		if (auto_alloc)
-			buf = new unsigned char[size];  // this may throw!
+			buf = new unsigned char[static_cast<unsigned int>(size)];  // this may throw!
 
+		// FIXME: Large file support
 		size_t read_bytes = fread(buf, 1, size, f);  // I really hope this is not a byte-by-byte operation
 		if (size != static_cast<file_size_t>(read_bytes)) {
 			set_error(std::string(HZ__("Unable to read file \"/path1/\": "))
@@ -352,8 +376,8 @@ inline bool File::get_contents(std::string& put_data_here, file_size_t max_size)
 		return false;
 
 	// Note: No need for appending 0, it's all automatic in string.
-	put_data_here.reserve(size);  // string takes size without trailing 0.
-	put_data_here.append(reinterpret_cast<char*>(buf), size);
+	put_data_here.reserve(static_cast<std::string::size_type>(size));  // string takes size without trailing 0.
+	put_data_here.append(reinterpret_cast<char*>(buf), static_cast<std::string::size_type>(size));
 
 	delete[] buf;
 	return ok();
@@ -377,8 +401,25 @@ inline bool File::put_contents(const unsigned char* data, file_size_t data_size)
 		return false;
 	}
 
-	const size_t written = fwrite(data, 1, data_size, f);  // I really hope this is not a byte-by-byte operation
-	if (data_size != static_cast<file_size_t>(written)) {
+	// We write in chunks to support large files.
+	const size_t chunk_size = 32*1024;  // 32K block devices will be happy.
+	file_size_t left_to_write = data_size;
+
+	bool write_error = false;
+	while (left_to_write >= static_cast<file_size_t>(chunk_size)) {
+		// better loop than specify all in one, this way we can support _really_ large files.
+		if (fwrite(data + data_size - left_to_write, chunk_size, 1, f) != 1) {
+			write_error = true;
+			break;
+		}
+		left_to_write -= chunk_size;
+	}
+
+	// write the remainder
+	if (!write_error && fwrite(data + data_size - left_to_write, left_to_write, 1, f) != 1)
+		write_error = true;
+
+	if (write_error) {
 		set_error(std::string(HZ__("Unable to write file \"/path1/\": "))
 				+ HZ__("Number of written bytes doesn't match the data size."), 0, path_);
 		fclose(f);  // don't check anything, it's too late
@@ -392,7 +433,7 @@ inline bool File::put_contents(const unsigned char* data, file_size_t data_size)
 }
 
 
-// // same as above, for std::string (no terminating 0 is needed inside data or anywhere else)
+// same as above, for std::string (no terminating 0 is needed inside data or anywhere else)
 inline bool File::put_contents(const std::string& data)
 {
 	return put_contents(reinterpret_cast<const unsigned char*>(data.data()), data.size());
@@ -402,7 +443,8 @@ inline bool File::put_contents(const std::string& data)
 
 
 // Do NOT assign the result to int - you'll break LFS support.
-inline bool File::get_size(file_size_t& put_here)
+// use_read parameter forces actual reading of a file, useful for files in /proc.
+inline bool File::get_size(file_size_t& put_here, bool use_read)
 {
 	clear_error();
 
@@ -411,17 +453,46 @@ inline bool File::get_size(file_size_t& put_here)
 		return false;
 	}
 
+	if (!use_read) {
+		struct stat s;
+		if (stat(path_.c_str(), &s) == -1) {
+			set_error(HZ__("Unable to get file size of \"/path1/\": /errno/."), errno, path_);
+			return false;
+		}
+
+		if (!S_ISREG(s.st_mode)) {  // no need for S_ISLNK - we're using stat(), not lstat().
+			set_error("Unable to get file size of \"/path1/\": Supplied path is not a regular file.", 0, path_);
+			return false;
+		}
+
+		// For symlinks st_size is a size in bytes of the pointed file.
+		// To get the size of a symlink itself, use lstat(). Size of a symlink
+		// is basically strlen(pointed_path).
+		put_here = s.st_size;
+
+		return true;
+	}
+
+
 	FILE* f = fopen(path_.c_str(), "rb");
 	if (!f) {
 		set_error(HZ__("Unable to open file \"/path1/\" for reading: /errno/."), errno, path_);
 		return false;
 	}
 
-	do {  // goto emulation
-		if (fseek(f, 0, SEEK_END) != 0) {  // this should work in LFS too (I think)
-			set_error(HZ__("Unable to read file \"/path1/\": /errno/."), errno, path_);
-			break;  // goto cleanup
-		}
+
+	const size_t buf_size = 32*1024;  // 32K block devices will be happy
+	char buf[buf_size];
+
+	// read until the end
+	while (fread(buf, buf_size, 1, f) == 1) {
+		// nothing
+	}
+
+	if (ferror(f)) {
+		set_error(HZ__("Unable to read file \"/path1/\": /errno/."), errno, path_);
+
+	} else {  // file read completely
 
 #ifndef _WIN32  // win32 doesn't have ftello()
 		const file_size_t size = ftello(f);  // LFS variant of ftell()
@@ -430,18 +501,17 @@ inline bool File::get_size(file_size_t& put_here)
 #endif
 		if (size == static_cast<file_size_t>(-1)) {  // size may be unsigned, it's the way it works
 			set_error(HZ__("Unable to read file \"/path1/\": /errno/."), errno, path_);
-			break;  // goto cleanup
+
+		} else {
+			// All OK
+			put_here = size;
 		}
-
-		// All OK
-		put_here = size;
-
-	} while (false);
+	}
 
 	// cleanup:
 	if (fclose(f) != 0) {
 		if (!bad())  // don't overwrite the previous error
-		set_error(HZ__("Error while closing file \"/path1/\": /errno/."), errno, path_);
+			set_error(HZ__("Error while closing file \"/path1/\": /errno/."), errno, path_);
 	}
 
 	return ok();
@@ -531,10 +601,11 @@ inline bool File::copy(const std::string& to)
 	}
 
 
-	const unsigned int buf_size = 32*1024;  // 32K
+	const size_t buf_size = 32*1024;  // 32K
 	unsigned char buf[buf_size] = {0};
 
 	while (true) {
+		// let's hope these are not byte-by-byte operations
 		size_t read_bytes = fread(buf, 1, buf_size, fsrc);
 
 		if (read_bytes != buf_size && ferror(fsrc)) {  // error

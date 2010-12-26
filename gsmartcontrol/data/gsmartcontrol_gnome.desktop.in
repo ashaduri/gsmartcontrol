@@ -7,8 +7,7 @@ OnlyShowIn=GNOME;
 Version=1.0
 Type=Application
 
-Categories=System;GTK;
-# Categories=Settings;HardwareSettings;
+Categories=System;Monitor;
 
 Name=GSmartControl
 # short description, usually shown in parentheses after Name
@@ -21,6 +20,8 @@ Comment=Monitor and control SMART data on hard disks
 # An absolute file path is also supported.
 Icon=gsmartcontrol
 
-# Run with root permissions. Some desktop files used gksu,
-# but it doesn't seem available on my system.
-Exec=gnomesu -c "@prefix@/bin/gsmartcontrol"
+# Run with root permissions.
+Exec="@prefix@/bin/gsmartcontrol_root.sh" gnome
+
+# Build service rpmlint gives errors without this
+X-SuSE-translate=false

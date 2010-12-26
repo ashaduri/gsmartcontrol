@@ -4,6 +4,8 @@
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
 
+#include "hz/hz_config.h"  // ENABLE_GLIB, DEBUG_BUILD
+
 #ifdef ENABLE_GLIB
 
 #include <string>
@@ -204,6 +206,7 @@ GOptionGroup* debug_get_option_group()
 				&(args->debug_colorize), "Enable colored output", NULL },
 		{ "debug-no-colorize", '\0', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE,
 				&(args->debug_colorize), "Disable colored output", NULL },
+		{ NULL }
 	};
 
 	g_option_group_add_entries(group, entries);

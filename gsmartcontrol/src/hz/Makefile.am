@@ -20,6 +20,7 @@ down_cast_test_SOURCES = down_cast_test.cpp
 errno_string_test_SOURCES = errno_string_test.cpp
 format_unit_test_SOURCES = format_unit_test.cpp
 fs_dir_test_SOURCES = fs_dir_test.cpp
+fs_file_test_SOURCES = fs_file_test.cpp
 fs_path_test_SOURCES = fs_path_test.cpp
 string_algo_test_SOURCES = string_algo_test.cpp
 string_format_test_SOURCES = string_format_test.cpp
@@ -34,7 +35,7 @@ tls_test_SOURCES = tls_test.cpp
 noinst_PROGRAMS =
 if ENABLE_TESTS
 noinst_PROGRAMS += any_type_test bin2ascii_encoder_test down_cast_test errno_string_test \
-	format_unit_test fs_dir_test fs_path_test string_algo_test string_num_test string_format_test \
+	format_unit_test fs_dir_test fs_file_test fs_path_test string_algo_test string_num_test string_format_test \
 	string_wcmatch_test sync_test sync_multilock_test tls_test
 endif
 

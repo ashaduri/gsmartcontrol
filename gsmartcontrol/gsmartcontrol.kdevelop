@@ -66,7 +66,7 @@
         <cflags/>
         <cxxflags/>
         <envvars/>
-        <configargs>--enable-default-gcc-options --enable-gcc-optimize --enable-gcc-pch --enable-tests</configargs>
+        <configargs>--disable-user-flags --enable-optimize-options --enable-tests</configargs>
         <topsourcedir/>
         <cppflags/>
         <ldflags/>
@@ -76,7 +76,7 @@
         <f77flags/>
       </optimized>
       <debuggy>
-        <configargs>--enable-default-gcc-options --enable-gcc-debug --enable-tests</configargs>
+        <configargs>--disable-user-flags --enable-debug-options --enable-tests</configargs>
         <builddir>debuggy</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
@@ -94,24 +94,24 @@
       </debuggy>
       <icc>
         <envvars/>
-        <configargs>--disable-default-gcc-options --enable-tests</configargs>
+        <configargs>--disable-user-flags --enable-tests</configargs>
         <builddir>icc</builddir>
         <topsourcedir/>
         <cppflags/>
-        <ldflags>-s -static-libgcc -static-intel</ldflags>
+        <ldflags/>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
         <ccompilerbinary>icc</ccompilerbinary>
         <cxxcompilerbinary>icpc</cxxcompilerbinary>
         <f77compilerbinary/>
-        <cflags>-w1</cflags>
-        <cxxflags>-g0 -O3 -m32 -ftrapuv -fstack-security-check -early-template-check -static-libgcc -static-intel -Wcomment -Wdeprecated -Wextra-tokens -Wformat -Wmissing-prototypes -Wnon-virtual-dtor -Wpointer-arith -Wreturn-type -Wshadow -Wtrigraphs -Wuninitialized -w1</cxxflags>
+        <cflags/>
+        <cxxflags/>
         <f77flags/>
       </icc>
       <win32>
         <envvars/>
-        <configargs>--enable-default-gcc-options --enable-gcc-optimize --enable-gcc-pch --enable-tests --target=i386-mingw32msvc --host=i386-mingw32msvc --build=i686-linux PKG_CONFIG_PATH=/target/lib/pkgconfig PKG_CONFIG_LIBDIR=/target/lib PATH=&quot;/opt/cross-tools/bin:/target/bin:$PATH&quot;</configargs>
+        <configargs>--disable-user-flags --enable-debug-options --enable-tests --target=i386-mingw32msvc --host=i386-mingw32msvc --build=i686-linux PKG_CONFIG_PATH=/target/lib/pkgconfig PKG_CONFIG_LIBDIR=/target/lib PATH=&quot;/opt/cross-tools/bin:/target/bin:$PATH&quot;</configargs>
         <builddir>win32</builddir>
         <topsourcedir/>
         <cppflags/>
@@ -119,8 +119,8 @@
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
-        <ccompilerbinary>&quot;i386-mingw32msvc-gcc -mms-bitfields&quot;</ccompilerbinary>
-        <cxxcompilerbinary>&quot;i386-mingw32msvc-g++ -mms-bitfields&quot;</cxxcompilerbinary>
+        <ccompilerbinary>i386-mingw32msvc-gcc</ccompilerbinary>
+        <cxxcompilerbinary>i386-mingw32msvc-g++</cxxcompilerbinary>
         <f77compilerbinary/>
         <cflags/>
         <cxxflags/>
@@ -130,7 +130,7 @@
         <envvars>
           <envvar value="/opt/sun/sunstudio12/bin:$PATH" name="PATH" />
         </envvars>
-        <configargs>--disable-default-gcc-options --enable-tests</configargs>
+        <configargs>--enable-tests</configargs>
         <builddir>suncc</builddir>
         <topsourcedir/>
         <cppflags/>
@@ -141,8 +141,8 @@
         <ccompilerbinary>suncc</ccompilerbinary>
         <cxxcompilerbinary>sunCC</cxxcompilerbinary>
         <f77compilerbinary/>
-        <cflags>-DDEBUG -DDEBUG_BUILD</cflags>
-        <cxxflags>+w -errtags -erroff=notemsource,notused -features=extensions -DHZ_FORCE_GLOBAL_MACROS -DDEBUG -DDEBUG_BUILD -DGLIBMM_HAVE_SUN_REVERSE_ITERATOR -DSIGC_HAVE_SUN_REVERSE_ITERATOR</cxxflags>
+        <cflags>-errwarn=%all</cflags>
+        <cxxflags>-DGLIBMM_HAVE_SUN_REVERSE_ITERATOR -DSIGC_HAVE_SUN_REVERSE_ITERATOR</cxxflags>
         <f77flags/>
       </suncc>
       <portland>
@@ -151,7 +151,7 @@
         <builddir>portland</builddir>
         <topsourcedir/>
         <cppflags/>
-        <ldflags/>
+        <ldflags>-s</ldflags>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
@@ -159,7 +159,7 @@
         <cxxcompilerbinary>pgCC</cxxcompilerbinary>
         <f77compilerbinary/>
         <cflags>-Minform=warn -Bstatic_pgi</cflags>
-        <cxxflags>-Minform=warn -Bstatic_pgi -noswitcherror -define_macro=HZ_FORCE_GLOBAL_MACROS</cxxflags>
+        <cxxflags>-Minform=warn -Bstatic_pgi -noswitcherror -define_macro=HZ_NO_COMPILER_AUTOINCLUDE</cxxflags>
         <f77flags/>
       </portland>
     </configurations>

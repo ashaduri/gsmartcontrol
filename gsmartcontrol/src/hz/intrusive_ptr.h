@@ -28,7 +28,7 @@ Original notes and copyright info follow:
 
 
 
-#include <cstring>  // strcpy / strlen
+#include <cstring>  // strncpy / strlen
 #include <exception>  // std::exception
 // #include <iosfwd>  // std::ostream (for operator<<)
 
@@ -67,11 +67,13 @@ namespace hz {
 struct intrusive_ptr_error : virtual public std::exception {  // from <exception>
 
 	intrusive_ptr_error(const char* msg)
-		: msg_(std::strcpy(new char[std::strlen(msg) + 1], msg))
 #ifndef DISABLE_RTTI
-			, type_(typeid(void))
+			: type_(typeid(void))
 #endif
-	{ }
+	{
+		std::size_t buf_len = std::strlen(msg) + 1;
+		msg_ = std::strncpy(new char[buf_len], msg, buf_len);
+	}
 
 #ifndef DISABLE_RTTI
 	intrusive_ptr_error(const char* msg, const std::type_info& type)
@@ -79,10 +81,13 @@ struct intrusive_ptr_error : virtual public std::exception {  // from <exception
 	{
 		const char* tname = type.name();
 		const char* tmsg = " Type: ";
-		msg_ = new char[std::strlen(msg) + std::strlen(tmsg) + std::strlen(tname) + 1];
-		std::strcpy(msg_, msg);
-		std::strcpy(msg_ + strlen(msg_), tmsg);
-		std::strcpy(msg_ + strlen(msg_), tname);
+		std::size_t msg_len = std::strlen(msg);
+		std::size_t tmsg_len = std::strlen(tmsg);
+		std::size_t tname_len = std::strlen(tname);
+		msg_ = new char[msg_len + tmsg_len + tname_len + 1];
+		std::strncpy(msg_, msg, msg_len);
+		std::strncpy(msg_ + msg_len, tmsg, tmsg_len);
+		std::strncpy(msg_ + msg_len + tmsg_len, tname, tname_len + 1);
 	}
 #endif
 

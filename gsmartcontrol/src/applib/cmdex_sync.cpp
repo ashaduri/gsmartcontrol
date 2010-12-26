@@ -4,7 +4,7 @@
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
-#include <glibmm/timer.h>  // usleep()
+#include <glib.h>  // g_usleep()
 
 #include "cmdex_sync.h"
 
@@ -93,7 +93,7 @@ bool CmdexSync::execute()
 			g_main_context_iteration(NULL, false);
 		}
 
-		Glib::usleep(50*1000);  // 50 msec. avoids 100% CPU usage.
+		g_usleep(50*1000);  // 50 msec. avoids 100% CPU usage.
 	}
 
 	// command exited, do a cleanup.

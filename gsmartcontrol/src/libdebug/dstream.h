@@ -89,7 +89,8 @@ namespace debug_internal {
 	// 					write_out(tmp);
 						write_char(char(c));
 					} else {  // we have a buffer
-						sputc(c);  // put c into buffer (the overflowed char); the rest is written in sync() earlier.
+						// put c into buffer (the overflowed char); the rest is written in sync() earlier.
+						sputc(static_cast<char>(c));
 					}
 				}
 				return 0;

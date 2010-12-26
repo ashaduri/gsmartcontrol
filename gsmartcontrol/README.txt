@@ -35,6 +35,8 @@ Perform SMART self-tests.
 Ability to load smartctl output as a "virtual" device, which acts just like a
 real (read-only) device.
 
+Works on most smartctl-supported operating systems.
+
 Extensive help information.
 
 
@@ -86,8 +88,6 @@ these bugs and works around them.
 
 Software Requirements
 
-So far, only Linux systems are supported.
-
 You need to have the following software installed:
 
 * pcre - http://www.pcre.org .
@@ -110,6 +110,33 @@ example, to build this program on OpenSUSE, you just need to install
 smartmontools, gtkmm2-devel and pcre-devel - the rest is installed
 automatically by the package manager's dependency resolver.
 
+The following operating systems are supported:
+
+* Linux - All the popular configurations should work.
+
+* FreeBSD - Tested with DesktopBSD 1.6 (FreeBSD 6.3) / x86.
+
+* NetBSD - Tested with NetBSD 4.0.1 / x86.
+
+* OpenBSD - Tested with OpenBSD 4.3 / x86-64 / gcc-3.3.5.
+
+* Solaris - Tested with Solaris 10 / x86 / gcc-3.4.3 / blastwave,
+Solaris 10 / x86 / sunstudio12 / sunfreeware. OpenSolaris should work but has
+not been tested yet. Note that until either smartctl gets ATA support under
+Solaris or GSmartControl gets SCSI support, these configurations are
+essentially useless.
+
+* DragonFlyBSD - Code written but no testing has been performed yet. Expected
+to work without any issues.
+
+* Windows (NT line only) - Only minimal testing has been performed. Expected
+to work. The Windows port uses /dev/pd0, /dev/pd1, etc... for physical drives
+0, 1, etc... .
+
+* Mac OS X - Code written but no testing has been performed yet.
+
+* QNX - Code written but no testing has been performed yet.
+
 
 
 Installation
@@ -120,9 +147,9 @@ Long answer: read below.
 
 First, check if you can find a pre-built package for your distribution or
 operating system - they usually provide the best integration and the easiest
-installation procedure. One option is to try OpenSUSE Build Service - it
-provides ready-to-install packages for various popular Linux distributions
-(OpenSUSE, Fedora, etc...). See
+installation procedure. For Linux, one option is to try the OpenSUSE Build
+Service - it provides ready-to-install packages for various popular Linux
+distributions (OpenSUSE, Fedora, etc...). See
 http://download.opensuse.org/repositories/home:/alex_sh/ .
 
 If you want to compile from source, check that you have all the required
@@ -130,15 +157,16 @@ dependencies (see Software Requirements section). Then the usual
 
 ./configure; make; make install
 
-will build and install it. Installation usually requires root privileges, but
-you don't need to install the program in order to run it directly from the
-compilation directory.
+will build and install it. Installation usually requires adminstrative
+privileges, but you don't need to install the program in order to run it
+directly from the compilation directory.
 
 
 
 Permission Problems
 
-Short answer: you need to be root. In X11, use kdesu, gnomesu, sux or similar.
+Short answer: you need to be root (Administrator in Windows).
+In X11, use kdesu, gnomesu, sux, xdg-su or similar.
 
 Long answer: read below.
 
@@ -146,29 +174,25 @@ Most operating systems prohibit direct access to hardware to users with
 non-administrative privileges. Unfortunately, to access SMART data, smartctl
 needs to directly access the hard drive.
 
-The provided desktop and menu icons should show the "Please enter the root
+The provided X11 desktop and menu icons should show the "Please enter the root
 password" dialog boxes, and, after correct information is entered, should run
 this program with root privileges. The dialogs should be available in most
 commonly used X11 desktop environments.
 
-However, in case the described method is somehow inaccessible, you need to
-manually invoke the program with kdesu, gnomesu, sux or similar programs. For
-example,
+Another way is to use the included gsmartcontrol_root.sh script, which finds
+the available su program and runs gsmartcontrol with it.
+
+Yet another way is to manually invoke the program with kdesu, gnomesu, sux or
+similar programs. For example,
 
 kdesu -u root -c gsmartcontrol
 
 will ask for root password and run gsmartcontrol with root privileges. Replace
-"kdesu" with "gnomesu" if using Gnome. The "sux" command may also help, if
-neither KDE or GNOME are available.
+"kdesu" with "gnomesu" if using Gnome. The "sux" or "xdg-su" commands may also
+help, if neither KDE or GNOME are available.
 
-Another method would be to set the "setuid" flag on smartctl binary, for
-example (run as root):
-
-chmod 4755 `which smartctl`
-
-This method is not recommended, however, and is considered a security risk.
-Also, some systems may reset the change automatically, unless explicitly
-instructed otherwise.
+Please don't set the "setuid" flag on smartctl binary. It is considered a
+security risk.
 
 
 
@@ -210,7 +234,7 @@ have X11 / Gtkmm running, so this is a low priority task.
 * I only have ATA drives, so testing would be almost impossible.
 
 Immediate Offline Tests are not supported. I haven't found a way to reliably
-monitor them.
+monitor them yet.
 
 You may run several tests on different drives in parallel, but you will only
 see the progress information of the last executing test. So, if you run tests
@@ -234,20 +258,30 @@ language and all.
 
 Reporting Bugs
 
-First, please collect the following information about your system. Without it
-it may be very hard or impossible to fix the bug.
+If it is a SMART or drive-related problem, please try to test it with smartctl
+first. Chances are, the problem you're experiencing is not tied to
+GSmartControl, but is a drive firmware or smartctl problem. For example, to
+see a complete information about your /dev/sda drive, type the following in a
+terminal emulator (e.g., xterm, konsole or gnome-terminal):
+
+smartctl -a /dev/sda
+
+If you still think it's a GSmartControl issue, please collect the following
+information about your system. Without it, it may be very hard or impossible
+to fix the bug.
 
 * Which operating system you use (for example, OpenSUSE Linux 11.0).
 
-* What version of GTK and Gtkmm you have installed. Finding this out is very
+* Which version of GTK and Gtkmm you have installed. Finding this out is very
 distribution-specific. For example, on OpenSUSE it would be
 "rpm -q gtk2 gtkmm2". Some distributions have gtkmm24 instead. You may also
 search them in your distribution's graphical package manager, if there is one.
 
 * Execution log from the program, if possible. To obtain it, run the program
-with -v option, e.g. (type the following in terminal emulator or Run dialog):
+with -v option, e.g. (type the following in a terminal emulator or Run
+dialog):
 
-kdesu -- biocalcon -v
+gsmartcontrol_root.sh other -v
 
 Perform the steps needed to reproduce the bug, then go to
 "Options -> View Execution Log", and click "Save All".

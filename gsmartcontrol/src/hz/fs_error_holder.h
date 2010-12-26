@@ -75,18 +75,19 @@ class FsErrorHolder {
 			// Errno string is in libc locale charset or utf8 (if using glib).
 
 			gchar* loc_errno = g_locale_from_utf8(hz::errno_string(error_errno_).c_str(), -1, NULL, NULL, NULL);
-			std::string loc_errno_str = (loc_errno ? loc_errno : HZ__("[Errno charset conversion error]"));
+			std::string loc_errno_str = (loc_errno ? loc_errno
+					: (HZ__("[charset conv error] ") + error_errno_ + hz::errno_string(error_errno_)));
 			g_free(loc_errno);
 
 			gchar* p1_utf8 = g_filename_display_name(error_path1_.c_str());  // fs -> utf8. always non-null.
-			gchar* p1_locale = g_locale_from_utf8(error_path1_.c_str(), -1, NULL, NULL, NULL);  // utf8 -> locale
-			std::string p1 = (p1_locale ? p1_locale : HZ__("[Path charset conversion error]"));
+			gchar* p1_locale = g_locale_from_utf8(p1_utf8, -1, NULL, NULL, NULL);  // utf8 -> locale
+			std::string p1 = (p1_locale ? p1_locale : (HZ__("[charset conv error] ") + error_path1_));
 			g_free(p1_utf8);
 			g_free(p1_locale);
 
 			gchar* p2_utf8 = g_filename_display_name(error_path2_.c_str());  // fs -> utf8. always non-null.
-			gchar* p2_locale = g_locale_from_utf8(error_path2_.c_str(), -1, NULL, NULL, NULL);  // utf8 -> locale
-			std::string p2 = (p2_locale ? p2_locale : HZ__("[Path charset conversion error]"));
+			gchar* p2_locale = g_locale_from_utf8(p2_utf8, -1, NULL, NULL, NULL);  // utf8 -> locale
+			std::string p2 = (p2_locale ? p2_locale : (HZ__("[charset conv error] ") + error_path2_));
 			g_free(p2_utf8);
 			g_free(p2_locale);
 
@@ -108,11 +109,11 @@ class FsErrorHolder {
 
 			// unlike g_filename_to_utf8, this always returns something. (available since glib 2.6).
 			gchar* p1_utf8 = g_filename_display_name(error_path1_.c_str());
-			std::string p1 = (p1_utf8 ? p1_utf8 : HZ__("[Path charset conversion error]"));
+			std::string p1 = (p1_utf8 ? p1_utf8 : (HZ__("[charset conv error] ") + error_path1_));
 			g_free(p1_utf8);
 
 			gchar* p2_utf8 = g_filename_display_name(error_path2_.c_str());
-			std::string p2 = (p2_utf8 ? p2_utf8 : HZ__("[Path charset conversion error]"));
+			std::string p2 = (p2_utf8 ? p2_utf8 : (HZ__("[charset conv error] ") + error_path2_));
 			g_free(p2_utf8);
 
 			std::string msg = error_format_;

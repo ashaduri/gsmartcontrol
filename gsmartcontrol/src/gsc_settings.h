@@ -34,8 +34,10 @@ inline void init_default_settings()
 	rconfig::set_default_data("system/smartctl_options", "");  // default options on ALL commands
 	rconfig::set_default_data("system/smartctl_device_options", "");  // dev1:val1;dev2:val2;... format, each bin2ascii-encoded.
 
-	rconfig::set_default_data("system/linux_udev_byid_path", "/dev/disk/by-id");  // hard disk device links here
-	rconfig::set_default_data("system/linux_proc_partitions_path", "/proc/partitions");  // file in /proc/partitions format
+	rconfig::set_default_data("system/linux_udev_byid_path", "/dev/disk/by-id");  // linux hard disk device links here
+	rconfig::set_default_data("system/linux_proc_partitions_path", "/proc/partitions");  // file in linux /proc/partitions format
+	rconfig::set_default_data("system/solaris_dev_path", "/dev/rdsk");  // path to /dev/rdsk for solaris.
+	rconfig::set_default_data("system/unix_sdev_path", "/dev");  // path to /dev. used by other unices
 // 	rconfig::set_default_data("system/device_match_patterns", "");  // semicolon-separated PCRE patterns
 	rconfig::set_default_data("system/device_blacklist_patterns", "");  // semicolon-separated PCRE patterns
 

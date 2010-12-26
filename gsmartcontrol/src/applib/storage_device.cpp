@@ -29,7 +29,7 @@ std::string StorageDevice::fetch_basic_data_and_parse(hz::intrusive_ptr<CmdexSyn
 	std::string output;
 	// We don't use "--all" - it may cause really screwed up the output (tests, etc...).
 	// This looks just like "--info" only on non-smart devices.
-	std::string error_msg = execute_smartctl("--info --health --capabilities", smartctl_ex, output);
+	std::string error_msg = execute_smartctl("-i -H -c", smartctl_ex, output);  // --info --health --capabilities
 	if (!error_msg.empty())
 		return error_msg;
 
@@ -52,9 +52,9 @@ std::string StorageDevice::parse_basic_data(bool emit_signal)
 
 	std::string version = SmartctlParser::parse_version(this->info_output_);
 	if (version.empty())  // is this smartctl data at all?
-		return "Cannot extract smartctl version information.";
+		return "Cannot get smartctl version information.";
 
-	// detect type. note: we can't distinguish between sata and scsi.
+	// detect type. note: we can't distinguish between sata and scsi (on linux, for -d ata switch).
 	if (app_pcre_match("/this device: CD\\/DVD/mi", info_output_)) {
 		this->set_type(type_cddvd);
 
@@ -72,7 +72,8 @@ std::string StorageDevice::parse_basic_data(bool emit_signal)
 
 	// Don't put complete messages here - they change across smartctl versions.
 	if (app_pcre_match("/^SMART support is:[ \\t]*Unavailable/mi", info_output_)  // cdroms output this
-			|| app_pcre_match("/Device does not support SMART/mi", info_output_)) {  // usb flash drives output this
+			|| app_pcre_match("/Device does not support SMART/mi", info_output_)  // usb flash drives, non-smart hds
+			|| app_pcre_match("/Device Read Identity Failed \\(not an ATA\\/ATAPI device\\)/mi", info_output_)) {  // solaris scsi, unsupported by smartctl
 		smart_supported_ = false;
 		smart_enabled_ = false;
 
@@ -135,7 +136,7 @@ std::string StorageDevice::fetch_data_and_parse(hz::intrusive_ptr<CmdexSync> sma
 	this->clear_fetched();  // clear everything fetched before, including outputs
 
 	std::string output;
-	std::string error_msg = execute_smartctl("--all", smartctl_ex, output);
+	std::string error_msg = execute_smartctl("-a", smartctl_ex, output);  // --all
 	if (!error_msg.empty())
 		return error_msg;
 
@@ -210,7 +211,8 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 */
 
 	std::string output;
-	std::string error_msg = execute_smartctl((b ? "--smart=on --saveauto=on" : "--smart=off"), smartctl_ex, output);
+	// --smart=on --saveauto=on, --smart=off
+	std::string error_msg = execute_smartctl((b ? "-s on -S on" : "-s off"), smartctl_ex, output);
 	if (!error_msg.empty())
 		return error_msg;
 
@@ -245,7 +247,8 @@ SMART Automatic Offline Testing Disabled.
 A mandatory SMART command failed: exiting. To continue, add one or more '-T permissive' options.
 */
 	std::string output;
-	std::string error_msg = execute_smartctl((b ? "--offlineauto=on" : "--offlineauto=off"), smartctl_ex, output);
+	// --offlineauto=on, --offlineauto=off
+	std::string error_msg = execute_smartctl((b ? "-o on" : "-o off"), smartctl_ex, output);
 	if (!error_msg.empty())
 		return error_msg;
 

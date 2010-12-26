@@ -8,7 +8,7 @@
 #define APP_CMDEX_SYNC_H
 
 #include <sigc++/sigc++.h>
-#include <glibmm/ustring.h>  // ustring
+#include <string>
 
 #include "hz/error.h"
 #include "hz/intrusive_ptr.h"
@@ -196,9 +196,9 @@ class CmdexSync : public hz::intrusive_ptr_referenced, public sigc::trackable {
 			return cmdex_.get_stderr_str(clear_existing);
 		}
 
-		void set_exit_status_translator(const sigc::slot<Glib::ustring, int>& slot_exit_status_translator)
+		void set_exit_status_translator(Cmdex::exit_status_translator_func_t func, void* user_data)
 		{
-			cmdex_.set_exit_status_translator(slot_exit_status_translator);
+			cmdex_.set_exit_status_translator(func, user_data);
 		}
 
 
@@ -209,7 +209,7 @@ class CmdexSync : public hz::intrusive_ptr_referenced, public sigc::trackable {
 			return error_msg_;
 		}
 
-		void set_running_msg(const Glib::ustring& msg)
+		void set_running_msg(const std::string& msg)
 		{
 			running_msg_ = msg;
 		}
@@ -264,7 +264,7 @@ class CmdexSync : public hz::intrusive_ptr_referenced, public sigc::trackable {
 		}
 
 
-		Glib::ustring get_running_msg() const
+		std::string get_running_msg() const
 		{
 			return running_msg_;
 		}
@@ -282,7 +282,7 @@ class CmdexSync : public hz::intrusive_ptr_referenced, public sigc::trackable {
 		std::string command_name_;
 		std::string command_args_;
 
-		Glib::ustring running_msg_;  // message to show in the dialogs, etc...
+		std::string running_msg_;  // message to show in the dialogs, etc...
 
 		int forced_kill_timeout_msec;
 

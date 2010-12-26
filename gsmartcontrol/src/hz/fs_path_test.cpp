@@ -95,6 +95,7 @@ int main()
 		paths.push_back("./hello/a/b.././c/d/../e");
 		paths.push_back("/a/../.././../b/");
 		paths.push_back("../a/./b/..");
+		paths.push_back("//.programrc");
 
 
 #endif

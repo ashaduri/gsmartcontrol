@@ -4,7 +4,7 @@
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
 
-#include <time.h>  // <ctime> doesn't contain ctime_r(), and std::ctime() is not thread-safe.
+#include <time.h>  // <ctime> doesn't contain ctime_r() (non-std), ctime()
 
 #include "dchannel.h"
 // #include <iostream>  // tmp
@@ -26,11 +26,14 @@ std::string debug_format_message(debug_level::flag level, const std::string& dom
 		if (format_flags.to_ulong() & debug_format::datetime) {  // print time
 			time_t t = time(0);
 			if (t != -1) {
-#ifndef _WIN32
+
+				// solaris and win32 have thread-safe ctime(). solaris has ctime_r() too, but with
+				// different semantics by default (unless _POSIX_PTHREAD_SEMANTICS is defined).
+#if defined _WIN32 || defined sun || defined __sun
+				const char* buf = ctime(&t);  // win32 doesn't have ctime_r(), but its ctime() is reentrant.
+#else
 				char buf[28] = {0}; // ctime_r requires max. 26 chars in buffer. align to 28.
 				ctime_r(&t, buf);
-#else
-				const char* buf = ctime(&t);  // win32 doesn't have ctime_r(), but its ctime() is reentrant.
 #endif
 				if (*buf) {
 					ret.append(buf, 24);

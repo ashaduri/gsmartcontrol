@@ -8,12 +8,7 @@
 #define APP_CMDEX_H
 
 #include <string>
-#include <sigc++/sigc++.h>
-#include <glibmm/iochannel.h>
-#include <glibmm/thread.h>
-#include <glibmm/timer.h>  // Timer
-#include <glibmm/spawn.h>  // Pid
-#include <glib.h>  // G*, g_*
+#include <glib.h>
 
 #include "hz/process_signal.h"  // hz::SIGNAL_*, hz::process_signal_send (cpp), win32's W* (cpp)
 #include "hz/error_holder.h"
@@ -41,7 +36,7 @@ from the _main_ thread.
 
 // inheriting from sigc::trackable automatically disconnects this class's
 // slots upon destruction.
-class Cmdex : public hz::ErrorHolder<hz::SyncPolicyGlib>, public sigc::trackable {
+class Cmdex : public hz::ErrorHolder<hz::SyncPolicyGlib> {
 
 	public:
 
@@ -51,24 +46,26 @@ class Cmdex : public hz::ErrorHolder<hz::SyncPolicyGlib>, public sigc::trackable
 		typedef hz::ErrorHolder<hz::SyncPolicyGlib>::ErrorScopedLock ScopedLock;
 		typedef hz::ErrorHolder<hz::SyncPolicyGlib>::ErrorLockPolicy LockPolicy;
 
+		typedef std::string (*exit_status_translator_func_t)(int, void*);
+		typedef void (*exited_callback_func_t)(void*);
+
 
 		Cmdex(
-			//const sigc::slot<Glib::ustring, int>& slot_exit_status_translator,
-			const sigc::slot<void>& slot_exited = sigc::slot<void>()
+			// exit_status_translator_func_t translator_func,
+			exited_callback_func_t exited_cb = NULL, void* exited_cb_data = NULL
 			)
 			: object_mutex_(error_object_mutex_),
-			running(false), kill_signal_sent(0), child_watch_handler_called(false),
-			pid(0), waitpid_status(0),
+			running_(false), kill_signal_sent_(0), child_watch_handler_called_(false),
+			pid_(0), waitpid_status_(0),
+			timer_(g_timer_new()),
 			event_source_id_term(0), event_source_id_kill(0),
-			fd_stdout(0), fd_stderr(0),
-			channel_stdout_buffer_size(100 * 1024), channel_stderr_buffer_size(10 * 1024),  // 100K and 10K
-			event_source_id_stdout(0), event_source_id_stderr(0),
-			stdout_make_str_as_available(false), stderr_make_str_as_available(true)
-		{
-			// signal_exit_status_translator.connect(slot_exit_status_translator);
-			if (!slot_exited.empty())
-				signal_exited.connect(slot_exited);
-		}
+			fd_stdout_(0), fd_stderr_(0), channel_stdout_(0), channel_stderr_(0),
+			channel_stdout_buffer_size_(100 * 1024), channel_stderr_buffer_size_(10 * 1024),  // 100K and 10K
+			event_source_id_stdout_(0), event_source_id_stderr_(0),
+			stdout_make_str_as_available_(false), stderr_make_str_as_available_(true),
+			translator_func_(0), translator_func_data_(0),
+			exited_callback_(exited_cb), exited_callback_data_(exited_cb_data)
+		{ }
 
 
 
@@ -79,14 +76,19 @@ class Cmdex : public hz::ErrorHolder<hz::SyncPolicyGlib>, public sigc::trackable
 			// This will help if object is destroyed after the command has exited, but before
 			// stopped_cleanup() has been called.
 			stopped_cleanup();
+
+			g_timer_destroy(timer_);
+
+			// no need to destroy the channels - stopped_cleanup() calls
+			// cleanup_members(), which deletes them.
 		}
 
 
 		// Call before execute.
-		void set_command(const std::string& command_exec_, const std::string& command_args_)
+		void set_command(const std::string& command_exec, const std::string& command_args)
 		{
-			command_exec = command_exec_;
-			command_args = command_args_;
+			command_exec_ = command_exec;
+			command_args_ = command_args;
 		}
 
 
@@ -130,7 +132,7 @@ class Cmdex : public hz::ErrorHolder<hz::SyncPolicyGlib>, public sigc::trackable
 		bool stopped_cleanup_needed(bool do_lock = true)
 		{
 			ScopedLock locker(object_mutex_, do_lock);
-			return (child_watch_handler_called);
+			return (child_watch_handler_called_);
 		}
 
 
@@ -140,7 +142,7 @@ class Cmdex : public hz::ErrorHolder<hz::SyncPolicyGlib>, public sigc::trackable
 		bool is_running() const
 		{
 			ScopedLock locker(object_mutex_);
-			return running;
+			return running_;
 		}
 
 
@@ -162,9 +164,9 @@ class Cmdex : public hz::ErrorHolder<hz::SyncPolicyGlib>, public sigc::trackable
 		{
 			ScopedLock locker(object_mutex_);
 			if (stdout_buffer_size)
-				channel_stdout_buffer_size = stdout_buffer_size;  // 100K by default
+				channel_stdout_buffer_size_ = stdout_buffer_size;  // 100K by default
 			if (stderr_buffer_size)
-				channel_stderr_buffer_size = stderr_buffer_size;  // 10K by default
+				channel_stderr_buffer_size_ = stderr_buffer_size;  // 10K by default
 		}
 
 
@@ -179,25 +181,25 @@ class Cmdex : public hz::ErrorHolder<hz::SyncPolicyGlib>, public sigc::trackable
 		void set_str_available(bool stdout_str_as_available = false, bool stderr_str_as_available = true)
 		{
 			ScopedLock locker(object_mutex_);
-			stdout_make_str_as_available = stdout_str_as_available;
-			stderr_make_str_as_available = stderr_str_as_available;
+			stdout_make_str_as_available_ = stdout_str_as_available;
+			stderr_make_str_as_available_ = stderr_str_as_available;
 		}
 
 
 
-		// If stdout_make_str_as_available is false, call this after stopped_cleanup(),
+		// If stdout_make_str_as_available_ is false, call this after stopped_cleanup(),
 		// before next execute(). If it's true, you may call this before the command has
 		// stopped, but it will decrease performance significantly.
 		std::string get_stdout_str(bool clear_existing = false)
 		{
 			ScopedLock locker(object_mutex_);
-			// debug_out_dump("app", str_stdout);
+			// debug_out_dump("app", str_stdout_);
 			if (clear_existing) {
-				std::string ret = str_stdout;
-				str_stdout.clear();
+				std::string ret = str_stdout_;
+				str_stdout_.clear();
 				return ret;
 			}
-			return str_stdout;
+			return str_stdout_;
 		}
 
 
@@ -206,33 +208,42 @@ class Cmdex : public hz::ErrorHolder<hz::SyncPolicyGlib>, public sigc::trackable
 		{
 			ScopedLock locker(object_mutex_);
 			if (clear_existing) {
-				std::string ret = str_stderr;
-				str_stderr.clear();
+				std::string ret = str_stderr_;
+				str_stderr_.clear();
 				return ret;
 			}
-			return str_stderr;
+			return str_stderr_;
+		}
+
+
+		// Return execution time, in seconds. Call after execute().
+		double get_execution_time()
+		{
+			ScopedLock locker(object_mutex_);
+			gulong microsec = 0;
+			return g_timer_elapsed(timer_, &microsec);
 		}
 
 
 		// don't return sigc::connection - it's better for thread-safety this way.
 		// this will disconnect earlier slots. Call before execute().
-		void set_exit_status_translator(const sigc::slot<Glib::ustring, int>& slot_exit_status_translator)
+		void set_exit_status_translator(exit_status_translator_func_t func, void* user_data)
 		{
 			ScopedLock locker(object_mutex_);
-			signal_exit_status_translator.slots().erase(signal_exit_status_translator.slots().begin(), signal_exit_status_translator.slots().end());
-			signal_exit_status_translator.connect(slot_exit_status_translator);
+			translator_func_ = func;
+			translator_func_data_ = user_data;
 		}
 
 
-		// Returns sigc::connection; you must use lock() / unlock() before modifying it.
-		// NOTE: The slot will be called in non-main thread! (the call is enclosed
+		// NOTE: The callback will be called in non-main thread! (the call is enclosed
 		// in lock/unlock).
 		// Don't use this unless absolutely necessary, use stopped_cleanup_needed()
 		// polling instead.
-		sigc::connection connect_signal_exited(const sigc::slot<void>& slot_exited)
+		void set_exited_callback(exited_callback_func_t func, void* user_data)
 		{
 			ScopedLock locker(object_mutex_);
-			return signal_exited.connect(slot_exited);
+			exited_callback_ = func;
+			exited_callback_data_ = user_data;
 		}
 
 
@@ -291,16 +302,25 @@ class Cmdex : public hz::ErrorHolder<hz::SyncPolicyGlib>, public sigc::trackable
 		void cleanup_members()
 		{
 			// ScopedLock locker(object_mutex_);
-			kill_signal_sent = 0;
-			child_watch_handler_called = false;
-			pid = 0;
-			waitpid_status = 0;
-			channel_stdout.clear();
-			channel_stderr.clear();
-			event_source_id_stdout = 0;
-			event_source_id_stderr = 0;
-			fd_stdout = 0;
-			fd_stderr = 0;
+			kill_signal_sent_ = 0;
+			child_watch_handler_called_ = false;
+			pid_ = 0;
+			waitpid_status_ = 0;
+			event_source_id_stdout_ = 0;
+			event_source_id_stderr_ = 0;
+			fd_stdout_ = 0;
+			fd_stderr_ = 0;
+
+			if (channel_stdout_) {
+				g_io_channel_shutdown(channel_stdout_, false, NULL);
+				g_io_channel_unref(channel_stdout_);
+				channel_stdout_ = 0;
+			}
+			if (channel_stderr_) {
+				g_io_channel_shutdown(channel_stderr_, false, NULL);
+				g_io_channel_unref(channel_stderr_);
+				channel_stderr_ = 0;
+			}
 		}
 
 
@@ -308,51 +328,53 @@ class Cmdex : public hz::ErrorHolder<hz::SyncPolicyGlib>, public sigc::trackable
 
 
 		// default command and its args. std::strings, not ustrings.
-		std::string command_exec;  // binary name. NOT affected by cleanup().
-		std::string command_args;  // args that always go with binary. NOT affected by cleanup().
+		std::string command_exec_;  // binary name. NOT affected by cleanup().
+		std::string command_args_;  // args that always go with binary. NOT affected by cleanup().
 
 
-		bool running;  // child process is running now. NOT affected by cleanup().
-		int kill_signal_sent;  // command has been sent this signal to terminate
-		bool child_watch_handler_called;  // true after child_watch_handler callback, before stopped_cleanup().
+		bool running_;  // child process is running now. NOT affected by cleanup().
+		int kill_signal_sent_;  // command has been sent this signal to terminate
+		bool child_watch_handler_called_;  // true after child_watch_handler callback, before stopped_cleanup().
 
-		Glib::Pid pid;  // int in Unix, pointer in win32
-		int waitpid_status;  // after the command is stopped, before cleanup, this will be available.
+		GPid pid_;  // int in Unix, pointer in win32
+		int waitpid_status_;  // after the command is stopped, before cleanup, this will be available.
 
 
-		Glib::Timer timer;  // keep track of elapsed time since command execution. not used by this class, but may be handy.
+		GTimer* timer_;  // keep track of elapsed time since command execution. not used by this class, but may be handy.
 
 		int event_source_id_term;
 		int event_source_id_kill;
 
 
-		int fd_stdout;
-		int fd_stderr;
+		int fd_stdout_;
+		int fd_stderr_;
 
-		Glib::RefPtr<Glib::IOChannel> channel_stdout;
-		Glib::RefPtr<Glib::IOChannel> channel_stderr;
+		GIOChannel* channel_stdout_;
+		GIOChannel* channel_stderr_;
 
-		int channel_stdout_buffer_size;  // NOT affected by cleanup().
-		int channel_stderr_buffer_size;  // NOT affected by cleanup().
+		int channel_stdout_buffer_size_;  // NOT affected by cleanup().
+		int channel_stderr_buffer_size_;  // NOT affected by cleanup().
 
-		int event_source_id_stdout;
-		int event_source_id_stderr;
+		int event_source_id_stdout_;
+		int event_source_id_stderr_;
 
-		int stdout_make_str_as_available;  // NOT affected by cleanup().
-		int stderr_make_str_as_available;  // NOT affected by cleanup().
+		int stdout_make_str_as_available_;  // NOT affected by cleanup().
+		int stderr_make_str_as_available_;  // NOT affected by cleanup().
 
-		std::string str_stdout;  // NOT affected by cleanup().
-		std::string str_stderr;  // NOT affected by cleanup().
+		std::string str_stdout_;  // NOT affected by cleanup().
+		std::string str_stderr_;  // NOT affected by cleanup().
 
 
 		// signals
 
 		// convert command exit status to message string
-		sigc::signal<Glib::ustring, int> signal_exit_status_translator;  // NOT affected by cleanup().
+		exit_status_translator_func_t translator_func_;  // NOT affected by cleanup().
+		void* translator_func_data_;
 
-		// command exited signal
-		sigc::signal<void> signal_exited;  // NOT affected by cleanup().
-
+		// "command exited" signal callback.
+		// NOTE: This will be called in separate thread!
+		exited_callback_func_t exited_callback_;  // NOT affected by cleanup().
+		void* exited_callback_data_;
 
 
 };

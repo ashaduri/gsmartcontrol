@@ -225,7 +225,7 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 	exss << "\n\n\n------------------------- EXECTION LOG -------------------------\n\n\n";
 
 	for (unsigned int i = 0; i < entries.size(); ++i) {
-		exss << "\n\n\n------------------------- EXECUTED COMMAND " << i << " -------------------------\n\n";
+		exss << "\n\n\n------------------------- EXECUTED COMMAND " << (i+1) << " -------------------------\n\n";
 		exss << "\n---------------" << "Command" << "---------------\n";
 		exss << entries[i]->command << "\n";
 		exss << "\n---------------" << "Parameters" << "---------------\n";

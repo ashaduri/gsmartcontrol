@@ -1,3 +1,11 @@
+
+# Disable implicit suffix rules for these extensions.
+# The problem is that make sees the .glade.cpp or .ui.cpp files
+# with their .glade prerequisites, and decides to rebuild the
+# (already existing) .glade files by using .glade.cpp files.
+# Implicit rules are to blame, so disable them for .glade.
+SUFFIXES = .glade .txt
+
 AM_CPPFLAGS =
 METASOURCES = AUTO
 
@@ -31,14 +39,6 @@ libres_a_DEPENDENCIES = $(RES_LIBADD)
 EXTRA_DIST = $(RES_DIST)
 
 
-# Implicit rule for .glade files (GNU make). The problem is that make sees
-# the .glade.cpp or .ui.cpp files with their .glade prerequisites, and decides
-# to rebuild the (already existing) .glade files by using .glade.cpp files.
-# Implicit rules are to blame, so disable them for .glade.
-%.glade :
-%.txt :
-
-
 # This lists the actual makefile rules for each target.
 @RES_TARGETS@
 
@@ -62,7 +62,7 @@ EXTRA_DIST = $(RES_DIST)
 # 	gsc_preferences_window.ui.cpp gsc_text_window.ui.cpp
 # endif
 #
-# if ENABLE_LIBGLADEMM
+# if ENABLE_LIBGLADE
 # # list all .ui.cpp files here
 # libres_a_SOURCES += gsc_about_dialog.glade.cpp gsc_executor_log_window.glade.cpp \
 # 	gsc_help_window.glade.cpp gsc_info_window.glade.cpp gsc_main_window.glade.cpp \

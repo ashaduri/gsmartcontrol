@@ -9,6 +9,7 @@
 
 #include <string>
 #include <stdint.h>
+#include <glibmm/timer.h>
 
 #include "hz/intrusive_ptr.h"
 

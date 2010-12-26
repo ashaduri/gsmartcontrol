@@ -1,7 +1,7 @@
 /**************************************************************************
  Copyright:
       (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
- License: Public Domain
+ License: See LICENSE_whatever.txt
 ***************************************************************************/
 
 // disable libdebug, we don't link to it
@@ -18,8 +18,10 @@
 
 #include <iostream>
 
+#include "hz/hz_config.h"  // ENABLE_GLIB
+
 #ifdef ENABLE_GLIB
-#	include <glib.h>
+	#include <glib.h>
 #endif
 
 

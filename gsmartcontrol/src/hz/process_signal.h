@@ -67,7 +67,7 @@ inline std::string signal_string(int signal_value);
 	enum signal_t {  // sendable signals
 		SIGNAL_SIGNONE,  // verify that process exists
 		SIGNAL_SIGTERM,  // ask to terminate
-		SIGNAL_SIGKILL,  // nuke
+		SIGNAL_SIGKILL  // nuke
 	};
 
 #else
@@ -77,7 +77,7 @@ inline std::string signal_string(int signal_value);
 	enum signal_t {  // sendable signals
 		SIGNAL_SIGNONE = 0,  // verify that process exists
 		SIGNAL_SIGTERM = SIGTERM,  // ask to terminate
-		SIGNAL_SIGKILL = SIGKILL,  // nuke
+		SIGNAL_SIGKILL = SIGKILL  // nuke
 	};
 
 #endif

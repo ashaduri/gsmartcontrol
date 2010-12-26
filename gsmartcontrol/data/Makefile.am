@@ -34,3 +34,7 @@ pixmaps_DATA = 48/gsmartcontrol.png
 
 EXTRA_DIST = $(appdata_DATA) $(pixmaps_DATA)
 
+
+bin_SCRIPTS = gsmartcontrol_root.sh
+CLEANFILES = $(bin_SCRIPTS)
+

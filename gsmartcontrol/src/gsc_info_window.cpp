@@ -309,16 +309,21 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		bool smart_enabled = (drive->get_smart_status() == StorageDevice::status_enabled);
 		Gtk::Widget* note_label = 0;
 
-		if ((note_label = lookup_widget("capabilities_tab_vbox")) != 0)
+		if ((note_label = lookup_widget("capabilities_tab_vbox")) != 0) {
 			if (smart_enabled) { note_label->show(); } else { note_label->hide(); }
-		if ((note_label = lookup_widget("attributes_tab_vbox")) != 0)
+		}
+		if ((note_label = lookup_widget("attributes_tab_vbox")) != 0) {
 			if (smart_enabled) { note_label->show(); } else { note_label->hide(); }
-		if ((note_label = lookup_widget("error_log_tab_vbox")) != 0)
+		}
+		if ((note_label = lookup_widget("error_log_tab_vbox")) != 0) {
 			if (smart_enabled) { note_label->show(); } else { note_label->hide(); }
-		if ((note_label = lookup_widget("selftest_log_tab_vbox")) != 0)
+		}
+		if ((note_label = lookup_widget("selftest_log_tab_vbox")) != 0) {
 			if (smart_enabled) { note_label->show(); } else { note_label->hide(); }
-		if ((note_label = lookup_widget("test_tab_vbox")) != 0)
+		}
+		if ((note_label = lookup_widget("test_tab_vbox")) != 0) {
 			if (smart_enabled) { note_label->show(); } else { note_label->hide(); }
+		}
 	}
 
 

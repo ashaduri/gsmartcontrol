@@ -29,6 +29,9 @@
 // Note: RecMutex assumes that pthread_mutexattr_settype
 // and PTHREAD_MUTEX_RECURSIVE work on current platform.
 
+// NOTE: This file requires UNIX98 support, enabled via _XOPEN_SOURCE >= 500
+// in glibc. Solaris doesn't need any additional feature macros.
+
 // Configuration macros:
 // This enables PTHREAD_MUTEX_ERRORCHECK flag on
 // non-recursive mutexes, which may perform some additional

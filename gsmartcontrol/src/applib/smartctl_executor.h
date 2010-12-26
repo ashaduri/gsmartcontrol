@@ -7,14 +7,11 @@
 #ifndef SMARTCTL_EXECUTOR_H
 #define SMARTCTL_EXECUTOR_H
 
-#include <sigc++/sigc++.h>
-
 #include "cmdex.h"
 #include "cmdex_sync.h"
 
 
 
-// Executor inherits from sigc::trackable
 template<class ExecutorSync>
 class SmartctlExecutorGeneric : public ExecutorSync {
 
@@ -42,8 +39,7 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 
 		void construct()
 		{
-			ExecutorSync::cmdex_.set_exit_status_translator(sigc::mem_fun(this,
-					&SmartctlExecutorGeneric::translate_exit_status));
+			ExecutorSync::cmdex_.set_exit_status_translator(&SmartctlExecutorGeneric::translate_exit_status, NULL);
 			this->set_error_header("An error occurred while executing smartctl:\n\n");
 		}
 
@@ -60,7 +56,7 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 		};
 
 
-		Glib::ustring translate_exit_status(int status)
+		static std::string translate_exit_status(int status, void* user_data)
 		{
 			const char* table[] = {
 				"Command line did not parse.",
@@ -73,7 +69,7 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 				"The device self-test log contains records of errors."
 			};
 
-			Glib::ustring str;
+			std::string str;
 
 			// check every bit
 			for (unsigned int i = 0; i <= 7; i++) {

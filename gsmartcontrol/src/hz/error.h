@@ -16,9 +16,9 @@
 #	include <typeinfo>  // std::type_info
 #endif
 
-#if defined ENABLE_GLIBMM
-#	include <glibmm/error.h>  // for Glib::Error specialization
-#endif
+// #if defined ENABLE_GLIBMM
+// #	include <glibmm/error.h>  // for Glib::Error specialization
+// #endif
 
 #include "debug.h"  // DBG_ASSERT
 #include "errno_string.h"  // hz::errno_string
@@ -34,8 +34,6 @@
 // - Define ENABLE_GLIBMM to enable glibmm-related code (mainly
 // utf8 string messages and Glib::Error specialization). Note that this
 // will also enable GLIB.
-
-// Note that __GXX_RTTI (not used here) is available for gcc >= 4.3.
 
 
 
@@ -55,7 +53,7 @@ struct ErrorLevel {
 		info = 1 << 1,  // default
 		warn = 1 << 2,
 		error = 1 << 3,
-		fatal = 1 << 4,
+		fatal = 1 << 4
 	};
 };
 

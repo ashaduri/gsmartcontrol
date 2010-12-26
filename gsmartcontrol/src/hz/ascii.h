@@ -98,7 +98,8 @@ T ascii_strtoi(const char* nptr, char** endptr, int base)
 	const char* s = nptr;
 	typename hz::type_make_unsigned<T>::type acc = 0;
 	typename hz::type_make_unsigned<T>::type cutoff = 0;
-	int any = 0, cutlim = 0;
+	typename hz::type_make_signed<T>::type cutlim = 0;
+	int any = 0;
 	char c = 0;
 	bool neg = false;
 
@@ -188,7 +189,8 @@ T ascii_strtoi(const char* nptr, char** endptr, int base)
 		if (c >= base) {
 			break;
 		}
-		if ((any < 0) || acc > cutoff || (acc == cutoff && c > cutlim)) {
+		if ((any < 0) || acc > cutoff || (acc == cutoff
+				&& static_cast<typename hz::type_make_signed<T>::type>(c) > cutlim)) {
 			any = -1;
 		} else {
 			any = 1;
@@ -256,6 +258,7 @@ namespace internal {
 				errno = ERANGE;
 				// infinity is defined as builtin hugeval in limits. HUGE_VALF seems to be C99 only.
 				return std::numeric_limits<float>::infinity();
+			}
 
 			// negative overflow
 			if (val < -static_cast<double>(std::numeric_limits<float>::max())) {

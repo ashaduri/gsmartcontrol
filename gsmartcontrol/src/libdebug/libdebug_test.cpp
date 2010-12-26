@@ -1,7 +1,7 @@
 /**************************************************************************
  Copyright:
       (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
- License: Public Domain
+ License: See LICENSE_whatever.txt
 ***************************************************************************/
 
 // The first header should be then one we're testing, to avoid missing
