@@ -16,6 +16,7 @@
 #include "storage_device.h"
 #include "smartctl_parser.h"
 #include "storage_settings.h"
+#include "smartctl_executor.h"
 
 
 
@@ -438,15 +439,15 @@ std::string StorageDevice::execute_smartctl(const std::string& command_options,
 	if (!smartctl_ex)  // if it doesn't exist, create a default one
 		smartctl_ex = new SmartctlExecutor();  // will be auto-deleted
 
-
-	std::string smartctl_binary, smartctl_def_options;
-	rconfig::get_data("system/smartctl_binary", smartctl_binary);
-	rconfig::get_data("system/smartctl_options", smartctl_def_options);
+	std::string smartctl_binary = get_smartctl_binary();
 
 	if (smartctl_binary.empty()) {
 		debug_out_error("app", DBG_FUNC_MSG << "Smartctl binary is not set in config.\n");
 		return "Smartctl binary is not specified in configuration.";
 	}
+
+	std::string smartctl_def_options;
+	rconfig::get_data("system/smartctl_options", smartctl_def_options);
 
 	if (!smartctl_def_options.empty())
 		smartctl_def_options += " ";

@@ -23,6 +23,6 @@ binary was compiled for 32-bit Windows, and should work on both 32-bit and
 
 * PCRE (http://www.pcre.org/) dll.
 
-* Smartctl binaries - smartctl.exe (compiled without console output),
-smartctl_console.exe (compiled with console output), version 5.38.
+* Smartctl binaries - smartctl-nc.exe (compiled without console output),
+smartctl.exe (compiled with console output), version 5.38.
 http://smartmontools.sf.net/ .

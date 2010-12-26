@@ -7,7 +7,6 @@
 #include "hz/hz_config.h"  // CONFIG_*
 
 #include <ios>  // std::boolalpha
-// #include <glibmm/fileutils.h>  // Dir
 #include <algorithm>  // std::find
 #include <cstdio>  // std::fgets()
 #include <cerrno>  // ENXIO
@@ -201,9 +200,9 @@ namespace {
 		}
 
 		hz::File file(parts_file);
-	// 	std::string contents;
+// 		std::string contents;
 		std::vector<std::string> lines;
-	// 	if (!f.get_contents(contents)) {
+// 		if (!f.get_contents(contents)) {
 		if (!read_proc_partitions_file(file, lines)) {  // this outputs to debug too
 			std::string error_msg = file.get_error_utf8();  // save before calling other file functions
 			if (!file.exists()) {
@@ -214,9 +213,9 @@ namespace {
 			return error_msg;
 		}
 
-	// 	debug_out_dump("app", DBG_FUNC_MSG << "Dumping partitions file:\n" << contents << "\n");
+// 		debug_out_dump("app", DBG_FUNC_MSG << "Dumping partitions file:\n" << contents << "\n");
 
-	// 	hz::string_split(contents, '\n', lines, true);
+// 		hz::string_split(contents, '\n', lines, true);
 
 		std::vector<std::string> blacklist;
 		// fixme: not sure about how partitions are visible with twa0.
@@ -225,6 +224,7 @@ namespace {
 		blacklist.push_back("/loop[0-9]*$/");  // not sure if loop devices go there, but anyway...
 		blacklist.push_back("/part[0-9]+$/");  // devfs had them
 		blacklist.push_back("/p[0-9]+$/");  // partitions are usually marked this way
+		blacklist.push_back("/md[0-9]*$/");  // linux software raid
 
 
 		for (unsigned int i = 0; i < lines.size(); ++i) {
@@ -249,7 +249,7 @@ namespace {
 			if (blacked)
 				continue;
 
-			std::string path = "/dev/" + dev;
+			std::string path = "/dev/" + dev;  // let's just hope the it's /dev.
 			if (std::find(devices.begin(), devices.end(), path) == devices.end())  // there may be duplicates
 				devices.push_back(path);
 		}
@@ -263,7 +263,7 @@ namespace {
 
 
 	// smartctl accepts various variants, the most straight being pdN,
-	// (or /dev/pdN, /dev being optional) where N comes from
+	// (or /dev/pdN, /dev/ being optional) where N comes from
 	// "\\.\PhysicalDriveN" (winnt only).
 
 	inline std::string detect_drives_win32(std::vector<std::string>& devices)

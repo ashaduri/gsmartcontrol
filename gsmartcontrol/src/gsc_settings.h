@@ -30,7 +30,18 @@ inline void init_default_settings()
 	rconfig::set_default_data("system/config_autosave_timeout", uint32_t(3*60));  // 3 minutes. 0 to disable.
 	rconfig::set_default_data("system/first_boot", true);  // used to show the first-start warning.
 
+
+#ifndef _WIN32
 	rconfig::set_default_data("system/smartctl_binary", "smartctl");  // must be in PATH or use absolute path.
+#else
+	rconfig::set_default_data("system/smartctl_binary", "smartctl-nc.exe");  // use no-console version by default.
+#endif
+	// search for "smartctl-nc.exe" in smartmontools installation first.
+	rconfig::set_default_data("system/win32_search_smartctl_in_smartmontools", true);
+	rconfig::set_default_data("system/win32_smartmontools_regpath", "SOFTWARE\\smartmontools");  // in HKLM
+	rconfig::set_default_data("system/win32_smartmontools_regkey", "Install_Dir");
+	rconfig::set_default_data("system/win32_smartmontools_smartctl_binary", "bin\\smartctl-nc.exe");  // relative to smt install path
+
 	rconfig::set_default_data("system/smartctl_options", "");  // default options on ALL commands
 	rconfig::set_default_data("system/smartctl_device_options", "");  // dev1:val1;dev2:val2;... format, each bin2ascii-encoded.
 

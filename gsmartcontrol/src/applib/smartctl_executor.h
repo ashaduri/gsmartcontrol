@@ -152,6 +152,9 @@ typedef SmartctlExecutorGeneric<CmdexSync> SmartctlExecutor;
 
 
 
+// returns an empty string if not found.
+std::string get_smartctl_binary();
+
 
 
 

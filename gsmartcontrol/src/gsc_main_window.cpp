@@ -15,6 +15,7 @@
 #include "applib/storage_detector.h"
 #include "applib/smartctl_parser.h"
 #include "applib/gui_utils.h"  // gui_show_error_dialog
+#include "applib/smartctl_executor.h"  // get_smartctl_binary()
 #include "applib/smartctl_executor_gui.h"
 #include "applib/app_gtkmm_utils.h"  // app_gtkmm_*
 #include "applib/storage_property_colors.h"  // app_property_get_label_hilight_color
@@ -61,11 +62,11 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 	bool show_output_button = true;
 
 	do {
-		std::string smartctl_binary, smartctl_def_options;
-		rconfig::get_data("system/smartctl_binary", smartctl_binary);
+		std::string smartctl_binary = get_smartctl_binary();
 
 		// Don't use default options here - they are used when invoked
 		// with a device option.
+// 		std::string smartctl_def_options;
 // 		rconfig::get_data("system/smartctl_options", smartctl_def_options);
 
 		if (smartctl_binary.empty()) {
