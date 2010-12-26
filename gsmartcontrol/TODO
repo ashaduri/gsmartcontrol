@@ -36,9 +36,9 @@ TODO:
 
 Patch pangomm for Pango::strip_markup().
 
-+Make a test case of IconView positioning bug, file a bug report.
-
 Patch gtkmm, glibmm, pangomm for static win32 builds.
+
+No Gtk::AboutDialog::set_logo(NULL);
 
 
 libdebug:
@@ -47,9 +47,6 @@ libdebug:
 	all flags should be per-channel.
 	bug: if -q is passed, Execution log doesn't contain libdebug log. (requires per-channel status control).
 
-
-OpenSuse Build Service:
-	fails with error when tarball already contains the debian directory.
 
 
 

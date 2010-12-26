@@ -17,7 +17,7 @@
 #endif
 
 #if defined CONFIG_KERNEL_WIN32
-	#include <windows.h>
+	#include <windows.h>  // CreateFile(), CloseHandle(), etc...
 #endif
 
 #include "hz/debug.h"

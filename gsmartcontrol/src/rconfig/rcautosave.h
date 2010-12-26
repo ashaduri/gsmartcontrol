@@ -32,7 +32,8 @@ namespace rconfig {
 // We use glib because it's available already and we _need_ threading.
 // Glib callbacks are executed in separate threads, so threading should
 // be available. Don't forget to initialize GThread!
-typedef hz::SyncPolicyGlib AutoSaveLockPolicy;
+// typedef hz::SyncPolicyGlib AutoSaveLockPolicy;
+typedef hz::SyncPolicyMtDefault AutoSaveLockPolicy;
 
 
 // specify the same type to get the same set of variables.

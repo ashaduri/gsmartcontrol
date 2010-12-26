@@ -40,7 +40,8 @@
 
 GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
 		: AppUIResWidget<GscMainWindow, false>(gtkcobj, ref_ui), iconview(0),
-		action_handling_enabled_(true), name_label(0), health_label(0), family_label(0)
+		action_handling_enabled_(true), name_label(0), health_label(0), family_label(0),
+		scanning_(false)
 {
 	APP_GTKMM_CONNECT_VIRTUAL(delete_event);  // make sure the event handler is called
 
@@ -357,7 +358,7 @@ bool GscMainWindow::create_widgets()
 	}
 	catch(Glib::Error& ex)
 	{
-		debug_out_error("app", DBG_FUNC_MSG << "Create failed: " << ex.what() << "\n");
+		debug_out_error("app", DBG_FUNC_MSG << "UI creation failed: " << ex.what() << "\n");
 		return false;
 	}
 
@@ -443,7 +444,12 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 		return;
 	}
 
-	debug_out_info("app", DBG_FUNC_MSG << "Action activated: \"" << action->get_name() << "\"\n");
+	std::string action_name = action->get_name();
+
+	// Do NOT output action->get_name() directly, it dies with unhandled conversion error
+	// exception if used with operator <<.
+	debug_out_info("app", DBG_FUNC_MSG << "Action activated: \"" + action_name << "\"\n");
+
 
 	switch (action_type) {
 		case action_quit:
@@ -573,7 +579,7 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 		}
 
 		default:
-			debug_out_error("app", DBG_FUNC_MSG << "Unknown action: \"" << action->get_name() << "\"\n");
+			debug_out_error("app", DBG_FUNC_MSG << "Unknown action: \"" << action_name << "\"\n");
 			break;
 	}
 }
@@ -932,6 +938,11 @@ void GscMainWindow::update_status_widgets()
 
 void GscMainWindow::rescan_devices()
 {
+	// ignore double-scan (may happen because we use gtk loop iterations here).
+	if (this->scanning_)
+		return;
+	this->scanning_ = true;
+
 	// don't manipulate window sensitiveness here - it breaks things
 	// (cursors, gtk errors pop out, etc...)
 
@@ -1008,6 +1019,8 @@ void GscMainWindow::rescan_devices()
 	// in case there are no drives in the system.
 	if (iconview->num_icons == 0)
 		iconview->empty_view_message = GscMainWindowIconView::message_no_drives_found;
+
+	this->scanning_ = false;
 }
 
 

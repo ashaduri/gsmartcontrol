@@ -353,6 +353,7 @@ void GscExecutorLogWindow::on_tree_selection_changed()
 			}
 		}
 
+		// Hide in win32 because it is known to cause segfaults there (huh?)
 #ifndef _WIN32
 		Gtk::Entry* command_entry = this->lookup_widget<Gtk::Entry*>("command_entry");
 		if (command_entry) {

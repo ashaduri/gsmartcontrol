@@ -35,11 +35,7 @@ inline std::string get_home_dir()
 	// Do NOT use g_get_home_dir, it doesn't work consistently in win32
 	// between glib versions.
 
-#ifndef _WIN32
-	const char* e = std::getenv("HOME");  // works well enough
-	std::string dir = (e ? e : "");
-
-#else  // win32
+#ifdef _WIN32
 	std::string dir;
 	win32_get_registry_value_string(dir, HKEY_CURRENT_USER,
 				"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Personal");
@@ -48,6 +44,11 @@ inline std::string get_home_dir()
 		win32_get_registry_value_string(dir, HKEY_CURRENT_USER,
 				"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "User");
 	}
+
+#else  // linux, etc...
+	const char* e = std::getenv("HOME");  // works well enough
+	std::string dir = (e ? e : "");
+
 #endif
 
 	return dir;
@@ -85,6 +86,8 @@ inline bool set_current_dir(const std::string& dir)
 // Get temporary directory of a system (can be user-specific)
 inline std::string get_tmp_dir()
 {
+	// FIXME: I'm not sure about the encoding used in win32.
+	// Is it fs encoding or some kind of locale, etc...?
 	const char* e = std::getenv("TMPDIR");
 	if (!e)
 		e = std::getenv("TMP");

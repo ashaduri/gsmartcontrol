@@ -1,4 +1,3 @@
-
 /**************************************************************************
  Copyright:
       (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
@@ -6,14 +5,13 @@
 ***************************************************************************/
 
 #include <iostream>
-#include <glibmm.h>
 #include <glib.h>
 
 
 
 int main(int argc, char** argv)
 {
-	Glib::thread_init();
+	g_thread_init(NULL);
 
 	GPid pid;
 	int fd_stdout = 0, fd_stderr = 0;
@@ -44,7 +42,6 @@ int main(int argc, char** argv)
 
 
 
-
 #ifdef _WIN32
 	GIOChannel* channel_stdout = g_io_channel_win32_new_fd(fd_stdout);
 	GIOChannel* channel_stderr = g_io_channel_win32_new_fd(fd_stderr);
@@ -67,8 +64,6 @@ int main(int argc, char** argv)
 		g_io_channel_set_flags(channel_stderr, flags, 0);
 		g_io_channel_set_buffer_size(channel_stderr, 10000);
 	}
-
-
 
 
 

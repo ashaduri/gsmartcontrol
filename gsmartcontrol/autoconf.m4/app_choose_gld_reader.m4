@@ -22,6 +22,12 @@ AC_DEFUN([APP_CHOOSE_GLD_READER], [
 	# These requirements check compile-time presence, not that they were called
 	AC_REQUIRE([AX_COMPILER_VENDOR])
 
+	AC_ARG_ENABLE(abort-if-no-glade-reader, AS_HELP_STRING([--disable-abort-if-no-glade-reader],
+			[disable abort if no glade file reader is found (default: configure aborts when glade file reader is not found)]),
+		[app_cv_abort_if_no_glade_reader=${enableval}], [app_cv_abort_if_no_glade_reader=yes])
+
+	AC_MSG_NOTICE([Abort if no glade file reader is found: $app_cv_abort_if_no_glade_reader])
+
 	# This is just in case
 	# PKG_PROG_PKG_CONFIG()
 
@@ -91,7 +97,13 @@ AC_DEFUN([APP_CHOOSE_GLD_READER], [
 
 	# still not found.
 	if test "$app_cv_gld_reader" = "none"; then
-		AC_MSG_WARN([Neither GtkBuilder nor $app_cv_gld_reader_libglade_name found. The program will be unable to compile fully.])
+		if test "x$app_cv_abort_if_no_glade_reader" = "xno"; then
+			AC_MSG_WARN([$LIBGLADE_PKG_ERRORS])
+			AC_MSG_WARN([Neither GtkBuilder nor $app_cv_gld_reader_libglade_name found. The program will be unable to compile fully.])
+		else
+			AC_MSG_WARN([Neither GtkBuilder nor $app_cv_gld_reader_libglade_name found.])
+			AC_MSG_ERROR([$LIBGLADE_PKG_ERRORS])
+		fi
 	fi
 
 

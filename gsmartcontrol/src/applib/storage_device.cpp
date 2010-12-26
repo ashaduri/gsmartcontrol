@@ -7,7 +7,7 @@
 #include <glibmm.h>  // Glib::shell_quote()
 
 #include "rconfig/rconfig_mini.h"
-#include "hz/string_algo.h"  // string_trim_copy
+#include "hz/string_algo.h"  // string_trim_copy, string_any_to_unix_copy
 #include "hz/fs_path.h"  // FsPath
 #include "hz/fs_path_utils.h"  // hz::filename_make_safe
 #include "hz/format_unit.h"  // hz::format_date
@@ -472,7 +472,8 @@ std::string StorageDevice::execute_smartctl(const std::string& command_options,
 		return smartctl_ex->get_error_msg();
 	}
 
-	output = smartctl_ex->get_stdout_str();
+	// any_to_unix is needed for windows
+	output = hz::string_trim_copy(hz::string_any_to_unix_copy(smartctl_ex->get_stdout_str()));
 	if (output.empty()) {
 		debug_out_error("app", DBG_FUNC_MSG << "Smartctl returned an empty output.\n");
 		return "Smartctl returned an empty output.";

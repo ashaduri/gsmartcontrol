@@ -18,7 +18,7 @@ http://gsmartcontrol.berlios.de
 
 Features
 
-Automatically report and hilight any abnormal SMART information.
+Automatically report and highlight any abnormal SMART information.
 
 Ability to enable / disable SMART.
 
@@ -41,7 +41,7 @@ Extensive help information.
 
 
 
-What is SMART?
+What Is SMART?
 
 Short answer: SMART is a technology which provides hard disk drives with
 methods to predict certain kinds of failures with certain chance of success.
@@ -101,8 +101,8 @@ You need to have the following software installed:
 * libglademm, version 2.4 or higher - see http://www.gtkmm.org .
 Note: libglademm is not needed when using GTK 2.12 and Gtkmm 2.12.
 
-Note that GTK+ 2.12 and Gtkmm 2.12 are HIGHLY recommended. While earlier
-versions may work, they may produce suboptimal results and buggy behaviour.
+Note that having GTK+ 2.12 and Gtkmm 2.12 is HIGHLY recommended. While earlier
+versions may work, they may produce suboptimal results and buggy behavior.
 Libglademm is not needed when using GTK / Gtkmm 2.12.
 
 Most of these packages are probably already provided by your distribution.
@@ -126,6 +126,10 @@ Note that usually you need to specify only these packages - the rest is
 installed automatically by the package manager's dependency resolver. Keep in
 mind that you also need smartmontools to run the program.
 
+Note: If using the official Windows package, the requirements are listed on
+GSmartControl's website.
+
+
 
 The following operating systems are supported:
 
@@ -137,9 +141,8 @@ The following operating systems are supported:
 
 * OpenBSD - Tested with OpenBSD 4.3 / x86-64 / gcc-3.3.5.
 
-* Windows (XP or higher) - Tested with Windows XP and Vista. Windows 2000 does
-not work for some unknown reason. The Windows port uses pd0, pd1, etc... for
-physical drives 0, 1, etc... .
+* Windows (2000 SP4 or newer) - Tested with Windows 2000 SP4, XP SP2 and Vista
+SP1. The Windows port uses pd0, pd1, etc... for physical drives 0, 1, etc... .
 
 * Solaris - Tested with Solaris 10 / x86 / gcc-3.4.3 / blastwave,
 Solaris 10 / x86 / sunstudio12 / sunfreeware. OpenSolaris should work but has
@@ -158,7 +161,11 @@ to work without any issues.
 
 Installation
 
-Short answer: ./configure; make; make install
+Short answer: build and install via: ./configure; make; make install
+
+Run gsmartcontrol-root to invoke gsmartcontrol with your desktop's su
+mechanism, or use the desktop menu entry.
+
 
 Long answer: read below.
 
@@ -174,15 +181,49 @@ dependencies (see Software Requirements section). Then the usual
 
 ./configure; make; make install
 
-will build and install it. Installation usually requires adminstrative
+will build and install it. Installation usually requires administrative
 privileges, but you don't need to install the program in order to run it
-directly from the compilation directory.
+directly from the build directory.
+
+
+
+Command Line Options
+
+GSmartControl inherits options from GTK+ and other libraries, so be sure to
+run it with --help option to get a full list of accepted parameters.
+Note: The Windows version may not have a text output at all, so --help and
+similar arguments won't have any effect. However, --verbose will still
+increase the verbosity of a log saved via "Options -> View Execution Log ->
+Save All".
+
+The most important parameters are:
+
+-?, --help - Show help options.
+
+-V, --version - Display version information.
+
+-l, --no-locale - Disable locale.
+
+--no-scan - Don't scan devices on startup.
+
+--no-hide-tabs - Don't hide non-identity tabs when SMART is disabled.
+
+--add-virtual - Load smartctl data from file, creating a virtual drive.
+
+--add-device - Add this device to device list. Useful with --no-scan to list
+certain drives only.
+
+-v, --verbose - Enable verbose logging; same as --verbosity-level 5.
+
+-q, --quiet - Disable logging; same as --verbosity-level 0.
+
+-b, --verbosity-level - Set verbosity level [0-5].
 
 
 
 Permission Problems
 
-Short answer: you need to be root (Administrator in Windows).
+Short answer: you need to be root (that's Administrator in Windows).
 In X11, use kdesu, gnomesu, sux, xdg-su or similar.
 
 Long answer: read below.
@@ -227,9 +268,10 @@ previously, it will be re-enabled on reboot.
 The easiest way to work around this is to set the desired settings on system
 startup. You may use smartctl or smartd to do that. For example, to enable
 both SMART and Automatic Offline Data Collection on /dev/sda, one would write
-the following to his/her boot.local, rc.local or similar:
+the following to the system startup script (e.g. boot.local, rc.local or
+similar on Linux):
 
-smartctl --smart=on --offlineauto=on /dev/sda
+smartctl -s on -o on /dev/sda
 
 For more information, see smartctl and smartd documentation.
 
@@ -251,13 +293,15 @@ have X11 / Gtkmm running, so this is a low priority task.
 * I only have ATA drives, so testing would be almost impossible.
 
 Immediate Offline Tests are not supported. I haven't found a way to reliably
-monitor them yet.
+monitor them yet. Besides, they run automatically anyway if Automatic Offline
+Data Collection is enabled.
 
 You may run several tests on different drives in parallel, but you will only
 see the progress information of the last executing test. So, if you run tests
 on drives A, B and C (in that order), you won't be able to monitor the tests
 on A and B until C completes. And you won't be able to see any progress on A
-until both B and C complete their tests.
+until both B and C complete their tests. This doesn't affect the tests
+themselves, just your ability to see their progress.
 
 Testing is only supported on drives which correctly report their progress
 information in capabilities.
@@ -283,6 +327,10 @@ terminal emulator (e.g., xterm, konsole or gnome-terminal):
 
 smartctl -a /dev/sda
 
+Note: If using official Windows packages, smartctl.exe doesn't provide any
+output. Use smartctl_console.exe instead. The devices name should be /dev/pd1
+for the second physical drive, etc... .
+
 If you still think it's a GSmartControl issue, please collect the following
 information about your system. Without it, it may be very hard or impossible
 to fix the bug.
@@ -299,6 +347,8 @@ with -v option, e.g. (type the following in a terminal emulator or Run
 dialog):
 
 gsmartcontrol-root auto -v
+
+Note: On Windows, run gsmartcontrol.exe with "-v" switch as Administrator.
 
 Perform the steps needed to reproduce the bug, then go to
 "Options -> View Execution Log", and click "Save All".

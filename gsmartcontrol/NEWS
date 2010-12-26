@@ -1,10 +1,31 @@
 
+Version 0.8.3, released on 2008-12-27
+	A random "Smartctl returned an empty output" error on Windows was fixed.
+		Thanks to Zurab Khetsuriani for testing.
+	Fixed a parser issue which prevented running self-tests in Windows.
+	The supplied icon (hopefully) shows correctly in Windows 2000 now.
+	This release adds an official support for Windows 2000 SP4.
+	Added scripts to allow GSmartControl to read smartctl data from
+		cron-generated files. This allows users to read somewhat recent
+		smartctl information without having to run GSmartControl as root.
+		Generously contributed by Alex Butcher <alex dot butcher 'at'
+		assursys.co.uk>.
+	Configure script correctly aborts instead of printing a warning if gtkmm
+		or libglademm (if needed) is not found.
+	Configure script now accepts --enable-windows-console,
+		--disable-abort-if-no-gtkmm, --disable-abort-if-no-glade-reader,
+		as well as Windows-supporting "auto" for --enable-nsis-wine and
+		--with-nsis.
+	Configure's --with-win32-env has been renamed to --with-windows-dlls.
+	The "About" dialog shows version information now.
+	Minor bugs were fixed.
+
 Version 0.8.2, released on 2008-12-10
 	Fixed gsmartcontrol_root.sh script to support distributions with no
 		/usr/sbin in their users' paths (thanks to Erwan Velu).
 	Added desktop auto-detection to gsmartcontrol_root.sh script. This allows
 		us to use only one desktop file (thanks to Erwan Velu).
-	Added debian package directory (named "debian.dist" for now to avoid
+	Added Debian package directory (named "debian.dist" for now to avoid
 		control file conflicts with Build Service).
 	Renamed gsmartcontrol_root.sh to gsmartcontrol-root, to make Debian happy.
 	Added make targets for Windows packages (zip and NSIS).
@@ -14,7 +35,7 @@ Version 0.8.2, released on 2008-12-10
 		No more unnecessary parsing.
 		No segfault on exit under Windows and Solaris.
 		A friendlier message is displayed if smartctl was not found.
-		No hilighted labels when switching tabs in Information window.
+		No highlighted labels when switching tabs in Information window.
 
 Version 0.8.1, released on 2008-11-11
 	Disabled Linux "by-id" drive detection - it's unreliable on some broken

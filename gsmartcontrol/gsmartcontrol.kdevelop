@@ -22,7 +22,7 @@
   <kdevautoproject>
     <general>
       <activetarget>src/gsmartcontrol</activetarget>
-      <useconfiguration>debuggy</useconfiguration>
+      <useconfiguration>win32</useconfiguration>
     </general>
     <run>
       <mainprogram>/10/devel/projects/gsmartcontrol/current/gsmartcontrol/debuggy</mainprogram>
@@ -111,7 +111,7 @@
       </icc>
       <win32>
         <envvars/>
-        <configargs>--disable-user-flags --enable-optimize-options --enable-tests --target=i386-mingw32msvc --host=i386-mingw32msvc --build=i686-linux PKG_CONFIG_PATH=/target/lib/pkgconfig PKG_CONFIG_LIBDIR=/target/lib PATH=&quot;/opt/cross-tools/bin:/target/bin:$PATH&quot;</configargs>
+        <configargs>--disable-user-flags --enable-optimize-options --enable-tests --target=i386-mingw32 --host=i386-mingw32 --build=i686-linux PKG_CONFIG_PATH=/target/lib/pkgconfig PKG_CONFIG_LIBDIR=/target/lib PATH=&quot;/opt/cross-tools/bin:/target/bin:$PATH&quot;</configargs>
         <builddir>win32</builddir>
         <topsourcedir/>
         <cppflags/>
@@ -119,8 +119,8 @@
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
-        <ccompilerbinary>i386-mingw32msvc-gcc</ccompilerbinary>
-        <cxxcompilerbinary>i386-mingw32msvc-g++</cxxcompilerbinary>
+        <ccompilerbinary>i386-mingw32-gcc</ccompilerbinary>
+        <cxxcompilerbinary>i386-mingw32-g++</cxxcompilerbinary>
         <f77compilerbinary/>
         <cflags/>
         <cxxflags/>
@@ -164,7 +164,7 @@
       </portland>
       <win32-debug>
         <envvars/>
-        <configargs>--disable-user-flags --enable-debug-options --enable-tests --target=i386-mingw32msvc --host=i386-mingw32msvc --build=i686-linux PKG_CONFIG_PATH=/target/lib/pkgconfig PKG_CONFIG_LIBDIR=/target/lib PATH=&quot;/opt/cross-tools/bin:/target/bin:$PATH&quot;</configargs>
+        <configargs>--disable-user-flags --enable-debug-options --enable-tests --target=i386-mingw32 --host=i386-mingw32 --build=i686-linux PKG_CONFIG_PATH=/target/lib/pkgconfig PKG_CONFIG_LIBDIR=/target/lib PATH=&quot;/opt/cross-tools/bin:/target/bin:$PATH&quot;</configargs>
         <builddir>win32-debug</builddir>
         <topsourcedir/>
         <cppflags/>
@@ -172,8 +172,8 @@
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
-        <ccompilerbinary>i386-mingw32msvc-gcc</ccompilerbinary>
-        <cxxcompilerbinary>i386-mingw32msvc-g++</cxxcompilerbinary>
+        <ccompilerbinary>i386-mingw32-gcc</ccompilerbinary>
+        <cxxcompilerbinary>i386-mingw32-g++</cxxcompilerbinary>
         <f77compilerbinary/>
         <cflags/>
         <cxxflags/>

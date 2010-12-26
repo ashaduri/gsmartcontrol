@@ -128,6 +128,8 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 		WrappingLabel* health_label;
 		WrappingLabel* family_label;
 
+		bool scanning_;
+
 
 		// -------------------- Callbacks
 

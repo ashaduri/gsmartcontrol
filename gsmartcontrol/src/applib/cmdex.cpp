@@ -18,9 +18,10 @@
 #include "hz/tls_policy_glib.h"
 #include "hz/debug.h"
 #include "hz/string_num.h"  // hz::number_to_string()
+#include "hz/env_tools.h"  // hz::ScopedEnv
+#include "hz/scoped_ptr.h"
 
 #include "cmdex.h"
-
 
 
 using hz::Error;
@@ -115,38 +116,36 @@ bool Cmdex::execute()
 
 	// Make command vector
 
-	int argcp = 0;  // number of args
-	gchar** argvp = 0;  // args vector
-	GError* shell_error = 0;
-	if (!g_shell_parse_argv(cmd.c_str(), &argcp, &argvp, &shell_error)) {
-		push_error(Error<void>("gshell", ErrorLevel::error, shell_error->message), false);
-		g_error_free(shell_error);
+	hz::scoped_ptr<gchar*> argvp(0, g_strfreev);  // args vector
 
-		g_strfreev(argvp);
-		return false;
+	{
+		int argcp = 0;  // number of args
+		hz::scoped_ptr<GError> shell_error(0, g_error_free);
+		if (!g_shell_parse_argv(cmd.c_str(), &argcp, &argvp.get_ref(), &shell_error.get_ref())) {
+			push_error(Error<void>("gshell", ErrorLevel::error, shell_error->message), false);
+			return false;
+		}
 	}
 
 
-
 	// Set the locale for a child to Classic - otherwise it may mangle the output.
-	// LANG is posix-only, so it has no effect on win32.
-	// Unfortunately, I was unable to find a way to execute a child with a different
-	// locale in win32. Locale seems to be non-inheritable, so setting it here won't help.
-#ifndef _WIN32
 	// TODO: make this controllable.
-	const gchar* old_lang_gchar = g_getenv("LANG");
-	bool old_lang_set = (old_lang_gchar);
-	std::string old_lang = (old_lang_gchar ? old_lang_gchar : "");
-	if (old_lang_set)
-		g_setenv("LANG", "C", true);
-#endif
+	bool change_lang = true;
+	#ifdef _WIN32
+		// LANG is posix-only, so it has no effect on win32.
+		// Unfortunately, I was unable to find a way to execute a child with a different
+		// locale in win32. Locale seems to be non-inheritable, so setting it here won't help.
+		change_lang = false;
+	#endif
+
+	hz::ScopedEnv lang_env("LANG", "C", change_lang);
 
 
 	debug_out_info("app", DBG_FUNC_MSG << "Executing \"" << cmd << "\".\n");
 
 	if (argvp) {
 		debug_out_dump("app", DBG_FUNC_MSG << "Dumping argvp:\n");
-		gchar** elem = argvp;
+		gchar** elem = argvp.get();
 		while (*elem) {
 			debug_out_dump("app", *elem << "\n");
 			++elem;
@@ -156,46 +155,62 @@ bool Cmdex::execute()
 
 	// Execute the command
 
-	gchar* curr_dir = g_get_current_dir();
-	GError* spawn_error = 0;
+	hz::scoped_ptr<gchar> curr_dir(g_get_current_dir(), g_free);
+	hz::scoped_ptr<GError> spawn_error(0, g_error_free);
 
-	if (!g_spawn_async_with_pipes(curr_dir, argvp, NULL,
-			GSpawnFlags(G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD),
-			NULL, NULL,  // child setup function
-			&this->pid_, 0, &fd_stdout_, &fd_stderr_, &spawn_error)) {
+/*
+#ifdef APP_CMDEX_USE_SYNC
 
-		push_error(Error<void>("gspawn", ErrorLevel::error, spawn_error->message), false);
-		g_error_free(spawn_error);
-
-		g_free(curr_dir);
-		g_strfreev(argvp);
-
-#ifndef _WIN32
-		if (old_lang_set)
-			g_setenv("LANG", old_lang.c_str(), true);
-#endif
-
-		return false;
-	}
-
-	g_free(curr_dir);
-	g_strfreev(argvp);
-
-#ifndef _WIN32
-	if (old_lang_set)
-		g_setenv("LANG", old_lang.c_str(), true);
-#endif
+	hz::scoped_ptr<gchar*> stdout_str(0, g_free);
+	hz::scoped_ptr<gchar*> stderr_str(0, g_free);
+	gint exit_status = 0;
 
 	g_timer_start(timer_);  // start the timer
 
+	if (!g_spawn_sync(curr_dir.get(), argvp.get(), NULL,
+			GSpawnFlags(G_SPAWN_SEARCH_PATH),
+			NULL, NULL,  // child setup function
+			&stdout_str.get_ref(), &stderr_str.get_ref(), &exit_status, &spawn_error.get_ref()))
+	{
+		// no data is returned to &-parameters on error.
+		push_error(Error<void>("gspawn", ErrorLevel::error, spawn_error->message), false);
+		return false;
+	}
 
-#ifdef _WIN32
-	channel_stdout_ = g_io_channel_win32_new_fd(fd_stdout_);
-	channel_stderr_ = g_io_channel_win32_new_fd(fd_stderr_);
-#else
-	channel_stdout_ = g_io_channel_unix_new(fd_stdout_);
-	channel_stderr_ = g_io_channel_unix_new(fd_stderr_);
-#endif
+#else // async way:
+*/
+	if (!g_spawn_async_with_pipes(curr_dir.get(), argvp.get(), NULL,
+			GSpawnFlags(G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD),
+			NULL, NULL,  // child setup function
+			&this->pid_, 0, &fd_stdout_, &fd_stderr_, &spawn_error.get_ref()))
+	{
+		// no data is returned to &-parameters on error.
+		push_error(Error<void>("gspawn", ErrorLevel::error, spawn_error->message), false);
+		return false;
+	}
+
+	g_timer_start(timer_);  // start the timer
+
+// #endif
+
+
+	#ifdef _WIN32
+	// Without this timeout the program randomly says that the child's output
+	// is empty (happens only in windows). Sounds like a race condition, but
+	// doesn't seem like it's in my code (all other platforms are ok).
+	// Note: Testing is really hard when moving this around - the error might
+	// occur once in 200 runs.
+// 	g_usleep(50*1000);  // 50 msec.
+	#endif
+
+
+	#ifdef _WIN32
+		channel_stdout_ = g_io_channel_win32_new_fd(fd_stdout_);
+		channel_stderr_ = g_io_channel_win32_new_fd(fd_stderr_);
+	#else
+		channel_stdout_ = g_io_channel_unix_new(fd_stdout_);
+		channel_stderr_ = g_io_channel_unix_new(fd_stderr_);
+	#endif
 
 	// The internal encoding is always UTF8. To read command output correctly, use
 	// "" for binary data, or set io encoding to current locale.
@@ -256,7 +271,6 @@ bool Cmdex::execute()
 	// This is AFTER the channels so that it doesn't get called before the channels are attached (is this needed?).
 	// (the child stops being a zombie as soon as wait*() exits and this handler is called).
 	g_child_watch_add(this->pid_, &cmdex_child_watch_handler, this);
-
 
 
 	this->running_ = true;  // process is running now.
@@ -479,9 +493,9 @@ gboolean Cmdex::on_channel_io_as_available(GIOChannel* source,
 
 	// while there's anything to read, read it
 	do {
-		GError* channel_error = 0;
+		hz::scoped_ptr<GError> channel_error(0, g_error_free);
 		gsize bytes_read = 0;
-		GIOStatus status = g_io_channel_read_chars(channel, buf, count, &bytes_read, &channel_error);
+		GIOStatus status = g_io_channel_read_chars(channel, buf, count, &bytes_read, &channel_error.get_ref());
 		if (bytes_read)
 			output_str->append(buf, bytes_read);
 
@@ -497,6 +511,7 @@ gboolean Cmdex::on_channel_io_as_available(GIOChannel* source,
 		}
 	} while (g_io_channel_get_buffer_condition(channel) & G_IO_IN);
 
+// 	DBG_FUNCTION_EXIT_MSG;
 
 	// false if the source should be removed, true otherwise.
 	return continue_events;
@@ -559,9 +574,9 @@ gboolean Cmdex::on_channel_io_buffered(GIOChannel* source,
 
 	// while there's anything to read, read it
 	do {
-		GError* channel_error = 0;
+		hz::scoped_ptr<GError> channel_error(0, g_error_free);
 		gsize bytes_read = 0;
-		GIOStatus status = g_io_channel_read_chars(source, buf, count, &bytes_read, &channel_error);
+		GIOStatus status = g_io_channel_read_chars(source, buf, count, &bytes_read, &channel_error.get_ref());
 		if (bytes_read)
 			s_final_str->append(buf, bytes_read);
 

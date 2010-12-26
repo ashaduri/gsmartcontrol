@@ -4,6 +4,8 @@
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
+#include "hz/hz_config.h"  // VERSION
+
 #include <list>  // list is more header-lightweight than vector
 
 #include "hz/debug.h"
@@ -37,6 +39,7 @@ GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, const app_ui_res_ref_t& 
 	// We don't set either, but rely on Glib::set_application_name() during init, which
 	// works with both older and newer versions.
 
+	set_version(VERSION);
 
 	// set these properties here (after setting hooks) to make the links work.
 	set_website("http://gsmartcontrol.berlios.de/");
