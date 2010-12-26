@@ -11,7 +11,7 @@
 
 int main(int argc, char** argv)
 {
-	g_thread_init(NULL);
+// 	g_thread_init(NULL);
 
 	GPid pid;
 	int fd_stdout = 0, fd_stderr = 0;
@@ -51,17 +51,17 @@ int main(int argc, char** argv)
 #endif
 
 	// blocking writes if the pipe is full helps for small-pipe systems (see man 7 pipe).
-	GIOFlags flags = GIOFlags(~G_IO_FLAG_NONBLOCK);
+	int channel_flags = ~G_IO_FLAG_NONBLOCK;
 
 	if (channel_stdout) {
 		g_io_channel_set_encoding(channel_stdout, NULL, 0);  // binary IO
-		g_io_channel_set_flags(channel_stdout, flags, 0);
+		g_io_channel_set_flags(channel_stdout, GIOFlags(g_io_channel_get_flags(channel_stdout) & channel_flags), 0);
 		g_io_channel_set_buffer_size(channel_stdout, 10000);
 	}
 
 	if (channel_stderr) {
 		g_io_channel_set_encoding(channel_stderr, NULL, 0);  // binary IO
-		g_io_channel_set_flags(channel_stderr, flags, 0);
+		g_io_channel_set_flags(channel_stderr, GIOFlags(g_io_channel_get_flags(channel_stderr) & channel_flags), 0);
 		g_io_channel_set_buffer_size(channel_stderr, 10000);
 	}
 

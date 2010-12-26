@@ -12,19 +12,21 @@
 
 #include "hz/hz_config.h"  // feature test macros (ENABLE_*)
 
-#if defined ENABLE_LIBGLADE
+#if defined ENABLE_LIBGLADE && ENABLE_LIBGLADE
 	#include <libglademm.h>
-#elif defined ENABLE_GTKBUILDER
+#elif defined ENABLE_GTKBUILDER && ENABLE_GTKBUILDER
 	#include <gtkmm/builder.h>
 #endif
 
-#if GLIBMM_EXCEPTIONS_ENABLED
+// Old glibmm versions had exceptions but didn't define this at all.
+// New ones define it to 0 if there are no glibmm exceptions.
+#if !defined GLIBMM_EXCEPTIONS_ENABLED || GLIBMM_EXCEPTIONS_ENABLED
 	#include <memory>  // std::auto_ptr
 #endif
 
 #include "app_gtkmm_features.h"  // APP_GTKMM_OLD_TOOLTIPS
 
-#ifdef APP_GTKMM_OLD_TOOLTIPS
+#if defined APP_GTKMM_OLD_TOOLTIPS && APP_GTKMM_OLD_TOOLTIPS
 	#include <gtk/gtk.h>  // gtk_tooltips_*
 #endif
 
@@ -44,7 +46,7 @@
 // Or, if you're using compiled-in buffers, it will make them available.
 
 
-#if defined ENABLE_LIBGLADE
+#if defined ENABLE_LIBGLADE && ENABLE_LIBGLADE
 
 	#define APP_UI_RES_DATA_INIT(res_name) \
 		HZ_RES_DATA_INIT_NAMED(res_name##_ui, #res_name ".glade", UIResDataBase); \
@@ -56,7 +58,7 @@
 		}
 
 
-#elif defined ENABLE_GTKBUILDER
+#elif defined ENABLE_GTKBUILDER && ENABLE_GTKBUILDER
 
 	#define APP_UI_RES_DATA_INIT(res_name) \
 		HZ_RES_DATA_INIT_NAMED(res_name##_ui, #res_name ".ui", UIResDataBase); \
@@ -84,7 +86,7 @@
 
 
 
-#if defined ENABLE_LIBGLADE
+#if defined ENABLE_LIBGLADE && ENABLE_LIBGLADE
 
 	typedef Glib::RefPtr<Gnome::Glade::Xml> app_ui_res_ref_t;
 
@@ -97,7 +99,7 @@
 			return false;
 		}
 
-	#if GLIBMM_EXCEPTIONS_ENABLED
+	#if !defined GLIBMM_EXCEPTIONS_ENABLED || GLIBMM_EXCEPTIONS_ENABLED
 		try {
 			// Glib::RefPtr<Gnome::Glade::Xml> ref = Gnome::Glade::Xml::create("main_window.glade");
 			ref = Gnome::Glade::Xml::create_from_buffer(reinterpret_cast<const char*>(buf),
@@ -124,7 +126,7 @@
 	}
 
 
-#elif defined ENABLE_GTKBUILDER
+#elif defined ENABLE_GTKBUILDER && ENABLE_GTKBUILDER
 
 	typedef Glib::RefPtr<Gtk::Builder> app_ui_res_ref_t;
 
@@ -137,7 +139,7 @@
 			return false;
 		}
 
-	#if GLIBMM_EXCEPTIONS_ENABLED
+	#if !defined GLIBMM_EXCEPTIONS_ENABLED || GLIBMM_EXCEPTIONS_ENABLED
 		try {
 			// ref->add_from_file("main_window.ui");
 			ref->add_from_string(reinterpret_cast<const char*>(buf), static_cast<gsize>(buf_size));
@@ -219,9 +221,9 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 
 		typedef hz::InstanceManager<Child, MultiInstance> instance_class;
 
-#if defined ENABLE_LIBGLADE
+#if defined ENABLE_LIBGLADE && ENABLE_LIBGLADE
 		friend class Gnome::Glade::Xml;  // allow construction through libglade
-#elif defined ENABLE_GTKBUILDER
+#elif defined ENABLE_GTKBUILDER && ENABLE_GTKBUILDER
 		friend class Gtk::Builder;  // allow construction through gtkbuilder
 #endif
 		friend class hz::InstanceManager<Child, MultiInstance>;  // allow construction through instance class
@@ -234,9 +236,9 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 				return hz::InstanceManager<Child, MultiInstance>::get_single_instance();
 
 			std::string error;
-#if defined ENABLE_LIBGLADE
+#if defined ENABLE_LIBGLADE && ENABLE_LIBGLADE
 			app_ui_res_ref_t ui;
-#elif defined ENABLE_GTKBUILDER
+#elif defined ENABLE_GTKBUILDER && ENABLE_GTKBUILDER
 			app_ui_res_ref_t ui = Gtk::Builder::create();
 #else  // none, just avoid compilation errors
 			app_ui_res_ref_t ui = 0;
@@ -301,9 +303,9 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 
 		Glib::Object* lookup_object(const Glib::ustring& name)
 		{
-#if defined ENABLE_LIBGLADE
+#if defined ENABLE_LIBGLADE && ENABLE_LIBGLADE
 			return static_cast<Glib::Object*>(lookup_widget(name));  // all glade objects are widgets, it's an upcast
-#elif defined ENABLE_GTKBUILDER
+#elif defined ENABLE_GTKBUILDER && ENABLE_GTKBUILDER
 			return ref_ui_->get_object(name).operator->();  // silly RefPtr doesn't have get().
 #else  // none, just avoid compilation errors
 			return 0;
@@ -329,6 +331,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 
 		// This is needed by APP_GLADE_ macros
 		typedef Child self_type;
+		typedef WidgetType widget_type;
 
 
 		// protected constructor / destructor, use create() / destroy() instead of new / delete.
@@ -339,7 +342,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 				: WidgetType(gtkcobj), ref_ui_(ref_ui)
 		{
 			// if gtkmm is older than 2.12, use the old tooltips API
-#ifdef APP_GTKMM_OLD_TOOLTIPS
+#if defined APP_GTKMM_OLD_TOOLTIPS && APP_GTKMM_OLD_TOOLTIPS
 			// attach it to the window
 			this->create_tooltips_data(this);
 #endif
@@ -360,7 +363,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 		{ }
 
 
-#ifdef APP_GTKMM_OLD_TOOLTIPS
+#if defined APP_GTKMM_OLD_TOOLTIPS && APP_GTKMM_OLD_TOOLTIPS
 		// differentiate Window and its children from other widgets through overloading
 
 		void create_tooltips_data(Gtk::Window* window)

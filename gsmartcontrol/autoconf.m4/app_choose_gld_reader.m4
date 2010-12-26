@@ -1,7 +1,7 @@
 
 ############################################################################
 # Copyright:
-#      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+#      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
 # License: See LICENSE_zlib.txt file
 ############################################################################
 
@@ -135,13 +135,17 @@ AC_DEFUN([APP_CHOOSE_GLD_READER], [
 	# export to config.h
 	if test "$app_cv_gld_reader" = "libglade"; then
 		AC_DEFINE(ENABLE_LIBGLADE, 1, [Use libglade(mm) instead of GtkBuilder])
+	else
+		AC_DEFINE(ENABLE_LIBGLADE, 0, [Use libglade(mm) instead of GtkBuilder])
 	fi
 	if test "$app_cv_gld_reader" = "gtkbuilder"; then
+		AC_DEFINE(ENABLE_GTKBUILDER, 1, [Use GtkBuilder instead of libglademm])
+	else
 		AC_DEFINE(ENABLE_GTKBUILDER, 1, [Use GtkBuilder instead of libglademm])
 	fi
 
 	# If we move this to the start, some messages get in between, so we have to have it here.
-	AC_MSG_CHECKING([for glade file support:])
+	AC_MSG_CHECKING([for glade file support])
 
 	AC_MSG_RESULT([$app_cv_gld_reader])
 

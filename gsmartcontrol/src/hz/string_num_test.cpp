@@ -17,7 +17,10 @@
 
 #include <limits>
 #include <iostream>
-#include <stdint.h>
+
+#include "cstdint.h"
+
+
 
 
 int main()
@@ -146,10 +149,10 @@ int main()
 		std::cerr << number_to_string(2L) << "\n";  // long int
 		std::cerr << number_to_string(6) << "\n";  // int
 
-#ifndef DISABLE_LL_INT
+#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
 		std::cerr << number_to_string(3LL) << "\n";  // long long int
 #endif
-#ifndef DISABLE_ULL_INT
+#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
 		std::cerr << number_to_string(4ULL) << "\n";  // unsigned long long int
 #endif
 

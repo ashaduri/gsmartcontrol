@@ -153,9 +153,9 @@ namespace debug_internal {
 
 
 // Function name (without classes / namespaces) only, e.g. "main".
-#if defined HAVE_CXX___func__
+#if defined HAVE_CXX___func__ && HAVE_CXX___func__
 	#define DBG_FUNC_NAME __func__
-#elif defined HAVE_CXX___FUNCTION__
+#elif defined HAVE_CXX___FUNCTION__ && HAVE_CXX___FUNCTION__
 	#define DBG_FUNC_NAME __FUNCTION__
 #else
 	#define DBG_FUNC_NAME "unknown"

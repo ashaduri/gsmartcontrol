@@ -11,9 +11,9 @@
 
 #include <string>
 #include <cwchar>  // std::wint_t
-#include <stdint.h>  // (u)intmax_t
 #include <cstddef>  // std::size_t, std::ptrdiff_t
 
+#include "cstdint.h"  // (u)intmax_t
 #include "system_specific.h"  // HZ_FUNC_PRINTF_CHECK
 #include "string_sprintf.h"  // string_sprintf
 #include "stream_cast.h"  // stream_cast<>
@@ -27,6 +27,13 @@
 
 // sprintf()-like _safe_ formatting to std::string with automatic object->string conversion
 // (via << operator).
+
+// Note: These functions use system *printf family of functions.
+
+// Note: On MinGW there is no support for %Lf (long double).
+// Also, you have to use %I64d instead of %lld for long long int
+// and %I64u instead of %llu for unsigned long long int.
+// You can use hz::number_to_string() as a workaround.
 
 
 namespace hz {
@@ -100,10 +107,10 @@ namespace internal {
 		format_type_ushort,
 		format_type_long,
 		format_type_ulong,
-#ifndef DISABLE_LL_INT
+#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
 		format_type_longlong,
 #endif
-#ifndef DISABLE_ULL_INT
+#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
 		format_type_ulonglong,
 #endif
 		format_type_intmax_t,
@@ -126,7 +133,7 @@ namespace internal {
 		format_type_scharp,
 		format_type_shortp,
 		format_type_longp,
-#ifndef DISABLE_LL_INT
+#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
 		format_type_longlongp,
 #endif
 
@@ -188,7 +195,7 @@ namespace internal {
 		{'X', 'h', format_type_uchar},  // hh
 		{'X', 'j', format_type_uintmax_t},
 		{'X', 'l', format_type_ulong},
-#ifndef DISABLE_ULL_INT
+#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
 		{'X', 'l', format_type_ulonglong},  // ll
 #endif
 		{'X', 't', format_type_ptrdiff_t},
@@ -208,7 +215,7 @@ namespace internal {
 		{'d', 'h', format_type_schar},  // hh
 		{'d', 'j', format_type_intmax_t},
 		{'d', 'l', format_type_long},
-#ifndef DISABLE_LL_INT
+#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
 		{'d', 'l', format_type_longlong},  // ll
 #endif
 		{'d', 't', format_type_ptrdiff_t},
@@ -228,7 +235,7 @@ namespace internal {
 		{'i', 'h', format_type_schar},  // hh
 		{'i', 'j', format_type_intmax_t},
 		{'i', 'l', format_type_long},
-#ifndef DISABLE_LL_INT
+#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
 		{'i', 'l', format_type_longlong},  // ll
 #endif
 		{'i', 't', format_type_ptrdiff_t},
@@ -239,7 +246,7 @@ namespace internal {
 		{'n', 'h', format_type_shortp},
 		{'n', 'h', format_type_scharp},  // hh
 		{'n', 'l', format_type_longp},
-#ifndef DISABLE_LL_INT
+#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
 		{'n', 'l', format_type_longlongp},  // ll
 #endif
 
@@ -249,7 +256,7 @@ namespace internal {
 		{'o', 'h', format_type_uchar},  // hh
 		{'o', 'j', format_type_uintmax_t},
 		{'o', 'l', format_type_ulong},
-#ifndef DISABLE_ULL_INT
+#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
 		{'o', 'l', format_type_ulonglong},  // ll
 #endif
 		{'o', 't', format_type_ptrdiff_t},
@@ -268,7 +275,7 @@ namespace internal {
 		{'u', 'h', format_type_uchar},  // hh
 		{'u', 'j', format_type_uintmax_t},
 		{'u', 'l', format_type_ulong},
-#ifndef DISABLE_ULL_INT
+#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
 		{'u', 'l', format_type_ulonglong},  // ll
 #endif
 		{'u', 't', format_type_ptrdiff_t},
@@ -280,7 +287,7 @@ namespace internal {
 		{'x', 'h', format_type_uchar},  // hh
 		{'x', 'j', format_type_uintmax_t},
 		{'x', 'l', format_type_ulong},
-#ifndef DISABLE_ULL_INT
+#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
 		{'x', 'l', format_type_ulonglong},  // ll
 #endif
 		{'x', 't', format_type_ptrdiff_t},
@@ -559,10 +566,10 @@ namespace internal {
 				case format_type_ushort: result += hz::string_sprintf(fc, static_cast<unsigned short int>(arg)); break;
 				case format_type_long: result += hz::string_sprintf(fc, static_cast<long int>(arg)); break;
 				case format_type_ulong: result += hz::string_sprintf(fc, static_cast<unsigned long int>(arg)); break;
-#ifndef DISABLE_LL_INT
+#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
 				case format_type_longlong: result += hz::string_sprintf(fc, static_cast<long long int>(arg)); break;
 #endif
-#ifndef DISABLE_ULL_INT
+#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
 				case format_type_ulonglong: result += hz::string_sprintf(fc, static_cast<unsigned long long int>(arg)); break;
 #endif
 				case format_type_intmax_t: result += hz::string_sprintf(fc, static_cast<intmax_t>(arg)); break;
@@ -659,7 +666,7 @@ namespace internal {
 		HZ_FORMAT_STATE_OPP_COMMON_SPEC(signed char*, format_type_scharp)
 		HZ_FORMAT_STATE_OPP_COMMON_SPEC(short int*, format_type_shortp)
 		HZ_FORMAT_STATE_OPP_COMMON_SPEC(long int*, format_type_longp)
-#ifndef DISABLE_LL_INT
+#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
 		HZ_FORMAT_STATE_OPP_COMMON_SPEC(long long int*, format_type_longlongp)
 #endif
 

@@ -10,44 +10,34 @@
 #include <string>
 #include <glib.h>
 
-#include "hz/process_signal.h"  // hz::SIGNAL_*, hz::process_signal_send (cpp), win32's W* (cpp)
+#include "hz/process_signal.h"  // hz::SIGNAL_*
 #include "hz/error_holder.h"
-#include "hz/sync.h"
-#include "hz/sync_policy_glib.h"
+#include "hz/sync.h"  // hz::SyncPolicyNone
 
 
 
 /*
 There are two ways to detect when the command exits:
 
-1. Add a callback to signal_exited. The callback will be executed
-in non-main thread, which means that all data access MUST be
-very carefully evaluated (and locked in both threads).
+1. Add a callback to signal_exited.
 
-2. Manually poll stopped_cleanup_needed() from the main thread.
+2. Manually poll stopped_cleanup_needed() (from the same thread).
 
-In both cases, stopped_cleanup() must be called afterwards,
-from the _main_ thread.
+In both cases, stopped_cleanup() must be called afterwards
+(from the main thread).
 */
 
-
-
-// typedef hz::SyncPolicyGlib CmdexSyncPolicy;
-typedef hz::SyncPolicyMtDefault CmdexSyncPolicy;
 
 
 
 // inheriting from sigc::trackable automatically disconnects this class's
 // slots upon destruction.
-class Cmdex : public hz::ErrorHolder<CmdexSyncPolicy> {
+class Cmdex : public hz::ErrorHolder<hz::SyncPolicyNone> {
 
 	public:
 
-		using hz::ErrorHolder<CmdexSyncPolicy>::ptr_error_list_t;  // auto-deleting container
-		using hz::ErrorHolder<CmdexSyncPolicy>::error_list_t;
-
-		typedef hz::ErrorHolder<CmdexSyncPolicy>::ErrorScopedLock ScopedLock;
-		typedef hz::ErrorHolder<CmdexSyncPolicy>::ErrorLockPolicy LockPolicy;
+		using hz::ErrorHolder<hz::SyncPolicyNone>::ptr_error_list_t;  // auto-deleting container
+		using hz::ErrorHolder<hz::SyncPolicyNone>::error_list_t;
 
 		typedef std::string (*exit_status_translator_func_t)(int, void*);
 		typedef void (*exited_callback_func_t)(void*);
@@ -57,17 +47,13 @@ class Cmdex : public hz::ErrorHolder<CmdexSyncPolicy> {
 			// exit_status_translator_func_t translator_func,
 			exited_callback_func_t exited_cb = NULL, void* exited_cb_data = NULL
 			)
-			: object_mutex_(error_object_mutex_),
-			running_(false), kill_signal_sent_(0), child_watch_handler_called_(false),
+			: running_(false), kill_signal_sent_(0), child_watch_handler_called_(false),
 			pid_(0), waitpid_status_(0),
 			timer_(g_timer_new()),
 			event_source_id_term(0), event_source_id_kill(0),
 			fd_stdout_(0), fd_stderr_(0), channel_stdout_(0), channel_stderr_(0),
 			channel_stdout_buffer_size_(100 * 1024), channel_stderr_buffer_size_(10 * 1024),  // 100K and 10K
 			event_source_id_stdout_(0), event_source_id_stderr_(0),
-			// Don't set false here (in any of these) - there's a bug in windows which causes
-			// output to be completely swallowed at random times.
-			stdout_make_str_as_available_(true), stderr_make_str_as_available_(true),
 			translator_func_(0), translator_func_data_(0),
 			exited_callback_(exited_cb), exited_callback_data_(exited_cb_data)
 		{ }
@@ -124,9 +110,7 @@ class Cmdex : public hz::ErrorHolder<CmdexSyncPolicy> {
 
 		// Unset timeouts. This will stop the timeout counters.
 		// This has an effect only if the command is running (after execute()).
-		// do_lock is kind of private and indicates that mutex should be locked prior to
-		// accessing the object members.
-		void unset_stop_timeouts(bool do_lock = true);
+		void unset_stop_timeouts();
 
 
 		// If stopped_cleanup_needed() returned true, call this. The command
@@ -136,10 +120,8 @@ class Cmdex : public hz::ErrorHolder<CmdexSyncPolicy> {
 
 		// Returns true if command has stopped.
 		// Call repeatedly in a waiting function, after execute(). When returns true, call stopped_cleanup().
-		// do_lock is private, set to false only if you already hold the object lock.
-		bool stopped_cleanup_needed(bool do_lock = true)
+		bool stopped_cleanup_needed()
 		{
-			ScopedLock locker(object_mutex_, do_lock);
 			return (child_watch_handler_called_);
 		}
 
@@ -149,7 +131,6 @@ class Cmdex : public hz::ErrorHolder<CmdexSyncPolicy> {
 		// stopped_cleanup_needed() instead.
 		bool is_running() const
 		{
-			ScopedLock locker(object_mutex_);
 			return running_;
 		}
 
@@ -157,40 +138,23 @@ class Cmdex : public hz::ErrorHolder<CmdexSyncPolicy> {
 
 		// Call this before execution. There is a race-like condition - when the command
 		// outputs something, the io channel reads it from fd to its buffer and the event
-		// source callback is called. If the command dies, the io channel thread reads
+		// source callback is called. If the command dies, the io channel callback reads
 		// the remaining data to the channel buffer.
 		// Since the event source callbacks (which read from the buffer and empty it)
-		// happen rather sporadically in another thread, the buffer may not get read and
+		// happen rather sporadically (from the glib loop), the buffer may not get read and
 		// emptied at all (before the command exits). This is why it's necessary to have
 		// a buffer size which potentially can hold _all_ the command output.
-		// A way to fight this is to increase event source thread priority (which may not help).
-		// Another way is to delay the command exit so that the event source thread
+		// A way to fight this is to increase event source priority (which may not help).
+		// Another way is to delay the command exit so that the event source callback
 		// catches on and reads the buffer.
 
 		// Use 0 to ignore the parameter. Call before execute().
 		void set_buffer_sizes(int stdout_buffer_size = 0, int stderr_buffer_size = 0)
 		{
-			ScopedLock locker(object_mutex_);
 			if (stdout_buffer_size)
 				channel_stdout_buffer_size_ = stdout_buffer_size;  // 100K by default
 			if (stderr_buffer_size)
 				channel_stderr_buffer_size_ = stderr_buffer_size;  // 10K by default
-		}
-
-
-		// Set the flags for child stdout and stderr. If stdout_str_as_available is true,
-		// then get_stdout_str() will return the stdout string as it becomes available,
-		// while false will make it available only after the command exits. Note that
-		// if the command outputs a lot of data in a very short period of time and
-		// then exits, false is much better choice because it's much faster.
-		// If you want to monitor the data as it becomes available and clean it to
-		// save some memory, use true.
-		// Call before execute().
-		void set_str_available(bool stdout_str_as_available = false, bool stderr_str_as_available = true)
-		{
-			ScopedLock locker(object_mutex_);
-			stdout_make_str_as_available_ = stdout_str_as_available;
-			stderr_make_str_as_available_ = stderr_str_as_available;
 		}
 
 
@@ -200,7 +164,6 @@ class Cmdex : public hz::ErrorHolder<CmdexSyncPolicy> {
 		// stopped, but it will decrease performance significantly.
 		std::string get_stdout_str(bool clear_existing = false)
 		{
-			ScopedLock locker(object_mutex_);
 			// debug_out_dump("app", str_stdout_);
 			if (clear_existing) {
 				std::string ret = str_stdout_;
@@ -214,7 +177,6 @@ class Cmdex : public hz::ErrorHolder<CmdexSyncPolicy> {
 		// See notes on get_stdout_str().
 		std::string get_stderr_str(bool clear_existing = false)
 		{
-			ScopedLock locker(object_mutex_);
 			if (clear_existing) {
 				std::string ret = str_stderr_;
 				str_stderr_.clear();
@@ -227,59 +189,25 @@ class Cmdex : public hz::ErrorHolder<CmdexSyncPolicy> {
 		// Return execution time, in seconds. Call after execute().
 		double get_execution_time()
 		{
-			ScopedLock locker(object_mutex_);
 			gulong microsec = 0;
 			return g_timer_elapsed(timer_, &microsec);
 		}
 
 
-		// don't return sigc::connection - it's better for thread-safety this way.
 		// this will disconnect earlier slots. Call before execute().
 		void set_exit_status_translator(exit_status_translator_func_t func, void* user_data)
 		{
-			ScopedLock locker(object_mutex_);
 			translator_func_ = func;
 			translator_func_data_ = user_data;
 		}
 
 
-		// NOTE: The callback will be called in non-main thread! (the call is enclosed
-		// in lock/unlock).
-		// Don't use this unless absolutely necessary, use stopped_cleanup_needed()
-		// polling instead.
+		// You can use stopped_cleanup_needed() polling instead.
 		void set_exited_callback(exited_callback_func_t func, void* user_data)
 		{
-			ScopedLock locker(object_mutex_);
 			exited_callback_ = func;
 			exited_callback_data_ = user_data;
 		}
-
-
-
-		// use lock() / unlock() if using members of this class outside of it.
-
-		void lock()
-		{
-			errors_lock();  // defer to parent's mutex - we use it for the whole object.
-		}
-
-
-		void unlock()
-		{
-			errors_unlock();
-		}
-
-
-
-		// protect all member variable access by this mutex, as well as
-		// serialize event callback execution (in respect of main thread too).
-		// it's possible to implement mutexes for each member individually, but
-		// it's impractical.
-		// mutable allows the definition of const member functions - they only
-		// read the data, but do it in a lock-protected manner.
-// 		mutable Glib::Mutex object_mutex;  // aka access serializer mutex
-		// use ErrorHolder's mutex
-
 
 
 
@@ -296,20 +224,15 @@ class Cmdex : public hz::ErrorHolder<CmdexSyncPolicy> {
 
 		static void on_child_watch_handler(GPid arg_pid, int waitpid_status, gpointer data);
 
-		static gboolean on_channel_io_buffered(GIOChannel* source,
-				GIOCondition cond, Cmdex* self, channel_t type);
-
-		static gboolean on_channel_io_as_available(GIOChannel* source,
+		static gboolean on_channel_io(GIOChannel* source,
 				GIOCondition cond, Cmdex* self, channel_t type);
 
 
 	private:
 
 
-		// The object MUST be locked by the caller.
 		void cleanup_members()
 		{
-			// ScopedLock locker(object_mutex_);
 			kill_signal_sent_ = 0;
 			child_watch_handler_called_ = false;
 			pid_ = 0;
@@ -331,8 +254,6 @@ class Cmdex : public hz::ErrorHolder<CmdexSyncPolicy> {
 			}
 		}
 
-
-		mutable ErrorLockPolicy::Mutex& object_mutex_;  // reference to parent's member
 
 
 		// default command and its args. std::strings, not ustrings.
@@ -366,9 +287,6 @@ class Cmdex : public hz::ErrorHolder<CmdexSyncPolicy> {
 		int event_source_id_stdout_;
 		int event_source_id_stderr_;
 
-		int stdout_make_str_as_available_;  // NOT affected by cleanup().
-		int stderr_make_str_as_available_;  // NOT affected by cleanup().
-
 		std::string str_stdout_;  // NOT affected by cleanup().
 		std::string str_stderr_;  // NOT affected by cleanup().
 
@@ -380,7 +298,6 @@ class Cmdex : public hz::ErrorHolder<CmdexSyncPolicy> {
 		void* translator_func_data_;
 
 		// "command exited" signal callback.
-		// NOTE: This will be called in separate thread!
 		exited_callback_func_t exited_callback_;  // NOT affected by cleanup().
 		void* exited_callback_data_;
 

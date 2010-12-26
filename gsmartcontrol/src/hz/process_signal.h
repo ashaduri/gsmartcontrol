@@ -11,28 +11,31 @@
 
 #include <string>
 
-#if defined ENABLE_GLIB
+#if defined ENABLE_GLIB && ENABLE_GLIB
 	#include <glib.h>  // g_strsignal()
 #else
-	#include <string.h>  // strsignal(). Note: <cstring> doesn't contain strsignal().
-	#include <cstdio>  // std::snprintf
+	#include <cstring>  // for string.h
+	#include <string.h>  // strsignal()
 #endif
 
 #ifdef _WIN32
-	// Note: #define WINVER 0x0501 before this!
+	// Note: #define WINVER 0x0501 (aka winxp) before this!
 	// This is needed for GetProcessId() (winxp or later).
 	// Just writing a prototype doesn't work - we get undefined symbols.
 	#include <windows.h>  // all that winapi stuff
 	#include <cerrno>  // errno
 #else
 	#include <sys/types.h>  // pid_t
+	#include <csignal>  // for signal.h
 	#include <signal.h>  // kill()
 #endif
+
+#include "portable_snprintf.h"  // portable_snprintf
 
 
 
 // Compilation options:
-// Define ENABLE_GLIB to enable glib-related code (portable signal messages).
+// Define ENABLE_GLIB to 1 to enable glib-related code (portable signal messages).
 
 
 
@@ -99,14 +102,14 @@ inline std::string signal_to_string(int signal_value)
 {
 	std::string msg;
 
-#ifdef ENABLE_GLIB
+#if defined ENABLE_GLIB && ENABLE_GLIB
 	msg = g_strsignal(signal_value);  // no need to free. won't return 0. message is in utf8.
 
 // mingw doesn't have strsignal()!
 #elif defined _WIN32
 
 	char buf[64] = {0};
-	std::snprintf(buf, 64, "Unknown signal: %d.", signal_value);
+	portable_snprintf(buf, 64, "Unknown signal: %d.", signal_value);
 	msg = buf;
 
 #else  // no glib and not win32
@@ -116,7 +119,7 @@ inline std::string signal_to_string(int signal_value)
 		msg = m;
 	} else {
 		char buf[64] = {0};
-		std::snprintf(buf, 64, "Unknown signal: %d.", signal_value);
+		portable_snprintf(buf, 64, "Unknown signal: %d.", signal_value);
 		msg = buf;
 	}
 #endif
@@ -214,8 +217,9 @@ namespace internal {
 
 			if (EnumWindows(&internal::process_signal_find_by_pid, reinterpret_cast<LPARAM>(&arg)) != 0) {
 				if (arg.hwnd) {  // we found something
-					// tell it to close
-					PostMessage(arg.hwnd, WM_QUIT, 0, 0);  // check the status later
+					// tell it to close.
+					// not sure what's the difference between ANSI/UNICODE here.
+					PostMessageA(arg.hwnd, WM_QUIT, 0, 0);  // check the status later
 
 				} else {  // error, not found
 					errno = EPERM;  // no permission

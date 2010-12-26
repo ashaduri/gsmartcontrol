@@ -54,7 +54,7 @@ namespace internal {
 	// 	int len = node->get_name().size();
 		int fill = 20 - internal_dump_offset;
 
-		std::stringstream ss;
+		std::ostringstream ss;
 		ss << std::string(internal_dump_offset, ' ');
 		// "refcount - 1" is needed because we take one reference (argument of this function).
 		ss << std::left << std::setw(fill) << node->get_name() << " [" << (node->ref_count() - 1) << "] "

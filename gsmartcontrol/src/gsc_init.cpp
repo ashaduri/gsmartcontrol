@@ -26,9 +26,10 @@
 #include "libdebug/libdebug.h"  // include full libdebug here (to add domains, etc...)
 #include "rconfig/rconfig.h"  // include full rconfig here
 #include "hz/data_file.h"  // data_file_add_search_directory
-#include "hz/fs_tools.h"  // get_home_dir
+#include "hz/fs_tools.h"  // get_user_config_dir()
 #include "hz/fs_path.h"  // FsPath
-#include "hz/string_algo.h"  // string_join
+#include "hz/string_algo.h"  // string_join()
+#include "hz/win32_tools.h"  // win32_get_registry_value_string()
 
 #include "gsc_main_window.h"
 #include "gsc_executor_log_window.h"
@@ -43,7 +44,7 @@ namespace {
 
 
 	static debug_channel_base_ptr s_debug_buf_channel;
-	static std::stringstream s_debug_buf_channel_stream;
+	static std::ostringstream s_debug_buf_channel_stream;
 
 
 	// This function is not thread-safe. The channel must be locked properly.
@@ -73,30 +74,75 @@ std::string app_get_debug_buffer_str()
 
 inline bool app_init_config()
 {
+	// $XDG_CONFIG_DIRS defaults to /etc/xdg, which is really silly.
+	// Actually, the whole specification is silly imho, since instead of
+	// removing just one directory/file I have to remove 3 now (and tell
+	// the users to do the same thing). And the *_DIRS stuff completely
+	// breaks parallel installations of the same program. Implementing
+	// only $XDG_CONFIG_HOME is harmless enough, so we do it.
+
+	s_home_config_file = hz::get_user_config_dir() + hz::DIR_SEPARATOR_S
+			+ "gsmartcontrol" + hz::DIR_SEPARATOR_S + "gsmartcontrol.conf";
+
+	std::string global_config_file;
+	std::string old_local_config;  // pre-XDG and pre-CSIDL_APPDATA file for migration
+
 #ifdef _WIN32
-	std::string global_config_file = "gsmartcontrol.conf";  // installation dir
-	s_home_config_file = hz::get_home_dir() + hz::DIR_SEPARATOR_S
-			+ "gsmartcontrol.conf";  // $HOME/program_name.conf
+	global_config_file = "gsmartcontrol.conf";  // CWD, installation dir by default.
+
+	std::string old_config_dir;
+	hz::win32_get_registry_value_string(HKEY_CURRENT_USER,
+			"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Personal", old_config_dir);
+
+	old_local_config = old_config_dir + hz::DIR_SEPARATOR_S + "gsmartcontrol.conf";
+
 #else
-	std::string global_config_file = std::string(PACKAGE_SYSCONF_DIR)
+	global_config_file = std::string(PACKAGE_SYSCONF_DIR)
 			+ hz::DIR_SEPARATOR_S + "gsmartcontrol.conf";
-	s_home_config_file = hz::get_home_dir() + hz::DIR_SEPARATOR_S + ".gsmartcontrolrc";
+
+	old_local_config = hz::get_home_dir() + hz::DIR_SEPARATOR_S + ".gsmartcontrolrc";
 #endif
+
+	debug_out_dump("app", DBG_FUNC_MSG << "Global config file: \"" << global_config_file << "\"\n");
+	debug_out_dump("app", DBG_FUNC_MSG << "Local config file: \"" << s_home_config_file << "\"\n");
+	debug_out_dump("app", DBG_FUNC_MSG << "Old local config file: \"" << old_local_config << "\"\n");
 
 	hz::FsPath gp(global_config_file);  // Default system-wide settings. This file is empty by default.
 	hz::FsPath hp(s_home_config_file);  // Per-user settings.
+	hz::FsPath op(old_local_config);  // Old user settings, should be migrated.
 
-	if (gp.exists() && gp.is_readable())
+	if (gp.exists() && gp.is_readable()) {  // load global first
 		rconfig::load_from_file(gp.str());
+	}
 
-	if (hp.exists() && hp.is_readable())
+	if (hp.exists() && hp.is_readable()) {  // load local
 		rconfig::load_from_file(hp.str());
+
+	} else {
+		// create the parent directories of the config file
+		hz::FsPath config_loc(hp.get_dirname());
+
+		if (!config_loc.exists()) {
+			config_loc.make_dir(0700, true);  // with parents.
+		}
+
+		if (op.exists() && op.is_readable()) {  // load the old config if the new one doesn't exist.
+			debug_print_info("app", "Old configuration file found at \"%s\", migrating to \"%s\".\n", op.c_str(), hp.c_str());
+			rconfig::load_from_file(op.str());
+			// force saving of the config to the new location (so that it's preserved in case of crash).
+			if (rconfig::save_to_file(hp.str())) {
+				// remove the old config
+				op.remove();
+			}
+		}
+	}
+
 
 	rconfig::dump_tree();
 
 	init_default_settings();  // initialize /default
 
-#ifdef ENABLE_GLIB
+#if defined ENABLE_GLIB && ENABLE_GLIB
 	rconfig::autosave_set_config_file(s_home_config_file);
 	uint32_t autosave_timeout = rconfig::get_data<uint32_t>("system/config_autosave_timeout");
 	if (autosave_timeout)
@@ -196,7 +242,7 @@ inline void app_print_version_info()
 	warningtext += "See LICENSE_gsmartcontrol.txt file for details.\n";
 	warningtext += "\nCopyright (C) 2008 - 2009  Alexander Shaduri <ashaduri" "" "@" "" "" "gmail.com>\n\n";
 
-	std::printf("%s%s", versiontext.c_str(), warningtext.c_str());
+	std::fprintf(stdout, "%s%s", versiontext.c_str(), warningtext.c_str());
 }
 
 
@@ -213,7 +259,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 
 	// initialize GThread (for mutexes, etc... to work). Must be called before any other glib function.
-	Glib::thread_init();
+// 	Glib::thread_init();
 
 
 	// parse command line args
@@ -414,7 +460,7 @@ void app_quit()
 	debug_out_info("app", "Saving config before exit...\n");
 
 	// save the config
-#ifdef ENABLE_GLIB
+#if defined ENABLE_GLIB && ENABLE_GLIB
 	rconfig::autosave_force_now();
 #else
 	rconfig::save_to_file(s_home_config_file);

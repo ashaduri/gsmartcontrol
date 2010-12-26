@@ -99,7 +99,7 @@ namespace debug_internal {
 
 	std::string DebugSourcePos::str() const
 	{
-		std::stringstream os;
+		std::ostringstream os;
 		os << "(";
 
 		if (enabled_types.to_ulong() & debug_pos::func_name) {

@@ -82,7 +82,7 @@ namespace debug_internal {
 			virtual int overflow(int c)  // overridden from parent
 			{
 				sync();  // write the buffer contents if available
-				if (c != EOF) {
+				if (c != traits_type::eof()) {
 					if (pbase() == epptr()) {  // no buffer, write it char-by-char (epptr() - buffer end pointer)
 	// 					std::string tmp;
 	// 					tmp += char(c);

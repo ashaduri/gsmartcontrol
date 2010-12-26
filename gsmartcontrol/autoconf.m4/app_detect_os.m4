@@ -1,7 +1,7 @@
 
 ############################################################################
 # Copyright:
-#      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+#      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
 # License: See LICENSE_zlib.txt file
 ############################################################################
 
@@ -59,12 +59,24 @@ AC_DEFUN([APP_DETECT_OS_KERNEL], [
 			app_cv_[]$1[]_os_kernel_macro="LINUX";
 			;;
 
-		*mingw* | *cygwin*)
+		i*86-*mingw* | i*86-*cygwin*)
 			# mingw defines _WIN32. msvc defines _WIN32 (built-in), and WIN32 via windows.h.
 			# Other mingw defines include: __WINNT, __WINNT__, __WIN32__, __i386, _X86_,
 			# i386, __i386__, WIN32, __MINGW32__, WINNT (all equal to 1).
-			app_cv_[]$1[]_os_kernel="windows";
-			app_cv_[]$1[]_os_kernel_macro="WINDOWS";
+			app_cv_[]$1[]_os_kernel="windows32";
+			app_cv_[]$1[]_os_kernel_macro="WINDOWS32";
+			;;
+
+		x86_64-*-mingw* | x86_64-*-cygwin*)
+			# mingw64 defines the same stuff as 32-bit one, plus _WIN64, __MINGW64__, etc... .
+			app_cv_[]$1[]_os_kernel="windows64";
+			app_cv_[]$1[]_os_kernel_macro="WINDOWS64";
+			;;
+
+		*interix*)
+			# Interix is a kernel on top of windows, so we treat it separately.
+			app_cv_[]$1[]_os_kernel="interix";
+			app_cv_[]$1[]_os_kernel_macro="INTERIX";
 			;;
 
 		# This includes debian gnu/kfreebsd. Dragonfly is checked separately.
@@ -124,8 +136,14 @@ AC_DEFUN([APP_DETECT_OS_KERNEL], [
 	if test "x${app_cv_[]$1[]_os_kernel}" = "xlinux"; then
 		AC_DEFINE($2[]LINUX, 1, [$1 OS kernel])
 	fi
-	if test "x${app_cv_[]$1[]_os_kernel}" = "xwindows"; then
-		AC_DEFINE($2[]WINDOWS, 1, [$1 OS kernel])
+	if test "x${app_cv_[]$1[]_os_kernel}" = "xwindows32"; then
+		AC_DEFINE($2[]WINDOWS32, 1, [$1 OS kernel])
+	fi
+	if test "x${app_cv_[]$1[]_os_kernel}" = "xwindows64"; then
+		AC_DEFINE($2[]WINDOWS64, 1, [$1 OS kernel])
+	fi
+	if test "x${app_cv_[]$1[]_os_kernel}" = "xinterix"; then
+		AC_DEFINE($2[]INTERIX, 1, [$1 OS kernel])
 	fi
 	if test "x${app_cv_[]$1[]_os_kernel}" = "xfreebsd"; then
 		AC_DEFINE($2[]FREEBSD, 1, [$1 OS kernel])
@@ -154,7 +172,9 @@ AC_DEFUN([APP_DETECT_OS_KERNEL], [
 
 	# Export to Makefile.am's.
 	AM_CONDITIONAL(m4_toupper($1)[]_OS_KERNEL_LINUX, [test "x${app_cv_[]$1[]_os_kernel}" = "xlinux"])
-	AM_CONDITIONAL(m4_toupper($1)[]_OS_KERNEL_WINDOWS, [test "x${app_cv_[]$1[]_os_kernel}" = "xwindows"])
+	AM_CONDITIONAL(m4_toupper($1)[]_OS_KERNEL_WINDOWS32, [test "x${app_cv_[]$1[]_os_kernel}" = "xwindows32"])
+	AM_CONDITIONAL(m4_toupper($1)[]_OS_KERNEL_WINDOWS64, [test "x${app_cv_[]$1[]_os_kernel}" = "xwindows64"])
+	AM_CONDITIONAL(m4_toupper($1)[]_OS_KERNEL_INTERIX, [test "x${app_cv_[]$1[]_os_kernel}" = "xinterix"])
 	AM_CONDITIONAL(m4_toupper($1)[]_OS_KERNEL_FREEBSD, [test "x${app_cv_[]$1[]_os_kernel}" = "xfreebsd"])
 	AM_CONDITIONAL(m4_toupper($1)[]_OS_KERNEL_DRAGONFLY, [test "x${app_cv_[]$1[]_os_kernel}" = "xdragonfly"])
 	AM_CONDITIONAL(m4_toupper($1)[]_OS_KERNEL_OPENBSD, [test "x${app_cv_[]$1[]_os_kernel}" = "xopenbsd"])
@@ -163,6 +183,19 @@ AC_DEFUN([APP_DETECT_OS_KERNEL], [
 	AM_CONDITIONAL(m4_toupper($1)[]_OS_KERNEL_DARWIN, [test "x${app_cv_[]$1[]_os_kernel}" = "xdarwin"])
 	AM_CONDITIONAL(m4_toupper($1)[]_OS_KERNEL_QNX, [test "x${app_cv_[]$1[]_os_kernel}" = "xqnx"])
 	AM_CONDITIONAL(m4_toupper($1)[]_OS_KERNEL_UNKNOWN, [test "x${app_cv_[]$1[]_os_kernel}" = "xunknown"])
+
+
+	# composite ones, for easy checking
+
+	AM_CONDITIONAL(m4_toupper($1)[]_OS_KERNEL_FAMILY_WINDOWS, \
+			[test "x${app_cv_[]$1[]_os_kernel}" = "xwindows32" || test "x${app_cv_[]$1[]_os_kernel}" = "xwindows64" \
+				|| test "x${app_cv_[]$1[]_os_kernel}" = "xinterix"])
+
+	if test "x${app_cv_[]$1[]_os_kernel}" = "xwindows32" || test "x${app_cv_[]$1[]_os_kernel}" = "xwindows64" \
+			|| test "x${app_cv_[]$1[]_os_kernel}" = "xinterix"; then
+		AC_DEFINE($2[]FAMILY_WINDOWS, 1, [$1 OS kernel family])
+	fi
+
 
 	AC_MSG_RESULT([${app_cv_[]$1[]_os_kernel}])
 ])
@@ -216,9 +249,17 @@ AC_DEFUN([APP_DETECT_OS_ENV], [
 			app_cv_[]$1[]_os_env="cygwin";
 			app_cv_[]$1[]_os_env_macro="CYGWIN";
 			;;
-		*mingw*)
-			app_cv_[]$1[]_os_env="mingw";
-			app_cv_[]$1[]_os_env_macro="MINGW";
+		i*86-*mingw*)
+			app_cv_[]$1[]_os_env="mingw32";
+			app_cv_[]$1[]_os_env_macro="MINGW32";
+			;;
+		x86_64-*-mingw*)
+			app_cv_[]$1[]_os_env="mingw64";
+			app_cv_[]$1[]_os_env_macro="MINGW64";
+			;;
+		*interix*)
+			app_cv_[]$1[]_os_env="interix";
+			app_cv_[]$1[]_os_env_macro="INTERIX";
 			;;
 		# This includes gnu/linux, debian gnu/kfreebsd, debian gnu/netbsd...
 		*-gnu | gnu*)
@@ -271,8 +312,14 @@ AC_DEFUN([APP_DETECT_OS_ENV], [
 	if test "x${app_cv_[]$1[]_os_env}" = "xcygwin"; then
 		AC_DEFINE($2[]CYGWIN, 1, [$1 OS userspace environment])
 	fi
-	if test "x${app_cv_[]$1[]_os_env}" = "xmingw"; then
-		AC_DEFINE($2[]MINGW, 1, [$1 OS userspace environment])
+	if test "x${app_cv_[]$1[]_os_env}" = "xmingw32"; then
+		AC_DEFINE($2[]MINGW32, 1, [$1 OS userspace environment])
+	fi
+	if test "x${app_cv_[]$1[]_os_env}" = "xmingw64"; then
+		AC_DEFINE($2[]MINGW64, 1, [$1 OS userspace environment])
+	fi
+	if test "x${app_cv_[]$1[]_os_env}" = "xinterix"; then
+		AC_DEFINE($2[]INTERIX, 1, [$1 OS userspace environment])
 	fi
 	if test "x${app_cv_[]$1[]_os_env}" = "xgnu"; then
 		AC_DEFINE($2[]GNU, 1, [$1 OS userspace environment])
@@ -304,7 +351,9 @@ AC_DEFUN([APP_DETECT_OS_ENV], [
 
 	# Export to Makefile.am's.
 	AM_CONDITIONAL(m4_toupper($1)[]_OS_ENV_CYGWIN, [test "x${app_cv_[]$1[]_os_env}" = "xcygwin"])
-	AM_CONDITIONAL(m4_toupper($1)[]_OS_ENV_MINGW, [test "x${app_cv_[]$1[]_os_env}" = "xmingw"])
+	AM_CONDITIONAL(m4_toupper($1)[]_OS_ENV_MINGW32, [test "x${app_cv_[]$1[]_os_env}" = "xmingw32"])
+	AM_CONDITIONAL(m4_toupper($1)[]_OS_ENV_MINGW64, [test "x${app_cv_[]$1[]_os_env}" = "xmingw64"])
+	AM_CONDITIONAL(m4_toupper($1)[]_OS_ENV_INTERIX, [test "x${app_cv_[]$1[]_os_env}" = "xinterix"])
 	AM_CONDITIONAL(m4_toupper($1)[]_OS_ENV_GNU, [test "x${app_cv_[]$1[]_os_env}" = "xgnu"])
 	AM_CONDITIONAL(m4_toupper($1)[]_OS_ENV_FREEBSD, [test "x${app_cv_[]$1[]_os_env}" = "xfreebsd"])
 	AM_CONDITIONAL(m4_toupper($1)[]_OS_ENV_DRAGONFLY, [test "x${app_cv_[]$1[]_os_env}" = "xdragonfly"])
@@ -314,6 +363,7 @@ AC_DEFUN([APP_DETECT_OS_ENV], [
 	AM_CONDITIONAL(m4_toupper($1)[]_OS_ENV_DARWIN, [test "x${app_cv_[]$1[]_os_env}" = "xdarwin"])
 	AM_CONDITIONAL(m4_toupper($1)[]_OS_ENV_QNX, [test "x${app_cv_[]$1[]_os_env}" = "xqnx"])
 	AM_CONDITIONAL(m4_toupper($1)[]_OS_ENV_UNKNOWN, [test "x${app_cv_[]$1[]_os_env}" = "xunknown"])
+
 
 	AC_MSG_RESULT([${app_cv_[]$1[]_os_env}])
 ])

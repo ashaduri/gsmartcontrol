@@ -1,7 +1,7 @@
 
 ############################################################################
 # Copyright:
-#      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+#      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
 # License: See LICENSE_zlib.txt file
 ############################################################################
 
@@ -50,7 +50,8 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 		# gcc / gnu environment, mingw, cygwin.
 		if test "x$app_cv_compiler_common_options" = "xgnu"; then
 
-			if test "x$app_cv_target_os_env" = "xmingw" || test "x$app_cv_target_os_env" = "xcygwin"; then
+			if test "x$app_cv_target_os_env" = "xmingw32" || test "x$app_cv_target_os_env" = "xmingw64" \
+					|| test "x$app_cv_target_os_env" = "xcygwin"; then
 				# mingw gcc options:
 				# -mno-cygwin - generate non-cygwin executables in cygwin's mingw.
 				# -mms-bitfields - make structures compatible with msvc. recommended default for non-cygwin.
@@ -60,7 +61,7 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 			fi
 
 			# Note: Disabled -Wconversion, it was causing lots of silly warnings under x86-64.
-			app_cv_compiler_tmp_var="-Wall -Wcast-align -Wcast-qual \
+			app_cv_compiler_tmp_var="-Wall -Wcast-align -Wcast-qual -Wconversion \
 -Wctor-dtor-privacy -Wfloat-equal -Wnon-virtual-dtor -Woverloaded-virtual \
 -Wpointer-arith -Wshadow -Wsign-compare -Wsign-promo -Wundef -Wwrite-strings";
 			app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags $app_cv_compiler_tmp_var";
@@ -78,7 +79,16 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 		# suncc
 		elif test "x$app_cv_compiler_common_options" = "xsun"; then
 			# Enable useful language extensions (e.g. __func__ in C++). Details at
-			# http://docs.sun.com/app/docs/doc/819-5267/6n7c46drp?a=view
+			# http://docs.sun.com/app/docs/doc/820-7599/bkapy?a=view
+			# Additional options: "-staticlib=Crun -staticlib=Cstd" - link statically to
+			# C++ runtime and standard libraries.
+			# http://docs.sun.com/app/docs/doc/820-7599/bkaws?a=view
+
+			# STLport seems to be more standards-compliant, but incompatible
+			# with default Cstd. Also, it's not guaranteed to keep compatibility
+			# between versions. Select it with "-library=stlport4".
+			# http://docs.sun.com/app/docs/doc/820-7599/bkakg?a=view
+			# http://developers.sun.com/solaris/articles/cmp_stlport_libCstd.html
 			app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags \
 +w -errtags -erroff=notemsource,notused -features=extensions";
 			app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags \
@@ -165,11 +175,11 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 		# gcc, mingw
 		if test "x$app_cv_compiler_optimize_options" = "xgnu"; then
 			# -mtune=generic is since gcc 4.0 iirc
-			if test "x$app_cv_target_os_env" = "xmingw" || test "x$app_cv_target_os_env" = "xcygwin"; then
-				app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -g0 -O3 -s -march=i586";
-				app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -g0 -O3 -s -march=i586";
-				app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -g0 -O3 -s -march=i586";
-			else
+			if test "x$app_cv_target_os_env" = "xmingw32"; then
+				app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -g0 -O3 -s -march=i686";
+				app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -g0 -O3 -s -march=i686";
+				app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -g0 -O3 -s -march=i686";
+			else  # mingw64, cygwin (they have new gcc), others.
 				app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -g0 -O3 -s -mtune=generic";
 				app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -g0 -O3 -s -mtune=generic";
 				app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -g0 -O3 -s -mtune=generic";
@@ -218,7 +228,7 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 	# -mconsole - opposite of -mwindows, default.
 
 	AC_ARG_ENABLE(windows-console, AS_HELP_STRING([--enable-windows-console=yes|no|auto],
-			[enable windows console (MinGW only). Accepted values are yes, no, auto. ]
+			[enable windows console (MinGW and Cygwin only). Accepted values are yes, no, auto. ]
 			[Auto means disabled for optimized builds, enabled for all others. (Default: auto)]),
 		[app_cv_compiler_windows_console=${enableval}], [app_cv_compiler_windows_console=auto])
 
@@ -231,15 +241,12 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 		fi
 	fi
 
-	if test "x$app_cv_target_os_env" = "xmingw" || test "x$app_cv_target_os_env" = "xcygwin"; then
+	if test "x$app_cv_target_os_env" = "xmingw32" || test "x$app_cv_target_os_env" = "xmingw64" \
+			|| test "x$app_cv_target_os_env" = "xcygwin"; then
 		if test "x$app_cv_compiler_windows_console" = "xno"; then
-			app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -mwindows";
-			app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -mwindows";
 			app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -mwindows";
 		else
 			# specify -mconsole even if it's the default - it should override the user-supplied setting
-			app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -mconsole";
-			app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -mconsole";
 			app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -mconsole";
 		fi
 		AC_MSG_NOTICE([Enable windows console: $app_cv_compiler_windows_console])

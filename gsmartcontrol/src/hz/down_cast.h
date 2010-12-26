@@ -29,7 +29,7 @@ namespace hz {
 
 
 
-#ifdef DISABLE_RTTI
+#if defined DISABLE_RTTI && DISABLE_RTTI
 
 
 template<typename Target, typename Source> inline

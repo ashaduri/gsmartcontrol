@@ -135,8 +135,8 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 			Gtk::TreeNodeChildren children = model->children();
 			for (Gtk::TreeNodeChildren::iterator iter = children.begin(); iter != children.end(); ++iter) {
 				Gtk::TreeModel::Row row = *iter;
-				if (devmap.find(row[col_device_real]) == devmap.end())
-					devmap[row[col_device_real]] = row[col_parameters];
+				if (!row.get_value(col_device_real).empty() && devmap.find(row.get_value(col_device_real)) == devmap.end())
+					devmap[row.get_value(col_device_real)] = row.get_value(col_parameters);
 			}
 
 			return devmap;
@@ -315,17 +315,17 @@ void GscPreferencesWindow::import_config()
 
 	// ------- General tab
 
-	bool scan_on_startup;
+	bool scan_on_startup = 0;
 	if ( prefs_config_get("gui/scan_on_startup", scan_on_startup)
 			&& (check = this->lookup_widget<Gtk::CheckButton*>("scan_on_startup_check")) )
 		check->set_active(scan_on_startup);
 
-	bool show_smart_capable_only;
+	bool show_smart_capable_only = 0;
 	if ( prefs_config_get("gui/show_smart_capable_only", show_smart_capable_only)
 			&& (check = this->lookup_widget<Gtk::CheckButton*>("show_smart_capable_only_check")) )
 		check->set_active(show_smart_capable_only);
 
-	bool win32_search_smartctl_in_smartmontools;
+	bool win32_search_smartctl_in_smartmontools = 0;
 	if ( prefs_config_get("system/win32_search_smartctl_in_smartmontools", win32_search_smartctl_in_smartmontools)
 			&& (check = this->lookup_widget<Gtk::CheckButton*>("search_in_smartmontools_first_check")) )
 		check->set_active(win32_search_smartctl_in_smartmontools);

@@ -10,16 +10,20 @@
 #include "hz_config.h"  // feature macros
 
 #include <string>
-#include <stdint.h>
-#include <ctime>  // std::strftime, std::time, std::localtime, ...
+#include <cstddef>  // std::size_t
+#include <ctime>  // for time.h, std::strftime, std::time, std::localtime, ...
 
-#ifndef _WIN32
-	#include <time.h>  // localtime_r
-#endif
-
+#include "cstdint.h"
+#include "locale_tools.h"  // ScopedLocale
 #include "string_num.h"  // number_to_string
 #include "i18n.h"  // HZ_NC_, HZ_C_
-#include "locale_tools.h"  // ScopedLocale
+
+
+// HAVE_WIN_SE_FUNCS means localtime_s
+#if (defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS) \
+		|| !(defined HAVE_REENTRANT_LOCALTIME && HAVE_REENTRANT_LOCALTIME)
+	#include <time.h>  // localtime_r, localtime_s
+#endif
 
 
 
@@ -175,13 +179,15 @@ inline std::string format_time_length(int64_t secs)
 
 
 // Format date specified by ltmp (pointer to tm structure).
+// See strftime() documentation for details. To print ISO datetime
+// use "%Y-%m-%d %H:%M:%S" (sometimes 'T' is used instead of space).
 inline std::string format_date(const std::string& format, const struct std::tm* ltmp, bool use_locale = true)
 {
 	if (!ltmp || format.empty())
 		return std::string();
 
 	// try to guess the appropriate buffer size for strftime
-	int buf_size = format.size() + (format.size() / 2);  // this should be enough for most of them
+	std::size_t buf_size = format.size() + (format.size() / 2);  // this should be enough for most of them
 	std::size_t written = 0;
 	std::string res;
 	int iterations = 0;
@@ -215,14 +221,20 @@ inline std::string format_date(const std::string& format, const struct std::tm* 
 // Format date specified by timet (seconds since Epoch).
 inline std::string format_date(const std::string& format, std::time_t timet, bool use_locale = true)
 {
-#ifndef _WIN32
+#if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
+	struct std::tm ltm;
+	if (localtime_s(&ltm, &timet) == 0)  // shut up msvc (it thinks std::localtime() is unsafe)
+		return std::string();
+	const struct std::tm* ltmp = &ltm;
+
+#elif defined HAVE_REENTRANT_LOCALTIME && HAVE_REENTRANT_LOCALTIME
+	const struct std::tm* ltmp = std::localtime(&timet);
+
+#else
 	struct std::tm ltm;
 	if (!localtime_r(&timet, &ltm))  // use reentrant localtime_r (posix/bsd and related)
 		return std::string();
 	const struct std::tm* ltmp = &ltm;
-
-#else
-	const struct std::tm* ltmp = std::localtime(&timet);  // win32's localtime() is reentrant
 #endif
 
 	return format_date(format, ltmp, use_locale);

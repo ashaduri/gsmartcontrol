@@ -8,9 +8,10 @@
 #define STORAGE_PROPERTY_H
 
 #include <string>
-#include <stdint.h>
 #include <vector>
 #include <iosfwd>
+
+#include "hz/cstdint.h"
 
 
 
@@ -96,7 +97,8 @@ class StorageAttribute {
 
 
 		StorageAttribute() : id(-1), value(0), worst(0), threshold(0),
-			attr_type(attr_type_unknown), update_type(update_type_unknown)
+			attr_type(attr_type_unknown), update_type(update_type_unknown),
+			when_failed(fail_time_unknown), raw_value_int(0)
 		{ }
 
 
@@ -126,12 +128,12 @@ class StorageErrorBlock {
 		StorageErrorBlock() : error_num(0), lifetime_hours(0)
 		{ }
 
-		static std::string get_readable_error_type(const std::string& type);
+		static std::string get_readable_error_types(const std::vector<std::string>& types);
 
 		uint32_t error_num;  // error number
 		uint32_t lifetime_hours;  // when it occurred
 		std::string device_state;  // "active or idle", standby, etc...
-		std::string reported_type;  // e.g. "UNC".
+		std::vector<std::string> reported_types;  // e.g. array of reported strings, e.g. "UNC".
 		std::string type_more_info;  // more info on error type (e.g. "at LBA = 0x0253eac0 = 39054016")
 };
 

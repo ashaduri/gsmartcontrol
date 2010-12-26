@@ -1,5 +1,5 @@
 
-AC_INIT([GSmartControl], 0.8.4, [], [gsmartcontrol])
+AC_INIT([GSmartControl],[0.8.5],[],[gsmartcontrol])
 
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_HEADERS([config.h])
@@ -64,7 +64,13 @@ APP_DETECT_OS_KERNEL([build], [CONFIG_HOST_KERNEL_])
 APP_COMPILER_OPTIONS([])
 
 # Thread support for known configurations.
-APP_GET_MT_FLAGS([])
+# Sun compiler (at least on linux) has some runtime issues with stringstream
+# unless we use the thread flags. Also, Linux-based gdb fails to debug
+# a gcc-compiled binary for some reason.
+# Do this for all systems except mingw.
+if test "$app_cv_target_os_env" != "mingw32" && test "$app_cv_target_os_env" != "mingw64"; then
+	APP_GET_MT_FLAGS([])
+fi
 
 # Enable _GNU_SOURCE, etc...
 APP_USE_SYSTEM_EXTENSIONS([])
@@ -108,7 +114,7 @@ AX_CXX_GCC_ABI_DEMANGLE
 AC_CXX_VERBOSE_TERMINATE_HANDLER
 
 # detect __func__ support (defines HAVE_CXX___func__)
-APP_CXX___FUNC__
+APP_CXX___func__
 
 # detect __FUNCTION__ support (defines HAVE_CXX___FUNCTION__)
 APP_CXX___FUNCTION__
@@ -128,7 +134,8 @@ AC_CHECK_FUNCS([strtoll _strtoi64], [break])
 # but let's ignore it. Note: They may be supported by system libc,
 # but not enabled by default (e.g. by glibc feature macros). In that case,
 # defining them still leads to undefined symbols at link time, so we don't do it.
-# Header check is the best way to determine availability:
+# Header check is the best way to determine availability.
+# This defines HAVE_DECL_<symbol> to 1 or 0.
 AC_CHECK_DECLS([strtof, strtold], [], [], [[#include <stdlib.h>]])
 # link check only:
 # AC_CHECK_FUNCS([strtof strtold])
@@ -169,15 +176,21 @@ AC_ARG_ENABLE(abort-if-no-gtkmm, AS_HELP_STRING([--disable-abort-if-no-gtkmm],
 AC_MSG_NOTICE([Abort if no gtkmm is found: $app_cv_abort_if_no_gtkmm])
 
 # iconview is available since 2.6.0. gthread is not enabled by default.
-pkg_modules="gtkmm-2.4 >= 2.6.0 gthread-2.0 >= 2.0"
+pkg_modules="gtkmm-2.4 >= 2.6.0"  # gthread-2.0 >= 2.0
 
 # define ENABLE_GLIB and friends if it's found.
 gtkmm_found="no"
 
-PKG_CHECK_MODULES([GTKMM], [$pkg_modules], [
-		AC_DEFINE([ENABLE_GLIB], [1], [Whether GLib is installed])
-		AC_DEFINE([ENABLE_GLIBMM], [1], [Whether GLibmm is installed])
-		gtkmm_found="yes"], [gtkmm_found="no"])
+PKG_CHECK_MODULES([GTKMM], [$pkg_modules],
+		[gtkmm_found="yes"], [gtkmm_found="no"])
+
+if test "x$gtkmm_found" = "xyes"; then
+	AC_DEFINE([ENABLE_GLIB], [1], [Defined to 1 if GLib is installed, 0 otherwise])
+	AC_DEFINE([ENABLE_GLIBMM], [1], [Defined to 1 if glibmm is installed, 0 otherwise])
+else
+	AC_DEFINE([ENABLE_GLIB], [0], [Defined to 1 if GLib is installed, 0 otherwise])
+	AC_DEFINE([ENABLE_GLIBMM], [0], [Defined to 1 if glibmm is installed, 0 otherwise])
+fi
 
 if test "x$gtkmm_found" = "xno"; then
 	if test "x$app_cv_abort_if_no_gtkmm" = "xno"; then
@@ -268,9 +281,9 @@ AC_ARG_ENABLE([nsis-wine], [AS_HELP_STRING([--enable-nsis-wine=yes|no|auto],
 		[use wine to run makensis.exe when making NSIS packages (default: auto, which is no for windows, yes for others)])],
 		[with_nsis_wine=${enableval}], [with_nsis_wine=yes])
 
-AC_ARG_WITH([windows-dlls], [AS_HELP_STRING([--with-windows-dlls],
-		[specify location of Windows dlls when making Windows packages (default: /target/bin)])],
-		[with_windows_env=${withval}], [win_windows_dlls=auto])
+AC_ARG_WITH([windows-bindir], [AS_HELP_STRING([--with-windows-bindir],
+		[specify location of Windows dlls and executables when making Windows packages (default: /cross/w32/target/bin)])],
+		[with_windows_bindir=${withval}], [with_windows_bindir=auto])
 
 if test "x$with_nsis" = "xauto" || test "x$with_nsis" = "x"; then
 	if test "x$app_cv_build_os_kernel" = "xwindows"; then
@@ -293,13 +306,13 @@ if test "x$with_nsis_wine" != "xno"; then
 	NSIS_EXEC="wine $with_nsis";
 fi
 
-if test "x$with_windows_dlls" = "xauto" || test "x$with_windows_dlls" = "x"; then
-	with_windows_dlls="/target/bin"
+if test "x$with_windows_bindir" = "xauto" || test "x$with_windows_bindir" = "x"; then
+	with_windows_bindir="/cross/w32/target/bin"
 fi
-WINDOWS_DLLS_LOCATION="$with_windows_dlls";
+WINDOWS_BINDIR="$with_windows_bindir";
 
 AC_SUBST(NSIS_EXEC)
-AC_SUBST(WINDOWS_DLLS_LOCATION)
+AC_SUBST(WINDOWS_BINDIR)
 
 
 # -------------------------------------------------------------------------------------
@@ -407,7 +420,8 @@ CXXFLAGS="$CXXFLAGS $ADDITIONAL_FLAGS"
 # Add pcrecpp too, because its files use #<file> on each other.
 ADDITIONAL_INCLUDES="-I\$(top_builddir) -I\$(top_srcdir)/src -I\$(top_srcdir)/src/pcrecpp"
 
-# -include works with gcc, intel and pathscale, but doesn't work with sun and pgi.
+# -include works with gcc, intel, pathscale and sunstudio since 12u1, but doesn't work
+# with pgi and older sunstudio (the one in solaris10, for example).
 # Note: some gcc-frontend-based compilers may have to be added here
 # (e.g. gccfss (gcc frontend / sun backend), etc...).
 if test "$ax_cv_cxx_compiler_vendor" = "gnu" || test "$ax_cv_cxx_compiler_vendor" = "intel" \

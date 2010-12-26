@@ -1,13 +1,14 @@
 
 ############################################################################
 # Copyright:
-#      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+#      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
 # License: See LICENSE_zlib.txt file
 ############################################################################
 
 
-# Check whether C++ compiler supports overloading between
-# extern "C" function pointer and C++ function pointer. GCC and
+# Check whether C++ compiler supports overloading of functions
+# with function pointer argument differing only in extern "C" specification,
+# that is, extern "C" function pointer and C++ function pointer. GCC and
 # Intel treat them equally, so no overloads are needed (or accepted)
 # there.
 
@@ -21,7 +22,8 @@
 # for template parameters (I don't remember the exact details).
 
 
-# If such support is found, HAVE_CXX_EXTERN_C_OVERLOAD is defined.
+# If such overloading support is found,
+# HAVE_CXX_EXTERN_C_OVERLOAD is defined.
 
 
 AC_DEFUN([APP_CXX_EXTERN_C_OVERLOAD], [
@@ -37,8 +39,11 @@ AC_DEFUN([APP_CXX_EXTERN_C_OVERLOAD], [
 		AC_LANG_POP([])
 	])
 	if test "x$ac_cv_cxx_extern_c_overload" = "xyes"; then
-		AC_DEFINE(HAVE_CXX_EXTERN_C_OVERLOAD, ,
-			[Define if the C++ complier accepts extern C function pointer overload])
+		AC_DEFINE(HAVE_CXX_EXTERN_C_OVERLOAD, 1,
+			[Defined to 1 if the C++ complier accepts extern C function pointer overload, 0 otherwise])
+	else
+		AC_DEFINE(HAVE_CXX_EXTERN_C_OVERLOAD, 0,
+			[Defined to 1 if the C++ complier accepts extern C function pointer overload, 0 otherwise])
 	fi
 ])
 

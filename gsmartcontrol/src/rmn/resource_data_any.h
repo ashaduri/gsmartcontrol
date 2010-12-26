@@ -78,7 +78,7 @@ class ResourceDataAny {
 	public:
 
 		ResourceDataAny()
-#ifdef RMN_TYPE_TRACKING
+#if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
 			: type_(T_EMPTY)
 #endif
 		{ }
@@ -92,7 +92,7 @@ class ResourceDataAny {
 				return false;
 
 			data_ = src->data_;
-#ifdef RMN_TYPE_TRACKING
+#if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
 			type_ = src->get_type();
 #endif
 			return true;
@@ -108,7 +108,7 @@ class ResourceDataAny {
 		void clear_data()
 		{
 			data_.clear();
-#ifdef RMN_TYPE_TRACKING
+#if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
 			type_ = T_EMPTY;
 #endif
 		}
@@ -119,7 +119,7 @@ class ResourceDataAny {
 		inline bool set_data(T data)
 		{
 			data_ = data;
-#ifdef RMN_TYPE_TRACKING
+#if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
 			type_ = node_data_type_by_real<T>::type;
 #endif
 			return true;
@@ -130,7 +130,7 @@ class ResourceDataAny {
 		inline bool set_data(const char* data)
 		{
 			data_ = std::string(data);
-#ifdef RMN_TYPE_TRACKING
+#if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
 			type_ = node_data_type_by_real<std::string>::type;
 #endif
 			return true;
@@ -138,14 +138,14 @@ class ResourceDataAny {
 
 
 		// this function works only if either RTTI or type tracking is enabled
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 		template<typename T>
 		inline bool data_is_type() const
 		{
 			// template is needed for gcc 3.3
 			return data_.template is_type<T>();  // won't work without RTTI! If empty, reacts to void only.
 		}
-#elif defined RMN_TYPE_TRACKING
+#elif defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
 		template<typename T>
 		inline bool data_is_type() const
 		{
@@ -155,7 +155,7 @@ class ResourceDataAny {
 
 
 
-#ifdef RMN_TYPE_TRACKING
+#if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
 		inline bool data_is_type(node_data_type type) const
 		{
 			return type == type_;
@@ -171,7 +171,7 @@ class ResourceDataAny {
 		template<typename T>
 		inline bool get_data(T& put_it_here) const  // returns false if cast failed
 		{
-#ifdef RMN_TYPE_TRACKING
+#if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
 			if (node_data_type_by_real<T>::type != type_)
 				return false;
 #endif
@@ -258,7 +258,7 @@ class ResourceDataAny {
 
 		hz::any_type data_;
 
-#ifdef RMN_TYPE_TRACKING
+#if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
 		node_data_type type_;
 #endif
 

@@ -44,6 +44,7 @@
 #ifndef _PCRE_SCANNER_H
 #define _PCRE_SCANNER_H
 
+#include <cassert>  // Custom
 #include <assert.h>
 #include <string>
 #include <vector>

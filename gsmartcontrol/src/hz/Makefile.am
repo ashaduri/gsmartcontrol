@@ -2,17 +2,18 @@ AM_CPPFLAGS = $(all_includes)
 METASOURCES = AUTO
 
 noinst_HEADERS = any_convert.h any_type.h any_type_holder.h ascii.h \
-	bad_cast_exception.h bin2ascii_encoder.h common_types.h data_file.h debug.h down_cast.h \
-	env_tools.h errno_string.h error.h error_holder.h exceptions.h format_unit.h fs_common.h fs_dir.h \
-	fs_error_holder.h fs_file.h fs_path.h fs_path_utils.h fs_tools.h hz_config.h i18n.h \
+	bad_cast_exception.h bin2ascii_encoder.h common_types.h cstdint.h cstdint_impl_msvc.h \
+	data_file.h debug.h down_cast.h env_tools.h errno_string.h error.h error_holder.h \
+	exceptions.h format_unit.h fs_common.h fs_dir.h fs_dir_platform.h fs_error_holder.h \
+	fs_file.h fs_fstream.h fs_path.h fs_path_utils.h fs_tools.h function.h function_impl.h hz_config.h i18n.h \
 	instance_manager.h intrusive_ptr.h intrusive_scoped_lock.h launch_url.h local_algo.h \
-	locale_tools.h noncopyable.h optional_value.h process_signal.h ptr_container.h \
-	res_data.h scoped_array.h scoped_ptr.h static_assert.h stream_cast.h string_algo.h \
-	string_format.h string_num.h string_sprintf.h string_wcmatch.h sync.h sync_lock_ptr.h \
-	sync_multilock.h sync_part_get_policy.h sync_policy_boost.h sync_policy_glib.h \
-	sync_policy_glibmm.h sync_policy_poco.h sync_policy_pthread.h sync_policy_win32.h \
-	system_specific.h tls.h tls_policy_boost.h tls_policy_glib.h tls_policy_pthread.h \
-	tls_policy_win32.h type_categories.h type_properties.h win32_tools.h
+	locale_tools.h noncopyable.h optional_value.h portable_snprintf.h process_signal.h \
+	ptr_container.h res_data.h scoped_array.h scoped_ptr.h shared_ptr.h static_assert.h stream_cast.h \
+	string_algo.h string_format.h string_num.h string_sprintf.h string_wcmatch.h sync.h \
+	sync_lock_ptr.h sync_multilock.h sync_part_get_policy.h sync_policy_boost.h \
+	sync_policy_glib.h sync_policy_glibmm.h sync_policy_poco.h sync_policy_pthread.h \
+	sync_policy_win32.h system_specific.h tls.h tls_policy_boost.h tls_policy_glib.h \
+	tls_policy_pthread.h tls_policy_win32.h type_categories.h type_properties.h win32_tools.h
 
 any_type_test_SOURCES = any_type_test.cpp
 bin2ascii_encoder_test_SOURCES = bin2ascii_encoder_test.cpp

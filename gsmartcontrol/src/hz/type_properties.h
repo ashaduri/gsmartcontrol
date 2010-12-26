@@ -73,10 +73,10 @@ TYPE_DEFINE_SPEC_0(type_is_integral, int, true);
 TYPE_DEFINE_SPEC_0(type_is_integral, unsigned int, true);
 TYPE_DEFINE_SPEC_0(type_is_integral, long, true);
 TYPE_DEFINE_SPEC_0(type_is_integral, unsigned long, true);
-#ifndef DISABLE_LL_INT
+#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
 	TYPE_DEFINE_SPEC_0(type_is_integral, long long, true);
 #endif
-#ifndef DISABLE_ULL_INT
+#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
 	TYPE_DEFINE_SPEC_0(type_is_integral, unsigned long long, true);
 #endif
 
@@ -88,7 +88,7 @@ TYPE_DEFINE_SPEC_0(type_is_signed, signed char, true);
 TYPE_DEFINE_SPEC_0(type_is_signed, short, true);
 TYPE_DEFINE_SPEC_0(type_is_signed, int, true);
 TYPE_DEFINE_SPEC_0(type_is_signed, long, true);
-#ifndef DISABLE_LL_INT
+#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
 	TYPE_DEFINE_SPEC_0(type_is_signed, long long, true);
 #endif
 
@@ -100,7 +100,7 @@ TYPE_DEFINE_SPEC_0(type_is_unsigned, unsigned char, true);
 TYPE_DEFINE_SPEC_0(type_is_unsigned, unsigned short, true);
 TYPE_DEFINE_SPEC_0(type_is_unsigned, unsigned int, true);
 TYPE_DEFINE_SPEC_0(type_is_unsigned, unsigned long, true);
-#ifndef DISABLE_ULL_INT
+#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
 	TYPE_DEFINE_SPEC_0(type_is_unsigned, unsigned long long, true);
 #endif
 
@@ -324,7 +324,7 @@ template<> struct type_make_signed<unsigned char> { typedef signed char type; };
 template<> struct type_make_signed<unsigned short int> { typedef short int type; };
 template<> struct type_make_signed<unsigned int> { typedef int type; };
 template<> struct type_make_signed<unsigned long int> { typedef long int type; };
-#ifndef DISABLE_ULL_INT
+#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
 	template<> struct type_make_signed<unsigned long long int> { typedef long long int type; };
 #endif
 
@@ -336,7 +336,7 @@ template<> struct type_make_unsigned<signed char> { typedef unsigned char type; 
 template<> struct type_make_unsigned<short int> { typedef unsigned short int type; };
 template<> struct type_make_unsigned<int> { typedef unsigned int type; };
 template<> struct type_make_unsigned<long int> { typedef unsigned long int type; };
-#ifndef DISABLE_LL_INT
+#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
 	template<> struct type_make_unsigned<long long int> { typedef unsigned long long int type; };
 #endif
 

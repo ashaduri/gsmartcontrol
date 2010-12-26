@@ -173,7 +173,8 @@ void GscHelpWindow::set_topic(const Glib::ustring& topic)
 		for (Gtk::TreeIter iter = list_store->children().begin(); iter != list_store->children().end(); ++iter) {
 			if (iter->get_value(col_topic) == topic) {
 				selection->select(*iter);
-				treeview->scroll_to_cell(list_store->get_path(iter), *(treeview->get_column(0)), 0.3, 0.);  // about 30% from top
+				// about 30% from top
+				treeview->scroll_to_cell(list_store->get_path(iter), *(treeview->get_column(0)), 0.3f, 0.f);
 				break;
 			}
 		}

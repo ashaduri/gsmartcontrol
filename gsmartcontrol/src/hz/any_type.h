@@ -31,16 +31,15 @@ Original notes and copyright info follow:
 
 
 // Compilation options:
-// - Define DISABLE_RTTI to disable RTTI checks and typeinfo-getter
+// - Define DISABLE_RTTI=1 to disable RTTI checks and typeinfo-getter
 // functions. NOT recommended.
 
-// - Define DISABLE_ANY_CONVERT to disable all .convert functions
+// - Define DISABLE_ANY_CONVERT=1 to disable all .convert functions
 // (avoids dependency on any_convert.h)
 
-// Note that __GXX_RTTI (not used here) is available for gcc >= 4.3.
 
-#ifndef DISABLE_RTTI
-#	include <typeinfo>  // std::type_info
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
+	#include <typeinfo>  // std::type_info
 #endif
 
 #include <iosfwd>  // std::ostream
@@ -96,7 +95,7 @@ class any_type {
 		}
 
 
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 		const std::type_info& type() const
 		{
 			return (content ? content->type() : typeid(void));
@@ -118,7 +117,7 @@ class any_type {
 		T get() const;  // this may throw if cast fails!
 
 
-#ifndef DISABLE_ANY_CONVERT
+#if !(defined DISABLE_ANY_CONVERT && DISABLE_ANY_CONVERT)
 		// convert the value into a castable type.
 		template<typename T> inline
 		bool convert(T& val) const;
@@ -226,7 +225,7 @@ ValueType any_cast(any_type* operand)
 	typedef typename type_remove_pointer<ValueType>::type nopointer;
 
 	if (operand && operand->content
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 		&& operand->type() == typeid(nopointer)
 #endif
 		) {
@@ -256,7 +255,7 @@ ValueType any_cast(any_type& operand)
 	if (!operand.content)
 		THROW_CUSTOM_BAD_CAST(bad_any_cast, operand.type(), typeid(nonref));
 
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 	if (operand.type() != typeid(nonref))
 		THROW_CUSTOM_BAD_CAST(bad_any_cast, operand.type(), typeid(nonref));
 #endif
@@ -274,7 +273,7 @@ ValueType any_cast(const any_type& operand)
 	if (!operand.content)
 		THROW_CUSTOM_BAD_CAST(bad_any_cast, operand.type(), typeid(nonref));
 
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 	if (operand.type() != typeid(nonref))
 		THROW_CUSTOM_BAD_CAST(bad_any_cast, operand.type(), typeid(nonref));
 #endif
@@ -298,7 +297,7 @@ inline any_type& any_type::swap(any_type& rhs)
 }
 
 
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 
 template<typename T> inline
 bool any_type::is_type() const
@@ -329,7 +328,7 @@ T any_type::get() const
 
 
 
-#ifndef DISABLE_ANY_CONVERT
+#if !(defined DISABLE_ANY_CONVERT && DISABLE_ANY_CONVERT)
 
 // convert the value into a castable type.
 template<typename T> inline

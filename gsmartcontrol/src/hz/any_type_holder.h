@@ -14,14 +14,14 @@
 Internal header, do not include manually.
 */
 
-#ifndef DISABLE_RTTI
-#	include <typeinfo>  // std::type_info
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
+	#include <typeinfo>  // std::type_info
 #endif
 
 #include <iosfwd>  // std::ostream
 #include <string>
 
-#ifndef DISABLE_ANY_CONVERT
+#if !(defined DISABLE_ANY_CONVERT && DISABLE_ANY_CONVERT)
 	#include "any_convert.h"  // any_convert
 #endif
 
@@ -40,7 +40,7 @@ struct AnyHolderBase {
 
 	virtual ~AnyHolderBase() { }
 
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 	virtual const std::type_info& type() const = 0;
 #endif
 	virtual AnyHolderBase* clone() const = 0;
@@ -48,7 +48,7 @@ struct AnyHolderBase {
 	virtual void to_stream(std::ostream& os) const = 0;
 
 
-#ifndef DISABLE_ANY_CONVERT
+#if !(defined DISABLE_ANY_CONVERT && DISABLE_ANY_CONVERT)
 
 	virtual bool convert(bool& val) const = 0;
 
@@ -63,10 +63,10 @@ struct AnyHolderBase {
 	virtual bool convert(unsigned int& val) const = 0;
 	virtual bool convert(long int& val) const = 0;
 	virtual bool convert(unsigned long int& val) const = 0;
-#ifndef DISABLE_LL_INT
+#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
 	virtual bool convert(long long int& val) const = 0;
 #endif
-#ifndef DISABLE_ULL_INT
+#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
 	virtual bool convert(unsigned long long int& val) const = 0;
 #endif
 
@@ -95,7 +95,7 @@ struct AnyHolder : public AnyHolderBase {
 	{ }
 
 
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 	const std::type_info& type() const
 	{
 		return typeid(ValueType);
@@ -115,7 +115,7 @@ struct AnyHolder : public AnyHolderBase {
 
 
 
-#ifndef DISABLE_ANY_CONVERT
+#if !(defined DISABLE_ANY_CONVERT && DISABLE_ANY_CONVERT)
 
 	bool convert(bool& val) const { return any_convert(value, val); }
 
@@ -130,10 +130,10 @@ struct AnyHolder : public AnyHolderBase {
 	bool convert(unsigned int& val) const { return any_convert(value, val); }
 	bool convert(long int& val) const { return any_convert(value, val); }
 	bool convert(unsigned long int& val) const { return any_convert(value, val); }
-#ifndef DISABLE_LL_INT
+#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
 	bool convert(long long int& val) const { return any_convert(value, val); }
 #endif
-#ifndef DISABLE_ULL_INT
+#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
 	bool convert(unsigned long long int& val) const { return any_convert(value, val); }
 #endif
 

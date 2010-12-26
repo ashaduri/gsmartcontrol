@@ -9,7 +9,7 @@
 
 // A simple empty window definition
 
-#if defined ENABLE_LIBGLADE
+#if defined ENABLE_LIBGLADE && ENABLE_LIBGLADE
 
 
 extern const unsigned char app_ui_res_test_window_ui[] = {
@@ -341,7 +341,7 @@ extern const unsigned int app_ui_res_test_window_ui_size = 319;
 
 
 
-#elif defined ENABLE_GTKBUILDER
+#elif defined ENABLE_GTKBUILDER && ENABLE_GTKBUILDER
 
 
 extern const unsigned char app_ui_res_test_window_ui[] = {

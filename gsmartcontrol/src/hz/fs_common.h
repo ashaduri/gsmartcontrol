@@ -9,7 +9,7 @@
 
 #include "hz_config.h"  // feature macros
 
-// #if defined ENABLE_GLIB
+// #if defined ENABLE_GLIB && ENABLE_GLIB
 // 	#include <glib.h>  // lotsa stuff...
 // #endif
 
@@ -24,7 +24,7 @@ namespace hz {
 // these have internal linkage (const integral types).
 
 // there's no point in keeping glib here only for this
-// #if defined ENABLE_GLIB
+// #if defined ENABLE_GLIB && ENABLE_GLIB
 // 	const char DIR_SEPARATOR = G_DIR_SEPARATOR;
 // 	static const char* const DIR_SEPARATOR_S = G_DIR_SEPARATOR_S;
 #if defined _WIN32

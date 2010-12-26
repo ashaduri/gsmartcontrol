@@ -172,10 +172,10 @@ DEFINE_STRING_IS_NUMERIC(unsigned int)
 DEFINE_STRING_IS_NUMERIC(long int)
 DEFINE_STRING_IS_NUMERIC(unsigned long int)
 
-#ifndef DISABLE_LL_INT
+#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
 	DEFINE_STRING_IS_NUMERIC(long long int)
 #endif
-#ifndef DISABLE_ULL_INT
+#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
 	DEFINE_STRING_IS_NUMERIC(unsigned long long int)
 #endif
 
@@ -235,13 +235,13 @@ namespace internal {
 				// base 10 can possibly have some funny formatting, so continue...
 			}
 
-			std::stringstream ss;
+			std::ostringstream ss;
 			ss.imbue(std::locale::classic());  // make it use classic locale
 
 			if (base == 16) {
 				// setfill & internal: leading 0s between 0x and XXXX.
 				// setw: e.g. for int32, we need 4*2 (size * 2 chars for byte) + 2 (0x) width.
-				ss << std::setfill('0') << std::internal << std::setw((sizeof(T) * 2) + 2);
+				ss << std::setfill('0') << std::internal << std::setw(static_cast<int>((sizeof(T) * 2) + 2));
 			}
 
 			ss << std::showbase << std::setbase(base) << number;
@@ -266,7 +266,7 @@ namespace internal {
 	struct number_to_string_impl<T, type_cat_float> {
 		static std::string func(T number, int precision, bool fixed_prec)
 		{
-			std::stringstream ss;
+			std::ostringstream ss;
 			ss.imbue(std::locale::classic());  // make it use classic locale
 			// without std::fixed, precision is counted as all digits, as opposed to only after comma.
 			if (fixed_prec)

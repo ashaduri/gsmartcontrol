@@ -375,14 +375,14 @@ struct is_any_convertible : public AnyConvertibleValue<
 	}
 
 
-#ifndef DISABLE_LL_INT
+#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
 	#define DEFINE_ANY_CONVERT_SPEC_STATIC_LLI(from_type) \
 			DEFINE_ANY_CONVERT_SPEC_STATIC(from_type, long long int)
 #else
 	#define DEFINE_ANY_CONVERT_SPEC_STATIC_LLI(from_type)
 #endif
 
-#ifndef DISABLE_ULL_INT
+#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
 	#define DEFINE_ANY_CONVERT_SPEC_STATIC_ULLI(from_type) \
 			DEFINE_ANY_CONVERT_SPEC_STATIC(from_type, unsigned long long int)
 #else
@@ -425,10 +425,10 @@ DEFINE_ANY_CONVERT_SPEC_ALL(int)
 DEFINE_ANY_CONVERT_SPEC_ALL(unsigned int)
 DEFINE_ANY_CONVERT_SPEC_ALL(long int)
 DEFINE_ANY_CONVERT_SPEC_ALL(unsigned long int)
-#ifndef DISABLE_LL_INT
+#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
 	DEFINE_ANY_CONVERT_SPEC_ALL(long long int)
 #endif
-#ifndef DISABLE_ULL_INT
+#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
 	DEFINE_ANY_CONVERT_SPEC_ALL(unsigned long long int)
 #endif
 

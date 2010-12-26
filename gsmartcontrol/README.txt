@@ -10,7 +10,8 @@ Technology) data on modern hard disk drives. It allows you to inspect the
 drive's SMART data to determine its health, as well as run various tests on
 it.
 
-Note: Only ATA drives (both PATA and SATA) are supported for now.
+Note: Only ATA drives (both PATA and SATA) and various USB to ATA bridges are
+supported for now.
 
 http://gsmartcontrol.berlios.de
 
@@ -28,10 +29,10 @@ impact on performance;
 
 * supports configuration of global and per-drive options for smartctl;
 
+* performs SMART self-tests;
+
 * displays drive identity information, capabilities, attributes, and
 self-test/error logs;
-
-* performs SMART self-tests;
 
 * can read in smartctl output from a saved file, interpreting it as a
 read-only virtual device;
@@ -147,9 +148,9 @@ SP1. The Windows port uses pd0, pd1, etc... for physical drives 0, 1, etc... .
 
 * Solaris - Tested with Solaris 10 / x86 / gcc-3.4.3 / blastwave,
 Solaris 10 / x86 / sunstudio12 / sunfreeware. OpenSolaris should work but has
-not been tested yet. Note that until either smartctl gets ATA support under
-Solaris or GSmartControl gets SCSI support, these configurations are
-essentially useless.
+not been tested yet. Note: smartctl doesn't seem to support ATA under Solaris,
+while GSmartControl doesn't support SCSI yet. This only leaves various USB to
+ATA bridges. See smartctl (5), -d option for details.
 
 * Mac OS X - 3rd-party testing by Fink project.
 
@@ -280,12 +281,12 @@ For more information, see smartctl and smartd documentation.
 
 Known Issues
 
-Only ATA (both PATA and SATA) disks are supported for now. The main reasons
-are:
+Only ATA drives (both PATA and SATA) and various USB to ATA bridges are
+supported for now. The main reasons are:
 
 * We can't support drives which don't work with smartmontools. This affects
 drives which don't support SMART or don't export SMART data correctly (e.g.
-USB enclosures, RAIDs, etc...).
+some USB enclosures, RAIDs, etc...).
 
 * Smartctl's output for SCSI drives is completely different compared to ATA.
 Also, SCSI drives are rarely found in desktop systems and the servers rarely
@@ -297,18 +298,11 @@ Immediate Offline Tests are not supported. I haven't found a way to reliably
 monitor them yet. Besides, they run automatically anyway if Automatic Offline
 Data Collection is enabled.
 
-You may run several tests on different drives in parallel, but you will only
-see the progress information of the last executing test. So, if you run tests
-on drives A, B and C (in that order), you won't be able to monitor the tests
-on A and B until C completes. And you won't be able to see any progress on A
-until both B and C complete their tests. This doesn't affect the tests
-themselves, just your ability to see their progress.
-
 Testing is only supported on drives which correctly report their progress
 information in capabilities.
 
 Not all drives support disabling Automatic Offline Data Collection, even if
-they report otherwise.
+they report otherwise. Unfortunately, there's no way to detect such drives.
 
 Running on GTK+ / Gtkmm versions earlier than 2.12 may cause visual artifacts,
 usability issues (especially with tooltips and icons), instability, etc...

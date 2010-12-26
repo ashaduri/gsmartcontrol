@@ -15,20 +15,12 @@
 
 
 
-// some auto-detection (gcc 3.3 or later (I think))
-#ifdef __GNUC__
-	#if ((__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3)) && !defined __EXCEPTIONS
-		#define DISABLE_EXCEPTIONS
-	#endif
-#endif
-
-
-// Define DISABLE_EXCEPTIONS to disable exception use
+// Define DISABLE_EXCEPTIONS=1 to disable exception use
 // (only applicable when using the macros defined below).
 // Useful for e.g. gcc's -fno-exceptions, etc...
 
 
-#ifndef DISABLE_EXCEPTIONS
+#if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
 
 
 	// If you use -fno-exceptions gcc switch (or similar), define
@@ -51,19 +43,24 @@
 #else  // no-exceptions alternative:
 
 
-	#include <cstdlib>  // std::exit(), EXIT_FAILURE
-	#include <iostream>  // std::cerr
+	#include <cstdlib>  // std::abort()
+	#include <cstdio>  // std::fprintf
+	// #include <iostream>  // std::cerr
 
-
+	// We could use std::exit(EXIT_FAILURE), but it's somewhat inconsistent
+	// in regards of stack unwinding and destructors, so use abort()
+	// std::cerr << "Fatal exception thrown (exceptions are disabled): " << ex.what() << std::endl;
 	#define THROW_FATAL(ex) \
 		if (true) { \
-			std::cerr << "Fatal exception thrown (exceptions are disabled): " << ex.what() << std::endl; \
-			std::exit(EXIT_FAILURE); \
+			const char* ex_what = ex.what(); \
+			std::fprintf(stderr, "Fatal exception thrown (exceptions are disabled): %s\n", ex_what ? ex_what : "[unknown]"); \
+			std::abort(); \
 		} else (void)0
 
+	// std::cerr << "Warn exception thrown (exceptions are disabled): " << ex.what() << std::endl;
 	#define THROW_WARN(ex) \
 		if (true) { \
-			std::cerr << "Warn exception thrown (exceptions are disabled): " << ex.what() << std::endl; \
+			std::fprintf(stderr, "Warn exception thrown (exceptions are disabled): %s\n", ex_what ? ex_what : "[unknown]"); \
 		} else (void)0
 
 

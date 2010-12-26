@@ -15,14 +15,14 @@
     <projectname>gsmartcontrol</projectname>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
-    <description/>
-    <defaultencoding/>
+    <description></description>
+    <defaultencoding></defaultencoding>
     <versioncontrol/>
   </general>
   <kdevautoproject>
     <general>
       <activetarget>src/gsmartcontrol</activetarget>
-      <useconfiguration>debuggy</useconfiguration>
+      <useconfiguration>suncc</useconfiguration>
     </general>
     <run>
       <mainprogram>/10/devel/projects/gsmartcontrol/current/gsmartcontrol/debuggy</mainprogram>
@@ -76,21 +76,21 @@
         <f77flags/>
       </optimized>
       <debuggy>
-        <configargs>--disable-user-flags --enable-debug-options --enable-tests</configargs>
+        <configargs>--enable-debug-options --enable-tests</configargs>
         <builddir>debuggy</builddir>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
-        <cflags/>
-        <cxxflags/>
+        <cflags></cflags>
+        <cxxflags></cxxflags>
         <envvars/>
-        <topsourcedir/>
-        <cppflags/>
-        <ldflags/>
-        <ccompilerbinary/>
-        <cxxcompilerbinary/>
-        <f77compilerbinary/>
-        <f77flags/>
+        <topsourcedir></topsourcedir>
+        <cppflags></cppflags>
+        <ldflags></ldflags>
+        <ccompilerbinary>gcc-4.4</ccompilerbinary>
+        <cxxcompilerbinary>g++-4.4</cxxcompilerbinary>
+        <f77compilerbinary></f77compilerbinary>
+        <f77flags></f77flags>
       </debuggy>
       <icc>
         <envvars/>
@@ -102,8 +102,8 @@
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
-        <ccompilerbinary>icc</ccompilerbinary>
-        <cxxcompilerbinary>icpc</cxxcompilerbinary>
+        <ccompilerbinary>icc64</ccompilerbinary>
+        <cxxcompilerbinary>icpc64</cxxcompilerbinary>
         <f77compilerbinary/>
         <cflags/>
         <cxxflags/>
@@ -111,7 +111,7 @@
       </icc>
       <win32>
         <envvars/>
-        <configargs>--disable-user-flags --enable-optimize-options --enable-tests --target=i386-mingw32 --host=i386-mingw32 --build=i686-linux PKG_CONFIG_PATH=/target/lib/pkgconfig PKG_CONFIG_LIBDIR=/target/lib PATH=&quot;/opt/cross-tools/bin:/target/bin:$PATH&quot;</configargs>
+        <configargs>--disable-user-flags --enable-optimize-options --enable-tests --build=i686-linux --host=i386-pc-mingw32 PKG_CONFIG_PATH=/cross/w32/target/lib/pkgconfig PKG_CONFIG_LIBDIR=&quot;&quot; PATH=&quot;/cross/w32/gcc-bin:/cross/w32/target/bin:$PATH&quot;</configargs>
         <builddir>win32</builddir>
         <topsourcedir/>
         <cppflags/>
@@ -119,8 +119,8 @@
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
-        <ccompilerbinary>i386-mingw32-gcc</ccompilerbinary>
-        <cxxcompilerbinary>i386-mingw32-g++</cxxcompilerbinary>
+        <ccompilerbinary>i386-pc-mingw32-gcc</ccompilerbinary>
+        <cxxcompilerbinary>i386-pc-mingw32-g++</cxxcompilerbinary>
         <f77compilerbinary/>
         <cflags/>
         <cxxflags/>
@@ -128,21 +128,21 @@
       </win32>
       <suncc>
         <envvars>
-          <envvar value="/opt/sun/sunstudio12/bin:$PATH" name="PATH" />
+          <envvar value="/opt/sun/sunstudio/bin:$PATH" name="PATH" />
         </envvars>
-        <configargs>--enable-tests</configargs>
+        <configargs>--enable-tests PKG_CONFIG_PATH=&quot;/opt/sun/target64/lib64/pkgconfig:/usr/lib64/pkgconfig&quot; PKG_CONFIG_LIBDIR=&quot;&quot;</configargs>
         <builddir>suncc</builddir>
         <topsourcedir/>
         <cppflags/>
-        <ldflags>-s</ldflags>
+        <ldflags>-R/opt/sun/target64/lib64 -L/opt/sun/target64/lib64</ldflags>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
         <ccompilerbinary>suncc</ccompilerbinary>
         <cxxcompilerbinary>sunCC</cxxcompilerbinary>
         <f77compilerbinary/>
-        <cflags>-errwarn=%all</cflags>
-        <cxxflags>-DGLIBMM_HAVE_SUN_REVERSE_ITERATOR -DSIGC_HAVE_SUN_REVERSE_ITERATOR</cxxflags>
+        <cflags>-errwarn=%all -I/opt/sun/target64/include</cflags>
+        <cxxflags>-I/opt/sun/target64/include</cxxflags>
         <f77flags/>
       </suncc>
       <portland>
@@ -164,7 +164,7 @@
       </portland>
       <win32-debug>
         <envvars/>
-        <configargs>--disable-user-flags --enable-debug-options --enable-tests --target=i386-mingw32 --host=i386-mingw32 --build=i686-linux PKG_CONFIG_PATH=/target/lib/pkgconfig PKG_CONFIG_LIBDIR=/target/lib PATH=&quot;/opt/cross-tools/bin:/target/bin:$PATH&quot;</configargs>
+        <configargs>--disable-user-flags --enable-debug-options --enable-tests --build=i686-linux --host=i386-pc-mingw32 PKG_CONFIG_PATH=/cross/w32/target/lib/pkgconfig PKG_CONFIG_LIBDIR=&quot;&quot; PATH=&quot;/cross/w32/gcc-bin:/cross/w32/target/bin:$PATH&quot;</configargs>
         <builddir>win32-debug</builddir>
         <topsourcedir/>
         <cppflags/>
@@ -172,13 +172,30 @@
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
-        <ccompilerbinary>i386-mingw32-gcc</ccompilerbinary>
-        <cxxcompilerbinary>i386-mingw32-g++</cxxcompilerbinary>
+        <ccompilerbinary>i386-pc-mingw32-gcc</ccompilerbinary>
+        <cxxcompilerbinary>i386-pc-mingw32-g++</cxxcompilerbinary>
         <f77compilerbinary/>
         <cflags/>
         <cxxflags/>
         <f77flags/>
       </win32-debug>
+      <win64-debug>
+        <envvars/>
+        <configargs>--disable-user-flags --enable-optimize-options --enable-tests --build=i686-linux --host=x86_64-pc-mingw32 PKG_CONFIG_PATH=/cross/w64/target/lib/pkgconfig PKG_CONFIG_LIBDIR=&quot;&quot; PATH=&quot;/cross/w64/gcc-bin:/cross/w64/target/bin:$PATH&quot;</configargs>
+        <builddir>win64-debug</builddir>
+        <topsourcedir/>
+        <cppflags/>
+        <ldflags/>
+        <ccompiler>kdevgccoptions</ccompiler>
+        <cxxcompiler>kdevgppoptions</cxxcompiler>
+        <f77compiler>kdevg77options</f77compiler>
+        <ccompilerbinary>x86_64-pc-mingw32-gcc</ccompilerbinary>
+        <cxxcompilerbinary>x86_64-pc-mingw32-g++</cxxcompilerbinary>
+        <f77compilerbinary/>
+        <cflags/>
+        <cxxflags/>
+        <f77flags/>
+      </win64-debug>
     </configurations>
     <make>
       <envvars>
@@ -254,11 +271,11 @@
   </kdevdoctreeview>
   <kdevdebugger>
     <general>
-      <dbgshell/>
-      <gdbpath/>
-      <configGdbScript/>
-      <runShellScript/>
-      <runGdbScript/>
+      <dbgshell></dbgshell>
+      <gdbpath></gdbpath>
+      <configGdbScript></configGdbScript>
+      <runShellScript></runShellScript>
+      <runGdbScript></runGdbScript>
       <breakonloadinglibs>true</breakonloadinglibs>
       <separatetty>false</separatetty>
       <floatingtoolbar>false</floatingtoolbar>

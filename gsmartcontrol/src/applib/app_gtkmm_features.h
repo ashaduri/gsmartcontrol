@@ -25,7 +25,7 @@
 
 // New tooltip API is available since 2.12
 #if !APP_GTKMM_CHECK_VERSION(2, 12, 0)
-	#define APP_GTKMM_OLD_TOOLTIPS
+	#define APP_GTKMM_OLD_TOOLTIPS 1
 #endif
 
 

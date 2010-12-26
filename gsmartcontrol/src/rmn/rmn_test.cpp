@@ -5,8 +5,11 @@
  License: See LICENSE_whatever.txt
 ***************************************************************************/
 
-#define INTRUSIVE_PTR_RUNTIME_CHECKS
-#define RMN_RESOURCE_NODE_DEBUG
+#undef INTRUSIVE_PTR_RUNTIME_CHECKS
+#define INTRUSIVE_PTR_RUNTIME_CHECKS 1
+
+#undef RMN_RESOURCE_NODE_DEBUG
+#define RMN_RESOURCE_NODE_DEBUG 1
 
 // disable libdebug, we don't link to it
 #undef HZ_USE_LIBDEBUG

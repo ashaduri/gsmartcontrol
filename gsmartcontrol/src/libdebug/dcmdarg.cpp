@@ -6,7 +6,7 @@
 
 #include "hz/hz_config.h"  // ENABLE_GLIB, DEBUG_BUILD
 
-#ifdef ENABLE_GLIB
+#if defined ENABLE_GLIB && ENABLE_GLIB
 
 #include <string>
 #include <vector>
@@ -166,7 +166,7 @@ static gboolean debug_internal_post_parse_func(GOptionContext* context,
 std::string debug_get_cmd_args_dump()
 {
 	debug_internal::DebugCmdArgs* args = debug_internal::debug_get_args_holder();
-	std::stringstream ss;
+	std::ostringstream ss;
 
 // 	ss << "\tverbose: " << std::boolalpha << static_cast<bool>(args->verbose) << "\n";
 // 	ss << "\tquiet: " << std::boolalpha << static_cast<bool>(args->quiet) << "\n";

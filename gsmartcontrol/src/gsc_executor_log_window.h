@@ -8,6 +8,7 @@
 #define GSC_EXECUTOR_LOG_WINDOW_H
 
 #include <vector>
+#include <cstddef>  // std::size_t
 #include <gtkmm/window.h>
 #include <gtkmm/liststore.h>
 #include <gtkmm/treeselection.h>
@@ -51,7 +52,7 @@ class GscExecutorLogWindow : public AppUIResWidget<GscExecutorLogWindow, false> 
 		Glib::RefPtr<Gtk::ListStore> list_store;
 		Glib::RefPtr<Gtk::TreeSelection> selection;
 
-		Gtk::TreeModelColumn<unsigned int> col_num;
+		Gtk::TreeModelColumn<std::size_t> col_num;
 		Gtk::TreeModelColumn<std::string> col_command;
 		Gtk::TreeModelColumn<CmdexSyncCommandInfoRefPtr> col_entry;
 

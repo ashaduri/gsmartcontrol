@@ -36,13 +36,21 @@
 
 
 // for easy printf format checks.
-// ms_printf is not available as of 4.3, but present in docs. TODO: check with 4.4 when it's out.
 #ifndef HZ_FUNC_PRINTF_CHECK
-// 	#if defined _WIN32 && HZ_GCC_CHECK_VERSION(4, 4, 0)
-// 		#define HZ_FUNC_PRINTF_CHECK(format_idx, check_idx) HZ_GCC_ATTR(format(ms_printf, format_idx, check_idx))
-// 	#else
+	// See http://gcc.gnu.org/onlinedocs/gcc-4.4.1/gcc/Function-Attributes.html
+	// ms_printf is available since gcc 4.4.
+	// Note: When using __USE_MINGW_ANSI_STDIO, mingw uses
+	// its own *printf() implementation (rather than msvcrt), which accepts
+	// both MS-style and standard format specifiers.
+	// ms_printf gives warnings on standard specifiers, but we still keep
+	// it so that the code will be portable to other win32 environments.
+	// TODO: Check if simply specifying "printf" selects the correct
+	// version for mingw.
+	#if defined _WIN32 && HZ_GCC_CHECK_VERSION(4, 4, 0)
+		#define HZ_FUNC_PRINTF_CHECK(format_idx, check_idx) HZ_GCC_ATTR(format(ms_printf, format_idx, check_idx))
+	#else
 		#define HZ_FUNC_PRINTF_CHECK(format_idx, check_idx) HZ_GCC_ATTR(format(printf, format_idx, check_idx))
-// 	#endif
+	#endif
 #endif
 
 
@@ -51,12 +59,11 @@
 #include <string>
 
 
-// this also works with intel/linux (__GNUC__ defined by default in it).
-// we still leave __GNUC__ for autoconf-less setups.
-#if defined HAVE_GCC_ABI_DEMANGLE || defined __GNUC__
+#if defined HAVE_GCC_ABI_DEMANGLE && HAVE_GCC_ABI_DEMANGLE
 
+	#include <string>
+	#include <cstdlib>  // std::free().
 	#include <cxxabi.h>  // __cxa_demangle
-	#include <stdlib.h>  // free(). don't use the C++ version, this one is allocated internally.
 
 
 namespace hz {
@@ -70,7 +77,7 @@ namespace hz {
 		if (demangled) {
 			if (status == 0)
 				ret = demangled;
-			free(demangled);
+			std::free(demangled);
 		}
 		return ret;
 	}
@@ -78,7 +85,7 @@ namespace hz {
 }  // ns hz
 
 
-#else // non-gcc-compatible
+#else  // non-gcc-compatible
 
 namespace hz {
 

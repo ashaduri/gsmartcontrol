@@ -30,24 +30,35 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		// to display the correct icon
 		enum type_t {
 			type_unknown,  // unknown. will be autodetected by smartctl
-			type_cddvd  // unsupported by smartctl
-// 			type_pata,  // old pata
-
-			// we can't differentiate between these.
-// 			type_ata,  // libata
-// 			type_scsi,  // scsi
+			type_invalid,  // this is set by smartctl executor if it detects invalid type (but not if it's scsi).
+			type_cddvd,  // unsupported by smartctl, only basic info is given.
+			type_scsi  // this is used to force "-d scsi" to execute IDENTIFY command.
 		};
 
-		static std::string get_type_name(type_t type)
+
+		// this gives a string which can be displayed in outputs
+		static std::string get_type_readable_name(type_t type)
 		{
 			switch (type) {
 				case type_unknown: return "unknown";
-				case type_cddvd: return "cd_dvd";
-// 				case type_pata: return "old_pata";
-// 				case type_ata: return "libata";
-// 				case type_scsi: return "scsi";
+				case type_invalid: return "invalid";
+				case type_cddvd: return "cd/dvd";
+				case type_scsi: return "scsi";
 			}
 			return "[internal_error]";
+		}
+
+
+		// this gives a string which, if not empty, can be given as a parameter of "-d".
+		static std::string get_type_arg_name(type_t type)
+		{
+			switch (type) {
+				case type_unknown: return "";
+				case type_invalid: return "";
+				case type_cddvd: return "";
+				case type_scsi: return "scsi";
+			}
+			return "";
 		}
 
 
@@ -147,7 +158,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		}
 
 
-		// calls "smartctl --info" (info sectio), then parse_basic_data()
+		// calls "smartctl --info" (info section), then parse_basic_data()
 		// called during drive detection.
 		// note: this will clear the non-basic properties!
 		std::string fetch_basic_data_and_parse(hz::intrusive_ptr<CmdexSync> smartctl_ex = 0);
@@ -344,12 +355,12 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		std::string get_save_filename() const;
 
 
-		std::string get_device_options() const;  // get smartctl options for this device from config.
+		std::string get_device_options() const;  // get smartctl options for this device from config and type info.
 
 
 		// execute smartctl on this device. nothing is modified in this class.
 		std::string execute_smartctl(const std::string& command_options,
-				hz::intrusive_ptr<CmdexSync> smartctl_ex, std::string& output) const;
+				hz::intrusive_ptr<CmdexSync> smartctl_ex, std::string& output, bool check_type = false);
 
 
 		// emitted whenever new information is available

@@ -25,16 +25,25 @@
 
 AC_DEFUN([AC_CXX_VERBOSE_TERMINATE_HANDLER],
 [AC_CACHE_CHECK(whether the compiler has __gnu_cxx::__verbose_terminate_handler,
-ac_cv_verbose_terminate_handler,
-[
-  AC_REQUIRE([AC_CXX_EXCEPTIONS])
-  AC_REQUIRE([AC_CXX_NAMESPACES])
-  AC_LANG_PUSH([C++])
-  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <exception>]], [[std::set_terminate(__gnu_cxx::__verbose_terminate_handler);]])],[ac_cv_verbose_terminate_handler=yes],[ac_cv_verbose_terminate_handler=no
-  ])
-  AC_LANG_POP([])
+	ac_cv_verbose_terminate_handler,
+	[
+		AC_REQUIRE([AC_CXX_EXCEPTIONS])
+		AC_REQUIRE([AC_CXX_NAMESPACES])
+		AC_LANG_PUSH([C++])
+		AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+			[[#include <exception>]],
+			[[std::set_terminate(__gnu_cxx::__verbose_terminate_handler);]])],
+			[ac_cv_verbose_terminate_handler=yes], [ac_cv_verbose_terminate_handler=no])
+		AC_LANG_POP([])
+	])
+	if test "$ac_cv_verbose_terminate_handler" = yes; then
+		AC_DEFINE(HAVE_VERBOSE_TERMINATE_HANDLER, 1,
+			[defined to 1 if the compiler has __gnu_cxx::__verbose_terminate_handler, 0 otherwise])
+	else
+		AC_DEFINE(HAVE_VERBOSE_TERMINATE_HANDLER, 0,
+			[defined to 1 if the compiler has __gnu_cxx::__verbose_terminate_handler, 0 otherwise])
+	fi
 ])
-if test "$ac_cv_verbose_terminate_handler" = yes; then
-  AC_DEFINE(HAVE_VERBOSE_TERMINATE_HANDLER, , [define if the compiler has __gnu_cxx::__verbose_terminate_handler])
-fi
-])
+
+
+

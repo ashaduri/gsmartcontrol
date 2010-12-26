@@ -1,14 +1,14 @@
 
 ############################################################################
 # Copyright:
-#      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+#      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
 # License: See LICENSE_zlib.txt file
 ############################################################################
 
 
 # APP_GET_MT_FLAGS(flags_prefix[, action-if-not-found])
 # This macro detects compiler flags which are needed to compile a multi-threaded
-# (possibly pthreads-based) applications on target OS. flags_prefixCFLAGS,
+# (preferably pthreads-based) applications on target OS. flags_prefixCFLAGS,
 # flags_prefixCXXFLAGS and flags_prefixLIBS will be initialized (or appended to)
 # with the correct flags.
 
@@ -47,7 +47,7 @@ AC_DEFUN([APP_GET_MT_FLAGS], [
 	fi
 
 
-	# Compilers use at least 3 defines to indicate thread-safe support to standard libs:
+	# Compilers use at least 3 defines to enable thread-safe support:
 	# _THREAD_SAFE, _MT, _REENTRANT.
 	# We use the ones that are required for detected platform.
 
@@ -63,17 +63,20 @@ AC_DEFUN([APP_GET_MT_FLAGS], [
 				app_cv_target_thread_found="yes";
 
 			elif test "$ax_cv_cxx_compiler_vendor" = "sun"; then
-				# suncc needs -lpthread on posix but not solaris.
-				# -mt defines _REENTRANT too. Don't use -lthread.
+				# suncc's -mt expands to:
+				# "-D_REENTRANT -lpthread" on Linux, uses pthreads (pthread.h);
+				# "-D_REENTRANT -lthread" on Solaris, uses Solaris threads (thread.h).
+				# To use pthreads on Solaris, use "-mt -lpthread".
+				# http://docs.sun.com/app/docs/doc/820-7598/bjapp?a=view
 				app_cv_target_thread_cflags="-mt"
 				app_cv_target_thread_cxxflags="-mt"
-				app_cv_target_thread_libs="-mt -lpthread"
+				app_cv_target_thread_libs="-mt"
 				app_cv_target_thread_found="yes";
 
 			fi
 			;;
 
-		windows)
+		windows*)
 			# NOTE: Not sure about cygwin.
 			# NOTE: This only enables multithreaded code generation. For linking
 			# with pthreads-win32 you need additional flags.
@@ -87,10 +90,20 @@ AC_DEFUN([APP_GET_MT_FLAGS], [
 			fi
 			;;
 
-		freebsd | dragonfly | netbsd | openbsd)
+		interix)
+			# Interix kernel is implemented on top of windows kernel.
+			# Interix uses -D_REENTRANT for pthreads, automatically enabling -lpthread.
+			if test "$ax_cv_cxx_compiler_vendor" = "gnu"; then
+				app_cv_target_thread_cflags="-D_REENTRANT"
+				app_cv_target_thread_cxxflags="-D_REENTRANT"
+				app_cv_target_thread_found="yes"
+			fi
+			;;
+
+		freebsd | dragonfly)
 			# NOTE: Not sure about debian gnu/kfreebsd and gnu/netbsd.
 			# Freebsd had -kthread, but it has been discontinued (afaik).
-			# For freebsd -pthread already replaces libc with libc_r.
+			# For freebsd -pthread replaces libc with libc_r.
 			if test "$ax_cv_cxx_compiler_vendor" = "gnu"; then
 				app_cv_target_thread_cflags="-pthread -D_MT -D_THREAD_SAFE"
 				app_cv_target_thread_cxxflags="-pthread -D_MT -D_THREAD_SAFE"
@@ -99,22 +112,48 @@ AC_DEFUN([APP_GET_MT_FLAGS], [
 			fi
 			;;
 
+		openbsd)
+			if test "$ax_cv_cxx_compiler_vendor" = "gnu"; then
+				app_cv_target_thread_cflags="-pthread -D_REENTRANT"
+				app_cv_target_thread_cxxflags="-pthread -D_REENTRANT"
+				app_cv_target_thread_libs="-pthread"
+				app_cv_target_thread_found="yes";
+			fi
+			;;
+
+		netbsd)
+			# See sys/featuretest.h
+			if test "$ax_cv_cxx_compiler_vendor" = "gnu"; then
+				app_cv_target_thread_cflags="-pthread -D_REENTRANT"
+				app_cv_target_thread_cxxflags="-pthread -D_REENTRANT"
+				app_cv_target_thread_libs="-pthread"
+				app_cv_target_thread_found="yes";
+			fi
+			;;
+
 		solaris)
 			if test "$ax_cv_cxx_compiler_vendor" = "gnu"; then
-				# gnu documentation mentions -threads (and its aliases, -pthreads and -pthread)
-				app_cv_target_thread_cflags="-pthreads -D_MT -D_THREAD_SAFE"
-				app_cv_target_thread_cxxflags="-pthreads -D_MT -D_THREAD_SAFE"
+				# gnu documentation mentions -threads (and its aliases, -pthreads and -pthread).
+				# _REENTRANT is needed to enable some thread-safe equivalents of standard
+				# functions.
+				# http://docs.sun.com/app/docs/doc/805-8005-04/6j7hcvqs4?l=ko&a=view
+				app_cv_target_thread_cflags="-pthreads -D_MT -D_THREAD_SAFE -D_REENTRANT"
+				app_cv_target_thread_cxxflags="-pthreads -D_MT -D_THREAD_SAFE -D_REENTRANT"
 				app_cv_target_thread_libs="-pthreads"
 				app_cv_target_thread_found="yes"
 
 			elif test "$ax_cv_cxx_compiler_vendor" = "sun"; then
-				# -mt defines _REENTRANT too. Don't use -lthread.
+				# suncc's -mt expands to:
+				# "-D_REENTRANT -lpthread" on Linux, uses pthreads (pthread.h);
+				# "-D_REENTRANT -lthread" on Solaris, uses Solaris threads (thread.h).
+				# To use pthreads on Solaris, use "-mt -lpthread".
+				# http://docs.sun.com/app/docs/doc/820-7598/bjapp?a=view
 				# http://docs.sun.com/app/docs/doc/816-5175/pthreads-5?a=view
 				# http://docs.sun.com/app/docs/doc/816-5137/compile-74765?a=view
-				# There are two threading libraries, selectable via different switches.
-				app_cv_target_thread_cflags="-mt"
-				app_cv_target_thread_cxxflags="-mt"
-				app_cv_target_thread_libs="-mt"
+				# We use POSIX threads, so append -lpthread.
+				app_cv_target_thread_cflags="-mt -lpthread"
+				app_cv_target_thread_cxxflags="-mt -lpthread"
+				app_cv_target_thread_libs="-mt -lpthread"
 				app_cv_target_thread_found="yes"
 			fi
 			;;
@@ -122,8 +161,6 @@ AC_DEFUN([APP_GET_MT_FLAGS], [
 		darwin)
 			if test "$ax_cv_cxx_compiler_vendor" = "gnu"; then
 				# Darwin produces mt code by default, and -pthread is an error.
-				# gcc/darwin defines __APPLE__. __UNIX__ is not defined.
-				# -D_THREAD_SAFE
 				app_cv_target_thread_found="yes"
 			fi
 			;;

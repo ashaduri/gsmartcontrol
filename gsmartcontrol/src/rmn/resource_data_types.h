@@ -25,9 +25,10 @@
 #define RMN_RESOURCE_DATA_TYPES_H
 
 #include <string>
-#include <stdint.h>
 
 #include "hz/hz_config.h"  // DISABLE_RTTI, RMN_TYPE_TRACKING (global_macros.h)
+#include "hz/cstdint.h"
+
 
 
 
@@ -76,7 +77,7 @@ template<> struct node_data_type_by_real<void*> { static const node_data_type ty
 
 
 
-#ifdef RMN_TYPE_TRACKING
+#if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
 
 template<class Data> inline
 node_data_type resource_node_get_type(intrusive_ptr<const resource_node<Data> > node)
@@ -93,7 +94,7 @@ node_data_type resource_node_get_type(intrusive_ptr<resource_node<Data> > node)
 
 
 
-#elif !defined DISABLE_RTTI
+#elif !(defined DISABLE_RTTI && DISABLE_RTTI)
 
 // RTTI version (slower)
 template<class Data> inline

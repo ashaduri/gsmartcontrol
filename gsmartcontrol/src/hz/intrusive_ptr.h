@@ -28,11 +28,12 @@ Original notes and copyright info follow:
 
 
 
+#include <cstddef>  // std::size_t
 #include <cstring>  // strncpy / strlen
 #include <exception>  // std::exception
 // #include <iosfwd>  // std::ostream (for operator<<)
 
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 	#include <typeinfo>  // std::type_info
 #endif
 
@@ -40,14 +41,14 @@ Original notes and copyright info follow:
 
 
 // This enables reference count and lock tracing (very verbose)
-// #define INTRUSIVE_PTR_TRACING
+// #define INTRUSIVE_PTR_TRACING 1
 
 // This enables runtime checks for errors (with exception throwing)
-#define INTRUSIVE_PTR_RUNTIME_CHECKS
+// #define INTRUSIVE_PTR_RUNTIME_CHECKS 1
 
 
 
-#ifdef INTRUSIVE_PTR_TRACING
+#if defined INTRUSIVE_PTR_TRACING && INTRUSIVE_PTR_TRACING
 	// Don't use libdebug here - it uses us and bad things may happen
 	// if there's something wrong with it.
 	// Use plain std::cerr. It will be disabled by default anyway.
@@ -67,7 +68,7 @@ namespace hz {
 struct intrusive_ptr_error : virtual public std::exception {  // from <exception>
 
 	intrusive_ptr_error(const char* msg)
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 			: type_(typeid(void))
 #endif
 	{
@@ -75,7 +76,7 @@ struct intrusive_ptr_error : virtual public std::exception {  // from <exception
 		msg_ = std::strncpy(new char[buf_len], msg, buf_len);
 	}
 
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 	intrusive_ptr_error(const char* msg, const std::type_info& type)
 		: msg_(0), type_(type)
 	{
@@ -104,7 +105,7 @@ struct intrusive_ptr_error : virtual public std::exception {  // from <exception
 	}
 
 	char* msg_;
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 	const std::type_info& type_;
 #endif
 };
@@ -114,20 +115,21 @@ struct intrusive_ptr_error : virtual public std::exception {  // from <exception
 // If no tracing, disregard messages to cerr.
 
 
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 
-	#if defined INTRUSIVE_PTR_TRACING && defined INTRUSIVE_PTR_RUNTIME_CHECKS
+	#if defined INTRUSIVE_PTR_TRACING && INTRUSIVE_PTR_TRACING \
+			&& defined INTRUSIVE_PTR_RUNTIME_CHECKS && INTRUSIVE_PTR_RUNTIME_CHECKS
 		#define INTRUSIVE_PTR_THROW(cond, type, msg) \
 			if (cond) { \
 				std::cerr << (msg) << " Type: " << type.name() << "\n"; \
 				THROW_FATAL(intrusive_ptr_error(msg, type)); \
 			}
 
-	#elif defined INTRUSIVE_PTR_TRACING
+	#elif defined INTRUSIVE_PTR_TRACING && INTRUSIVE_PTR_TRACING
 		#define INTRUSIVE_PTR_THROW(cond, type, msg) \
 			std::cerr << (msg) << " Type: " << type.name() << "\n";
 
-	#elif defined INTRUSIVE_PTR_RUNTIME_CHECKS
+	#elif defined INTRUSIVE_PTR_RUNTIME_CHECKS && INTRUSIVE_PTR_RUNTIME_CHECKS
 		#define INTRUSIVE_PTR_THROW(cond, type, msg) \
 			if (cond) { \
 				THROW_FATAL(intrusive_ptr_error(msg, type)); \
@@ -140,18 +142,19 @@ struct intrusive_ptr_error : virtual public std::exception {  // from <exception
 
 #else  // no rtti
 
-	#if defined INTRUSIVE_PTR_TRACING && defined INTRUSIVE_PTR_RUNTIME_CHECKS
+	#if defined INTRUSIVE_PTR_TRACING && INTRUSIVE_PTR_TRACING \
+			&& defined INTRUSIVE_PTR_RUNTIME_CHECKS && INTRUSIVE_PTR_RUNTIME_CHECKS
 		#define INTRUSIVE_PTR_THROW(cond, type, msg) \
 			if (cond) { \
 				std::cerr << (msg) << "\n"; \
 				THROW_FATAL(intrusive_ptr_error(msg)); \
 			}
 
-	#elif defined INTRUSIVE_PTR_TRACING
+	#elif defined INTRUSIVE_PTR_TRACING && INTRUSIVE_PTR_TRACING
 		#define INTRUSIVE_PTR_THROW(cond, type, msg) \
 			std::cerr << (msg) << "\n";
 
-	#elif defined INTRUSIVE_PTR_RUNTIME_CHECKS
+	#elif defined INTRUSIVE_PTR_RUNTIME_CHECKS && INTRUSIVE_PTR_RUNTIME_CHECKS
 		#define INTRUSIVE_PTR_THROW(cond, type, msg) \
 			if (cond) { \
 				THROW_FATAL(intrusive_ptr_error(msg)); \
@@ -165,7 +168,7 @@ struct intrusive_ptr_error : virtual public std::exception {  // from <exception
 
 
 // Prints a message if tracing is enabled
-#if defined INTRUSIVE_PTR_TRACING
+#if defined INTRUSIVE_PTR_TRACING && INTRUSIVE_PTR_TRACING
 	#define INTRUSIVE_PTR_TRACE_MSG(msg) std::cerr << msg << "\n";
 #else
 	#define INTRUSIVE_PTR_TRACE_MSG(msg) { }
@@ -562,7 +565,7 @@ intrusive_ptr<T, R> ptr_const_cast(const intrusive_ptr<U, S>& p)
 }
 
 
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 
 template<class T, class R, class U> inline
 intrusive_ptr<T> ptr_dynamic_cast(const intrusive_ptr<U, R>& p)

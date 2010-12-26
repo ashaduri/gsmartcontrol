@@ -10,6 +10,7 @@
 #include "hz/string_num.h"  // number_to_string
 #include "hz/stream_cast.h"  // stream_cast<>
 #include "hz/format_unit.h"  // format_time_length
+#include "hz/string_algo.h"  // string_join
 
 #include "storage_property.h"
 
@@ -38,7 +39,7 @@ std::ostream& operator<< (std::ostream& os, const StorageAttribute& p)
 
 
 
-std::string StorageErrorBlock::get_readable_error_type(const std::string& type)
+std::string StorageErrorBlock::get_readable_error_types(const std::vector<std::string>& types)
 {
 	std::map<std::string, std::string> m;
 
@@ -57,18 +58,25 @@ std::string StorageErrorBlock::get_readable_error_type(const std::string& type)
 	m["UNC"] = "Uncorrectable error in data";
 	m["WP"] = "Media is write protected";
 
-	if (m.find(type) != m.end())
-		return m[type];
+	std::vector<std::string> sv;
+	for (std::vector<std::string>::const_iterator iter = types.begin(); iter != types.end(); ++iter) {
+		if (m.find(*iter) != m.end()) {
+			sv.push_back(m[*iter]);
+		} else {
+			sv.push_back("[unknown type" + (iter->empty() ? "" : (": " + (*iter))) + "]");
+		}
+	}
 
-	return "[unknown type]";
+	return hz::string_join(sv, ", ");
 }
 
 
 
 std::ostream& operator<< (std::ostream& os, const StorageErrorBlock& b)
 {
-	os << "Error number: " << b.error_num << ", "
-		<< b.reported_type << " [" << StorageErrorBlock::get_readable_error_type(b.reported_type) << "]";
+	os << "Error number " << b.error_num << ": "
+		<< hz::string_join(b.reported_types, ", ")
+		<< " [" << StorageErrorBlock::get_readable_error_types(b.reported_types) << "]";
 	return os;
 }
 

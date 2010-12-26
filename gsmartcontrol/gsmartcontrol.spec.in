@@ -1,5 +1,5 @@
 Name:		gsmartcontrol
-Version:	@VERSION@
+Version: 	@VERSION@
 Release:	1as
 License:	GPLv2, GPLv3
 Url:		http://gsmartcontrol.berlios.de
@@ -38,8 +38,13 @@ Group:		Hardware/Other
 Requires: smartmontools, pcre, gtkmm2 >= 2.12.0
 BuildRequires: gcc-c++, libstdc++-devel, pcre-devel, gtkmm2-devel >= 2.12.0
 %else
+%if 0%{?%suse_version} == 1020
 Requires: smartmontools, pcre, gtkmm2 >= 2.6.0, libglademm >= 2.4.0
 BuildRequires: gcc-c++, libstdc++-devel, pcre-devel, gtkmm2-devel >= 2.6.0, libglademm-devel >= 2.4.0
+%else
+Requires: smartmontools, pcre, gtkmm24 >= 2.6.0, libglademm >= 2.4.0
+BuildRequires: gcc-c++, libstdc++-devel, pcre-devel, gtkmm24-devel >= 2.6.0, libglademm-devel >= 2.4.0
+%endif
 %endif
 
 %endif
@@ -85,8 +90,11 @@ SMART data to determine its health, as well as run various tests on it.
 
 
 %setup -q
+%if 0%{?mandriva_version} <= 2006
+%configure
+%else
 %configure --enable-optimize-options=auto
-
+%endif
 
 %build
 # Set up for parallel builds
@@ -146,4 +154,3 @@ rm -rf %buildroot
 
 * Mon Sep 15 2008 Alexander Shaduri <ashaduri 'at' gmail.com>
 - Initial .spec file.
-

@@ -12,11 +12,11 @@
 #include <string>
 #include <exception>  // for std::exception specialization
 
-#ifndef DISABLE_RTTI
-#	include <typeinfo>  // std::type_info
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
+	#include <typeinfo>  // std::type_info
 #endif
 
-// #if defined ENABLE_GLIBMM
+// #if defined ENABLE_GLIBMM && ENABLE_GLIBMM
 // #	include <glibmm/error.h>  // for Glib::Error specialization
 // #endif
 
@@ -31,7 +31,7 @@
 // Compilation options:
 // - Define DISABLE_RTTI to disable RTTI checks and typeinfo-getter
 // functions. NOT recommended.
-// - Define ENABLE_GLIBMM to enable glibmm-related code (mainly
+// - Define ENABLE_GLIBMM to 1 to enable glibmm-related code (mainly
 // utf8 string messages and Glib::Error specialization). Note that this
 // will also enable GLIB.
 
@@ -88,7 +88,7 @@ class ErrorBase {
 		virtual ErrorBase* clone() = 0;  // needed for copying by base pointers
 
 
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 		virtual const std::type_info& get_code_type() const = 0;
 #endif
 
@@ -96,7 +96,7 @@ class ErrorBase {
 		template<class CodeMemberType>
 		CodeMemberType get_code() const  // this may throw on bad cast!
 		{
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 			if (get_code_type() != typeid(CodeMemberType))
 				THROW_CUSTOM_BAD_CAST(type_mismatch, get_code_type(), typeid(CodeMemberType));
 #endif
@@ -107,7 +107,7 @@ class ErrorBase {
 		template<class CodeMemberType>
 		bool get_code(CodeMemberType& put_it_here) const  // this doesn't throw
 		{
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 			if (get_code_type() != typeid(CodeMemberType))
 				return false;
 #endif
@@ -181,7 +181,7 @@ class ErrorCodeHolder : public ErrorBase {
 
 	public:
 
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 		const std::type_info& get_code_type() const { return typeid(CodeType); }
 #endif
 
@@ -202,7 +202,7 @@ class ErrorCodeHolder<void> : public ErrorBase {
 
 	public:
 
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 		const std::type_info& get_code_type() const { return typeid(void); }
 #endif
 

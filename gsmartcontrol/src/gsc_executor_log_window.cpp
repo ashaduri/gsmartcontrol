@@ -5,6 +5,7 @@
 ***************************************************************************/
 
 #include <sstream>
+#include <cstddef>  // std::size_t
 #include <gtkmm/button.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/textview.h>
@@ -90,13 +91,13 @@ GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, const app_ui
 	// Setting text on this entry segfaults under win32, (utf8 conversion doesn't
 	// help, not that it should). Seems to be connected to non-english locale.
 	// Surprisingly, the treeview column text still works.
-	// Any solutions?
 
-#ifdef _WIN32
-	Gtk::HBox* command_hbox = this->lookup_widget<Gtk::HBox*>("command_hbox");
-	if (command_hbox)
-		command_hbox->hide();
-#endif
+	// The problem seems to have disappeared (new compiler/runtime?)
+// #ifdef _WIN32
+// 	Gtk::HBox* command_hbox = this->lookup_widget<Gtk::HBox*>("command_hbox");
+// 	if (command_hbox)
+// 		command_hbox->hide();
+// #endif
 
 	// ---------------
 
@@ -230,14 +231,14 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 {
 	// complete libdebug output + execution logs
 
-	std::stringstream exss;
+	std::ostringstream exss;
 
 	exss << "\n------------------------- LIBDEBUG LOG -------------------------\n\n\n";
 	exss << app_get_debug_buffer_str() << "\n\n\n";
 
 	exss << "\n\n\n------------------------- EXECTION LOG -------------------------\n\n\n";
 
-	for (unsigned int i = 0; i < entries.size(); ++i) {
+	for (std::size_t i = 0; i < entries.size(); ++i) {
 		exss << "\n\n\n------------------------- EXECUTED COMMAND " << (i+1) << " -------------------------\n\n";
 		exss << "\n---------------" << "Command" << "---------------\n";
 		exss << entries[i]->command << "\n";
@@ -353,14 +354,15 @@ void GscExecutorLogWindow::on_tree_selection_changed()
 			}
 		}
 
-		// Hide in win32 because it is known to cause segfaults there (huh?)
-#ifndef _WIN32
+		// Hide in win32 because it is known to cause segfaults there (see above).
+		// Not anymore...
+// #ifndef _WIN32
 		Gtk::Entry* command_entry = this->lookup_widget<Gtk::Entry*>("command_entry");
 		if (command_entry) {
 			std::string cmd_text = entry->command + " " + entry->parameters;
 			command_entry->set_text(cmd_text);
 		}
-#endif
+// #endif
 
 		Gtk::Button* window_save_current_button = this->lookup_widget<Gtk::Button*>("window_save_current_button");
 		if (window_save_current_button)

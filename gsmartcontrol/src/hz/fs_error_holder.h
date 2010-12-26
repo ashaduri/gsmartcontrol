@@ -13,7 +13,7 @@
 // cerrno is not directly used here, but will be needed in children.
 #include <cerrno>  // errno (not std::errno, it may be a macro)
 
-#ifdef ENABLE_GLIB
+#if defined ENABLE_GLIB && ENABLE_GLIB
 	#include <glib.h>  // g_*
 #endif
 
@@ -66,12 +66,12 @@ class FsErrorHolder {
 
 
 
-#ifdef ENABLE_GLIB
+#if defined ENABLE_GLIB && ENABLE_GLIB
 
 		// Get error message in current locale. Useful for outputting to console, etc...
 		std::string get_error_locale()
 		{
-			// Note: Paths are in filesystem charset.
+			// Note: Paths are in filesystem charset. On win32 it's always utf-8.
 			// Errno string is in libc locale charset or utf8 (if using glib).
 
 			gchar* loc_errno = g_locale_from_utf8(hz::errno_string(error_errno_).c_str(), -1, NULL, NULL, NULL);
@@ -130,17 +130,40 @@ class FsErrorHolder {
 		// Without glib, the messages may be really screwed up.
 		// We still provide these, but we don't make any guarantees.
 
+		// This _should_ work on windows, but since we're using this function
+		// for console and console in windows is screwed up (uses DOS charsets(!)),
+		// we can't promise anything.
 		std::string get_error_locale()
 		{
-			std::string msg = error_format_;  // gettext-supplied charset
-			hz::string_replace(msg, "/path1/", error_path1_, 1);  // filesystem charset (possibly locale)
+			std::string msg = error_format_;  // gettext-supplied charset (locale, probably)
+
+		#ifdef _WIN32
+			// files are in system locale. we're using console, don't use thread locale.
+			char* err_path1 = hz::win32_utf8_to_locale(error_path1_.c_str(), 0, false);
+			char* err_path2 = hz::win32_utf8_to_locale(error_path2_.c_str(), 0, false);
+			std::string errno_str = hz::errno_string(error_errno_);
+			char* errno_cstr = hz::win32_utf8_to_locale(errno_str.c_str(), 0, false);
+
+			hz::string_replace(msg, "/path1/", (err_path1 ? err_path1 : error_path1_), 1);
+			hz::string_replace(msg, "/path2/", (err_path2 ? err_path2 : error_path2_), 1);
+			hz::string_replace(msg, "/errno/", (errno_cstr ? errno_cstr : errno_str), 1);  // utf-8
+
+			delete[] err_path1;
+			delete[] err_path2;
+			delete[] errno_cstr;
+
+		#else
+			// filesystem charset (possibly locale). screwed up, probably.
+			hz::string_replace(msg, "/path1/", error_path1_, 1);
 			hz::string_replace(msg, "/path2/", error_path2_, 1);
 			hz::string_replace(msg, "/errno/", hz::errno_string(error_errno_), 1);  // locale charset
+		#endif
 
 			return msg;
 		}
 
 
+		// This works correctly in windows, since we use only utf-8 paths there.
 		std::string get_error_utf8()
 		{
 			return this->get_error_locale();
