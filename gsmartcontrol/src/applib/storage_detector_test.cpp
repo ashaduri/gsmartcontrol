@@ -14,10 +14,11 @@
 int main()
 {
 	std::vector<StorageDeviceRefPtr> drives;
-	std::vector<std::string> match_patterns, blacklist_patterns;  // additional parameters
+// 	std::vector<std::string> match_patterns;
+	std::vector<std::string> blacklist_patterns;  // additional parameters
 
 	StorageDetector sd;
-	sd.add_match_patterns(match_patterns);
+// 	sd.add_match_patterns(match_patterns);
 	sd.add_blacklist_patterns(blacklist_patterns);
 
 	std::string error_msg = sd.detect_and_fetch_basic_data(drives);

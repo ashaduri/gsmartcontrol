@@ -12,6 +12,8 @@ it.
 
 Note: Only ATA drives (both PATA and SATA) are supported for now.
 
+http://gsmartcontrol.berlios.de
+
 
 
 Features
@@ -84,7 +86,7 @@ these bugs and works around them.
 
 Software Requirements
 
-So far, only Linux 2.6 systems are supported.
+So far, only Linux systems are supported.
 
 You need to have the following software installed:
 
@@ -118,7 +120,10 @@ Long answer: read below.
 
 First, check if you can find a pre-built package for your distribution or
 operating system - they usually provide the best integration and the easiest
-installation procedure.
+installation procedure. One option is to try OpenSUSE Build Service - it
+provides ready-to-install packages for various popular Linux distributions
+(OpenSUSE, Fedora, etc...). See
+http://download.opensuse.org/repositories/home:/alex_sh/ .
 
 If you want to compile from source, check that you have all the required
 dependencies (see Software Requirements section). Then the usual
@@ -239,9 +244,13 @@ distribution-specific. For example, on OpenSUSE it would be
 "rpm -q gtk2 gtkmm2". Some distributions have gtkmm24 instead. You may also
 search them in your distribution's graphical package manager, if there is one.
 
-* Execution log from the program, if possible. To obtain it, perform the steps
-needed to reproduce the bug, then go to "Options -> View Execution Log", and
-press "Save All".
+* Execution log from the program, if possible. To obtain it, run the program
+with -v option, e.g. (type the following in terminal emulator or Run dialog):
+
+kdesu -- biocalcon -v
+
+Perform the steps needed to reproduce the bug, then go to
+"Options -> View Execution Log", and click "Save All".
 
 * Detailed description of steps you performed when the bug occurred.
 

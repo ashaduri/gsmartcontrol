@@ -918,11 +918,12 @@ void GscMainWindow::rescan_devices()
 		return;
 	}
 
-	std::string match_str = rconfig::get_data<std::string>("system/device_match_patterns");
+// 	std::string match_str = rconfig::get_data<std::string>("system/device_match_patterns");
 	std::string blacklist_str = rconfig::get_data<std::string>("system/device_blacklist_patterns");
 
-	std::vector<std::string> match_patterns, blacklist_patterns;
-	hz::string_split(match_str, ';', match_patterns, true);
+// 	std::vector<std::string> match_patterns;
+	std::vector<std::string> blacklist_patterns;
+// 	hz::string_split(match_str, ';', match_patterns, true);
 	hz::string_split(blacklist_str, ';', blacklist_patterns, true);
 
 	iconview->empty_view_message = GscMainWindowIconView::message_scanning;
@@ -933,7 +934,7 @@ void GscMainWindow::rescan_devices()
 
 	// populate the icon area with drive icons
 	StorageDetector sd;
-	sd.add_match_patterns(match_patterns);
+// 	sd.add_match_patterns(match_patterns);
 	sd.add_blacklist_patterns(blacklist_patterns);
 
 
@@ -959,7 +960,9 @@ void GscMainWindow::rescan_devices()
 	}
 
 	if (!error && !error_msg.empty()) {  // generic scan error. smartctl errors are not reported during scan at all.
-		gsc_executor_error_dialog_show("An error occurred while scanning the system", error_msg, this);
+		// we don't show output button here
+		gsc_executor_error_dialog_show("An error occurred while scanning the system",
+				error_msg, this, false);
 		error = true;
 
 	// add them anyway, in case the error was only on one drive.

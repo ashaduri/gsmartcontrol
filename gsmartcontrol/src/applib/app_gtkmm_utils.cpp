@@ -72,6 +72,12 @@ void app_gtkmm_set_widget_tooltip(Gtk::Widget& widget,
 					gtk_tooltips_set_tip(tooltips, widget.gobj(), stripped, "");
 				}
 				g_free(stripped);
+
+				// alternate method, check if it works (AttrList has bool() since gtkmm 2.10):
+				// char dummy = 0;
+				// Glib::ustring stripped;
+				// if (Pango::AttrList(tooltip_text, 0, stripped, dummy).gobj()) ...
+
 			} else {
 				gtk_tooltips_set_tip(tooltips, widget.gobj(), tooltip_text.c_str(), "");
 			}
@@ -85,8 +91,8 @@ void app_gtkmm_set_widget_tooltip(Gtk::Widget& widget,
 // unset model on treeview, cross-gtkmm-version.
 void app_gtkmm_treeview_unset_model(Gtk::TreeView* treeview)
 {
-	// gtkmm's unset_model() is since gtkmm 2.8 (and there's no version
-	// info in docs), so use this instead.
+	// gtkmm's TreeView::unset_model() is since gtkmm 2.8
+	// (and there's no version info in docs), so use this instead.
 	if (treeview)
 		gtk_tree_view_set_model(treeview->gobj(), 0);
 }
@@ -96,7 +102,7 @@ void app_gtkmm_treeview_unset_model(Gtk::TreeView* treeview)
 // unset model on combobox, cross-gtkmm-version.
 void app_gtkmm_combobox_unset_model(Gtk::ComboBox* box)
 {
-	// there's no unset_model() in gtkmm (huh?)
+	// there's no ComboBox::unset_model() in gtkmm (huh?)
 	if (box)
 		gtk_combo_box_set_model(box->gobj(), 0);
 }
