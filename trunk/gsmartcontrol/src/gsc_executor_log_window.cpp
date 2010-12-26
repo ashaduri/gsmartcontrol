@@ -85,6 +85,19 @@ GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, const app_ui
 	}
 
 
+
+	// Hide command text entry in win32.
+	// Setting text on this entry segfaults under win32, (utf8 conversion doesn't
+	// help, not that it should). Seems to be connected to non-english locale.
+	// Surprisingly, the treeview column text still works.
+	// Any solutions?
+
+#ifdef _WIN32
+	Gtk::HBox* command_hbox = this->lookup_widget<Gtk::HBox*>("command_hbox");
+	if (command_hbox)
+		command_hbox->hide();
+#endif
+
 	// ---------------
 
 	// Connect to CmdexSync signal
@@ -304,12 +317,29 @@ void GscExecutorLogWindow::on_tree_selection_changed()
 		CmdexSyncCommandInfoRefPtr entry = row[col_entry];
 
 		Gtk::TextView* output_textview = this->lookup_widget<Gtk::TextView*>("output_textview");
-		Gtk::Entry* command_entry = this->lookup_widget<Gtk::Entry*>("command_entry");
 
 		if (output_textview) {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = output_textview->get_buffer();
 			if (buffer) {
-				buffer->set_text(entry->std_output);
+
+				// Under win32, we can't execute smartctl under C locale. Smartctl
+				// uses locale information only for thousands separator in User Capacity.
+				// We can parse that, but we need to insert that text into a textarea
+				// widget, which may error out on invalid utf8 char.
+				// So, we convert the whole output to utf8, hoping that the result is ok.
+				// Note that a separator converted to utf8 may be a different sequence
+				// of chars, so we parse it as original charset, but insert into a textarea
+				// as utf8.
+				std::string buf_text = entry->std_output;
+				#ifdef _WIN32
+				try {
+					buf_text = Glib::locale_to_utf8(buf_text);
+				} catch (Glib::ConvertError& e) {
+					buf_text = "";  // inserting invalid utf8 may trigger a segfault, so empty better.
+				}
+				#endif
+
+				buffer->set_text(buf_text);
 
 				Glib::RefPtr<Gtk::TextTag> tag;
 				Glib::RefPtr<Gtk::TextTagTable> table = buffer->get_tag_table();
@@ -323,9 +353,13 @@ void GscExecutorLogWindow::on_tree_selection_changed()
 			}
 		}
 
+#ifndef _WIN32
+		Gtk::Entry* command_entry = this->lookup_widget<Gtk::Entry*>("command_entry");
 		if (command_entry) {
-			command_entry->set_text(entry->command + " " + entry->parameters);
+			std::string cmd_text = entry->command + " " + entry->parameters;
+			command_entry->set_text(cmd_text);
 		}
+#endif
 
 		Gtk::Button* window_save_current_button = this->lookup_widget<Gtk::Button*>("window_save_current_button");
 		if (window_save_current_button)

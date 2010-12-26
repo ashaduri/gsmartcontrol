@@ -1,6 +1,24 @@
 
+Version 0.8.2, released on 2008-12-10
+	Fixed gsmartcontrol_root.sh script to support distributions with no
+		/usr/sbin in their users' paths (thanks to Erwan Velu).
+	Added desktop auto-detection to gsmartcontrol_root.sh script. This allows
+		us to use only one desktop file (thanks to Erwan Velu).
+	Added debian package directory (named "debian.dist" for now to avoid
+		control file conflicts with Build Service).
+	Renamed gsmartcontrol_root.sh to gsmartcontrol-root, to make Debian happy.
+	Added make targets for Windows packages (zip and NSIS).
+	Fixed Windows-related issues (Vista is fully supported now).
+	Fixed minor bugs:
+		Smartctl parser is win32-locale-aware now.
+		No more unnecessary parsing.
+		No segfault on exit under Windows and Solaris.
+		A friendlier message is displayed if smartctl was not found.
+		No hilighted labels when switching tabs in Information window.
+
 Version 0.8.1, released on 2008-11-11
-	Disabled Linux "by-id" drive detection - it's unreliable on some broken systems.
+	Disabled Linux "by-id" drive detection - it's unreliable on some broken
+		systems.
 	Added some more attribute descriptions.
 	Our names for attributes override smartctls' now.
 	Added a proper "Add Device" dialog for Windows.
@@ -12,7 +30,8 @@ Version 0.8.0rc4, released on 2008-10-20
 	NetBSD support (tested with NetBSD 4.0.1 / x86).
 	OpenBSD support (tested with OpenBSD 4.3 / x86-64 / gcc-3.3.5).
 	Solaris/gcc support (tested with Solaris 10 / x86 / gcc-3.4.3 / blastwave).
-	Solaris/sunstudio support (tested with Solaris 10 / x86 / sunstudio12 / sunfreeware).
+	Solaris/sunstudio support (tested with Solaris 10 / x86 / sunstudio12 /
+		sunfreeware).
 	Code to support Windows, Mac OS X, QNX.
 	Support of older pcre versions (at least 4.5, maybe older too).
 	Added gsmartcontrol_root.sh script to easily run gsmartcontrol as root.

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Fri Sep  5 17:24:24 2008 -->
+<!--Generated with glade3 3.4.5 on Fri Nov 28 20:55:56 2008 -->
 <glade-interface>
   <widget class="GtkWindow" id="gsc_executor_log_window">
     <property name="title" translatable="yes">Execution Log - GSmartControl</property>
@@ -85,7 +85,7 @@
                     <property name="visible">True</property>
                     <property name="spacing">5</property>
                     <child>
-                      <widget class="GtkHBox" id="hbox2">
+                      <widget class="GtkHBox" id="command_hbox">
                         <property name="visible">True</property>
                         <child>
                           <widget class="GtkLabel" id="label3">

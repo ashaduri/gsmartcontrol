@@ -7,6 +7,7 @@
 #include <string>
 // #include <locale>  // std::locale
 #include <clocale>  // std::setlocale
+// #include <locale.h>  // _configthreadlocale (win32)
 #include <cstdio>  // std::printf
 #include <vector>
 #include <sstream>
@@ -203,7 +204,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 	// glib needs this for command line args. It will be reset by Gtk::Main later.
 
-	// this aborts on freebsd with "locale::facet::_S_create_c_locale name not valid",
+	// This aborts on freebsd with "locale::facet::_S_create_c_locale name not valid",
 	// so use the C equivalent.
 	// std::locale::global(std::locale(""));  // set locale to system LANG
 	std::setlocale(LC_ALL, "");
@@ -287,6 +288,15 @@ bool app_init_and_loop(int& argc, char**& argv)
 	// Initialize GTK+
 // 	Gtk::Main m(argc, argv, args.arg_locale);
 	Gtk::Main m(argc, argv);
+
+
+#ifdef _WIN32
+	// Now that all program-specific locale setup has been performed,
+	// make sure the future locale changes affect only current thread.
+	// Not available on mingw, so disable for now.
+// 	_configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
+
+#endif
 
 
 	// Redirect all GTK+/Glib and related messages to libdebug

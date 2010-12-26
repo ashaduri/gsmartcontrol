@@ -102,7 +102,7 @@ You need to have the following software installed:
 Note: libglademm is not needed when using GTK 2.12 and Gtkmm 2.12.
 
 Note that GTK+ 2.12 and Gtkmm 2.12 are HIGHLY recommended. While earlier
-versions may work, they may produce ugly results and buggy behaviour.
+versions may work, they may produce suboptimal results and buggy behaviour.
 Libglademm is not needed when using GTK / Gtkmm 2.12.
 
 Most of these packages are probably already provided by your distribution.
@@ -116,8 +116,8 @@ Fedora, CentOS, RHEL:
 gcc-c++, pcre-devel, gtkmm24-devel, (possibly) libglademm24-devel.
 
 Mandriva:
-gcc-c++, gcc-cpp, libpcre-devel, libgtkmm2.4-devel, (possibly)
-libglademm2.4_1-devel.
+gcc-c++, gcc-cpp, libpcre-devel, gtkmm2.4-devel, (possibly)
+libglademm2.4-devel.
 
 Ubuntu, Debian GNU/Linux:
 g++, libpcre3-dev, libgtkmm-2.4-dev, (possibly) libglademm-2.4-dev.
@@ -137,9 +137,9 @@ The following operating systems are supported:
 
 * OpenBSD - Tested with OpenBSD 4.3 / x86-64 / gcc-3.3.5.
 
-* Windows (XP or higher) - Tested with Windows XP. Windows 2000 does not work
-for some unknown reason. The Windows port uses pd0, pd1, etc... for physical
-drives 0, 1, etc... .
+* Windows (XP or higher) - Tested with Windows XP and Vista. Windows 2000 does
+not work for some unknown reason. The Windows port uses pd0, pd1, etc... for
+physical drives 0, 1, etc... .
 
 * Solaris - Tested with Solaris 10 / x86 / gcc-3.4.3 / blastwave,
 Solaris 10 / x86 / sunstudio12 / sunfreeware. OpenSolaris should work but has
@@ -147,10 +147,10 @@ not been tested yet. Note that until either smartctl gets ATA support under
 Solaris or GSmartControl gets SCSI support, these configurations are
 essentially useless.
 
+* Mac OS X - 3rd-party testing by Fink project.
+
 * DragonFlyBSD - Code written but no testing has been performed yet. Expected
 to work without any issues.
-
-* Mac OS X - Code written but no testing has been performed yet.
 
 * QNX - Code written but no testing has been performed yet.
 
@@ -196,8 +196,8 @@ password" dialog boxes, and, after correct information is entered, should run
 this program with root privileges. The dialogs should be available in most
 commonly used X11 desktop environments.
 
-Another way is to use the included gsmartcontrol_root.sh script, which finds
-the available su program and runs gsmartcontrol with it.
+Another way is to use the included gsmartcontrol-root script, which finds the
+available su program and runs gsmartcontrol with it.
 
 Yet another way is to manually invoke the program with kdesu, gnomesu, sux or
 similar programs. For example,
@@ -298,7 +298,7 @@ search them in your distribution's graphical package manager, if there is one.
 with -v option, e.g. (type the following in a terminal emulator or Run
 dialog):
 
-gsmartcontrol_root.sh other -v
+gsmartcontrol-root auto -v
 
 Perform the steps needed to reproduce the bug, then go to
 "Options -> View Execution Log", and click "Save All".

@@ -1,0 +1,293 @@
+
+; NSIS2 Script
+; Compatible with NSIS 2.40
+
+
+!define PRODUCT_VERSION "@VERSION@"
+!define PRODUCT_NAME "GSmartControl"
+!define PRODUCT_NAME_SMALL "gsmartcontrol"
+!define PRODUCT_PUBLISHER "Alexander Shaduri"
+!define PRODUCT_WEB_SITE "http://gsmartcontrol.berlios.de"
+
+;!define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\AppMainExe.exe"
+!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
+!define PRODUCT_UNINST_ROOT_KEY "HKLM"
+
+!define REGISTRY_APP_PATHS "Software\Microsoft\Windows\CurrentVersion\App Paths"
+
+
+
+
+; --------------- General Settings
+
+
+; This compressor gives us the best results
+SetCompressor /SOLID lzma
+
+; Do a CRC check before installing
+CRCCheck On
+
+; This is used in titles
+Name "${PRODUCT_NAME}"  ;  ${PRODUCT_VERSION}
+
+; Output File Name
+OutFile "${PRODUCT_NAME_SMALL}-${PRODUCT_VERSION}.exe"
+
+
+
+;The Default Installation Directory
+; try to install to the same directory as runtime.
+InstallDir "$PROGRAMFILES\${PRODUCT_NAME_SMALL}"
+; If already installed, try here
+InstallDirRegKey HKLM "SOFTWARE\${PRODUCT_NAME}" "InstallationDirectory"
+
+
+ShowInstDetails show
+ShowUnInstDetails show
+
+
+
+
+
+; --------------------- MUI INTERFACE
+
+; MUI 2.0 compatible install
+!include "MUI2.nsh"
+
+;Backgound Colors. uncomment to enable fullscreen.
+; BGGradient 0000FF 000000 FFFFFF
+
+; MUI Settings
+!define MUI_ABORTWARNING
+!define MUI_ICON "nsi_install.ico"
+!define MUI_UNICON "nsi_uninstall.ico"
+
+
+;Things that need to be extracted on first (keep these lines before any File command!)
+;Only useful for BZIP2 compression
+!insertmacro MUI_RESERVEFILE_LANGDLL
+;!insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
+
+
+; Language Selection Dialog Settings
+!define MUI_LANGDLL_REGISTRY_ROOT "${PRODUCT_UNINST_ROOT_KEY}"
+!define MUI_LANGDLL_REGISTRY_KEY "${PRODUCT_UNINST_KEY}"
+!define MUI_LANGDLL_REGISTRY_VALUENAME "NSIS:Language"
+
+
+; Pages to show during installation
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_LICENSE "doc\distribution.txt"
+;!insertmacro MUI_PAGE_COMPONENTS
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+
+;!define MUI_FINISHPAGE_RUN "$INSTDIR\gsmartcontrol.exe"
+;!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\Example.file"
+;!define MUI_FINISHPAGE_RUN_NOTCHECKED
+!define MUI_FINISHPAGE_NOAUTOCLOSE
+!define MUI_FINISHPAGE_NOREBOOTSUPPORT
+!insertmacro MUI_PAGE_FINISH
+
+
+
+; Uninstaller page
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+
+
+
+; Language files
+!insertmacro MUI_LANGUAGE "English"
+
+
+; --------------- END MUI
+
+LangString TEXT_IO_TITLE ${LANG_ENGLISH} "GSmartControl"
+
+
+
+; --------------- START INSTALLATION
+
+
+Function .onInit
+
+  !insertmacro MUI_LANGDLL_DISPLAY
+
+  Push 2 ;F ;22 = number of languages, F = change font
+
+  ;Language selection
+  LangDLL::LangDialog "Installer Language" "Please select a language."
+
+  Pop $LANGUAGE
+  StrCmp $LANGUAGE "cancel" 0 +2
+  Abort
+
+    ; detect previous installation
+	ReadRegStr $R0 HKLM "${PRODUCT_UNINST_KEY}" "UninstallString"
+	StrCmp $R0 "" no_prev
+
+	MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION \
+		"${PRODUCT_NAME} is already installed. $\n$\nClick 'OK' to remove the \
+		previous version or 'Cancel' to continue anyway." \
+		IDOK uninst_product
+		; Abort
+	goto no_prev ; if cancel was pressed, continue as if no old installation.
+
+    ;Run the uninstaller
+    uninst_product:
+    ClearErrors
+    ExecWait '$R0 _?=$INSTDIR'  ;Do not copy the uninstaller to a temp file
+
+    IfErrors cannot_uninst_product
+
+    ;You can either use Delete /REBOOTOK in the uninstaller or add some code
+    ;here to remove the uninstaller. Use a registry key to check
+    ;whether the user has chosen to uninstall. If you are using an uninstaller
+    ;components page, make sure all sections are uninstalled.
+    cannot_uninst_product:
+
+    no_prev: ; no old installation found, all ok
+
+
+
+
+	; detect GTK installation (any of available versions)
+	ReadRegStr $R0 HKLM "SOFTWARE\GTK\2.0" "DllPath"
+	StrCmp $R0 "" no_gtk
+
+	goto have_gtk
+
+	no_gtk:
+	MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION \
+	"GTK2-Runtime is not installed. This product needs it to function properly.$\n\
+	Please install GTK2-Runtime from http://gtk-win.sf.net/ first.$\n$\n\
+	Click 'Cancel' to abort the installation \
+	or 'OK' to continue anyway." \
+	IDOK have_gtk
+	Abort
+
+	have_gtk:
+	; do nothing
+
+
+
+FunctionEnd
+
+
+
+
+; ----------------- INSTALLATINO TYPES
+
+; InstType "Recommended"
+InstType "Full"
+;InstType "Minimal"
+
+
+
+
+
+
+Section "Main" SecMain
+SectionIn 1
+  SetOutPath "$INSTDIR"
+
+  SetOverwrite Off ; don't overwrite the config file
+;  File "gsmartcontrol.conf"
+
+  SetOverwrite On
+  File gsmartcontrol.exe
+  File gsmartcontrol.ico
+  File icon_*.png
+  File *.dll
+  File smartctl.exe
+  File smartctl_console.exe
+
+  File /r doc
+
+  ; set a special path for this exe, as GTK may not be in a global path.
+  ReadRegStr $R3 HKLM "SOFTWARE\GTK\2.0" "DllPath"
+  WriteRegStr HKLM "${REGISTRY_APP_PATHS}\gsmartcontrol.exe" "Path" "$R3"
+
+  ;Add Shortcuts
+  CreateShortCut "$SMPROGRAMS\GSmartControl.lnk" "$INSTDIR\gsmartcontrol.exe" "" "$INSTDIR\gsmartcontrol.ico" 0
+
+SectionEnd
+
+
+
+; ------------------ POST INSTALL
+
+
+!define TEMP $R0
+
+Section -post
+
+  WriteRegStr HKLM "SOFTWARE\${PRODUCT_NAME}" "InstallationDirectory" "$INSTDIR"
+  WriteRegStr HKLM "SOFTWARE\${PRODUCT_NAME}" "Vendor" "Alexander Shaduri"
+
+  WriteRegStr HKLM "${PRODUCT_UNINST_KEY}" "DisplayName" "${PRODUCT_NAME}"
+  WriteRegStr HKLM "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\gsmartcontrol_uninst.exe"
+
+  ; We don't need this, MUI takes care for us
+  WriteRegStr HKCU "Software\${PRODUCT_NAME}" "Installer Language" $LANGUAGE
+
+  ; uninstall shortcut
+;  CreateDirectory "$SMPROGRAMS\GSmartControl"
+;  CreateShortCut "$SMPROGRAMS\GSmartControl\Uninstall GSmartControl.lnk" "$INSTDIR\gsmartcontrol_uninst.exe" "" ""
+
+
+  ; write out uninstaller
+  WriteUninstaller "$INSTDIR\gsmartcontrol_uninst.exe"
+
+SectionEnd ; post
+
+
+
+
+
+; ---------------- UNINSTALL
+
+
+
+Function un.onUninstSuccess
+  HideWindow
+  MessageBox MB_ICONINFORMATION|MB_OK "$(^Name) was successfully removed from your computer."
+FunctionEnd
+
+
+
+
+Section Uninstall
+
+  SetAutoClose false
+
+  ; add delete commands to delete whatever files/registry keys/etc you installed here.
+  Delete "$INSTDIR\gsmartcontrol_uninst.exe"
+
+  DeleteRegKey HKLM "SOFTWARE\${PRODUCT_NAME}"
+  DeleteRegKey HKLM "${PRODUCT_UNINST_KEY}"
+
+  Delete "$INSTDIR\gsmartcontrol.exe"
+  Delete "$INSTDIR\gsmartcontrol.ico"
+  Delete "$INSTDIR\icon_*.png"
+  Delete "$INSTDIR\*.dll"
+  Delete "$INSTDIR\smartctl.exe"
+  Delete "$INSTDIR\smartctl_console.exe"
+
+  RMDir /r "$INSTDIR\doc"
+
+  RMDir "$INSTDIR"  ; only if empty
+
+  DeleteRegKey HKLM "${REGISTRY_APP_PATHS}\gsmartcontrol.exe"
+
+  Delete "$SMPROGRAMS\GSmartControl.lnk"
+;  Delete "$SMPROGRAMS\GSmartControl\Uninstall GSmartControl.lnk"
+
+
+SectionEnd ; end of uninstall section
+
+
+
+
+; eof

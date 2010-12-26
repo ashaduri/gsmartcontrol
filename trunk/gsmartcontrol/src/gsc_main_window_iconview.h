@@ -37,7 +37,8 @@ class GscMainWindowIconView : public Gtk::IconView {
 			message_none,
 			message_scan_disabled,
 			message_scanning,
-			message_no_drives_found
+			message_no_drives_found,
+			message_no_smartctl
 		};
 
 
@@ -147,6 +148,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 					case message_scan_disabled: msg = "Automatic scanning is disabled.\nPress Ctrl+R to scan manually."; break;
 					case message_scanning: msg = "Scanning system, please wait..."; break;
 					case message_no_drives_found: msg = "No drives found."; break;
+					case message_no_smartctl: msg = "Please specify the correct smartctl binary in\nPreferences and press Ctrl-R to re-scan."; break;
 					default: msg = "[error - invalid message]";
 				}
 

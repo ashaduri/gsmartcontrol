@@ -1,5 +1,5 @@
 
-AC_INIT([GSmartControl], [0.8.1], [], [gsmartcontrol])
+AC_INIT([GSmartControl], 0.8.2, [], [gsmartcontrol])
 
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_HEADERS([config.h])
@@ -29,8 +29,12 @@ AC_LANG([C++])
 
 # Needed for generating static libs
 AC_CHECK_TOOL(RANLIB, ranlib)
+
 # Win32 resource file compilation
 AC_CHECK_TOOL(WINDRES, windres)
+
+# Win32 external dll stripping (already detected by autoconf)
+# AC_CHECK_TOOL(STRIP, strip)
 
 
 # -------------------------------------------------------------------------------------
@@ -203,7 +207,7 @@ PCRE_LIBS="";
 PKG_CHECK_MODULES(PCRE, [libpcre], [pcre_found=yes], [pcre_found=no])
 
 # if not found, try pcre-config (solaris had it but not pkg-config).
-if test "$pcre_found" = "no"; then
+if test "x$pcre_found" = "xno"; then
 	AC_PATH_PROG(pcre_config_binary, [pcre-config])
 	if test "x$pcre_config_binary" != "x"; then
 		PCRE_CFLAGS="`pcre-config --cflags`"
@@ -217,6 +221,43 @@ fi
 CFLAGS="$CFLAGS $PCRE_CFLAGS"
 CXXFLAGS="$CXXFLAGS $PCRE_CFLAGS"
 LIBS="$LIBS $PCRE_LIBS"
+
+
+# -------------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------------
+
+
+# Win32 distribution support (NSIS, zip)
+
+AC_ARG_WITH([nsis], [AS_HELP_STRING([--with-nsis],
+		[specify makensis.exe location to support making NSIS packages]
+		[ (default: ~/".wine/drive_c/Program Files/NSIS/makensis.exe")])],
+		[with_nsis=${withval}], [with_nsis=auto])
+
+AC_ARG_ENABLE([nsis-wine], [AS_HELP_STRING([--enable-nsis-wine],
+		[use wine to run makensis.exe when making NSIS packages (default: yes)])],
+		[with_nsis_wine=${enableval}], [with_nsis_wine=yes])
+
+AC_ARG_WITH([win32-env], [AS_HELP_STRING([--with-win32-env],
+		[specify location of win32 dlls when making win32 packages (default: /target/bin)])],
+		[with_win32_env=${withval}], [win_win32_env=auto])
+
+if test "x$with_nsis" = "xauto" || test "x$with_nsis" = "x"; then
+	with_nsis="~/\".wine/drive_c/Program Files/NSIS/makensis.exe\""
+fi
+if test "x$with_win32_env" = "xauto" || test "x$with_win32_env" = "x"; then
+	with_win32_env="/target/bin"
+fi
+
+NSIS_EXEC="$with_nsis";
+if test "x$with_nsis_wine" != "xno"; then
+	NSIS_EXEC="wine $with_nsis";
+fi
+WIN32_ENV="$with_win32_env";
+
+AC_SUBST(NSIS_EXEC)
+AC_SUBST(WIN32_ENV)
 
 
 # -------------------------------------------------------------------------------------
@@ -404,12 +445,14 @@ AC_SUBST(AUTODIRS)
 # -------------------------------------------------------------------------------------
 
 
-AC_CONFIG_FILES([ data/gsmartcontrol_gnome.desktop data/gsmartcontrol_kde.desktop \
-	data/gsmartcontrol_other.desktop src/winres.rc \
+AC_CONFIG_FILES([ data/gsmartcontrol.desktop \
+	data/nsis/distribution.txt data/nsis/gsmartcontrol.nsi \
+	debian.dist/changelog \
+	src/gsc_winres.rc \
 	gsmartcontrol.spec version compilation_flags ])
 
 
-AC_CONFIG_FILES([data/gsmartcontrol_root.sh], [chmod +x data/gsmartcontrol_root.sh])
+AC_CONFIG_FILES([data/gsmartcontrol-root], [chmod +x data/gsmartcontrol-root])
 
 
 # these are all the makefiles to generate
@@ -417,7 +460,8 @@ AC_CONFIG_FILES([data/gsmartcontrol_root.sh], [chmod +x data/gsmartcontrol_root.
 AC_CONFIG_FILES([Makefile src/Makefile src/applib/Makefile src/res/Makefile src/hz/Makefile \
 	src/libdebug/Makefile src/pcrecpp/Makefile src/rconfig/Makefile src/rmn/Makefile \
 	data/Makefile data/16/Makefile data/22/Makefile data/24/Makefile data/32/Makefile \
-	data/48/Makefile data/64/Makefile data/128/Makefile data/256/Makefile])
+	data/48/Makefile data/64/Makefile data/128/Makefile data/256/Makefile data/nsis/Makefile \
+	debian.dist/Makefile])
 
 
 AC_OUTPUT

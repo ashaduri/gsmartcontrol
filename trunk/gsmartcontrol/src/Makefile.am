@@ -5,17 +5,18 @@ SUBDIRS = libdebug hz rmn rconfig pcrecpp applib res
 
 
 if TARGET_OS_KERNEL_WINDOWS
-WINRES_OBJ = res_win32.o
+WINRES_OBJ = gsc_winres_win32.o
 endif
 
-res_win32.o: $(top_srcdir)/data/gsmartcontrol.ico winres.rc
+# use different name for object file to avoid make auto-rules
+gsc_winres_win32.o: $(top_srcdir)/data/gsmartcontrol.ico gsc_winres.rc
 	cp -f $(top_srcdir)/data/gsmartcontrol.ico .
-	$(WINDRES) winres.rc res_win32.o
+	$(WINDRES) gsc_winres.rc gsc_winres_win32.o
 
 mostlyclean-local:
 	rm -f gsmartcontrol.ico
 
-noinst_DATA = winres.rc.in
+noinst_DATA = gsc_winres.rc.in
 
 
 bin_PROGRAMS = gsmartcontrol
