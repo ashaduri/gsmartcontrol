@@ -19,7 +19,7 @@ See LICENSE_gpl2.txt and LICENSE_gpl3.txt for details.
 
 
 All files which don't have any copyright notices, as well as tests and
-examples are covered under the Whatever License. See LICENSE_whatever.txt for
+examples are covered under the Unlicense. See LICENSE_unlicense.txt for
 details.
 
 

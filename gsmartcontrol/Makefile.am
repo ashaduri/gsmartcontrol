@@ -23,7 +23,7 @@ dist_doc_DATA = AUTHORS.txt ChangeLog NEWS README.txt \
 	LICENSE_gsmartcontrol.txt \
 	LICENSE_hz.txt \
 	LICENSE_pcrecpp.txt \
-	LICENSE_whatever.txt \
+	LICENSE_unlicense.txt \
 	LICENSE_zlib.txt
 
 
@@ -75,53 +75,74 @@ src-rpm: dist
 # Execute only with win32 build present.
 
 WIN_ZIP_NAME = $(PACKAGE)-$(VERSION)-win32
-
-win-dist: win-dist-prepare nsis-dist-nocleanup win-zip-dist
-
-win-dist-clean:
-	rm -rf gsmartcontrol-*.exe gsmartcontrol-*.zip nsis-dist $(WIN_ZIP_NAME)
+WIN_ZIP_NOGTK_NAME = $(PACKAGE)-$(VERSION)-win32-nogtk
 
 
-win-dist-prepare: all win-dist-clean
-	$(MKDIR_P) nsis-dist
+win-dist: win-dist-nocleanup win-dist-cleanup
 
-	cp data/nsis/gsmartcontrol.nsi $(top_srcdir)/data/nsis/nsi_* nsis-dist/
-	cp $(top_srcdir)/data/gsmartcontrol.ico $(top_srcdir)/data/icon_*.png nsis-dist/
+win-dist-nocleanup: win-dist-prepare nsis-dist-nocleanup win-zip-dist-nocleanup
 
-	$(MKDIR_P) nsis-dist/doc
-	cp data/nsis/distribution.txt nsis-dist/doc/
-	cp $(top_srcdir)/AUTHORS.txt $(top_srcdir)/LICENSE_* $(top_srcdir)/README.txt nsis-dist/doc/
-	cp $(top_srcdir)/NEWS nsis-dist/doc/NEWS.txt
+win-dist-cleanup: win-zip-dist-cleanup nsis-dist-cleanup
+	rm -rf win-dist
 
-	unix2dos nsis-dist/*.nsi nsis-dist/doc/*.txt
-
-	cp "@WINDOWS_BINDIR@"/smartctl-nc.exe nsis-dist/
-	cp "@WINDOWS_BINDIR@"/smartctl.exe nsis-dist/
-
-	cp src/gsmartcontrol.exe nsis-dist/
-
-	$(STRIP) nsis-dist/*.exe
+win-dist-clean: win-dist-cleanup
+	rm -f gsmartcontrol-*.exe gsmartcontrol-*.zip
 
 
-nsis-dist: nsis-dist-nocleanup nsis-cleanup
+win-dist-prepare-all: nsis-dist-prepare win-zip-dist-prepare
 
-nsis-dist-nocleanup: win-dist-prepare
+
+win-dist-prepare: all
+	$(MKDIR_P) win-dist
+	cp $(top_srcdir)/data/icon_*.png win-dist/
+
+	$(MKDIR_P) win-dist/doc
+	cp data/nsis/distribution*.txt win-dist/doc/
+	cp $(top_srcdir)/AUTHORS.txt $(top_srcdir)/LICENSE_* $(top_srcdir)/README.txt win-dist/doc/
+	cp $(top_srcdir)/NEWS win-dist/doc/NEWS.txt
+
+	cp "@WINDOWS_BINDIR@"/smartctl-nc.exe win-dist/
+	cp "@WINDOWS_BINDIR@"/smartctl.exe win-dist/
+
+	cp src/gsmartcontrol.exe src/gsmartcontrol.exe.manifest win-dist/
+
+	unix2dos win-dist/doc/*.txt
+	$(STRIP) win-dist/*.exe
+
+
+nsis-dist-prepare: win-dist-prepare
+	cp -a win-dist nsis-dist
+	cp $(top_srcdir)/data/gsmartcontrol.ico nsis-dist/
+	cp data/nsis/*.nsi $(top_srcdir)/data/nsis/nsi_* nsis-dist/
+	unix2dos nsis-dist/*.nsi
+	cp "@WINDOWS_BINDIR@"/"@GTK_INSTALLER_NAME@".exe nsis-dist/
+
+nsis-dist-nocleanup: nsis-dist-prepare
 	cd nsis-dist && @NSIS_EXEC@ gsmartcontrol.nsi
 	mv nsis-dist/$(PACKAGE)-$(VERSION).exe .
+	cd nsis-dist && @NSIS_EXEC@ /DNO_GTK gsmartcontrol.nsi
+	mv nsis-dist/$(PACKAGE)-$(VERSION)-nogtk.exe .
 
-nsis-cleanup:
+nsis-dist-cleanup:
 	rm -rf nsis-dist
 
+nsis-dist: nsis-dist-nocleanup nsis-dist-cleanup
 
-win-zip-dist: win-zip-dist-nocleanup win-zip-dist-cleanup
 
-win-zip-dist-nocleanup: win-dist-prepare
-	mv nsis-dist $(WIN_ZIP_NAME)
-	rm -rf $(WIN_ZIP_NAME)/gsmartcontrol.ico $(WIN_ZIP_NAME)/nsi_* $(WIN_ZIP_NAME)/*.nsi
-	zip -9r $(WIN_ZIP_NAME).zip $(WIN_ZIP_NAME)
+win-zip-dist-prepare:
+	cp -a win-dist $(WIN_ZIP_NAME)
+	cp -a win-dist $(WIN_ZIP_NOGTK_NAME)
+	cp -a "@WINDOWS_BINDIR@"/"@GTK_INSTALLER_NAME@"/* $(WIN_ZIP_NAME)/
+
+win-zip-dist-nocleanup: win-zip-dist-prepare
+	zip -K -9r $(WIN_ZIP_NAME).zip $(WIN_ZIP_NAME) -x $(WIN_ZIP_NAME)/doc/distribution-nogtk.txt
+	zip -K -9r $(WIN_ZIP_NOGTK_NAME).zip $(WIN_ZIP_NOGTK_NAME) -x $(WIN_ZIP_NOGTK_NAME)/doc/distribution.txt
 
 win-zip-dist-cleanup:
 	rm -rf $(WIN_ZIP_NAME)
+	rm -rf $(WIN_ZIP_NOGTK_NAME)
+
+win-zip-dist: win-zip-dist-nocleanup win-zip-dist-cleanup
 
 
 

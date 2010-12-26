@@ -8,6 +8,10 @@ http://gsmartcontrol.berlios.de
 and
 http://developer.berlios.de/project/showfiles.php?group_id=10075
 
+You need GTK+ for Windows Runtime package to use this program. You can get one
+at http://gtk-win.sf.net (you must download at least version 2.16.6-2010-02-21
+of gtk2-runtime).
+
 
 This distribution includes:
 
@@ -19,9 +23,6 @@ binary was compiled for 32-bit Windows, and should work on both 32-bit and
 * Smartctl binaries (from smartmontools 5.39.1, http://smartmontools.sf.net/)
 - smartctl-nc.exe (compiled without console output), smartctl.exe (compiled
 with console output).
-
-* GTK+ for Windows Runtime package (@GTK_INSTALLER_NAME@)
-from http://gtk-win.sf.net, either in original or unpacked form.
 
 
 The combined distribution is multi-licensed under GNU GPL versions 2 and 3.

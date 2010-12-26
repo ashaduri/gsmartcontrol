@@ -25,6 +25,11 @@ int main(int argc, char* argv[])
 	try {
 #endif
 
+	// disable "Send to MS..." dialog box in non-debug builds
+#if defined _WIN32 && !(defined DEBUG_BUILD && DEBUG_BUILD)
+	SetErrorMode(SEM_FAILCRITICALERRORS);
+#endif
+
 	// debug builds already have a console, no need to create one.
 #if defined _WIN32 && !(defined DEBUG_BUILD && DEBUG_BUILD)
 	// if the console is not open, or unsupported (win2k), use files.

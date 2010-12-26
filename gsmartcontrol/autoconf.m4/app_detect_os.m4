@@ -69,6 +69,8 @@ AC_DEFUN([APP_DETECT_OS_KERNEL], [
 
 		x86_64-*-mingw* | x86_64-*-cygwin*)
 			# mingw64 defines the same stuff as 32-bit one, plus _WIN64, __MINGW64__, etc... .
+			# Keep in mind that if you're generating a 32-bit application, the kernel will
+			# be windows32 even if you run it on 64-bit Windows.
 			app_cv_[]$1[]_os_kernel="windows64";
 			app_cv_[]$1[]_os_kernel_macro="WINDOWS64";
 			;;

@@ -16,7 +16,7 @@ gsc_winres_win32.o: $(top_srcdir)/data/gsmartcontrol.ico gsc_winres.rc
 mostlyclean-local:
 	rm -f gsmartcontrol.ico
 
-noinst_DATA = gsc_winres.rc.in
+noinst_DATA = gsc_winres.rc.in gsmartcontrol.exe.manifest.in
 
 
 # if TARGET_OS_KERNEL_FAMILY_WINDOWS

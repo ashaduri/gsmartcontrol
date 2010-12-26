@@ -373,7 +373,13 @@ struct SyncPolicyPthread : public SyncScopedLockProvider<SyncPolicyPthread> {
 
 	// Static methods
 
-	static bool init() { return true; }
+	static bool init()
+	{
+	#ifdef PTW32_STATIC_LIB
+		ptw32_processInitialize();  // needed only when linking statically to pthreads-win32
+	#endif
+		return true;
+	}
 
 	static void lock(Mutex& m) { m.lock(); }
 	static bool trylock(Mutex& m) { return m.trylock(); }

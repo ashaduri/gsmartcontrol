@@ -9,8 +9,8 @@ All original code (except for the tests) is licensed under the Zlib License.
 See LICENSE_zlib.txt for details.
 
 
-All tests and examples are covered under the Whatever License. See
-LICENSE_whatever.txt for details.
+All tests and examples are covered under the Unlicense. See
+LICENSE_unlicense.txt for details.
 
 
 Portions of this software are copyright Regents of the University of
