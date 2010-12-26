@@ -13,7 +13,7 @@
 #include <ostream>  // std::ostream
 
 #include "hz/system_specific.h"
-#include "hz/hz_config.h"  // HAVE_CXX__FUNC
+#include "hz/hz_config.h"  // HAVE_CXX_*
 
 #include "dflags.h"
 
@@ -153,10 +153,12 @@ namespace debug_internal {
 
 
 // Function name (without classes / namespaces) only, e.g. "main".
-#ifdef HAVE_CXX__FUNC
+#if defined HAVE_CXX___func__
 	#define DBG_FUNC_NAME __func__
-#else
+#elif defined HAVE_CXX___FUNCTION__
 	#define DBG_FUNC_NAME __FUNCTION__
+#else
+	#define DBG_FUNC_NAME "unknown"
 #endif
 
 // Pretty name is the whole prototype, including return type and classes / namespaces.

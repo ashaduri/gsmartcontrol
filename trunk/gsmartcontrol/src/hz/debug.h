@@ -9,6 +9,12 @@
 
 #include "hz_config.h"  // feature macros
 
+#include <cstdio>  // std::fprintf(), std::vfprintf()
+
+#ifndef __GNUC__
+	#include <cstdarg>  // std::va_start, va_list macro and friends
+#endif
+
 
 /*
 #include <cassert>
@@ -139,31 +145,72 @@
 			std::cerr << "<fatal> [" << (domain) << "] " << output
 
 
-		// The ## part is needed to avoid requirement of at least one argument after "format".
 
-		#define debug_print_dump(domain, format, ...) \
-			std::fprintf(stderr, (std::string("<dump>  [") + (domain) + "] " + format).c_str(), ## __VA_ARGS__)
+		#ifdef __GNUC__
 
-		#define debug_print_info(domain, format, ...) \
-			std::fprintf(stderr, (std::string("<info>  [") + (domain) + "] " + format).c_str(), ## __VA_ARGS__)
+			// The "trim trailing comma" and "##" extensions are GNU features (works with intel too).
+			// The ## part is needed to avoid requirement of at least one argument after "format".
 
-		#define debug_print_warn(domain, format, ...) \
-			std::fprintf(stderr, (std::string("<warn>  [") + (domain) + "] " + format).c_str(), ## __VA_ARGS__)
+			#define debug_print_dump(domain, format, ...) \
+				std::fprintf(stderr, (std::string("<dump>  [") + (domain) + "] " + format).c_str(), ## __VA_ARGS__)
 
-		#define debug_print_error(domain, format, ...) \
-			std::fprintf(stderr, (std::string("<error> [") + (domain) + "] " + format).c_str(), ## __VA_ARGS__)
+			#define debug_print_info(domain, format, ...) \
+				std::fprintf(stderr, (std::string("<info>  [") + (domain) + "] " + format).c_str(), ## __VA_ARGS__)
 
-		#define debug_print_fatal(domain, format, ...) \
-			std::fprintf(stderr, (std::string("<fatal> [") + (domain) + "] " + format).c_str(), ## __VA_ARGS__)
+			#define debug_print_warn(domain, format, ...) \
+				std::fprintf(stderr, (std::string("<warn>  [") + (domain) + "] " + format).c_str(), ## __VA_ARGS__)
+
+			#define debug_print_error(domain, format, ...) \
+				std::fprintf(stderr, (std::string("<error> [") + (domain) + "] " + format).c_str(), ## __VA_ARGS__)
+
+			#define debug_print_fatal(domain, format, ...) \
+				std::fprintf(stderr, (std::string("<fatal> [") + (domain) + "] " + format).c_str(), ## __VA_ARGS__)
+
+
+
+		#else  // non-gcc compilers:
+
+			namespace hz {
+				namespace internal {
+					inline void debug_print_impl(const std::string& header, const char* format, ...)
+					{
+						std::va_list ap;
+						va_start(ap, format);
+						std::vfprintf(stderr, (header + format).c_str(), ap);
+						va_end(ap);
+					}
+				}
+			}
+
+			#define debug_print_dump(domain, ...) \
+				hz::internal::debug_print_impl(std::string("<dump> [") + (domain) + "] ", __VA_ARGS__)
+
+			#define debug_print_info(domain, ...) \
+				hz::internal::debug_print_impl(std::string("<info> [") + (domain) + "] ", __VA_ARGS__)
+
+			#define debug_print_warn(domain, ...) \
+				hz::internal::debug_print_impl(std::string("<warn> [") + (domain) + "] ", __VA_ARGS__)
+
+			#define debug_print_error(domain, ...) \
+				hz::internal::debug_print_impl(std::string("<error> [") + (domain) + "] ", __VA_ARGS__)
+
+			#define debug_print_fatal(domain, ...) \
+				hz::internal::debug_print_impl(std::string("<fatal> [") + (domain) + "] ", __VA_ARGS__)
+
+
+		#endif
+
 
 
 		#define DBG_FILE __FILE__
 		#define DBG_LINE __LINE__
 
-		#ifdef HAVE_CXX__FUNC
+		#if defined HAVE_CXX___func__
 			#define DBG_FUNC_NAME __func__
-		#else
+		#elif defined HAVE_CXX___FUNCTION__
 			#define DBG_FUNC_NAME __FUNCTION__
+		#else
+			#define DBG_FUNC_NAME "unknown"
 		#endif
 
 		#ifdef __GNUC__

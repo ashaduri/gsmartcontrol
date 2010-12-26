@@ -9,7 +9,7 @@
 
 #include "hz_config.h"  // feature macros
 
-#include <cstdlib>  // free()
+#include <cstdlib>  // std::free()
 
 // Don't use DBG_ASSERT() here, it's using this library and therefore
 // too error-prone to use in this context.
@@ -222,7 +222,7 @@ struct tls_functions {
 	static void cleanup_delete_array(T* p) { delete[] p; }
 
 	// use this for C's free()
-	static void cleanup_free(T* p) { free(p); }
+	static void cleanup_free(T* p) { std::free(p); }
 
 	// use this for no cleanup
 	static void nothing(T* p) { }  // Note: This will work with C linkage too, because it's not actually called.
@@ -317,7 +317,7 @@ extern "C" {
 
 	inline void tls_cleanup_c_free(void* p)
 	{
-		free(p);
+		std::free(p);
 	}
 
 	inline void tls_cleanup_c_nothing(void* p)

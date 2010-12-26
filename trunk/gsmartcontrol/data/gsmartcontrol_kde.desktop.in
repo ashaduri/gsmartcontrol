@@ -7,8 +7,7 @@ OnlyShowIn=KDE;
 Version=1.0
 Type=Application
 
-Categories=System;GTK;
-# Categories=Settings;HardwareSettings;
+Categories=System;Monitor;
 
 Name=GSmartControl
 # short description, usually shown in parentheses after Name
@@ -26,4 +25,7 @@ Icon=gsmartcontrol
 #X-KDE-SubstituteUID=true
 #X-KDE-RootOnly=true
 
-Exec=kdesu "@prefix@/bin/gsmartcontrol"
+Exec="@prefix@/bin/gsmartcontrol_root.sh" kde
+
+# Build service rpmlint gives errors without this
+X-SuSE-translate=false

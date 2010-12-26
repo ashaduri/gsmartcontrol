@@ -30,7 +30,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		// to display the correct icon
 		enum type_t {
 			type_unknown,  // unknown. will be autodetected by smartctl
-			type_cddvd,  // unsupported by smartctl
+			type_cddvd  // unsupported by smartctl
 // 			type_pata,  // old pata
 
 			// we can't differentiate between these.
@@ -55,7 +55,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 			status_enabled,  // smart, aodc
 			status_disabled,  // smart, aodc
 			status_unsupported,  // smart, aodc
-			status_unknown,  // aodc - supported but unknown if it's enabled or not.
+			status_unknown  // aodc - supported but unknown if it's enabled or not.
 		};
 
 		static std::string get_status_name(status_t status, bool use_yesno = false)

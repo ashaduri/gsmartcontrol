@@ -534,7 +534,7 @@ inline bool FsPath::is_symlink()
 	}
 
 #ifdef _WIN32
-// 	set_error("The path \"" + path_ + "\" doesn't point to a symbolic link.");  // well, win32 and all...
+	// well, win32 and all...
 	return false;
 
 #else
@@ -545,7 +545,6 @@ inline bool FsPath::is_symlink()
 	}
 
 	if (!S_ISLNK(s.st_mode)) {
-// 		set_error("The path \"" + path_ + "\" doesn't point to a symbolic link.");
 		return false;
 	}
 
@@ -721,7 +720,7 @@ namespace internal {
 
 	// Helper function, internal.
 	// returns the number of not removed files. 0 on success. pass directory only.
-	inline int path_remove_recursive(const std::string& path)
+	inline int path_remove_dir_recursive(const std::string& path)
 	{
 		hz::FsPath p(path);
 		if (!p.exists())
@@ -759,7 +758,7 @@ namespace internal {
 				FsPath ep(entry_path);
 
 				if (ep.is_dir() && !ep.is_symlink()) {  // if it's a directory and not a symlink, go recursive
-					error_count += path_remove_recursive(entry_path);
+					error_count += path_remove_dir_recursive(entry_path);
 
 				} else {  // just remove it
 					if (::unlink(entry_path.c_str()) == -1)
@@ -799,16 +798,17 @@ inline bool FsPath::remove(bool recursive)
 
 	if (recursive && !is_file()) {
 		clear_error();  // clear previous function call
-		if (internal::path_remove_recursive(path_) > 0) {  // supply dirs here only.
+		if (internal::path_remove_dir_recursive(path_) > 0) {  // supply dirs here only.
 			set_error(HZ__("Unable to remove directory \"/path1/\" completely: Some files couldn't be deleted."), 0, path_);
 		}
 		return false;
 	}
 
-#ifdef _WIN32  // win2k (maybe later wins' too) remove() says "permission denied" (!) on directories.
+#ifdef _WIN32  // win2k (maybe later wins too) remove() says "permission denied" (!) on directories.
 	int status = 0;
 	if (is_dir()) {
 		status = ::rmdir(path_.c_str());  // empty dir only
+
 	} else {
 		status = ::unlink(path_.c_str());  // files only
 	}
@@ -819,6 +819,13 @@ inline bool FsPath::remove(bool recursive)
 
 #else
 	if (::remove(path_.c_str()) == -1) {
+
+		// In case of not empty directory, POSIX says the error will be EEXIST
+		// or ENOTEMPTY. Linux uses ENOTEMPTY, Solaris uses EEXIST.
+		// ENOTEMPTY makes more sense for error messages, so convert.
+		if (errno == EEXIST)
+			errno = ENOTEMPTY;
+
 		set_error(HZ__("Unable to remove file or directory \"/path1/\": /errno/."), errno, path_);
 	}
 #endif

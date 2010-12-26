@@ -25,6 +25,8 @@ smartctl_parser_test_SOURCES = smartctl_parser_test.cpp
 smartctl_parser_test_LDADD = libapplib.a \
 	$(top_builddir)/src/pcrecpp/libpcrecpp.a $(top_builddir)/src/libdebug/libdebug.a
 
+spawn_test_SOURCES = spawn_test.cpp
+
 # Build them first
 SUBDIRS=../libdebug ../pcrecpp
 
@@ -33,7 +35,7 @@ SUBDIRS=../libdebug ../pcrecpp
 noinst_PROGRAMS =
 if ENABLE_TESTS
 noinst_PROGRAMS += smartctl_executor_test smartctl_parser_test \
-	storage_detector_test
+	storage_detector_test spawn_test
 endif
 
 tests: $(noinst_PROGRAMS)

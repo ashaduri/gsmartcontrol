@@ -10,7 +10,9 @@
 #include <string>
 #include <gtkmm/window.h>
 
-#if defined ENABLE_LIBGLADEMM
+#include "hz/hz_config.h"  // feature test macros (ENABLE_*)
+
+#if defined ENABLE_LIBGLADE
 	#include <libglademm.h>
 #elif defined ENABLE_GTKBUILDER
 	#include <gtkmm/builder.h>
@@ -42,7 +44,7 @@
 // Or, if you're using compiled-in buffers, it will make them available.
 
 
-#if defined ENABLE_LIBGLADEMM
+#if defined ENABLE_LIBGLADE
 
 	#define APP_UI_RES_DATA_INIT(res_name) \
 		HZ_RES_DATA_INIT_NAMED(res_name##_ui, #res_name ".glade", UIResDataBase); \
@@ -51,7 +53,7 @@
 			{ \
 				UIResDataBase::root_name = #res_name;  /* we need original name here, not with _ui */ \
 			} \
-		};
+		}
 
 
 #elif defined ENABLE_GTKBUILDER
@@ -63,7 +65,7 @@
 			{ \
 				UIResDataBase::root_name = #res_name;  /* we need original name here, not with _ui */ \
 			} \
-		};
+		}
 
 
 #else  // none, just avoid errors
@@ -75,14 +77,14 @@
 			{ \
 				UIResDataBase::root_name = #res_name;  /* we need original name here, not with _ui */ \
 			} \
-		};
+		}
 
 #endif
 
 
 
 
-#if defined ENABLE_LIBGLADEMM
+#if defined ENABLE_LIBGLADE
 
 	typedef Glib::RefPtr<Gnome::Glade::Xml> app_ui_res_ref_t;
 
@@ -215,7 +217,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 
 		typedef hz::InstanceManager<Child, MultiInstance> instance_class;
 
-#if defined ENABLE_LIBGLADEMM
+#if defined ENABLE_LIBGLADE
 		friend class Gnome::Glade::Xml;  // allow construction through libglade
 #elif defined ENABLE_GTKBUILDER
 		friend class Gtk::Builder;  // allow construction through gtkbuilder
@@ -230,7 +232,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 				return hz::InstanceManager<Child, MultiInstance>::get_single_instance();
 
 			std::string error;
-#if defined ENABLE_LIBGLADEMM
+#if defined ENABLE_LIBGLADE
 			app_ui_res_ref_t ui;
 #elif defined ENABLE_GTKBUILDER
 			app_ui_res_ref_t ui = Gtk::Builder::create();
@@ -297,7 +299,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 
 		Glib::Object* lookup_object(const Glib::ustring& name)
 		{
-#if defined ENABLE_LIBGLADEMM
+#if defined ENABLE_LIBGLADE
 			return static_cast<Glib::Object*>(lookup_widget(name));  // all glade objects are widgets, it's an upcast
 #elif defined ENABLE_GTKBUILDER
 			return ref_ui_->get_object(name).operator->();  // silly RefPtr doesn't have get().

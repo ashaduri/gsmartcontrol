@@ -1,13 +1,14 @@
 /**************************************************************************
  Copyright:
       (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
- License: Public Domain
+ License: See LICENSE_whatever.txt
 ***************************************************************************/
 
 #include <iostream>
 #include <gtkmm/main.h>
 
-#include "smartctl_executor_gui.h"
+// #include "smartctl_executor_gui.h"
+#include "smartctl_executor.h"
 
 
 
@@ -16,12 +17,14 @@ int main(int argc, char** argv)
 	Glib::thread_init();
 	Gtk::Main m(argc, argv);
 
+	// NOTE: Don't use long options (e.g. --info). Use short ones (e.g. -i),
+	// because long options may be unsupported on some platforms.
 
-//  SmartctlExecutor ex("smartctl", "--info /dev/sda");
+//  SmartctlExecutor ex("smartctl", "-i /dev/sda");
 // 	SmartctlExecutorGui ex("ls", "-l --color=no -R /dev");
 // 	SmartctlExecutorGui ex("lsa", "-1 --color=no /sys/block");
-	SmartctlExecutorGui ex("../../../0test_binary.sh", "");
-// 	SmartctlExecutor ex("../../../0test_binary.sh", "");
+// 	SmartctlExecutorGui ex("../../../0test_binary.sh", "");
+	SmartctlExecutor ex("../../../0test_binary.sh", "");
 
 	ex.execute();
 

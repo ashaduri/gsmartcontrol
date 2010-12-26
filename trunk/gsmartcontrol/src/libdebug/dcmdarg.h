@@ -7,6 +7,8 @@
 #ifndef LIBDEBUG_DCMDARG_H
 #define LIBDEBUG_DCMDARG_H
 
+#include "hz/hz_config.h"  // ENABLE_GLIB
+
 
 // Glib option parsing support - public interface
 

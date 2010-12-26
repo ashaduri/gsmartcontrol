@@ -9,6 +9,8 @@
 
 #include <string>
 
+#include "hz/hz_config.h"  // DISABLE_RTTI, RMN_TYPE_TRACKING
+
 // if there's RTTI or type tracking enabled
 #if !defined DISABLE_RTTI || defined RMN_TYPE_TRACKING
 	#include <stdexcept>  // std::runtime_error
@@ -16,7 +18,6 @@
 
 #include "hz/sync.h"
 #include "hz/exceptions.h"  // THROW_FATAL
-#include "hz/hz_config.h"  // DISABLE_RTTI
 
 #include "rmn/resource_node.h"  // resource_node type
 #include "rmn/resource_data_any.h"  // any_type data provider
@@ -302,7 +303,8 @@ bool set_data(const std::string& path, T data)
 	if (!node_t::is_abs_path(path)) {
 		node_ptr def_node = get_default_node(path);
 		if (def_node && !def_node->data_is_empty()) {  // if exists and not empty
-			if (!def_node->data_is_type<T>())
+			// template is needed for gcc3.3
+			if (!def_node->template data_is_type<T>())
 				THROW_FATAL(std::runtime_error(std::string(
 						"rconfig::set_data(): Error: Type mismatch between default and config value for \"") + path + "\"!"));
 		}

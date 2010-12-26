@@ -22,6 +22,11 @@ extern "C" {
 	typedef void (*tls_policy_glib_cleanup_func_t)(void*);
 }
 
+// suncc needs this
+#ifdef HAVE_CXX_EXTERN_C_OVERLOAD
+	typedef void (*tls_policy_glib_cleanup_func_cpp_t)(void*);
+#endif
+
 
 
 class TlsPolicyGlib {
@@ -31,6 +36,13 @@ class TlsPolicyGlib {
 		{
 			g_static_private_init(&key_);
 		}
+
+#ifdef HAVE_CXX_EXTERN_C_OVERLOAD
+		TlsPolicyGlib(tls_policy_glib_cleanup_func_cpp_t native_cleanup) : native_cleanup_(native_cleanup)
+		{
+			g_static_private_init(&key_);
+		}
+#endif
 
 		~TlsPolicyGlib()
 		{

@@ -49,12 +49,27 @@
 
 
 // Custom: Added for compatibility with older pcre versions
+#ifndef PCRE_NEWLINE_CR
+	#define PCRE_NEWLINE_CR 0x00100000
+#endif
+#ifndef PCRE_NEWLINE_LF
+	#define PCRE_NEWLINE_LF 0x00200000
+#endif
+#ifndef PCRE_NEWLINE_CRLF
+	#define PCRE_NEWLINE_CRLF 0x00300000
+#endif
 #ifndef PCRE_NEWLINE_ANYCRLF
 	#define PCRE_NEWLINE_ANYCRLF 0x00500000
 #endif
 #ifndef PCRE_NEWLINE_ANY
 	#define PCRE_NEWLINE_ANY 0x00400000
 #endif
+
+#ifndef PCRE_NEWLINE_ANY
+	#define PCRE_EXTRA_MATCH_LIMIT_RECURSION 0x0010
+#endif
+
+
 
 
 namespace pcrecpp {
@@ -506,15 +521,27 @@ int RE::TryMatch(const StringPiece& text,
     return 0;
   }
 
+	// Custom: match_limit_recursion field is since pcre 6.5, tables field since 5.0.
+#if PCRE_MAJOR > 6 || (PCRE_MAJOR == 6 && PCRE_MINOR >= 5)
   pcre_extra extra = { 0, 0, 0, 0, 0, 0 };
+#elif PCRE_MAJOR > 5 || (PCRE_MAJOR == 5 && PCRE_MINOR >= 0)
+  pcre_extra extra = { 0, 0, 0, 0, 0 };
+#else
+  pcre_extra extra = { 0, 0, 0, 0 };
+#endif
+
   if (options_.match_limit() > 0) {
     extra.flags |= PCRE_EXTRA_MATCH_LIMIT;
     extra.match_limit = options_.match_limit();
   }
+
+	// Custom: match_limit_recursion is since pcre 6.5.
+#if PCRE_MAJOR > 6 || (PCRE_MAJOR == 6 && PCRE_MINOR >= 5)
   if (options_.match_limit_recursion() > 0) {
     extra.flags |= PCRE_EXTRA_MATCH_LIMIT_RECURSION;
     extra.match_limit_recursion = options_.match_limit_recursion();
   }
+#endif
   int rc = pcre_exec(re,              // The regular expression object
                      &extra,
                      (text.data() == NULL) ? "" : text.data(),

@@ -142,7 +142,8 @@ class ResourceDataAny {
 		template<typename T>
 		inline bool data_is_type() const
 		{
-			return data_.is_type<T>();  // won't work without RTTI! If empty, reacts to void only.
+			// template is needed for gcc 3.3
+			return data_.template is_type<T>();  // won't work without RTTI! If empty, reacts to void only.
 		}
 #elif defined RMN_TYPE_TRACKING
 		template<typename T>
@@ -192,7 +193,8 @@ class ResourceDataAny {
 				THROW_FATAL(type_mismatch());
 #endif
 			try {
-				return data_.get<T>();  // won't work if empty or invalid type
+				// template is needed for gcc 3.3
+				return data_.template get<T>();  // won't work if empty or invalid type
 			}
 			catch (hz::bad_any_cast& e) {  // convert any_type exception to rmn exception.
 				THROW_CUSTOM_BAD_CAST(type_mismatch, data_.type(), typeid(T));
@@ -230,7 +232,8 @@ class ResourceDataAny {
 #endif
 			try {
 				// Note: This throws only if RTTI is enabled.
-				return data_.convert<T>();  // won't work if empty or invalid type
+				// template is needed for gcc 3.3
+				return data_.template convert<T>();  // won't work if empty or invalid type
 			}
 			catch (hz::bad_any_cast& e) {
 				THROW_CUSTOM_BAD_CAST(type_convert_error, data_.type(), typeid(T));

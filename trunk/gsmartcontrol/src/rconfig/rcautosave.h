@@ -7,6 +7,8 @@
 #ifndef RCONFIG_RCAUTOSAVE_H
 #define RCONFIG_RCAUTOSAVE_H
 
+#include "hz/hz_config.h"  // ENABLE_GLIB
+
 
 // Autosave functions are only available if GLib is enabled.
 #ifdef ENABLE_GLIB

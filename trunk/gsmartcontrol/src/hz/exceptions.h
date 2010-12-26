@@ -38,13 +38,14 @@
 	// Note: The exceptions MUST have a what() member function
 	// for this to work.
 
+	// Do NOT put ex into parentheses. gcc-3.3 gives syntax errors about that (huh?).
 
 	#define THROW_FATAL(ex) \
-		throw (ex)
+		throw ex
 
 	// same as above, but no abort() in case of no-exceptions
 	#define THROW_WARN(ex) \
-		throw (ex)
+		throw ex
 
 
 #else  // no-exceptions alternative:

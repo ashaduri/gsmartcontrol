@@ -1,7 +1,6 @@
 AM_CPPFLAGS = $(all_includes)
 METASOURCES = AUTO
 
-
 bin_PROGRAMS = gsmartcontrol
 
 SUBDIRS = libdebug hz rmn rconfig pcrecpp applib res

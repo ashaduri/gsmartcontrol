@@ -77,7 +77,7 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 		ex.create_running_dialog(this);
 		ex.set_running_msg("Checking if smartctl is executable...");
 
-		ex.set_command(smartctl_binary, smartctl_def_options + "--version");
+		ex.set_command(smartctl_binary, smartctl_def_options + "-V");  // --version
 
 		if (!ex.execute() || !ex.get_error_msg().empty()) {
 			error_msg = ex.get_error_msg();
@@ -122,6 +122,9 @@ void GscMainWindow::populate_iconview()
 
 	} else {
 		iconview->empty_view_message = GscMainWindowIconView::message_scan_disabled;
+		iconview->clear_all();  // the message won't be shown without invalidating the region.
+		while (Gtk::Main::events_pending())  // give expose event the time it needs
+			Gtk::Main::iteration();
 	}
 
 	// Add command-line-requested devices and virtual drives.
@@ -739,92 +742,87 @@ void GscMainWindow::set_drive_menu_status(StorageDeviceRefPtr drive)
 	// bogus toggle actions, etc...
 	this->action_handling_enabled_ = false;
 
-	// if no drive is selected or if a test is being run on selected drive, disallow.
-	bool device_active = (drive && !drive->get_test_is_active());
+	do {  // for quick skipping
 
-	actiongroup_device->set_sensitive(device_active);
+		// if no drive is selected or if a test is being run on selected drive, disallow.
+		if (!drive || drive->get_test_is_active()) {
+			actiongroup_device->set_sensitive(false);
+			break;  // nothing else to do here
+		}
 
-	// smart toggle status
-	{
-		Gtk::ToggleAction* action = hz::down_cast<Gtk::ToggleAction*>(
-				actiongroup_device->get_action(APP_ACTION_NAME(action_enable_smart)).operator->());
-		if (action) {
-			StorageDevice::status_t status = StorageDevice::status_unsupported;
-			if (drive)
-				status = drive->get_smart_status();
+		// make everything sensitive, then disable one by one
+		actiongroup_device->set_sensitive(true);
 
-			if (status == StorageDevice::status_unsupported) {
-				action->set_active(false);
-				action->set_sensitive(false);
-			} else {  // smart supported
-				action->set_sensitive(true);
-				action->set_active(status == StorageDevice::status_enabled);
+		bool is_virtual = (drive && drive->get_is_virtual());
+
+		StorageDevice::status_t smart_status = StorageDevice::status_unsupported;
+		StorageDevice::status_t aodc_status = StorageDevice::status_unsupported;
+
+		if (drive && !is_virtual) {
+			smart_status = drive->get_smart_status();
+			aodc_status = drive->get_aodc_status();
+		}
+
+
+		// Sensitivity and visibility manipulation.
+		// Do this first, then do the enable / disable stuff.
+		{
+			Glib::RefPtr<Gtk::Action> action;
+
+			if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_perform_tests))))
+				action->set_sensitive(smart_status == StorageDevice::status_enabled);
+			if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_reread_device_data))))
+				action->set_visible(drive && !is_virtual);
+			if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_remove_device)))) {
+				action->set_visible(drive && drive->get_is_manually_added());
+				// action->set_sensitive(drive && drive->get_is_manually_added());
+			}
+			if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_remove_virtual_device))))
+				action->set_visible(drive && is_virtual);
+			if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_enable_smart))))
+				action->set_sensitive(smart_status != StorageDevice::status_unsupported);
+			if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_enable_aodc))))
+				action->set_sensitive(smart_status != StorageDevice::status_unsupported);
+		}
+
+
+		// smart toggle status
+		{
+			Gtk::ToggleAction* action = hz::down_cast<Gtk::ToggleAction*>(
+					actiongroup_device->get_action(APP_ACTION_NAME(action_enable_smart)).operator->());
+			if (action) {
+				action->set_active(smart_status == StorageDevice::status_enabled);
 			}
 		}
-	}
 
 
-	// aodc toggle status
-	{
-		Gtk::ToggleAction* action = hz::down_cast<Gtk::ToggleAction*>(
-				actiongroup_device->get_action(APP_ACTION_NAME(action_enable_aodc)).operator->());
-		if (action) {
-			StorageDevice::status_t status = StorageDevice::status_unsupported;
-			if (drive)
-				status = drive->get_aodc_status();
+		// aodc toggle status
+		{
+			Gtk::ToggleAction* action = hz::down_cast<Gtk::ToggleAction*>(
+					actiongroup_device->get_action(APP_ACTION_NAME(action_enable_aodc)).operator->());
 
-			// add some more accelerators (in addition to existing ones)
-			Gtk::CheckMenuItem* dev_odc_item = hz::down_cast<Gtk::CheckMenuItem*>(ui_manager->get_widget(
-					"/main_menubar/device_menu/" APP_ACTION_NAME(action_enable_aodc)));
-			Gtk::CheckMenuItem* popup_odc_item = hz::down_cast<Gtk::CheckMenuItem*>(ui_manager->get_widget(
-					"/device_popup/" APP_ACTION_NAME(action_enable_aodc)));
-			Gtk::CheckButton* status_aodc_check = lookup_widget<Gtk::CheckButton*>("status_aodc_enabled_check");
+			if (action) {
+				Gtk::CheckMenuItem* dev_odc_item = hz::down_cast<Gtk::CheckMenuItem*>(ui_manager->get_widget(
+						"/main_menubar/device_menu/" APP_ACTION_NAME(action_enable_aodc)));
+				Gtk::CheckMenuItem* popup_odc_item = hz::down_cast<Gtk::CheckMenuItem*>(ui_manager->get_widget(
+						"/device_popup/" APP_ACTION_NAME(action_enable_aodc)));
+				Gtk::CheckButton* status_aodc_check = lookup_widget<Gtk::CheckButton*>("status_aodc_enabled_check");
 
-			// true if supported, but unknown whether it's enabled or not.
-			if (dev_odc_item)
-				dev_odc_item->set_inconsistent(status == StorageDevice::status_unknown);
-			if (popup_odc_item)
-				popup_odc_item->set_inconsistent(status == StorageDevice::status_unknown);
-			if (status_aodc_check)
-				status_aodc_check->set_inconsistent(status == StorageDevice::status_unknown);
+				// true if supported, but unknown whether it's enabled or not.
+				if (dev_odc_item)
+					dev_odc_item->set_inconsistent(aodc_status == StorageDevice::status_unknown);
+				if (popup_odc_item)
+					popup_odc_item->set_inconsistent(aodc_status == StorageDevice::status_unknown);
+				if (status_aodc_check)
+					status_aodc_check->set_inconsistent(aodc_status == StorageDevice::status_unknown);
 
-			if (status == StorageDevice::status_unsupported) {
-				action->set_active(false);
-				action->set_sensitive(false);
-
-			} else if (status == StorageDevice::status_unknown) {
-				action->set_sensitive(true);
-				action->set_active(false);  // doesn't really matter what state
-
-			} else {  // supported, known status
-				action->set_sensitive(true);
-				action->set_active(status == StorageDevice::status_enabled);
+				// for unknown it doesn't really matter what state it's in.
+				action->set_active(aodc_status == StorageDevice::status_enabled);
 			}
-
 		}
-	}
 
+	} while (false);
 
-	// hide some entries in virtual and vice versa
-	{
-		bool normal = (!drive || !drive->get_is_virtual());  // hide virtual stuff for non-drives, it's pretty long.
-		Glib::RefPtr<Gtk::Action> action;
-
-		if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_perform_tests))))
-			action->set_sensitive(normal);
-		if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_reread_device_data))))
-			action->set_visible(normal);
-		if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_remove_device)))) {
-			action->set_visible(drive && drive->get_is_manually_added());
-			// action->set_sensitive(drive && drive->get_is_manually_added());
-		}
-		if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_remove_virtual_device))))
-			action->set_visible(!normal);
-		if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_enable_smart))))
-			action->set_sensitive(normal);
-		if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_enable_aodc))))
-			action->set_sensitive(normal);
-	}
 
 	// re-enable action handling
 	this->action_handling_enabled_ = true;
@@ -928,7 +926,9 @@ void GscMainWindow::rescan_devices()
 
 	iconview->empty_view_message = GscMainWindowIconView::message_scanning;
 
-	iconview->clear_all();  // clear previous icons
+	iconview->clear_all();  // clear previous icons, invalidate region to update the message.
+	while (Gtk::Main::events_pending())  // give expose event the time it needs
+		Gtk::Main::iteration();
 
 	this->drives.clear();
 

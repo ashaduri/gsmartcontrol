@@ -45,7 +45,7 @@ class StorageAttribute {
 		enum attr_t {
 			attr_type_unknown,
 			attr_type_prefail,  // reported: Pre-fail
-			attr_type_oldage,  // reported: Old_age
+			attr_type_oldage  // reported: Old_age
 		};
 
 		static std::string get_attr_type_name(attr_t a)
@@ -62,7 +62,7 @@ class StorageAttribute {
 		enum update_t {
 			update_type_unknown,
 			update_type_always,  // reported: Always
-			update_type_offline,  // reported: Offline
+			update_type_offline  // reported: Offline
 		};
 
 		static std::string get_update_type_name(update_t a)
@@ -80,7 +80,7 @@ class StorageAttribute {
 			fail_time_unknown,
 			fail_time_none,  // reported: -
 			fail_time_past,  // reported: In_the_past
-			fail_time_now,  // reported: FAILING_NOW
+			fail_time_now  // reported: FAILING_NOW
 		};
 
 		static std::string get_fail_time_name(fail_time_t a)
@@ -245,7 +245,7 @@ class StorageProperty {
 			value_type_capability,  // for "capabilities" subsection (non-time-interval blocks only)
 			value_type_attribute,  // for "attributes" subsection
 			value_type_error_block,  // for "error_log" subsection
-			value_type_selftest_entry,  // for "selftest_log" subsection
+			value_type_selftest_entry  // for "selftest_log" subsection
 		};
 
 		static std::string get_value_type_name(value_type_t type)
@@ -270,7 +270,7 @@ class StorageProperty {
 			section_unknown,  // use when searching in all sections
 			section_info,  // Short info (--info)
 			section_data,  // SMART DATA
-			section_internal,  // internal application-specific data
+			section_internal  // internal application-specific data
 		};
 
 		static std::string get_section_name(section_t s)
@@ -293,7 +293,7 @@ class StorageProperty {
 			subsection_attributes,  // Attributes (-A, --attributes). These need decoding.
 			subsection_error_log,  // Error Log (-l error)
 			subsection_selftest_log,  // Self-test log (-l selftest)
-			subsection_selective_selftest_log,  // Selective self-test log and settings
+			subsection_selective_selftest_log  // Selective self-test log and settings
 		};
 
 		static std::string get_subsection_name(subsection_t s)
@@ -315,7 +315,7 @@ class StorageProperty {
 			warning_none,
 			warning_notice,  // a known attribute is somewhat disturbing, but no smart error
 			warning_warn,  // smart warning is raised by old-age attribute
-			warning_alert,  // smart warning is raised by pre-fail attribute, and similar errors
+			warning_alert  // smart warning is raised by pre-fail attribute, and similar errors
 		};
 
 

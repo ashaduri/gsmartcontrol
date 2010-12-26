@@ -37,7 +37,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 			message_none,
 			message_scan_disabled,
 			message_scanning,
-			message_no_drives_found,
+			message_no_drives_found
 		};
 
 

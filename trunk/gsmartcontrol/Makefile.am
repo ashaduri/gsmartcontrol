@@ -22,6 +22,7 @@ dist_doc_DATA = AUTHORS.txt ChangeLog NEWS README.txt \
 	LICENSE_gsmartcontrol.txt \
 	LICENSE_hz.txt \
 	LICENSE_pcrecpp.txt \
+	LICENSE_whatever.txt \
 	LICENSE_zlib.txt
 
 

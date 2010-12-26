@@ -5,7 +5,8 @@
 ***************************************************************************/
 
 #include <string>
-#include <locale>  // std::locale
+// #include <locale>  // std::locale
+#include <clocale>  // std::setlocale
 #include <cstdio>  // std::printf
 #include <vector>
 #include <sstream>
@@ -19,12 +20,13 @@
 // #include <gtkmm.h>
 // #include <iostream>
 
+#include "hz/hz_config.h"  // ENABLE_GLIB, VERSION, DEBUG_BUILD
+
 #include "libdebug/libdebug.h"  // include full libdebug here (to add domains, etc...)
 #include "rconfig/rconfig.h"  // include full rconfig here
 #include "hz/data_file.h"  // data_file_add_search_directory
 #include "hz/fs_tools.h"  // get_home_dir
 #include "hz/fs_path.h"  // FsPath
-#include "hz/hz_config.h"  // ENABLE_GLIB
 #include "hz/string_algo.h"  // string_join
 
 #include "gsc_main_window.h"
@@ -200,7 +202,11 @@ bool app_init_and_loop(int& argc, char**& argv)
 {
 
 	// glib needs this for command line args. It will be reset by Gtk::Main later.
-	std::locale::global(std::locale(""));  // set locale to system LANG
+
+	// this aborts on freebsd with "locale::facet::_S_create_c_locale name not valid",
+	// so use the C equivalent.
+	// std::locale::global(std::locale(""));  // set locale to system LANG
+	std::setlocale(LC_ALL, "");
 
 
 	// initialize GThread (for mutexes, etc... to work). Must be called before any other glib function.
@@ -212,6 +218,13 @@ bool app_init_and_loop(int& argc, char**& argv)
 	if (! parse_cmdline_args(args, argc, argv)) {
 		return true;
 	}
+
+	// Note: parsing gtk option context is initializes gtk, so
+	// gtk_disable_setlocale() won't work here.
+	if (!args.arg_locale) {
+		std::setlocale(LC_ALL, "C");  // set classic locale. otherwise we're already in user locale.
+	}
+
 
 	if (args.arg_version) {
 		// show version information and exit
@@ -268,8 +281,12 @@ bool app_init_and_loop(int& argc, char**& argv)
 	app_init_config();
 
 
+	debug_out_info("app", "Current locale: " << std::setlocale(LC_ALL, NULL) << "\n");
+
+
 	// Initialize GTK+
-	Gtk::Main m(argc, argv, args.arg_locale);
+// 	Gtk::Main m(argc, argv, args.arg_locale);
+	Gtk::Main m(argc, argv);
 
 
 	// Redirect all GTK+/Glib and related messages to libdebug

@@ -1,18 +1,21 @@
 /**************************************************************************
  Copyright:
       (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
- License: Public Domain
+ License: See LICENSE_whatever.txt
 ***************************************************************************/
 
 #include <iostream>
 
 #include "storage_device.h"
 #include "storage_detector.h"
-
+#include "gsc_settings.h"  // in src directory
 
 
 int main()
 {
+	// These settings contain device search paths, smartctl binary, etc...
+	init_default_settings();
+
 	std::vector<StorageDeviceRefPtr> drives;
 // 	std::vector<std::string> match_patterns;
 	std::vector<std::string> blacklist_patterns;  // additional parameters

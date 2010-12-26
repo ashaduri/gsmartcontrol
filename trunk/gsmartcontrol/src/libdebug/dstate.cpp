@@ -7,6 +7,8 @@
 #include <iostream>  // std::cerr, the default output stream
 #include <map>
 
+#include "hz/hz_config.h"  // DEBUG_BUILD
+
 #include "hz/exceptions.h"  // THROW_FATAL
 
 #include "dstate.h"
