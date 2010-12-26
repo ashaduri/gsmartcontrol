@@ -7,6 +7,7 @@
 #include <iostream>  // cerr
 #include <exception>  // std::exception, std::set_terminate()
 #include <cstdlib>  // EXIT_*
+// #include <SDL.h>
 
 #include "hz/hz_config.h"  // HAVE_VERBOSE_TERMINATE_HANDLER
 
@@ -14,7 +15,13 @@
 
 
 
-int main (int argc, char** argv)
+// #ifdef _WIN32
+// This is a stupid win32 workaround (wrapper) for WinMain braindamageness.
+// This will also make sure that the stdout and stderr get redirected to the appropriate files.
+// int SDL_main(int argc, char* argv[])
+// #else
+int main(int argc, char* argv[])
+// #endif
 {
 	// we still leave __GNUC__ for autoconf-less setups.
 #if defined HAVE_VERBOSE_TERMINATE_HANDLER || defined __GNUC__

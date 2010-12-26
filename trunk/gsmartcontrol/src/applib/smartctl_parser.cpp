@@ -198,7 +198,13 @@ bool SmartctlParser::parse_full(const std::string& full)
 		section_start_pos = section_end_pos;
 	}
 
-	return status;
+	if (!status) {
+		set_error_msg("No ATA sections could be parsed.");
+		debug_out_warn("app", DBG_FUNC_MSG << "No ATA sections could be parsed. Returning.\n");
+		return false;
+	}
+
+	return true;
 }
 
 
@@ -207,14 +213,10 @@ bool SmartctlParser::parse_full(const std::string& full)
 // returns empty string on failure. Non-unix newlines in s are ok.
 std::string SmartctlParser::parse_version(const std::string& s)
 {
-	pcrecpp::RE_Options re_options;
-	re_options.set_caseless(true).set_multiline(true);
-
-	// e.g. "smartctl version 5.37" or "smartctl 5.39"
-	pcrecpp::RE re("^smartctl (?:version )?([0-9][^ \\t\\n\\r]+)", re_options);
 	std::string version;
 
-	if (!re.PartialMatch(s, &version)) {
+	// e.g. "smartctl version 5.37" or "smartctl 5.39"
+	if (!app_pcre_match("/^smartctl (?:version )?([0-9][^ \\t\\n\\r]+)/mi", s, &version)) {
 		debug_out_error("app", DBG_FUNC_MSG << "No smartctl version information found in supplied string.\n");
 		return std::string();
 	}
@@ -258,7 +260,7 @@ std::string SmartctlParser::parse_byte_size(const std::string& str, uint64_t& by
 	// When launching smartctl, we use LANG=C for it, but it works only on POSIX.
 	// Also, loading smartctl output files from different locales doesn't really work.
 
-	debug_out_dump("app", "Size reported as: " << str << "\n");
+// 	debug_out_dump("app", "Size reported as: " << str << "\n");
 
 	std::vector<std::string> to_replace;
 	to_replace.push_back(" ");
@@ -344,16 +346,13 @@ bool SmartctlParser::parse_section(const std::string& header, const std::string&
 // Parse the info section (without "===" header)
 bool SmartctlParser::parse_section_info(const std::string& body)
 {
-	pcrecpp::RE_Options re_options;
-	re_options.set_caseless(true).set_multiline(true);
-
 	this->set_data_section_info(body);
 
 	StorageProperty::section_t section = StorageProperty::section_info;
 
 	// split by lines.
 	// e.g. Device Model:     ST3500630AS
-	pcrecpp::RE re("^([^:\\n]+):[ \\t]*(.*)$", re_options);
+	pcrecpp::RE re = app_pcre_re("/^([^:\\n]+):[ \\t]*(.*)$/mi");
 
 	std::string name, value;
 	pcrecpp::StringPiece input(body);  // position tracker
@@ -500,7 +499,7 @@ bool SmartctlParser::parse_section_data(const std::string& body)
 	// merge "error log" parts. each part begins with a double-space or "Error nn".
 	for (unsigned int i = 0; i < split_subsections.size(); ++i) {
 		std::string sub = hz::string_trim_copy(split_subsections[i], "\t\n\r");  // don't trim space
-		if (pcrecpp::RE("^  ").PartialMatch(sub) || pcrecpp::RE("^Error [0-9]+").PartialMatch(sub)) {
+		if (app_pcre_re("^  ").PartialMatch(sub) || app_pcre_re("^Error [0-9]+").PartialMatch(sub)) {
 			if (!subsections.empty()) {
 				subsections.back() += "\n\n" + sub;  // append to previous part
 			} else {
@@ -561,14 +560,8 @@ bool SmartctlParser::parse_section_data_subsection_health(const std::string& sub
 	pt.section = StorageProperty::section_data;
 	pt.subsection = StorageProperty::subsection_health;
 
-	pcrecpp::RE_Options re_options;
-	re_options.set_caseless(true).set_multiline(true);
-
-
-	pcrecpp::RE re("^([^:\\n]+):[ \\t]*(.*)$", re_options);
-
 	std::string name, value;
-	if (re.PartialMatch(sub, &name, &value)) {
+	if (app_pcre_match("/^([^:\\n]+):[ \\t]*(.*)$/mi", sub, &name, &value)) {
 		hz::string_trim(name);
 		hz::string_trim(value);
 
@@ -599,16 +592,12 @@ bool SmartctlParser::parse_section_data_subsection_capabilities(const std::strin
 	pt.section = StorageProperty::section_data;
 	pt.subsection = StorageProperty::subsection_capabilities;
 
-	pcrecpp::RE_Options re_options;
-	re_options.set_caseless(true).set_multiline(true);
-
-
 	std::string sub = sub_initial;
 
 	// Fix some bugs in smartctl output (pre-5.39-final versions):
 	// There is a stale newline in "is in a Vendor Specific state\n.\n" and
 	// "is in a Reserved state\n.\n".
-// 	pcrecpp::RE("\\n\\.$", re_options).GlobalReplace(".", &sub);
+// 	app_pcre_replace("/\\n\\.$/mi", ".", &sub);
 	app_pcre_replace("/(is in a Vendor Specific state)\\n\\.$/mi", "\\1.", sub);
 	app_pcre_replace("/(is in a Reserved state)\\n\\.$/mi", "\\1.", sub);
 
@@ -644,8 +633,7 @@ bool SmartctlParser::parse_section_data_subsection_capabilities(const std::strin
 
 
 	// parse each block
-	pcrecpp::RE re("([^:]*):\\s*\\(([^)]+)\\)\\s*(.*)",
-			pcrecpp::RE_Options().set_multiline(true).set_dotall(true));
+	pcrecpp::RE re = app_pcre_re("/([^:]*):\\s*\\(([^)]+)\\)\\s*(.*)/ms");
 
 	bool cap_found = false;  // found at least one capability
 
@@ -744,9 +732,6 @@ bool SmartctlParser::parse_section_data_subsection_capabilities(const std::strin
 // Check the capabilities for internal properties we can use.
 bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& cap)
 {
-	pcrecpp::RE_Options re_options;
-	re_options.set_caseless(true).set_multiline(true);
-
 	// Some special capabilities we're interested in.
 
 	// Note: Smartctl gradually changed spelling Off-line to Offline in some messages.
@@ -757,29 +742,29 @@ bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& c
 
 	// "was never started", "was completed without error", "is in progress",
 	// "was suspended by an interrupting command from host", etc...
-	pcrecpp::RE re_offline_status("^(Off-?line data collection) activity (?:is|was) (.*)$", re_options);
+	pcrecpp::RE re_offline_status = app_pcre_re("/^(Off-?line data collection) activity (?:is|was) (.*)$/mi");
 	// "Enabled", "Disabled". May not show up on older smartctl (< 5.1.10), so no way of knowing there.
-	pcrecpp::RE re_offline_enabled("^(Auto Off-?line Data Collection):[ \\t]*(.*)$", re_options);
-	pcrecpp::RE re_offline_immediate("^(SMART execute Off-?line immediate)$", re_options);
+	pcrecpp::RE re_offline_enabled = app_pcre_re("/^(Auto Off-?line Data Collection):[ \\t]*(.*)$/mi");
+	pcrecpp::RE re_offline_immediate = app_pcre_re("/^(SMART execute Off-?line immediate)$/mi");
 	// "No Auto Offline data collection support.", "Auto Offline data collection on/off support.".
-	pcrecpp::RE re_offline_auto("^(No |)(Auto Off-?line data collection (?:on\\/off )?support)$", re_options);
+	pcrecpp::RE re_offline_auto = app_pcre_re("/^(No |)(Auto Off-?line data collection (?:on\\/off )?support)$/mi");
 	// Same as above (smartctl <= 5.1-18). "No Automatic timer ON/OFF support."
-	pcrecpp::RE re_offline_auto2("^(No |)(Automatic timer ON\\/OFF support)$", re_options);
-	pcrecpp::RE re_offline_suspend("^(?:Suspend|Abort) (Off-?line collection upon new command)$", re_options);
-	pcrecpp::RE re_offline_surface("^(No |)(Off-?line surface scan supported)$", re_options);
-	pcrecpp::RE re_offline_time("^(Total time to complete Off-?line data collection)", re_options);  // match on name!
+	pcrecpp::RE re_offline_auto2 = app_pcre_re("/^(No |)(Automatic timer ON\\/OFF support)$/mi");
+	pcrecpp::RE re_offline_suspend = app_pcre_re("/^(?:Suspend|Abort) (Off-?line collection upon new command)$/mi");
+	pcrecpp::RE re_offline_surface = app_pcre_re("/^(No |)(Off-?line surface scan supported)$/mi");
+	pcrecpp::RE re_offline_time = app_pcre_re("/^(Total time to complete Off-?line data collection)/mi");  // match on name!
 
-	pcrecpp::RE re_selftest_status("^Self-test execution status", re_options);  // match on name
-	pcrecpp::RE re_selftest_support("^(No |)(Self-test supported)$", re_options);
-	pcrecpp::RE re_conv_selftest_support("^(No |)(Conveyance Self-test supported)$", re_options);
-	pcrecpp::RE re_selective_selftest_support("^(No |)(Selective Self-test supported)$", re_options);
-	pcrecpp::RE re_selftest_short_time("^(Short self-test routine recommended polling time)", re_options);  // match on name!
-	pcrecpp::RE re_selftest_long_time("^(Extended self-test routine recommended polling time)", re_options);  // match on name!
-	pcrecpp::RE re_conv_selftest_time("^(Conveyance self-test routine recommended polling time)", re_options);  // match on name!
+	pcrecpp::RE re_selftest_status = app_pcre_re("/^Self-test execution status/mi");  // match on name
+	pcrecpp::RE re_selftest_support = app_pcre_re("/^(No |)(Self-test supported)$/mi");
+	pcrecpp::RE re_conv_selftest_support = app_pcre_re("/^(No |)(Conveyance Self-test supported)$/mi");
+	pcrecpp::RE re_selective_selftest_support = app_pcre_re("/^(No |)(Selective Self-test supported)$/mi");
+	pcrecpp::RE re_selftest_short_time = app_pcre_re("/^(Short self-test routine recommended polling time)/mi");  // match on name!
+	pcrecpp::RE re_selftest_long_time = app_pcre_re("/^(Extended self-test routine recommended polling time)/mi");  // match on name!
+	pcrecpp::RE re_conv_selftest_time = app_pcre_re("/^(Conveyance self-test routine recommended polling time)/mi");  // match on name!
 
-	pcrecpp::RE re_sct_status("^(SCT Status supported)$", re_options);
-	pcrecpp::RE re_sct_control("^(SCT Feature Control supported)$", re_options);  // means can change logging interval
-	pcrecpp::RE re_sct_data("^(SCT Data Table supported)$", re_options);
+	pcrecpp::RE re_sct_status = app_pcre_re("/^(SCT Status supported)$/mi");
+	pcrecpp::RE re_sct_control = app_pcre_re("/^(SCT Feature Control supported)$/mi");  // means can change logging interval
+	pcrecpp::RE re_sct_data = app_pcre_re("/^(SCT Data Table supported)$/mi");
 
 	if (cap.section != StorageProperty::section_data || cap.subsection != StorageProperty::subsection_capabilities) {
 		debug_out_error("app", DBG_FUNC_MSG << "Non-capability property passed.\n");
@@ -991,10 +976,6 @@ bool SmartctlParser::parse_section_data_subsection_attributes(const std::string&
 	pt.section = StorageProperty::section_data;
 	pt.subsection = StorageProperty::subsection_attributes;
 
-	pcrecpp::RE_Options re_options;
-	re_options.set_caseless(true).set_multiline(true);
-
-
 	// split to lines
 	std::vector<std::string> lines;
 	hz::string_split(sub, '\n', lines, true);
@@ -1010,13 +991,13 @@ bool SmartctlParser::parse_section_data_subsection_attributes(const std::string&
 	bool attr_found = false;  // at least one attribute was found
 	bool attr_format_with_updated = false;  // UPDATED column present
 
-	pcrecpp::RE re_up("[ \\t]*([0-9]+) ([^\\t\\n]+)[ \\t]+((?:0x[a-fA-F0-9]+)|(?:[A-Z-]{2,}))[ \\t]+([0-9]+)[ \\t]+([0-9]+)[ \\t]+([0-9]+)[ \\t]+"
-			"([^ \\t\\n]+)[ \\t]+([^ \\t\\n]+)[ \\t]+([^ \\t\\n]+)[ \\t]+(.+)[ \\t]*", re_options);
+	pcrecpp::RE re_up = app_pcre_re("/[ \\t]*([0-9]+) ([^\\t\\n]+)[ \\t]+((?:0x[a-fA-F0-9]+)|(?:[A-Z-]{2,}))[ \\t]+([0-9]+)[ \\t]+([0-9]+)[ \\t]+([0-9]+)[ \\t]+"
+			"([^ \\t\\n]+)[ \\t]+([^ \\t\\n]+)[ \\t]+([^ \\t\\n]+)[ \\t]+(.+)[ \\t]*/mi");
 
-	pcrecpp::RE re_noup("[ \\t]*([0-9]+) ([^\\t\\n]+)[ \\t]+((?:0x[a-fA-F0-9]+)|(?:[A-Z-]{2,}))[ \\t]+([0-9]+)[ \\t]+([0-9]+)[ \\t]+([0-9]+)[ \\t]+"
-			"([^ \\t\\n]+)[ \\t]+([^ \\t\\n]+)[ \\t]+(.+)[ \\t]*", re_options);
+	pcrecpp::RE re_noup = app_pcre_re("/[ \\t]*([0-9]+) ([^\\t\\n]+)[ \\t]+((?:0x[a-fA-F0-9]+)|(?:[A-Z-]{2,}))[ \\t]+([0-9]+)[ \\t]+([0-9]+)[ \\t]+([0-9]+)[ \\t]+"
+			"([^ \\t\\n]+)[ \\t]+([^ \\t\\n]+)[ \\t]+(.+)[ \\t]*/mi");
 
-	pcrecpp::RE re_flag_descr("^[\\t ]+\\|", re_options);
+	pcrecpp::RE re_flag_descr = app_pcre_re("/^[\\t ]+\\|/mi");
 
 
 	for(unsigned int i = 0; i < lines.size(); ++i) {
@@ -1036,7 +1017,7 @@ bool SmartctlParser::parse_section_data_subsection_attributes(const std::string&
 		}
 
 		if (app_pcre_match("/Data Structure revision number/mi", line)) {
-			pcrecpp::RE re("^([^:\\n]+):[ \\t]*(.*)$", re_options);
+			pcrecpp::RE re = app_pcre_re("/^([^:\\n]+):[ \\t]*(.*)$/mi");
 			std::string name, value;
 			if (re.PartialMatch(line, &name, &value)) {
 				hz::string_trim(name);
@@ -1140,10 +1121,6 @@ bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& 
 	pt.section = StorageProperty::section_data;
 	pt.subsection = StorageProperty::subsection_error_log;
 
-	pcrecpp::RE_Options re_options;
-	re_options.set_caseless(true).set_multiline(true);
-
-
 	// Note: The format of this section was changed somewhere between 5.0-x and 5.30.
 	// The old format is doesn't really give any useful info, and whatever's left is somewhat
 	// parsable by this parser. Can't really improve that.
@@ -1153,7 +1130,7 @@ bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& 
 
 	// error log version
 	{
-		pcrecpp::RE re("^(SMART Error Log Version):[ \\t]*(.*)$", re_options);
+		pcrecpp::RE re = app_pcre_re("/^(SMART Error Log Version):[ \\t]*(.*)$/mi");
 
 		std::string name, value;
 		if (re.PartialMatch(sub, &name, &value)) {
@@ -1177,8 +1154,8 @@ bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& 
 	// error log count
 	{
 		// note: these represent the same information
-		pcrecpp::RE re1("^ATA Error Count:[ \\t]*([0-9]+)", re_options);
-		pcrecpp::RE re2("^No Errors Logged$", re_options);
+		pcrecpp::RE re1 = app_pcre_re("/^ATA Error Count:[ \\t]*([0-9]+)/mi");
+		pcrecpp::RE re2 = app_pcre_re("/^No Errors Logged$/mi");
 
 		std::string value;
 		if (re1.PartialMatch(sub, &value) || re2.PartialMatch(sub)) {
@@ -1203,11 +1180,11 @@ bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& 
 	// individual errors
 	{
 		// split by blocks
-		pcrecpp::RE re_block("^((Error[ \\t]*([0-9]+))[ \\t]*occurred at disk power-on lifetime:[ \\t]*([0-9]+) hours.*(?:\\n(?:  |\\n  ).*)*)", re_options);
+		pcrecpp::RE re_block = app_pcre_re("/^((Error[ \\t]*([0-9]+))[ \\t]*occurred at disk power-on lifetime:[ \\t]*([0-9]+) hours.*(?:\\n(?:  |\\n  ).*)*)/mi");
 
 		// for "in an unknown state" - remove first two words.
-		pcrecpp::RE re_state("occurred, the device was[ \\t]*(?: in)?(?: an?)?[ \\t]+([^.\\n]*)\\.?", re_options);
-		pcrecpp::RE re_type("[ \\t]+Error:[ \\t]*([^ \\t\\n]+)[ \\t]*(.*)$", re_options);
+		pcrecpp::RE re_state = app_pcre_re("/occurred, the device was[ \\t]*(?: in)?(?: an?)?[ \\t]+([^.\\n]*)\\.?/mi");
+		pcrecpp::RE re_type = app_pcre_re("/[ \\t]+Error:[ \\t]*([^ \\t\\n]+)[ \\t]*(.*)$/mi");
 
 		std::string block, name, value_num, value_time;
 		pcrecpp::StringPiece input(sub);  // position tracker
@@ -1270,9 +1247,6 @@ bool SmartctlParser::parse_section_data_subsection_selftest_log(const std::strin
 	pt.section = StorageProperty::section_data;
 	pt.subsection = StorageProperty::subsection_selftest_log;
 
-	pcrecpp::RE_Options re_options;
-	re_options.set_caseless(true).set_multiline(true);
-
 	// Self-test log contains:
 	// * structure revision number
 	// * a list of current / previous tests performed, with each having:
@@ -1301,9 +1275,9 @@ bool SmartctlParser::parse_section_data_subsection_selftest_log(const std::strin
 	// self-test log version
 	{
 		// newer smartctl (since smartctl 5.1-16)
-		pcrecpp::RE re1("(SMART Self-test log structure[^\\n0-9]*)([^ \\n]+)[ \\t]*$", re_options);
+		pcrecpp::RE re1 = app_pcre_re("/(SMART Self-test log structure[^\\n0-9]*)([^ \\n]+)[ \\t]*$/mi");
 		// older smartctl
-		pcrecpp::RE re2("(SMART Self-test log, version number[^\\n0-9]*)([^ \\n]+)[ \\t]*$", re_options);
+		pcrecpp::RE re2 = app_pcre_re("/(SMART Self-test log, version number[^\\n0-9]*)([^ \\n]+)[ \\t]*$/mi");
 
 		std::string name, value;
 		if (re1.PartialMatch(sub, &name, &value) || re2.PartialMatch(sub, &name, &value)) {
@@ -1333,7 +1307,7 @@ bool SmartctlParser::parse_section_data_subsection_selftest_log(const std::strin
 	{
 		// split by columns.
 		// num, type, status, remaining, hours, lba (optional).
-		pcrecpp::RE re("^(#[ \\t]*([0-9]+)[ \\t]+(\\S+(?: \\S+)*)  [ \\t]*(\\S.*) [ \\t]*([0-9]+%)  [ \\t]*([0-9]+)[ \\t]*((?:  [ \\t]*\\S.*)?))$", re_options);
+		pcrecpp::RE re = app_pcre_re("/^(#[ \\t]*([0-9]+)[ \\t]+(\\S+(?: \\S+)*)  [ \\t]*(\\S.*) [ \\t]*([0-9]+%)  [ \\t]*([0-9]+)[ \\t]*((?:  [ \\t]*\\S.*)?))$/mi");
 
 		std::string line, num, type, status_str, remaining, hours, lba;
 		pcrecpp::StringPiece input(sub);  // position tracker
@@ -1422,10 +1396,6 @@ bool SmartctlParser::parse_section_data_subsection_selective_selftest_log(const 
 	StorageProperty pt;  // template for easy copying
 	pt.section = StorageProperty::section_data;
 	pt.subsection = StorageProperty::subsection_selective_selftest_log;
-
-	pcrecpp::RE_Options re_options;
-	re_options.set_caseless(true).set_multiline(true);
-
 
 	// Selective self-test log contains:
 	// * 5 (maybe less/more?) test entries, each with

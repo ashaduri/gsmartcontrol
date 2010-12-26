@@ -178,6 +178,8 @@
 	inline bool app_ui_res_create_from(app_ui_res_ref_t& ref,
 			const unsigned char* buf, unsigned int buf_size, std::string& error_msg)
 	{
+		error_msg = "Neither Gtk::Builder (gtkmm >= 2.12) nor libglademm were present during compilation."
+				" Recompile when either dependency is resolved.";
 		return false;
 	}
 

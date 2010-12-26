@@ -53,13 +53,10 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 			if test "x$app_cv_target_os_env" = "xmingw" || test "x$app_cv_target_os_env" = "xcygwin"; then
 				# mingw gcc options:
 				# -mno-cygwin - generate non-cygwin executables in cygwin's mingw.
-				# -mwindows - hide console window. possibly suppresses any std output / error.
-				# -mconsole - opposite of -mwindows, default.
 				# -mms-bitfields - make structures compatible with msvc. recommended default for non-cygwin.
-
-				app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -mms-bitfields -mwindows"
-				app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -mms-bitfields -mwindows"
-				app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -mms-bitfields -mwindows"
+				app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -mms-bitfields"
+				app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -mms-bitfields"
+				app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -mms-bitfields"
 			fi
 
 			# Note: Disabled -Wconversion, it was causing lots of silly warnings under x86-64.
@@ -119,13 +116,6 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 
 		# gcc, mingw
 		if test "x$app_cv_compiler_debug_options" = "xgnu"; then
-			if test "x$app_cv_target_os_env" = "xmingw" || test "x$app_cv_target_os_env" = "xcygwin"; then
-				# Enable console window for debug builds
-				app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -mconsole"
-				app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -mconsole"
-				app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -mconsole"
-			fi
-
 			# We could put libstdc++ debug options here, but it generates binary-incompatible
 			# C++ code, which leads to runtime errors with e.g. libsigc++.
 			app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -g3 -O0";
@@ -175,7 +165,7 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 		# gcc, mingw
 		if test "x$app_cv_compiler_optimize_options" = "xgnu"; then
 			# -mtune=generic is since gcc 4.0 iirc
-			if test "$app_cv_target_os_env" = "mingw" || test "$app_cv_target_os_env" = "cygwin"; then
+			if test "x$app_cv_target_os_env" = "xmingw" || test "x$app_cv_target_os_env" = "xcygwin"; then
 				app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -g0 -O3 -s -march=i586";
 				app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -g0 -O3 -s -march=i586";
 				app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -g0 -O3 -s -march=i586";
@@ -218,6 +208,41 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 	if test "x$app_cv_compiler_gcc_pch" = "xyes"; then
 		app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -Winvalid-pch -DENABLE_PCH"
 		app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -Winvalid-pch -DENABLE_PCH"
+	fi
+
+
+
+	# ---- Compiler options for Mingw's mwindows/mconsole
+
+	# -mwindows - hide console window. possibly suppresses any std output / error.
+	# -mconsole - opposite of -mwindows, default.
+
+	AC_ARG_ENABLE(windows-console, AS_HELP_STRING([--enable-windows-console=yes|no|auto],
+			[enable windows console (MinGW only). Accepted values are yes, no, auto. ]
+			[Auto means disabled for optimized builds, enabled for all others. (Default: auto)]),
+		[app_cv_compiler_windows_console=${enableval}], [app_cv_compiler_windows_console=auto])
+
+	if test "x$app_cv_compiler_windows_console" = "xauto"; then
+		# disable console for optimized builds.
+		if test "x$app_cv_compiler_optimize_options" != "xnone"; then
+			app_cv_compiler_windows_console="no";
+		else
+			app_cv_compiler_windows_console="yes";
+		fi
+	fi
+
+	if test "x$app_cv_target_os_env" = "xmingw" || test "x$app_cv_target_os_env" = "xcygwin"; then
+		if test "x$app_cv_compiler_windows_console" = "xno"; then
+			app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -mwindows";
+			app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -mwindows";
+			app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -mwindows";
+		else
+			# specify -mconsole even if it's the default - it should override the user-supplied setting
+			app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -mconsole";
+			app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -mconsole";
+			app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -mconsole";
+		fi
+		AC_MSG_NOTICE([Enable windows console: $app_cv_compiler_windows_console])
 	fi
 
 

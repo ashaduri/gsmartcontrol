@@ -60,7 +60,8 @@ BuildRequires: gcc-c++, pcre-devel, gtkmm24-devel >= 2.6.0, libglademm24-devel >
 %endif
 
 
-# Mandriva
+# Mandriva. Check the latest official spec file at
+# http://svn.mandriva.com/cgi-bin/viewvc.cgi/packages/cooker/gsmartcontrol/current/
 %if 0%{?mandriva_version}
 
 %if 0%{?mandriva_version} >= 2008
@@ -101,6 +102,9 @@ make -j$numprocs
 %install
 # %makeinstall
 make DESTDIR=%buildroot install-strip
+# Remove the icon cache file "make install" generates, to avoid package conflicts.
+rm -f $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/icon-theme.cache
+
 
 %if 0%{?mandriva_version}
 desktop-file-install --vendor="" \

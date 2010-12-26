@@ -1,6 +1,8 @@
 
 SUBDIRS = 16 22 24 32 48 64 128 256 nsis
 
+# This command is needed if installing with make install (the cache
+# file is ignored for rpms).
 gtk_update_icon_cache = gtk-update-icon-cache -f -t $(datadir)/icons/hicolor
 
 install-data-hook: update-icon-cache

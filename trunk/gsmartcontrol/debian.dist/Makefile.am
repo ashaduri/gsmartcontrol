@@ -1,7 +1,6 @@
 
-noinst_DATA = changelog.in compat control copyright docs menu postinst \
-	postrm rules
+noinst_DATA = changelog.in compat control copyright menu postinst postrm rules
 
 # include the generated file too
-EXTRA_DIST=changelog.in changelog compat control copyright docs menu postinst \
+EXTRA_DIST=changelog.in changelog compat control copyright menu postinst \
 	postrm rules

@@ -38,11 +38,11 @@
 // for easy printf format checks.
 // ms_printf is not available as of 4.3, but present in docs. TODO: check with 4.4 when it's out.
 #ifndef HZ_FUNC_PRINTF_CHECK
-	#if defined _WIN32 && HZ_GCC_CHECK_VERSION(4, 4, 0)
-		#define HZ_FUNC_PRINTF_CHECK(format_idx, check_idx) HZ_GCC_ATTR(format(ms_printf, format_idx, check_idx))
-	#else
+// 	#if defined _WIN32 && HZ_GCC_CHECK_VERSION(4, 4, 0)
+// 		#define HZ_FUNC_PRINTF_CHECK(format_idx, check_idx) HZ_GCC_ATTR(format(ms_printf, format_idx, check_idx))
+// 	#else
 		#define HZ_FUNC_PRINTF_CHECK(format_idx, check_idx) HZ_GCC_ATTR(format(printf, format_idx, check_idx))
-	#endif
+// 	#endif
 #endif
 
 

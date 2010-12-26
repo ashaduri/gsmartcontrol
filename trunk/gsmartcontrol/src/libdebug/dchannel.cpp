@@ -30,10 +30,10 @@ std::string debug_format_message(debug_level::flag level, const std::string& dom
 				// solaris and win32 have thread-safe ctime(). solaris has ctime_r() too, but with
 				// different semantics by default (unless _POSIX_PTHREAD_SEMANTICS is defined).
 #if defined _WIN32 || defined sun || defined __sun
-				const char* buf = ctime(&t);  // win32 doesn't have ctime_r(), but its ctime() is reentrant.
+				const char* buf = ctime(&t);
 #else
-				char buf[28] = {0}; // ctime_r requires max. 26 chars in buffer. align to 28.
-				ctime_r(&t, buf);
+				char buf[28] = {0}; // ctime_r() requires max. 26 chars in buffer. align to 28.
+				ctime_r(&t, buf);  // ctime_r() is a posix thing.
 #endif
 				if (*buf) {
 					ret.append(buf, 24);

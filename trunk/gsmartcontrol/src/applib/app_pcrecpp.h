@@ -26,7 +26,13 @@
 
 inline pcrecpp::RE_Options app_pcre_get_options(const char* modifiers)
 {
+	// ANYCRLF means any of crlf, cr, lf. Used in ^ and $.
+	// This overrides the build-time newline setting of pcre.
+#ifdef PCRE_NEWLINE_ANYCRLF
+	pcrecpp::RE_Options options(PCRE_NEWLINE_ANYCRLF);
+#else
 	pcrecpp::RE_Options options;
+#endif
 
 	if (modifiers) {
 		char c = '\0';
@@ -58,6 +64,8 @@ inline pcrecpp::RE_Options app_pcre_get_options(const char* modifiers)
 // Note: Slashes should be escaped within the pattern.
 // If the string doesn't start with a slash, it is treated as an ordinary pattern
 // without modifiers.
+// This function will make a RE object with ANYCRLF option set for portability
+// across various pcre builds.
 inline pcrecpp::RE app_pcre_re(const std::string& perl_pattern)
 {
 	if (perl_pattern.size() >= 2 && perl_pattern[0] == '/') {
@@ -71,7 +79,7 @@ inline pcrecpp::RE app_pcre_re(const std::string& perl_pattern)
 				app_pcre_get_options(perl_pattern.substr(endpos + 1).c_str()));
 	}
 
-	return pcrecpp::RE(perl_pattern);
+	return pcrecpp::RE(perl_pattern, app_pcre_get_options(0));
 }
 
 

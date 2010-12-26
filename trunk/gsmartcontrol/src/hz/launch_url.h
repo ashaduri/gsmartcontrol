@@ -10,12 +10,15 @@
 #include "hz_config.h"  // feature macros
 
 #include <string>
+#include <cstdlib>  // std::getenv()
 #include <glib.h>  // g_*
 #include <gdk/gdk.h>  // gdk_spawn_command_line_on_screen, GdkScreen
 
 #ifdef _WIN32
 	#include <windows.h>  // ShellExecuteA()
 #endif
+
+#include "scoped_ptr.h"
 
 
 // Note: Glib / GDK only.
@@ -54,21 +57,30 @@ namespace hz {
 		bool is_email = (link.compare(0, 7, "mailto:") == 0);
 
 		// susehelp lists this, with alternative being TEXTBROWSER
-		const gchar* browser = g_getenv("XBROWSER");
+		const char* browser = std::getenv("XBROWSER");
 		if (!browser || *browser == '\0')
-			browser = g_getenv("BROWSER");  // this is the common method
+			browser = std::getenv("BROWSER");  // this is the common method
 
 		// try xfce first - it has the most sensible launcher.
 		if (!browser || *browser == '\0')
 			browser = "exo-open";
 
-		gchar* qbrowser = g_shell_quote(browser);  // will this break its parameters?
-		gchar* qlink = g_shell_quote(link.c_str());
+		std::string qlink, qbrowser;
 
-		std::string command = std::string(qbrowser) + " " + qlink;
+		{
+			hz::scoped_ptr<gchar> qbrowser_cstr(g_shell_quote(browser), g_free);  // will this break its parameters?
+			if (qbrowser_cstr)
+				qbrowser = qbrowser_cstr.get();
 
-		GError* error = 0;
-		bool status = internal::launch_url_helper_do_launch(command.c_str(), &error, screen);
+			hz::scoped_ptr<gchar> qlink_cstr(g_shell_quote(link.c_str()), g_free);
+			if (qlink_cstr)
+				qlink = qlink_cstr.get();
+		}
+
+		std::string command = qbrowser + " " + qlink;
+
+		hz::scoped_ptr<GError> error(0, g_error_free);
+		bool status = internal::launch_url_helper_do_launch(command.c_str(), &error.get_ref(), screen);
 
 		if (!status) {  // try kde4
 			status = internal::launch_url_helper_do_launch(std::string("kde-open ") + qlink, 0, screen);
@@ -95,12 +107,6 @@ namespace hz {
 			error_msg = std::string("An error occurred while executing a command")
 					+ ((error && error->message) ? (std::string(": ") + error->message) : ".");
 		}
-
-		if (error)
-			g_error_free(error);
-
-		g_free(qlink);
-		g_free(qbrowser);
 
 		return error_msg;
 #endif

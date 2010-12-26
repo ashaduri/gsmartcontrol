@@ -91,7 +91,7 @@ inline std::string string_vsprintf(const char* format, va_list ap)
 
 	// there's also g_vasprintf(), but only since glib 2.4.
 	gchar* buf = g_strdup_vprintf(format, ap);
-	std::string ret = buf;
+	std::string ret = (buf ? buf : "");
 	if (buf)
 		g_free(buf);
 

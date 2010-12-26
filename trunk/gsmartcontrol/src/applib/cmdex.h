@@ -32,19 +32,22 @@ from the _main_ thread.
 
 
 
+// typedef hz::SyncPolicyGlib CmdexSyncPolicy;
+typedef hz::SyncPolicyMtDefault CmdexSyncPolicy;
+
 
 
 // inheriting from sigc::trackable automatically disconnects this class's
 // slots upon destruction.
-class Cmdex : public hz::ErrorHolder<hz::SyncPolicyGlib> {
+class Cmdex : public hz::ErrorHolder<CmdexSyncPolicy> {
 
 	public:
 
-		using hz::ErrorHolder<hz::SyncPolicyGlib>::ptr_error_list_t;  // auto-deleting container
-		using hz::ErrorHolder<hz::SyncPolicyGlib>::error_list_t;
+		using hz::ErrorHolder<CmdexSyncPolicy>::ptr_error_list_t;  // auto-deleting container
+		using hz::ErrorHolder<CmdexSyncPolicy>::error_list_t;
 
-		typedef hz::ErrorHolder<hz::SyncPolicyGlib>::ErrorScopedLock ScopedLock;
-		typedef hz::ErrorHolder<hz::SyncPolicyGlib>::ErrorLockPolicy LockPolicy;
+		typedef hz::ErrorHolder<CmdexSyncPolicy>::ErrorScopedLock ScopedLock;
+		typedef hz::ErrorHolder<CmdexSyncPolicy>::ErrorLockPolicy LockPolicy;
 
 		typedef std::string (*exit_status_translator_func_t)(int, void*);
 		typedef void (*exited_callback_func_t)(void*);
@@ -62,7 +65,9 @@ class Cmdex : public hz::ErrorHolder<hz::SyncPolicyGlib> {
 			fd_stdout_(0), fd_stderr_(0), channel_stdout_(0), channel_stderr_(0),
 			channel_stdout_buffer_size_(100 * 1024), channel_stderr_buffer_size_(10 * 1024),  // 100K and 10K
 			event_source_id_stdout_(0), event_source_id_stderr_(0),
-			stdout_make_str_as_available_(false), stderr_make_str_as_available_(true),
+			// Don't set false here (in any of these) - there's a bug in windows which causes
+			// output to be completely swallowed at random times.
+			stdout_make_str_as_available_(true), stderr_make_str_as_available_(true),
 			translator_func_(0), translator_func_data_(0),
 			exited_callback_(exited_cb), exited_callback_data_(exited_cb_data)
 		{ }

@@ -26,6 +26,13 @@ dist_doc_DATA = AUTHORS.txt ChangeLog NEWS README.txt \
 	LICENSE_zlib.txt
 
 
+# nobase_ preserves their directory names.
+nobase_dist_doc_DATA = contrib/cron-based_noadmin/README \
+	contrib/cron-based_noadmin/cron_gather_smart.sh \
+	contrib/cron-based_noadmin/crontab.example \
+	contrib/cron-based_noadmin/smartctl_subst.sh
+
+
 # Extra files bundled with distribution.
 # file2csource.sh is needed for building but not installed.
 EXTRA_DIST = COPYING TODO INSTALL configure autogen.sh \
@@ -86,10 +93,18 @@ win-dist-prepare: all win-dist-clean
 
 	unix2dos nsis-dist/*.nsi nsis-dist/doc/*.txt
 
-	cp "@WIN32_ENV@"/libatkmm-*.dll "@WIN32_ENV@"/libcairomm-*.dll "@WIN32_ENV@"/libgdkmm-*.dll nsis-dist/
-	cp "@WIN32_ENV@"/libgiomm-*.dll "@WIN32_ENV@"/libglibmm-*.dll "@WIN32_ENV@"/libgtkmm-*.dll nsis-dist/
-	cp "@WIN32_ENV@"/libpangomm-*.dll "@WIN32_ENV@"/libsigc-*.dll "@WIN32_ENV@"/pcre3.dll nsis-dist/
-	cp "@WIN32_ENV@"/mingwm10.dll "@WIN32_ENV@"/smartctl.exe "@WIN32_ENV@"/smartctl_console.exe nsis-dist/
+	cp "@WINDOWS_DLLS_LOCATION@"/libatkmm-*.dll nsis-dist/
+	cp "@WINDOWS_DLLS_LOCATION@"/libcairomm-*.dll nsis-dist/
+	cp "@WINDOWS_DLLS_LOCATION@"/libgdkmm-*.dll nsis-dist/
+	cp "@WINDOWS_DLLS_LOCATION@"/libgiomm-*.dll nsis-dist/
+	cp "@WINDOWS_DLLS_LOCATION@"/libglibmm-*.dll nsis-dist/
+	cp "@WINDOWS_DLLS_LOCATION@"/libgtkmm-*.dll nsis-dist/
+	cp "@WINDOWS_DLLS_LOCATION@"/libpangomm-*.dll nsis-dist/
+	cp "@WINDOWS_DLLS_LOCATION@"/libsigc-*.dll nsis-dist/
+	cp "@WINDOWS_DLLS_LOCATION@"/pcre3.dll nsis-dist/
+	cp "@WINDOWS_DLLS_LOCATION@"/mingwm10.dll nsis-dist/
+	cp "@WINDOWS_DLLS_LOCATION@"/smartctl.exe nsis-dist/
+	cp "@WINDOWS_DLLS_LOCATION@"/smartctl_console.exe nsis-dist/
 
 	cp src/gsmartcontrol.exe nsis-dist/
 

@@ -179,6 +179,8 @@ inline bool parse_cmdline_args(CmdArgs& args, int& argc, char**& argv)
 	g_option_context_add_group(context, debug_get_option_group());
 	g_option_context_parse(context, &argc, &argv, &error);
 	g_option_context_free(context);
+	if (error)
+		g_error_free(error);
 
 	return true;
 }
@@ -293,7 +295,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 #ifdef _WIN32
 	// Now that all program-specific locale setup has been performed,
 	// make sure the future locale changes affect only current thread.
-	// Not available on mingw, so disable for now.
+	// Not available in mingw, so disable for now.
 // 	_configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
 
 #endif
@@ -318,7 +320,8 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 	// Add data file search paths
 #ifdef _WIN32
-	hz::data_file_add_search_directory(".");  // the program is bundled with all the files in the same directory
+	// In windows the program is distributed with all the data files in the same directory.
+	hz::data_file_add_search_directory(".");
 #else
 	#ifdef DEBUG_BUILD
 		hz::data_file_add_search_directory(std::string(TOP_SRC_DIR) + "/src/res");  // application data resources
@@ -332,7 +335,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 	// set default icon for all windows.
 	// set_default_icon_name is available since 2.12 in gtkmm, but since 2.6 in gtk.
 
-#ifndef _WIN32  // win32 version has its icon compiled-in.
+#ifndef _WIN32  // win32 version has its icon compiled-in, so no need to set it there.
 	{
 		// we load it via icontheme to provide multi-size version.
 		GtkIconTheme* default_icon_theme = gtk_icon_theme_get_default();

@@ -1,5 +1,5 @@
 
-AC_INIT([GSmartControl], 0.8.2, [], [gsmartcontrol])
+AC_INIT([GSmartControl], 0.8.3, [], [gsmartcontrol])
 
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_HEADERS([config.h])
@@ -52,6 +52,7 @@ AX_COMPILER_VENDOR
 # (also define automake conditionals).
 APP_DETECT_OS_KERNEL([target], [CONFIG_KERNEL_])
 APP_DETECT_OS_ENV([target], [CONFIG_OS_ENV_])
+APP_DETECT_OS_KERNEL([build], [CONFIG_HOST_KERNEL_])
 
 # Detect common (warning, debug, optimize) compiler flags and
 # export them to C(XX)FLAGS, LDFLAGS.
@@ -158,6 +159,12 @@ AM_CONDITIONAL([ENABLE_TESTS], [test "$with_tests" = "yes"])
 # -------------------------------------------------------------------------------------
 
 
+AC_ARG_ENABLE(abort-if-no-gtkmm, AS_HELP_STRING([--disable-abort-if-no-gtkmm],
+		[disable abort if no gtkmm is found (default: configure aborts when gtkmm is not found)]),
+	[app_cv_abort_if_no_gtkmm=${enableval}], [app_cv_abort_if_no_gtkmm=yes])
+
+AC_MSG_NOTICE([Abort if no gtkmm is found: $app_cv_abort_if_no_gtkmm])
+
 # iconview is available since 2.6.0. gthread is not enabled by default.
 pkg_modules="gtkmm-2.4 >= 2.6.0 gthread-2.0 >= 2.0"
 
@@ -167,14 +174,16 @@ gtkmm_found="no"
 PKG_CHECK_MODULES([GTKMM], [$pkg_modules], [
 		AC_DEFINE([ENABLE_GLIB], [1], [Whether GLib is installed])
 		AC_DEFINE([ENABLE_GLIBMM], [1], [Whether GLibmm is installed])
-		gtkmm_found="yes"
-	], [
+		gtkmm_found="yes"], [gtkmm_found="no"])
+
+if test "x$gtkmm_found" = "xno"; then
+	if test "x$app_cv_abort_if_no_gtkmm" = "xno"; then
 		AC_MSG_WARN([$GTKMM_PKG_ERRORS])
 		AC_MSG_WARN([The program will be unable to compile fully.])
-	])
-
-# use this instead of the above one to enable abort-on-not-found behaviour.
-# PKG_CHECK_MODULES([GTKMM], [$pkg_modules])
+	else
+		AC_MSG_ERROR([$GTKMM_PKG_ERRORS])
+	fi
+fi
 
 # GTK flags must be prepended, or glib_config.h conflict between
 # gtk 2.x and 1.2 may occur.
@@ -228,36 +237,66 @@ LIBS="$LIBS $PCRE_LIBS"
 # -------------------------------------------------------------------------------------
 
 
+# Test stuff here...
+# <nothing>
+
+#SDL_VERSION=1.2.0
+#AM_PATH_SDL($SDL_VERSION, :,
+#	AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!]) )
+#CFLAGS="$CFLAGS $SDL_CFLAGS"
+#CXXFLAGS="$CXXFLAGS $SDL_CFLAGS "
+#LIBS="$LIBS $SDL_LIBS"
+
+
+# -------------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------------
+
+
 # Win32 distribution support (NSIS, zip)
 
-AC_ARG_WITH([nsis], [AS_HELP_STRING([--with-nsis],
+AC_ARG_WITH([nsis], [AS_HELP_STRING([--with-nsis=<location>|auto],
 		[specify makensis.exe location to support making NSIS packages]
-		[ (default: ~/".wine/drive_c/Program Files/NSIS/makensis.exe")])],
+		[ (default: "C:\Program Files\NSIS\makensis.exe" for windows, ]
+		["~/.wine/drive_c/Program Files/NSIS/makensis.exe" for others)])],
 		[with_nsis=${withval}], [with_nsis=auto])
 
-AC_ARG_ENABLE([nsis-wine], [AS_HELP_STRING([--enable-nsis-wine],
-		[use wine to run makensis.exe when making NSIS packages (default: yes)])],
+AC_ARG_ENABLE([nsis-wine], [AS_HELP_STRING([--enable-nsis-wine=yes|no|auto],
+		[use wine to run makensis.exe when making NSIS packages (default: auto, which is no for windows, yes for others)])],
 		[with_nsis_wine=${enableval}], [with_nsis_wine=yes])
 
-AC_ARG_WITH([win32-env], [AS_HELP_STRING([--with-win32-env],
-		[specify location of win32 dlls when making win32 packages (default: /target/bin)])],
-		[with_win32_env=${withval}], [win_win32_env=auto])
+AC_ARG_WITH([windows-dlls], [AS_HELP_STRING([--with-windows-dlls],
+		[specify location of Windows dlls when making Windows packages (default: /target/bin)])],
+		[with_windows_env=${withval}], [win_windows_dlls=auto])
 
 if test "x$with_nsis" = "xauto" || test "x$with_nsis" = "x"; then
-	with_nsis="~/\".wine/drive_c/Program Files/NSIS/makensis.exe\""
+	if test "x$app_cv_build_os_kernel" = "xwindows"; then
+		with_nsis="~/\".wine/drive_c/Program Files/NSIS/makensis.exe\"";
+	else
+		with_nsis="\"C:\\Program Files\\NSIS\\makensis.exe\"";
+	fi
 fi
-if test "x$with_win32_env" = "xauto" || test "x$with_win32_env" = "x"; then
-	with_win32_env="/target/bin"
+
+if test "x$with_nsis_wine" = "xauto"; then
+	if test "x$app_cv_build_os_kernel" = "xwindows"; then
+		with_nsis_wine="no";
+	else
+		with_nsis_wine="yes";
+	fi
 fi
 
 NSIS_EXEC="$with_nsis";
 if test "x$with_nsis_wine" != "xno"; then
 	NSIS_EXEC="wine $with_nsis";
 fi
-WIN32_ENV="$with_win32_env";
+
+if test "x$with_windows_dlls" = "xauto" || test "x$with_windows_dlls" = "x"; then
+	with_windows_dlls="/target/bin"
+fi
+WINDOWS_DLLS_LOCATION="$with_windows_dlls";
 
 AC_SUBST(NSIS_EXEC)
-AC_SUBST(WIN32_ENV)
+AC_SUBST(WINDOWS_DLLS_LOCATION)
 
 
 # -------------------------------------------------------------------------------------
