@@ -1,0 +1,6 @@
+Version 0.8.0rc2
+	Fix for compilation under gcc 4.3.
+	Removed test data (there's a lot of it and it's unnecessary).
+
+Version 0.8.0rc1
+	Initial release.
