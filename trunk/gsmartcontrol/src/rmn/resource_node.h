@@ -410,11 +410,12 @@ resource_node<Data>::get_child_node(const std::string& name) const
 	if (name.empty())
 		return node_const_ptr(0);
 
-	child_const_iterator iter = std::find_if(children_.begin(), children_.end(), compare_name(name));
-	if (iter == children_.end())
-		return node_const_ptr(0);
+	for (child_const_iterator iter = children_.begin(); iter != children_.end(); ++iter) {
+		if ((*iter)->get_name() == name)
+			return node_const_ptr(*iter);
+	}
 
-	return node_const_ptr(*iter);
+	return node_const_ptr(0);
 }
 
 
@@ -482,10 +483,11 @@ bool resource_node<Data>::remove_child_node(const std::string& name)
 // 		return false;
 // 	std::string base(path.begin() + pos, path.end());  // base name from the path.
 
-	child_iterator iter = std::find_if(children_.begin(), children_.end(), compare_name(name));
-	if (iter != children_.end()) {
-		(*iter)->clear_parent();
-		children_.erase(iter);
+	for (child_iterator iter = children_.begin(); iter != children_.end(); ++iter) {
+		if ((*iter)->get_name() == name) {
+			(*iter)->clear_parent();
+			children_.erase(iter);
+		}
 	}
 
 	return true;

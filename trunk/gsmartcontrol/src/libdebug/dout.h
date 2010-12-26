@@ -8,11 +8,9 @@
 #define LIBDEBUG_DOUT_H
 
 #include <string>
-#include <iosfwd>  // std::ostream definition
-
-#ifdef __SUNPRO_CC  // problems with incomplete type of std::ostream
-	#include <ostream>
-#endif
+// Note: Sun compiler refuses to compile without <ostream> (iosfwd is not enough).
+// Since every useful operator << is defined in ostream, we include it here anyway.
+#include <ostream>  // std::ostream
 
 #include "hz/system_specific.h"
 #include "hz/hz_config.h"  // HAVE_CXX__FUNC

@@ -1,5 +1,0 @@
-alex@linux:~> smartctl -a /dev/sda
-smartctl 5.39 2008-05-08 21:56 [i686-pc-linux-gnu] (local build)
-Copyright (C) 2002-8 by Bruce Allen, http://smartmontools.sourceforge.net
-
-Smartctl open device: /dev/sda failed: Permission denied

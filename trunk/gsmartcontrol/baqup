@@ -12,7 +12,7 @@ cp -a autoconf.m4/ $stamp/
 cp -a data/ $stamp/
 cp -a src/ $stamp/
 cp -a templates/ $stamp/
-cp -a test-data/ $stamp/
+# cp -a test-data/ $stamp/
 
 tar cvf  $stamp.tar $stamp
 bzip2 -9 $stamp.tar

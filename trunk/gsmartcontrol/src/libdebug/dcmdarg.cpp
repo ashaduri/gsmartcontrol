@@ -12,6 +12,7 @@
 #include <glib.h>
 #include <sstream>
 #include <ios>  // std::boolalpha
+#include <algorithm>  // std::find
 
 #include "hz/string_algo.h"  // string_split()
 

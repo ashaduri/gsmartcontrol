@@ -55,11 +55,11 @@ namespace hz {
 
 		// susehelp lists this, with alternative being TEXTBROWSER
 		const gchar* browser = g_getenv("XBROWSER");
-		if (!browser || strlen(browser) == 0)
+		if (!browser || *browser == '\0')
 			browser = g_getenv("BROWSER");  // this is the common method
 
 		// try xfce first - it has the most sensible launcher.
-		if (!browser || strlen(browser) == 0)
+		if (!browser || *browser == '\0')
 			browser = "exo-open";
 
 		gchar* qbrowser = g_shell_quote(browser);  // will this break its parameters?
