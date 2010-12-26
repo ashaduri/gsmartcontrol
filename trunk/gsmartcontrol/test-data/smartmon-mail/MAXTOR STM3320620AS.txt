@@ -1,0 +1,185 @@
+smartctl -a /dev/sdb
+smartctl 5.39 2008-05-08 21:56 [i686-pc-linux-gnu] (local build)
+Copyright (C) 2002-8 by Bruce Allen, http://smartmontools.sourceforge.net
+
+=== START OF INFORMATION SECTION ===
+Device Model:     MAXTOR STM3320620AS
+Serial Number:    3QF0W3PK
+Firmware Version: 3.AAE
+User Capacity:    320,072,933,376 bytes
+Device is:        Not in smartctl database [for details use: -P showall]
+ATA Version is:   7
+ATA Standard is:  Exact ATA specification draft version not indicated
+Local Time is:    Thu Jul 17 10:12:41 2008 PDT
+SMART support is: Available - device has SMART capability.
+SMART support is: Enabled
+
+=== START OF READ SMART DATA SECTION ===
+SMART overall-health self-assessment test result: PASSED
+
+General SMART Values:
+Offline data collection status:  (0x82) Offline data collection activity
+                                        was completed without error.
+                                        Auto Offline Data Collection: Enabled.
+Self-test execution status:      (   0) The previous self-test routine completed
+                                        without error or no self-test has ever
+                                        been run.
+Total time to complete Offline
+data collection:                 ( 430) seconds.
+Offline data collection
+capabilities:                    (0x5b) SMART execute Offline immediate.
+                                        Auto Offline data collection on/off support.
+                                        Suspend Offline collection upon new
+                                        command.
+                                        Offline surface scan supported.
+                                        Self-test supported.
+                                        No Conveyance Self-test supported.
+                                        Selective Self-test supported.
+SMART capabilities:            (0x0003) Saves SMART data before entering
+                                        power-saving mode.
+                                        Supports SMART auto save timer.
+Error logging capability:        (0x01) Error logging supported.
+                                        General Purpose Logging supported.
+Short self-test routine
+recommended polling time:        (   1) minutes.
+Extended self-test routine
+recommended polling time:        ( 115) minutes.
+
+SMART Attributes Data Structure revision number: 10
+Vendor Specific SMART Attributes with Thresholds:
+ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
+  1 Raw_Read_Error_Rate     0x000f   116   091   006    Pre-fail  Always       -       109168606
+  3 Spin_Up_Time            0x0003   096   095   000    Pre-fail  Always       -       0
+  4 Start_Stop_Count        0x0032   100   100   020    Old_age   Always       -       445
+  5 Reallocated_Sector_Ct   0x0033   100   100   036    Pre-fail  Always       -       0
+  7 Seek_Error_Rate         0x000f   078   060   030    Pre-fail  Always       -       61842015
+  9 Power_On_Hours          0x0032   099   099   000    Old_age   Always       -       1734
+ 10 Spin_Retry_Count        0x0013   100   100   097    Pre-fail  Always       -       0
+ 12 Power_Cycle_Count       0x0032   100   100   020    Old_age   Always       -       1002
+187 Reported_Uncorrect      0x0032   058   058   000    Old_age   Always       -       42
+189 High_Fly_Writes         0x003a   100   100   000    Old_age   Always       -       0
+190 Airflow_Temperature_Cel 0x0022   058   049   045    Old_age   Always       -       42 (Lifetime Min/Max 25/42)
+194 Temperature_Celsius     0x0022   042   051   000    Old_age   Always       -       42 (0 23 0 0)
+195 Hardware_ECC_Recovered  0x001a   062   051   000    Old_age   Always       -       195781176
+197 Current_Pending_Sector  0x0012   100   100   000    Old_age   Always       -       3
+198 Offline_Uncorrectable   0x0010   100   100   000    Old_age   Offline      -       3
+199 UDMA_CRC_Error_Count    0x003e   200   200   000    Old_age   Always       -       0
+200 Multi_Zone_Error_Rate   0x0000   100   253   000    Old_age   Offline      -       0
+202 TA_Increase_Count       0x0032   100   253   000    Old_age   Always       -       0
+
+SMART Error Log Version: 1
+ATA Error Count: 120 (device log contains only the most recent five errors)
+        CR = Command Register [HEX]
+        FR = Features Register [HEX]
+        SC = Sector Count Register [HEX]
+        SN = Sector Number Register [HEX]
+        CL = Cylinder Low Register [HEX]
+        CH = Cylinder High Register [HEX]
+        DH = Device/Head Register [HEX]
+        DC = Device Command Register [HEX]
+        ER = Error register [HEX]
+        ST = Status register [HEX]
+Powered_Up_Time is measured from power on, and printed as
+DDd+hh:mm:SS.sss where DD=days, hh=hours, mm=minutes,
+SS=sec, and sss=millisec. It "wraps" after 49.710 days.
+
+Error 120 occurred at disk power-on lifetime: 820 hours (34 days + 4 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 51 00 bf c4 80 ed  Error: UNC at LBA = 0x0d80c4bf = 226542783
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  c8 00 08 bf c4 80 ed 00      00:11:48.534  READ DMA
+  27 00 00 00 00 00 e0 00      00:11:48.526  READ NATIVE MAX ADDRESS EXT
+  ec 00 00 00 00 00 a0 02      00:11:48.466  IDENTIFY DEVICE
+  ef 03 46 00 00 00 a0 02      00:11:48.458  SET FEATURES [Set transfer mode]
+  27 00 00 00 00 00 e0 00      00:11:48.018  READ NATIVE MAX ADDRESS EXT
+
+Error 119 occurred at disk power-on lifetime: 820 hours (34 days + 4 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 51 00 bf c4 80 ed  Error: UNC at LBA = 0x0d80c4bf = 226542783
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  c8 00 08 bf c4 80 ed 00      00:11:48.534  READ DMA
+  27 00 00 00 00 00 e0 00      00:11:48.526  READ NATIVE MAX ADDRESS EXT
+  ec 00 00 00 00 00 a0 02      00:11:48.466  IDENTIFY DEVICE
+  ef 03 46 00 00 00 a0 02      00:11:48.458  SET FEATURES [Set transfer mode]
+  27 00 00 00 00 00 e0 00      00:11:48.018  READ NATIVE MAX ADDRESS EXT
+
+Error 118 occurred at disk power-on lifetime: 820 hours (34 days + 4 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 51 00 bf c4 80 ed  Error: UNC at LBA = 0x0d80c4bf = 226542783
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  c8 00 08 bf c4 80 ed 00      00:11:43.503  READ DMA
+  27 00 00 00 00 00 e0 00      00:11:43.434  READ NATIVE MAX ADDRESS EXT
+  ec 00 00 00 00 00 a0 02      00:11:43.426  IDENTIFY DEVICE
+  ef 03 46 00 00 00 a0 02      00:11:42.993  SET FEATURES [Set transfer mode]
+  27 00 00 00 00 00 e0 00      00:11:41.050  READ NATIVE MAX ADDRESS EXT
+
+Error 117 occurred at disk power-on lifetime: 820 hours (34 days + 4 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 51 00 bf c4 80 ed  Error: UNC at LBA = 0x0d80c4bf = 226542783
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  c8 00 08 bf c4 80 ed 00      00:11:43.503  READ DMA
+  27 00 00 00 00 00 e0 00      00:11:43.434  READ NATIVE MAX ADDRESS EXT
+  ec 00 00 00 00 00 a0 02      00:11:43.426  IDENTIFY DEVICE
+  ef 03 46 00 00 00 a0 02      00:11:42.993  SET FEATURES [Set transfer mode]
+  27 00 00 00 00 00 e0 00      00:11:41.050  READ NATIVE MAX ADDRESS EXT
+
+Error 116 occurred at disk power-on lifetime: 820 hours (34 days + 4 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 51 00 bf c4 80 ed  Error: UNC at LBA = 0x0d80c4bf = 226542783
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  c8 00 08 bf c4 80 ed 00      00:11:38.532  READ DMA
+  27 00 00 00 00 00 e0 00      00:11:38.532  READ NATIVE MAX ADDRESS EXT
+  ec 00 00 00 00 00 a0 02      00:11:38.529  IDENTIFY DEVICE
+  ef 03 46 00 00 00 a0 02      00:11:38.528  SET FEATURES [Set transfer mode]
+  27 00 00 00 00 00 e0 00      00:11:41.050  READ NATIVE MAX ADDRESS EXT
+
+SMART Self-test log structure revision number 1
+Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA_of_first_error
+# 1  Short offline       Completed without error       00%      1734         -
+# 2  Extended offline    Completed: read failure       90%       836         226542783
+
+SMART Selective self-test log data structure revision number 1
+ SPAN  MIN_LBA  MAX_LBA  CURRENT_TEST_STATUS
+    1        0        0  Not_testing
+    2        0        0  Not_testing
+    3        0        0  Not_testing
+    4        0        0  Not_testing
+    5        0        0  Not_testing
+Selective self-test flags (0x0):
+  After scanning selected spans, do NOT read-scan remainder of disk.
+If Selective self-test is pending on power-up, resume after 0 minute delay.

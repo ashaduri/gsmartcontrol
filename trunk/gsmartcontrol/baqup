@@ -1,0 +1,19 @@
+#!/bin/sh
+
+stamp="../gsmartcontrol-`date +%F`"
+echo $stamp
+
+mkdir $stamp
+cp -dp * $stamp/
+
+rm -f $stamp/*pcs  # kdevelop persistent store files
+
+cp -a autoconf.m4/ $stamp/
+cp -a data/ $stamp/
+cp -a src/ $stamp/
+cp -a templates/ $stamp/
+cp -a test-data/ $stamp/
+
+tar cvf  $stamp.tar $stamp
+bzip2 -9 $stamp.tar
+

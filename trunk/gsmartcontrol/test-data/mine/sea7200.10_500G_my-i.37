@@ -1,0 +1,16 @@
+smartctl version 5.37 [i686-suse-linux-gnu] Copyright (C) 2002-6 Bruce Allen
+Home page is http://smartmontools.sourceforge.net/
+
+=== START OF INFORMATION SECTION ===
+Model Family:     Seagate Barracuda 7200.10 family
+Device Model:     ST3500630AS
+Serial Number:    9QG0R38D
+Firmware Version: 3.AAK
+User Capacity:    500,107,862,016 bytes
+Device is:        In smartctl database [for details use: -P show]
+ATA Version is:   7
+ATA Standard is:  Exact ATA specification draft version not indicated
+Local Time is:    Mon May  5 20:57:32 2008 GST
+SMART support is: Available - device has SMART capability.
+SMART support is: Enabled
+

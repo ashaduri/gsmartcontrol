@@ -1,0 +1,13 @@
+smartctl version 5.37 [i686-suse-linux-gnu] Copyright (C) 2002-6 Bruce Allen
+Home page is http://smartmontools.sourceforge.net/
+
+=== START OF INFORMATION SECTION ===
+Device Model:     PIONEER DVD-RW  DVR-108
+Serial Number:    [No Information Found]
+Firmware Version: 1.20
+Device is:        Not in smartctl database [for details use: -P showall]
+ATA Version is:   5
+ATA Standard is:  Exact ATA specification draft version not indicated
+Local Time is:    Mon May  5 20:57:26 2008 GST
+SMART support is: Unavailable - Packet Interface Devices [this device: CD/DVD] don't support ATA SMART
+A mandatory SMART command failed: exiting. To continue, add one or more '-T permissive' options.
