@@ -285,16 +285,22 @@ AC_ARG_WITH([windows-bindir], [AS_HELP_STRING([--with-windows-bindir],
 		[specify location of Windows dlls and executables when making Windows packages (default: /cross/w32/target/bin)])],
 		[with_windows_bindir=${withval}], [with_windows_bindir=auto])
 
+AC_ARG_WITH([windows-gtk-name], [AS_HELP_STRING([--with-windows-gtk-name],
+		[specify name of Windows GTK+ runtime (installer and unpacked directory) when making Windows packages. It will be looked in windows-bindir.])],
+		[with_windows_gtk_name=${withval}], [with_windows_gtk_name=])
+
 if test "x$with_nsis" = "xauto" || test "x$with_nsis" = "x"; then
-	if test "x$app_cv_build_os_kernel" = "xwindows"; then
-		with_nsis="~/\".wine/drive_c/Program Files/NSIS/makensis.exe\"";
-	else
+	# if building on windows, use native paths
+	if test "x$app_cv_build_os_kernel" = "xwindows32" || test "x$app_cv_build_os_kernel" = "xwindows64"; then
 		with_nsis="\"C:\\Program Files\\NSIS\\makensis.exe\"";
+	else
+		with_nsis="~/\".wine/drive_c/Program Files/NSIS/makensis.exe\"";
 	fi
 fi
 
 if test "x$with_nsis_wine" = "xauto"; then
-	if test "x$app_cv_build_os_kernel" = "xwindows"; then
+	# if not building on windows, use wine
+	if test "x$app_cv_build_os_kernel" = "xwindows32" || test "x$app_cv_build_os_kernel" = "xwindows64"; then
 		with_nsis_wine="no";
 	else
 		with_nsis_wine="yes";
@@ -311,8 +317,28 @@ if test "x$with_windows_bindir" = "xauto" || test "x$with_windows_bindir" = "x";
 fi
 WINDOWS_BINDIR="$with_windows_bindir";
 
+GTK_INSTALLER_NAME="$with_windows_gtk_name";
+
 AC_SUBST(NSIS_EXEC)
 AC_SUBST(WINDOWS_BINDIR)
+AC_SUBST(GTK_INSTALLER_NAME)
+
+
+# -------------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------------
+
+
+# Win32 security manifest support
+
+WINDOWS_ARCH=""
+if test "x$app_cv_target_os_kernel" = "xwindows32"; then
+	WINDOWS_ARCH="x86"
+elif test "x$app_cv_target_os_kernel" = "xwindows64"; then
+	WINDOWS_ARCH="amd64"
+fi
+
+AC_SUBST(WINDOWS_ARCH)
 
 
 # -------------------------------------------------------------------------------------
@@ -502,9 +528,9 @@ AC_SUBST(AUTODIRS)
 
 
 AC_CONFIG_FILES([ data/gsmartcontrol.desktop \
-	data/nsis/distribution.txt data/nsis/gsmartcontrol.nsi \
+	data/nsis/distribution.txt data/nsis/distribution-nogtk.txt data/nsis/gsmartcontrol.nsi \
 	debian.dist/changelog \
-	src/gsc_winres.rc \
+	src/gsc_winres.rc src/gsmartcontrol.exe.manifest \
 	gsmartcontrol.spec version compilation_flags ])
 
 

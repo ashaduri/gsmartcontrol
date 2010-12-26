@@ -1,7 +1,7 @@
 /**************************************************************************
  Copyright:
       (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
- License: See LICENSE_whatever.txt
+ License: See LICENSE_unlicense.txt
 ***************************************************************************/
 
 // disable libdebug, we don't link to it

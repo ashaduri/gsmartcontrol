@@ -1560,6 +1560,11 @@ void GscInfoWindow::on_test_execute_button_clicked()
 	if (!test)
 		return;
 
+	// hide previous test results from GUI
+	Gtk::HBox* test_result_hbox = this->lookup_widget<Gtk::HBox*>("test_result_hbox");
+	if (test_result_hbox)
+		test_result_hbox->hide();
+
 	SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
 	ex->create_running_dialog(this);
 

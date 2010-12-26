@@ -25,6 +25,25 @@ with existing model, which should be unset.
 
 TODO:
 
++Clear the test message area when starting a new test.
+
++Support launching from read-only media (win32 zip version) (seems like this was a windows problem).
+
+Testing: If ETA time has elapsed, but it's still only at 10% completion,
+	ETA 0 is displayed. Fix.
+
+Testing: If smartctl -t ... returns an error, testing=true should not be set.
+
+Testing: Detect running tests on launch (maybe ask the user too? some tests
+	may be stuck due to bad firmware).
+
+Testing: Allow quitting when test is running (ask first).
+
+Add ability to configure default save filename (in config-file only):
+	"{serial}-{model}-{date}.txt", with the default being "{model}-{date}.txt".
+
+Add string_replace_linear(), where multiple strings are replaced into the
+	original string (as opposed to previous result).
 
 
 Support Areca controller.
@@ -32,7 +51,10 @@ Support Areca controller.
 When adding device, have an option to specify "-d" type and other parameters.
 	This is needed to support multi-disk devices.
 
-
+Add built-in GTK, as well as no-gtk version installer (zip too?).
+	In GTK version, add option to install GTK system-wide (further options
+		controlled by GTK installer itself), or in the same directory
+		(no other options, no GTK PATH, no gsmartcontrol registry key for PATH).
 
 Patch pangomm for Pango::strip_markup().
 

@@ -123,7 +123,7 @@ bool Cmdex::execute()
 
 
 	debug_out_info("app", DBG_FUNC_MSG << "Executing \"" << cmd << "\".\n");
-
+/*
 	if (argvp) {
 		debug_out_dump("app", DBG_FUNC_MSG << "Dumping argvp:\n");
 		gchar** elem = argvp.get();
@@ -132,7 +132,7 @@ bool Cmdex::execute()
 			++elem;
 		}
 	}
-
+*/
 
 	// Execute the command
 

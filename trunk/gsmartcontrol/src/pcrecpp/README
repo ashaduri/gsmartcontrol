@@ -1,5 +1,5 @@
 
-Part of PCRE library, version 7.8.
+Part of PCRE library, version 8.01.
 
 pcrecpparg.h and pcre_stringpiece.h generated using:
 
@@ -10,4 +10,4 @@ pcrecpparg.h and pcre_stringpiece.h generated using:
 	--enable-utf8 \
 	--enable-unicode-properties
 
-The system was OpenSUSE 10.3, with gcc-4.2-24 and glibc-2.6.1-18.3.
+The system was OpenSUSE 11.1, with gcc-4.3-34.243 and glibc-2.9-2.12.1.

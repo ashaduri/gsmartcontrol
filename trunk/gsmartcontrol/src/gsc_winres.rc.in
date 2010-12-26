@@ -1,12 +1,15 @@
-//#include <winver.h>
 
-biocalcon           ICON          "gsmartcontrol.ico"
+// We use external manifests, so no need for this
+// #include "winuser.h"  // needed for RT_MANIFEST
+// 1 RT_MANIFEST "gsmartcontrol.exe.manifest"
+
+biocalcon ICON "gsmartcontrol.ico"
 
 1 VERSIONINFO
-    FILEVERSION     0,0,0,0
-    PRODUCTVERSION  0,0,0,0
-//    FILEOS          VOS__WINDOWS32
-//    FILETYPE        VFT_FONT
+    FILEVERSION 0,0,0,0
+    PRODUCTVERSION 0,0,0,0
+//  FILEOS VOS__WINDOWS32
+//  FILETYPE VFT_FONT
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
@@ -15,7 +18,7 @@ BEGIN
             VALUE "FileDescription", "GSmartControl - Hard disk drive health inspection tool"
             VALUE "FileVersion", "@VERSION@"
             VALUE "InternalName", "gsmartcontrol.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2008 - 2009  Alexander Shaduri"
+            VALUE "LegalCopyright", "Copyright (C) 2008 - 2010  Alexander Shaduri"
             VALUE "OriginalFilename", "gsmartcontrol.exe"
             VALUE "ProductName", "GSmartControl"
             VALUE "ProductVersion", "@VERSION@"

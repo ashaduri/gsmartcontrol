@@ -60,7 +60,6 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 				app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -mms-bitfields"
 			fi
 
-			# Note: Disabled -Wconversion, it was causing lots of silly warnings under x86-64.
 			app_cv_compiler_tmp_var="-Wall -Wcast-align -Wcast-qual -Wconversion \
 -Wctor-dtor-privacy -Wfloat-equal -Wnon-virtual-dtor -Woverloaded-virtual \
 -Wpointer-arith -Wshadow -Wsign-compare -Wsign-promo -Wundef -Wwrite-strings";

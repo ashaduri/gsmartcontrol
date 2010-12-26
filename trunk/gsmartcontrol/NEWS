@@ -1,4 +1,11 @@
 
+Version 0.8.6, released on -----------
+	Previous test result is cleared in GUI when running new tests now.
+	Windows: Vastly improved installer, supports built-in GTK+ now.
+	Windows: A proper method of privilege escalation is used for Vista/7.
+	Windows: GSmartControl works on Windows 7 now.
+	Updated copyright for files with Whatever License to use Unlicense.
+
 Version 0.8.5, released on 2009-09-05
 	GSmartControl now uses XDG config directory for per-user configuration on
 		UNIX and CSIDL_PROFILE directory on Windows. Existing configuration is

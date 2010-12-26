@@ -15,14 +15,14 @@
     <projectname>gsmartcontrol</projectname>
     <projectdirectory>.</projectdirectory>
     <absoluteprojectpath>false</absoluteprojectpath>
-    <description></description>
-    <defaultencoding></defaultencoding>
+    <description/>
+    <defaultencoding/>
     <versioncontrol/>
   </general>
   <kdevautoproject>
     <general>
       <activetarget>src/gsmartcontrol</activetarget>
-      <useconfiguration>suncc</useconfiguration>
+      <useconfiguration>win32</useconfiguration>
     </general>
     <run>
       <mainprogram>/10/devel/projects/gsmartcontrol/current/gsmartcontrol/debuggy</mainprogram>
@@ -81,16 +81,16 @@
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
-        <cflags></cflags>
-        <cxxflags></cxxflags>
+        <cflags/>
+        <cxxflags/>
         <envvars/>
-        <topsourcedir></topsourcedir>
-        <cppflags></cppflags>
-        <ldflags></ldflags>
+        <topsourcedir/>
+        <cppflags/>
+        <ldflags/>
         <ccompilerbinary>gcc-4.4</ccompilerbinary>
         <cxxcompilerbinary>g++-4.4</cxxcompilerbinary>
-        <f77compilerbinary></f77compilerbinary>
-        <f77flags></f77flags>
+        <f77compilerbinary/>
+        <f77flags/>
       </debuggy>
       <icc>
         <envvars/>
@@ -111,20 +111,20 @@
       </icc>
       <win32>
         <envvars/>
-        <configargs>--disable-user-flags --enable-optimize-options --enable-tests --build=i686-linux --host=i386-pc-mingw32 PKG_CONFIG_PATH=/cross/w32/target/lib/pkgconfig PKG_CONFIG_LIBDIR=&quot;&quot; PATH=&quot;/cross/w32/gcc-bin:/cross/w32/target/bin:$PATH&quot;</configargs>
+        <configargs>--with-windows-gtk-name=gtk2-runtime-2.16.6-2010-02-21-ash --disable-user-flags --enable-optimize-options --enable-tests --build=i686-linux --host=i386-pc-mingw32 PKG_CONFIG_PATH=/cross/w32/target/lib/pkgconfig PKG_CONFIG_LIBDIR=&quot;&quot; PATH=&quot;/cross/w32/gcc-bin:/cross/w32/target/bin:$PATH&quot;</configargs>
         <builddir>win32</builddir>
-        <topsourcedir/>
-        <cppflags/>
-        <ldflags/>
+        <topsourcedir></topsourcedir>
+        <cppflags></cppflags>
+        <ldflags></ldflags>
         <ccompiler>kdevgccoptions</ccompiler>
         <cxxcompiler>kdevgppoptions</cxxcompiler>
         <f77compiler>kdevg77options</f77compiler>
         <ccompilerbinary>i386-pc-mingw32-gcc</ccompilerbinary>
         <cxxcompilerbinary>i386-pc-mingw32-g++</cxxcompilerbinary>
-        <f77compilerbinary/>
-        <cflags/>
-        <cxxflags/>
-        <f77flags/>
+        <f77compilerbinary></f77compilerbinary>
+        <cflags></cflags>
+        <cxxflags></cxxflags>
+        <f77flags></f77flags>
       </win32>
       <suncc>
         <envvars>
@@ -271,11 +271,11 @@
   </kdevdoctreeview>
   <kdevdebugger>
     <general>
-      <dbgshell></dbgshell>
-      <gdbpath></gdbpath>
-      <configGdbScript></configGdbScript>
-      <runShellScript></runShellScript>
-      <runGdbScript></runGdbScript>
+      <dbgshell/>
+      <gdbpath/>
+      <configGdbScript/>
+      <runShellScript/>
+      <runGdbScript/>
       <breakonloadinglibs>true</breakonloadinglibs>
       <separatetty>false</separatetty>
       <floatingtoolbar>false</floatingtoolbar>
