@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2010  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
 
@@ -14,8 +14,7 @@
 #include <cstddef>  // std::size_t, std::ptrdiff_t
 
 #include "cstdint.h"  // (u)intmax_t
-#include "system_specific.h"  // HZ_FUNC_PRINTF_CHECK
-#include "string_sprintf.h"  // string_sprintf
+#include "string_sprintf.h"  // string_sprintf, HZ_FUNC_STRING_SPRINTF_CHECK
 #include "stream_cast.h"  // stream_cast<>
 #include "local_algo.h"  // returning_binary_search
 
@@ -30,10 +29,14 @@
 
 // Note: These functions use system *printf family of functions.
 
-// Note: On MinGW there is no support for %Lf (long double).
-// Also, you have to use %I64d instead of %lld for long long int
+// Note: If using mingw without __USE_MINGW_ANSI_STDIO,
+// you MUST cast long double to double and use %f instead of %Lf;
+// also you have to use %I64d instead of %lld for long long int
 // and %I64u instead of %llu for unsigned long long int.
 // You can use hz::number_to_string() as a workaround.
+
+// FIXME: Check string_sprintf() features through HAVE_STRING_SPRINTF_*
+// macros and supply the necessary specifiers / casts.
 
 
 namespace hz {
@@ -48,7 +51,7 @@ namespace internal {
 
 // Public API:
 
-inline internal::FormatState string_format(std::string& s, const char* format) HZ_FUNC_PRINTF_CHECK(2, 0);
+inline internal::FormatState string_format(std::string& s, const char* format) HZ_FUNC_STRING_SPRINTF_CHECK(2, 0);
 
 inline internal::FormatState string_format(std::string& s, const std::string& format);
 

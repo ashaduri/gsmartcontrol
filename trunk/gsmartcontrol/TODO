@@ -19,6 +19,17 @@ A treeview (also iconview, combobox) from glade comes
 with existing model, which should be unset.
 
 
+Bugs / patches:
+
+	Patch pangomm for Pango::strip_markup().
+
++	gtkmm bug: No Gtk::AboutDialog::set_logo(NULL);
+
++	Gtk::Main m(argc, argv, false);
+		If gtk_get_option_group() and g_option_context_parse() were used before,
+		this generates a warning:
+		(gsmartcontrol:28241): Gtk-WARNING **: gtk_disable_setlocale() must be called before gtk_init()
+
 
 
 --------------------------------------------------------
@@ -27,24 +38,26 @@ TODO:
 
 +Clear the test message area when starting a new test.
 
-+Support launching from read-only media (win32 zip version) (seems like this was a windows problem).
+Add debian/ubuntu's su-to-root support to gsmartcontrol-root.
 
-Testing: If ETA time has elapsed, but it's still only at 10% completion,
-	ETA 0 is displayed. Fix.
+Testing:
+	If ETA time has elapsed, but it's still only at 10% completion,
+		ETA 0 is displayed. Fix.
+	If smartctl -t ... returns an error, testing=true should not be set.
+	Detect running tests on launch (maybe ask the user too? some tests
+		may be stuck due to bad firmware).
+	Allow quitting when test is running (ask first).
 
-Testing: If smartctl -t ... returns an error, testing=true should not be set.
-
-Testing: Detect running tests on launch (maybe ask the user too? some tests
-	may be stuck due to bad firmware).
-
-Testing: Allow quitting when test is running (ask first).
-
-Add ability to configure default save filename (in config-file only):
+Add ability to configure default save filename (in config-file only?):
 	"{serial}-{model}-{date}.txt", with the default being "{model}-{date}.txt".
 
 Add string_replace_linear(), where multiple strings are replaced into the
 	original string (as opposed to previous result).
 
++Re-check long double printing - win32 libc doesn't support it, a cast
+	to double is needed.
+	The underlying problem is that in msvc, long double is the same size
+	as double, so printf() has mingw-incompatible presentation of long double.
 
 Add support for launching with consolehelper (from usermode package).
 	Fedora uses this by default.
@@ -54,16 +67,172 @@ Add support for launching with consolehelper (from usermode package).
 		but I think we can check it with "which".
 		http://fedoranews.org/contributors/matt_hansen/nautilus/
 
-Highlight soft-warning-having devices too (configurable?).
+Add "Show output" button to the devices with "No further info available...".
+
+If the detection executes "smartctl -i", don't execute it again afterwards.
 
 When adding device, have an option to specify "-d" type and other parameters.
 	This is needed to support multi-disk devices.
+	Maybe make "-d" a dropdown?
+		Not sure, "-l aaa /tmp" doesn't list all types. Also raid...
 
-Add "Show output" button to the devices with "No further info available...".
+Add support for multiple drives behind devices.
+	Add support for specifying these drives on gsmartcontrol command-line,
+		each one with optional smartctl parameters.
+	Use :: as delimiter, as in device::-d_string::other_options.
+		Show in UI as device (-d_string).
 
-Patch pangomm for Pango::strip_markup().
+Rework drive properties UI:
+	add properties for each multi-drive.
+	smartctl options
+	use 48-bit or not or auto.
+	Enable/disable/dont_touch SMART on startup for this drive.
+	Enable/disable/dont_touch AODC on startup for this drive.
 
-No Gtk::AboutDialog::set_logo(NULL);
+Add --init-smart-only option to only apply the SMART/AODC enabling status
+	from the drive properties.
+	Add also --no-init-smart to avoid doing that on GUI startup.
+
+Notifications:
+	Tied to (drive::subdrive, notif_key, exact_value(optional)).
+		If exact_value isn't specified when ignoring, notify on every value change.
+	Ignore options:
+		Per-drive: Ignore all notifications for this key, ignore only this value.
+	Don't generate multiple notifications for the same drive/key combo.
+	Clearing in preferences: Clear all ignored, clear ignored for this drive, clear individual.
+	Soft-warnings require "-a" by default, tricky for scsi (maybe try -a, then -i?).
+
+Monitor:
+	Needs root access, so not gonna happen until the dbus/udisks stuff
+		is finalized.
+	Same program, add --tray option to start in tray only.
+	Option to enable the tray icon.
+	Option to continue running in the tray on window close.
+	Use freedesktop notifications when notifications are generated
+		and we're running in tray only.
+		Don't generate the same notification at a single run time if it was
+			ignored (untouched) by the user; Change the tray icon and
+			show them in the main window instead.
+	Periodically re-run smartctl to refresh the notifications.
+	Periodically see if drives were added / removed (possibly use OS callbacks
+		instead of polling?)
+
+Fix inability to detect types in some error logs.
+
+Options->Prefs->Drives
+	Add a hint about "pd0" for Windows version.
+
+If a drive is not recognized, suggest using -d (sat, sat,12, ...)
+	Refer the user to
+	http://sourceforge.net/apps/trac/smartmontools/wiki/Supported_USB-Devices
+
+
+
+RAID:
+	http://sourceforge.net/apps/trac/smartmontools/wiki/Supported_RAID-Controllers
+
+	Areca Linux:
+		Call as: smartctl -i -d areca,[1-24] /dev/sg0
+		Detection:
+		Check if /proc/scsi/sg/device_strs contains "Areca       RAID controller".
+			If not, there's no Areca controller present.
+		Check /proc/scsi/sg/devices, the line # with type 3 is the sg* number.
+			The "host" field value is the N value in /sys, see below.
+		Check /sys/bus/scsi/devices/hostN/scsi_host/hostN/host_fw_hd_channels, set
+			its contents as the number of ports. If not present, use 24.
+		Probe each port for a valid drive: If the output contains "Device Read Identity Failed",
+			then there is no drive on that port (or Areca has an old firmware, nothing we can
+			do there).
+		Notification: If /sys/bus/scsi/devices/hostN/scsi_host/hostN/host_fw_version
+			is older than "V1.46 2009-01-06", notify the user (maybe its better to grep
+			the smartctl output for that on port 0?).
+
+	3ware Linux:
+		Call as: smartctl -i -d 3ware,[0-127] /dev/twa[0-15]  (or twe[0-15])
+		Use twe* for [678]xxx series, and twa* for 9xxx series.
+		Note: twe* devices are limited to [0-15] ports (not sure about this).
+		Note: /dev/tw* devices may not exist, they are created by smartctl on the first run.
+		Note: for twe*, /dev/sda may also exist (to be used with -d 3ware,N), we should
+			somehow detect and ignore them.
+		Note: when specifying non-existent port, either a "Device Read Identity Failed"
+			error, or a "blank" info may be returned.
+		Detection:
+		Grep /proc/devices for "twa" or "twe" (e.g. "251 twa"). Use this for /dev/tw* part.
+		Grep /proc/scsi/scsi for AMCC (3ware, LSI too?), use number of matched lines N
+			for /dev/tw*[0, N-1].
+		For detecting the number of ports, use "tw_cli /c0 show all", 0 being the controller N.
+			If there's no tw_cli, we'll have to scan all 127 ports.
+
+	3ware FreeBSD:
+		Call as: smartctl -i -d 3ware,[0-127] /dev/twa0  (or twe0)
+		Detection: unknown.
+
+	3ware Windows (XP so far, maybe the same under the others):
+		For 3ware 9xxx only.
+		Call as: smartctl -i sd[a-z],N
+			N is port, a-z is logical drive (unit) provided by controller.
+			N is limited to [0, 31] in the code.
+			The sd[a-z] device actually exists as \\.\PhysicalDrive[0-N].
+				No idea how to check if it's 3ware.
+		Call as: smarctl -i tw_cli/cx/py
+			This runs tw_cli tool and parses the output; controller x, port y.
+			tw_cli is needed for 64-bit systems, as well as older controllers.
+			In tw_cli mode only limited information-gathering is supported.
+		tw_cli (part of 3DM2) is automatically added to system PATH,
+			no need to look for it.
+		3DM2 install can be detected by checking:
+			HKEY_USERS\.DEFAULT\Software\3ware\3DM2, InstallPath
+		Another option for detection (whether it's 3ware) would be getting
+			\\.\PhysicalDrive0 properties, like smartctl does.
+		Newer (post-5.39.1) smartctl supports --scan-open, which will give us:
+			/dev/sda,0 -d ata (opened)
+			/dev/sda,1 -d ata (opened)
+		-d 3ware is not needed under Windows. We should treat sda as pd0
+			and remove pd0 from PhysicalDrive-detected list.
+		Running smartctl on sda gives almost the same result as on sda,0.
+
+
+	LSI MegaRAID (SCSI/SAS), Linux:
+		Call as: smartctl -i -d megaraid,[0-?] /dev/sda
+			We should differentiate between ordinary sda and RAID one (not sure if sda is detected).
+		Detection: unknown.
+
+	HighPoint RocketRAID ((S)ATA) Linux:
+		Call as: smartctl -i -d hpt,[1-8]/[1-8] /dev/sda
+		Call as: smartctl -i -d hpt,[1-8]/[1-8]/[1-15] /dev/sda
+		Note: /dev/sda should be derived from this controller.
+			We should differentiate between ordinary sda and RAID one (not sure if sda is detected).
+		Smartctl docs specify smaller limits, but the code says these are the ones.
+		Detection: unknown.
+
+	HighPoint RocketRAID ((S)ATA) FreeBSD:
+		Call as: smartctl -i -d hpt,[1-8]/[1-8] /dev/hptrr
+		Call as: smartctl -i -d hpt,[1-8]/[1-8]/[1-15] /dev/hptrr
+		Note: /dev/hptrr should be derived from this controller.
+		Smartctl docs specify smaller limits, but the code says these are the ones.
+		Detection: unknown.
+		TODO: Analyze sent info.
+
+	CCISS (HP (Compaq) Smart Array Controller) Linux:
+		Call as: smartctl -a -d cciss,[0-127] /dev/cciss/c0d0
+		c0d0 is the controller (d0 seems to be a logical drive, doesn't matter?).
+		/dev/cciss/c0d0p1 is the first ordinary partition (used in mount, etc...).
+		The port limit had a brief regression in 5.39.x (limited to 15).
+		5.39 doesn't seem to work at all (prereleases work with P400 controller)?
+			Possibly a 64-bit-only issue?
+		To detect controller presence: cat /proc/devices, contains "cciss0"
+			for controller 0.
+		There is a cciss_vol_status utility but it doesn't report anything except "OK" status.
+		It may not return the "SMART Health Status: OK" line in smartctl -i for some reason?
+			(It returns it in -a though, and in some freebsd output I found).
+		If no /dev/cciss exists, you may need to run "cd /dev; ./MAKEDEV cciss".
+		Smartctl SVN has some /dev/sg* stuff, check it out.
+
+	CCISS (HP (Compaq) Smart Array Controller) FreeBSD:
+		Seems to be the same as Linux (uses the same driver?).
+		Detection: unknown.
+
+
 
 
 libdebug:
@@ -74,124 +243,33 @@ libdebug:
 	use format_time() instead of ctime() and friends, with ISO formatting.
 
 
+48-bit ATA command support:
+	'-l xerror' -> Extended Comprehensive Error log: An multi-sector and
+	LBA48 capable version of '-l error'. Output is similar, except more
+	entries can exists and the high bytes of the registers are also printed.
+	Some newer drives (Samsung) only write to this log.
 
-If the detection executes "smartctl -i", don't execute it again afterwards.
+	'-l xselftest' -> Extended Self Test Log: An multi-sector and LBA48
+	capable version of '-l selftest'. Output will be similar, except more
+	entries can exists and the LBA values can be somewhat longer.
 
-
-RAID:
-http://sourceforge.net/apps/trac/smartmontools/wiki/Supported_RAID-Controllers
-
-Areca Linux:
-	Call as: smartctl -i -d areca,[1-24] /dev/sg0
-	Detection:
-	Check if /proc/scsi/sg/device_strs contains "Areca       RAID controller".
-		If not, there's no Areca controller present.
-	Check /proc/scsi/sg/devices, the line # with type 3 is the sg* number.
-		The "host" field value is the N value in /sys, see below.
-	Check /sys/bus/scsi/devices/hostN/scsi_host/hostN/host_fw_hd_channels, set
-		its contents as the number of ports. If not present, use 24.
-	Probe each port for a valid drive: If the output contains "Device Read Identity Failed",
-		then there is no drive on that port (or Areca has an old firmware, nothing we can
-		do there).
-	Notification: If /sys/bus/scsi/devices/hostN/scsi_host/hostN/host_fw_version
-		is older than "V1.46 2009-01-06", notify the user (maybe its better to grep
-		the smartctl output for that on port 0?).
-
-
-3ware Linux:
-	Call as: smartctl -i -d 3ware,[0-127] /dev/twa[0-15]  (or twe[0-15])
-	Use twe* for [678]xxx series, and twa* for 9xxx series.
-	Note: twe* devices are limited to [0-15] ports (not sure about this).
-	Note: /dev/tw* devices may not exist, they are created by smartctl on the first run.
-	Note: for twe*, /dev/sda may also exist (to be used with -d 3ware,N), we should
-		somehow detect and ignore them.
-	Note: when specifying non-existent port, either a "Device Read Identity Failed"
-		error, or a "blank" info may be returned.
-	Detection:
-	Grep /proc/devices for "twa" or "twe" (e.g. "251 twa"). Use this for /dev/tw* part.
-	Grep /proc/scsi/scsi for AMCC (3ware, LSI too?), use number of matched lines N
-		for /dev/tw*[0, N-1].
-
-
-3ware FreeBSD:
-	Call as: smartctl -i -d 3ware,[0-127] /dev/twa0  (or twe0)
-
-
-3ware Windows:
-	For 9xxx only.
-	Call as: smartctl -i sd[a-z],N
-		N is port, a-z is logical drive (unit) provided by controller.
-	Call as: smarctl -i tw_cli/cx/py
-		This runs tw_cli tool and parses the output; controller x, port y.
-		tw_cli is needed for 64-bit systems, as well as older controllers.
-		In tw_cli mode only limited information-gathering is supported.
-
-
-LSI MegaRAID (SCSI/SAS), Linux:
-	Call as: smartctl -i -d megaraid,[0-?] /dev/sda
-
-
-HighPoint RocketRAID ((S)ATA) Linux:
-	Call as: smartctl -i -d hpt,[1-8]/[1-8] /dev/sda
-	Call as: smartctl -i -d hpt,[1-8]/[1-8]/[1-15] /dev/sda
-	Note: /dev/sda should be derived from this controller.
-	Smartctl docs specify smaller limits, but the code says these are the ones.
-
-
-HighPoint RocketRAID ((S)ATA) FreeBSD:
-	Call as: smartctl -i -d hpt,[1-8]/[1-8] /dev/hptrr
-	Call as: smartctl -i -d hpt,[1-8]/[1-8]/[1-15] /dev/hptrr
-	Note: /dev/hptrr should be derived from this controller.
-	Smartctl docs specify smaller limits, but the code says these are the ones.
-
-
-CCISS (HP (Compaq) Smart Array Controller) Linux:
-	Call as: smartctl -a -d cciss,[0-15] /dev/cciss/c0d0
-	c0d0 is the controller (d0 seems to be a logical
-		drive, but it doesn't seem to matter?).
-	An unofficial patch adds support for [0-127] ports.
-
-
-CCISS (HP (Compaq) Smart Array Controller) FreeBSD:
-	Seems to be the same as Linux (uses the same driver?).
-
-
+	"smartctl -l this_wont_exist" gives the list of supported logs - this
+		is needed to detect xerror / xselftest support in smartctl.
 
 
 
 '-l sataphy' -> SATA Phy event counters: Non-SMART feature, useful to detect SATA cabling problems.
 
-'-l xerror' -> Extended Comprehensive Error log: An multi-sector and
-LBA48 capable version of '-l error'. Output is similar, except more
-entries can exists and the high bytes of the registers are also printed.
-Some newer drives (Samsung) only write to this log.
 
-'-l scttemp' -> SCT Temperature history table. See below.
+SCT Temperatures
+	-l scttemp prints temperature and history.
+	-t scttempint,N[,p] (N - count, p - preserve across reset or not).
+		This configures temperature logging interval (1 min by default) and clears the history.
+	-l scterc[,...] to get/set the SCT Error Recovery Control time limit (5.40 and newer).
 
-'-l xselftest' -> Extended Self Test Log: An multi-sector and LBA48
-capable version of '-l selftest'. Output will be similar, except more
-entries can exists and the LBA values can be somewhat longer.
-
-"smartctl -l this_wont_exist" gives the list of supported logs - this
-	is needed to detect xerror / xselftest support in smartctl.
-
-
-Careful with GPL (xerror...) stuff until the jmicron situation clears up.
 
 Add detection for Interix (i586-pc-interix3), maybe with debian?
 
-Re-check long double printing - win32 libc doesn't support it, a cast
-to double is needed.
-	The underlying problem is that in msvc, long double is the same size
-	as double, so printf() has mingw-incompatible presentation of long double.
-
-Support USB flash disks in CVS smartctl versions:
-	Try smartctl -i /dev/sdc;
-	If it returns "Smartctl: please specify device type with the -d option.",
-	try "-d scsi", which should at least give us the name.
-
-Maybe make it easier to specify "-d" (with a dropdown?)
-	Not sure, "-l aaa /tmp" doesn't list all types.
 
 
 
@@ -237,15 +315,9 @@ Maybe make it easier to specify "-d" (with a dropdown?)
 +	smartctl exited with error - look it up in error map.
 
 
-SCT Temperatures
-	-l scttemp prints temperature and history.
-	-t scttempint,N[,p] (N - count, p - preserve across reset or not).
-		This configures temperature logging interval (1 min by default) and clears the history.
 
 
 +Tests:
-	Ability to detect a testing drive on boot, show its info with testing tab.
-
 	Run one-time Immediate Offline test (-t offline).
 		Offline tests only update Attributes, and if errors are found they will
 		appear in SMART error log. Self-test logs are unaffected.

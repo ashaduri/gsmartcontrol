@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2010  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
@@ -225,6 +225,7 @@ namespace {
 		blacklist.push_back("/part[0-9]+$/");  // devfs had them
 		blacklist.push_back("/p[0-9]+$/");  // partitions are usually marked this way
 		blacklist.push_back("/md[0-9]*$/");  // linux software raid
+		blacklist.push_back("/dm-[0-9]*$/");  // linux device mapper
 
 
 		for (unsigned int i = 0; i < lines.size(); ++i) {
@@ -265,6 +266,7 @@ namespace {
 	// smartctl accepts various variants, the most straight being pdN,
 	// (or /dev/pdN, /dev/ being optional) where N comes from
 	// "\\.\PhysicalDriveN" (winnt only).
+	// http://msdn.microsoft.com/en-us/library/aa365247(VS.85).aspx
 
 	inline std::string detect_drives_win32(std::vector<std::string>& devices)
 	{

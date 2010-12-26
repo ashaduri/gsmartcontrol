@@ -13,4 +13,4 @@ install-sh
 *.glade.cpp
 *.ui.cpp
 *.txt.cpp
-gsmartcontrol.spec
+.kdev4

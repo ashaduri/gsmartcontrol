@@ -9,7 +9,7 @@ noinst_HEADERS = any_convert.h any_type.h any_type_holder.h ascii.h \
 	instance_manager.h intrusive_ptr.h intrusive_scoped_lock.h launch_url.h local_algo.h \
 	locale_tools.h noncopyable.h optional_value.h portable_snprintf.h process_signal.h \
 	ptr_container.h res_data.h scoped_array.h scoped_ptr.h shared_ptr.h static_assert.h stream_cast.h \
-	string_algo.h string_format.h string_num.h string_sprintf.h string_wcmatch.h sync.h \
+	string_algo.h string_format.h string_num.h string_sprintf.h string_sprintf_macros.h string_wcmatch.h sync.h \
 	sync_lock_ptr.h sync_multilock.h sync_part_get_policy.h sync_policy_boost.h \
 	sync_policy_glib.h sync_policy_glibmm.h sync_policy_poco.h sync_policy_pthread.h \
 	sync_policy_win32.h system_specific.h tls.h tls_policy_boost.h tls_policy_glib.h \

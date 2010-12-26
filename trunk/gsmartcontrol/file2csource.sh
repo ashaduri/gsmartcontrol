@@ -1,7 +1,7 @@
 #!/bin/bash
 ############################################################################
 # Copyright:
-#      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
+#      (C) 2008 - 2010  Alexander Shaduri <ashaduri 'at' gmail.com>
 # License: See LICENSE_zlib.txt file
 ############################################################################
 

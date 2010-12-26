@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008 - 2009 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2010  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
 
@@ -14,6 +14,7 @@
 
 #include "hz/system_specific.h"
 #include "hz/hz_config.h"  // HAVE_CXX_*
+#include "hz/string_sprintf_macros.h"  // HZ_FUNC_STRING_SPRINTF_CHECK
 
 #include "dflags.h"
 
@@ -51,7 +52,7 @@ std::ostream& debug_out(debug_level::flag level, const std::string& domain);
 
 
 void debug_print(debug_level::flag level, const std::string& domain,
-		const char* format, ...) HZ_FUNC_PRINTF_CHECK(3, 4);
+		const char* format, ...) HZ_FUNC_STRING_SPRINTF_CHECK(3, 4);
 
 
 

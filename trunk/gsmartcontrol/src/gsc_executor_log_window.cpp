@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2010  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
@@ -236,7 +236,7 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 	exss << "\n------------------------- LIBDEBUG LOG -------------------------\n\n\n";
 	exss << app_get_debug_buffer_str() << "\n\n\n";
 
-	exss << "\n\n\n------------------------- EXECTION LOG -------------------------\n\n\n";
+	exss << "\n\n\n------------------------- EXECUTION LOG -------------------------\n\n\n";
 
 	for (std::size_t i = 0; i < entries.size(); ++i) {
 		exss << "\n\n\n------------------------- EXECUTED COMMAND " << (i+1) << " -------------------------\n\n";

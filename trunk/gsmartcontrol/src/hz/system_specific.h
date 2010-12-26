@@ -1,8 +1,13 @@
 /**************************************************************************
  Copyright:
-      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2010  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_SYSTEM_SPECIFIC_H
 #define HZ_SYSTEM_SPECIFIC_H
@@ -35,9 +40,14 @@
 #endif
 
 
-// for easy printf format checks.
-#ifndef HZ_FUNC_PRINTF_CHECK
+// For easy printf format checks.
+
+#ifndef HZ_FUNC_PRINTF_ISO_CHECK
 	// See http://gcc.gnu.org/onlinedocs/gcc-4.4.1/gcc/Function-Attributes.html
+	#define HZ_FUNC_PRINTF_ISO_CHECK(format_idx, check_idx) HZ_GCC_ATTR(format(printf, format_idx, check_idx))
+#endif
+
+#ifndef HZ_FUNC_PRINTF_MS_CHECK
 	// ms_printf is available since gcc 4.4.
 	// Note: When using __USE_MINGW_ANSI_STDIO, mingw uses
 	// its own *printf() implementation (rather than msvcrt), which accepts
@@ -47,9 +57,9 @@
 	// TODO: Check if simply specifying "printf" selects the correct
 	// version for mingw.
 	#if defined _WIN32 && HZ_GCC_CHECK_VERSION(4, 4, 0)
-		#define HZ_FUNC_PRINTF_CHECK(format_idx, check_idx) HZ_GCC_ATTR(format(ms_printf, format_idx, check_idx))
+		#define HZ_FUNC_PRINTF_MS_CHECK(format_idx, check_idx) HZ_GCC_ATTR(format(ms_printf, format_idx, check_idx))
 	#else
-		#define HZ_FUNC_PRINTF_CHECK(format_idx, check_idx) HZ_GCC_ATTR(format(printf, format_idx, check_idx))
+		#define HZ_FUNC_PRINTF_MS_CHECK(format_idx, check_idx)
 	#endif
 #endif
 
@@ -58,6 +68,11 @@
 
 #include <string>
 
+/**
+\fn std::string hz::type_name_demangle(const std::string& name)
+Demangle a C/C++ type name, as returned by std::type_info.name().
+Similar to c++filt command. Supported under gcc only for now.
+*/
 
 #if defined HAVE_GCC_ABI_DEMANGLE && HAVE_GCC_ABI_DEMANGLE
 
@@ -68,7 +83,6 @@
 
 namespace hz {
 
-	// accepts input string as given by std::type_info.name().
 	inline std::string type_name_demangle(const std::string& name)
 	{
 		int status = 0;
@@ -104,3 +118,5 @@ namespace hz {
 
 
 #endif
+
+/// @}

@@ -62,6 +62,12 @@ Requires: smartmontools, pcre, gtkmm24 >= 2.6.0, libglademm24 >= 2.4.0
 BuildRequires: gcc-c++, pcre-devel, gtkmm24-devel >= 2.6.0, libglademm24-devel >= 2.4.0
 %endif
 
+# Fedora doesn't include gnomesu or anything similar except beesu (since 11), so force it.
+# usermode-gtk is for consolehelper-gtk (optional for beesu, needed for GUI auth).
+%if 0%{?fedora_version} >= 11
+Requires: beesu, usermode-gtk
+%endif
+
 %endif
 
 
@@ -145,6 +151,9 @@ rm -rf %buildroot
 
 
 %changelog
+* Fri Dec 10 2010 Alexander Shaduri <ashaduri 'at' gmail.com>
+- Fixes for Fedora 14.
+
 * Fri Nov 14 2008 Alexander Shaduri <ashaduri 'at' gmail.com>
 - Updated .spec file to incorporate changes from the official Mandriva package.
 

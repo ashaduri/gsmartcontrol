@@ -1,27 +1,46 @@
 /**************************************************************************
  Copyright:
-      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2010  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_HZ_CONFIG_H
 #define HZ_HZ_CONFIG_H
 
-// This file is included from all hz headers.
+/**
+\file
+\brief This file is included from all hz headers.
 
-// You should include this file if you're using any of:
-// macros from autoconf-generated config.h
-// macros from global_macros.h
-// This file has effect only if "-include" compiler option doesn't work.
+You should include this file if you're using any of:
+- macros from autoconf-generated config.h
+- macros from global_macros.h
+This file has effect only if "-include" compiler option doesn't work.
 
-// The purpose of this file is to provide some common compatibility
-// solutions for the whole hz, while not depending on "-include"
-// compiler switches or pasting autoconf's config.h code in all files.
+The purpose of this file is to provide some common compatibility
+solutions for the whole hz, while not depending on "-include"
+compiler switches or pasting autoconf's config.h code in all files.
+*/
+
+
+/**
+\namespace hz
+HZ library, system-level abstraction and general utilities.
+*/
+
+
+/**
+\namespace hz::internal
+HZ library internal implementation helpers.
+*/
 
 
 // Define HZ_NO_COMPILER_AUTOINCLUDE=1 from a compiler option to enable
 // auto-inclusion of global_macros.h.
-
 
 #ifndef APP_GLOBAL_MACROS_INCLUDED  // defined in global_macros.h
 	#if defined HZ_NO_COMPILER_AUTOINCLUDE && HZ_NO_COMPILER_AUTOINCLUDE
@@ -194,6 +213,29 @@
 
 
 
+// Whether the *printf() family (but not _*printf() or *printf_s()) behaves
+// according to ISO specification in terms of 0-termination, return value
+// and accepting %lld, %llu and %Lf format specifiers.
+
+// Note: If using mingw runtime >= 3.15 and __USE_MINGW_ANSI_STDIO,
+// mingw supports both C99/POSIX and msvcrt format specifiers.
+// This includes proper printing of long double (%Lf), %lld and %llu, etc...
+// This does _not_ affect _snprintf() and similar non-standard functions.
+
+#ifndef HAVE_ISO_STDIO
+	// On win32, assume only with mingw with ansi/iso extensions.
+	// for others, assume it's always there.
+	#if !defined _WIN32 || ( defined __GNUC__ && \
+			(!defined __NO_ISOCEXT || defined __USE_MINGW_ANSI_STDIO) )
+		#define HAVE_ISO_STDIO 1
+	#else
+		#define HAVE_ISO_STDIO 0
+	#endif
+#endif
+
+
+
+
 #ifndef HAVE__SNPRINTF  // Win32's _snprintf (broken 0-termination)
 	#if defined _WIN32
 		#define HAVE__SNPRINTF 1
@@ -202,29 +244,24 @@
 	#endif
 #endif
 
-#ifndef HAVE_PROPER_SNPRINTF  // snprintf() with correct 0-termination
-	// On win32, assume only with mingw with ansi/iso extensions.
-	// for others, assume it's always there.
-	// Mingw used to use _snprintf()-like termination for snprintf(), so
-	// we use HAVE_PROPER_SNPRINTF instead of HAVE_SNPRINTF.
-	#if !defined _WIN32 || ( defined __GNUC__ && \
-			(!defined __NO_ISOCEXT || (defined __USE_MINGW_ANSI_STDIO)) )
-		#define HAVE_PROPER_SNPRINTF 1
+
+#ifndef HAVE__VSNPRINTF  // Win32's _vsnprintf (broken 0-termination)
+	#if defined _WIN32
+		#define HAVE__SNPRINTF 1
 	#else
-		#define HAVE_PROPER_SNPRINTF 0
+		#define HAVE__SNPRINTF 0
 	#endif
 #endif
 
 
-
-
-#ifndef HAVE_VASPRINTF  // vasprintf() (GNU/glibc extension)
-	#if defined _GNU_SOURCE
-		#define HAVE_VASPRINTF 1
+#ifndef HAVE_SNPRINTF_S  // snprintf_s (msvc 2005/8.0)
+	#if defined _MSC_VER && _MSC_VER >= 1400
+		#define HAVE_SNPRINTF_S 1
 	#else
-		#define HAVE_VASPRINTF 0
+		#define HAVE_SNPRINTF_S 0
 	#endif
 #endif
+
 
 #ifndef HAVE_VSNPRINTF_S  // vsnprintf_s (msvc 2005/8.0)
 	#if defined _MSC_VER && _MSC_VER >= 1400
@@ -234,16 +271,12 @@
 	#endif
 #endif
 
-#ifndef HAVE_PROPER_VSNPRINTF  // vsnprintf() with correct 0-termination
-	// On win32, assume only with mingw with ansi/iso extensions.
-	// for others, assume it's always there.
-	// MSVC has _vsnprintf()-like termination for vsnprintf(), so
-	// we use HAVE_PROPER_VSNPRINTF instead of HAVE_VSNPRINTF.
-	#if !defined _WIN32 || ( defined __GNUC__ && \
-			(!defined __NO_ISOCEXT || (defined __USE_MINGW_ANSI_STDIO)) )
-		#define HAVE_PROPER_VSNPRINTF 1
+
+#ifndef HAVE_VASPRINTF  // vasprintf() (GNU/glibc extension)
+	#if defined _GNU_SOURCE
+		#define HAVE_VASPRINTF 1
 	#else
-		#define HAVE_PROPER_VSNPRINTF 0
+		#define HAVE_VASPRINTF 0
 	#endif
 #endif
 
@@ -281,3 +314,5 @@
 
 
 #endif
+
+/// @}

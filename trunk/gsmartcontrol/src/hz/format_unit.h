@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2003 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2003 - 2010  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
 
@@ -14,8 +14,8 @@
 #include <ctime>  // for time.h, std::strftime, std::time, std::localtime, ...
 
 #include "cstdint.h"
-#include "locale_tools.h"  // ScopedLocale
-#include "string_num.h"  // number_to_string
+#include "locale_tools.h"  // hz::ScopedCLocale
+#include "string_num.h"  // hz::number_to_string
 #include "i18n.h"  // HZ_NC_, HZ_C_
 
 
@@ -199,7 +199,7 @@ inline std::string format_date(const std::string& format, const struct std::tm* 
 	int iterations = 0;
 
 	// strftime is locale-dependent. unless use_locale is true, we switch to classic locale.
-	const ScopedLocale classic(!use_locale);
+	const ScopedCLocale classic(!use_locale);
 
 	do {
 		char* buf = new char[buf_size];
