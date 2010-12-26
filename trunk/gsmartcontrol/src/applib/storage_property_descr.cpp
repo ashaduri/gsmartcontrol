@@ -4,6 +4,9 @@
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
+#include "hz/string_algo.h"  // string_replace_copy
+#include "applib/app_pcrecpp.h"
+
 #include "storage_property_descr.h"
 
 
@@ -15,6 +18,7 @@ namespace {
 		return (p.generic_name.empty() ? (p.reported_name == name) : (p.generic_name == name));
 	}
 
+
 	inline bool auto_set(StorageProperty& p, const std::string& name, const char* descr)
 	{
 		if (name_match(p, name)) {
@@ -25,18 +29,49 @@ namespace {
 	}
 
 
+
+	// pass -1 as attr_id to match any attribute property
 	inline bool attr_match(StorageProperty& p, int32_t attr_id)
 	{
-		return (p.value_type == StorageProperty::value_type_attribute && p.value_attribute.id == attr_id);
+		return (p.value_type == StorageProperty::value_type_attribute &&
+				(p.value_attribute.id == attr_id || attr_id == -1));
 	}
+
 
 	inline bool auto_set_attr(StorageProperty& p, int32_t attr_id, const char* attr_name, const char* descr)
 	{
-		if (attr_match(p, attr_id)) {
-			p.set_description(std::string("<b>") + attr_name + "</b>\n" + descr);
-			return true;
+		if (!attr_match(p, attr_id))
+			return false;
+
+		bool has_descr = bool(descr);
+		if (!has_descr) {
+			p.set_description("No description is available for this attribute");
 		}
-		return false;
+
+		std::string smartctl_name = hz::string_replace_copy(p.reported_name, '_', ' ');
+
+		if (attr_id == -1) {  // not in our database
+			// use smartctl-reported name. replace "_"'s with spaces.
+			p.readable_name = smartctl_name;
+
+			if (has_descr)
+				p.set_description(descr);  // "no description" tooltip
+
+		} else {
+			bool known_by_smartctl = !app_pcre_match("/Unknown_Attribute/i", p.reported_name);
+			bool smartctl_is_same = app_pcre_match("/^" + app_pcre_escape(smartctl_name) + "$/i", attr_name);
+
+			p.readable_name = attr_name;
+
+			if (has_descr) {
+				p.set_description(std::string("<b>") + attr_name + "</b>"
+					+ ((known_by_smartctl && !smartctl_is_same) ?
+							("\n<small>Reported by smartctl as <b>\"" + smartctl_name + "\"</b></small>\n") : "")
+					+ "\n" + descr);
+			}
+		}
+
+		return true;
 	}
 
 }
@@ -85,10 +120,10 @@ bool storage_property_autoset_description(StorageProperty& p)
 		// Reallocated Sector Count
 		|| auto_set_attr(p, 5, "Reallocated Sector Count", "Number of reallocated sectors (Raw value). Non-zero Raw value indicates a disk surface failure. "
 				"\n\nWhen a drive encounters a surface error, it marks that sector as &quot;unstable&quot; (also known as &quot;pending reallocation&quot;). "
-				"If the sector is successfully read from or written to at some later point, it is unmarked. However, if the sector continues to be inaccessible, "
+				"If the sector is successfully read from or written to at some later point, it is unmarked. If the sector continues to be inaccessible, "
 				"the drive reallocates (remaps) it to a specially reserved area as soon as it has a chance (usually during write request or successful read), "
 				"transferring the data so that no changes are reported to the operating system. This is why you generally don't see &quot;bad blocks&quot; "
-				"on modern drives - if you do, it means they could not be remapped yet, or the drive is out of reserved area.")
+				"on modern drives - if you do, it means that either they have not been remapped yet, or the drive is out of reserved area.")
 		// Read Channel Margin
 		|| auto_set_attr(p, 6, "Read Channel Margin", "Margin of a channel while reading data. The function of this attribute is not specified.")
 		// Seek Error Rate
@@ -105,8 +140,12 @@ bool storage_property_autoset_description(StorageProperty& p)
 		|| auto_set_attr(p, 12, "Power Cycle Count", "Number of complete power start/stop cycles of a drive.")
 		// Soft Read Error Rate (same as 201 ?) (description sounds lame, fix?)
 		|| auto_set_attr(p, 13, "Soft Read Error Rate", "Uncorrected read errors reported to the operating system (Raw value). If the value is non-zero, you should back up your data.")
+		// End to End Error (description?)
+		|| auto_set_attr(p, 184, "End to End Error", NULL)
 		// Reported Uncorrectable (seagate). anyone knows what it means? (no guesses please)
-		|| auto_set_attr(p, 187, "Reported Uncorrectable", "Exact meaning of this attribute is vendor-specific.")
+		|| auto_set_attr(p, 187, "Reported Uncorrectable", NULL)
+		// Command Timeout (description?)
+		|| auto_set_attr(p, 188, "Command Timeout", NULL)
 		// High Fly Writes (description?)
 		|| auto_set_attr(p, 189, "High Fly Writes", "Number of times the recording head is flying outside its normal operating range.")
 		// Airflow Temperature (WD Caviar (may be 50 less), Samsung). Temperature or (100 - temp.) on Seagate/Maxtor.
@@ -114,45 +153,45 @@ bool storage_property_autoset_description(StorageProperty& p)
 		// G-sense error rate (same as 221?)
 		|| auto_set_attr(p, 191, "G-Sense Error Rate", "Number of errors resulting from externally-induced shock and vibration (Raw value). May indicate incorrect installation.")
 		// Power-Off Retract Cycle, Fujitsu: Emergency Retract Cycle Count
-		|| auto_set_attr(p, 192, "Power-Off Retract Cycle / Emergency Retract Cycle Count", "Number of times the heads were loaded off the media (during power-offs or emergency conditions).")
+		|| auto_set_attr(p, 192, "Emergency Retract Cycle Count", "Number of times the heads were loaded off the media (during power-offs or emergency conditions).")
 		// Load/Unload Cycle
 		|| auto_set_attr(p, 193, "Load/Unload Cycle", "Number of load/unload cycles into Landing Zone position.")
 		// Temperature Celsius (same as 231). This is the most common one. Some Samsungs: 10xTemp.
 		|| auto_set_attr(p, 194, "Temperature Celsius", "Drive temperature. The Raw value shows built-in heat sensor registrations (in Celsius). Increases in average drive temperature often signal spindle motor problems (unless the increases are caused by environmental factors).")
 		// Hardware ECC Recovered, Fujitsu: ECC_On_The_Fly_Count
-		|| auto_set_attr(p, 195, "Hardware ECC Recovered / ECC On The Fly Count", "Number of ECC on the fly errors (Raw value). Users are advised to ignore this attribute.")
+		|| auto_set_attr(p, 195, "Hardware ECC Recovered", "Number of ECC on the fly errors (Raw value). Users are advised to ignore this attribute.")
 		// Reallocation Event Count
 		|| auto_set_attr(p, 196, "Reallocation Event Count", "Number of reallocation (remap) operations. Raw value <i>should</i> show the total number of attempts (both successful and unsuccessful) to reallocate sectors. An increase in Raw value indicates a disk surface failure. "
 				"\n\nWhen a drive encounters a surface error, it marks that sector as &quot;unstable&quot; (also known as &quot;pending reallocation&quot;). "
-				"If the sector is successfully read from or written to at some later point, it is unmarked. However, if the sector continues to be inaccessible, "
+				"If the sector is successfully read from or written to at some later point, it is unmarked. If the sector continues to be inaccessible, "
 				"the drive reallocates (remaps) it to a specially reserved area as soon as it has a chance (usually during write request or successful read), "
 				"transferring the data so that no changes are reported to the operating system. This is why you generally don't see &quot;bad blocks&quot; "
-				"on modern drives - if you do, it means they could not be remapped yet, or the drive is out of reserved area.")
+				"on modern drives - if you do, it means that either they have not been remapped yet, or the drive is out of reserved area.")
 		// Current Pending Sector Count
 		|| auto_set_attr(p, 197, "Current Pending Sector Count", "Number of &quot;unstable&quot; (waiting to be remapped) sectors (Raw value). If the unstable sector is subsequently read from or written to successfully, this value is decreased and the sector is not remapped. An increase in Raw value indicates a disk surface failure. "
 				"\n\nWhen a drive encounters a surface error, it marks that sector as &quot;unstable&quot; (also known as &quot;pending reallocation&quot;). "
-				"If the sector is successfully read from or written to at some later point, it is unmarked. However, if the sector continues to be inaccessible, "
+				"If the sector is successfully read from or written to at some later point, it is unmarked. If the sector continues to be inaccessible, "
 				"the drive reallocates (remaps) it to a specially reserved area as soon as it has a chance (usually during write request or successful read), "
 				"transferring the data so that no changes are reported to the operating system. This is why you generally don't see &quot;bad blocks&quot; "
-				"on modern drives - if you do, it means they could not be remapped yet, or the drive is out of reserved area.")
+				"on modern drives - if you do, it means that either they have not been remapped yet, or the drive is out of reserved area.")
 		// Offline Uncorrectable, Fujitsu: Off-line_Scan_UNC_Sector_Ct
 		|| auto_set_attr(p, 198, "Offline Uncorrectable", "Number of sectors which couldn't be corrected during Offline Data Collection (Raw value). An increase in Raw value indicates a disk surface failure. "
 				"The value may be decreased automatically when the errors are corrected (e.g., when an unreadable sector is reallocated and the next Offline test is run to see the change). "
 				"\n\nWhen a drive encounters a surface error, it marks that sector as &quot;unstable&quot; (also known as &quot;pending reallocation&quot;). "
-				"If the sector is successfully read from or written to at some later point, it is unmarked. However, if the sector continues to be inaccessible, "
+				"If the sector is successfully read from or written to at some later point, it is unmarked. If the sector continues to be inaccessible, "
 				"the drive reallocates (remaps) it to a specially reserved area as soon as it has a chance (usually during write request or successful read), "
 				"transferring the data so that no changes are reported to the operating system. This is why you generally don't see &quot;bad blocks&quot; "
-				"on modern drives - if you do, it means they could not be remapped yet, or the drive is out of reserved area.")
+				"on modern drives - if you do, it means that either they have not been remapped yet, or the drive is out of reserved area.")
 		// UDMA CRC Error Count
 		|| auto_set_attr(p, 199, "UDMA CRC Error Count", "Number of errors in data transfer via the interface cable in UDMA mode, as determined by ICRC (Interface Cyclic Redundancy Check) (Raw value).")
 		// Fujitsu: Write Error Rate, WD: Multi-Zone Error Rate. (maybe head flying height too (?))
-		|| auto_set_attr(p, 200, "Write Error Count / Multi-Zone Error Rate", "Number of errors found when writing to sectors (Raw value). The higher the value, the worse the disk surface condition and/or mechanical subsystem is.")
+		|| auto_set_attr(p, 200, "Write Error Count", "Number of errors found when writing to sectors (Raw value). The higher the value, the worse the disk surface condition and/or mechanical subsystem is.")
 		// Soft Read Error Rate / Maxtor: Off Track Errors / Fujitsu: Detected TA Count (description?)
-		|| auto_set_attr(p, 201, "Soft Read Error Rate / Off Track Errors", "Uncorrected read errors reported to the operating system (Raw value). If the value is non-zero, you should back up your data.")
+		|| auto_set_attr(p, 201, "Soft Read Error Rate", "Uncorrected read errors reported to the operating system (Raw value). If the value is non-zero, you should back up your data.")
 		// Data Address Mark Errors / TA Increase Count (same as 227?)
 		|| auto_set_attr(p, 202, "TA Increase Count / Data Address Mark Errors", "This attribute may mean several different things. TA Increase Count: Number of attempts to compensate for platter speed variations. Data Address Mark Errors: Frequency of the Data Address Mark errors.")
 		// Run Out Cancel. (description ?), Maxtor: ECC Errors
-		|| auto_set_attr(p, 203, "Run Out Cancel / ECC Errors", "Number of ECC errors.")
+		|| auto_set_attr(p, 203, "ECC Errors", "Number of ECC errors.")
 		// Shock_Count_Write_Opern (description?), Maxtor: Soft ECC Correction
 		|| auto_set_attr(p, 204, "Soft ECC Correction", "Number of errors corrected by software ECC.")
 		// Thermal Asperity Rate (TAR)
@@ -165,6 +204,12 @@ bool storage_property_autoset_description(StorageProperty& p)
 		|| auto_set_attr(p, 208, "Spin Buzz", "Number of buzz routines to spin up the drive.")
 		// Offline Seek Performance (description?)
 		|| auto_set_attr(p, 209, "Offline Seek Performance", "Seek performance during Offline Data Collection operations")
+		// Vibration During Write. wikipedia says 211, but it's wrong. (description?)
+		|| auto_set_attr(p, 210, "Vibration During Write", NULL)
+		// Vibration During Read. (description?)
+		|| auto_set_attr(p, 211, "Vibration During Read", NULL)
+		// Shock During Write (description?)
+		|| auto_set_attr(p, 212, "Shock During Write", NULL)
 		// Disk Shift / Temperature Celsius (temperature again? which drives?)
 		|| auto_set_attr(p, 220, "Disk Shift", "Shift of disks towards spindle. Shift of disks is possible as a result of a strong shock or a fall, or for other reasons.")
 		// G-sense error rate
@@ -184,13 +229,18 @@ bool storage_property_autoset_description(StorageProperty& p)
 		// Power-Off Retract Count
 		|| auto_set_attr(p, 228, "Power-off Retract Count", "Number of times the magnetic armature was retracted automatically as a result of cutting power.")
 		// GMR Head Amplitude (IBM)
-		|| auto_set_attr(p, 229, "GMR Head Amplitude", "Amplitude of heads trembling (GMR-head) in running mode.")
+		|| auto_set_attr(p, 230, "GMR Head Amplitude", "Amplitude of heads trembling (GMR-head) in running mode.")
 		// Temperature (Some drives)
 		|| auto_set_attr(p, 231, "Temperature", "Drive temperature. The Raw value shows built-in heat sensor registrations (in Celsius). Increases in average drive temperature often signal spindle motor problems (unless the increases are caused by environmental factors).")
 		// Head Flying Hours
 		|| auto_set_attr(p, 240, "Head Flying Hours", "Time while head is positioning.")
 		// Read Error Retry Rate (description?)
 		|| auto_set_attr(p, 250, "Read Error Retry Rate", "Number of read retries.")
+		// Free Fall Protection (seagate laptop drives)
+		|| auto_set_attr(p, 254, "Free Fall Protection", "Number of \"Free Fall Events\" detected.")
+
+		// all unknown attributes (not in our DB)
+		|| auto_set_attr(p, -1, "", NULL)
 		;
 
 

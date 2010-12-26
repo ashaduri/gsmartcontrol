@@ -12,7 +12,7 @@
 #include "hz/down_cast.h"
 #include "hz/string_num.h"  // number_to_string
 #include "hz/string_format.h"  // string_sprintf
-#include "hz/string_algo.h"  // string_join, string_replace_copy
+#include "hz/string_algo.h"  // string_join
 #include "hz/fs_file.h"  // hz::File
 #include "hz/format_unit.h"  // format_time_length
 #include "rconfig/rconfig_mini.h"  // rconfig::*
@@ -654,7 +654,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			Gtk::TreeRow row = *(list_store->append());
 
 			row[col_id] = iter->value_attribute.id;
-			row[col_name] = hz::string_replace_copy(iter->readable_name, '_', ' ');  // names have unnecessary underscores
+			row[col_name] = iter->readable_name;
 			row[col_flag_value] = iter->value_attribute.flag;  // it's a string, not int.
 			row[col_value] = hz::number_to_string(iter->value_attribute.value);
 			row[col_worst] = hz::number_to_string(iter->value_attribute.worst);
@@ -1472,6 +1472,10 @@ void GscInfoWindow::test_loop()
 
 		} else {
 			result_msg = "<b>Test result: </b>" + StorageSelftestEntry::get_status_name(status) + ".";
+
+			// It may not reach 100% somehow, so do it manually.
+			if (test_completion_progressbar)
+				test_completion_progressbar->set_fraction(1.);  // yes, we're at 100% anyway (at least logically).
 		}
 	}
 

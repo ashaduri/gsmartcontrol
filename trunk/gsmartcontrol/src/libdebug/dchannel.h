@@ -8,11 +8,7 @@
 #define LIBDEBUG_DCHANNEL_H
 
 #include <string>
-#include <iosfwd>  // std::ostream
-
-#ifdef __SUNPRO_CC  // problems with incomplete type of std::ostream
-	#include <ostream>
-#endif
+#include <ostream>  // std::ostream (iosfwd is not enough for win32 and suncc)
 
 #include "hz/intrusive_ptr.h"
 #include "hz/sync.h"

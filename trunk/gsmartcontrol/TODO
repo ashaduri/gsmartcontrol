@@ -16,7 +16,7 @@ local scope destruction also works if using stack variables.
 
 
 A treeview (also iconview, combobox) from glade comes
-with existing model, which should be unset
+with existing model, which should be unset.
 
 
 --------------------------------------------------------
@@ -26,16 +26,6 @@ win32 32-bit: int: 4, long: 4, pointer: 4.
 win32 64-bit: int: 4, long: 8, pointer: 8.
 
 sparc: same as win32 (what about OS?).
-
---------------------------------------------------------
-
-GTKMM problems:
-
-
-Lots of gtk_, GTK_, g_ in documentation.
-
-
-no ComboBox::unset_model()  and IconView::unset_model().
 
 
 

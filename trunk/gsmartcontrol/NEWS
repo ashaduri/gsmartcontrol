@@ -1,4 +1,12 @@
 
+Version 0.8.1, released on 2008-11-11
+	Disabled Linux "by-id" drive detection - it's unreliable on some broken systems.
+	Added some more attribute descriptions.
+	Our names for attributes override smartctls' now.
+	Added a proper "Add Device" dialog for Windows.
+	Added an icon and resource file for Windows.
+	Fixed minor bugs.
+
 Version 0.8.0rc4, released on 2008-10-20
 	FreeBSD support (tested with DesktopBSD 1.6 (FreeBSD 6.3) / x86).
 	NetBSD support (tested with NetBSD 4.0.1 / x86).

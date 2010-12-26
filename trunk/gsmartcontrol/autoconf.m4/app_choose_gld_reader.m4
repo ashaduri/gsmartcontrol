@@ -65,8 +65,24 @@ AC_DEFUN([APP_CHOOSE_GLD_READER], [
 	# libglade specified, or auto and no gtkbuilder. gtkmm2.4-compatible libglademm is >= 2.4.0.
 	# (not sure about libglade version).
 	if test "x$app_cv_gld_reader" = "xnone"; then
-		PKG_CHECK_MODULES([app_cv_gld_reader], [$app_cv_gld_reader_libglade_pkg_name >= 2.4.0],
-				[app_cv_gld_reader="libglade"], [AC_MSG_WARN([$LIBGLADE_PKG_ERRORS])])
+		if test "x$app_cv_gld_reader_libglade_name" = "xlibglade"; then
+			# libglade
+			PKG_CHECK_MODULES([LIBGLADE], [$app_cv_gld_reader_libglade_pkg_name >= 2.4.0],
+					[app_cv_gld_reader="libglade"], [AC_MSG_WARN([$LIBGLADE_PKG_ERRORS])])
+			app_cv_gld_reader_CFLAGS="$LIBGLADE_CFLAGS";
+			app_cv_gld_reader_CXXFLAGS="$LIBGLADE_CFLAGS";
+			app_cv_gld_reader_LIBS="$LIBGLADE_LIBS";
+		else
+			# libglademm
+			PKG_CHECK_MODULES([LIBGLADEMM], [$app_cv_gld_reader_libglade_pkg_name >= 2.4.0],
+					[app_cv_gld_reader="libglade"], [AC_MSG_WARN([$LIBGLADEMM_PKG_ERRORS])])
+			app_cv_gld_reader_CFLAGS=""
+			app_cv_gld_reader_CXXFLAGS="$LIBGLADEMM_CFLAGS";
+			app_cv_gld_reader_LIBS="$LIBGLADEMM_LIBS";
+		fi
+		# reset them so they don't interfere later
+		LIBGLADE_CFLAGS="";
+		LIBGLADE_LIBS="";
 	fi
 
 	if test "x$with_libglade" = "xyes" && test "x$app_cv_gld_reader" = "xnone"; then
@@ -76,15 +92,6 @@ AC_DEFUN([APP_CHOOSE_GLD_READER], [
 	# still not found.
 	if test "$app_cv_gld_reader" = "none"; then
 		AC_MSG_WARN([Neither GtkBuilder nor $app_cv_gld_reader_libglade_name found. The program will be unable to compile fully.])
-	fi
-
-
-	# pkg-config doesn't do CXXFLAGS, so do it manually.
-	app_cv_gld_reader_CXXFLAGS="$app_cv_gld_reader_CFLAGS";
-
-	# if using libglademm, it doesn't make any sense to leave the flags for C.
-	if test "x$1" = "xC++"; then
-		app_cv_gld_reader_CFLAGS="";
 	fi
 
 

@@ -4,6 +4,8 @@
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
+#include <glibmm.h>  // Glib::shell_quote()
+
 #include "rconfig/rconfig_mini.h"
 #include "hz/string_algo.h"  // string_trim_copy
 #include "hz/fs_path.h"  // FsPath
@@ -411,11 +413,16 @@ std::string StorageDevice::execute_smartctl(const std::string& command_options,
 	}
 
 	std::string device = get_device();
-	std::string::size_type pos = device.rfind('/');  // find basename
-	if (pos == std::string::npos) {
-		debug_out_error("app", DBG_FUNC_MSG << "Invalid device name \"" << device << "\".\n");
-		return "Invalid device name specified.";
+
+#ifndef _WIN32  // win32 doesn't have slashes in devices names
+	{
+		std::string::size_type pos = device.rfind('/');  // find basename
+		if (pos == std::string::npos) {
+			debug_out_error("app", DBG_FUNC_MSG << "Invalid device name \"" << device << "\".\n");
+			return "Invalid device name specified.";
+		}
 	}
+#endif
 
 	if (!smartctl_ex)  // if it doesn't exist, create a default one
 		smartctl_ex = new SmartctlExecutor();  // will be auto-deleted
@@ -439,8 +446,8 @@ std::string StorageDevice::execute_smartctl(const std::string& command_options,
 		device_specific_options += " ";
 
 
-	smartctl_ex->set_command(smartctl_binary,
-			smartctl_def_options + device_specific_options + command_options + " " + device);
+	smartctl_ex->set_command(Glib::shell_quote(smartctl_binary),
+			smartctl_def_options + device_specific_options + command_options + " " + Glib::shell_quote(device));
 
 
 	if (!smartctl_ex->execute() || !smartctl_ex->get_error_msg().empty()) {

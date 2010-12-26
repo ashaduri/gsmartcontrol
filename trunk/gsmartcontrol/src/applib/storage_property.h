@@ -108,8 +108,8 @@ class StorageAttribute {
 		attr_t attr_type;
 		update_t update_type;
 		fail_time_t when_failed;
-		std::string raw_value;
-		int64_t raw_value_int;  // same as raw_value, but parsed as int.
+		std::string raw_value;  // as presented by smartctl (formatted).
+		int64_t raw_value_int;  // same as raw_value, but parsed as int. original value is 6 bytes I think.
 
 };
 

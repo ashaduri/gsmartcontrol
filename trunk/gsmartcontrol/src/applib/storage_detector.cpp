@@ -262,26 +262,28 @@ namespace {
 #elif defined CONFIG_KERNEL_WINDOWS
 
 
-	// smartctl accepts various variants, but \\.\PhysicalDriveN
-	// seems to be the most native and acceptable.
+	// smartctl accepts various variants, the most straight being pdN,
+	// (or /dev/pdN, /dev being optional) where N comes from
+	// "\\.\PhysicalDriveN" (winnt only).
 
 	inline std::string detect_drives_win32(std::vector<std::string>& devices)
 	{
 		for (int drive_num = 0; ; ++drive_num) {
+			std::string name = hz::string_sprintf("\\\\.\\PhysicalDrive%d", drive_num);
+
 			// If the drive is openable, then it's there.
 			// NOTE: Administrative privileges are required to open it.
-			std::string name = hz::string_sprintf("\\\\.\\PhysicalDrive%d", drive_num);
+			// Yes, CreateFile() is open, not create. Yes, it's silly (ah, win32...).
 			HANDLE h = CreateFile(name.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
 					NULL, OPEN_EXISTING, 0, NULL);
 
-			// The numbers seem to be continuous, so break on first invalid.
+			// The numbers seem to be consecutive, so break on first invalid.
 			if (h == INVALID_HANDLE_VALUE)
 				break;
 
-			CloseHandle (h);
+			CloseHandle(h);
 
-			// smartctl uses /dev/pdN for \\.\PhysicalDrive N.
-			devices.push_back(hz::string_sprintf("/dev/pd%d", drive_num));
+			devices.push_back(hz::string_sprintf("pd%d", drive_num));
 		}
 
 		return std::string();
@@ -547,6 +549,11 @@ std::string StorageDetector::detect(std::vector<StorageDeviceRefPtr>& drives)
 
 #if defined CONFIG_KERNEL_LINUX
 
+	// Disable by-id detection - it's unreliable on broken systems.
+	// For example, on Ubuntu 8.04, /dev/disk/by-id contains two device
+	// links for two drives, but both point to the same sdb (instead of
+	// sda and sdb). Plus, there are no "*-partN" files (not that we need them).
+/*
 	if (!found) {
 		error_msg = detect_drives_linux_udev_byid(devices);  // linux udev
 		// we check for devices vector emptiness because it could be a dummy directory
@@ -555,7 +562,7 @@ std::string StorageDetector::detect(std::vector<StorageDeviceRefPtr>& drives)
 			found = true;
 		}
 	}
-
+*/
 	if (!found) {
 		error_msg = detect_drives_linux_proc_partitions(devices);  // linux /proc/partitions as fallback.
 		if (error_msg.empty() && !devices.empty()) {

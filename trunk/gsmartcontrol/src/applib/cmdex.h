@@ -85,6 +85,9 @@ class Cmdex : public hz::ErrorHolder<hz::SyncPolicyGlib> {
 
 
 		// Call before execute.
+		// Note: The command and the arguments _must_ be shell-escaped.
+		// Use g_shell_quote() or Glib::shell_quote(). Note that each argument
+		// must be escaped separately.
 		void set_command(const std::string& command_exec, const std::string& command_args)
 		{
 			command_exec_ = command_exec;

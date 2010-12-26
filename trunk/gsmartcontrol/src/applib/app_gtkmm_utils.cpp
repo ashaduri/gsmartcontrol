@@ -14,6 +14,7 @@
 	#include <gtk/gtk.h>  // gtk_tooltips_*
 #endif
 
+#include "app_pango_utils.h"  // app_pango_strip_markup()
 #include "app_gtkmm_utils.h"
 
 
@@ -67,16 +68,10 @@ void app_gtkmm_set_widget_tooltip(Gtk::Widget& widget,
 		if (tooltips) {
 			if (use_markup) {
 				// strip markup
-				gchar* stripped = 0;
-				if (pango_parse_markup(tooltip_text.c_str(), -1, 0, NULL, &stripped, NULL, NULL) && stripped) {
-					gtk_tooltips_set_tip(tooltips, widget.gobj(), stripped, "");
+				Glib::ustring stripped;
+				if (app_pango_strip_markup(tooltip_text, stripped)) {
+					gtk_tooltips_set_tip(tooltips, widget.gobj(), stripped.c_str(), "");
 				}
-				g_free(stripped);
-
-				// alternate method, check if it works (AttrList has bool() since gtkmm 2.10):
-				// char dummy = 0;
-				// Glib::ustring stripped;
-				// if (Pango::AttrList(tooltip_text, 0, stripped, dummy).gobj()) ...
 
 			} else {
 				gtk_tooltips_set_tip(tooltips, widget.gobj(), tooltip_text.c_str(), "");
