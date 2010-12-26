@@ -48,7 +48,11 @@ libdebug:
 	bug: if -q is passed, Execution log doesn't contain libdebug log. (requires per-channel status control).
 
 
+Move attributes as a second tab
 
+INCLUDE SMARTMONTOOLS LICENSE!!
+
+Update copyright years.
 
 
 ----------- Feature List ----------

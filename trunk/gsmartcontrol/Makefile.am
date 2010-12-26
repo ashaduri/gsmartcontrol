@@ -68,7 +68,7 @@ src-rpm: dist
 
 
 # NSIS installer support.
-# Requires wine, installed NSIS, gtkmm dlls, pcre dlls, smartctl.exe, smartctl_console.exe.
+# Requires wine, installed NSIS, gtkmm dlls, pcre dlls, smartctl-nc.exe, smartctl.exe.
 # dos2unix on build machine.
 # Execute only with win32 build present.
 
@@ -103,8 +103,8 @@ win-dist-prepare: all win-dist-clean
 	cp "@WINDOWS_DLLS_LOCATION@"/libsigc-*.dll nsis-dist/
 	cp "@WINDOWS_DLLS_LOCATION@"/pcre3.dll nsis-dist/
 	cp "@WINDOWS_DLLS_LOCATION@"/mingwm10.dll nsis-dist/
+	cp "@WINDOWS_DLLS_LOCATION@"/smartctl-nc.exe nsis-dist/
 	cp "@WINDOWS_DLLS_LOCATION@"/smartctl.exe nsis-dist/
-	cp "@WINDOWS_DLLS_LOCATION@"/smartctl_console.exe nsis-dist/
 
 	cp src/gsmartcontrol.exe nsis-dist/
 

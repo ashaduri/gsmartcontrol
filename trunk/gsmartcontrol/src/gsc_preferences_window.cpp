@@ -229,6 +229,13 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const app_ui
 	// we can't do this in treeview's constructor, it doesn't know about this window yet.
 	this->device_widget_set_remove_possible(false);  // initial state
 
+	// hide win32-only options for non-win32.
+#ifndef _WIN32
+	Gtk::CheckButton* smartctl_search_check = this->lookup_widget<Gtk::CheckButton*>("search_in_smartmontools_first_check");
+	if (smartctl_search_check)
+		smartctl_search_check->hide();
+#endif
+
 
 	// ---------------
 
@@ -318,6 +325,11 @@ void GscPreferencesWindow::import_config()
 			&& (check = this->lookup_widget<Gtk::CheckButton*>("show_smart_capable_only_check")) )
 		check->set_active(show_smart_capable_only);
 
+	bool win32_search_smartctl_in_smartmontools;
+	if ( prefs_config_get("system/win32_search_smartctl_in_smartmontools", win32_search_smartctl_in_smartmontools)
+			&& (check = this->lookup_widget<Gtk::CheckButton*>("search_in_smartmontools_first_check")) )
+		check->set_active(win32_search_smartctl_in_smartmontools);
+
 	std::string smartctl_binary;
 	if ( prefs_config_get("system/smartctl_binary", smartctl_binary)
 			&& (entry = this->lookup_widget<Gtk::Entry*>("smartctl_binary_entry")) )
@@ -362,6 +374,9 @@ void GscPreferencesWindow::export_config()
 
 	if ((check = this->lookup_widget<Gtk::CheckButton*>("show_smart_capable_only_check")))
 		prefs_config_set("gui/show_smart_capable_only", bool(check->get_active()));
+
+	if ((check = this->lookup_widget<Gtk::CheckButton*>("search_in_smartmontools_first_check")))
+		prefs_config_set("system/win32_search_smartctl_in_smartmontools", bool(check->get_active()));
 
 	if ((entry = this->lookup_widget<Gtk::Entry*>("smartctl_binary_entry")))
 		prefs_config_set("system/smartctl_binary", std::string(entry->get_text()));

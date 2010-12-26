@@ -109,7 +109,7 @@ Most of these packages are probably already provided by your distribution.
 Here are the packages you need to have to build GSmartControl on some Linux
 distributions:
 
-OpenSUSE, SLES, SLED:
+openSUSE, SLES, SLED:
 gcc-c++, pcre-devel, gtkmm2-devel, (possibly) libglademm-devel.
 
 Fedora, CentOS, RHEL:
@@ -171,9 +171,9 @@ Long answer: read below.
 
 First, check if you can find a pre-built package for your distribution or
 operating system - they usually provide the best integration and the easiest
-installation procedure. For Linux, one option is to try the OpenSUSE Build
+installation procedure. For Linux, one option is to try the openSUSE Build
 Service - it provides ready-to-install packages for various popular Linux
-distributions (OpenSUSE, Fedora, etc...). See
+distributions (openSUSE, Fedora, etc...). See
 http://download.opensuse.org/repositories/home:/alex_sh/ .
 
 If you want to compile from source, check that you have all the required
@@ -335,10 +335,10 @@ If you still think it's a GSmartControl issue, please collect the following
 information about your system. Without it, it may be very hard or impossible
 to fix the bug.
 
-* Which operating system you use (for example, OpenSUSE Linux 11.0).
+* Which operating system you use (for example, openSUSE Linux 11.0).
 
 * Which version of GTK and Gtkmm you have installed. Finding this out is very
-distribution-specific. For example, on OpenSUSE it would be
+distribution-specific. For example, on openSUSE it would be
 "rpm -q gtk2 gtkmm2". Some distributions have gtkmm24 instead. You may also
 search them in your distribution's graphical package manager, if there is one.
 

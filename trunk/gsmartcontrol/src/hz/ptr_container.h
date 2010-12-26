@@ -167,7 +167,13 @@ class ptr_container : public Container {
 		// for std::list: remove() and remove_if()
 		void remove(const value_type& v)
 		{
-			clean( std::find(begin(), end(), v) );
+			for (iterator i = begin(); i != end(); ++i) {
+				if ((*i) == v) {
+					clean(i);
+					break;
+				}
+			}
+// 			clean( std::find(begin(), end(), v) );
 			Container::remove(v);
 		}
 

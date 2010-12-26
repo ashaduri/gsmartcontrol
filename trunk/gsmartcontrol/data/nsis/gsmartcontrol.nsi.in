@@ -177,7 +177,7 @@ FunctionEnd
 
 
 
-; ----------------- INSTALLATINO TYPES
+; ----------------- INSTALLATION TYPES
 
 ; InstType "Recommended"
 InstType "Full"
@@ -200,8 +200,8 @@ SectionIn 1
   File gsmartcontrol.ico
   File icon_*.png
   File *.dll
+  File smartctl-nc.exe
   File smartctl.exe
-  File smartctl_console.exe
 
   File /r doc
 
@@ -272,8 +272,8 @@ Section Uninstall
   Delete "$INSTDIR\gsmartcontrol.ico"
   Delete "$INSTDIR\icon_*.png"
   Delete "$INSTDIR\*.dll"
+  Delete "$INSTDIR\smartctl-nc.exe"
   Delete "$INSTDIR\smartctl.exe"
-  Delete "$INSTDIR\smartctl_console.exe"
 
   RMDir /r "$INSTDIR\doc"
 

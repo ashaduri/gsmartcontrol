@@ -1,4 +1,8 @@
 
+Version 0.8.4, released on ---------
+	Blacklist Linux Software RAID devices (backported from Debian).
+	Win32: Use smartmontools-supplied smartctl-nc.exe by default (if found).
+
 Version 0.8.3, released on 2008-12-27
 	A random "Smartctl returned an empty output" error on Windows was fixed.
 		Thanks to Zurab Khetsuriani for testing.

@@ -543,6 +543,7 @@ inline bool File::move(const std::string& to)
 
 	// win32 rename() doesn't replace contents if newpath exists and says "file exists".
 #ifdef _WIN32
+/// FIXME: Try to rename first, unlink/rename again later. This way we have at least some atomicity.
 	// try remove it if it's a file. no error checks here - rename() will report the needed messages.
 	File dest_file(to);
 	if (dest_file.is_file())
