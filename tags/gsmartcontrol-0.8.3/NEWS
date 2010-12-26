@@ -1,0 +1,79 @@
+
+Version 0.8.3, released on 2008-12-27
+	A random "Smartctl returned an empty output" error on Windows was fixed.
+		Thanks to Zurab Khetsuriani for testing.
+	Fixed a parser issue which prevented running self-tests in Windows.
+	The supplied icon (hopefully) shows correctly in Windows 2000 now.
+	This release adds an official support for Windows 2000 SP4.
+	Added scripts to allow GSmartControl to read smartctl data from
+		cron-generated files. This allows users to read somewhat recent
+		smartctl information without having to run GSmartControl as root.
+		Generously contributed by Alex Butcher <alex dot butcher 'at'
+		assursys.co.uk>.
+	Configure script correctly aborts instead of printing a warning if gtkmm
+		or libglademm (if needed) is not found.
+	Configure script now accepts --enable-windows-console,
+		--disable-abort-if-no-gtkmm, --disable-abort-if-no-glade-reader,
+		as well as Windows-supporting "auto" for --enable-nsis-wine and
+		--with-nsis.
+	Configure's --with-win32-env has been renamed to --with-windows-dlls.
+	The "About" dialog shows version information now.
+	Minor bugs were fixed.
+
+Version 0.8.2, released on 2008-12-10
+	Fixed gsmartcontrol_root.sh script to support distributions with no
+		/usr/sbin in their users' paths (thanks to Erwan Velu).
+	Added desktop auto-detection to gsmartcontrol_root.sh script. This allows
+		us to use only one desktop file (thanks to Erwan Velu).
+	Added Debian package directory (named "debian.dist" for now to avoid
+		control file conflicts with Build Service).
+	Renamed gsmartcontrol_root.sh to gsmartcontrol-root, to make Debian happy.
+	Added make targets for Windows packages (zip and NSIS).
+	Fixed Windows-related issues (Vista is fully supported now).
+	Fixed minor bugs:
+		Smartctl parser is win32-locale-aware now.
+		No more unnecessary parsing.
+		No segfault on exit under Windows and Solaris.
+		A friendlier message is displayed if smartctl was not found.
+		No highlighted labels when switching tabs in Information window.
+
+Version 0.8.1, released on 2008-11-11
+	Disabled Linux "by-id" drive detection - it's unreliable on some broken
+		systems.
+	Added some more attribute descriptions.
+	Our names for attributes override smartctls' now.
+	Added a proper "Add Device" dialog for Windows.
+	Added an icon and resource file for Windows.
+	Fixed minor bugs.
+
+Version 0.8.0rc4, released on 2008-10-20
+	FreeBSD support (tested with DesktopBSD 1.6 (FreeBSD 6.3) / x86).
+	NetBSD support (tested with NetBSD 4.0.1 / x86).
+	OpenBSD support (tested with OpenBSD 4.3 / x86-64 / gcc-3.3.5).
+	Solaris/gcc support (tested with Solaris 10 / x86 / gcc-3.4.3 / blastwave).
+	Solaris/sunstudio support (tested with Solaris 10 / x86 / sunstudio12 /
+		sunfreeware).
+	Code to support Windows, Mac OS X, QNX.
+	Support of older pcre versions (at least 4.5, maybe older too).
+	Added gsmartcontrol_root.sh script to easily run gsmartcontrol as root.
+	Improved .desktop files.
+	License for tests and examples is legally more correct now.
+	Minor bugfixes.
+
+Version 0.8.0rc3, released on 2008-10-08
+	Added support for udevless Linux distributions by providing a fallback
+		/proc/partitions-based drive detection method. The new method adds
+		support for Linux 2.4 and older systems. Thanks to Paul Marwick for
+		reporting and testing.
+	Fixed invalid error messages with directory-related operations.
+	Fixed invalid verbosity levels of console output of debug messages in
+		non-debug builds.
+	Improved rpm spec file - now supports building on OpenSUSE build
+		service with various distributions as targets.
+
+Version 0.8.0rc2, released on 2008-10-05
+	Fixed compilation under gcc 4.3. Thanks to Peter Linnell for reporting.
+	Removed test data (there's a lot of it and it's unnecessary).
+
+Version 0.8.0rc1, released on 2008-10-01
+	Initial public release.

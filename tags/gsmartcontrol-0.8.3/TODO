@@ -1,0 +1,138 @@
+
+
+GTKMM Notes:
+
+To transfer an ownership from your local code to a container, use
+Gtk::Button* pButton = Gtk::manage(new Gtk::Button("Test"));
+container->add(*pButton);
+(add() takes an object by reference).
+otherwise, you will need to delete() it.
+
+local scope destruction also works if using stack variables.
+{
+	Gtk::Button aButton;
+	// destroyed here
+}
+
+
+A treeview (also iconview, combobox) from glade comes
+with existing model, which should be unset.
+
+
+--------------------------------------------------------
+
+portability:
+win32 32-bit: int: 4, long: 4, pointer: 4.
+win32 64-bit: int: 4, long: 8, pointer: 8.
+
+sparc: same as win32 (what about OS?).
+
+
+
+--------------------------------------------------------
+
+TODO:
+
+
+Patch pangomm for Pango::strip_markup().
+
+Patch gtkmm, glibmm, pangomm for static win32 builds.
+
+No Gtk::AboutDialog::set_logo(NULL);
+
+
+libdebug:
+	per-channel disabling.
+	per-channel formatting.
+	all flags should be per-channel.
+	bug: if -q is passed, Execution log doesn't contain libdebug log. (requires per-channel status control).
+
+
+
+
+
+----------- Feature List ----------
+
++Autodetect available devices
+
++Select current device (from autodetected list; manually whitelist devices).
+
++Smartctl binary (text entries in Options - binary, default command line options).
++	Global command-line options for smartctl.
++	Command-line options per-device in settings (e.g. -d ata).
++	Search smartctl binary on startup (try to execute it with --version). If it's not there, alert the user.
+
++Indicate which of the devices has SMART supported / enabled.
++	Enable / disable smart on devices.
++		Indicate that this is until shutdown (but may be preserved on reboot).
++	Direct them to smartd / smartctl documentation for permanent enabling.
++		NOTE: SMART is sometimes preserved across power cycles.
+
++Enable / disable Automatic Offline Data Collection for devices. (-o on)
++	Show its status in the main window.
+
++Show identity information for device (aka short info), --info.
+
++Show all SMART information for device (--all), includes:
++	* Short info (--info)
++	* SMART DATA
++		* overall-health (-H, --health) - may check this automatically as well.
++		* General SMART Values, aka Capabilities (-c, --capabilities)
++		* Attributes (-A, --attributes). These need decoding.
++		* Error Log (-l error)
++		* Self-test log (-l selftest)
++		* Selective self-test log and settings
+		* SCT status and other stuff
+			Display temperature somewhere (use SCT or Attr 194 for this).
+			Which one is updated more frequently, SCT or attr 194?
++	* Ability to save this information to a file.
++	* On info window show: Ask to turn SMART on if it's disabled
+
++Program error reporting:
++	invalid smartmontools version.
++	cannot parse output - show log.
++	smartctl exited with error - look it up in error map.
+
+
+SCT Temperatures (do we use these?)
+	-l scttemp prints temperature and history.
+	-t scttempint,N[,p] (N - count, p - preserve across reset or not).
+		This configures temperature logging interval (1 min by default) and clears the history.
+
+
++Tests:
+	Ability to detect a testing drive on boot, show its info with testing tab.
+
+	Run one-time Immediate Offline test (-t offline).
+		Offline tests only update Attributes, and if errors are found they will
+		appear in SMART error log. Self-test logs are unaffected.
+		Abort (-X). Abort works with Offline only if there's
+		"Abort Offline collection upon new command" capability.
+		If the drive has "Suspend Offline collection upon new  command" capability,
+		immediate offline test may be tracked through --capabilities (not on mine!).
+		If it's "Abort Offline collection upon new command", then the test
+		will abort on --capabilities or --abort.
+
+
+Polling time
+The self-test routine recommended polling time shall be equal to the number of minutes that is the minimum
+recommended time before which the host should first poll for test completion status. Actual test time could
+be several times this value. Polling before this time could extend the self-test execution time or abort the test
+depending on the state of bit 2 of the off-line data capability bits.
+
+Autosave
+This command enables and disables the optional attribute autosave feature of the device. This command
+may either allow the device, after some vendor specified event, to save the device updated attribute values
+to non-volatile memory; or this command may cause the autosave feature to be disabled. The state of the
+attribute autosave feature (either enabled or disabled) shall be preserved by the device across power cycles.
+A value of zero written by the host into the device’s Sector Count register before issuing this command shall
+cause this feature to be disabled. Disabling this feature does not preclude the device from saving SMART
+data to non-volatile memory during some other normal operation such as during a power-on or power-off
+sequence or during an error recovery sequence.
+A value of F1h written by the host into the device’s Sector Count register before issuing this command shall
+cause this feature to be enabled. Any other meaning of this value or any other non-zero value written by the
+host into this register before issuing this command may differ from device to device. The meaning of any
+non-zero value written to this register at this time shall be preserved by the device across power cycles.
+
+
+
