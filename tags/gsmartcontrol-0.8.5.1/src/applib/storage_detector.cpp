@@ -225,6 +225,7 @@ namespace {
 		blacklist.push_back("/part[0-9]+$/");  // devfs had them
 		blacklist.push_back("/p[0-9]+$/");  // partitions are usually marked this way
 		blacklist.push_back("/md[0-9]*$/");  // linux software raid
+		blacklist.push_back("/dm-[0-9]*$/");  // linux device mapper
 
 
 		for (unsigned int i = 0; i < lines.size(); ++i) {
