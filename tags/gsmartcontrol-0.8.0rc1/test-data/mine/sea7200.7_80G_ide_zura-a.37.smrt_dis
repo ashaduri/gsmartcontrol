@@ -1,0 +1,100 @@
+smartctl version 5.37 [i686-suse-linux-gnu] Copyright (C) 2002-6 Bruce Allen
+Home page is http://smartmontools.sourceforge.net/
+
+=== START OF INFORMATION SECTION ===
+Model Family:     Seagate Barracuda 7200.7 and 7200.7 Plus family
+Device Model:     ST380011A
+Serial Number:    3JV9B86C
+Firmware Version: 3.06
+User Capacity:    80,026,361,856 bytes
+Device is:        In smartctl database [for details use: -P show]
+ATA Version is:   6
+ATA Standard is:  ATA/ATAPI-6 T13 1410D revision 2
+Local Time is:    Sat Jul 26 17:54:20 2008 GET
+SMART support is: Available - device has SMART capability.
+SMART support is: Disabled
+
+Warning! SMART Attribute Data Structure error: invalid SMART checksum.
+Warning! SMART Attribute Thresholds Structure error: invalid SMART checksum.
+=== START OF READ SMART DATA SECTION ===
+SMART overall-health self-assessment test result: PASSED
+
+General SMART Values:
+Offline data collection status:  (0x65)	Offline data collection activity
+					is in a Vendor Specific state
+.
+					Auto Offline Data Collection: Disabled.
+Total time to complete Offline 
+data collection: 		 (  57) seconds.
+Offline data collection
+capabilities: 			 (0x00) 	Offline data collection not supported.
+SMART capabilities:            (0x0075)	Saves SMART data before entering
+					power-saving mode.
+Error logging capability:        (0x31)	Error logging supported.
+					No General Purpose Logging support.
+
+SMART Attributes Data Structure revision number: 100
+Vendor Specific SMART Attributes with Thresholds:
+ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
+ 97 Unknown_Attribute       0x7600   000   105   000    Old_age   Offline  FAILING_NOW 52778437207040
+ 50 Unknown_Attribute       0x3000   000   056   000    Old_age   Offline  FAILING_NOW 106654657953792
+104 Unknown_Attribute       0x6f00   000   111   000    Old_age   Offline  FAILING_NOW 122047451639296
+109 Unknown_Attribute       0x2200   000   044   000    Old_age   Offline  FAILING_NOW 52777296343040
+ 44 Unknown_Attribute       0x2c00   000   034   000    Old_age   Offline  FAILING_NOW 37384133550592
+ 49 Unknown_Attribute       0x3000   000   034   000    Old_age   Offline  FAILING_NOW 102256108121088
+ 10 Spin_Retry_Count        0x2c00   000   091   000    Old_age   Offline  FAILING_NOW 48378679418112
+ 48 Unknown_Attribute       0x5d00   000   010   000    Old_age   Offline  FAILING_NOW 48378679418112
+ 48 Unknown_Attribute       0x5d00   000   010   000    Old_age   Offline  FAILING_NOW 48378679418112
+ 91 Unknown_Attribute       0x3100   000   049   000    Old_age   Offline  FAILING_NOW 37384922082304
+114 Unknown_Attribute       0x7300   000   099   000    Old_age   Offline  FAILING_NOW 59374366106112
+ 93 Unknown_Attribute       0x0a00   000   093   000    Old_age   Offline  FAILING_NOW 100056296327680
+ 49 Unknown_Attribute       0x3200   000   044   000    Old_age   Offline  FAILING_NOW 124245384387328
+105 Unknown_Attribute       0x2200   000   044   000    Old_age   Offline  FAILING_NOW 53876807971072
+ 48 Unknown_Attribute       0x2c00   000   051   000    Old_age   Offline  FAILING_NOW 102254749179136
+ 10 Spin_Retry_Count        0x2c00   000   091   000    Old_age   Offline  FAILING_NOW 48379367272704
+ 91 Unknown_Attribute       0x2200   000   113   000    Old_age   Offline  FAILING_NOW 48379082075136
+ 34 Unknown_Attribute       0x6800   000   034   000    Old_age   Offline  FAILING_NOW 106653198330880
+ 34 Unknown_Attribute       0x2c00   000   034   000    Old_age   Offline  FAILING_NOW 48379082073856
+ 34 Unknown_Attribute       0x6d00   000   034   000    Old_age   Offline  FAILING_NOW 102254749179136
+ 10 Spin_Retry_Count        0x2c00   000   091   000    Old_age   Offline  FAILING_NOW 48379384049920
+ 91 Unknown_Attribute       0x2200   000   115   000    Old_age   Offline  FAILING_NOW 48379082076928
+ 34 Unknown_Attribute       0x5c00   000   117   000    Old_age   Offline  FAILING_NOW 109951968096512
+ 48 Unknown_Attribute       0x5c00   000   117   000    Old_age   Offline  FAILING_NOW 111051479724288
+ 48 Unknown_Attribute       0x5c00   000   117   000    Old_age   Offline  FAILING_NOW 111051479724288
+ 50 Unknown_Attribute       0x5c00   000   117   000    Old_age   Offline  FAILING_NOW 109951968096512
+ 52 Unknown_Attribute       0x5c00   000   117   000    Old_age   Offline  FAILING_NOW 109951968096512
+ 98 Unknown_Attribute       0x2000   000   092   000    Old_age   Offline  FAILING_NOW 52777380246784
+101 Unknown_Attribute       0x3900   000   092   000    Old_age   Offline  FAILING_NOW 52777380246784
+100 Unknown_Attribute       0x3000   000   092   000    Old_age   Offline  FAILING_NOW 52777380246784
+
+Warning! SMART ATA Error Log Structure error: invalid SMART checksum.
+SMART Error Log Version: 50
+No Errors Logged
+
+Warning! SMART Self-Test Log Structure error: invalid SMART checksum.
+SMART Self-test log structure revision number 50
+Warning: ATA Specification requires self-test log structure revision number = 1
+Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA_of_first_error
+# 1  Reserved offline    Completed without error       00%        34         -
+# 2  Reserved offline    Completed without error       00%        34         -
+# 3  Vendor offline      Completed without error       00%        10         -
+# 4  Reserved offline    Completed without error       00%        34         -
+# 5  Reserved offline    Completed without error       00%        44         -
+# 6  Reserved offline    Completed without error       00%        49         -
+# 7  Reserved offline    Completed without error       00%        48         -
+# 8  Vendor offline      Completed without error       00%       109         -
+# 9  Reserved offline    Completed without error       00%        44         -
+#10  Reserved offline    Completed without error       00%        34         -
+#11  Reserved offline    Completed without error       00%        34         -
+#12  Vendor offline      Completed without error       00%        10         -
+#13  Vendor offline      Completed without error       00%        34         -
+#14  Vendor offline      Completed without error       00%       111         -
+#15  Vendor offline      Completed without error       00%       112         -
+#16  Vendor offline      Completed without error       00%       114         -
+#17  Reserved offline    Completed without error       00%        34         -
+#18  Vendor offline      Completed without error       00%       101         -
+#19  Reserved offline    Completed without error       00%       103         -
+#20  Vendor offline      Completed without error       00%       101         -
+#21  Reserved offline    Completed without error       00%        44         -
+
+Device does not support Selective Self Tests/Logging

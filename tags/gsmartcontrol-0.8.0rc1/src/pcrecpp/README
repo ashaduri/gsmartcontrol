@@ -1,0 +1,13 @@
+
+Part of PCRE library, version 7.7.
+
+pcrecpparg.h generated from pcrecpparg.h.in using:
+
+./configure \
+	--with-link-size=2 \
+	--with-match-limit=10000000 \
+	--enable-newline-is-lf \
+	--enable-utf8 \
+	--enable-unicode-properties
+
+The system was OpenSUSE 10.3, with gcc-4.2-24 and glibc-2.6.1-18.3.

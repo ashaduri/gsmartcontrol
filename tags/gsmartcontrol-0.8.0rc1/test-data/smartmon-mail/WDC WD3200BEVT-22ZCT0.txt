@@ -1,0 +1,194 @@
+smartctl version 5.37 [i686-pc-linux-gnu] Copyright (C) 2002-6 Bruce Allen
+Home page is http://smartmontools.sourceforge.net/
+
+=== START OF INFORMATION SECTION ===
+Device Model:     WDC WD3200BEVT-22ZCT0
+Serial Number:    <hidden>
+Firmware Version: 11.01A11
+User Capacity:    320,072,933,376 bytes
+Device is:        Not in smartctl database [for details use: -P showall]
+ATA Version is:   8
+ATA Standard is:  Exact ATA specification draft version not indicated
+Local Time is:    Sat Jun 14 18:16:14 2008 CEST
+SMART support is: Available - device has SMART capability.
+SMART support is: Enabled
+
+=== START OF READ SMART DATA SECTION ===
+SMART overall-health self-assessment test result: PASSED
+
+General SMART Values:
+Offline data collection status:  (0x04)	Offline data collection activity
+					was suspended by an interrupting command from host.
+					Auto Offline Data Collection: Disabled.
+Self-test execution status:      (   0)	The previous self-test routine completed
+					without error or no self-test has ever 
+					been run.
+Total time to complete Offline 
+data collection: 		 (10380) seconds.
+Offline data collection
+capabilities: 			 (0x7b) SMART execute Offline immediate.
+					Auto Offline data collection on/off support.
+					Suspend Offline collection upon new
+					command.
+					Offline surface scan supported.
+					Self-test supported.
+					Conveyance Self-test supported.
+					Selective Self-test supported.
+SMART capabilities:            (0x0003)	Saves SMART data before entering
+					power-saving mode.
+					Supports SMART auto save timer.
+Error logging capability:        (0x01)	Error logging supported.
+					General Purpose Logging supported.
+Short self-test routine 
+recommended polling time: 	 (   2) minutes.
+Extended self-test routine
+recommended polling time: 	 ( 122) minutes.
+Conveyance self-test routine
+recommended polling time: 	 (   5) minutes.
+
+SMART Attributes Data Structure revision number: 16
+Vendor Specific SMART Attributes with Thresholds:
+ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
+  1 Raw_Read_Error_Rate     0x002f   200   200   051    Pre-fail  Always       -       0
+  3 Spin_Up_Time            0x0027   186   186   021    Pre-fail  Always       -       1666
+  4 Start_Stop_Count        0x0032   100   100   000    Old_age   Always       -       65
+  5 Reallocated_Sector_Ct   0x0033   200   200   140    Pre-fail  Always       -       0
+  7 Seek_Error_Rate         0x002e   200   200   051    Old_age   Always       -       0
+  9 Power_On_Hours          0x0032   100   100   000    Old_age   Always       -       85
+ 10 Spin_Retry_Count        0x0033   100   253   051    Pre-fail  Always       -       0
+ 11 Calibration_Retry_Count 0x0032   100   253   000    Old_age   Always       -       0
+ 12 Power_Cycle_Count       0x0032   100   100   000    Old_age   Always       -       65
+192 Power-Off_Retract_Count 0x0032   200   200   000    Old_age   Always       -       41
+193 Load_Cycle_Count        0x0032   200   200   000    Old_age   Always       -       1419
+194 Temperature_Celsius     0x0022   096   088   000    Old_age   Always       -       51
+196 Reallocated_Event_Count 0x0032   200   200   000    Old_age   Always       -       0
+197 Current_Pending_Sector  0x0032   200   200   000    Old_age   Always       -       0
+198 Offline_Uncorrectable   0x0030   100   253   000    Old_age   Offline      -       0
+199 UDMA_CRC_Error_Count    0x0032   200   200   000    Old_age   Always       -       0
+200 Multi_Zone_Error_Rate   0x0009   200   200   051    Pre-fail  Offline      -       0
+
+SMART Error Log Version: 1
+ATA Error Count: 62 (device log contains only the most recent five errors)
+	CR = Command Register [HEX]
+	FR = Features Register [HEX]
+	SC = Sector Count Register [HEX]
+	SN = Sector Number Register [HEX]
+	CL = Cylinder Low Register [HEX]
+	CH = Cylinder High Register [HEX]
+	DH = Device/Head Register [HEX]
+	DC = Device Command Register [HEX]
+	ER = Error register [HEX]
+	ST = Status register [HEX]
+Powered_Up_Time is measured from power on, and printed as
+DDd+hh:mm:SS.sss where DD=days, hh=hours, mm=minutes,
+SS=sec, and sss=millisec. It "wraps" after 49.710 days.
+
+Error 62 occurred at disk power-on lifetime: 82 hours (3 days + 10 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 51 08 a1 3a 0e e0  Error: UNC 8 sectors at LBA = 0x000e3aa1 = 932513
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  25 00 08 a1 3a 0e 18 08      00:41:16.016  READ DMA EXT
+  27 00 00 00 00 00 00 08      00:41:16.016  READ NATIVE MAX ADDRESS EXT
+  ec 00 00 00 00 00 00 08      00:41:16.006  IDENTIFY DEVICE
+  ef 03 46 00 00 00 00 08      00:41:15.999  SET FEATURES [Set transfer mode]
+  27 00 00 00 00 00 00 08      00:41:15.999  READ NATIVE MAX ADDRESS EXT
+
+Error 61 occurred at disk power-on lifetime: 82 hours (3 days + 10 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 51 08 a1 3a 0e e0  Error: UNC 8 sectors at LBA = 0x000e3aa1 = 932513
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  25 00 08 a1 3a 0e 18 08      00:41:12.968  READ DMA EXT
+  27 00 00 00 00 00 00 08      00:41:12.968  READ NATIVE MAX ADDRESS EXT
+  ec 00 00 00 00 00 00 08      00:41:12.960  IDENTIFY DEVICE
+  ef 03 46 00 00 00 00 08      00:41:12.953  SET FEATURES [Set transfer mode]
+  27 00 00 00 00 00 00 08      00:41:12.953  READ NATIVE MAX ADDRESS EXT
+
+Error 60 occurred at disk power-on lifetime: 82 hours (3 days + 10 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 51 08 a1 3a 0e e0  Error: UNC 8 sectors at LBA = 0x000e3aa1 = 932513
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  25 00 08 a1 3a 0e 18 08      00:41:09.909  READ DMA EXT
+  27 00 00 00 00 00 00 08      00:41:09.909  READ NATIVE MAX ADDRESS EXT
+  ec 00 00 00 00 00 00 08      00:41:09.900  IDENTIFY DEVICE
+  ef 03 46 00 00 00 00 08      00:41:09.894  SET FEATURES [Set transfer mode]
+  27 00 00 00 00 00 00 08      00:41:09.894  READ NATIVE MAX ADDRESS EXT
+
+Error 59 occurred at disk power-on lifetime: 82 hours (3 days + 10 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 51 08 a1 3a 0e e0  Error: UNC 8 sectors at LBA = 0x000e3aa1 = 932513
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  25 00 08 a1 3a 0e 18 08      00:41:06.849  READ DMA EXT
+  27 00 00 00 00 00 00 08      00:41:06.849  READ NATIVE MAX ADDRESS EXT
+  ec 00 00 00 00 00 00 08      00:41:06.840  IDENTIFY DEVICE
+  ef 03 46 00 00 00 00 08      00:41:06.833  SET FEATURES [Set transfer mode]
+  27 00 00 00 00 00 00 08      00:41:06.833  READ NATIVE MAX ADDRESS EXT
+
+Error 58 occurred at disk power-on lifetime: 82 hours (3 days + 10 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER ST SC SN CL CH DH
+  -- -- -- -- -- -- --
+  40 51 08 a1 3a 0e e0  Error: UNC 8 sectors at LBA = 0x000e3aa1 = 932513
+
+  Commands leading to the command that caused the error were:
+  CR FR SC SN CL CH DH DC   Powered_Up_Time  Command/Feature_Name
+  -- -- -- -- -- -- -- --  ----------------  --------------------
+  25 00 08 a1 3a 0e 18 08      00:41:03.798  READ DMA EXT
+  27 00 00 00 00 00 00 08      00:41:03.798  READ NATIVE MAX ADDRESS EXT
+  ec 00 00 00 00 00 00 08      00:41:03.788  IDENTIFY DEVICE
+  ef 03 46 00 00 00 00 08      00:41:03.782  SET FEATURES [Set transfer mode]
+  27 00 00 00 00 00 00 08      00:41:03.782  READ NATIVE MAX ADDRESS EXT
+
+SMART Self-test log structure revision number 1
+Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA_of_first_error
+# 1  Short offline       Completed without error       00%        85         -
+# 2  Extended offline    Completed without error       00%        85         -
+# 3  Selective offline   Completed without error       00%        82         -
+# 4  Selective offline   Completed: read failure       90%        81         403585703
+# 5  Short offline       Completed: read failure       30%        81         403585703
+# 6  Short offline       Completed: read failure       90%        81         403585703
+# 7  Short offline       Completed: read failure       90%        79         403585703
+# 8  Short offline       Completed: read failure       90%        77         403585703
+# 9  Short offline       Completed: read failure       90%        77         403585703
+#10  Short offline       Completed without error       00%        11         -
+
+SMART Selective self-test log data structure revision number 1
+ SPAN    MIN_LBA    MAX_LBA  CURRENT_TEST_STATUS
+    1  403585700  403585705  Not_testing
+    2          0          0  Not_testing
+    3          0          0  Not_testing
+    4          0          0  Not_testing
+    5          0          0  Not_testing
+Selective self-test flags (0x0):
+  After scanning selected spans, do NOT read-scan remainder of disk.
+If Selective self-test is pending on power-up, resume after 0 minute delay.
+
