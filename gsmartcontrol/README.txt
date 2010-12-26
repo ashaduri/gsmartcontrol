@@ -18,26 +18,27 @@ http://gsmartcontrol.berlios.de
 
 Features
 
-Automatically report and highlight any abnormal SMART information.
+* automatically reports and highlights any anomalies;
 
-Ability to enable / disable SMART.
+* allows enabling/disabling SMART;
 
-Ability to enable / disable Automatic Offline Data Collection - A short
+* allows enabling/disabling Automatic Offline Data Collection - a short
 self-check that the drive will perform automatically every four hours with no
-impact on performance.
+impact on performance;
 
-Ability to set global and per-drive options for smartctl.
+* supports configuration of global and per-drive options for smartctl;
 
-Display drive identity, capabilities, attributes, error and self-test logs.
+* displays drive identity information, capabilities, attributes, and
+self-test/error logs;
 
-Perform SMART self-tests.
+* performs SMART self-tests;
 
-Ability to load smartctl output as a "virtual" device, which acts just like a
-real (read-only) device.
+* can read in smartctl output from a saved file, interpreting it as a
+read-only virtual device;
 
-Works on most smartctl-supported operating systems.
+* works on most smartctl-supported operating systems;
 
-Extensive help information.
+* has extensive help information.
 
 
 
@@ -327,9 +328,8 @@ terminal emulator (e.g., xterm, konsole or gnome-terminal):
 
 smartctl -a /dev/sda
 
-Note: If using official Windows packages, smartctl.exe doesn't provide any
-output. Use smartctl_console.exe instead. The devices name should be /dev/pd1
-for the second physical drive, etc... .
+Note: If using Windows, the device name should be /dev/pd1 for the second
+physical drive, etc... .
 
 If you still think it's a GSmartControl issue, please collect the following
 information about your system. Without it, it may be very hard or impossible
@@ -372,7 +372,7 @@ For license information, see LICENSE_gsmartcontrol.txt file.
 
 You may notice that GSmartControl is not licensed under "GNU GPL version X or
 later", but under "GNU GPL version X and Y". I firmly believe that it's unwise
-to license a piece of code under non-existant licenses, whatever anyone else
+to license a piece of code under non-existent licenses, whatever anyone else
 might say. The reason for this is that one simply CANNOT know that, say, in 20
 years FSF won't be bought by some corporation who will release GPL version Z
 which will completely reverse the reasons GPL was created for.

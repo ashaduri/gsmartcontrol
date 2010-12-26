@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
@@ -28,13 +28,12 @@ class SmartctlParser {
 		bool parse_full(const std::string& s);
 
 
-		// supply output of "smartctl --version" here.
-		// returns empty string on failure.
-		static std::string parse_version(const std::string& s);
+		// supply any output of smartctl here.
+		static bool parse_version(const std::string& s, std::string& version, std::string& version_full);
 
 
 		// check that the version of smartctl output can be parsed with this parser.
-		static bool check_version(const std::string& version_str);
+		static bool check_version(const std::string& version_str, const std::string& version_full_str);
 
 
 		// convert e.g. "1,000,204,886,016 bytes" to 1.00 TiB [931.51 GB, 1000204886016 bytes]

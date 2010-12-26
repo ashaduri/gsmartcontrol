@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
@@ -76,7 +76,7 @@ namespace {
 				label->set_flags(label->get_flags() & ~Gtk::CAN_FOCUS);
 
 				std::string fg;
-				if (app_property_get_label_hilight_color(iter->property->warning, fg))
+				if (app_property_get_label_highlight_color(iter->property->warning, fg))
 					label->set_markup("<span color=\"" + fg + "\">" + label_text + "</span>");
 				vbox->pack_start(*label, false, false);
 
@@ -100,7 +100,7 @@ namespace {
 		Gtk::CellRendererText* crt = hz::down_cast<Gtk::CellRendererText*>(cr);
 		if (crt) {
 			std::string fg, bg;
-			if (app_property_get_row_hilight_colors(p->warning, fg, bg)) {
+			if (app_property_get_row_highlight_colors(p->warning, fg, bg)) {
 				// Note: property_cell_background makes horizontal tree lines disappear around it,
 				// but property_background doesn't play nice with sorted column color.
 				crt->property_cell_background() = bg;
@@ -115,7 +115,7 @@ namespace {
 	}
 
 
-	inline void app_hilight_tab_label(Gtk::Widget* label_widget,
+	inline void app_highlight_tab_label(Gtk::Widget* label_widget,
 			StorageProperty::warning_t warning, const Glib::ustring& original_label)
 	{
 		Gtk::Label* label = hz::down_cast<Gtk::Label*>(label_widget);
@@ -128,7 +128,7 @@ namespace {
 		}
 
 		std::string fg;
-		if (app_property_get_label_hilight_color(warning, fg))
+		if (app_property_get_label_highlight_color(warning, fg))
 			label->set_markup_with_mnemonic("<span color=\"" + fg + "\">" + original_label + "</span>");
 	}
 
@@ -358,8 +358,10 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
 			if (iter->section == StorageProperty::section_info) {
-				if (iter->generic_name == "smartctl_version") {
+				if (iter->generic_name == "smartctl_version_full") {
 					version_props.push_back(*iter);
+				} else if (iter->generic_name == "smartctl_version") {
+					continue;  // we use the full version string instead.
 				} else {
 					id_props.push_back(*iter);
 				}
@@ -411,7 +413,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			value->set_markup(Glib::Markup::escape_text(iter->format_value()));
 
 			std::string fg;
-			if (app_property_get_label_hilight_color(iter->warning, fg)) {
+			if (app_property_get_label_highlight_color(iter->warning, fg)) {
 				name->set_markup("<span color=\"" + fg + "\">"+ name->get_label() + "</span>");
 				value->set_markup("<span color=\"" + fg + "\">"+ value->get_label() + "</span>");
 			}
@@ -434,7 +436,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		identity_table->show_all();
 
 		// tab label
-		app_hilight_tab_label(lookup_widget("identity_tab_label"), max_warning, tab_identity_name);
+		app_highlight_tab_label(lookup_widget("identity_tab_label"), max_warning, tab_identity_name);
 
 	} while (false);
 
@@ -529,7 +531,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		}
 
 		// tab label
-		app_hilight_tab_label(lookup_widget("capabilities_tab_label"), max_warning, tab_capabilities_name);
+		app_highlight_tab_label(lookup_widget("capabilities_tab_label"), max_warning, tab_capabilities_name);
 
 	} while (false);
 
@@ -678,7 +680,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		app_set_top_labels(label_vbox, label_strings);
 
 		// tab label
-		app_hilight_tab_label(lookup_widget("attributes_tab_label"), max_warning, tab_attributes_name);
+		app_highlight_tab_label(lookup_widget("attributes_tab_label"), max_warning, tab_attributes_name);
 
 	} while (false);
 
@@ -816,7 +818,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		app_set_top_labels(label_vbox, label_strings);
 
 		// tab label
-		app_hilight_tab_label(lookup_widget("error_log_tab_label"), max_warning, tab_error_log_name);
+		app_highlight_tab_label(lookup_widget("error_log_tab_label"), max_warning, tab_error_log_name);
 
 	} while (false);
 
@@ -929,7 +931,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		app_set_top_labels(label_vbox, label_strings);
 
 		// tab label
-		app_hilight_tab_label(lookup_widget("selftest_log_tab_label"), max_warning, tab_selftest_log_name);
+		app_highlight_tab_label(lookup_widget("selftest_log_tab_label"), max_warning, tab_selftest_log_name);
 
 	} while (false);
 
@@ -1087,7 +1089,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_hilight_tab_label(lookup_widget("identity_tab_label"), StorageProperty::warning_none, tab_identity_name);
+		app_highlight_tab_label(lookup_widget("identity_tab_label"), StorageProperty::warning_none, tab_identity_name);
 	}
 
 	{
@@ -1103,7 +1105,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_hilight_tab_label(lookup_widget("capabilities_tab_label"), StorageProperty::warning_none, tab_capabilities_name);
+		app_highlight_tab_label(lookup_widget("capabilities_tab_label"), StorageProperty::warning_none, tab_capabilities_name);
 	}
 
 	{
@@ -1120,7 +1122,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_hilight_tab_label(lookup_widget("attributes_tab_label"), StorageProperty::warning_none, tab_attributes_name);
+		app_highlight_tab_label(lookup_widget("attributes_tab_label"), StorageProperty::warning_none, tab_attributes_name);
 	}
 
 	{
@@ -1144,7 +1146,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_hilight_tab_label(lookup_widget("error_log_tab_label"), StorageProperty::warning_none, tab_error_log_name);
+		app_highlight_tab_label(lookup_widget("error_log_tab_label"), StorageProperty::warning_none, tab_error_log_name);
 	}
 
 	{
@@ -1161,7 +1163,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_hilight_tab_label(lookup_widget("selftest_log_tab_label"), StorageProperty::warning_none, tab_selftest_log_name);
+		app_highlight_tab_label(lookup_widget("selftest_log_tab_label"), StorageProperty::warning_none, tab_selftest_log_name);
 	}
 
 	{
@@ -1217,7 +1219,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 
 
 		// tab label
-		app_hilight_tab_label(lookup_widget("test_tab_label"), StorageProperty::warning_none, tab_test_name);
+		app_highlight_tab_label(lookup_widget("test_tab_label"), StorageProperty::warning_none, tab_test_name);
 	}
 
 }

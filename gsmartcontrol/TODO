@@ -48,11 +48,21 @@ libdebug:
 	bug: if -q is passed, Execution log doesn't contain libdebug log. (requires per-channel status control).
 
 
-Move attributes as a second tab
 
-INCLUDE SMARTMONTOOLS LICENSE!!
+'-l sataphy' -> SATA Phy event counters: Non-SMART feature, useful to detect SATA cabling problems.
 
-Update copyright years.
+'-l xerror' -> Extended Comprehensive Error log: An multi-sector and
+LBA48 capable version of '-l error'. Output is similar, except more
+entries can exists and the high bytes of the registers are also printed.
+Some newer drives (Samsung) only write to this log.
+
+'-l scttemp' -> SCT Temperature history table. See below.
+
+'-l xselftest' -> Extended Self Test Log: An multi-sector and LBA48
+capable version of '-l selftest'. Output will be similar, except more
+entries can exists and the LBA values can be somewhat longer.
+
+
 
 
 ----------- Feature List ----------
@@ -88,7 +98,6 @@ Update copyright years.
 +		* Selective self-test log and settings
 		* SCT status and other stuff
 			Display temperature somewhere (use SCT or Attr 194 for this).
-			Which one is updated more frequently, SCT or attr 194?
 +	* Ability to save this information to a file.
 +	* On info window show: Ask to turn SMART on if it's disabled
 
@@ -98,7 +107,7 @@ Update copyright years.
 +	smartctl exited with error - look it up in error map.
 
 
-SCT Temperatures (do we use these?)
+SCT Temperatures
 	-l scttemp prints temperature and history.
 	-t scttempint,N[,p] (N - count, p - preserve across reset or not).
 		This configures temperature logging interval (1 min by default) and clears the history.

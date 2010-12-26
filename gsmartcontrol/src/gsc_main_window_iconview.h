@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
@@ -194,7 +194,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 					gtk_icon_view_set_cursor(GTK_ICON_VIEW(this->gobj()), tpath.gobj(), cell->gobj(), false);
 				}
 #endif
-				this->select_path(tpath);  // hilight it
+				this->select_path(tpath);  // highlight it
 			}
 
 			++num_icons;

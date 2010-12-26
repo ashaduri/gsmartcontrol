@@ -1,7 +1,7 @@
 /**************************************************************************
  Copyright:
-      (C) 2003 - 2008  Irakli Elizbarashvili <ielizbar 'at' gmail.com>
-      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2003 - 2009  Irakli Elizbarashvili <ielizbar 'at' gmail.com>
+      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
 
  License:
 

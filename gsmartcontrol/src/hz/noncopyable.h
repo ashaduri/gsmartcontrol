@@ -1,7 +1,7 @@
 /**************************************************************************
  Copyright:
-      (C) 1999 - 2008  Beman Dawes
-      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 1999 - 2009  Beman Dawes
+      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_boost_1_0.txt file
 ***************************************************************************/
 

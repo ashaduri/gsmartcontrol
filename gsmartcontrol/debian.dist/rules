@@ -25,8 +25,12 @@ endif
 ifneq "$(wildcard /usr/share/misc/config.guess)" ""
 	cp -f /usr/share/misc/config.guess config.guess
 endif
-	./configure --enable-optimize-options=auto --host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs"
+	./configure --host=$(DEB_HOST_GNU_TYPE) \
+		--build=$(DEB_BUILD_GNU_TYPE) --prefix=/usr --mandir=\$${prefix}/share/man \
+		--infodir=\$${prefix}/share/info CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs"
 
+# Add --enable-optimize-options=auto to configure line
+# for optimized build (may not work on older gcc versions).
 
 build: build-stamp
 
@@ -42,7 +46,7 @@ build-stamp:  config.status
 clean:
 	dh_testdir
 	dh_testroot
-	rm -f build-stamp 
+	rm -f build-stamp
 
 	# Add here commands to clean up after the build process.
 	-$(MAKE) clean
@@ -72,7 +76,7 @@ binary-arch: build install
 #	dh_installexamples
 #	dh_install
 	dh_installmenu
-#	dh_installdebconf	
+#	dh_installdebconf
 #	dh_installlogrotate
 #	dh_installemacsen
 #	dh_installpam
@@ -95,4 +99,4 @@ binary-arch: build install
 	dh_builddeb
 
 binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install 
+.PHONY: build clean binary-indep binary-arch binary install

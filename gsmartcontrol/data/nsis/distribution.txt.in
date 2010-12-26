@@ -23,6 +23,10 @@ binary was compiled for 32-bit Windows, and should work on both 32-bit and
 
 * PCRE (http://www.pcre.org/) dll.
 
-* Smartctl binaries - smartctl-nc.exe (compiled without console output),
-smartctl.exe (compiled with console output), version 5.38.
-http://smartmontools.sf.net/ .
+* Smartctl binaries (from smartmontools 5.38, http://smartmontools.sf.net/) -
+smartctl-nc.exe (compiled without console output), smartctl.exe (compiled with
+console output).
+
+
+The combined distribution is multi-licensed under GNU GPL versions 2 and 3.
+See LICENSE_gpl2.txt and LICENSE_gpl3.txt for details.

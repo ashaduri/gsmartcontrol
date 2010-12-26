@@ -1,7 +1,7 @@
 /**************************************************************************
  Copyright:
       (C) 1989, 1993, 1994  The Regents of the University of California
-      (C) 2008  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_bsd-ucb.txt file
 ***************************************************************************/
 

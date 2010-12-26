@@ -22,7 +22,7 @@
   <kdevautoproject>
     <general>
       <activetarget>src/gsmartcontrol</activetarget>
-      <useconfiguration>win32</useconfiguration>
+      <useconfiguration>debuggy</useconfiguration>
     </general>
     <run>
       <mainprogram>/10/devel/projects/gsmartcontrol/current/gsmartcontrol/debuggy</mainprogram>
