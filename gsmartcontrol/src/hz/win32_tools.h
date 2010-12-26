@@ -1,8 +1,13 @@
 /**************************************************************************
  Copyright:
-      (C) 2003 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2003 - 2010  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_WIN32_TOOLS_H
 #define HZ_WIN32_TOOLS_H
@@ -26,102 +31,119 @@
 
 
 
+/**
+\file
+\brief Win32-specific API functions.
+\note The public API works with UTF-8 strings, unless noted otherwise.
+*/
+
+
+
 namespace hz {
 
 
-// Note: The public API works with UTF-8 strings, unless noted otherwise.
-
-
-// Get a list of drives available for the user. The drives are in
-// "C:\" format (uppercase, utf-8).
+/// Get a list of drives available for the user. The drives are in
+/// "C:\" format (uppercase, utf-8).
 template<class Container> inline
 bool win32_get_drive_list(Container& put_here);
 
 
-// Get windows "special" folder by CSIDL (CSIDL_APPDATA, for example).
-// See http://msdn.microsoft.com/en-us/library/bb762494(VS.85).aspx
-// for details.
+/// Get windows "special" folder by CSIDL (CSIDL_APPDATA, for example).
+/// See http://msdn.microsoft.com/en-us/library/bb762494(VS.85).aspx
+/// for details.
 inline std::string win32_get_special_folder(int csidl, bool auto_create = true);
 
 
-// Usually C:\Windows or something like that.
+/// Usually C:\\Windows or something like that.
 inline std::string win32_get_windows_directory();
 
 
-// base may be e.g. HKEY_CURRENT_USER.
-// Note that this works only with REG_SZ (string) types,
-// returning their value as utf-8. False is returned for all other types.
+/// Get registry value as a string.
+/// Base may be e.g. HKEY_CURRENT_USER.
+/// Note that this works only with REG_SZ (string) types,
+/// returning their value as utf-8. False is returned for all other types.
 inline bool win32_get_registry_value_string(HKEY base,
 		const std::string& keydir, const std::string& key, std::string& put_here);
 
 
-// Note that this sets the type as REG_SZ (string). The accepted utf-8
-// value is converted to utf-16 for storage.
+/// Set registry value as a string.
+/// Note that this sets the type as REG_SZ (string). The accepted utf-8
+/// value is converted to utf-16 for storage.
 inline bool win32_set_registry_value_string(HKEY base,
 		const std::string& keydir, const std::string& key, const std::string& value);
 
 
-// Redirect stdout and stderr to console window (if open).
-inline bool win32_redirect_stdio_to_console();
+/// Redirect stdout and stderr to console window (if open). Requires winxp (at compile-time).
+/// \param create_if_none if true, create a new console if none was found and attach to it.
+/// \return false if failed or unsupported.
+inline bool win32_redirect_stdio_to_console(bool create_if_none = false);
 
 
-// Redirect stdout to stdout.txt and stderr to stderr.txt.
-// Call once.
+/// Redirect stdout and stderr to console window (if open). Requires winxp (at compile-time).
+/// \param create_if_none if true, create a new console if none was found and attach to it.
+/// \param console_created Set to true if a new console was created due to \c create_if_none.
+/// \return false if failed or unsupported.
+inline bool win32_redirect_stdio_to_console(bool create_if_none, bool& console_created);
+
+
+/// Redirect stdout to stdout.txt and stderr to stderr.txt.
+/// Call once.
+/// \return true on success, false on failure.
 inline bool win32_redirect_stdio_to_files(std::string stdout_file = "", std::string stderr_file = "");
 
 
-// Convert a string in user-specified encoding to utf-16 string (00-terminated array of wchar_t).
-// wchar_t is 2 bytes on windows, thus holding utf-16 code unit.
-// Caller must delete[] the returned value.
-// returned_buf_size (if not 0) will be set to the size of returned buffer
-// (in wchar_t; including terminating 00). The byte size will be (returned_buf_size*2).
+/// Convert a string in user-specified encoding to utf-16 string (00-terminated array of wchar_t).
+/// wchar_t is 2 bytes on windows, thus holding utf-16 code unit.
+/// Caller must delete[] the returned value.
+/// returned_buf_size (if not 0) will be set to the size of returned buffer
+/// (in wchar_t; including terminating 00). The byte size will be (returned_buf_size*2).
 inline wchar_t* win32_user_to_utf16(UINT from_cp, const char* from_str, unsigned int* returned_buf_size = 0);
 
 
-// Convert utf-16 string (represented as 0-terminated array of wchar_t, where
-// wchar_t is 2 bytes (on windows)) to a string in user-specified encoding.
-// Caller must delete[] the returned value.
-// The size of the returned buffer is std::strlen(buf) + 1.
-// returned_buf_size (if not 0) will be set to the size of returned buffer
-// (in char; including terminating 0).
+/// Convert utf-16 string (represented as 0-terminated array of wchar_t, where
+/// wchar_t is 2 bytes (on windows)) to a string in user-specified encoding.
+/// Caller must delete[] the returned value.
+/// The size of the returned buffer is std::strlen(buf) + 1.
+/// returned_buf_size (if not 0) will be set to the size of returned buffer
+/// (in char; including terminating 0).
 inline char* win32_utf16_to_user(UINT to_cp, const wchar_t* utf16_str, unsigned int* returned_buf_size = 0);
 
 
-// Convert utf-8 string to utf-16 string. See win32_user_to_utf16() for details.
+/// Convert utf-8 string to utf-16 string. See win32_user_to_utf16() for details.
 inline wchar_t* win32_utf8_to_utf16(const char* utf8_str, unsigned int* returned_buf_size = 0);
 
 
-// Convert utf-16 string to utf-8 string. See win32_utf16_to_user() for details.
+/// Convert utf-16 string to utf-8 string. See win32_utf16_to_user() for details.
 inline char* win32_utf16_to_utf8(const wchar_t* utf16_str, unsigned int* returned_buf_size = 0);
 
 
-// Same as win32_utf16_to_utf8(), but safer since it never returns 0 (it returns "" instead).
-// Note that we don't provide non-utf8 versions of this function, because the other charsets
-// may actually be multi-byte (std::string can't hold their terminating 0 properly).
-// Also, we don't provide std::wstring versions for utf16, because they are not always
-// supported by non-MS compilers (mingw, for example).
+/// Same as win32_utf16_to_utf8(), but safer since it never returns 0 (it returns "" instead).
+/// Note that we don't provide non-utf8 versions of this function, because the other charsets
+/// may actually be multi-byte (std::string can't hold their terminating 0 properly).
+/// Also, we don't provide std::wstring versions for utf16, because they are not always
+/// supported by non-MS compilers (mingw, for example).
 inline std::string win32_utf16_to_utf8_string(const wchar_t* utf16_str);
 
 
-// Convert current locale-encoded string to utf-16 string. See win32_user_to_utf16() for details.
-// Use CP_ACP is system default windows ANSI codepage.
-// Use CP_THREAD_ACP is for current thread. Think before you choose. :)
+/// Convert current locale-encoded string to utf-16 string. See win32_user_to_utf16() for details.
+/// Use CP_ACP is system default windows ANSI codepage.
+/// Use CP_THREAD_ACP is for current thread. Think before you choose. :)
 inline wchar_t* win32_locale_to_utf16(const char* loc_str, unsigned int* returned_buf_size = 0,
 		bool use_thread_locale = false);
 
 
-// Convert utf-16 string to locale-encoded string. See win32_utf16_to_user() for details.
+/// Convert utf-16 string to locale-encoded string. See win32_utf16_to_user() for details.
 inline char* win32_utf16_to_locale(const wchar_t* utf16_str, unsigned int* returned_buf_size = 0,
 		bool use_thread_locale = false);
 
 
-// Convert current locale-encoded string to utf-8 string. The returned value must be freed by caller.
+/// Convert current locale-encoded string to utf-8 string. The returned value must be freed by caller.
 inline char* win32_locale_to_utf8(const char* loc_str, unsigned int* returned_buf_size = 0,
 		bool use_thread_locale = false);
 
 
-// Convert utf-8 string to locale-encoded string. See win32_utf8_to_user() for details.
-inline char* win32_utf8_to_locale(const wchar_t* utf8_str, unsigned int* returned_buf_size = 0,
+/// Convert utf-8 string to locale-encoded string. See win32_utf8_to_user() for details.
+inline char* win32_utf8_to_locale(const char* utf8_str, unsigned int* returned_buf_size = 0,
 		bool use_thread_locale = false);
 
 
@@ -329,15 +351,35 @@ inline bool win32_set_registry_value_string(HKEY base,
 
 
 
+// Redirect stdout and stderr to console window (if open).
+inline bool win32_redirect_stdio_to_console(bool create_if_none)
+{
+	bool console_created = false;
+	return win32_redirect_stdio_to_console(create_if_none, console_created);
+}
+
+
 
 // Redirect stdout and stderr to console window (if open).
-inline bool win32_redirect_stdio_to_console()
+inline bool win32_redirect_stdio_to_console(bool create_if_none, bool& console_created)
 {
+	console_created = false;
+
 	// AttachConsole is since winxp (note that mingw and MS headers say win2k,
-	// which is incorrect).
+	// which is incorrect; msdn is correct).
 #if defined WINVER && WINVER >= 0x0501
 	if (!AttachConsole(ATTACH_PARENT_PROCESS)) {
-		return false;
+		if (create_if_none) {
+			// Even though msdn says that stdio is redirected to the new console,
+			// it isn't so and we must do it manually.
+			if (!AllocConsole()) {
+				return false;
+			} else {
+				console_created = true;
+			}
+		} else {
+			return false;
+		}
 	}
 
 	// redirect unbuffered STDOUT to the console
@@ -384,7 +426,7 @@ namespace internal {
 
 
 
-	// returns full path (in utf-16) to the output filename (in utf-8)
+	/// Returns full path (in utf-16) to the output filename (in utf-8)
 	inline wchar_t* win32_get_std_output_file(const char* base)
 	{
 		if (!base)
@@ -417,8 +459,8 @@ namespace internal {
 
 
 
-	// Remove the output files if there was no output written.
-	// This is an atexit() callback.
+	/// Remove the output files if there was no output written.
+	/// This is an atexit() callback.
 	extern "C" inline void win32_redirect_stdio_to_files_cleanup()
 	{
 		// Flush the output in case anything is queued
@@ -688,3 +730,5 @@ inline char* win32_utf8_to_locale(const char* utf8_str, unsigned int* returned_b
 #endif  // win32
 
 #endif  // hg
+
+/// @}

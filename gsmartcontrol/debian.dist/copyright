@@ -5,7 +5,7 @@ It was downloaded from <http://gsmartcontrol.berlios.de/>
 
 Copyright:
 
-    Copyright (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
+    Copyright (C) 2008 - 2010  Alexander Shaduri <ashaduri 'at' gmail.com>
 
 License:
 
@@ -27,6 +27,6 @@ On Debian systems, the complete text of the GNU General
 Public Licenses can be found in `/usr/share/common-licenses/GPL-2' and
 `/usr/share/common-licenses/GPL-3'.
 
-The Debian packaging is (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com> and
+The Debian packaging is (C) 2008 - 2010  Alexander Shaduri <ashaduri 'at' gmail.com> and
 is licensed under the GPLv2 and GPLv3, see above.
 

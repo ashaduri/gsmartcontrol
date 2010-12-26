@@ -1,11 +1,12 @@
 /**************************************************************************
  Copyright:
-      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2010  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
-#include <clocale>  // setlocale, localeconv
+#include <clocale>  // localeconv
 
+#include "hz/locale_tools.h"  // ScopedCLocale, locale_c_get().
 #include "hz/cstdint.h"  // uint64_t
 #include "hz/string_algo.h"  // string_*
 #include "hz/string_num.h"  // string_is_numeric, number_to_string
@@ -285,20 +286,15 @@ std::string SmartctlParser::parse_byte_size(const std::string& str, uint64_t& by
 	// if current locale is C, then probably we didn't change it at application
 	// startup, so set it now (temporarily). Otherwise, just use the current locale's
 	// thousands separator.
+	{
+		std::string old_locale = hz::locale_c_get();
+		hz::ScopedCLocale loc("", old_locale == "C");  // set system locale if the current one is C
 
-	std::string old_locale = std::setlocale(LC_ALL, NULL);
-	bool locale_is_c = (old_locale == "C");
-	if (locale_is_c) {
-		std::setlocale(LC_ALL, "");  // set system locale
-	}
-	struct lconv* lc = std::localeconv();
-	if (lc && lc->thousands_sep && *(lc->thousands_sep)) {
-		to_replace.push_back(lc->thousands_sep);
-	}
-
-	if (locale_is_c) {
-		std::setlocale(LC_ALL, "C");  // restore it
-	}
+		struct lconv* lc = std::localeconv();
+		if (lc && lc->thousands_sep && *(lc->thousands_sep)) {
+			to_replace.push_back(lc->thousands_sep);
+		}
+	}  // the locale is restored here
 #endif
 
 	to_replace.push_back("bytes");

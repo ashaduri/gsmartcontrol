@@ -1,7 +1,7 @@
 /**************************************************************************
  Copyright:
-      (C) 2003 - 2009  Irakli Elizbarashvili <ielizbar 'at' gmail.com>
-      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2003 - 2010  Irakli Elizbarashvili <ielizbar 'at' gmail.com>
+      (C) 2008 - 2010  Alexander Shaduri <ashaduri 'at' gmail.com>
 
  License:
 
@@ -31,7 +31,7 @@
 #include <istream>  // std::istream definition (calling bad() member)
 #include <ostream>  // std::ostream definition (calling bad() member)
 #include <ios>  // std::ios::*
-#include <locale>  // std::locale
+#include <locale>  // std::locale::classic()
 
 #include "hz/cstdint.h"
 #include "hz/hz_config.h"  // DISABLE_RTTI, RMN_* (global_macros.h)

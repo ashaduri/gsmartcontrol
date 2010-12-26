@@ -1,12 +1,10 @@
 /**************************************************************************
  Copyright:
-      (C) 2008 - 2009  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2010  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
 #include <string>
-#include <locale>  // std::locale
-#include <clocale>  // std::setlocale
 // #include <locale.h>  // _configthreadlocale (win32)
 #include <stdexcept>  // std::runtime_error
 #include <cstdio>  // std::printf
@@ -29,6 +27,7 @@
 #include "hz/data_file.h"  // data_file_add_search_directory
 #include "hz/fs_tools.h"  // get_user_config_dir()
 #include "hz/fs_path.h"  // FsPath
+#include "hz/locale_tools.h"  // locale_c*
 #include "hz/string_algo.h"  // string_join()
 #include "hz/win32_tools.h"  // win32_get_registry_value_string()
 
@@ -194,7 +193,7 @@ struct CmdArgs {
 		arg_add_device(NULL)
 	{ }
 
-	gboolean arg_locale;  // if false, disable locale
+	gboolean arg_locale;  // if false, disable using system locale
 	gboolean arg_version;  // if true, show version and exit
 	gboolean arg_scan;  // if false, don't scan the system for drives on startup
 	gboolean arg_hide_tabs;  // if true, hide additional info tabs when smart is disabled. false may help debugging.
@@ -208,7 +207,7 @@ inline bool parse_cmdline_args(CmdArgs& args, int& argc, char**& argv)
 {
 	static const GOptionEntry arg_entries[] =
 	{
-		{ "no-locale", 'l', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_locale), "Disable locale", NULL },
+		{ "no-locale", 'l', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_locale), "Don't use system locale", NULL },
 		{ "version", 'V', 0, G_OPTION_ARG_NONE, &(args.arg_version), "Display version information", NULL },
 		{ "no-scan", '\0', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_scan), "Don't scan devices on startup", NULL },
 		{ "no-hide-tabs", '\0', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_hide_tabs), "Don't hide non-identity tabs when SMART is disabled. Useful for debugging.", NULL },
@@ -219,11 +218,16 @@ inline bool parse_cmdline_args(CmdArgs& args, int& argc, char**& argv)
 
 	GError* error = 0;
 	GOptionContext* context = g_option_context_new("- A GTK+ GUI for smartmontools");
+
+	// our options
 	g_option_context_add_main_entries(context, arg_entries, NULL);
-	g_option_context_add_group(context, gtk_get_option_group(false));  // gtk options
+
+	// gtk options
+	g_option_context_add_group(context, gtk_get_option_group(false));
 
 	// libdebug options; this will also automatically apply them
 	g_option_context_add_group(context, debug_get_option_group());
+
 	g_option_context_parse(context, &argc, &argv, &error);
 	g_option_context_free(context);
 	if (error)
@@ -241,7 +245,7 @@ inline void app_print_version_info()
 	std::string warningtext = std::string("\nWarning: GSmartControl");
 	warningtext += " comes with ABSOLUTELY NO WARRANTY.\n";
 	warningtext += "See LICENSE_gsmartcontrol.txt file for details.\n";
-	warningtext += "\nCopyright (C) 2008 - 2009  Alexander Shaduri <ashaduri" "" "@" "" "" "gmail.com>\n\n";
+	warningtext += "\nCopyright (C) 2008 - 2010  Alexander Shaduri <ashaduri" "" "@" "" "" "gmail.com>\n\n";
 
 	std::fprintf(stdout, "%s%s", versiontext.c_str(), warningtext.c_str());
 }
@@ -250,44 +254,32 @@ inline void app_print_version_info()
 
 bool app_init_and_loop(int& argc, char**& argv)
 {
-
-	// glib needs locale initialized for command line args. It will be reset by Gtk::Main later.
-
-	// set C and C++ locales to system LANG.
-	try {
-		// This may throw on freebsd and osx with
-		// "locale::facet::_S_create_c_locale name not valid", so make it non-fatal.
-		std::locale::global(std::locale(""));  // C++
-	}
-	catch (const std::runtime_error& e) {
-		// nothing. we can't print anything here, so just ignore it.
-		// newer gtkmm will print a warning if it cannot set a C++ locale,
-		// so it will be an indication.
-	}
-
-	std::setlocale(LC_ALL, "");  // C
-
-
 	// initialize GThread (for mutexes, etc... to work). Must be called before any other glib function.
 // 	Glib::thread_init();
 
 
-	// parse command line args
+	// Glib needs the C locale set to system locale for command line args.
+	// We will reset it later if needed.
+	hz::locale_c_set("");  // set the current locale to system locale
+
+	// Parse command line args.
+	// Due to gtk_get_option_group()/g_option_context_parse() calls, this
+	// will also initialize GTK and set the C locale to system locale (as well
+	// as do some locale-specific gdk initialization).
 	CmdArgs args;
 	if (! parse_cmdline_args(args, argc, argv)) {
 		return true;
 	}
 
-	// Note: parsing gtk option context is initializes gtk, so
-	// gtk_disable_setlocale() won't work here.
+	// If locale setting is explicitly disabled, revert to the original classic C locale.
+	// Note that changing GTK locale after it's inited isn't really supported by GTK,
+	// but we have no other choice - glib needs system locale when parsing the
+	// arguments, and gtk is inited while the parsing is performed.
 	if (!args.arg_locale) {
-		// set classic locale. otherwise we're already in user locale.
-		try {
-			std::locale::global(std::locale::classic());  // C++
-		}
-		catch (const std::runtime_error& e) {
-		}
-		std::setlocale(LC_ALL, "C");
+		hz::locale_c_set("C");
+	} else {
+		// change the C++ locale to match the C one.
+		hz::locale_cpp_set("");  // this may fail on some systems
 	}
 
 
@@ -346,25 +338,8 @@ bool app_init_and_loop(int& argc, char**& argv)
 	app_init_config();
 
 
-	debug_out_info("app", "Current C locale: " << std::setlocale(LC_ALL, NULL) << "\n");
-	debug_out_info("app", "Current C++ locale: " << std::locale::locale().name() << "\n");
-
-
-	// Initialize GTK+
-// 	Gtk::Main m(argc, argv, args.arg_locale);
-	Gtk::Main m(argc, argv);
-
-
-#ifdef _WIN32
-	// Now that all program-specific locale setup has been performed,
-	// make sure the future locale changes affect only current thread.
-	// Not available in mingw, so disable for now.
-// 	_configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
-
-#endif
-
-
-	// Redirect all GTK+/Glib and related messages to libdebug
+	// Redirect all GTK+/Glib and related messages to libdebug.
+	// Do this before GTK+ init, to capture its possible warnings as well.
 	static const char* const gtkdomains[] = {
 			// no atk or cairo, they don't log. libgnomevfs may be loaded by gtk file chooser.
 			"GLib", "GModule", "GLib-GObject", "GLib-GRegex", "GLib-GIO", "GThread",
@@ -375,6 +350,35 @@ bool app_init_and_loop(int& argc, char**& argv)
 		g_log_set_handler(gtkdomains[i], GLogLevelFlags(G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
 				| G_LOG_FLAG_RECURSION), glib_message_handler, NULL);
 	}
+
+
+	// Save the locale
+	std::locale final_loc_cpp = hz::locale_cpp_get<std::locale>();
+
+	// Initialize GTK+ (it's already initialized by command-line parser,
+	// so this doesn't do much).
+	// Newer gtkmm will try to set the C++ locale here.
+	// Note: passing false (as use_locale) as the third parameter here
+	// will generate a gtk_disable_setlocale() warning (due to gtk being
+	// already initialized), so manually save / restore the C++ locale
+	// (C locale won't be touched).
+	// Nothing is affected in gtkmm itself by C++ locale, so it's ok to do it.
+	Gtk::Main m(argc, argv);
+
+	// Restore the locale
+	hz::locale_cpp_set(final_loc_cpp);
+
+
+	debug_out_info("app", "Current C locale: " << hz::locale_c_get() << "\n");
+	debug_out_info("app", "Current C++ locale: " << hz::locale_cpp_get<std::string>() << "\n");
+
+
+#ifdef _WIN32
+	// Now that all program-specific locale setup has been performed,
+	// make sure the future locale changes affect only current thread.
+	// Not available in mingw, so disable for now.
+// 	_configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
+#endif
 
 
 	// This shows up in About dialog gtk.
