@@ -16,6 +16,7 @@ noinst_DATA = AUTHORS.txt LICENSE_gsmartcontrol.txt README.txt
 # Some of these files are actually needed for compilation (see src/res/Makefile.am).
 dist_doc_DATA = AUTHORS.txt ChangeLog NEWS README.txt \
 	LICENSE_boost_1_0.txt \
+	LICENSE_bsd-ac.txt \
 	LICENSE_bsd-ucb.txt \
 	LICENSE_gpl2.txt \
 	LICENSE_gpl3.txt \
@@ -68,7 +69,8 @@ src-rpm: dist
 
 
 # NSIS installer support.
-# Requires wine, installed NSIS, gtkmm dlls, pcre dlls, smartctl-nc.exe, smartctl.exe.
+# Requires wine, installed NSIS, smartctl-nc.exe, smartctl.exe.
+# Gtkmm dlls and pcre dlls are required if linking against them.
 # dos2unix on build machine.
 # Execute only with win32 build present.
 
@@ -93,25 +95,12 @@ win-dist-prepare: all win-dist-clean
 
 	unix2dos nsis-dist/*.nsi nsis-dist/doc/*.txt
 
-	cp "@WINDOWS_DLLS_LOCATION@"/libatkmm-*.dll nsis-dist/
-	cp "@WINDOWS_DLLS_LOCATION@"/libcairomm-*.dll nsis-dist/
-	cp "@WINDOWS_DLLS_LOCATION@"/libgdkmm-*.dll nsis-dist/
-	cp "@WINDOWS_DLLS_LOCATION@"/libgiomm-*.dll nsis-dist/
-	cp "@WINDOWS_DLLS_LOCATION@"/libglibmm-*.dll nsis-dist/
-	cp "@WINDOWS_DLLS_LOCATION@"/libgtkmm-*.dll nsis-dist/
-	cp "@WINDOWS_DLLS_LOCATION@"/libpangomm-*.dll nsis-dist/
-	cp "@WINDOWS_DLLS_LOCATION@"/libsigc-*.dll nsis-dist/
-	cp "@WINDOWS_DLLS_LOCATION@"/pcre3.dll nsis-dist/
-	cp "@WINDOWS_DLLS_LOCATION@"/mingwm10.dll nsis-dist/
-	cp "@WINDOWS_DLLS_LOCATION@"/smartctl-nc.exe nsis-dist/
-	cp "@WINDOWS_DLLS_LOCATION@"/smartctl.exe nsis-dist/
+	cp "@WINDOWS_BINDIR@"/smartctl-nc.exe nsis-dist/
+	cp "@WINDOWS_BINDIR@"/smartctl.exe nsis-dist/
 
 	cp src/gsmartcontrol.exe nsis-dist/
 
 	$(STRIP) nsis-dist/*.exe
-	mv nsis-dist/mingwm10.dll nsis-dist/mingwm10.dll_
-	$(STRIP) --strip-debug --strip-unneeded nsis-dist/*.dll
-	mv nsis-dist/mingwm10.dll_ nsis-dist/mingwm10.dll
 
 
 nsis-dist: nsis-dist-nocleanup nsis-cleanup

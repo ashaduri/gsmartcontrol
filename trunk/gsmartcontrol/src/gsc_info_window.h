@@ -70,13 +70,12 @@ class GscInfoWindow : public AppUIResWidget<GscInfoWindow, true> {
 		void show_tests();
 
 
-		void test_loop();  // Runs a GUI loop until test is running
-
-
 	protected:
 
 
 		// -------------------- Callbacks
+
+		static gboolean test_idle_callback(void* data);
 
 
 		// ---------- override virtual methods
@@ -135,6 +134,13 @@ class GscInfoWindow : public AppUIResWidget<GscInfoWindow, true> {
 		StorageDeviceRefPtr drive;  // represented drive.
 
 		SelfTestPtr current_test;  // currently running test, or 0.
+
+		// test idle callback temporaries
+		std::string test_error_msg;  // our errors
+		Glib::Timer test_timer_poll;
+		Glib::Timer test_timer_bar;
+		bool test_force_bar_update;
+
 
 		// test type combobox stuff
 		Gtk::TreeModelColumn<Glib::ustring> test_combo_col_name;

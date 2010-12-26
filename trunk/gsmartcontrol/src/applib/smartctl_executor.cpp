@@ -35,7 +35,7 @@ std::string get_smartctl_binary()
 			break;
 
 		std::string smt_inst_dir;
-		hz::win32_get_registry_value_string(smt_inst_dir, HKEY_LOCAL_MACHINE, smt_regpath, smt_regkey);
+		hz::win32_get_registry_value_string(HKEY_LOCAL_MACHINE, smt_regpath, smt_regkey, smt_inst_dir);
 
 		if (smt_inst_dir.empty()) {
 			debug_out_info("app", DBG_FUNC_MSG << "Smartmontools installation not found in \"HKLM\\"

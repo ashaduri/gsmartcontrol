@@ -11,7 +11,7 @@
 
 
 // Autosave functions are only available if GLib is enabled.
-#ifdef ENABLE_GLIB
+#if defined ENABLE_GLIB && ENABLE_GLIB
 
 
 #include <string>
@@ -29,10 +29,6 @@
 namespace rconfig {
 
 
-// We use glib because it's available already and we _need_ threading.
-// Glib callbacks are executed in separate threads, so threading should
-// be available. Don't forget to initialize GThread!
-// typedef hz::SyncPolicyGlib AutoSaveLockPolicy;
 typedef hz::SyncPolicyMtDefault AutoSaveLockPolicy;
 
 
@@ -61,7 +57,7 @@ extern "C" {
 	{
 		bool force = (bool)data;
 
-		// If previous call is active, return (may happen with too small timeout?).
+		// If previous call is active, return (callback registered multiple times?).
 		// Don't do this for forced call, because it may expect the file to be updated
 		// once this function exits.
 		if (!force) {

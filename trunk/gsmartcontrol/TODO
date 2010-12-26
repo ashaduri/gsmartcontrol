@@ -19,14 +19,6 @@ A treeview (also iconview, combobox) from glade comes
 with existing model, which should be unset.
 
 
---------------------------------------------------------
-
-portability:
-win32 32-bit: int: 4, long: 4, pointer: 4.
-win32 64-bit: int: 4, long: 8, pointer: 8.
-
-sparc: same as win32 (what about OS?).
-
 
 
 --------------------------------------------------------
@@ -34,9 +26,15 @@ sparc: same as win32 (what about OS?).
 TODO:
 
 
-Patch pangomm for Pango::strip_markup().
 
-Patch gtkmm, glibmm, pangomm for static win32 builds.
+Support Areca controller.
+
+When adding device, have an option to specify "-d" type and other parameters.
+	This is needed to support multi-disk devices.
+
+
+
+Patch pangomm for Pango::strip_markup().
 
 No Gtk::AboutDialog::set_logo(NULL);
 
@@ -46,6 +44,7 @@ libdebug:
 	per-channel formatting.
 	all flags should be per-channel.
 	bug: if -q is passed, Execution log doesn't contain libdebug log. (requires per-channel status control).
+	use format_time() instead of ctime() and friends, with ISO formatting.
 
 
 
@@ -62,6 +61,26 @@ Some newer drives (Samsung) only write to this log.
 capable version of '-l selftest'. Output will be similar, except more
 entries can exists and the LBA values can be somewhat longer.
 
+"smartctl -l this_wont_exist" gives the list of supported logs - this
+	is needed to detect xerror / xselftest support in smartctl.
+
+
+Careful with GPL (xerror...) stuff until the jmicron situation clears up.
+
+Add detection for Interix (i586-pc-interix3), maybe with debian?
+
+Re-check long double printing - win32 libc doesn't support it, a cast
+to double is needed.
+	The underlying problem is that in msvc, long double is the same size
+	as double, so printf() has mingw-incompatible presentation of long double.
+
+Support USB flash disks in CVS smartctl versions:
+	Try smartctl -i /dev/sdc;
+	If it returns "Smartctl: please specify device type with the -d option.",
+	try "-d scsi", which should at least give us the name.
+
+Maybe make it easier to specify "-d" (with a dropdown?)
+	Not sure, "-l aaa /tmp" doesn't list all types.
 
 
 

@@ -53,10 +53,12 @@
 #include <cerrno>  // errno (not std::errno, it may be a macro)
 #include <clocale>  // std::localeconv, std::lconv
 #include <cstring>  // std::strlen, std::memcmp, std::memcpy
-#include <cstdlib>  // std::strtod
+#include <cstddef>  // std::size_t, std::ptrdiff_t
+#include <cstdlib>  // for stdlib.h, std::strtod
 #include <cctype>  // std::isspace
 
-#if !defined(DISABLE_STRTOF) || !defined(DISABLE_STRTOLD)
+#if !(defined DISABLE_STRTOF && DISABLE_STRTOF) \
+		|| !(defined DISABLE_STRTOLD && DISABLE_STRTOLD)
 	#include <stdlib.h>  // strtof, strtold (C99, not in C++98)
 #endif
 
@@ -95,11 +97,14 @@ inline bool ascii_isspace(char c)
 template<typename T> inline
 T ascii_strtoi(const char* nptr, char** endptr, int base)
 {
+	typedef typename hz::type_make_unsigned<T>::type unsigned_type;
+	typedef typename hz::type_make_signed<T>::type signed_type;
+
 	const char* s = nptr;
-	typename hz::type_make_unsigned<T>::type acc = 0;
-	typename hz::type_make_unsigned<T>::type cutoff = 0;
-	typename hz::type_make_signed<T>::type cutlim = 0;
-	int any = 0;
+	unsigned_type acc = 0;
+	unsigned_type cutoff = 0;
+	signed_type cutlim = 0;
+	int any = 0;  // (-1, 0, 1)
 	char c = 0;
 	bool neg = false;
 
@@ -165,24 +170,25 @@ T ascii_strtoi(const char* nptr, char** endptr, int base)
 	// overflow.
 
 	if (std::numeric_limits<T>::is_signed) {
-		cutoff = neg ? static_cast<typename hz::type_make_unsigned<T>::type>(-(std::numeric_limits<T>::min()
-					+ std::numeric_limits<T>::max())) + std::numeric_limits<T>::max() : std::numeric_limits<T>::max();
-		cutlim = cutoff % base;
-		cutoff /= base;
+		cutoff = static_cast<unsigned_type>( neg ?
+				( static_cast<unsigned_type>(-(std::numeric_limits<T>::min() + std::numeric_limits<T>::max()))
+				+ std::numeric_limits<T>::max() ) : std::numeric_limits<T>::max() );
+		cutlim = static_cast<signed_type>(cutoff % base);
+		cutoff = static_cast<unsigned_type>(cutoff / base);
 	} else {
-		cutoff = std::numeric_limits<T>::max() / base;
-		cutlim = std::numeric_limits<T>::max() % base;
+		cutoff = static_cast<unsigned_type>(std::numeric_limits<T>::max() / base);
+		cutlim = static_cast<signed_type>(std::numeric_limits<T>::max() % base);
 	}
 
 	// Assumes that the upper and lower case
 	// alphabets and digits are each contiguous.
 	for ( ; ; c = *s++) {
 		if (c >= '0' && c <= '9') {
-			c -= '0';
+			c = static_cast<char>(c - '0');
 		} else if (c >= 'A' && c <= 'Z') {
-			c -= 'A' - 10;
+			c = static_cast<char>(c - 'A' + 10);
 		} else if (c >= 'a' && c <= 'z') {
-			c -= 'a' - 10;
+			c = static_cast<char>(c - 'a' + 10);
 		} else {
 			break;
 		}
@@ -190,12 +196,11 @@ T ascii_strtoi(const char* nptr, char** endptr, int base)
 			break;
 		}
 		if ((any < 0) || acc > cutoff || (acc == cutoff
-				&& static_cast<typename hz::type_make_signed<T>::type>(c) > cutlim)) {
+				&& static_cast<signed_type>(c) > cutlim)) {
 			any = -1;
 		} else {
 			any = 1;
-			acc *= base;
-			acc += c;
+			acc = static_cast<unsigned_type>((acc * base) + c);
 		}
 	}
 
@@ -211,11 +216,11 @@ T ascii_strtoi(const char* nptr, char** endptr, int base)
 		errno = EINVAL;
 
 	} else if (neg) {
-		acc = -acc;
+		acc = static_cast<unsigned_type>(-acc);
 	}
 
 	if (endptr != 0)
-		*endptr = const_cast<char*>(any ? s - 1 : nptr);
+		*endptr = const_cast<char*>(any ? (s - 1) : nptr);
 
 	return acc;
 }
@@ -247,9 +252,9 @@ namespace internal {
 	struct ascii_strtof_impl<float> {
 		static float func(const char* nptr, char** endptr)
 		{
-#ifndef DISABLE_STRTOF
+		#if !(defined DISABLE_STRTOF && DISABLE_STRTOF)
 			return strtof(nptr, endptr);
-#else
+		#else
 			// emulate via strtod().
 			double val = std::strtod(nptr, endptr);
 
@@ -283,15 +288,15 @@ namespace internal {
 	struct ascii_strtof_impl<long double> {
 		static long double func(const char* nptr, char** endptr)
 		{
-#ifndef DISABLE_STRTOLD
+		#if !(defined DISABLE_STRTOLD && DISABLE_STRTOLD)
 			return strtold(nptr, endptr);
-#else
+		#else
 			// This leads to loss of precision, but what else can we do?
 
 			// nans and infinities are preserved on implicit conversion,
 			// so no need to do anything.
 			return std::strtod(nptr, endptr);
-#endif
+		#endif
 		}
 	};
 
@@ -414,7 +419,7 @@ T ascii_strtof(const char* nptr, char** endptr)
 				if (cendptr == copy) {
 					*endptr = const_cast<char*>(nptr);
 				} else {
-					int coffset = (cendptr - copy);
+					std::ptrdiff_t coffset = (cendptr - copy);
 					*endptr = const_cast<char*>(wnptr) + coffset - ((coffset > (radix_pos - wnptr)) ? (radix_len - 1) : 0);
 				}
 			}

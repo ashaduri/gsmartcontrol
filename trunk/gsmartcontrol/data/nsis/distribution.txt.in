@@ -17,15 +17,12 @@ This distribution includes:
 
 * GSmartControl binary (gsmartcontrol.exe) and associated resources. The
 binary was compiled for 32-bit Windows, and should work on both 32-bit and
-64-bit Windows.
+64-bit Windows. The binary was statically compiled against Gtkmm
+(http://www.gtkmm.org/) and related libraries, and PCRE (http://www.pcre.org/).
 
-* Gtkmm (http://www.gtkmm.org/) dlls.
-
-* PCRE (http://www.pcre.org/) dll.
-
-* Smartctl binaries (from smartmontools 5.38, http://smartmontools.sf.net/) -
-smartctl-nc.exe (compiled without console output), smartctl.exe (compiled with
-console output).
+* Smartctl binaries (from smartmontools 5.39-0-20090826-r2878,
+http://smartmontools.sf.net/) - smartctl-nc.exe (compiled without console
+output), smartctl.exe (compiled with console output).
 
 
 The combined distribution is multi-licensed under GNU GPL versions 2 and 3.

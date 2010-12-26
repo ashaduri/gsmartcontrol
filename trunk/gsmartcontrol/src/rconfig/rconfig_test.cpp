@@ -20,7 +20,7 @@
 
 #include "hz/hz_config.h"  // ENABLE_GLIB
 
-#ifdef ENABLE_GLIB
+#if defined ENABLE_GLIB && ENABLE_GLIB
 	#include <glib.h>
 #endif
 
@@ -81,7 +81,7 @@ int main()
 	rconfig::save_to_file("test.config");
 
 
-#ifdef ENABLE_GLIB
+#if defined ENABLE_GLIB && ENABLE_GLIB
 	rconfig::autosave_set_config_file("test2.config");
 	rconfig::autosave_start(2);  // every 2 seconds
 	while(true) {

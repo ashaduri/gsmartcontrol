@@ -30,6 +30,7 @@ namespace hz {
 	// Use this when making an explicit static_assertion<false>.
 	// Without T, Intel C++ explicitly instantiates the static_assertion type.
 	// Usage: HZ_STATIC_ASSERT(hz::static_false<T>::value, cannot_do_this);
+	// where T is an instantiation-dependent type.
 	template<typename T>
 	struct static_false
 	{

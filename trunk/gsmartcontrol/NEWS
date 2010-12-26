@@ -1,4 +1,19 @@
 
+Version 0.8.5, released on 2009-09-05
+	GSmartControl now uses XDG config directory for per-user configuration on
+		UNIX and CSIDL_PROFILE directory on Windows. Existing configuration is
+		migrated automatically.
+	The names are shown correctly for unsupported devices even with the latest
+		smartctl snapshots now.
+	Smartctl SVN revision is shown (if available).
+	The progress bars update properly when parallel tests are run.
+	Windows: GSmartControl should be able to operate on any valid filesystem
+		path (not just locale-representable ones).
+	Windows: GSmartControl is now officially compilable on x86_64 via mingw64.
+	Fixed compilation under very old gtkmm/libglademm, and with gcc 4.4.
+	Fixed parsing of multiple error types in SMART error log.
+	Added minor features and fixed miscellaneous bugs.
+
 Version 0.8.4, released on 2009-03-23
 	Linux Software RAID devices are blacklisted now. (backported from Debian).
 	Attributes tab is before the capabilities tab now.

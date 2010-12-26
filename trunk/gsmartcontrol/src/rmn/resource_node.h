@@ -36,6 +36,9 @@
 #include "resource_exception.h"
 
 
+// Define RMN_RESOURCE_NODE_DEBUG=1 to enable
+// debug printing of resource node operations.
+
 
 namespace rmn {
 
@@ -75,7 +78,7 @@ class resource_node : public resource_base, public Data {
 
 		~resource_node()
 		{
-#ifdef RMN_RESOURCE_NODE_DEBUG
+#if defined RMN_RESOURCE_NODE_DEBUG && RMN_RESOURCE_NODE_DEBUG
 			debug_out_dump("rmn", "Deleting node " << get_name() << "\n");
 #endif
 		}
@@ -339,13 +342,13 @@ bool resource_node<Data>::resource_node::add_child(node_ptr p)
 		debug_out_warn("rmn", "resource_node::add_child(): this node has a parent already!\n");
 		return false;
 	}
-#ifdef RMN_RESOURCE_NODE_DEBUG
+#if defined RMN_RESOURCE_NODE_DEBUG && RMN_RESOURCE_NODE_DEBUG
 // 	debug_out_dump("rmn", p->get_name() << " refcount is " << p->ref_count() << " (before insertion)\n");
 #endif
 	if (!get_child_node(p->get_name())) {
 		children_.push_back(p);
 		p->set_parent(this);
-#ifdef RMN_RESOURCE_NODE_DEBUG
+#if defined RMN_RESOURCE_NODE_DEBUG && RMN_RESOURCE_NODE_DEBUG
 // 	debug_out_dump("rmn", p->get_name() << " refcount is " << p->ref_count() << " (after insertion)\n");
 #endif
 
@@ -487,6 +490,7 @@ bool resource_node<Data>::remove_child_node(const std::string& name)
 		if ((*iter)->get_name() == name) {
 			(*iter)->clear_parent();
 			children_.erase(iter);
+			break;  // erase() invalidates the iteration, so we must break here.
 		}
 	}
 

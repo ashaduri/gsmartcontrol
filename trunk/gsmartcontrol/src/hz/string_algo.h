@@ -10,7 +10,7 @@
 #include "hz_config.h"  // feature macros
 
 #include <string>
-
+#include <cctype>  // std::tolower, std::toupper
 
 
 
@@ -656,6 +656,48 @@ inline std::string string_any_to_unix_copy(const std::string& s)
 }
 
 
+
+// Convert s to lowercase (modifying s). Return size of the string.
+inline std::string::size_type string_to_lower(std::string& s)
+{
+	const std::string::size_type len = s.size();
+	for(std::string::size_type i = 0; i != len; ++i) {
+		s[i] = static_cast<char>(std::tolower(s[i]));
+	}
+	return len;
+}
+
+
+
+// Convert s to lowercase, not modifying s, returning the changed string.
+inline std::string string_to_lower_copy(const std::string& s)
+{
+	std::string ret(s);
+	string_to_lower(ret);
+	return ret;
+}
+
+
+
+// Convert s to uppercase (modifying s). Return size of the string.
+inline std::string::size_type string_to_upper(std::string& s)
+{
+	const std::string::size_type len = s.size();
+	for(std::string::size_type i = 0; i != len; ++i) {
+		s[i] = static_cast<char>(std::tolower(s[i]));
+	}
+	return len;
+}
+
+
+
+// Convert s to uppercase, not modifying s, returning the changed string.
+inline std::string string_to_upper_copy(const std::string& s)
+{
+	std::string ret(s);
+	string_to_upper(ret);
+	return ret;
+}
 
 
 

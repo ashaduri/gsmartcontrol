@@ -33,7 +33,7 @@ int main()
 
 	{
 		std::string s;
-		hz::string_format(s, "abc %s efg %d ijk %Lf lmn %s\n")("hello")(5)(8.99)(std::string("werld"));
+		hz::string_format(s, "abc %s efg %d ijk %f lmn %s\n")("hello")(5)(8.99)(std::string("werld"));
 		std::cerr << s;
 	}
 

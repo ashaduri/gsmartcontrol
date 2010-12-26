@@ -52,7 +52,6 @@ This file is not included directly, but through the compiler option
 		#include <iosfwd>
 		#include <sstream>
 		#include <iomanip>
-		#include <fstream>
 		#include <iostream>
 		#include <ios>
 
@@ -63,7 +62,9 @@ This file is not included directly, but through the compiler option
 
 		#include <cctype>
 		#include <cstdlib>
+		#include <cstdio>
 		#include <cassert>
+		#include <csignal>
 		#include <cerrno>
 		#include <cstddef>
 		#include <cstring>
@@ -72,16 +73,14 @@ This file is not included directly, but through the compiler option
 	#endif
 
 	// most of the other headers
-	#include <stdio.h>
-	#include <stdint.h>
 	#include <sys/types.h>
-	#include <signal.h>
-	#include <dirent.h>
 
-	#ifdef ENABLE_GLIB
+// 	#include <dirent.h>
+
+	#if defined ENABLE_GLIB && ENABLE_GLIB
 		#include <glib.h>
 	#endif
-	#ifdef ENABLE_GLIBMM
+	#if defined ENABLE_GLIBMM && ENABLE_GLIBMM
 		#include <sigc++/sigc++.h>
 		#include <gtkmm.h>  // if we have glibmm, we're building everything
 		#include <gtk/gtk.h>
@@ -96,28 +95,34 @@ This file is not included directly, but through the compiler option
 
 
 
+// this is either defined to 1 (by autoconf), or undefined
 #ifdef HAVE_LONG_LONG_INT
 	// pcrecpp uses this
 	#ifndef HAVE_LONG_LONG
 		#define HAVE_LONG_LONG
 	#endif
 
+	#define DISABLE_LL_INT 0
+
 #else  // there is no long long int
 	// explicitly disable it in our code. by default, it assumes that long long int exists.
-	#define DISABLE_LL_INT
+	#define DISABLE_LL_INT 1
 
 #endif
 
 
+// this is either defined to 1 (by autoconf), or undefined
 #ifdef HAVE_UNSIGNED_LONG_LONG_INT
 	// pcrecpp uses this
 	#ifndef HAVE_UNSIGNED_LONG_LONG
 		#define HAVE_UNSIGNED_LONG_LONG
 	#endif
 
+	#define DISABLE_ULL_INT 0
+
 #else  // there is no long long int
 	// explicitly disable it in our code. by default, it assumes that long long int exists.
-	#define DISABLE_ULL_INT
+	#define DISABLE_ULL_INT 1
 
 #endif
 
@@ -127,22 +132,20 @@ This file is not included directly, but through the compiler option
 // HAVE_DECL_func means that it's declared in a header.
 // HAVE_DECL_func is always defined as 0 or 1.
 
-// check if it's not in stdlib.h
-#if defined HAVE_DECL_STRTOF && !HAVE_DECL_STRTOF
-// 	#ifdef HAVE_STRTOF  // it's not in header, but it is in a library
-// 		float strtof(const char *nptr, char **endptr);
-// 	#else  // neither header, nor library
-		#define DISABLE_STRTOF
-// 	#endif
+// check if it's not in stdlib.h.
+// HAVE_DECL_* is always either 1 or 0.
+#if !defined DISABLE_STRTOF && defined HAVE_DECL_STRTOF && !HAVE_DECL_STRTOF
+	#define DISABLE_STRTOF 1
+#else
+	#define DISABLE_STRTOF 0
 #endif
 
 
-#if defined HAVE_DECL_STRTOLD && !HAVE_DECL_STRTOLD
-// 	#ifdef HAVE_STRTOLD
-// 		long double strtold(const char *nptr, char **endptr);
-// 	#else
-		#define DISABLE_STRTOLD
-// 	#endif
+// HAVE_DECL_* is always either 1 or 0.
+#if !defined DISABLE_STRTOLD && defined HAVE_DECL_STRTOLD && !HAVE_DECL_STRTOLD
+	#define DISABLE_STRTOLD 1
+#else
+	#define DISABLE_STRTOLD 0
 #endif
 
 
@@ -156,8 +159,8 @@ This file is not included directly, but through the compiler option
 
 // -- These have effect in rmn, hz error library, hz string_tools.
 // These will be defined automatically by autoconf if found.
-// #define ENABLE_GLIB
-// #define ENABLE_GLIBMM
+// #define ENABLE_GLIB 1
+// #define ENABLE_GLIBMM 1
 
 
 // -- RMN settings - see rmn/rmn.h for details
@@ -169,20 +172,26 @@ This file is not included directly, but through the compiler option
 // makes the headers work in full when there is no config.h.
 
 // -- Define this if using -fno-rtti or similar (automatic from autoconf).
-#ifndef HAVE_RTTI
-	#define DISABLE_RTTI
+// HAVE_RTTI is always defined as 1 or 0.
+#if !defined DISABLE_RTTI && defined HAVE_RTTI && !HAVE_RTTI
+	#define DISABLE_RTTI 1
+#else
+	#define DISABLE_RTTI 0
 #endif
 
 // -- Define this if using -fno-exceptions (automatic from autoconf).
-#ifndef HAVE_EXCEPTIONS
-	#define DISABLE_EXCEPTIONS
+// HAVE_EXCEPTIONS is always defined as 1 or 0.
+#if !defined DISABLE_EXCEPTIONS && defined HAVE_EXCEPTIONS && !HAVE_EXCEPTIONS
+	#define DISABLE_EXCEPTIONS 1
+#else
+	#define DISABLE_EXCEPTIONS 0
 #endif
 
 
 
 // -- Default policy for synchronization primitives (sync.h);
 // (define only one of these):
-
+/*
 // check if any of them are forced
 #if (!defined HZ_SYNC_DEFAULT_POLICY_BOOST) \
 		&& (!defined HZ_SYNC_DEFAULT_POLICY_GLIB) \
@@ -191,7 +200,7 @@ This file is not included directly, but through the compiler option
 		&& (!defined HZ_SYNC_DEFAULT_POLICY_PTHREAD) \
 		&& (!defined HZ_SYNC_DEFAULT_POLICY_WIN32)
 
-	#if defined ENABLE_GLIB
+	#if defined ENABLE_GLIB && ENABLE_GLIB
 		#define HZ_SYNC_DEFAULT_POLICY_GLIB
 	#elif defined _WIN32
 		#define HZ_SYNC_DEFAULT_POLICY_WIN32
@@ -205,19 +214,19 @@ This file is not included directly, but through the compiler option
 	// #define HZ_SYNC_DEFAULT_POLICY_POCO
 
 #endif
-
+*/
 
 
 // -- Default policy for thread-local storage pointer (tls.h);
 // (define only one of these):
-
+/*
 // check if any of them are forced
 #if (!defined HZ_TLS_DEFAULT_POLICY_BOOST) \
 		&& (!defined HZ_TLS_DEFAULT_POLICY_GLIB) \
 		&& (!defined HZ_TLS_DEFAULT_POLICY_PTHREAD) \
 		&& (!defined HZ_TLS_DEFAULT_POLICY_WIN32)
 
-	#if defined ENABLE_GLIB
+	#if defined ENABLE_GLIB && ENABLE_GLIB
 		#define HZ_TLS_DEFAULT_POLICY_GLIB
 
 	#elif defined _WIN32
@@ -233,7 +242,7 @@ This file is not included directly, but through the compiler option
 	// #define HZ_TLS_DEFAULT_POLICY_WIN32
 
 #endif
-
+*/
 
 
 // -- hz/debug.h settings.
@@ -270,8 +279,8 @@ This file is not included directly, but through the compiler option
 // #define INTRUSIVE_PTR_REF_TRACING
 
 // This enables runtime checks for errors (with exception throwing)
-#ifdef DEBUG_BUILD
-	#define INTRUSIVE_PTR_RUNTIME_CHECKS
+#if defined DEBUG_BUILD && !defined INTRUSIVE_PTR_RUNTIME_CHECKS
+	#define INTRUSIVE_PTR_RUNTIME_CHECKS 1
 #endif
 
 

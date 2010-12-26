@@ -18,8 +18,9 @@ If not, see <http://www.gnu.org/licenses/>.
 See LICENSE_gpl2.txt and LICENSE_gpl3.txt for details.
 
 
-All files which don't have any copyright notices, tests and examples are
-covered under the Whatever License. See LICENSE_whatever.txt for details.
+All files which don't have any copyright notices, as well as tests and
+examples are covered under the Whatever License. See LICENSE_whatever.txt for
+details.
 
 
 Portions of this software are copyright Google Inc. See LICENSE_pcrecpp.txt

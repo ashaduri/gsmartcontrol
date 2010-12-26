@@ -4,7 +4,7 @@
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
 
-#include <time.h>  // <ctime> doesn't contain ctime_r() (non-std), ctime()
+#include "hz/format_unit.h"  // format_date()
 
 #include "dchannel.h"
 // #include <iostream>  // tmp
@@ -24,24 +24,8 @@ std::string debug_format_message(debug_level::flag level, const std::string& dom
 	if (is_first_line || !(format_flags.to_ulong() & debug_format::first_line_only)) {
 
 		if (format_flags.to_ulong() & debug_format::datetime) {  // print time
-			time_t t = time(0);
-			if (t != -1) {
-
-				// solaris and win32 have thread-safe ctime(). solaris has ctime_r() too, but with
-				// different semantics by default (unless _POSIX_PTHREAD_SEMANTICS is defined).
-#if defined _WIN32 || defined sun || defined __sun
-				const char* buf = ctime(&t);
-#else
-				char buf[28] = {0}; // ctime_r() requires max. 26 chars in buffer. align to 28.
-				ctime_r(&t, buf);  // ctime_r() is a posix thing.
-#endif
-				if (*buf) {
-					ret.append(buf, 24);
-					ret += ": ";
-				}
-			}
+			ret += hz::format_date("%Y-%m-%d %H:%M:%S: ", false);
 		}
-
 
 		if (format_flags.to_ulong() & debug_format::level) {  // print level name
 			bool use_color = (format_flags.to_ulong() & debug_format::color);
@@ -54,7 +38,6 @@ std::string debug_format_message(debug_level::flag level, const std::string& dom
 			if (use_color)
 				ret += debug_level::get_color_stop(level);
 		}
-
 
 		if (format_flags.to_ulong() & debug_format::domain) {  // print domain name
 			ret += std::string("[") + domain + "] ";

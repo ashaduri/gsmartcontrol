@@ -36,9 +36,9 @@
 #include "sync_multilock.h"
 
 #include "sync.h"  // policies need this
-#include "sync_policy_glib.h"
-#include "sync_policy_glibmm.h"
-#include "sync_policy_pthread.h"
+// #include "sync_policy_glib.h"
+// #include "sync_policy_glibmm.h"
+// #include "sync_policy_pthread.h"
 
 #include <iostream>
 #include <vector>
@@ -72,7 +72,7 @@ int main()
 		}
 	}
 
-
+/*
 	{
 		SyncPolicyGlib::Mutex m1;
 		SyncPolicyGlibmm::RecMutex m2;
@@ -84,7 +84,7 @@ int main()
 // 			SyncMultiLock<SyncPolicyGlib::Mutex, SyncPolicyGlibmm::RecMutex> lock(m1, m2, m3, true, true, false);  // error
 		}
 	}
-
+*/
 
 
 	std::cerr << "All OK\n";

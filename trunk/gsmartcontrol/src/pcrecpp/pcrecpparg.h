@@ -32,6 +32,7 @@
 #ifndef _PCRECPPARG_H
 #define _PCRECPPARG_H
 
+#include <cstdlib>  // Custom
 #include <stdlib.h>    // for NULL
 #include <string>
 

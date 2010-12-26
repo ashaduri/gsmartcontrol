@@ -99,7 +99,7 @@ namespace internal {
 			++pattern;
 
 		if (HZ_WC_ISSET(flags, HZ_FNM_CASEFOLD))
-			test = std::tolower(static_cast<unsigned char>(test));
+			test = static_cast<char>(std::tolower(static_cast<unsigned char>(test)));
 
 		/*
 		* A right bracket shall lose its special meaning and represent
@@ -118,7 +118,7 @@ namespace internal {
 				return (HZ_RANGE_NOMATCH);
 
 			if (HZ_WC_ISSET(flags, HZ_FNM_CASEFOLD))
-				c = std::tolower(static_cast<unsigned char>(c));
+				c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
 
 			if (*pattern == '-' && (c2 = *(pattern+1)) != '\0' && c2 != ']') {
 				pattern += 2;
@@ -130,7 +130,7 @@ namespace internal {
 					return (HZ_RANGE_ERROR);
 
 				if (HZ_WC_ISSET(flags, HZ_FNM_CASEFOLD))
-					c2 = std::tolower((unsigned char)c2);
+					c2 = static_cast<char>(std::tolower((unsigned char)c2));
 
 				if (c <= test && test <= c2)
 					ok = 1;

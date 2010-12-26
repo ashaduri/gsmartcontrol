@@ -32,7 +32,21 @@ std::string StorageDevice::fetch_basic_data_and_parse(hz::intrusive_ptr<CmdexSyn
 	std::string output;
 	// We don't use "--all" - it may cause really screwed up the output (tests, etc...).
 	// This looks just like "--info" only on non-smart devices.
-	std::string error_msg = execute_smartctl("-i -H -c", smartctl_ex, output);  // --info --health --capabilities
+	// --info --health --capabilities
+	std::string error_msg = execute_smartctl("-i -H -c", smartctl_ex, output, true);  // set type to invalid if needed
+
+	// Smartctl 5.39 cvs/svn version defaults to usb type on at least linux and windows.
+	// This means that the old SCSI identify command isn't executed by default,
+	// and there is no information about the device manufacturer/etc... in the output.
+	// We detect this and set the device type to scsi to at least have _some_ info.
+	if (get_type() == type_invalid) {
+		debug_out_info("app", "The device seems to be of different type than auto-detected, trying again with scsi.\n");
+		this->set_type(type_scsi);
+		return this->fetch_basic_data_and_parse(smartctl_ex);  // try again with scsi
+	}
+
+	// Since the type error leads to "command line didn't parse" error here,
+	// we do this after the scsi stuff.
 	if (!error_msg.empty())
 		return error_msg;
 
@@ -117,7 +131,9 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	}
 
 
-	// try to parse the properties. ignore its errors - we already got what we came for.
+	// Try to parse the properties. ignore its errors - we already got what we came for.
+	// Note that this may try to parse data the second time (it may already have
+	// been parsed by parse_data() which failed at it).
 	if (do_set_properties) {
 		SmartctlParser ps;
 		if (ps.parse_full(this->info_output_)) {  // try to parse it
@@ -142,13 +158,28 @@ std::string StorageDevice::fetch_data_and_parse(hz::intrusive_ptr<CmdexSync> sma
 	this->clear_fetched();  // clear everything fetched before, including outputs
 
 	std::string output;
-//	std::string error_msg = execute_smartctl("-a", smartctl_ex, output);  // --all
+	std::string error_msg;
+
 	// instead of -a, we use all the individual options -a encompasses, so that
 	// an addition to default -a output won't affect us.
-	// IDE equivalent of -a:
-	std::string error_msg = execute_smartctl("-H -i -c -A -l error -l selftest -l selective", smartctl_ex, output);
-	// SCSI equivalent of -a:
-// 	std::string error_msg = execute_smartctl("-H -i -A -l error -l selftest", smartctl_ex, output);
+	if (this->get_type() == type_scsi) {
+		// This doesn't do much yet, but just in case...
+		// SCSI equivalent of -a:
+		error_msg = execute_smartctl("-H -i -A -l error -l selftest", smartctl_ex, output);
+	} else {
+		// ATA equivalent of -a:
+		error_msg = execute_smartctl("-H -i -c -A -l error -l selftest -l selective",
+				smartctl_ex, output, true);  // set type to invalid if needed
+	}
+	// See notes above (in fetch_basic_data_and_parse()).
+	if (get_type() == type_invalid) {
+		debug_out_info("app", "The device seems to be of different type than auto-detected, trying again with scsi.\n");
+		this->set_type(type_scsi);
+		return this->fetch_data_and_parse(smartctl_ex);  // try again with scsi
+	}
+
+	// Since the type error leads to "command line didn't parse" error here,
+	// we do this after the scsi stuff.
 	if (!error_msg.empty())
 		return error_msg;
 
@@ -408,14 +439,27 @@ std::string StorageDevice::get_device_options() const
 		return std::string();
 	}
 
-	return app_get_device_option(get_device());
+	std::string config_options = app_get_device_option(get_device());
+
+	// If we have some special type, specify it on the command line (like "-d scsi").
+	// Note that the latter "-d" option overrides the former, so we're ok with multiple ones.
+	std::string type_arg = get_type_arg_name(this->get_type());
+
+	if (!type_arg.empty()) {
+ 	if (!config_options.empty()) {
+			config_options += " ";
+		}
+		config_options += "-d " + type_arg;
+	}
+
+	return config_options;
 }
 
 
 
 // Returns error message on error, empty string on success
 std::string StorageDevice::execute_smartctl(const std::string& command_options,
-		hz::intrusive_ptr<CmdexSync> smartctl_ex, std::string& output) const
+		hz::intrusive_ptr<CmdexSync> smartctl_ex, std::string& smartctl_output, bool check_type)
 {
 	// don't forbid running on currently tested drive - we need to call this from the test code.
 
@@ -461,21 +505,32 @@ std::string StorageDevice::execute_smartctl(const std::string& command_options,
 	smartctl_ex->set_command(Glib::shell_quote(smartctl_binary),
 			smartctl_def_options + device_specific_options + command_options + " " + Glib::shell_quote(device));
 
-
 	if (!smartctl_ex->execute() || !smartctl_ex->get_error_msg().empty()) {
-		debug_out_error("app", DBG_FUNC_MSG << "Error while executing smartctl binary.\n");
+		debug_out_warn("app", DBG_FUNC_MSG << "Error while executing smartctl binary.\n");
+
+		std::string output = smartctl_ex->get_stdout_str();
+
 		// check if it's a device permission error.
 		// Smartctl open device: /dev/sdb failed: Permission denied
-		if (app_pcre_match("/Smartctl open device.+Permission denied/mi", smartctl_ex->get_stdout_str())) {
+		if (app_pcre_match("/Smartctl open device.+Permission denied/mi", output)) {
 			return "Permission denied while opening device.";
+		}
+
+		// Smartctl 5.39 cvs/svn version defaults to usb type on at least linux and windows.
+		// This means that the old SCSI identify command isn't executed by default,
+		// and there is no information about the device manufacturer/etc... in the output.
+		// We detect this and set the device type to scsi to at least have _some_ info.
+		if (check_type && this->get_type() == type_unknown
+				&& app_pcre_match("/specify device type with the -d option/mi", output)) {
+			this->set_type(type_invalid);
 		}
 
 		return smartctl_ex->get_error_msg();
 	}
 
 	// any_to_unix is needed for windows
-	output = hz::string_trim_copy(hz::string_any_to_unix_copy(smartctl_ex->get_stdout_str()));
-	if (output.empty()) {
+	smartctl_output = hz::string_trim_copy(hz::string_any_to_unix_copy(smartctl_ex->get_stdout_str()));
+	if (smartctl_output.empty()) {
 		debug_out_error("app", DBG_FUNC_MSG << "Smartctl returned an empty output.\n");
 		return "Smartctl returned an empty output.";
 	}

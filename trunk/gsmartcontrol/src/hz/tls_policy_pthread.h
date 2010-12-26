@@ -31,7 +31,7 @@ extern "C" {
 }
 
 // suncc needs this
-#ifdef HAVE_CXX_EXTERN_C_OVERLOAD
+#if defined HAVE_CXX_EXTERN_C_OVERLOAD && HAVE_CXX_EXTERN_C_OVERLOAD
 	typedef void (*tls_policy_pthread_cleanup_cpp_func_t)(void*);
 #endif
 
@@ -47,7 +47,7 @@ class TlsPolicyPthread {
 			ASSERT(res == 0);
 		}
 
-#ifdef HAVE_CXX_EXTERN_C_OVERLOAD
+#if defined HAVE_CXX_EXTERN_C_OVERLOAD && HAVE_CXX_EXTERN_C_OVERLOAD
 		TlsPolicyPthread(tls_policy_pthread_cleanup_cpp_func_t native_cleanup) : native_cleanup_(native_cleanup)
 		{
 			int res = pthread_key_create(&key_, native_cleanup);

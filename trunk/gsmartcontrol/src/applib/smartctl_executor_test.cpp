@@ -14,7 +14,7 @@
 
 int main(int argc, char** argv)
 {
-	Glib::thread_init();
+// 	Glib::thread_init();
 	Gtk::Main m(argc, argv);
 
 	// NOTE: Don't use long options (e.g. --info). Use short ones (e.g. -i),

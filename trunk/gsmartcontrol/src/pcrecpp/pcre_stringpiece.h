@@ -38,6 +38,7 @@
 #ifndef _PCRE_STRINGPIECE_H
 #define _PCRE_STRINGPIECE_H
 
+#include <cstring>  // Custom
 #include <string.h>
 #include <string>
 #include <iosfwd>    // for ostream forward-declaration

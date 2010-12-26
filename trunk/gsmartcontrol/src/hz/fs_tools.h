@@ -10,15 +10,20 @@
 #include "hz_config.h"  // feature macros
 
 #include <string>
-#include <cstdlib>  // std::getenv(), std::size_t
+#include <cstddef>  // std::size_t
 
 #ifdef _WIN32
-	#include <io.h>  // getcwd, chdir
+	#include <direct.h>  // _wgetcwd, _wchdir
 #else
 	#include <unistd.h>  // getcwd, chdir
 #endif
 
-#include "win32_tools.h"  // registry stuff
+#include "env_tools.h"  // hz::env_get_value
+
+#ifdef _WIN32
+	#include "win32_tools.h"  // win32_* stuff
+	#include "scoped_array.h"  // hz::scoped_array
+#endif
 
 
 // Filesystem utilities
@@ -28,26 +33,90 @@ namespace hz {
 
 
 
-// Get the current user's home directory (in native fs encoding).
-// Return an empty string if not found.
+// Get the current user's configuration file directory (in native fs encoding
+// for UNIX, utf-8 for windows).
+inline std::string get_user_config_dir();
+
+// Get the current user's home directory (in native fs encoding for UNIX,
+// utf-8 for windows). This function always returns something.
+// Note that the directory may not actually exist at all.
+inline std::string get_home_dir();
+
+// Get current working directory
+inline std::string get_current_dir();
+
+// Change current directory.
+inline bool set_current_dir(const std::string& dir);
+
+// Get temporary directory of a system (can be user-specific).
+// For windows it seems to be in UTF-8, for others - in fs encoding.
+inline std::string get_tmp_dir();
+
+
+
+
+// ------------------------- Implementation
+
+
+
+// Get the current user's configuration file directory (in native fs encoding
+// for UNIX, utf-8 for windows).
+inline std::string get_user_config_dir()
+{
+	std::string dir;
+
+#ifdef _WIN32
+	// that's "C:\documents and settings\username\application data".
+	dir = win32_get_special_folder(CSIDL_APPDATA);
+	if (dir.empty()) {
+		dir = get_home_dir();  // fallback, always non-empty.
+	}
+#else
+	if (!hz::env_get_value("XDG_CONFIG_HOME", dir)) {
+		// default to $HOME/.config
+		dir = get_home_dir() + DIR_SEPARATOR + ".config";
+	}
+#endif
+	return dir;
+}
+
+
+
+
+// Get the current user's home directory (in native fs encoding for UNIX,
+// utf-8 for windows). This function always returns something.
+// Note that the directory may not actually exist at all.
 inline std::string get_home_dir()
 {
 	// Do NOT use g_get_home_dir, it doesn't work consistently in win32
 	// between glib versions.
 
-#ifdef _WIN32
 	std::string dir;
-	win32_get_registry_value_string(dir, HKEY_CURRENT_USER,
-				"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Personal");
+
+#ifdef _WIN32
+	// For windows we usually get "C:\documents and settings\username".
+	// Try $USERPROFILE, then CSIDL_PROFILE, then Windows directory
+	// (glib uses it, not sure why though).
+
+	hz::env_get_value("USERPROFILE", dir);  // in utf-8
 
 	if (dir.empty()) {
-		win32_get_registry_value_string(dir, HKEY_CURRENT_USER,
-				"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "User");
+		dir = win32_get_special_folder(CSIDL_PROFILE);
+	}
+	if (dir.empty()) {
+		dir = win32_get_windows_directory();  // always returns something.
 	}
 
 #else  // linux, etc...
-	const char* e = std::getenv("HOME");  // works well enough
-	std::string dir = (e ? e : "");
+	// We use $HOME to allow the user to override it.
+	// Other solutions involve getpwuid_r() to read from passwd.
+	if (!hz::env_get_value("HOME", dir)) {  // works well enough
+		// HOME may be empty in some situations (limited shells
+		// and rescue logins).
+		// We could use /tmp/<username>, but obtaining the username
+		// is too complicated and unportable.
+		dir = get_tmp_dir();
+	}
 
 #endif
 
@@ -59,15 +128,31 @@ inline std::string get_home_dir()
 // Get current working directory
 inline std::string get_current_dir()
 {
+	std::string dir;
+
+#ifdef _WIN32
+	std::size_t buf_size = MAX_PATH;
+	wchar_t* buf = new wchar_t[buf_size];  // not sure if it's really max, so increase it on demand
+
+	while (_wgetcwd(buf, static_cast<int>(buf_size)) == 0) {
+		delete[] buf;
+		buf = new wchar_t[buf_size *= 2];
+	}
+
+	dir = hz::win32_utf16_to_utf8_string(buf);
+
+#else
 	std::size_t buf_size = 1024;
 	char* buf = new char[buf_size];
 
-	while (getcwd(buf, buf_size) == NULL) {
+	while (getcwd(buf, buf_size) == 0) {
 		delete[] buf;
 		buf = new char[buf_size *= 2];
 	}
 
-	std::string dir = (buf ? buf : "");
+	dir = buf;
+#endif
+
 	delete[] buf;
 
 	return dir;
@@ -78,28 +163,43 @@ inline std::string get_current_dir()
 // Change current directory.
 inline bool set_current_dir(const std::string& dir)
 {
+#ifdef _WIN32
+	// Dont check the parameter, let the function do it.
+	return (_wchdir(hz::scoped_array<wchar_t>(hz::win32_utf8_to_utf16(dir.c_str())).get()) == 0);
+#else
 	return (chdir(dir.c_str()) == 0);
+#endif
 }
 
 
 
-// Get temporary directory of a system (can be user-specific)
+// Get temporary directory of a system (can be user-specific).
+// For windows it's in UTF-8, for others - in fs encoding.
 inline std::string get_tmp_dir()
 {
-	// FIXME: I'm not sure about the encoding used in win32.
-	// Is it fs encoding or some kind of locale, etc...?
-	const char* e = std::getenv("TMPDIR");
-	if (!e)
-		e = std::getenv("TMP");
-	if (!e)
-		e = std::getenv("TEMP");
+	std::string dir;
 
-#ifndef _WIN32
-	if (!e)
-		e = "/tmp";
+	hz::env_get_value("TMPDIR", dir);
+
+	if (dir.empty()) {
+		 hz::env_get_value("TMP", dir);
+	}
+	if (dir.empty()) {
+		 hz::env_get_value("TEMP", dir);
+	}
+
+#ifdef _WIN32
+	if (dir.empty()) {
+		// not sure about this, but that's what glib does...
+		dir = win32_get_windows_directory();  // always returns something
+	}
+#else
+	if (dir.empty()) {
+		dir = "/tmp";
+	}
 #endif
 
-	return std::string(e ? e : "");
+	return dir;
 }
 
 

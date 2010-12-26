@@ -8,9 +8,9 @@
 #define SELFTEST_H
 
 #include <string>
-#include <stdint.h>
 #include <glibmm/timer.h>
 
+#include "hz/cstdint.h"
 #include "hz/intrusive_ptr.h"
 
 #include "storage_device.h"

@@ -60,14 +60,14 @@ int main()
 
 	// listing entries
 	{
-		std::cerr << "\nListing through entry_list():\n";
+		std::cerr << "\nListing through list():\n";
 
 		hz::Dir dir("..");  // open the directory. closed in destructor.
 
 		{
 			std::cerr << "\nSorted by name (dirs first):\n";
 			std::vector<std::string> v;
-			dir.entry_list(v, false);
+			dir.list(v, false);
 
 			for (unsigned int i = 0; i < v.size(); ++i) {
 				std::cerr << v[i] << "\n";
@@ -77,7 +77,7 @@ int main()
 		{
 			std::cerr << "\nSorted by timestamp (mixed):\n";
 			std::vector<std::string> v;
-			dir.entry_list(v, true, hz::DirSortMTime(DIR_SORT_MIXED));
+			dir.list(v, true, hz::DirSortMTime(DIR_SORT_MIXED));
 
 			for (unsigned int i = 0; i < v.size(); ++i) {
 				std::cerr << v[i] << "\n";
@@ -87,7 +87,7 @@ int main()
 		{
 			std::cerr << "\nSorted by name (dirs first), filtered by wildcard:\n";
 			std::vector<std::string> v;
-			dir.entry_list_filtered(v, false, hz::DirFilterWc("*.o"));
+			dir.list_filtered(v, false, hz::DirFilterWc("*.o"));
 
 			for (unsigned int i = 0; i < v.size(); ++i) {
 				std::cerr << v[i] << "\n";

@@ -36,7 +36,9 @@
 // This enables PTHREAD_MUTEX_ERRORCHECK flag on
 // non-recursive mutexes, which may perform some additional
 // checking on some systems.
-#define HZ_SYNC_PTHREAD_ERROR_CHECKS
+#ifndef HZ_SYNC_PTHREAD_ERROR_CHECKS
+	#define HZ_SYNC_PTHREAD_ERROR_CHECKS 1
+#endif
 
 
 
@@ -95,7 +97,7 @@ class MutexPthread : public hz::noncopyable {
 
 		MutexPthread()
 		{
-#ifdef HZ_SYNC_PTHREAD_ERROR_CHECKS
+#if defined HZ_SYNC_PTHREAD_ERROR_CHECKS && HZ_SYNC_PTHREAD_ERROR_CHECKS
 			pthread_mutexattr_t attr;
 			int res = pthread_mutexattr_init(&attr);
 			if (res != 0) {

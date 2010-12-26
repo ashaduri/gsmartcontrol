@@ -32,14 +32,14 @@
 #include <ostream>  // std::ostream definition (calling bad() member)
 #include <ios>  // std::ios::*
 #include <locale>  // std::locale
-#include <fstream>
-#include <stdint.h>
 
+#include "hz/cstdint.h"
+#include "hz/hz_config.h"  // DISABLE_RTTI, RMN_* (global_macros.h)
 #include "hz/string_algo.h"  // string_split(), string_trim(), string_trim_copy()
 #include "hz/string_num.h"  // string_is_numeric(), number_to_string()
 #include "hz/bin2ascii_encoder.h"
 #include "hz/debug.h"
-#include "hz/hz_config.h"  // DISABLE_RTTI, RMN_* (global_macros.h)
+#include "hz/fs_file.h"  // hz::File
 
 #include "resource_node.h"
 #include "resource_data_types.h"
@@ -87,7 +87,7 @@ inline bool serializer_version_from_string(const std::string& str, int& major, i
 // generate serializer version from ints
 inline std::string serializer_version_to_string(int major, int minor, int revision)
 {
-	std::stringstream ss;
+	std::ostringstream ss;
 	ss.imbue(std::locale::classic());
 	ss << major << "." << minor << "." << revision;
 	return ss.str();
@@ -201,9 +201,10 @@ inline node_data_type node_data_type_from_string(const std::string& str)
 
 
 // Serializer works only if type tracking or RTTI is enabled
-#if defined RMN_TYPE_TRACKING || !defined DISABLE_RTTI
+#if (defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING) \
+		|| !(defined DISABLE_RTTI && DISABLE_RTTI)
 
-#define RMN_SERIALIZE_AVAILABLE
+#define RMN_SERIALIZE_AVAILABLE 1
 
 
 // serialize _one_ node data to string.
@@ -369,49 +370,18 @@ bool serialize_node_to_stream_recursive(intrusive_ptr<resource_node<Data> > node
 
 
 
-// write node data to file recursively
-template<class Data> inline
-bool serialize_node_to_file_recursive(intrusive_ptr<const resource_node<Data> > node,
-		const std::string& file)
-{
-	std::ofstream ofs(file.c_str(), std::ios::out | std::ios::binary);  // we always save in unix mode
-	if (ofs.bad()) {
-		debug_print_error("rmn", "serialize_node_to_file_recursive(): Unable to open file \"%s\"!\n", file.c_str());
-		return false;
-	}
-
-	std::string version_string = serializer_version_to_string(version_major, version_minor, version_revision);
-	ofs << "#" << version_identifier << version_string << "\n";
-
-	debug_out_info("rmn", "Saving: \"" <<  node->get_path() << "\""
-			<< " version: " << version_string << "\n");
-
-	return serialize_node_to_stream_recursive(node, ofs);
-}
-
-
-// write node data to file recursively
-template<class Data> inline
-bool serialize_node_to_file_recursive(intrusive_ptr<resource_node<Data> > node,
-		const std::string& file)
-{
-	return serialize_node_to_file_recursive(intrusive_ptr<const resource_node<Data> >(node), file);
-}
-
-
-
 
 // write node data to string recursively
 template<class Data> inline
 bool serialize_node_to_string_recursive(intrusive_ptr<const resource_node<Data> > node,
 		std::string& put_here)
 {
-	std::stringstream ss;
+	std::ostringstream ss;
 
 	std::string version_string = serializer_version_to_string(version_major, version_minor, version_revision);
 	ss << "#" << version_identifier << version_string << "\n";
 
-	debug_out_info("rmn", "Saving: \"" <<  node->get_path() << "\""
+	debug_out_info("rmn", "Serializing: \"" <<  node->get_path() << "\""
 			<< " version: " << version_string << "\n");
 
 	if (!serialize_node_to_stream_recursive(node, ss))
@@ -428,6 +398,39 @@ bool serialize_node_to_string_recursive(intrusive_ptr<resource_node<Data> > node
 		std::string& put_here)
 {
 	return serialize_node_to_string_recursive(intrusive_ptr<const resource_node<Data> >(node), put_here);
+}
+
+
+
+// write node data to file recursively
+template<class Data> inline
+bool serialize_node_to_file_recursive(intrusive_ptr<const resource_node<Data> > node,
+		const std::string& file)
+{
+	debug_out_info("rmn", "Saving: \"" <<  node->get_path() << "\"" << " to file: \"" << file << "\".\n");
+
+	// Don't use std::fstream, it's not safe with localized filenames on win32.
+	std::string s;
+	if (!serialize_node_to_string_recursive(node, s)) {  // warns on error
+		return false;
+	}
+
+	hz::File f(file);
+	if (!f.put_contents(s)) {
+		debug_print_error("rmn", "serialize_node_to_file_recursive(): Unable to write to file \"%s\".\n", file.c_str());
+		return false;
+	}
+
+	return true;
+}
+
+
+// write node data to file recursively
+template<class Data> inline
+bool serialize_node_to_file_recursive(intrusive_ptr<resource_node<Data> > node,
+		const std::string& file)
+{
+	return serialize_node_to_file_recursive(intrusive_ptr<const resource_node<Data> >(node), file);
 }
 
 
@@ -613,16 +616,23 @@ bool unserialize_nodes_from_string(intrusive_ptr<resource_node<Data> > under_thi
 
 
 
-
 template<class Data> inline
 bool unserialize_nodes_from_file(intrusive_ptr<resource_node<Data> > under_this_node,
 		const std::string& file)
 {
-	std::ifstream in(file.c_str(), std::ios::binary);
-	if (in.bad())
-		return false;
+	debug_out_info("rmn", "Loading under \"" <<  under_this_node->get_path() << "\""
+			<< " from file \"" << file << "\".\n");
 
-	return unserialize_nodes_from_stream(under_this_node, in);
+	// Don't use std::fstream, it's not safe with localized filenames on win32.
+	hz::File f(file);
+
+	std::string s;
+	if (!f.get_contents(s)) {  // this warns
+		debug_print_error("rmn", "unserialize_nodes_from_file(): Unable to read from file \"%s\".\n", file.c_str());
+		return false;
+	}
+
+	return unserialize_nodes_from_string(under_this_node, s);
 }
 
 

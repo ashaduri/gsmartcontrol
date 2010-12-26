@@ -14,12 +14,15 @@
 #if !defined _WIN32
 	#include <libgen.h>  // dirname, basename
 	#include <cstring>  // strncpy
+	#include <cstddef>  // std::size_t
 #endif
 
 #include "fs_common.h"  // separator
 
 
-// Filesystem path string manipulation
+// Filesystem path string manipulation.
+// For windows, always supply utf-8 or current locale-encoded strings.
+// Paths like \\.\ and \\?\ are not supported for windows (yet).
 
 
 namespace hz {
@@ -132,7 +135,7 @@ inline std::string path_get_dirname(const std::string& path)
 // "/usr/local/" returns "/usr/local", not "/usr". Don't use it.
 
 #if !defined _WIN32
-	unsigned int buf_size = path.size() + 1;
+	std::size_t buf_size = path.size() + 1;
 	char* buf = new char[buf_size];
 	std::strncpy(buf, path.c_str(), buf_size);
 	std::string ret = dirname(buf);  // dirname may modify buf, that's why we needed a copy of it.
@@ -140,6 +143,9 @@ inline std::string path_get_dirname(const std::string& path)
 	return ret;
 
 #else
+	if (path.empty())
+		return ".";
+
 	std::string::size_type apos = path_is_absolute(path);  // first position of non-abs portion
 	if (apos >= path.size())  // / or similar
 		return path;
@@ -150,9 +156,10 @@ inline std::string path_get_dirname(const std::string& path)
 
 	std::string::size_type pos1 = path.find_last_of(DIR_SEPARATOR, pos2);  // next slash from the end
 	if (pos1 == std::string::npos) {
-		if (apos)  // it's root subdir
-			return path.substr(0, apos);
 		return ".";  // one-component relative dir
+	}
+	if (apos && pos1 == apos - 1) {  // it's a root subdir
+		return path.substr(0, apos);
 	}
 
 	pos1 = path.find_last_not_of(DIR_SEPARATOR, pos1);  // skip duplicate slashes
@@ -173,7 +180,7 @@ inline std::string path_get_dirname(const std::string& path)
 inline std::string path_get_basename(const std::string& path)
 {
 #if !defined _WIN32
-	unsigned int buf_size = path.size() + 1;
+	std::size_t buf_size = path.size() + 1;
 	char* buf = new char[buf_size];
 	std::strncpy(buf, path.c_str(), buf_size);
 	std::string ret = basename(buf);  // basename may modify buf, that's why we needed a copy of it.
@@ -181,6 +188,9 @@ inline std::string path_get_basename(const std::string& path)
 	return ret;
 
 #else
+	if (path.empty())
+		return ".";
+
 	std::string::size_type apos = path_is_absolute(path);  // first position of non-abs portion
 	if (apos >= path.size())  // / or similar
 		return path;  // / -> /, as per basename manpage
@@ -208,7 +218,7 @@ inline std::string path_get_root(const std::string& path)
 	if (path.size() >= 3 && path.substr(1, 2) == ":\\")  // 'D:\'
 		return path.substr(0, 3);
 
-	if (path.size() >= 4 && path.substr(0, 2) == "\\\\") {  // '\\host\'
+	if (path.size() >= 4 && path.substr(0, 2) == "\\\\") {  // '\\host\', '\\.\', '\\?\'
 		std::string::size_type pos = path.rfind('\\');
 		if (pos >= 3 && pos != std::string::npos)
 			return path.substr(0, pos+1);
@@ -277,7 +287,7 @@ inline std::string path_compress(const std::string& path)
 
 
 
-// Change the supplied filename so that it's safe to create it.
+// Change the supplied filename so that it's safe to create it on any filesystem.
 inline std::string filename_make_safe(const std::string& filename)
 {
 	std::string s(filename);
@@ -287,6 +297,10 @@ inline std::string filename_make_safe(const std::string& filename)
 			pos)) != std::string::npos) {
 		s[pos] = '_';
 		++pos;
+	}
+	// win32 kernel (heh) has trouble with space and dot-ending files
+	if (!s.empty() && (s[s.size() - 1] == '.' || s[s.size() - 1] == ' ')) {
+		s[s.size() - 1] = '_';
 	}
 	return s;
 }
@@ -304,6 +318,10 @@ inline std::string path_make_safe(const std::string& path)
 		if (s[pos] != DIR_SEPARATOR)
 			s[pos] = '_';
 		++pos;
+	}
+	// win32 kernel (heh) has trouble with space and dot-ending files
+	if (!s.empty() && (s[s.size() - 1] == '.' || s[s.size() - 1] == ' ')) {
+		s[s.size() - 1] = '_';
 	}
 	return s;
 }

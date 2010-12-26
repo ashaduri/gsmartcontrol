@@ -74,7 +74,8 @@ struct A {
 
 		a.get<std::string>();
 
-#ifndef DISABLE_RTTI  // is_type<> is available only with RTTI
+		// is_type<> is available only with RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 		if (a.is_type<std::string>())
 			return any_cast<std::string>(a);
 		return std::string();
@@ -103,7 +104,6 @@ ANY_TYPE_SET_PRINTABLE(A, true);
 
 
 
-//#ifdef TEST_STANDALONE
 int main()
 {
 
@@ -119,7 +119,7 @@ int main()
 
 
 
-#ifndef DISABLE_ANY_CONVERT
+#if !(defined DISABLE_ANY_CONVERT && DISABLE_ANY_CONVERT)
 
 	any_type a2 = std::string("5.444");
 	double a2val = 0;
@@ -151,7 +151,6 @@ int main()
 
 	return 0;
 }
-//#endif
 
 
 

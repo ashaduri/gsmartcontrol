@@ -12,15 +12,19 @@
 #include <string>
 #include <vector>
 #include <sys/types.h>  // dirent needs this
-#include <dirent.h>
 
 #include "local_algo.h"  // shell_sort
 #include "string_wcmatch.h"  // string_wcmatch
 
 #include "fs_path.h"  // Path
+#include "fs_dir_platform.h"  // directory_*
 
 
-// Filesystem directory access
+// Filesystem directory access.
+
+// This API accepts/gives utf-8 filenames/paths on win32,
+// current locale filenames/paths on others (just like glib).
+
 
 
 namespace hz {
@@ -33,6 +37,7 @@ namespace hz {
 class Dir;
 
 namespace internal {
+
 
 	// Notes:
 	// There is no const version of this because of technical limitations.
@@ -50,13 +55,13 @@ namespace internal {
 			typedef void pointer;
 			typedef value_type reference;
 
-			typedef struct dirent* handle_type;
+			typedef directory_entry_handle_type handle_type;
 
 
 			DirIterator() : dir_(NULL), entry_(NULL)
 			{ }
 
-			DirIterator(Dir* dir, struct dirent* entry) : dir_(dir), entry_(entry)
+			DirIterator(Dir* dir, handle_type entry) : dir_(dir), entry_(entry)
 			{ }
 
 			DirIterator(const DirIterator& other)
@@ -113,7 +118,7 @@ namespace internal {
 		private:
 
 			Dir* dir_;
-			struct dirent* entry_;
+			handle_type entry_;
 
 	};
 
@@ -208,7 +213,7 @@ struct DirFilterByFlags {
 
 struct DirFilterWc {
 
-	DirFilterWc(const std::string pattern) : pattern_(pattern)
+	DirFilterWc(const std::string& pattern) : pattern_(pattern)
 	{ }
 
 	// whether to use operator() with FsPaths instead of strings.
@@ -391,8 +396,8 @@ class Dir : public FsPath {
 
 		typedef internal::DirIterator iterator;
 
-		typedef DIR* handle_type;
-		typedef struct dirent* entry_handle_type;
+		typedef directory_handle_type handle_type;
+		typedef directory_entry_handle_type entry_handle_type;
 
 
 		// Create a Dir object. This will NOT open the directory.
@@ -436,7 +441,7 @@ class Dir : public FsPath {
 */
 
 		// Destructor which invokes close() if needed.
-		~Dir()
+		virtual ~Dir()
 		{
 			if (dir_)
 				close();
@@ -507,27 +512,27 @@ class Dir : public FsPath {
 		// entry name before putting it into the container.
 		// This function will open the directory if needed.
 		template<class Container, class SortFunctor, class FilterFunctor> inline
-		bool entry_list(Container& put_here, bool put_with_path, SortFunctor sort_func, FilterFunctor filter_func);
+		bool list(Container& put_here, bool put_with_path, SortFunctor sort_func, FilterFunctor filter_func);
 
 		// Same as above, but defaulting to no filtering.
 		template<class Container, class SortFunctor>
-		bool entry_list(Container& put_here, bool put_with_path, SortFunctor sort_func)
+		bool list(Container& put_here, bool put_with_path, SortFunctor sort_func)
 		{
-			return entry_list(put_here, put_with_path, sort_func, DirFilterNone());
+			return this->list(put_here, put_with_path, sort_func, DirFilterNone());
 		}
 
 		// Same as above, but with default sorting.
 		template<class Container, class FilterFunctor>
-		bool entry_list_filtered(Container& put_here, bool put_with_path, FilterFunctor filter_func)
+		bool list_filtered(Container& put_here, bool put_with_path, FilterFunctor filter_func)
 		{
-			return entry_list(put_here, put_with_path, DirSortAlpha(DIR_SORT_DIRS_FIRST), filter_func);
+			return this->list(put_here, put_with_path, DirSortAlpha(DIR_SORT_DIRS_FIRST), filter_func);
 		}
 
 		// Same as above, but defaulting to no filtering and alphanumeric sort (dirs first).
 		template<class Container>
-		bool entry_list(Container& put_here, bool put_with_path = false)
+		bool list(Container& put_here, bool put_with_path = false)
 		{
-			return entry_list(put_here, put_with_path, DirSortAlpha(DIR_SORT_DIRS_FIRST), DirFilterNone());
+			return this->list(put_here, put_with_path, DirSortAlpha(DIR_SORT_DIRS_FIRST), DirFilterNone());
 		}
 
 
@@ -638,20 +643,20 @@ inline bool Dir::open()
 {
 	if (dir_) {  // already open
 		set_error(std::string(HZ__("Error while opening directory \"/path1/\": "))
-				+ HZ__("Another directory is open already. Close it first."), 0, path_);
+				+ HZ__("Another directory is open already. Close it first."), 0, this->get_path());
 		return false;
 	}
 
-	if (path_.empty()) {
+	if (this->empty()) {
 		set_error(std::string(HZ__("Error while opening directory: ")) + HZ__("Supplied path is empty."));
 		return false;
 	}
 
 	clear_error();
 
-	dir_ = opendir(path_.c_str());
+	dir_ = directory_open(this->c_str());
 	if (!dir_) {
-		set_error(HZ__("Error while opening directory \"/path1/\": /errno/."), errno, path_);
+		set_error(HZ__("Error while opening directory \"/path1/\": /errno/."), errno, this->get_path());
 		return false;
 	}
 
@@ -674,8 +679,8 @@ inline bool Dir::close()
 {
 	clear_error();
 
-	if (dir_ && closedir(dir_) != 0) {  // error
-		set_error(HZ__("Error while closing directory \"/path1/\": /errno/."), errno, path_);
+	if (dir_ && directory_close(dir_) != 0) {  // error
+		set_error(HZ__("Error while closing directory \"/path1/\": /errno/."), errno, this->get_path());
 		dir_ = NULL;
 		entry_ = NULL;
 		return false;
@@ -712,10 +717,10 @@ inline bool Dir::entry_next()
 // 	}
 
 	errno = 0;  // reset errno, because readdir may return NULL even if it's OK.
-	entry_ = readdir(dir_);
+	entry_ = directory_read(dir_);
 
 	if (errno != 0) {
-		set_error(HZ__("Error while reading directory entry of \"/path1/\": /errno/."), errno, path_);
+		set_error(HZ__("Error while reading directory entry of \"/path1/\": /errno/."), errno, this->get_path());
 		return true;  // you may continue reading anyway
 	}
 
@@ -742,7 +747,7 @@ inline bool Dir::entry_reset()
 // 		return false;
 // 	}
 
-	rewinddir(dir_);  // no return value here
+	directory_rewind(dir_);  // no return value here
 
 	return true;
 }
@@ -754,17 +759,17 @@ inline std::string Dir::entry_get_name()
 	clear_error();
 	if (!dir_) {
 		set_error(std::string(HZ__("Error while reading directory entry of \"/path1/\": "))
-				+ HZ__("Directory is not open."), 0, path_);
+				+ HZ__("Directory is not open."), 0, this->get_path());
 		return std::string();
 	}
 
 	if (!entry_) {
 		set_error(std::string(HZ__("Error while reading directory entry of \"/path1/\": "))
-				+ HZ__("Entry is not set."), 0, path_);
+				+ HZ__("Entry is not set."), 0, this->get_path());
 		return std::string();
 	}
 
-	return (entry_->d_name ? std::string(entry_->d_name) : std::string());
+	return directory_entry_name(entry_);
 }
 
 
@@ -784,7 +789,7 @@ inline Dir::entry_handle_type Dir::entry_get_handle()
 
 
 template<class Container, class SortFunctor, class FilterFunctor> inline
-bool Dir::entry_list(Container& put_here, bool put_with_path, SortFunctor sort_func, FilterFunctor filter_func)
+bool Dir::list(Container& put_here, bool put_with_path, SortFunctor sort_func, FilterFunctor filter_func)
 {
 	clear_error();
 
@@ -799,10 +804,10 @@ bool Dir::entry_list(Container& put_here, bool put_with_path, SortFunctor sort_f
 	bool filter_using_paths = filter_func.use_path_objects();
 	bool sort_using_paths = sort_func.use_path_objects();
 
-	typedef std::vector<FsPath> entry_list_path_list_t;
-	typedef std::vector<std::string> entry_list_string_list_t;
-	entry_list_path_list_t path_results;  // for FsPaths
-	entry_list_string_list_t string_results;  // for strings
+	typedef std::vector<FsPath> list_path_list_t;
+	typedef std::vector<std::string> list_string_list_t;
+	list_path_list_t path_results;  // for FsPaths
+	list_string_list_t string_results;  // for strings
 
 
 	while (entry_next()) {
@@ -814,7 +819,7 @@ bool Dir::entry_list(Container& put_here, bool put_with_path, SortFunctor sort_f
 			continue;
 
 		if (filter_using_paths) {
-			FsPath p(path_);
+			FsPath p(this->get_path());
 			p.append(name);
 
 			if (filter_func(p)) {
@@ -828,7 +833,7 @@ bool Dir::entry_list(Container& put_here, bool put_with_path, SortFunctor sort_f
 		} else {  // string-based filtering
 			if (filter_func(name)) {
 				if (sort_using_paths) {
-					FsPath p(path_);
+					FsPath p(this->get_path());
 					p.append(name);
 					path_results.push_back(p);
 				} else {
@@ -840,12 +845,12 @@ bool Dir::entry_list(Container& put_here, bool put_with_path, SortFunctor sort_f
 	}
 
 
-	sort_func.set_dir(path_);
+	sort_func.set_dir(this->get_path());
 
 	if (sort_using_paths) {
 		hz::shell_sort(path_results.begin(), path_results.end(), sort_func);
 
-		for (entry_list_path_list_t::const_iterator iter = path_results.begin(); iter != path_results.end(); ++iter) {
+		for (list_path_list_t::const_iterator iter = path_results.begin(); iter != path_results.end(); ++iter) {
 			if (put_with_path) {
 				put_here.push_back(iter->str());
 			} else {
@@ -856,9 +861,9 @@ bool Dir::entry_list(Container& put_here, bool put_with_path, SortFunctor sort_f
 	} else {
 		hz::shell_sort(string_results.begin(), string_results.end(), sort_func);
 
-		for (entry_list_string_list_t::const_iterator iter = string_results.begin(); iter != string_results.end(); ++iter) {
+		for (list_string_list_t::const_iterator iter = string_results.begin(); iter != string_results.end(); ++iter) {
 			if (put_with_path) {
-				FsPath p(path_);
+				FsPath p(this->get_path());
 				p.append(*iter);
 				put_here.push_back(p.str());
 

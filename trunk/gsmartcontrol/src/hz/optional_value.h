@@ -72,7 +72,7 @@ class OptionalValue {
 
 		bool operator== (const T& v)
 		{
-			return (defined_ && value == v);
+			return (defined_ && value_ == v);
 		}
 
 

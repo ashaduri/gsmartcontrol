@@ -7,7 +7,8 @@
 #ifndef LIBDEBUG_DEXCEPT_H
 #define LIBDEBUG_DEXCEPT_H
 
-#include <cstring>  // strncpy / strlen
+#include <cstddef>  // std::size_t
+#include <cstring>  // std::strncpy / std::strlen
 #include <exception>  // std::exception
 
 

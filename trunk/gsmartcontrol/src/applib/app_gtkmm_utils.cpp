@@ -10,7 +10,7 @@
 
 #include "app_gtkmm_features.h"  // APP_GTKMM_OLD_TOOLTIPS
 
-#ifdef APP_GTKMM_OLD_TOOLTIPS
+#if defined APP_GTKMM_OLD_TOOLTIPS && APP_GTKMM_OLD_TOOLTIPS
 	#include <gtk/gtk.h>  // gtk_tooltips_*
 #endif
 
@@ -54,7 +54,7 @@ void app_gtkmm_set_widget_tooltip(Gtk::Widget& widget,
 		const Glib::ustring& tooltip_text, bool use_markup)
 {
 	// set_tooltip_* is available since 2.12
-#ifndef APP_GTKMM_OLD_TOOLTIPS
+#if !(defined APP_GTKMM_OLD_TOOLTIPS && APP_GTKMM_OLD_TOOLTIPS)
 	if (use_markup) {
 		widget.set_tooltip_markup(tooltip_text);
 	} else {
@@ -107,7 +107,7 @@ void app_gtkmm_combobox_unset_model(Gtk::ComboBox* box)
 
 
 
-#ifdef APP_GTKMM_OLD_TOOLTIPS
+#if defined APP_GTKMM_OLD_TOOLTIPS && APP_GTKMM_OLD_TOOLTIPS
 
 namespace {
 
@@ -160,7 +160,7 @@ void gtkmm_set_treeview_tooltip_column(Gtk::TreeView* treeview,
 	if (!treeview)
 		return;
 
-#ifndef APP_GTKMM_OLD_TOOLTIPS
+#if !(defined APP_GTKMM_OLD_TOOLTIPS && APP_GTKMM_OLD_TOOLTIPS)
 	treeview->set_tooltip_column(col_tooltip.index());  // gtkmm has only index-based api here
 
 #else  // manually set tooltips when hovering over cells
@@ -177,7 +177,7 @@ void gtkmm_set_iconview_tooltip_column(Gtk::IconView* iconview,
 	if (!iconview)
 		return;
 
-#ifndef APP_GTKMM_OLD_TOOLTIPS
+#if !(defined APP_GTKMM_OLD_TOOLTIPS && APP_GTKMM_OLD_TOOLTIPS)
 	iconview->set_tooltip_column(col_tooltip.index());  // gtkmm has only index-based api here
 
 #else  // manually set tooltips when hovering over cells

@@ -58,7 +58,8 @@ inline std::string app_serialize_device_option_map(const device_option_map_t& op
 	std::vector<std::string> pairs;
 
 	for (device_option_map_t::const_iterator iter = option_map.begin(); iter != option_map.end(); ++iter) {
-		pairs.push_back(enc.encode(iter->first) + ":" + enc.encode(iter->second));
+		if (!iter->first.empty())
+			pairs.push_back(enc.encode(iter->first) + ":" + enc.encode(iter->second));
 	}
 
 	return hz::string_join(pairs, ';');

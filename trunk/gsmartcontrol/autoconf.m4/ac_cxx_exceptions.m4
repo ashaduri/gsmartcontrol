@@ -26,12 +26,23 @@
 
 AC_DEFUN([AC_CXX_EXCEPTIONS],
 [AC_CACHE_CHECK(whether the compiler supports exceptions,
-ac_cv_cxx_exceptions,
-[AC_LANG_PUSH([C++])
- AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[try { throw  1; } catch (int i) { return i; }]])],[ac_cv_cxx_exceptions=yes],[ac_cv_cxx_exceptions=no])
- AC_LANG_POP([])
+	ac_cv_cxx_exceptions,
+	[AC_LANG_PUSH([C++])
+		AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]],
+			[[try { throw  1; } catch (int i) { return i; }]])],
+			[ac_cv_cxx_exceptions=yes], [ac_cv_cxx_exceptions=no])
+		AC_LANG_POP([])
+	])
+
+	if test "$ac_cv_cxx_exceptions" = yes; then
+		AC_DEFINE(HAVE_EXCEPTIONS, 1,
+			[defined to 1 if the compiler supports exceptions, 0 otherwise])
+	else
+		AC_DEFINE(HAVE_EXCEPTIONS, 0,
+			[defined to 1 if the compiler supports exceptions, 0 otherwise])
+	fi
+
 ])
-if test "$ac_cv_cxx_exceptions" = yes; then
-  AC_DEFINE(HAVE_EXCEPTIONS,,[define if the compiler supports exceptions])
-fi
-])
+
+
+

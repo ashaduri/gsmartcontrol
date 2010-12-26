@@ -12,7 +12,8 @@
 #include "hz/hz_config.h"  // DISABLE_RTTI, RMN_TYPE_TRACKING
 
 // if there's RTTI or type tracking enabled
-#if !defined DISABLE_RTTI || defined RMN_TYPE_TRACKING
+#if !(defined DISABLE_RTTI && DISABLE_RTTI) \
+		|| (defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING)
 	#include <stdexcept>  // std::runtime_error
 #endif
 
@@ -299,7 +300,8 @@ bool set_data(const std::string& path, T data)
 
 	// Verify that the default's type matches T,
 	// if there's RTTI or type tracking enabled.
-#if !defined DISABLE_RTTI || defined RMN_TYPE_TRACKING
+#if !(defined DISABLE_RTTI && DISABLE_RTTI) \
+		|| (defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING)
 	if (!node_t::is_abs_path(path)) {
 		node_ptr def_node = get_default_node(path);
 		if (def_node && !def_node->data_is_empty()) {  // if exists and not empty
@@ -388,7 +390,8 @@ inline bool data_is_empty(const std::string& path)
 
 
 // this function works only if either RTTI or type tracking is enabled
-#if !defined DISABLE_RTTI || defined RMN_TYPE_TRACKING
+#if !(defined DISABLE_RTTI && DISABLE_RTTI) \
+		|| (defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING)
 template<typename T> inline
 bool data_is_type(const std::string& path)
 {

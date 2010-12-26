@@ -9,8 +9,9 @@
 
 #include "hz_config.h"  // feature macros
 
+#include <cstddef>  // std::size_t
 #include <string>
-#include <cstring>  // strchr
+#include <cstring>  // std::strchr
 
 
 
@@ -80,13 +81,13 @@ class Bin2AsciiEncoder {
 		char char_from_hex_digit(char c) const
 		{
 			if (c >= '0' && c <= '9') {
-				return (c - '0');
+				return static_cast<char>(c - '0');
 			}
 			if (c >= 'A' && c <= 'F') {
-				return (c - 'A' + 10);
+				return static_cast<char>(c - 'A' + 10);
 			}
 			if (c >= 'a' && c <= 'f') {
-				return (c - 'a' + 10);
+				return static_cast<char>(c - 'a' + 10);
 			}
 			return 16;  // aka invalid
 		}
@@ -119,14 +120,14 @@ const char* const Bin2AsciiEncoder::StaticHolder<Dummy>::encoded_chars_url =
 // encode the passed string (src.data()).
 inline std::string Bin2AsciiEncoder::encode(const std::string& src) const
 {
-	unsigned int src_size = src.size();
+	std::size_t src_size = src.size();
 	std::string dest;
 	dest.reserve(src_size * 3);  // maximum
 
 	static const char* digits = "0123456789ABCDEF";
 
 	char c = 0;
-	for (unsigned int i = 0; i < src_size; ++i) {
+	for (std::size_t i = 0; i < src_size; ++i) {
 		c = src[i];
 
 		if (c == ' ') {
@@ -155,12 +156,12 @@ inline std::string Bin2AsciiEncoder::encode(const std::string& src) const
 // returns an empty string on failure (provided that src is not empty).
 inline std::string Bin2AsciiEncoder::decode(const std::string& src) const
 {
-	unsigned int src_size = src.size();
+	std::size_t src_size = src.size();
 	std::string dest;
 	dest.reserve(src_size);  // maximum
 
 	char c = 0;
-	for (unsigned int i = 0; i < src_size; ++i) {
+	for (std::size_t i = 0; i < src_size; ++i) {
 		c = src[i];
 
 		if (c == '+' && url_mode_) {  // if not url_mode, treat it as the others
@@ -175,7 +176,7 @@ inline std::string Bin2AsciiEncoder::decode(const std::string& src) const
 				if (cv1 == 16 || cv2 == 16)  // invalid, max hex char + 1.
 					return std::string();
 
-				dest += (cv2 + (cv1 << 4));
+				dest += static_cast<char>(cv2 + (cv1 << 4));
 				continue;
 			}
 			return std::string();

@@ -9,10 +9,13 @@
 
 #include "hz_config.h"  // feature macros
 
+#include <cstddef>  // std::size_t
+
 #include "common_types.h"  // NullType
 #include "local_algo.h"  // shell_sort
 #include "sync_part_get_policy.h"  // internal header, SyncGetPolicy struct.
 #include "system_specific.h"  // HZ_GCC_CHECK_VERSION
+
 
 
 namespace hz {
@@ -374,7 +377,7 @@ class SyncMultiLock :
 
 		~SyncMultiLock()
 		{
-			for (unsigned int i = size_; i > 0; --i) {  // unlock reverse order
+			for (std::size_t i = size_; i > 0; --i) {  // unlock reverse order
 				switch (mutexes_[i - 1].index) {
 					case 1: internal::MultiLockBase<1, Mutex1, LockPolicy1>::unlock(); break;
 					case 2: internal::MultiLockBase<2, Mutex2, LockPolicy2>::unlock(); break;
@@ -397,7 +400,7 @@ class SyncMultiLock :
 		{
 			shell_sort(mutexes_, mutexes_ + size_);  // sort by mutex addresses
 
-			for (unsigned int i = 0; i < size_; ++i) {
+			for (std::size_t i = 0; i < size_; ++i) {
 				switch (mutexes_[i].index) {
 					case 1: internal::MultiLockBase<1, Mutex1, LockPolicy1>::lock(); break;
 					case 2: internal::MultiLockBase<2, Mutex2, LockPolicy2>::lock(); break;
@@ -417,7 +420,7 @@ class SyncMultiLock :
 	private:
 
 		internal::MultiLockPair* mutexes_;  // array of MultiLockPair* for sorting
-		unsigned int size_;  // array size
+		std::size_t size_;  // array size
 
 		// forbid copying
 		SyncMultiLock(const SyncMultiLock& from);
@@ -448,14 +451,14 @@ class SyncMultiLockUniType {
 		// -------------------------------- passed as an array
 
 
-		template<unsigned int size>
+		template<std::size_t size>
 		SyncMultiLockUniType(Mutex* (&mutexes)[size], bool do_lock = true)
 				: mutexes_(0), size_(0)
 		{
 			if (size && do_lock) {
 				size_ = size;
 				mutexes_ = new Mutex*[size_];
-				for (unsigned int i = 0; i < size_; ++i)
+				for (std::size_t i = 0; i < size_; ++i)
 					mutexes_[i] = mutexes[i];
 				this->sort_lock();
 			}
@@ -470,7 +473,7 @@ class SyncMultiLockUniType {
 			if (do_lock) {
 				size_ = mutexes.size();
 				mutexes_ = new Mutex*[size_];
-				int i = 0;
+				std::size_t i = 0;
 				for (typename Container<Mutex*>::const_iterator iter = mutexes.begin(); iter != mutexes.end(); ++iter)
 					mutexes_[i++] = *iter;
 				this->sort_lock();
@@ -492,7 +495,7 @@ class SyncMultiLockUniType {
 			if (do_lock) {
 				size_ = mutexes.size();
 				mutexes_ = new Mutex*[size_];
-				int i = 0;
+				std::size_t i = 0;
 				for (typename Container<Mutex*, CT2>::const_iterator iter = mutexes.begin(); iter != mutexes.end(); ++iter)
 					mutexes_[i++] = *iter;
 				this->sort_lock();
@@ -507,7 +510,7 @@ class SyncMultiLockUniType {
 			if (do_lock) {
 				size_ = mutexes.size();
 				mutexes_ = new Mutex*[size_];
-				int i = 0;
+				std::size_t i = 0;
 				for (typename Container<Mutex*, CT2, CT3>::const_iterator iter = mutexes.begin(); iter != mutexes.end(); ++iter)
 					mutexes_[i++] = *iter;
 				this->sort_lock();
@@ -659,7 +662,7 @@ class SyncMultiLockUniType {
 
 		~SyncMultiLockUniType()
 		{
-			for (unsigned int i = size_; i > 0; --i) {  // unlock in reverse order
+			for (std::size_t i = size_; i > 0; --i) {  // unlock in reverse order
 				LockPolicy::unlock(*(mutexes_[i-1]));
 			}
 			delete[] mutexes_;
@@ -669,7 +672,7 @@ class SyncMultiLockUniType {
 		void sort_lock()
 		{
 			shell_sort(mutexes_, mutexes_ + size_);
-			for (unsigned int i = 0; i < size_; ++i) {
+			for (std::size_t i = 0; i < size_; ++i) {
 				LockPolicy::lock(*(mutexes_[i]));
 			}
 		}
@@ -677,7 +680,7 @@ class SyncMultiLockUniType {
 
 	private:
 		Mutex** mutexes_;  // array of Mutex*
-		unsigned int size_;
+		std::size_t size_;
 
 		// resolve ambiguity with earlier gcc versions
 #if defined(__INTEL_COMPILER) || (!defined __GNUC__) || HZ_GCC_CHECK_VERSION(4, 2, 0)
@@ -698,7 +701,7 @@ class SyncMultiLockEmpty {
 
 		// -------------------------------- passed as an array
 
-		template<unsigned int size>
+		template<std::size_t size>
 		SyncMultiLockEmpty(Mutex* (&mutexes)[size], bool do_lock = true)
 		{ }
 

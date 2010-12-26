@@ -8,15 +8,15 @@
 
 #include <ios>  // std::boolalpha
 #include <algorithm>  // std::find
-#include <cstdio>  // std::fgets()
+#include <cstdio>  // std::fgets(), std::FILE
 #include <cerrno>  // ENXIO
 
 #if defined CONFIG_KERNEL_OPENBSD || defined CONFIG_KERNEL_NETBSD
 	#include <util.h>  // getrawpartition()
 #endif
 
-#if defined CONFIG_KERNEL_WIN32
-	#include <windows.h>  // CreateFile(), CloseHandle(), etc...
+#if defined CONFIG_KERNEL_FAMILY_WINDOWS
+	#include <windows.h>  // CreateFileA(), CloseHandle(), etc...
 #endif
 
 #include "hz/debug.h"
@@ -72,7 +72,7 @@ namespace {
 		hz::Dir dir(dev_dir);
 
 		std::vector<std::string> all_devices;
-		if (!dir.entry_list(all_devices, false)) {  // this outputs to debug too.
+		if (!dir.list(all_devices, false)) {  // this outputs to debug too.
 			std::string error_msg = dir.get_error_utf8();
 			if (!dir.exists()) {
 				debug_out_warn("app", DBG_FUNC_MSG << "Device scan directory doesn't exist.\n");
@@ -132,12 +132,12 @@ namespace {
 		if (!file.open("rb"))  // closed automatically
 			return false;  // the error message is in File itself.
 
-		FILE* fp = file.get_handle();
+		std::FILE* fp = file.get_handle();
 		if (!fp)
 			return false;
 
 		char line[256];
-		while (std::fgets(line, sizeof(line), fp) != NULL) {
+		while (std::fgets(line, static_cast<int>(sizeof(line)), fp) != NULL) {
 			if (*line != '\0')
 				lines.push_back(line);
 		}
@@ -259,7 +259,7 @@ namespace {
 
 
 
-#elif defined CONFIG_KERNEL_WINDOWS
+#elif defined CONFIG_KERNEL_FAMILY_WINDOWS
 
 
 	// smartctl accepts various variants, the most straight being pdN,
@@ -274,7 +274,8 @@ namespace {
 			// If the drive is openable, then it's there.
 			// NOTE: Administrative privileges are required to open it.
 			// Yes, CreateFile() is open, not create. Yes, it's silly (ah, win32...).
-			HANDLE h = CreateFile(name.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
+			// We don't use any long/unopenable files here, so use the ANSI version.
+			HANDLE h = CreateFileA(name.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
 					NULL, OPEN_EXISTING, 0, NULL);
 
 			// The numbers seem to be consecutive, so break on first invalid.
@@ -300,7 +301,7 @@ namespace {
 		debug_out_info("app", DBG_FUNC_MSG << "Detecting through /dev...\n");
 
 		std::string sdev_config_path;
-		#ifdef CONFIG_KERNEL_SOLARIS
+		#if defined CONFIG_KERNEL_SOLARIS
 			sdev_config_path = "system/solaris_dev_path";
 		#else  // other unixes
 			sdev_config_path = "system/unix_sdev_path";
@@ -315,7 +316,7 @@ namespace {
 		hz::Dir dir(dev_dir);
 
 		std::vector<std::string> all_devices;
-		if (!dir.entry_list(all_devices, false, hz::DirSortNone())) {  // this outputs to debug too.
+		if (!dir.list(all_devices, false, hz::DirSortNone())) {  // this outputs to debug too.
 			std::string error_msg = dir.get_error_utf8();
 			if (!dir.exists()) {
 				debug_out_warn("app", DBG_FUNC_MSG << "Device directory doesn't exist.\n");
@@ -570,7 +571,7 @@ std::string StorageDetector::detect(std::vector<StorageDeviceRefPtr>& drives)
 		}
 	}
 
-#elif defined CONFIG_KERNEL_WINDOWS
+#elif defined CONFIG_KERNEL_FAMILY_WINDOWS
 
 	if (!found) {
 		error_msg = detect_drives_win32(devices);  // win32
@@ -674,7 +675,7 @@ std::string StorageDetector::fetch_basic_data(std::vector<StorageDeviceRefPtr>& 
 
 		debug_out_dump("app", "Device information for " << drive->get_device() << ":\n"
 				<< "\tModel: " << drive->get_model_name() << "\n"
-				<< "\tType: " << StorageDevice::get_type_name(drive->get_type()) << "\n"
+				<< "\tType: " << StorageDevice::get_type_readable_name(drive->get_type()) << "\n"
 				<< "\tSMART status: " << StorageDevice::get_status_name(drive->get_smart_status()) << "\n"
 				);
 

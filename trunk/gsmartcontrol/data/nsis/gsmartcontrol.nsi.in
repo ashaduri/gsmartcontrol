@@ -199,7 +199,7 @@ SectionIn 1
   File gsmartcontrol.exe
   File gsmartcontrol.ico
   File icon_*.png
-  File *.dll
+;  File *.dll
   File smartctl-nc.exe
   File smartctl.exe
 
@@ -271,7 +271,7 @@ Section Uninstall
   Delete "$INSTDIR\gsmartcontrol.exe"
   Delete "$INSTDIR\gsmartcontrol.ico"
   Delete "$INSTDIR\icon_*.png"
-  Delete "$INSTDIR\*.dll"
+;  Delete "$INSTDIR\*.dll"
   Delete "$INSTDIR\smartctl-nc.exe"
   Delete "$INSTDIR\smartctl.exe"
 

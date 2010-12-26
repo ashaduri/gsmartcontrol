@@ -11,7 +11,7 @@
 
 #include "hz/down_cast.h"
 #include "hz/string_num.h"  // number_to_string
-#include "hz/string_format.h"  // string_sprintf
+#include "hz/string_sprintf.h"  // string_sprintf
 #include "hz/string_algo.h"  // string_join
 #include "hz/fs_file.h"  // hz::File
 #include "hz/format_unit.h"  // format_time_length
@@ -161,7 +161,7 @@ namespace {
 // glade/gtkbuilder needs this constructor
 GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
 		: AppUIResWidget<GscInfoWindow, true>(gtkcobj, ref_ui),
-		device_name_label(0)
+		device_name_label(0), test_force_bar_update(true)
 {
 
 	// Create missing widgets
@@ -802,7 +802,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 				row[col_num] = iter->value_error_block.error_num;
 				row[col_hours] = iter->value_error_block.lifetime_hours;
 				row[col_state] = iter->value_error_block.device_state;
-				row[col_type] = StorageErrorBlock::get_readable_error_type(iter->value_error_block.reported_type);
+				row[col_type] = StorageErrorBlock::get_readable_error_types(iter->value_error_block.reported_types);
 				row[col_details] = (type_details.empty() ? "-" : type_details);  // e.g. OBS has no details
 				row[col_tooltip] = iter->get_description();
 				row[col_storage] = &(*iter);
@@ -1367,115 +1367,117 @@ void GscInfoWindow::on_test_type_combo_changed()
 
 
 
+
 // Note: Another loop like this may run inside it for another drive.
-void GscInfoWindow::test_loop()
+gboolean GscInfoWindow::test_idle_callback(void* data)
 {
-	if (!current_test)  // shouldn't happen
-		return;
+	GscInfoWindow* self = static_cast<GscInfoWindow*>(data);
+	DBG_ASSERT(self);
 
-	// Switch GUI to running test mode
+	if (!self->current_test)  // shouldn't happen
+		return false;  // stop
 
-	Gtk::ComboBox* test_type_combo = lookup_widget<Gtk::ComboBox*>("test_type_combo");
-	if (test_type_combo)
-		test_type_combo->set_sensitive(false);
-
-	Gtk::Button* test_execute_button = lookup_widget<Gtk::Button*>("test_execute_button");
-	if (test_execute_button)
-		test_execute_button->set_sensitive(false);
+	Gtk::ProgressBar* test_completion_progressbar =
+			self->lookup_widget<Gtk::ProgressBar*>("test_completion_progressbar");
 
 
-	Gtk::ProgressBar* test_completion_progressbar = lookup_widget<Gtk::ProgressBar*>("test_completion_progressbar");
-	if (test_completion_progressbar) {
-		test_completion_progressbar->set_text("");
-		test_completion_progressbar->set_sensitive(true);
-		test_completion_progressbar->show();
-	}
+	bool active = true;
 
-	Gtk::Button* test_stop_button = lookup_widget<Gtk::Button*>("test_stop_button");
-	if (test_stop_button) {
-		test_stop_button->set_sensitive(true);  // true while test is active
-		test_stop_button->show();
-	}
-
-	std::string error_msg;  // our errors
-
-	Glib::Timer timer_poll, timer_bar;
-
-	// one update() is performed by start(), so do the timeout first
-	while (true) {
-		if (!current_test->is_active())  // check status
+	do {  // goto
+		if (!self->current_test->is_active()) {  // check status
+			active = false;
 			break;
+		}
 
-		int8_t rem_percent = current_test->get_remaining_percent();
+		int8_t rem_percent = self->current_test->get_remaining_percent();
 		std::string rem_percent_str = (rem_percent == -1 ? "Unknown" : hz::number_to_string(100 - rem_percent));
 
-		timer_poll.start();  // restart it
-		int64_t poll_in = current_test->get_poll_in_seconds();  // sec
+		int64_t poll_in = self->current_test->get_poll_in_seconds();  // sec
 
-		timer_bar.start();  // restart
-		bool force_bar_update = true;  // every time after poll
 
-		// wait until next poll (up to several minutes)
-		while (timer_poll.elapsed() < static_cast<double>(poll_in)) {  // elapsed() is seconds in double.
+		// One update() is performed by start(), so do the timeout first.
 
-			Glib::usleep(30*1000);  // 30msec. don't do more - we may have two or more loops like this
+		// Wait until next poll (up to several minutes). Meanwhile, interpolate
+		// the remaining time, update the progressbar, etc...
+		if (self->test_timer_poll.elapsed() < static_cast<double>(poll_in)) {  // elapsed() is seconds in double.
 
-			if (force_bar_update || timer_bar.elapsed() >= 5.) {  // update progress bar every 5 seconds or after poll.
+			// Update progress bar right after poll, plus every 5 seconds.
+			if (self->test_force_bar_update || self->test_timer_bar.elapsed() >= 5.) {
 
-				int64_t rem_seconds = current_test->get_remaining_seconds();
-				std::string rem_seconds_str = (rem_seconds == -1 ? "Unknown" : hz::format_time_length(rem_seconds));
-
-				Glib::ustring bar_str = hz::string_sprintf("Test completion: %s%%; ETA: %s",
-						rem_percent_str.c_str(), rem_seconds_str.c_str());
-				if (!error_msg.empty())
-					bar_str = error_msg;  // better than popup every few seconds
+				int64_t rem_seconds = self->current_test->get_remaining_seconds();
 
 				if (test_completion_progressbar) {
+					std::string rem_seconds_str = (rem_seconds == -1 ? "Unknown" : hz::format_time_length(rem_seconds));
+
+					Glib::ustring bar_str;
+
+					if (self->test_error_msg.empty()) {
+						bar_str = hz::string_sprintf("Test completion: %s%%; ETA: %s",
+								rem_percent_str.c_str(), rem_seconds_str.c_str());
+					} else {
+						bar_str = self->test_error_msg;  // better than popup every few seconds
+					}
+
 					test_completion_progressbar->set_text(bar_str);
 					test_completion_progressbar->set_fraction(std::max(0., std::min(1., 1. - (rem_percent / 100.))));
 				}
 
-				force_bar_update = false;
-				timer_bar.start();  // restart
+				self->test_force_bar_update = false;
+				self->test_timer_bar.start();  // restart
 			}
 
-			while (Gtk::Main::events_pending()) {
-				Gtk::Main::iteration();
-			}
-
-			if (!current_test->is_active())  // check status
+			if (!self->current_test->is_active()) {  // check status
+				active = false;
 				break;
+			}
+
+
+		} else {  // it's poll time
+
+			if (!self->current_test->is_active()) {  // the inner loop stopped, stop this one too
+				active = false;
+				break;
+			}
+
+			SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
+			ex->create_running_dialog(self);
+
+			self->test_error_msg = self->current_test->update(ex);
+			if (!self->test_error_msg.empty()) {
+// 				gui_show_error_dialog("Cannot monitor test progress", self->test_error_msg, this);  // better show in progressbar.
+				self->current_test->force_stop(ex);  // what else can we do?
+				active = false;
+				break;
+			}
+
+			self->test_timer_poll.start();  // restart it
+			self->test_force_bar_update = true;  // force progressbar / ETA update on the next tick
 		}
 
-		if (!current_test->is_active())  // the inner loop stopped, stop this one too
-			break;
 
-		SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
-		ex->create_running_dialog(this);
+	} while (false);
 
-		error_msg = current_test->update(ex);
-		if (!error_msg.empty()) {
-// 			gui_show_error_dialog("Cannot monitor test progress", error_msg, this);  // better show in progressbar.
-			current_test->force_stop(ex);  // what else can we do?
-		}
+
+	if (active) {
+		return true;  // continue the idle callback
 	}
 
-	timer_poll.stop();  // just in case
-	timer_bar.stop();  // just in case
 
+	// Test is finished, clean up
 
-	// Test is finished
+	self->test_timer_poll.stop();  // just in case
+	self->test_timer_bar.stop();  // just in case
 
-	StorageSelftestEntry::status_t status = current_test->get_status();
+	StorageSelftestEntry::status_t status = self->current_test->get_status();
 
 	bool aborted = false;
 	StorageSelftestEntry::status_severity_t severity = StorageSelftestEntry::severity_none;
 	std::string result_msg;
 
-	if (!error_msg.empty()) {
+	if (!self->test_error_msg.empty()) {
 		aborted = true;
 		severity = StorageSelftestEntry::severity_error;
-		result_msg = "<b>Test aborted: </b>" + error_msg;
+		result_msg = "<b>Test aborted: </b>" + self->test_error_msg;
 
 	} else {
 		severity = StorageSelftestEntry::get_status_severity(status);
@@ -1497,15 +1499,18 @@ void GscInfoWindow::test_loop()
 	}
 
 
+	Gtk::ComboBox* test_type_combo = self->lookup_widget<Gtk::ComboBox*>("test_type_combo");
 	if (test_type_combo)
 		test_type_combo->set_sensitive(true);
 
+	Gtk::Button* test_execute_button = self->lookup_widget<Gtk::Button*>("test_execute_button");
 	if (test_execute_button)
 		test_execute_button->set_sensitive(true);
 
 	if (test_completion_progressbar)
 		test_completion_progressbar->set_text(aborted ? "Test aborted" : "Test completed");
 
+	Gtk::Button* test_stop_button = self->lookup_widget<Gtk::Button*>("test_stop_button");
 	if (test_stop_button)
 		test_stop_button->set_sensitive(false);
 
@@ -1516,25 +1521,28 @@ void GscInfoWindow::test_loop()
 		stock_id = Gtk::Stock::DIALOG_WARNING;
 	}
 
-	Gtk::Image* test_result_image = lookup_widget<Gtk::Image*>("test_result_image");
+	Gtk::Image* test_result_image = self->lookup_widget<Gtk::Image*>("test_result_image");
 	// we use large icon size here because the icons we use are from dialogs.
 	// unfortunately, there are no non-dialog icons of this sort.
 	if (test_result_image)
 		test_result_image->set(stock_id, Gtk::ICON_SIZE_DND);
 
 
-	Gtk::Label* test_result_label = lookup_widget<Gtk::Label*>("test_result_label");
+	Gtk::Label* test_result_label = self->lookup_widget<Gtk::Label*>("test_result_label");
 	if (test_result_label)
 		test_result_label->set_markup(result_msg);
 
-	Gtk::HBox* test_result_hbox = lookup_widget<Gtk::HBox*>("test_result_hbox");
+	Gtk::HBox* test_result_hbox = self->lookup_widget<Gtk::HBox*>("test_result_hbox");
 	if (test_result_hbox)
 		test_result_hbox->show();
 
 
-	this->refresh_info(false);  // don't clear the tests tab
+	self->refresh_info(false);  // don't clear the tests tab
 
+	return false;  // stop idle callback
 }
+
+
 
 
 
@@ -1563,8 +1571,51 @@ void GscInfoWindow::on_test_execute_button_clicked()
 
 	current_test = test;
 
-	// The Main Test Loop (tm)
-	test_loop();
+
+	// Switch GUI to "running test" mode
+
+	if (test_type_combo)
+		test_type_combo->set_sensitive(false);
+
+	Gtk::Button* test_execute_button = lookup_widget<Gtk::Button*>("test_execute_button");
+	if (test_execute_button)
+		test_execute_button->set_sensitive(false);
+
+
+	Gtk::ProgressBar* test_completion_progressbar = lookup_widget<Gtk::ProgressBar*>("test_completion_progressbar");
+	if (test_completion_progressbar) {
+		test_completion_progressbar->set_text("");
+		test_completion_progressbar->set_sensitive(true);
+		test_completion_progressbar->show();
+	}
+
+	Gtk::Button* test_stop_button = lookup_widget<Gtk::Button*>("test_stop_button");
+	if (test_stop_button) {
+		test_stop_button->set_sensitive(true);  // true while test is active
+		test_stop_button->show();
+	}
+
+
+	// reset these
+	test_error_msg = "";
+	test_timer_poll.start();
+	test_timer_bar.start();
+	test_force_bar_update = true;
+
+
+	// We don't use idle function here, because it has the following problem:
+	// CmdexSync::execute() (which is called on force_stop()) calls g_main_context_pending(),
+	// which returns true EVERY time, until the idle callback returns false.
+	// So, force_stop() exits its "execute abort" command only when the
+	// idle callback polls the drive on the next timeout and sees that the test
+	// has been actually aborted.
+	// So, we use timeout callback - and hope that there are no usleeps
+	// with 300ms so that g_main_context_pending() returns false at least once,
+	// to escape the execute() loop.
+
+// 	g_idle_add(test_idle_callback, this);
+	g_timeout_add(300, test_idle_callback, this);  // every 300ms
+
 }
 
 
@@ -1584,7 +1635,7 @@ void GscInfoWindow::on_test_stop_button_clicked()
 		return;
 	}
 
-	// nothing else to do - the cleanup is performed by test_loop.
+	// nothing else to do - the cleanup is performed by the idle callback.
 }
 
 

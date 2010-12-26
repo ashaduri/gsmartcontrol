@@ -33,6 +33,14 @@
 #include "config.h"
 #endif
 
+// Custom:
+#include <cstdlib>
+#include <cstdio>
+#include <cctype>
+#include <climits>
+#include <cassert>
+#include <cerrno>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>

@@ -21,7 +21,7 @@ int64_t SelfTest::get_remaining_seconds() const
 	if (total <= 0)
 		return -1;  // unknown
 
-	double gran = (total / 9.);  // seconds per 10%
+	double gran = (double(total) / 9.);  // seconds per 10%
 	// since remaining_percent_ may be manually set to 100, we limit from the above.
 	double rem_seconds_at_last_change = std::min(double(total), gran * remaining_percent_ / 10.);
 	double rem = rem_seconds_at_last_change - timer_.elapsed();
@@ -251,7 +251,8 @@ std::string SelfTest::update(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 			poll_in_seconds_ = 30;  // just a guess
 
 		} else {
-			double gran = (total / 9.);  // seconds per 10%. use double, because e.g. 60sec test gives silly values with int.
+			// seconds per 10%. use double, because e.g. 60sec test gives silly values with int.
+			double gran = (double(total) / 9.);
 
 			// Add 1/10 for disk load delays, etc... . Limit to 15sec, in case of very quick tests.
 			poll_in_seconds_ = std::max(int64_t(15), int64_t(gran / 3. + (gran / 10.)));

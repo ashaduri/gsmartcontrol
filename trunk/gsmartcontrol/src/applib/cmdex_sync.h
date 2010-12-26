@@ -179,13 +179,6 @@ class CmdexSync : public hz::intrusive_ptr_referenced, public sigc::trackable {
 			cmdex_.set_buffer_sizes(stdout_buffer_size, stderr_buffer_size);
 		}
 
-		// Call before execute().
-		// See Cmdex for details.
-		void set_str_available(bool stdout_str_as_available = false, bool stderr_str_as_available = true)
-		{
-			cmdex_.set_str_available(stdout_str_as_available, stderr_str_as_available);
-		}
-
 		std::string get_stdout_str(bool clear_existing = false)
 		{
 			return cmdex_.get_stdout_str(clear_existing);

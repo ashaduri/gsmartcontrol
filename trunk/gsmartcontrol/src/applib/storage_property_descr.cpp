@@ -4,6 +4,8 @@
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
+#include <vector>
+
 #include "hz/string_algo.h"  // string_replace_copy
 #include "applib/app_pcrecpp.h"
 
@@ -59,7 +61,23 @@ namespace {
 
 		} else {
 			bool known_by_smartctl = !app_pcre_match("/Unknown_Attribute/i", p.reported_name);
-			bool smartctl_is_same = app_pcre_match("/^" + app_pcre_escape(smartctl_name) + "$/i", attr_name);
+
+			// check if smartctl_name is approximately the same as our description.
+			std::string regex = app_pcre_escape(smartctl_name);
+			std::string match = attr_name;
+
+			std::vector<std::string> searches, replacements;
+			searches.push_back("-");
+			replacements.push_back(" ");
+			searches.push_back("/");
+			replacements.push_back(" ");
+			searches.push_back("Ct");
+			replacements.push_back("Count");
+
+			hz::string_replace_array(regex, searches, replacements);
+			hz::string_replace_array(match, searches, replacements);
+
+			bool smartctl_is_same = app_pcre_match("/^" + regex + "$/i", match);
 
 			p.readable_name = attr_name;
 
@@ -127,7 +145,7 @@ bool storage_property_autoset_description(StorageProperty& p)
 		// Read Channel Margin
 		|| auto_set_attr(p, 6, "Read Channel Margin", "Margin of a channel while reading data. The function of this attribute is not specified.")
 		// Seek Error Rate
-		|| auto_set_attr(p, 7, "Seek Error Rate", "Number of seek errors (Raw value). When a drive reads data, it positions heads in the needed place. If there is a failure in the mechanical positioning system, a seek error arises. More seek errors indicate worse condition of a disk surface and disk mechanical subsystem.")
+		|| auto_set_attr(p, 7, "Seek Error Rate", "Frequency of errors appearance while positioning. When a drive reads data, it positions heads in the needed place. If there is a failure in the mechanical positioning system, a seek error arises. More seek errors indicate worse condition of a disk surface and disk mechanical subsystem. The exact meaning of the Raw value is manufacturer-dependent.")
 		// Seek Time Performance
 		|| auto_set_attr(p, 8, "Seek Time Performance", "Average efficiency of seek operations of the magnetic heads. If this value is decreasing, it is a sign of problems in the hard disk drive mechanical subsystem.")
 		// Power-On Hours (Maxtor may use minutes, Fujitsu may use seconds, some even temperature?)

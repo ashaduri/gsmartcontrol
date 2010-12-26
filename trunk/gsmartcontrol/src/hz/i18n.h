@@ -25,9 +25,10 @@ namespace hz {
 
 
 // Usually NLS can be disabled through the configure --disable-nls option.
-#if (defined ENABLE_NLS) && (ENABLE_NLS)
+#if defined ENABLE_NLS && ENABLE_NLS
 
 	#include <libintl.h>  // gettext functions
+	#include <cstddef>  // std::size_t
 	#include <cstring>  // std::strlen, std::memcpy
 
 

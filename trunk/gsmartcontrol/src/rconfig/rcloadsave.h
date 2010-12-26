@@ -40,7 +40,7 @@ inline bool load_from_string(const std::string& str)
 
 
 
-#ifdef RMN_SERIALIZE_AVAILABLE
+#if defined RMN_SERIALIZE_AVAILABLE && RMN_SERIALIZE_AVAILABLE
 
 inline bool save_to_file(const std::string& file)
 {

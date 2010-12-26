@@ -1198,7 +1198,7 @@ void GscMainWindow::show_add_device_chooser()
 			"For example, pd0 means the first physical drive",
 			dev, last_str, this, false)) {
 		last_str = dev;  // safe for the future
-		this->add_device(dev);
+		this->add_device(dev);  // both the GUI and the API is in utf-8, no conversion is necessary.
 	}
 
 
@@ -1229,7 +1229,7 @@ void GscMainWindow::show_add_device_chooser()
 		{
 			last_dir = dialog.get_current_folder();  // safe for the future
 
-			std::string file = dialog.get_filename();
+			std::string file = dialog.get_filename();  // in fs encoding
 			this->add_device(file);
 			break;
 		}
@@ -1272,7 +1272,7 @@ void GscMainWindow::show_load_virtual_file_chooser()
 		{
 			last_dir = dialog.get_current_folder();  // safe for the future
 
-			std::string file = dialog.get_filename();
+			std::string file = dialog.get_filename();  // in fs encoding
 			this->add_virtual_drive(file);
 			break;
 		}

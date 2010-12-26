@@ -30,7 +30,8 @@ int main()
 
 	} else {
 		for (unsigned int i = 0; i < drives.size(); ++i) {
-			std::cerr << drives[i]->get_device() << " (" << StorageDevice::get_type_name(drives[i]->get_type()) << ")\n";
+			std::cerr << drives[i]->get_device() <<
+					" (" << StorageDevice::get_type_readable_name(drives[i]->get_type()) << ")\n";
 		}
 	}
 

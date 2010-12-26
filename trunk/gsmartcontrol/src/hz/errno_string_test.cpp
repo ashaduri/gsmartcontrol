@@ -17,6 +17,7 @@
 
 #include <iostream>
 #include <map>
+#include <cerrno>  // for errno.h
 #include <errno.h>  // E*
 
 

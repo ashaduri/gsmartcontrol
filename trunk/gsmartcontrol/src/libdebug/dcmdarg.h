@@ -12,7 +12,7 @@
 
 // Glib option parsing support - public interface
 
-#ifdef ENABLE_GLIB
+#if defined ENABLE_GLIB && ENABLE_GLIB
 
 #include <glib.h>
 

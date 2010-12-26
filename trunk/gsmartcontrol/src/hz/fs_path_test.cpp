@@ -64,17 +64,20 @@ int main()
 #ifdef _WIN32
 		paths.push_back("A:\\temp\\ab");  // dir: A:\temp, base: ab
 		paths.push_back("B:\\temp\\ab\\\\");  // dir: B:\temp, base: ab
-		paths.push_back("\\\\host\\");  // dir: \\host\, base: \\host\;
-		paths.push_back("C:\\");  // dir: C:\, base: C:\\;
+		paths.push_back("\\\\host\\");  // dir: \\host\, base: \\host\ ;
+		paths.push_back("C:\\");  // dir: C:\, base: C:\;
 		paths.push_back("D:\\a\\\\b\\\\c");  // dir: D:\a\\b, base: c
 		paths.push_back("\\a\\b\\c");  // dir: \a\b, base: c
 		paths.push_back("d\\e\\f");  // dir: \d\e, base: f
-		paths.push_back("\\f");  // dir: ., base: f
+		paths.push_back("\\f");  // dir: ., base: f; We can't use the \-paths, because there's no "current" drive.
 		paths.push_back("g");  // dir: ., base: g
+		paths.push_back("C:\\temp");  // dir: temp, base: C:\ ;
+		paths.push_back("C:\\temp\\");  // dir: temp, base: C:\ ;
+		paths.push_back("C:\\Documents and Settings\\whatever\\My Documents\\hello.conf");
 
 		paths.push_back(".");  // dir: ., base: .
 		paths.push_back("..");  // dir: ., base: ..
-		paths.push_back("");
+		paths.push_back("");  // dir: ., base: .
 
 
 #else

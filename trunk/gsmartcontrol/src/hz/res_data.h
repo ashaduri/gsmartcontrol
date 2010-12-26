@@ -9,9 +9,9 @@
 
 #include "hz_config.h"  // feature macros
 
-#include <stdint.h>
 #include <string>
 
+#include "cstdint.h"
 #include "data_file.h"
 #include "fs_file.h"
 
@@ -128,7 +128,7 @@
 
 // Use these to automatically enable the selected method.
 
-#if HZ_ENABLE_COMPILED_RES_DATA
+#if defined HZ_ENABLE_COMPILED_RES_DATA && HZ_ENABLE_COMPILED_RES_DATA
 
 	#define HZ_RES_DATA_INIT_NAMED(res_name, dummy, class_name) \
 			HZ_RES_DATA_COMPILED_INIT_NAMED(res_name, dummy, class_name)

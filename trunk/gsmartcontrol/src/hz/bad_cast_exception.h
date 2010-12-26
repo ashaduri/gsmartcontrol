@@ -13,7 +13,7 @@
 #include <exception>  // std::exception
 #include <string>
 
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 	#include <typeinfo>  // std::type_info
 #endif
 
@@ -27,7 +27,7 @@ namespace hz {
 
 
 
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 
 
 struct bad_cast_except : virtual public std::exception {  // from <exception>
@@ -120,7 +120,7 @@ struct custom_cast_exception : public hz::bad_cast_except {
 	custom_cast_exception() : hz::bad_cast_except("custom_cast_exception", "Cast failed from %s to %s.")
 	{ }
 
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 	custom_cast_exception(const std::type_info& src, const std::type_info& dest)
 		: hz::bad_cast_except(src, dest, "custom_cast_exception", "Cast failed")
 	{ }
@@ -129,7 +129,7 @@ struct custom_cast_exception : public hz::bad_cast_except {
 */
 
 
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 
 #define DEFINE_BAD_CAST_EXCEPTION(name, rtti_msg, nortti_msg) \
 	struct name : public hz::bad_cast_except { \
@@ -152,7 +152,7 @@ struct custom_cast_exception : public hz::bad_cast_except {
 
 
 
-#ifndef DISABLE_RTTI
+#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 
 #define THROW_CUSTOM_BAD_CAST(name, from, to) \
 	THROW_FATAL(name(from, to))

@@ -15,8 +15,10 @@
 // header pitfalls.
 #include "format_unit.h"
 
-#include <stdint.h>
 #include <iostream>
+
+#include "cstdint.h"
+
 
 
 

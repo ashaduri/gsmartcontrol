@@ -7,9 +7,8 @@
 #ifndef GSC_SETTINGS_H
 #define GSC_SETTINGS_H
 
-#include <stdint.h>
-
 #include "rconfig/rconfig_mini.h"
+#include "hz/cstdint.h"
 
 
 

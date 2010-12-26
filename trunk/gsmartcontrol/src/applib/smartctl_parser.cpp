@@ -4,9 +4,9 @@
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
-#include <stdint.h>  // uint64_t
 #include <clocale>  // setlocale, localeconv
 
+#include "hz/cstdint.h"  // uint64_t
 #include "hz/string_algo.h"  // string_*
 #include "hz/string_num.h"  // string_is_numeric, number_to_string
 #include "hz/format_unit.h"  // format_size
@@ -225,7 +225,9 @@ bool SmartctlParser::parse_full(const std::string& full)
 bool SmartctlParser::parse_version(const std::string& s, std::string& version, std::string& version_full)
 {
 	// e.g. "smartctl version 5.37" or "smartctl 5.39"
-	if (!app_pcre_match("/^smartctl (?:version )?(([0-9][^ \\t\\n\\r]+)(?: [0-9 :-]+)?)/mi", s, &version_full, &version)) {
+	// "smartctl 5.39 2009-06-03 20:10" (cvs versions)
+	// "smartctl 5.39 2009-08-08 r2873" (svn versions)
+	if (!app_pcre_match("/^smartctl (?:version )?(([0-9][^ \\t\\n\\r]+)(?: [0-9 r:-]+)?)/mi", s, &version_full, &version)) {
 		debug_out_error("app", DBG_FUNC_MSG << "No smartctl version information found in supplied string.\n");
 		return false;
 	}
@@ -713,7 +715,7 @@ bool SmartctlParser::parse_section_data_subsection_capabilities(const std::strin
 			p.value_type = StorageProperty::value_type_capability;
 
 			p.value_capability.reported_flag_value = numvalue_orig;
-			p.value_capability.flag_value = numvalue;  // full flag value
+			p.value_capability.flag_value = static_cast<int16_t>(numvalue);  // full flag value
 			p.value_capability.reported_strvalue = strvalue_orig;
 
 			// split capability lines into a vector. every flag sentence ends with "."
@@ -1195,9 +1197,11 @@ bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& 
 		// split by blocks
 		pcrecpp::RE re_block = app_pcre_re("/^((Error[ \\t]*([0-9]+))[ \\t]*occurred at disk power-on lifetime:[ \\t]*([0-9]+) hours.*(?:\\n(?:  |\\n  ).*)*)/mi");
 
-		// for "in an unknown state" - remove first two words.
+		// "  When the command that caused the error occurred, the device was active or idle."
+		// Note: For "in an unknown state" - remove first two words.
 		pcrecpp::RE re_state = app_pcre_re("/occurred, the device was[ \\t]*(?: in)?(?: an?)?[ \\t]+([^.\\n]*)\\.?/mi");
-		pcrecpp::RE re_type = app_pcre_re("/[ \\t]+Error:[ \\t]*([^ \\t\\n]+)[ \\t]*(.*)$/mi");
+		// "  84 51 2c 71 cd 3f e6  Error: ICRC, ABRT 44 sectors at LBA = 0x063fcd71 = 104844657"
+		pcrecpp::RE re_type = app_pcre_re("/[ \\t]+Error:[ \\t]*([ ,a-z]+)[ \\t]+[0-9]+[ \\t]*(.*)$/mi");
 
 		std::string block, name, value_num, value_time;
 		pcrecpp::StringPiece input(sub);  // position tracker
@@ -1208,9 +1212,9 @@ bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& 
 			hz::string_trim(value_time);
 			// debug_out_dump("app", "\nBLOCK -------------------------------\n" << block);
 
-			std::string state, etype, emore;
+			std::string state, etypes_str, emore;
 			re_state.PartialMatch(block, &state);
-			re_type.PartialMatch(block, &etype, &emore);
+			re_type.PartialMatch(block, &etypes_str, &emore);
 
 			StorageProperty p(pt);
 			p.set_name(hz::string_trim_copy(name));  // "Error 6"
@@ -1220,8 +1224,14 @@ bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& 
 			hz::string_is_numeric(value_num, p.value_error_block.error_num, false);
 			hz::string_is_numeric(value_time, p.value_error_block.lifetime_hours, false);
 
+			std::vector<std::string> etypes;
+			hz::string_split(etypes_str, ",", etypes, true);
+			for (std::vector<std::string>::iterator iter = etypes.begin(); iter != etypes.end(); ++iter) {
+				hz::string_trim(*iter);
+			}
+
 			p.value_error_block.device_state = hz::string_trim_copy(state);
-			p.value_error_block.reported_type = hz::string_trim_copy(etype);
+			p.value_error_block.reported_types = etypes;
 			p.value_error_block.type_more_info = hz::string_trim_copy(emore);
 
 			add_property(p);

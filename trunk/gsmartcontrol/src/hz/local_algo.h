@@ -9,6 +9,8 @@
 
 #include "hz_config.h"  // feature macros
 
+#include <cstddef>  // std::ptrdiff_t
+
 
 
 namespace hz {
@@ -47,10 +49,10 @@ namespace internal {
 template<class RandomIter> inline
 void shell_sort(RandomIter first, RandomIter last)
 {
-	const int n = last - first;
-	for (int gap = n / 2; 0 < gap; gap /= 2) {
-		for (int i = gap; i < n; i++) {
-			for (int j = i - gap; 0 <= j; j -= gap) {
+	const std::ptrdiff_t n = last - first;
+	for (std::ptrdiff_t gap = n / 2; 0 < gap; gap /= 2) {
+		for (std::ptrdiff_t i = gap; i < n; i++) {
+			for (std::ptrdiff_t j = i - gap; 0 <= j; j -= gap) {
 				if ( *(first+j+gap) < *(first+j) ) {  // swap them
 					typename internal::shell_sort_helper<RandomIter>::value_type temp = *(first+j);
 					*(first+j) = *(first+j+gap);
@@ -66,10 +68,10 @@ void shell_sort(RandomIter first, RandomIter last)
 template<class RandomIter, class Comparator> inline
 void shell_sort(RandomIter first, RandomIter last, Comparator less_than_func)
 {
-	const int n = last - first;
-	for (int gap = n / 2; 0 < gap; gap /= 2) {
-		for (int i = gap; i < n; i++) {
-			for (int j = i - gap; 0 <= j; j -= gap) {
+	const std::ptrdiff_t n = last - first;
+	for (std::ptrdiff_t gap = n / 2; 0 < gap; gap /= 2) {
+		for (std::ptrdiff_t i = gap; i < n; i++) {
+			for (std::ptrdiff_t j = i - gap; 0 <= j; j -= gap) {
 				if ( less_than_func(*(first+j+gap), *(first+j)) ) {  // swap them
 					typename internal::shell_sort_helper<RandomIter>::value_type temp = *(first+j);
 					*(first+j) = *(first+j+gap);

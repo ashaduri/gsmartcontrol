@@ -87,8 +87,10 @@ bool CmdexSync::execute()
 		}
 
 
-		// without this, no event sources will be processed and the program will
+		// Without this, no event sources will be processed and the program will
 		// hang waiting for the child to exit (the watch handler won't be called).
+		// Note: If you have an idle callback, g_main_context_pending() will
+		// always return true (until the idle callback returns false and unregisters itself).
 		while(g_main_context_pending(NULL)) {
 			g_main_context_iteration(NULL, false);
 		}

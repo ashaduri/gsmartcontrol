@@ -34,6 +34,7 @@
 #endif
 
 #include <vector>
+#include <cassert>  // Custom
 #include <assert.h>
 
 #include "pcrecpp_internal.h"

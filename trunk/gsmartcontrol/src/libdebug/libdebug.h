@@ -10,7 +10,7 @@
 
 // These macros may be used to control how libdebug is built:
 
-// define ENABLE_GLIB to enable Glib option parsing support.
+// define ENABLE_GLIB to 1 to enable Glib option parsing support.
 // define DEBUG_BUILD to enable all levels by default.
 
 
