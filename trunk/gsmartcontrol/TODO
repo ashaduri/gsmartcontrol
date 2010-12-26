@@ -46,15 +46,20 @@ Add string_replace_linear(), where multiple strings are replaced into the
 	original string (as opposed to previous result).
 
 
-Support Areca controller.
+Add support for launching with consolehelper (from usermode package).
+	Fedora uses this by default.
+	Investigate Fedora selinux situation.
+	usermode-gtk contains consolehelper-gtk, not sure about our package
+		requirement. consolehelper-gtk is not supposed to be launched by user,
+		but I think we can check it with "which".
+		http://fedoranews.org/contributors/matt_hansen/nautilus/
+
+Highlight soft-warning-having devices too (configurable?).
 
 When adding device, have an option to specify "-d" type and other parameters.
 	This is needed to support multi-disk devices.
 
-Add built-in GTK, as well as no-gtk version installer (zip too?).
-	In GTK version, add option to install GTK system-wide (further options
-		controlled by GTK installer itself), or in the same directory
-		(no other options, no GTK PATH, no gsmartcontrol registry key for PATH).
+Add "Show output" button to the devices with "No further info available...".
 
 Patch pangomm for Pango::strip_markup().
 
@@ -67,6 +72,90 @@ libdebug:
 	all flags should be per-channel.
 	bug: if -q is passed, Execution log doesn't contain libdebug log. (requires per-channel status control).
 	use format_time() instead of ctime() and friends, with ISO formatting.
+
+
+
+If the detection executes "smartctl -i", don't execute it again afterwards.
+
+
+RAID:
+http://sourceforge.net/apps/trac/smartmontools/wiki/Supported_RAID-Controllers
+
+Areca Linux:
+	Call as: smartctl -i -d areca,[1-24] /dev/sg0
+	Detection:
+	Check if /proc/scsi/sg/device_strs contains "Areca       RAID controller".
+		If not, there's no Areca controller present.
+	Check /proc/scsi/sg/devices, the line # with type 3 is the sg* number.
+		The "host" field value is the N value in /sys, see below.
+	Check /sys/bus/scsi/devices/hostN/scsi_host/hostN/host_fw_hd_channels, set
+		its contents as the number of ports. If not present, use 24.
+	Probe each port for a valid drive: If the output contains "Device Read Identity Failed",
+		then there is no drive on that port (or Areca has an old firmware, nothing we can
+		do there).
+	Notification: If /sys/bus/scsi/devices/hostN/scsi_host/hostN/host_fw_version
+		is older than "V1.46 2009-01-06", notify the user (maybe its better to grep
+		the smartctl output for that on port 0?).
+
+
+3ware Linux:
+	Call as: smartctl -i -d 3ware,[0-127] /dev/twa[0-15]  (or twe[0-15])
+	Use twe* for [678]xxx series, and twa* for 9xxx series.
+	Note: twe* devices are limited to [0-15] ports (not sure about this).
+	Note: /dev/tw* devices may not exist, they are created by smartctl on the first run.
+	Note: for twe*, /dev/sda may also exist (to be used with -d 3ware,N), we should
+		somehow detect and ignore them.
+	Note: when specifying non-existent port, either a "Device Read Identity Failed"
+		error, or a "blank" info may be returned.
+	Detection:
+	Grep /proc/devices for "twa" or "twe" (e.g. "251 twa"). Use this for /dev/tw* part.
+	Grep /proc/scsi/scsi for AMCC (3ware, LSI too?), use number of matched lines N
+		for /dev/tw*[0, N-1].
+
+
+3ware FreeBSD:
+	Call as: smartctl -i -d 3ware,[0-127] /dev/twa0  (or twe0)
+
+
+3ware Windows:
+	For 9xxx only.
+	Call as: smartctl -i sd[a-z],N
+		N is port, a-z is logical drive (unit) provided by controller.
+	Call as: smarctl -i tw_cli/cx/py
+		This runs tw_cli tool and parses the output; controller x, port y.
+		tw_cli is needed for 64-bit systems, as well as older controllers.
+		In tw_cli mode only limited information-gathering is supported.
+
+
+LSI MegaRAID (SCSI/SAS), Linux:
+	Call as: smartctl -i -d megaraid,[0-?] /dev/sda
+
+
+HighPoint RocketRAID ((S)ATA) Linux:
+	Call as: smartctl -i -d hpt,[1-8]/[1-8] /dev/sda
+	Call as: smartctl -i -d hpt,[1-8]/[1-8]/[1-15] /dev/sda
+	Note: /dev/sda should be derived from this controller.
+	Smartctl docs specify smaller limits, but the code says these are the ones.
+
+
+HighPoint RocketRAID ((S)ATA) FreeBSD:
+	Call as: smartctl -i -d hpt,[1-8]/[1-8] /dev/hptrr
+	Call as: smartctl -i -d hpt,[1-8]/[1-8]/[1-15] /dev/hptrr
+	Note: /dev/hptrr should be derived from this controller.
+	Smartctl docs specify smaller limits, but the code says these are the ones.
+
+
+CCISS (HP (Compaq) Smart Array Controller) Linux:
+	Call as: smartctl -a -d cciss,[0-15] /dev/cciss/c0d0
+	c0d0 is the controller (d0 seems to be a logical
+		drive, but it doesn't seem to matter?).
+	An unofficial patch adds support for [0-127] ports.
+
+
+CCISS (HP (Compaq) Smart Array Controller) FreeBSD:
+	Seems to be the same as Linux (uses the same driver?).
+
+
 
 
 

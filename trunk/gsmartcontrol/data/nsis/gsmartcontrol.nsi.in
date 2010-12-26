@@ -22,6 +22,8 @@
 !define REGISTRY_APP_PATHS "Software\Microsoft\Windows\CurrentVersion\App Paths"
 
 
+!include "FileFunc.nsh"  ; GetOptions
+
 
 
 ; --------------- General Settings
@@ -127,6 +129,8 @@ ShowUnInstDetails show
 LangString TEXT_IO_TITLE ${LANG_ENGLISH} "GSmartControl"
 
 
+var install_option_removeold  ; uninstall the old version first (if present): yes (default), no.
+
 
 
 ; ----------------- INSTALLATION TYPES
@@ -155,18 +159,16 @@ SectionIn 1 RO
 	File smartctl-nc.exe
 	File smartctl.exe
 
+	; Include the "doc" directory completely, excluding the file we're not using (e.g. the -nogtk file in gtk installer).
 !ifdef NO_GTK
 	File /r /x distribution.txt doc
 !else
 	File /r /x distribution-nogtk.txt doc
 !endif
 
-	; make our exe request admin privileges when running
-	WriteRegStr HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\layers" \
-		"$INSTDIR\gsmartcontrol.exe" "RUNASADMIN"
-
 	; Add Shortcuts (this inherits the exe's run permissions)
-	CreateShortCut "$SMPROGRAMS\GSmartControl.lnk" "$INSTDIR\gsmartcontrol.exe" "" "$INSTDIR\gsmartcontrol.ico" 0
+	CreateShortCut "$SMPROGRAMS\GSmartControl.lnk" "$INSTDIR\gsmartcontrol.exe" "" \
+		"$INSTDIR\gsmartcontrol.ico" "" SW_SHOWNORMAL "" "GSmartControl - Hard disk drive health inspection tool"
 
 SectionEnd
 
@@ -184,7 +186,7 @@ Section "GTK+ (for this program only)" SecGtkPrivate
 	File "${GTK_INSTALLER_EXE}"
 	; TODO: in the future, when we have translations for this program,
 	; make the GTK+ translations installation dependent on their installation status.
-	ExecWait '"${GTK_INSTALLER_EXE}" /dllpath=root /sideeffects=no /translations=no /compatdlls=no /S /D=$INSTDIR'
+	ExecWait '"${GTK_INSTALLER_EXE}" /sideeffects=no /dllpath=root /translations=no /compatdlls=no /S /D=$INSTDIR'
 	Delete "$INSTDIR\${GTK_INSTALLER_EXE}"
 SectionEnd
 
@@ -211,6 +213,8 @@ var gtk_tmp  ; temporary variable
 ; Executed on installation start
 Function .onInit
 	SetShellVarContext all  ; use all user variables as opposed to current user
+
+	${GetOptions} "$CMDLINE" "/removeold=" $install_option_removeold
 
 	Call PreventMultipleInstances
 
@@ -329,7 +333,7 @@ Section -post
 !endif
 
 	WriteRegStr HKLM "SOFTWARE\${PRODUCT_NAME}" "InstallationDirectory" "$INSTDIR"
-	WriteRegStr HKLM "SOFTWARE\${PRODUCT_NAME}" "Vendor" "Alexander Shaduri"
+	WriteRegStr HKLM "SOFTWARE\${PRODUCT_NAME}" "Vendor" "${PRODUCT_PUBLISHER}"
 
 	WriteRegStr HKLM "${PRODUCT_UNINST_KEY}" "DisplayName" "${PRODUCT_NAME}"
 	WriteRegStr HKLM "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\gsmartcontrol_uninst.exe"
@@ -346,8 +350,6 @@ Section -post
 
 	; write out uninstaller
 	WriteUninstaller "$INSTDIR\gsmartcontrol_uninst.exe"
-	WriteRegStr HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\layers" \
-		"$INSTDIR\gsmartcontrol_uninst.exe" "RUNASADMIN"
 
 	; uninstall shortcut
 	;CreateDirectory "$SMPROGRAMS\GSmartControl"
@@ -378,16 +380,15 @@ Section Uninstall
 !ifndef NO_GTK
 	ReadRegStr $gtk_mode HKLM "SOFTWARE\${PRODUCT_NAME}" "GtkInstalledMode"
 	StrCmp $gtk_mode "private" "" skip_gtk_remove
-		; remove private GTK+, specify the dir because it won't find it on its own (not sure?)
-		ExecWait "$INSTDIR\gtk2_runtime_uninst.exe /remove_config=yes /S _?=$INSTDIR"
-		Delete "$INSTDIR\gtk2_runtime_uninst.exe"  ; it stays for some reason, so delete it manually
+		; remove private GTK+, specify the same custom options are during installation
+		ExecWait "$INSTDIR\gtk2_runtime_uninst.exe /remove_config=yes /sideeffects=no /dllpath=root /translations=no /compatdlls=no /S"
+		; _?=$INSTDIR
+		; Delete "$INSTDIR\gtk2_runtime_uninst.exe"  ; If using _? flag, it won't get deleted automatically, do it manually.
 	skip_gtk_remove:
 !endif
 
 	; add delete commands to delete whatever files/registry keys/etc you installed here.
 	Delete "$INSTDIR\gsmartcontrol_uninst.exe"
-	DeleteRegValue HKLM "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\layers" \
-		"$INSTDIR\gsmartcontrol_uninst.exe"
 
 	DeleteRegKey HKLM "SOFTWARE\${PRODUCT_NAME}"
 	DeleteRegKey HKLM "${PRODUCT_UNINST_KEY}"
@@ -399,11 +400,12 @@ Section Uninstall
 	; Delete "$INSTDIR\*.dll"
 	Delete "$INSTDIR\smartctl-nc.exe"
 	Delete "$INSTDIR\smartctl.exe"
+
+	RMDir /r "$INSTDIR\doc"
+
 	; clean up generated stuff
 	Delete "$INSTDIR\*stdout.txt"
 	Delete "$INSTDIR\*stderr.txt"
-
-	RMDir /r "$INSTDIR\doc"
 
 	RMDir "$INSTDIR"  ; only if empty
 
@@ -424,8 +426,11 @@ SectionEnd ; end of uninstall section
 
 ; --------------- Helpers
 
-; detect previous installation
+; Detect previous installation
 Function DetectPrevInstallation
+	; if /removeold=no option is given, don't check anything.
+	StrCmp $install_option_removeold "no" old_detect_done
+
 	SetShellVarContext all  ; use all user variables as opposed to current user
 	push $R0
 
@@ -445,24 +450,22 @@ Function DetectPrevInstallation
 		ClearErrors
 		IfSilent old_silent_uninst old_nosilent_uninst
 
-	old_nosilent_uninst:
-		; ExecWait '$R0 _?=$INSTDIR'  ;Do not copy the uninstaller to a temp file
-		ExecWait '$R0'
-		goto old_uninst_continue
+		old_nosilent_uninst:
+			ExecWait '$R0'
+			goto old_uninst_continue
 
-	old_silent_uninst:
-		; ExecWait '$R0 /S _?=$INSTDIR'
-		ExecWait '$R0'
+		old_silent_uninst:
+			ExecWait '$R0 /S _?=$INSTDIR'
 
-	old_uninst_continue:
+		old_uninst_continue:
 
-	IfErrors old_no_remove_uninstaller
+		IfErrors old_no_remove_uninstaller
 
-	; You can either use Delete /REBOOTOK in the uninstaller or add some code
-	; here to remove to remove the uninstaller. Use a registry key to check
-	; whether the user has chosen to uninstall. If you are using an uninstaller
-	; components page, make sure all sections are uninstalled.
-	old_no_remove_uninstaller:
+		; You can either use Delete /REBOOTOK in the uninstaller or add some code
+		; here to remove to remove the uninstaller. Use a registry key to check
+		; whether the user has chosen to uninstall. If you are using an uninstaller
+		; components page, make sure all sections are uninstalled.
+		old_no_remove_uninstaller:
 
 	old_detect_done: ; old installation not found, all ok
 
@@ -503,7 +506,7 @@ FunctionEnd
 ; Prevent running multiple instances of the installer
 Function PreventMultipleInstances
 	Push $R0
-	System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${PRODUCT_NAME}") ?e'
+	System::Call 'kernel32::CreateMutexA(i 0, i 0, t ${PRODUCT_NAME}) ?e'
 	Pop $R0
 	StrCmp $R0 0 +3
 		MessageBox MB_OK|MB_ICONEXCLAMATION "The installer is already running." /SD IDOK

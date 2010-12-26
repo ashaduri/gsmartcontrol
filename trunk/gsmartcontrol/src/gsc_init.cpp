@@ -5,9 +5,10 @@
 ***************************************************************************/
 
 #include <string>
-// #include <locale>  // std::locale
+#include <locale>  // std::locale
 #include <clocale>  // std::setlocale
 // #include <locale.h>  // _configthreadlocale (win32)
+#include <stdexcept>  // std::runtime_error
 #include <cstdio>  // std::printf
 #include <vector>
 #include <sstream>
@@ -250,12 +251,21 @@ inline void app_print_version_info()
 bool app_init_and_loop(int& argc, char**& argv)
 {
 
-	// glib needs this for command line args. It will be reset by Gtk::Main later.
+	// glib needs locale initialized for command line args. It will be reset by Gtk::Main later.
 
-	// This aborts on freebsd with "locale::facet::_S_create_c_locale name not valid",
-	// so use the C equivalent.
-	// std::locale::global(std::locale(""));  // set locale to system LANG
-	std::setlocale(LC_ALL, "");
+	// set C and C++ locales to system LANG.
+	try {
+		// This may throw on freebsd and osx with
+		// "locale::facet::_S_create_c_locale name not valid", so make it non-fatal.
+		std::locale::global(std::locale(""));  // C++
+	}
+	catch (const std::runtime_error& e) {
+		// nothing. we can't print anything here, so just ignore it.
+		// newer gtkmm will print a warning if it cannot set a C++ locale,
+		// so it will be an indication.
+	}
+
+	std::setlocale(LC_ALL, "");  // C
 
 
 	// initialize GThread (for mutexes, etc... to work). Must be called before any other glib function.
@@ -271,7 +281,13 @@ bool app_init_and_loop(int& argc, char**& argv)
 	// Note: parsing gtk option context is initializes gtk, so
 	// gtk_disable_setlocale() won't work here.
 	if (!args.arg_locale) {
-		std::setlocale(LC_ALL, "C");  // set classic locale. otherwise we're already in user locale.
+		// set classic locale. otherwise we're already in user locale.
+		try {
+			std::locale::global(std::locale::classic());  // C++
+		}
+		catch (const std::runtime_error& e) {
+		}
+		std::setlocale(LC_ALL, "C");
 	}
 
 
@@ -330,7 +346,8 @@ bool app_init_and_loop(int& argc, char**& argv)
 	app_init_config();
 
 
-	debug_out_info("app", "Current locale: " << std::setlocale(LC_ALL, NULL) << "\n");
+	debug_out_info("app", "Current C locale: " << std::setlocale(LC_ALL, NULL) << "\n");
+	debug_out_info("app", "Current C++ locale: " << std::locale::locale().name() << "\n");
 
 
 	// Initialize GTK+
