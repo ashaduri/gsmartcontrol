@@ -3,7 +3,7 @@
 // #include "winuser.h"  // needed for RT_MANIFEST
 // 1 RT_MANIFEST "gsmartcontrol.exe.manifest"
 
-biocalcon ICON "gsmartcontrol.ico"
+gsmartcontrol ICON "gsmartcontrol.ico"
 
 1 VERSIONINFO
     FILEVERSION 0,0,0,0

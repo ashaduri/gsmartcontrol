@@ -36,9 +36,8 @@ nobase_dist_doc_DATA = contrib/cron-based_noadmin/README \
 
 # Extra files bundled with distribution.
 # file2csource.sh is needed for building but not installed.
-EXTRA_DIST = COPYING TODO INSTALL configure autogen.sh \
-	baqup gsmartcontrol.kdevelop \
-	templates \
+EXTRA_DIST = COPYING INSTALL configure autogen.sh \
+	gsmartcontrol.kdev4 \
 	file2csource.sh \
 	gsmartcontrol.spec
 
