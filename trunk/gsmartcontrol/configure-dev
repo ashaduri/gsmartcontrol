@@ -1,0 +1,70 @@
+#!/bin/bash
+
+# Configure a build directory according to developer flags
+
+type="$1";
+configure_script="$2";
+
+if [ "$type" == "" ]; then
+	echo "Usage: $0 <type> [<configure_script>]"
+	echo "where <type> is one of:"
+	echo "debug optimized icc win32 win32-debug win64-debug sun portland open64";
+	echo "<configure_script> is ../configure by default"
+	exit 1;
+fi
+
+if [ "$configure_script" == "" ]; then
+	configure_script="../configure";
+fi
+
+
+flags="";
+
+case $type in
+	optimized)
+		flags="--disable-user-flags --enable-optimize-options --enable-tests" ;;
+	debug)
+		flags="--enable-debug-options --enable-tests" ;;
+	icc)
+		flags="CC=icc64 CXX=icpc64 --disable-user-flags --enable-tests" ;;
+	win32)
+		flags="CC=i386-pc-mingw32-gcc CXX=i386-pc-mingw32-g++ \
+			PKG_CONFIG_PATH=/cross/w32/target/lib/pkgconfig PKG_CONFIG_LIBDIR=\"\" \
+			PATH=\"/cross/w32/gcc-bin:/cross/w32/target/bin:$PATH\" \
+			--with-windows-gtk-name=gtk2-runtime-2.16.6-2010-02-24-ash --disable-user-flags \
+			--enable-optimize-options --enable-tests --build=i686-linux --host=i386-pc-mingw32" ;;
+	win32-debug)
+		flags="CC=i386-pc-mingw32-gcc CXX=i386-pc-mingw32-g++ \
+			PKG_CONFIG_PATH=/cross/w32/target/lib/pkgconfig PKG_CONFIG_LIBDIR=\"\" \
+			PATH=\"/cross/w32/gcc-bin:/cross/w32/target/bin:$PATH\" \
+			--disable-user-flags --enable-debug-options --enable-tests --build=i686-linux --host=i386-pc-mingw32" ;;
+	win64-debug)
+		flags="CC=x86_64-pc-mingw32-gcc CXX=x86_64-pc-mingw32-g++
+			PKG_CONFIG_PATH=/cross/w64/target/lib/pkgconfig \
+			PKG_CONFIG_LIBDIR=\"\" PATH=\"/cross/w64/gcc-bin:/cross/w64/target/bin:$PATH\" \
+			--disable-user-flags --enable-optimize-options --enable-tests --build=i686-linux \
+			--host=x86_64-pc-mingw32" ;;
+	sun)
+		flags="CC=suncc CXX=sunCC CFLAGS=\"-errwarn=%all -I/opt/sun/target64/include\" \
+			CXXFLAGS=\"-I/opt/sun/target64/include\" PATH=\"/opt/sun/sunstudio/bin:$PATH\" \
+			LDFLAGS=\"-R/opt/sun/target64/lib64 -L/opt/sun/target64/lib64\" \
+			PKG_CONFIG_PATH=\"/opt/sun/target64/lib64/pkgconfig:/usr/lib64/pkgconfig\" \
+			PKG_CONFIG_LIBDIR=\"\" --enable-tests" ;;
+	portland)
+		flags="CC=pgcc CXX=pgCC LDFLAGS=\"-s\" CFLAGS=\"-Minform=warn -Bstatic_pgi\" \
+			CXXFLAGS=\"-Minform=warn -Bstatic_pgi -noswitcherror -define_macro=HZ_NO_COMPILER_AUTOINCLUDE\" \
+			--enable-tests" ;;
+
+	open64)
+		flags="CC=/opt/open64/bin/opencc CXX=/opt/open64/bin/openCC CXXFLAGS=\"-Wall\" \
+			--enable-tests" ;;
+esac
+
+
+echo "Running:"
+echo $configure_script $flags;
+
+$configure_script $flags
+
+
+exit $?
