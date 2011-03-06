@@ -40,6 +40,8 @@ Add debian/ubuntu's su-to-root support to gsmartcontrol-root.
 
 Add support for SSD smartctl attribute names (they're totally different).
 	Check smartctl sources, they print those names.
+	Use smartctl-returned names for searching by default. If it's "Unknown_Attribute"
+		or unknown name, then use our ID db.
 
 
 Testing:
@@ -172,7 +174,7 @@ RAID:
 			HKEY_USERS\.DEFAULT\Software\3ware\3DM2, InstallPath
 		Another option for detection (whether it's 3ware) would be getting
 			\\.\PhysicalDrive0 properties, like smartctl does.
-		Newer (post-5.39.1) smartctl supports --scan-open, which will give us:
+		Newer (> 5.39.1) smartctl supports --scan-open, which will give us:
 			/dev/sda,0 -d ata (opened)
 			/dev/sda,1 -d ata (opened)
 		-d 3ware is not needed under Windows. We should treat sda as pd0
