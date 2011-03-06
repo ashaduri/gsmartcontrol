@@ -11,6 +11,7 @@
 #include <vector>
 #include <iosfwd>
 
+#include "hz/optional_value.h"
 #include "hz/cstdint.h"
 
 
@@ -96,22 +97,21 @@ class StorageAttribute {
 		}
 
 
-		StorageAttribute() : id(-1), value(0), worst(0), threshold(0),
-			attr_type(attr_type_unknown), update_type(update_type_unknown),
+		StorageAttribute() : id(-1), attr_type(attr_type_unknown), update_type(update_type_unknown),
 			when_failed(fail_time_unknown), raw_value_int(0)
 		{ }
 
 
-		int32_t id;
-		std::string flag;  // some have it in 0xXXXX format, others in "PO--C-" format (some WD drives?).
-		uint8_t value;
-		uint8_t worst;
-		uint8_t threshold;
+		int32_t id;  ///< Attribute ID (most vendors agree on this)
+		std::string flag;  ///< Some have it in 0xXXXX format, others in "PO--C-" format (some WD drives?).
+		hz::OptionalValue<uint8_t> value;  ///< Normalized value. May be unset ("---").
+		hz::OptionalValue<uint8_t> worst;  ///< Worst ever value. May be unset ("---").
+		hz::OptionalValue<uint8_t> threshold;  ///< Threshold for normalized value. May be unset ("---").
 		attr_t attr_type;
 		update_t update_type;
 		fail_time_t when_failed;
-		std::string raw_value;  // as presented by smartctl (formatted).
-		int64_t raw_value_int;  // same as raw_value, but parsed as int. original value is 6 bytes I think.
+		std::string raw_value;  ///< as presented by smartctl (formatted).
+		int64_t raw_value_int;  ///< same as raw_value, but parsed as int. original value is 6 bytes I think.
 
 };
 

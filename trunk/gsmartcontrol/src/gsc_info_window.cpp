@@ -659,9 +659,9 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			row[col_id] = iter->value_attribute.id;
 			row[col_name] = iter->readable_name;
 			row[col_flag_value] = iter->value_attribute.flag;  // it's a string, not int.
-			row[col_value] = hz::number_to_string(iter->value_attribute.value);
-			row[col_worst] = hz::number_to_string(iter->value_attribute.worst);
-			row[col_threshold] = hz::number_to_string(iter->value_attribute.threshold);
+			row[col_value] = (iter->value_attribute.value.defined() ? hz::number_to_string(iter->value_attribute.value.value()) : "-");
+			row[col_worst] = (iter->value_attribute.worst.defined() ? hz::number_to_string(iter->value_attribute.worst.value()) : "-");
+			row[col_threshold] = (iter->value_attribute.threshold.defined() ? hz::number_to_string(iter->value_attribute.threshold.value()) : "-");
 			row[col_raw] = iter->value_attribute.raw_value;
 			row[col_type] = attr_type;
 			row[col_updated] = StorageAttribute::get_update_type_name(iter->value_attribute.update_type);

@@ -106,7 +106,6 @@ bool storage_property_autoset_description(StorageProperty& p)
 		p.set_description("Checksum errors indicate that SMART data is invalid. This shouldn't happen in normal circumstances.");
 		found = true;
 
-
 	// Section Info
 	} else if (p.section == StorageProperty::section_info) {
 		found = auto_set(p, "Serial Number", "Serial number, unique to each physical drive.")
@@ -265,10 +264,12 @@ bool storage_property_autoset_description(StorageProperty& p)
 	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_error_log) {
 		found = auto_set(p, "error_count", "Number of errors in error log. Note: Some manufacturers may list completely harmless errors in this log "
 			"(e.g., command invalid, not implemented, etc...).");
+// 		|| auto_set(p, "error_log_unsupported", "This device does not support error logging.");  // the property text already says that
 
 
 	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_selftest_log) {
 		found = auto_set(p, "selftest_num_entries", "Number of tests in selftest log. Note: This log usually contains only the last 20 or so manual tests. ");
+// 		|| auto_set(p, "selftest_log_unsupported", "This device does not support self-test logging.");  // the property text already says that
 
 	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_selective_selftest_log) {
 		// nothing here
@@ -388,12 +389,21 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 			w = StorageProperty::warning_warn;
 			reason = "The drive is reporting internal errors. Usually this means uncorrectable data loss and similar severe errors. "
 					"Check the actual errors for details.";
+
+		} else if (name_match(p, "error_log_unsupported")) {
+			w = StorageProperty::warning_notice;
+			reason = "The drive does not support error logging. This means that SMART error history is unavailable.";
 		}
 
 
 	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_selftest_log) {
 		// don't include selftest warnings - they may be old or something.
 		// self-tests are carried manually anyway, so the user is expected to check their status anyway.
+
+		if (name_match(p, "selftest_log_unsupported")) {
+			w = StorageProperty::warning_notice;
+			reason = "The drive does not support self-test logging. This means that SMART test results won't be logged.";
+		}
 
 	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_selective_selftest_log) {
 		// nothing here

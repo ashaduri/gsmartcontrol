@@ -27,7 +27,7 @@ class OptionalValue {
 		typedef T value_type;
 
 
-		OptionalValue() : value_(), defined_(true)
+		OptionalValue() : value_(), defined_(false)
 		{ }
 
 
