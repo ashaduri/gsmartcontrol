@@ -11,6 +11,7 @@
 #include <gtkmm/button.h>
 #include <gtkmm/accelgroup.h>
 #include <gtkmm/textview.h>
+#include <gtkmm/filechooserdialog.h>
 #include <gdk/gdkkeysyms.h>  // GDK_Escape
 
 #include "hz/debug.h"

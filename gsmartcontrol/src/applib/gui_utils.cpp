@@ -15,8 +15,7 @@
 #include "gui_utils.h"
 
 
-namespace
-{
+namespace {
 
 	inline void show_dialog(const std::string& message, const std::string& sec_message,
 			Gtk::Window* parent, Gtk::MessageType type, bool sec_msg_markup)

@@ -46,11 +46,6 @@ Testing:
 		may be stuck due to bad firmware).
 	Allow quitting when test is running (ask first).
 
-Add ability to configure default save filename (in config-file only?):
-	"{serial}-{model}-{date}.txt", with the default being "{model}-{date}.txt".
-	Add string_replace_linear(), where multiple strings are replaced into the
-		original string (as opposed to previous result).
-
 Add support for launching with consolehelper (from usermode package).
 	Fedora uses this by default.
 	Investigate Fedora selinux situation.

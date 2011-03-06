@@ -108,7 +108,7 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 	if (!smartctl_valid) {
 		gsc_executor_error_dialog_show("There was an error while executing smartctl",
 				error_msg + "\n\n<i>Please specify the correct smartctl binary in Preferences.</i>",
-				this, show_output_button, true);
+				this, true, show_output_button);
 	}
 
 	// Scan
@@ -1000,7 +1000,7 @@ void GscMainWindow::rescan_devices()
 	if (!error && !error_msg.empty()) {  // generic scan error. smartctl errors are not reported during scan at all.
 		// we don't show output button here
 		gsc_executor_error_dialog_show("An error occurred while scanning the system",
-				error_msg, this, false);
+				error_msg, this, false, false);
 		error = true;
 
 	// add them anyway, in case the error was only on one drive.
@@ -1163,7 +1163,8 @@ GscInfoWindow* GscMainWindow::show_device_info_window(StorageDeviceRefPtr drive)
 	// usb devices), only very basic info is available and there's no point
 	// in showing this window. - for both virtual and non-virtual.
 	if (!drive->get_fully_parsed()) {
-		gui_show_warn_dialog("No additional information is available for this drive.", this);
+		gsc_no_info_dialog_show("No additional information is available for this drive.",
+				"", this, false, drive->get_info_output(), "Smartctl Output", drive->get_save_filename());
 		return 0;
 	}
 
