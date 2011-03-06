@@ -38,10 +38,13 @@ TODO:
 
 Add debian/ubuntu's su-to-root support to gsmartcontrol-root.
 
+Add support for parsing SSD outputs.
+
 Testing:
 	If ETA time has elapsed, but it's still only at 10% completion,
 		ETA 0 is displayed. Fix.
 	If smartctl -t ... returns an error, testing=true should not be set.
+		Can't reproduce it?
 	Detect running tests on launch (maybe ask the user too? some tests
 		may be stuck due to bad firmware).
 	Allow quitting when test is running (ask first).
@@ -53,8 +56,6 @@ Add support for launching with consolehelper (from usermode package).
 		requirement. consolehelper-gtk is not supposed to be launched by user,
 		but I think we can check it with "which".
 		http://fedoranews.org/contributors/matt_hansen/nautilus/
-
-Add "Show output" button to the devices with "No further info available...".
 
 If the detection executes "smartctl -i", don't execute it again afterwards.
 

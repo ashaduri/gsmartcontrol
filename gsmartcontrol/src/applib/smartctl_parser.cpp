@@ -1197,7 +1197,8 @@ bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& 
 		// Note: For "in an unknown state" - remove first two words.
 		pcrecpp::RE re_state = app_pcre_re("/occurred, the device was[ \\t]*(?: in)?(?: an?)?[ \\t]+([^.\\n]*)\\.?/mi");
 		// "  84 51 2c 71 cd 3f e6  Error: ICRC, ABRT 44 sectors at LBA = 0x063fcd71 = 104844657"
-		pcrecpp::RE re_type = app_pcre_re("/[ \\t]+Error:[ \\t]*([ ,a-z]+)[ \\t]+[0-9]+[ \\t]*(.*)$/mi");
+		// "  40 51 00 f5 41 61 e0  Error: UNC at LBA = 0x006141f5 = 6373877"
+		pcrecpp::RE re_type = app_pcre_re("/[ \\t]+Error:[ \\t]*([ ,a-z]+)[ \\t]+((?:[0-9]+|at )[ \\t]*.*)$/mi");
 
 		std::string block, name, value_num, value_time;
 		pcrecpp::StringPiece input(sub);  // position tracker
