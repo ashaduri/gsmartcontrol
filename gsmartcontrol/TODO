@@ -36,8 +36,6 @@ Bugs / patches:
 
 TODO:
 
-+Clear the test message area when starting a new test.
-
 Add debian/ubuntu's su-to-root support to gsmartcontrol-root.
 
 Testing:
@@ -50,14 +48,8 @@ Testing:
 
 Add ability to configure default save filename (in config-file only?):
 	"{serial}-{model}-{date}.txt", with the default being "{model}-{date}.txt".
-
-Add string_replace_linear(), where multiple strings are replaced into the
-	original string (as opposed to previous result).
-
-+Re-check long double printing - win32 libc doesn't support it, a cast
-	to double is needed.
-	The underlying problem is that in msvc, long double is the same size
-	as double, so printf() has mingw-incompatible presentation of long double.
+	Add string_replace_linear(), where multiple strings are replaced into the
+		original string (as opposed to previous result).
 
 Add support for launching with consolehelper (from usermode package).
 	Fedora uses this by default.
@@ -273,60 +265,18 @@ Add detection for Interix (i586-pc-interix3), maybe with debian?
 
 
 
------------ Feature List ----------
-
-+Autodetect available devices
-
-+Select current device (from autodetected list; manually whitelist devices).
-
-+Smartctl binary (text entries in Options - binary, default command line options).
-+	Global command-line options for smartctl.
-+	Command-line options per-device in settings (e.g. -d ata).
-+	Search smartctl binary on startup (try to execute it with --version). If it's not there, alert the user.
-
-+Indicate which of the devices has SMART supported / enabled.
-+	Enable / disable smart on devices.
-+		Indicate that this is until shutdown (but may be preserved on reboot).
-+	Direct them to smartd / smartctl documentation for permanent enabling.
-+		NOTE: SMART is sometimes preserved across power cycles.
-
-+Enable / disable Automatic Offline Data Collection for devices. (-o on)
-+	Show its status in the main window.
-
-+Show identity information for device (aka short info), --info.
-
-+Show all SMART information for device (--all), includes:
-+	* Short info (--info)
-+	* SMART DATA
-+		* overall-health (-H, --health) - may check this automatically as well.
-+		* General SMART Values, aka Capabilities (-c, --capabilities)
-+		* Attributes (-A, --attributes). These need decoding.
-+		* Error Log (-l error)
-+		* Self-test log (-l selftest)
-+		* Selective self-test log and settings
-		* SCT status and other stuff
-			Display temperature somewhere (use SCT or Attr 194 for this).
-+	* Ability to save this information to a file.
-+	* On info window show: Ask to turn SMART on if it's disabled
-
-+Program error reporting:
-+	invalid smartmontools version.
-+	cannot parse output - show log.
-+	smartctl exited with error - look it up in error map.
+----------- SMART stuff ----------
 
 
-
-
-+Tests:
-	Run one-time Immediate Offline test (-t offline).
-		Offline tests only update Attributes, and if errors are found they will
-		appear in SMART error log. Self-test logs are unaffected.
-		Abort (-X). Abort works with Offline only if there's
-		"Abort Offline collection upon new command" capability.
-		If the drive has "Suspend Offline collection upon new  command" capability,
-		immediate offline test may be tracked through --capabilities (not on mine!).
-		If it's "Abort Offline collection upon new command", then the test
-		will abort on --capabilities or --abort.
+Run one-time Immediate Offline test (-t offline).
+	Offline tests only update Attributes, and if errors are found they will
+	appear in SMART error log. Self-test logs are unaffected.
+	Abort (-X). Abort works with Offline only if there's
+	"Abort Offline collection upon new command" capability.
+	If the drive has "Suspend Offline collection upon new  command" capability,
+	immediate offline test may be tracked through --capabilities (not on mine!).
+	If it's "Abort Offline collection upon new command", then the test
+	will abort on --capabilities or --abort.
 
 
 Polling time

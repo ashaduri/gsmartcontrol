@@ -304,6 +304,13 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		}
 
 
+		// returns an empty string if unknown
+		std::string get_serial_number() const
+		{
+			return (serial_number_.defined() ? serial_number_.value() : "");
+		}
+
+
 		void set_info_output(const std::string& s)
 		{
 			info_output_ = s;
@@ -398,6 +405,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		mutable hz::OptionalValue<status_t> aodc_status_;  // cached aodc status.
 		hz::OptionalValue<std::string> model_name_;
 		hz::OptionalValue<std::string> family_name_;
+		hz::OptionalValue<std::string> serial_number_;
 		hz::OptionalValue<std::string> size_;  // formatted size
 		mutable hz::OptionalValue<StorageProperty> health_property_;  // cached health property.
 
