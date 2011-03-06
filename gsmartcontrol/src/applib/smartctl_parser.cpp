@@ -997,16 +997,23 @@ bool SmartctlParser::parse_section_data_subsection_attributes(const std::string&
 	// named "Head flying hours". So, parse until we encounter the next column.
 	// * One WD drive had non-integer flags, something like "PO--C-", with several
 	// lines of their descriptions after the attributes block (each line started with spaces and |).
+	// * SSD drives may show "---" in value/worst/threshold fields.
 
+	// "  1 Raw_Read_Error_Rate     0x000f   115   099   006    Pre-fail  Always       -       90981479"
+	// " 12 Power_Cycle_Count       0x0000   ---   ---   ---    Old_age   Offline      -       167"
 
 	bool attr_found = false;  // at least one attribute was found
 	bool attr_format_with_updated = false;  // UPDATED column present
 
-	pcrecpp::RE re_up = app_pcre_re("/[ \\t]*([0-9]+) ([^\\t\\n]+)[ \\t]+((?:0x[a-fA-F0-9]+)|(?:[A-Z-]{2,}))[ \\t]+([0-9]+)[ \\t]+([0-9]+)[ \\t]+([0-9]+)[ \\t]+"
-			"([^ \\t\\n]+)[ \\t]+([^ \\t\\n]+)[ \\t]+([^ \\t\\n]+)[ \\t]+(.+)[ \\t]*/mi");
+	std::string base_re = "[ \\t]*([0-9]+) ([^\\t\\n]+)[ \\t]+((?:0x[a-fA-F0-9]+)|(?:[A-Z-]{2,}))[ \\t]+"  // name / flag
+			"([0-9-]+)[ \\t]+([0-9-]+)[ \\t]+([0-9-]+)[ \\t]+"  // value / worst / threshold
+			"([^ \\t\\n]+)[ \\t]+";  // type
 
-	pcrecpp::RE re_noup = app_pcre_re("/[ \\t]*([0-9]+) ([^\\t\\n]+)[ \\t]+((?:0x[a-fA-F0-9]+)|(?:[A-Z-]{2,}))[ \\t]+([0-9]+)[ \\t]+([0-9]+)[ \\t]+([0-9]+)[ \\t]+"
-			"([^ \\t\\n]+)[ \\t]+([^ \\t\\n]+)[ \\t]+(.+)[ \\t]*/mi");
+	pcrecpp::RE re_up = app_pcre_re("/" + base_re
+			+ "([^ \\t\\n]+)[ \\t]+([^ \\t\\n]+)[ \\t]+(.+)[ \\t]*/mi");  // updated / when_failed / raw
+
+	pcrecpp::RE re_noup = app_pcre_re("/" + base_re
+			+ "([^ \\t\\n]+)[ \\t]+(.+)[ \\t]*/mi");  // when_failed / raw
 
 	pcrecpp::RE re_flag_descr = app_pcre_re("/^[\\t ]+\\|/mi");
 
@@ -1080,9 +1087,17 @@ bool SmartctlParser::parse_section_data_subsection_attributes(const std::string&
 			StorageAttribute a;
 			hz::string_is_numeric(hz::string_trim_copy(id), a.id, true, 10);
 			a.flag = hz::string_trim_copy(flag);
-			hz::string_is_numeric(hz::string_trim_copy(value), a.value, true, 10);
-			hz::string_is_numeric(hz::string_trim_copy(worst), a.worst, true, 10);
-			hz::string_is_numeric(hz::string_trim_copy(threshold), a.threshold, true, 10);
+			uint8_t norm_value = 0, worst_value = 0, threshold_value = 0;
+
+			if (hz::string_is_numeric(hz::string_trim_copy(value), norm_value, true, 10)) {
+				a.value = norm_value;
+			}
+			if (hz::string_is_numeric(hz::string_trim_copy(worst), worst_value, true, 10)) {
+				a.worst = worst_value;
+			}
+			if (hz::string_is_numeric(hz::string_trim_copy(threshold), threshold_value, true, 10)) {
+				a.threshold = threshold_value;
+			}
 
 			a.attr_type = (attr_type == "Pre-fail" ? StorageAttribute::attr_type_prefail
 					: (attr_type == "Old_age" ? StorageAttribute::attr_type_oldage : StorageAttribute::attr_type_unknown));
@@ -1139,7 +1154,7 @@ bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& 
 
 	bool data_found = false;
 
-	// error log version
+	// Error log version
 	{
 		pcrecpp::RE re = app_pcre_re("/^(SMART Error Log Version):[ \\t]*(.*)$/mi");
 
@@ -1162,7 +1177,20 @@ bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& 
 		}
 	}
 
-	// error log count
+	// Error log support
+	{
+		pcrecpp::RE re = app_pcre_re("/^(Warning: device does not support Error Logging)$/mi");
+
+		if (re.PartialMatch(sub)) {
+			StorageProperty p(pt);
+			p.set_name("error_log_unsupported");
+			p.readable_name = "Warning";
+			p.readable_value = "Device does not support error logging";
+			add_property(p);
+		}
+	}
+
+	// Error log enty count
 	{
 		// note: these represent the same information
 		pcrecpp::RE re1 = app_pcre_re("/^ATA Error Count:[ \\t]*([0-9]+)/mi");
@@ -1279,7 +1307,7 @@ bool SmartctlParser::parse_section_data_subsection_selftest_log(const std::strin
 
 	bool data_found = false;  // true if something was found.
 
-	// the whole subsection
+	// The whole subsection
 	{
 		StorageProperty p(pt);
 		p.set_name("SMART Self-test log", "selftest_log");
@@ -1292,7 +1320,20 @@ bool SmartctlParser::parse_section_data_subsection_selftest_log(const std::strin
 	}
 
 
-	// self-test log version
+	// Self-test log support
+	{
+		pcrecpp::RE re = app_pcre_re("/^(Warning: device does not support Self Test Logging)$/mi");
+
+		if (re.PartialMatch(sub)) {
+			StorageProperty p(pt);
+			p.set_name("selftest_log_unsupported");
+			p.readable_name = "Warning";
+			p.readable_value = "Device does not support self-test logging";
+			add_property(p);
+		}
+	}
+
+	// Self-test log version
 	{
 		// newer smartctl (since smartctl 5.1-16)
 		pcrecpp::RE re1 = app_pcre_re("/(SMART Self-test log structure[^\\n0-9]*)([^ \\n]+)[ \\t]*$/mi");

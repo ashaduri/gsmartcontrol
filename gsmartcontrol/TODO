@@ -38,7 +38,9 @@ TODO:
 
 Add debian/ubuntu's su-to-root support to gsmartcontrol-root.
 
-Add support for parsing SSD outputs.
+Add support for SSD smartctl attribute names (they're totally different).
+	Check smartctl sources, they print those names.
+
 
 Testing:
 	If ETA time has elapsed, but it's still only at 10% completion,
@@ -104,8 +106,6 @@ Monitor:
 	Periodically re-run smartctl to refresh the notifications.
 	Periodically see if drives were added / removed (possibly use OS callbacks
 		instead of polling?)
-
-Fix inability to detect types in some error logs.
 
 Options->Prefs->Drives
 	Add a hint about "pd0" for Windows version.

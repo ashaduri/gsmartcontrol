@@ -31,9 +31,13 @@ std::ostream& operator<< (std::ostream& os, const StorageCapability& p)
 
 std::ostream& operator<< (std::ostream& os, const StorageAttribute& p)
 {
-	os
-// 	<< p.name << ": "
-	<< static_cast<int>(p.value) << " (" << p.raw_value_int << ")";
+//	os << p.name << ": "
+	if (p.value.defined()) {
+		os << static_cast<int>(p.value.value());
+	} else {
+		os << "-";
+	}
+	os << " (" << p.raw_value_int << ")";
 	return os;
 }
 
