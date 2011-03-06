@@ -355,6 +355,10 @@ inline std::string string_remove_adjacent_duplicates_copy(const std::string& s, 
 // --------------------------------------------- Replace
 
 
+// TODO: Add string_replace_linear(), where multiple strings are replaced into the
+// original string (as opposed to previous result).
+
+
 // Replace from with to inside s (modifying s). Return number of replacements made.
 inline std::string::size_type string_replace(std::string& s,
 		const std::string& from, const std::string& to, int max_replacements = -1)

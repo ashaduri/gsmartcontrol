@@ -122,6 +122,11 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 		family_name_ = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(family), ' ');
 	}
 
+	std::string serial;
+	if (app_pcre_match("/^Serial Number:[ \\t]*(.*)$/mi", info_output_, &serial)) {
+		serial_number_ = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(serial), ' ');
+	}
+
 
 	// Note: this property is present since 5.33.
 	std::string size;
@@ -422,11 +427,17 @@ StorageProperty StorageDevice::get_health_property() const
 
 std::string StorageDevice::get_save_filename() const
 {
-	std::string filename = this->get_model_name();  // may be empty
-	filename += hz::format_date("-%Y-%m-%d", false);
-	if (!filename.empty())
-		filename = hz::filename_make_safe(filename) + ".txt";
-	return filename;
+	std::string model = this->get_model_name();  // may be empty
+	std::string serial = this->get_serial_number();
+	std::string date = hz::format_date("%Y-%m-%d", false);
+
+	std::string filename_format;
+	rconfig::get_data("gui/smartctl_output_filename_format", filename_format);
+	hz::string_replace(filename_format, "{serial}", serial);
+	hz::string_replace(filename_format, "{model}", model);
+	hz::string_replace(filename_format, "{date}", date);
+
+	return hz::filename_make_safe(filename_format);
 }
 
 

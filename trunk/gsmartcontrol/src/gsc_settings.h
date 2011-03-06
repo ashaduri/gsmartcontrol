@@ -54,6 +54,8 @@ inline void init_default_settings()
 	rconfig::set_default_data("gui/show_smart_capable_only", false);  // show smart-capable drives only
 	rconfig::set_default_data("gui/scan_on_startup", true);  // scan drives on startup
 
+	rconfig::set_default_data("gui/smartctl_output_filename_format", "{model}_{serial}_{date}.txt");  // when suggesting filename
+
 
 	// Populate /runtime too, just in case. The values don't really matter.
 
