@@ -19,11 +19,10 @@
 You should include this file if you're using any of:
 - macros from autoconf-generated config.h
 - macros from global_macros.h
-This file has effect only if "-include" compiler option doesn't work.
 
 The purpose of this file is to provide some common compatibility
-solutions for the whole hz, while not depending on "-include"
-compiler switches or pasting autoconf's config.h code in all files.
+solutions for the whole hz, while not depending on pasting autoconf's
+config.h code into all files.
 */
 
 
@@ -39,16 +38,15 @@ HZ library internal implementation helpers.
 */
 
 
-// Define HZ_NO_COMPILER_AUTOINCLUDE=1 from a compiler option to enable
+// Define HZ_USE_GLOBAL_MACROS=1 from a compiler option to enable
 // auto-inclusion of global_macros.h.
 
-#ifndef APP_GLOBAL_MACROS_INCLUDED  // defined in global_macros.h
-	#if defined HZ_NO_COMPILER_AUTOINCLUDE && HZ_NO_COMPILER_AUTOINCLUDE
-		// define manually
-		#include "global_macros.h"
-	#else
-		#define HZ_NO_GLOBAL_MACROS 1
-	#endif
+#if defined HZ_USE_GLOBAL_MACROS && HZ_USE_GLOBAL_MACROS
+	// define manually
+	#include "global_macros.h"
+	#define HZ_NO_GLOBAL_MACROS 0
+#else
+	#define HZ_NO_GLOBAL_MACROS 1
 #endif
 
 

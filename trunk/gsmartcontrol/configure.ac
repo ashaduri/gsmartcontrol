@@ -433,7 +433,8 @@ _AM_SUBST_NOTMAKE([RES_TARGETS])
 
 ADDITIONAL_FLAGS="-DPACKAGE_PKGDATA_DIR=\"\\\"\$(pkgdatadir)\\\"\" \
 -DPACKAGE_SYSCONF_DIR=\"\\\"\$(sysconfdir)\\\"\" \
--DTOP_SRC_DIR=\"\\\"\$(top_srcdir)\\\"\""
+-DTOP_SRC_DIR=\"\\\"\$(top_srcdir)\\\"\" \
+-DHZ_USE_GLOBAL_MACROS=1"
 
 #CFLAGS="$CFLAGS $ADDITIONAL_FLAGS"
 CXXFLAGS="$CXXFLAGS $ADDITIONAL_FLAGS"
@@ -450,13 +451,12 @@ ADDITIONAL_INCLUDES="-I\$(top_builddir) -I\$(top_srcdir)/src -I\$(top_srcdir)/sr
 # with pgi and older sunstudio (the one in solaris10, for example).
 # Note: some gcc-frontend-based compilers may have to be added here
 # (e.g. gccfss (gcc frontend / sun backend), etc...).
-if test "$ax_cv_cxx_compiler_vendor" = "gnu" || test "$ax_cv_cxx_compiler_vendor" = "intel" \
-		|| test "$ax_cv_cxx_compiler_vendor" = "pathscale"; then
-	# This auto-includes this file when compiling any file. Benefits include pch support.
-	ADDITIONAL_INCLUDES="$ADDITIONAL_INCLUDES -include global_macros.h"
-else  # sun, pgi, others...
-	# This forces the file to be included manually.
-	ADDITIONAL_INCLUDES="$ADDITIONAL_INCLUDES -DHZ_NO_COMPILER_AUTOINCLUDE"
+# We use -include only when using pch.
+if test "x$app_cv_compiler_gcc_pch" = "xyes"; then
+	if test "$ax_cv_cxx_compiler_vendor" = "gnu" || test "$ax_cv_cxx_compiler_vendor" = "intel" || test "$ax_cv_cxx_compiler_vendor" = "pathscale"; then
+		# This auto-includes this file when compiling any file. Benefits include pch support.
+		ADDITIONAL_INCLUDES="$ADDITIONAL_INCLUDES -include global_macros.h"
+	fi
 fi
 
 # our flags must be before all the others

@@ -11,8 +11,9 @@
 This file serves as a compile-time configuration for various
 library components.
 
-This file is not included directly, but through the compiler option
--include global_macros.h
+This file is included from hz_config.h.
+Additionally, it may be included through compiler's "-include" option
+(if supported) for pch support.
 */
 
 
@@ -22,7 +23,7 @@ This file is not included directly, but through the compiler option
 #endif
 
 
-// So that others may check if "-include" works
+// So that others may check whether this file was included or not.
 #define APP_GLOBAL_MACROS_INCLUDED
 
 
