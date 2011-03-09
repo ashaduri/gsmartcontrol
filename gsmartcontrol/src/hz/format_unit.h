@@ -143,10 +143,11 @@ inline std::string format_time_length(int64_t secs)
 		    if (hours > 0 && sec_diff < (-hour_size / 2))
 		       days--;
 
-			return hz::number_to_string(days) + HZ_C_("time", "d") + " " + hz::number_to_string(hours) + HZ_C_("time", "h");
+			return hz::number_to_string(days) + " " + HZ_C_("time", "d")
+					+ " " + hz::number_to_string(hours) + " " + HZ_C_("time", "h");
 
 		} else {  // display days only
-			return hz::number_to_string(days) + HZ_C_("time", "d");
+			return hz::number_to_string(days) + " " + HZ_C_("time", "d");
 
 		}
 
@@ -160,21 +161,22 @@ inline std::string format_time_length(int64_t secs)
 			if (minutes > 0 && sec_diff < (-min_size / 2))
 				hours--;
 
-			return hz::number_to_string(hours) + HZ_C_("time", "h") + " " + hz::number_to_string(minutes) + HZ_C_("time", "min");
+			return hz::number_to_string(hours) + " " + HZ_C_("time", "h")
+					+ " " + hz::number_to_string(minutes) + " " + HZ_C_("time", "min");
 
 		} else {  // display hours only
-			return hz::number_to_string(hours) + HZ_C_("time", "h");
+			return hz::number_to_string(hours) + " " + HZ_C_("time", "h");
 
 		}
 
 
 	} else if (secs >= 100) {
 		int64_t minutes = (secs + min_size / 2) / min_size;  // time in minutes (rounded to nearest)
-		return hz::number_to_string(minutes) + HZ_C_("time", "min");
+		return hz::number_to_string(minutes) + " " + HZ_C_("time", "min");
 
 	}
 
-	return hz::number_to_string(secs) + HZ_C_("time", "sec");
+	return hz::number_to_string(secs) + " " + HZ_C_("time", "sec");
 }
 
 

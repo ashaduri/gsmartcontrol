@@ -435,7 +435,7 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 			p.value_integer = v;
 
 	} else if (app_pcre_match("/Device is/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "in_smartctl_db", "Is in smartctl database");
+		p.set_name(p.reported_name, "in_smartctl_db", "In Smartctl Database");
 		p.value_type = StorageProperty::value_type_bool;
 		p.value_bool = (!app_pcre_match("/Not in /mi", p.reported_value));
 
@@ -444,29 +444,29 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 		// Don't put complete messages here - they change across smartctl versions.
 
 		if (app_pcre_match("/Available - device has/mi", p.reported_value)) {
-			p.set_name(p.reported_name, "smart_supported", "SMART supported");
+			p.set_name(p.reported_name, "smart_supported", "SMART Supported");
 			p.value_type = StorageProperty::value_type_bool;
 			p.value_bool = true;
 
 		} else if (app_pcre_match("/Enabled/mi", p.reported_value)) {
-			p.set_name(p.reported_name, "smart_enabled", "SMART enabled");
+			p.set_name(p.reported_name, "smart_enabled", "SMART Enabled");
 			p.value_type = StorageProperty::value_type_bool;
 			p.value_bool = true;
 
 		} else if (app_pcre_match("/Disabled/mi", p.reported_value)) {
-			p.set_name(p.reported_name, "smart_enabled", "SMART enabled");
+			p.set_name(p.reported_name, "smart_enabled", "SMART Enabled");
 			p.value_type = StorageProperty::value_type_bool;
 			p.value_bool = false;
 
 		} else if (app_pcre_match("/Unavailable/mi", p.reported_value)) {
-			p.set_name(p.reported_name, "smart_supported", "SMART supported");
+			p.set_name(p.reported_name, "smart_supported", "SMART Supported");
 			p.value_type = StorageProperty::value_type_bool;
 			p.value_bool = false;
 
 		// this should be last - when ambiguous state is detected, usually smartctl
 		// retries with other methods and prints one of the above.
 		} else if (app_pcre_match("/Ambiguous/mi", p.reported_value)) {
-			p.set_name(p.reported_name, "smart_supported", "SMART supported");
+			p.set_name(p.reported_name, "smart_supported", "SMART Supported");
 			p.value_type = StorageProperty::value_type_bool;
 			p.value_bool = true;  // let's be optimistic - just hope that it doesn't hurt.
 
@@ -578,7 +578,7 @@ bool SmartctlParser::parse_section_data_subsection_health(const std::string& sub
 
 		// only one attribute in this section
 		if (app_pcre_match("/SMART overall-health self-assessment/mi", name)) {
-			pt.set_name(name, "overall_health", "Overall health self-assessment test");
+			pt.set_name(name, "overall_health", "Overall Health Self-Assessment Test");
 			pt.reported_value = value;
 			pt.value_type = StorageProperty::value_type_string;
 			pt.value_string = pt.reported_value;
