@@ -804,7 +804,9 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 				row[col_state] = iter->value_error_block.device_state;
 				row[col_type] = StorageErrorBlock::get_readable_error_types(iter->value_error_block.reported_types);
 				row[col_details] = (type_details.empty() ? "-" : type_details);  // e.g. OBS has no details
-				row[col_tooltip] = iter->get_description();
+				// There are no descriptions in self-test log entries, so don't display
+				// "No description available" for all of them.
+// 				row[col_tooltip] = iter->get_description();
 				row[col_storage] = &(*iter);
 				row[col_mark_name] = "Error " + hz::number_to_string(iter->value_error_block.error_num);
 			}
@@ -919,7 +921,9 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			row[col_percent] = hz::number_to_string(100 - iter->value_selftest_entry.remaining_percent) + "%";
 			row[col_hours] = iter->value_selftest_entry.lifetime_hours;
 			row[col_lba] = iter->value_selftest_entry.lba_of_first_error;
-			row[col_tooltip] = iter->get_description();
+			// There are no descriptions in self-test log entries, so don't display
+			// "No description available" for all of them.
+			// row[col_tooltip] = iter->get_description();
 			row[col_storage] = &(*iter);
 
 			if (int(iter->warning) > int(max_warning))

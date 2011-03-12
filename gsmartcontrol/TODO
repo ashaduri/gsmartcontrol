@@ -44,6 +44,7 @@ Add support for SSD smartctl attribute names (they're totally different).
 		or unknown name, then use our ID db.
 
 
+
 Testing:
 	If ETA time has elapsed, but it's still only at 10% completion,
 		ETA 0 is displayed. Fix.
@@ -221,6 +222,9 @@ RAID:
 	CCISS (HP (Compaq) Smart Array Controller) FreeBSD:
 		Seems to be the same as Linux (uses the same driver?).
 		Detection: unknown.
+
+	Intel Matrix RAID Windows:
+		Added to smartmontools SVN version on 2011-02-04. Experimental.
 
 
 
