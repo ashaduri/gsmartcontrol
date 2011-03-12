@@ -473,7 +473,7 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 		}
 
 	} else {
-		debug_out_warn("app", DBG_FUNC_MSG << "Unknown attribute \"" << p.reported_name << "\"\n");
+		debug_out_warn("app", DBG_FUNC_MSG << "Unknown property \"" << p.reported_name << "\"\n");
 		// this is not an error, just unknown attribute. treat it as string.
 		// Don't highlight it with warning, it may just be a new smartctl feature.
 		p.value_type = StorageProperty::value_type_string;
@@ -763,19 +763,26 @@ bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& c
 	pcrecpp::RE re_offline_auto2 = app_pcre_re("/^(No |)(Automatic timer ON\\/OFF support)$/mi");
 	pcrecpp::RE re_offline_suspend = app_pcre_re("/^(?:Suspend|Abort) (Off-?line collection upon new command)$/mi");
 	pcrecpp::RE re_offline_surface = app_pcre_re("/^(No |)(Off-?line surface scan supported)$/mi");
-	pcrecpp::RE re_offline_time = app_pcre_re("/^(Total time to complete Off-?line data collection)/mi");  // match on name!
 
-	pcrecpp::RE re_selftest_status = app_pcre_re("/^Self-test execution status/mi");  // match on name
 	pcrecpp::RE re_selftest_support = app_pcre_re("/^(No |)(Self-test supported)$/mi");
 	pcrecpp::RE re_conv_selftest_support = app_pcre_re("/^(No |)(Conveyance Self-test supported)$/mi");
 	pcrecpp::RE re_selective_selftest_support = app_pcre_re("/^(No |)(Selective Self-test supported)$/mi");
-	pcrecpp::RE re_selftest_short_time = app_pcre_re("/^(Short self-test routine recommended polling time)/mi");  // match on name!
-	pcrecpp::RE re_selftest_long_time = app_pcre_re("/^(Extended self-test routine recommended polling time)/mi");  // match on name!
-	pcrecpp::RE re_conv_selftest_time = app_pcre_re("/^(Conveyance self-test routine recommended polling time)/mi");  // match on name!
 
 	pcrecpp::RE re_sct_status = app_pcre_re("/^(SCT Status supported)$/mi");
 	pcrecpp::RE re_sct_control = app_pcre_re("/^(SCT Feature Control supported)$/mi");  // means can change logging interval
 	pcrecpp::RE re_sct_data = app_pcre_re("/^(SCT Data Table supported)$/mi");
+
+	// these are matched on name
+	pcrecpp::RE re_offline_status_group = app_pcre_re("/^(Off-?line data collection status)/mi");
+	pcrecpp::RE re_offline_time = app_pcre_re("/^(Total time to complete Off-?line data collection)/mi");
+	pcrecpp::RE re_offline_cap_group = app_pcre_re("/^(Off-?line data collection capabilities)/mi");
+	pcrecpp::RE re_smart_cap_group = app_pcre_re("/^(SMART capabilities)/mi");
+	pcrecpp::RE re_error_log_cap_group = app_pcre_re("/^(Error logging capability)/mi");
+	pcrecpp::RE re_sct_cap_group = app_pcre_re("/^(SCT capabilities)/mi");
+	pcrecpp::RE re_selftest_status = app_pcre_re("/^Self-test execution status/mi");
+	pcrecpp::RE re_selftest_short_time = app_pcre_re("/^(Short self-test routine recommended polling time)/mi");
+	pcrecpp::RE re_selftest_long_time = app_pcre_re("/^(Extended self-test routine recommended polling time)/mi");
+	pcrecpp::RE re_conv_selftest_time = app_pcre_re("/^(Conveyance self-test routine recommended polling time)/mi");
 
 	if (cap.section != StorageProperty::section_data || cap.subsection != StorageProperty::subsection_capabilities) {
 		debug_out_error("app", DBG_FUNC_MSG << "Non-capability property passed.\n");
@@ -783,9 +790,30 @@ bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& c
 	}
 
 
+	// Name the capability groups for easy matching when setting descriptions
+	if (cap.value_type == StorageProperty::value_type_capability) {
+		if (re_offline_status_group.PartialMatch(cap.reported_name)) {
+			cap.generic_name = "offline_status_group";
+
+		} else if (re_offline_cap_group.PartialMatch(cap.reported_name)) {
+			cap.generic_name = "offline_cap_group";
+
+		} else if (re_smart_cap_group.PartialMatch(cap.reported_name)) {
+			cap.generic_name = "smart_cap_group";
+
+		} else if (re_error_log_cap_group.PartialMatch(cap.reported_name)) {
+			cap.generic_name = "error_log_cap_group";
+
+		} else if (re_sct_cap_group.PartialMatch(cap.reported_name)) {
+			cap.generic_name = "sct_cap_group";
+
+		} else if (re_selftest_status.PartialMatch(cap.reported_name)) {
+			cap.generic_name = "last_selftest_cap_group";
+		}
+	}
 
 
-	// match on name:
+	// Last self-test status
 	if (re_selftest_status.PartialMatch(cap.reported_name)) {
 		// The last self-test status. break up into pieces.
 
@@ -883,6 +911,7 @@ bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& c
 
 		return true;
 	}
+
 
 	// Extract subcapabilities from capability vectors and assign to "internal" section.
 	if (cap.value_type == StorageProperty::value_type_capability) {
@@ -994,7 +1023,8 @@ bool SmartctlParser::parse_section_data_subsection_attributes(const std::string&
 	// Format notes:
 	// * Before 5.1-14, no UPDATED column was present.
 	// * Most, but not all attribute names are with underscores. However, I encountered one
-	// named "Head flying hours". So, parse until we encounter the next column.
+	// named "Head flying hours" and there are slashes sometimes as well.
+	// So, parse until we encounter the next column.
 	// * One WD drive had non-integer flags, something like "PO--C-", with several
 	// lines of their descriptions after the attributes block (each line started with spaces and |).
 	// * SSD drives may show "---" in value/worst/threshold fields.
