@@ -455,8 +455,6 @@
                                               <widget class="GtkEntry" id="device_options_device_entry">
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">True</property>
-                                                <property name="tooltip_text">Device name (for example, "/dev/sda")</property>
-                                                <property name="tooltip" translatable="yes">Device name (for example, "/dev/sda")</property>
                                               </widget>
                                               <packing>
                                                 <property name="left_attach">1</property>

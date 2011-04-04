@@ -92,7 +92,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	// Don't put complete messages here - they change across smartctl versions.
 	if (app_pcre_match("/^SMART support is:[ \\t]*Unavailable/mi", info_output_)  // cdroms output this
 			|| app_pcre_match("/Device does not support SMART/mi", info_output_)  // usb flash drives, non-smart hds
-			|| app_pcre_match("/Device Read Identity Failed \\(not an ATA\\/ATAPI device\\)/mi", info_output_)) {  // solaris scsi, unsupported by smartctl
+			|| app_pcre_match("/Device Read Identity Failed/mi", info_output_)) {  // solaris scsi, unsupported by smartctl (maybe others?)
 		smart_supported_ = false;
 		smart_enabled_ = false;
 
