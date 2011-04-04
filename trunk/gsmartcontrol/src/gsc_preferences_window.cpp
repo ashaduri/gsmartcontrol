@@ -210,7 +210,9 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const app_ui
 
 	Gtk::Entry* device_options_device_entry = 0;
 	APP_UI_RES_AUTO_CONNECT(device_options_device_entry, changed);
-	Glib::ustring device_options_tooltip = "Device name (for example, %s)";
+	Glib::ustring device_options_tooltip = "Format: <device name>::<type>, where \"::<type>\" part is optional. "
+			" An example of device name would be %s. Type is an argument of smartctl -d option and can be "
+			" used to specify a drive behind a RAID device, e.g. /dev/twa0::3ware,2";
 #ifdef _WIN32
 	device_options_tooltip = hz::string_sprintf(device_options_tooltip.c_str(), "\"pd0\" for the first physical drive");
 #else

@@ -68,7 +68,7 @@ inline std::string app_serialize_device_option_map(const device_option_map_t& op
 
 
 
-inline std::string app_get_device_option(const std::string& dev)
+inline std::string app_get_device_option(const std::string& dev, const std::string& type_arg)
 {
 	if (dev.empty())
 		return std::string();
@@ -79,11 +79,27 @@ inline std::string app_get_device_option(const std::string& dev)
 
 	device_option_map_t devmap = app_unserialize_device_option_map(devmap_str);
 
-	device_option_map_t::const_iterator iter = devmap.find(dev);
-	if (iter == devmap.end())
-		return std::string();
+	// try the concrete type first
+	if (!type_arg.empty()) {
+		device_option_map_t::const_iterator iter = devmap.find(dev + "::" + type_arg);
+		if (iter != devmap.end()) {
+			return iter->second;
+		}
+	}
 
-	return iter->second;
+	// in case there's a trailing delimiter
+	device_option_map_t::const_iterator iter = devmap.find(dev + "::" + type_arg);
+	if (iter != devmap.end()) {
+		return iter->second;
+	}
+
+	// just the device name
+	iter = devmap.find(dev);
+	if (iter != devmap.end()) {
+		return iter->second;
+	}
+
+	return std::string();
 }
 
 
