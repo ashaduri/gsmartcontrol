@@ -145,7 +145,14 @@ void GscMainWindow::populate_iconview(bool smartctl_valid)
 		if (rconfig::get_data("/runtime/gui/add_devices_on_startup", load_devices)) {
 			for (unsigned int i = 0; i < load_devices.size(); ++i) {
 				if (!load_devices[i].empty()) {
-					add_device(load_devices[i]);
+					std::vector<std::string> parts;
+					hz::string_split(load_devices[i], "::", parts, false);
+					std::string file = (parts.size() > 0 ? parts.at(0) : "");
+					std::string type_arg = (parts.size() > 1 ? parts.at(1) : "");
+					std::string extra_args = (parts.size() > 2 ? parts.at(2) : "");
+					if (!file.empty()) {
+						add_device(file, type_arg, extra_args);
+					}
 				}
 			}
 		}
@@ -1027,7 +1034,7 @@ void GscMainWindow::rescan_devices()
 
 
 
-bool GscMainWindow::add_device(const std::string& file)
+bool GscMainWindow::add_device(const std::string& file, const std::string& type_arg, const std::string& extra_args)
 {
 #ifndef _WIN32  	// win32 doesn't have device files, so skip the check
 	hz::File f(file);
@@ -1040,6 +1047,8 @@ bool GscMainWindow::add_device(const std::string& file)
 #endif
 
 	StorageDeviceRefPtr d(new StorageDevice(file));
+	d->set_type_argument(type_arg);
+	d->set_extra_arguments(extra_args);
 	d->set_is_manually_added(true);
 
 	SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
@@ -1199,7 +1208,10 @@ void GscMainWindow::show_add_device_chooser()
 			"For example, pd0 means the first physical drive",
 			dev, last_str, this, false)) {
 		last_str = dev;  // safe for the future
-		this->add_device(dev);  // both the GUI and the API is in utf-8, no conversion is necessary.
+		std::string type_arg = "";  /// TODO
+		std::string extra_args = "";  /// TODO
+		// both the GUI and the API is in utf-8, no conversion is necessary.
+		this->add_device(dev, type_arg, extra_args);
 	}
 
 
@@ -1231,7 +1243,9 @@ void GscMainWindow::show_add_device_chooser()
 			last_dir = dialog.get_current_folder();  // safe for the future
 
 			std::string file = dialog.get_filename();  // in fs encoding
-			this->add_device(file);
+			std::string type_arg = "";  /// TODO
+			std::string extra_args = "";  /// TODO
+			this->add_device(file, type_arg, extra_args);
 			break;
 		}
 

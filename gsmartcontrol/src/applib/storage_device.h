@@ -33,16 +33,11 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 			detected_type_unknown,  // unknown. will be autodetected by smartctl
 			detected_type_invalid,  // this is set by smartctl executor if it detects invalid type (but not if it's scsi).
 			detected_type_cddvd,  // unsupported by smartctl, only basic info is given.
-			detected_type_scsi  // this is used to force "-d scsi" to execute IDENTIFY command.
 		};
 
 
 		/// This gives a string which can be displayed in outputs
 		static std::string get_type_readable_name(detected_type_t type);
-
-
-		/// This gives a string which, if not empty, can be given as a parameter of "-d".
-		static std::string get_type_arg_name(detected_type_t type);
 
 
 		/// Statuses of various states
@@ -138,7 +133,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 
 
 		/// Set extra arguments smartctl
-		void set_extra_argument(const std::string& args);
+		void set_extra_arguments(const std::string& args);
 
 		/// Get extra arguments smartctl
 		std::string get_extra_arguments() const;

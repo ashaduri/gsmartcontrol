@@ -207,12 +207,20 @@ inline bool parse_cmdline_args(CmdArgs& args, int& argc, char**& argv)
 {
 	static const GOptionEntry arg_entries[] =
 	{
-		{ "no-locale", 'l', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_locale), "Don't use system locale", NULL },
-		{ "version", 'V', 0, G_OPTION_ARG_NONE, &(args.arg_version), "Display version information", NULL },
-		{ "no-scan", '\0', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_scan), "Don't scan devices on startup", NULL },
-		{ "no-hide-tabs", '\0', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_hide_tabs), "Don't hide non-identity tabs when SMART is disabled. Useful for debugging.", NULL },
-		{ "add-virtual", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &(args.arg_add_virtual), "Load smartctl data from file, creating a virtual drive", NULL },
-		{ "add-device", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &(args.arg_add_device), "Add this device to device list. Useful with --no-scan to list certain drives only.", NULL },
+		{ "no-locale", 'l', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_locale),
+				"Don't use system locale", NULL },
+		{ "version", 'V', 0, G_OPTION_ARG_NONE, &(args.arg_version),
+				"Display version information", NULL },
+		{ "no-scan", '\0', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_scan),
+				"Don't scan devices on startup", NULL },
+		{ "no-hide-tabs", '\0', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_hide_tabs),
+				"Don't hide non-identity tabs when SMART is disabled. Useful for debugging.", NULL },
+		{ "add-virtual", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &(args.arg_add_virtual),
+				"Load smartctl data from file, creating a virtual drive. You can specify this option multiple times.", NULL },
+		{ "add-device", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &(args.arg_add_device),
+				"Add this device to device list. The format of the device is \"<device>::<type>::<extra_args>\", where type and extra_args are optional."
+				" This option is useful with --no-scan to list certain drives only. You can specify this option multiple times."
+				"Example: --add-device /dev/sda --add-device /dev/twa0::3ware,2 --add-device '/dev/sdb::::-T permissive'", NULL },
 		{ NULL }
 	};
 
@@ -319,7 +327,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 			load_devices.push_back(entry);
 		}
 	}
-	std::string load_devices_str = hz::string_join(load_devices, ", ");  // for display purposes only
+	std::string load_devices_str = hz::string_join(load_devices, "; ");  // for display purposes only
 
 
 	// it's here because earlier there are no domains

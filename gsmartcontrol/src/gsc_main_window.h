@@ -52,7 +52,7 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 
 
 		// manually add device file to icon list
-		bool add_device(const std::string& file);
+		bool add_device(const std::string& file, const std::string& type_arg, const std::string& extra_args);
 
 
 		// read smartctl data from file, add it as a virtual drive to icon list
