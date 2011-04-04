@@ -22,12 +22,13 @@
 class StorageDevice;
 
 
+/// This class represents a single drive
 class StorageDevice : public hz::intrusive_ptr_referenced {
 
 	public:
 
-		// these may be used to force smartctl to a special type, as well as
-		// to display the correct icon
+		/// These may be used to force smartctl to a special type, as well as
+		/// to display the correct icon
 		enum detected_type_t {
 			detected_type_unknown,  // unknown. will be autodetected by smartctl
 			detected_type_invalid,  // this is set by smartctl executor if it detects invalid type (but not if it's scsi).
@@ -36,383 +37,232 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		};
 
 
-		// this gives a string which can be displayed in outputs
-		static std::string get_type_readable_name(detected_type_t type)
-		{
-			switch (type) {
-				case detected_type_unknown: return "unknown";
-				case detected_type_invalid: return "invalid";
-				case detected_type_cddvd: return "cd/dvd";
-				case detected_type_scsi: return "scsi";
-			}
-			return "[internal_error]";
-		}
+		/// This gives a string which can be displayed in outputs
+		static std::string get_type_readable_name(detected_type_t type);
 
 
-		// this gives a string which, if not empty, can be given as a parameter of "-d".
-		static std::string get_type_arg_name(detected_type_t type)
-		{
-			switch (type) {
-				case detected_type_unknown: return "";
-				case detected_type_invalid: return "";
-				case detected_type_cddvd: return "";
-				case detected_type_scsi: return "scsi";
-			}
-			return "";
-		}
+		/// This gives a string which, if not empty, can be given as a parameter of "-d".
+		static std::string get_type_arg_name(detected_type_t type);
 
 
-		enum status_t {  // statuses of various states
-			status_enabled,  // smart, aodc
-			status_disabled,  // smart, aodc
-			status_unsupported,  // smart, aodc
-			status_unknown  // aodc - supported but unknown if it's enabled or not.
+		/// Statuses of various states
+		enum status_t {
+			status_enabled,  ///< SMART, AODC
+			status_disabled,  ///< SMART, AODC
+			status_unsupported,  ///< SMART, AODC
+			status_unknown  ///< AODC - supported but unknown if it's enabled or not.
 		};
 
-		static std::string get_status_name(status_t status, bool use_yesno = false)
-		{
-			switch (status) {
-				case status_enabled: return (use_yesno ? "Yes" : "Enabled");
-				case status_disabled: return (use_yesno ? "No" : "Disabled");
-				case status_unsupported: return "Unsupported";
-				case status_unknown: return "Unknown";
-			};
-			return "[internal_error]";
-		}
+		/// Get displayable name for status_t.
+		static std::string get_status_name(status_t status, bool use_yesno = false);
 
 
+		/// Constructor
+		StorageDevice(const std::string& dev_or_vfile, bool is_virtual = false);
 
-		StorageDevice(const std::string& dev_or_vfile, bool is_virtual = false)
-		{
-			detected_type_ = detected_type_unknown;
-			// force_type_ = false;
-			is_virtual_ = is_virtual;
-			is_manually_added_ = false;
-			fully_parsed_ = false;
-			test_is_active_ = false;
+		/// Copy constructor
+		StorageDevice(const StorageDevice& other);
 
-			if (is_virtual) {
-				virtual_file_ = dev_or_vfile;
-			} else {
-				device_ = dev_or_vfile;
-			}
-		}
-
-
-		StorageDevice(const StorageDevice& other)
-		{
-			*this = other;
-		}
-
-
-		StorageDevice& operator= (const StorageDevice& other)
-		{
-			info_output_ = other.info_output_;
-			full_output_ = other.full_output_;
-
-			device_ = other.device_;
-
-			// force_type_ = other.force_type_;
-			is_virtual_ = other.is_virtual_;
-			virtual_file_ = other.virtual_file_;
-			is_manually_added_ = other.is_manually_added_;
-
-			fully_parsed_ = other.fully_parsed_;
-			test_is_active_ = other.test_is_active_;
-
-			detected_type_ = other.detected_type_;
-			smart_supported_ = other.smart_supported_;
-			smart_enabled_ = other.smart_enabled_;
-			aodc_status_ = other.aodc_status_;
-			model_name_ = other.model_name_;
-			family_name_ = other.family_name_;
-			size_ = other.size_;
-			health_property_ = other.health_property_;
-
-			properties_ = other.properties_;
-
-			return *this;
-		}
+		/// Assignment operator
+		StorageDevice& operator= (const StorageDevice& other);
 
 
 		// clear everything fetched before.
-		void clear_fetched(bool including_outputs = true)
-		{
-			if (including_outputs) {
-				info_output_.clear();
-				full_output_.clear();
-			}
+		void clear_fetched(bool including_outputs = true);
 
-			fully_parsed_ = false;
-			test_is_active_ = false;  // not sure
-
-			smart_supported_.reset();
-			smart_enabled_.reset();
-			model_name_.reset();
-			aodc_status_.reset();
-			family_name_.reset();
-			size_.reset();
-			health_property_.reset();
-
-			properties_.clear();
-		}
-
-
-		// calls "smartctl --info" (info section), then parse_basic_data()
-		// called during drive detection.
-		// note: this will clear the non-basic properties!
+		/// Calls "smartctl --info" (info section), then parse_basic_data().
+		/// Called during drive detection.
+		/// Note: this will clear the non-basic properties!
 		std::string fetch_basic_data_and_parse(hz::intrusive_ptr<CmdexSync> smartctl_ex = 0);
 
-
-		// detects type, smart support, smart status (on / off).
-		// note: this will clear the non-basic properties!
+		/// Detects type, smart support, smart status (on / off).
+		/// Note: this will clear the non-basic properties!
 		std::string parse_basic_data(bool do_set_properties = true, bool emit_signal = true);
 
-
-		// execute smartctl --all (all sections), get output, parse it, fill properties.
+		/// Execute smartctl --all (all sections), get output, parse it (basic data too), fill properties.
 		std::string fetch_data_and_parse(hz::intrusive_ptr<CmdexSync> smartctl_ex = 0);  // returns error message on error.
 
+		// Parses full info. If failed, try to parse it as basic info.
+		/// \return error message on error.
+		std::string parse_data();
 
-		std::string parse_data();  // returns error message on error.
-
-
-		void set_fully_parsed(bool b)
-		{
-			fully_parsed_ = b;
-		}
-
-		bool get_fully_parsed() const
-		{
-			return fully_parsed_;
-		}
+		/// Get the "fully parsed" flag
+		bool get_fully_parsed() const;
 
 
-		// try to enable SMART. will return error message on error.
+		/// Try to enable SMART.
+		/// \return error message on error, empty string on success
 		std::string set_smart_enabled(bool b, hz::intrusive_ptr<CmdexSync> smartctl_ex = 0);
 
-		// try to enable Automatic Offline Data Collection. will return error message on error.
+		/// Try to enable Automatic Offline Data Collection.
+		/// \return error message on error, empty string on success
 		std::string set_aodc_enabled(bool b, hz::intrusive_ptr<CmdexSync> smartctl_ex = 0);
 
 
+		/// Get SMART status
 		status_t get_smart_status() const;
 
+		/// Get AODC status
 		status_t get_aodc_status() const;
 
-		// returns empty string on error, format size string on success.
+
+		/// Get format size string, or an empty string on error.
 		std::string get_device_size_str() const;
 
+		/// Get the overall health property
 		StorageProperty get_health_property() const;
 
 
-		std::string get_device() const
-		{
-			return device_;
-		}
-
+		/// Get device name (e.g. /dev/sda)
+		std::string get_device() const;
 
 		/// Get device name without path. For example, "sda".
-		std::string get_device_base() const
-		{
-			if (is_virtual_)
-				return "";
+		std::string get_device_base() const;
 
-			std::string::size_type pos = device_.rfind('/');  // find basename
-			if (pos == std::string::npos)
-				return device_;  // fall back
-			return device_.substr(pos+1, std::string::npos);
-		}
+		/// Get device name for display purposes
+		std::string get_device_pretty(bool extended = false) const;
 
 
-		// for display purposes
-		std::string get_device_pretty(bool extended = false) const
-		{
-			std::string ret;
-			if (this->get_is_virtual()) {
-				ret = "Virtual";
-				if (extended) {
-					std::string vf = this->get_virtual_filename();
-					ret += (" (" + (vf.empty() ? "[empty]" : vf) + ")");
-				}
-			} else {
-				ret = (extended ? this->get_device() : this->get_device_base());
-			}
+		/// Set detected type
+		void set_detected_type(detected_type_t t);
 
-			return ret;
-		}
+		/// Get detected type
+		detected_type_t get_detected_type() const;
 
 
+		/// Set argument for "-d" smartctl parameter
+		void set_type_argument(const std::string& arg);
 
-		void set_detected_type(detected_type_t t)
-		{
-			detected_type_ = t;
-		}
-
-		detected_type_t get_detected_type() const
-		{
-			return detected_type_;
-		}
+		/// Get argument for "-d" smartctl parameter
+		std::string get_type_argument() const;
 
 
+		/// Set extra arguments smartctl
+		void set_extra_argument(const std::string& args);
 
-		bool get_is_virtual() const
-		{
-			return is_virtual_;
-		}
+		/// Get extra arguments smartctl
+		std::string get_extra_arguments() const;
 
-		std::string get_virtual_file() const
-		{
-			return (is_virtual_ ? virtual_file_ : std::string());
-		}
 
-		// get only the filename portion
+		/// Get "virtual" status
+		bool get_is_virtual() const;
+
+		/// If the device is virtual, return its file
+		std::string get_virtual_file() const;
+
+		/// Get only the filename portion of a virtual file
 		std::string get_virtual_filename() const;
 
 
-		const SmartctlParser::prop_list_t& get_properties() const
-		{
-			return properties_;
-		}
+		/// Get all detected properties
+		const SmartctlParser::prop_list_t& get_properties() const;
 
 
+		/// Find a property
 		StorageProperty lookup_property(const std::string& generic_name,
 				StorageProperty::section_t section = StorageProperty::section_unknown,  // if unknown, search in all.
-				StorageProperty::subsection_t subsection = StorageProperty::subsection_unknown) const
-		{
-			for (SmartctlParser::prop_list_t::const_iterator iter = properties_.begin(); iter != properties_.end(); ++iter) {
-				if (section != StorageProperty::section_unknown && iter->section != section)
-					continue;
-				if (subsection != StorageProperty::subsection_unknown && iter->subsection != subsection)
-					continue;
-
-				if (iter->generic_name == generic_name)
-					return *iter;
-			}
-			return StorageProperty();  // check with .empty()
-		}
+				StorageProperty::subsection_t subsection = StorageProperty::subsection_unknown) const;
 
 
-		// returns an empty string if unknown
-		std::string get_model_name() const
-		{
-			return (model_name_.defined() ? model_name_.value() : "");
-		}
+		/// Get model name.
+		/// \return empty string if not found
+		std::string get_model_name() const;
+
+		/// Get family name.
+		/// \return empty string if not found
+		std::string get_family_name() const;
+
+		/// Get serial number.
+		/// \return empty string if not found
+		std::string get_serial_number() const;
 
 
-		// returns an empty string if unknown
-		std::string get_family_name() const
-		{
-			return (family_name_.defined() ? family_name_.value() : "");
-		}
+		/// Set "info" output to parse
+		void set_info_output(const std::string& s);
+
+		/// Get "info" output to parse
+		std::string get_info_output() const;
 
 
-		// returns an empty string if unknown
-		std::string get_serial_number() const
-		{
-			return (serial_number_.defined() ? serial_number_.value() : "");
-		}
+		/// Set "full" output to parse
+		void set_full_output(const std::string& s);
+
+		/// Get "full" output to parse
+		std::string get_full_output() const;
 
 
-		void set_info_output(const std::string& s)
-		{
-			info_output_ = s;
-		}
+		/// Set "manually added" flag
+		void set_is_manually_added(bool b);
 
-		void set_full_output(const std::string& s)
-		{
-			full_output_ = s;
-		}
+		/// Get "manually added" flag
+		bool get_is_manually_added() const;
 
 
-		std::string get_info_output() const
-		{
-			return info_output_;
-		}
+		/// Set "test is active" flag, emit the "changed" signal if needed.
+		void set_test_is_active(bool b);
 
-		std::string get_full_output() const
-		{
-			return full_output_;
-		}
+		/// Get "test is active" flag
+		bool get_test_is_active() const;
 
 
-		void set_is_manually_added(bool b)
-		{
-			is_manually_added_ = b;
-		}
-
-		bool get_is_manually_added() const
-		{
-			return is_manually_added_;
-		}
-
-
-		void set_test_is_active(bool b)
-		{
-			bool changed = (test_is_active_ != b);
-			test_is_active_ = b;
-			if (changed)
-				signal_changed.emit(this);  // so that everybody stops any test-aborting operations.
-		}
-
-		bool get_test_is_active() const
-		{
-			return test_is_active_;
-		}
-
-
-		// get the recommended filename to save output to. includes model and date.
+		/// Get the recommended filename to save output to. Includes model and date.
 		std::string get_save_filename() const;
 
 
-		std::string get_device_options() const;  // get smartctl options for this device from config and type info.
+		/// Get final smartctl options for this device from config and type info.
+		std::string get_device_options() const;
 
 
-		// execute smartctl on this device. nothing is modified in this class.
+		/// Execute smartctl on this device. Nothing is modified in this class.
+		/// \return error message on error, empty string on success
 		std::string execute_smartctl(const std::string& command_options,
 				hz::intrusive_ptr<CmdexSync> smartctl_ex, std::string& output, bool check_type = false);
 
 
-		// emitted whenever new information is available
+		/// Emitted whenever new information is available
 		sigc::signal<void, StorageDevice*> signal_changed;
 
 
 	protected:
 
-		void set_properties(const SmartctlParser::prop_list_t& props)
-		{
-			properties_ = props;
-		}
+		/// Set the "fully parsed" flag
+		void set_fully_parsed(bool b);
+
+		/// Set parsed properties
+		void set_properties(const SmartctlParser::prop_list_t& props);
 
 
-		std::string info_output_;  // "smartctl --info" output
-		std::string full_output_;  // "smartctl --all" output
+	private:
 
-		std::string device_;  // e.g. /dev/sda. empty if virtual.
-// 		std::string type_;  // 
+		std::string info_output_;  ///< "smartctl --info" output
+		std::string full_output_;  ///< "smartctl --all" output
 
-		// bool force_type_;  // force "-d type" to smartctl, e.g. "-d scsi". DISCONTINUED, use per-device options.
-		bool is_virtual_;  // if true, then this is not a real device - merely a loaded description of it.
-		std::string virtual_file_;  // a file (smartctl data) the virtual device was loaded from
-		bool is_manually_added_;  // StorageDevice doesn't use it, but it's useful for its users.
+		std::string device_;  ///< e.g. /dev/sda. empty if virtual.
+		std::string type_arg_;  ///< Device type (for -d smartctl parameter), as specified when adding the device.
+		std::string extra_args_;  ///< Extra parameters for smartctl, as specified when adding the device.
 
-		bool fully_parsed_;
+		bool is_virtual_;  ///< If true, then this is not a real device - merely a loaded description of it.
+		std::string virtual_file_;  ///< A file (smartctl data) the virtual device was loaded from
+		bool is_manually_added_;  ///< StorageDevice doesn't use it, but it's useful for its users.
 
-		// sort of "lock". if true, the device is not allowed to perform any commands
-		// except "-l selftest" and maybe "--capabilities" and "--info" (not sure).
+		bool fully_parsed_;  ///< "Fully parsed" flag
+
+		/// Sort of a "lock". If true, the device is not allowed to perform any commands
+		/// except "-l selftest" and maybe "--capabilities" and "--info" (not sure).
 		bool test_is_active_;
 
-		// these are detected through info output
-		detected_type_t detected_type_;  // e.g. type_unknown
-		hz::OptionalValue<bool> smart_supported_;
-		hz::OptionalValue<bool> smart_enabled_;
-		mutable hz::OptionalValue<status_t> aodc_status_;  // cached aodc status.
-		hz::OptionalValue<std::string> model_name_;
-		hz::OptionalValue<std::string> family_name_;
-		hz::OptionalValue<std::string> serial_number_;
-		hz::OptionalValue<std::string> size_;  // formatted size
-		mutable hz::OptionalValue<StorageProperty> health_property_;  // cached health property.
+		// Note: These are detected through info output
+		detected_type_t detected_type_;  ///< e.g. type_unknown
+		hz::OptionalValue<bool> smart_supported_;  ///< SMART support status
+		hz::OptionalValue<bool> smart_enabled_;  ///< SMART enabled status
+		mutable hz::OptionalValue<status_t> aodc_status_;  ///< Cached aodc status.
+		hz::OptionalValue<std::string> model_name_;  ///< Model name
+		hz::OptionalValue<std::string> family_name_;  ///< Family name
+		hz::OptionalValue<std::string> serial_number_;  ///< Serial number
+		hz::OptionalValue<std::string> size_;  ///< Formatted size
+		mutable hz::OptionalValue<StorageProperty> health_property_;  ///< Cached health property.
 
-		// smart properties. detected through full output.
-		SmartctlParser::prop_list_t properties_;
+		SmartctlParser::prop_list_t properties_;  ///< Smart properties. Detected through full output.
 
 
 };
