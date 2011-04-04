@@ -39,9 +39,9 @@ std::string StorageDevice::fetch_basic_data_and_parse(hz::intrusive_ptr<CmdexSyn
 	// This means that the old SCSI identify command isn't executed by default,
 	// and there is no information about the device manufacturer/etc... in the output.
 	// We detect this and set the device type to scsi to at least have _some_ info.
-	if (get_type() == type_invalid) {
+	if (get_detected_type() == detected_type_invalid) {
 		debug_out_info("app", "The device seems to be of different type than auto-detected, trying again with scsi.\n");
-		this->set_type(type_scsi);
+		this->set_detected_type(detected_type_scsi);
 		return this->fetch_basic_data_and_parse(smartctl_ex);  // try again with scsi
 	}
 
@@ -75,13 +75,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 
 	// detect type. note: we can't distinguish between sata and scsi (on linux, for -d ata switch).
 	if (app_pcre_match("/this device: CD\\/DVD/mi", info_output_)) {
-		this->set_type(type_cddvd);
-
-// 	} else {
-// 		std::string dev_base = get_device_base();
-// 		if (!dev_base.empty() && dev_base[0] == 'h') {  // e.g. hda
-// 			this->set_type(type_pata);
-// 		}
+		this->set_detected_type(detected_type_cddvd);
 	}
 
 	// Note: We don't use SmartctlParser here, because this information
@@ -167,7 +161,7 @@ std::string StorageDevice::fetch_data_and_parse(hz::intrusive_ptr<CmdexSync> sma
 
 	// instead of -a, we use all the individual options -a encompasses, so that
 	// an addition to default -a output won't affect us.
-	if (this->get_type() == type_scsi) {
+	if (this->get_detected_type() == detected_type_scsi) {
 		// This doesn't do much yet, but just in case...
 		// SCSI equivalent of -a:
 		error_msg = execute_smartctl("-H -i -A -l error -l selftest", smartctl_ex, output);
@@ -177,9 +171,9 @@ std::string StorageDevice::fetch_data_and_parse(hz::intrusive_ptr<CmdexSync> sma
 				smartctl_ex, output, true);  // set type to invalid if needed
 	}
 	// See notes above (in fetch_basic_data_and_parse()).
-	if (get_type() == type_invalid) {
+	if (get_detected_type() == detected_type_invalid) {
 		debug_out_info("app", "The device seems to be of different type than auto-detected, trying again with scsi.\n");
-		this->set_type(type_scsi);
+		this->set_detected_type(detected_type_scsi);
 		return this->fetch_data_and_parse(smartctl_ex);  // try again with scsi
 	}
 
@@ -454,10 +448,10 @@ std::string StorageDevice::get_device_options() const
 
 	// If we have some special type, specify it on the command line (like "-d scsi").
 	// Note that the latter "-d" option overrides the former, so we're ok with multiple ones.
-	std::string type_arg = get_type_arg_name(this->get_type());
+	std::string type_arg = get_type_arg_name(this->get_detected_type());
 
 	if (!type_arg.empty()) {
- 	if (!config_options.empty()) {
+		if (!config_options.empty()) {
 			config_options += " ";
 		}
 		config_options += "-d " + type_arg;
@@ -531,9 +525,9 @@ std::string StorageDevice::execute_smartctl(const std::string& command_options,
 		// This means that the old SCSI identify command isn't executed by default,
 		// and there is no information about the device manufacturer/etc... in the output.
 		// We detect this and set the device type to scsi to at least have _some_ info.
-		if (check_type && this->get_type() == type_unknown
+		if (check_type && this->get_detected_type() == detected_type_unknown // && this->get_type() == ""
 				&& app_pcre_match("/specify device type with the -d option/mi", output)) {
-			this->set_type(type_invalid);
+			this->set_detected_type(detected_type_invalid);
 		}
 
 		return smartctl_ex->get_error_msg();

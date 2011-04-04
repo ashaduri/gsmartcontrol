@@ -71,6 +71,7 @@ Add support for multiple drives behind devices.
 		each one with optional smartctl parameters.
 	Use :: as delimiter, as in device::-d_string::other_options.
 		Show in UI as device (-d_string).
+		Preferences will match it as device::-d_string
 
 Rework drive properties UI:
 	add properties for each multi-drive.
@@ -105,8 +106,6 @@ Monitor:
 	Periodically re-run smartctl to refresh the notifications.
 	Periodically see if drives were added / removed (possibly use OS callbacks
 		instead of polling?)
-
-+Add a hint about "pd0" for Windows version.
 
 If a drive is not recognized, suggest using -d (sat, sat,12, ...)
 	Refer the user to

@@ -156,7 +156,7 @@ std::string StorageDetector::fetch_basic_data(std::vector<StorageDeviceRefPtr>& 
 
 		debug_out_dump("app", "Device information for " << drive->get_device() << ":\n"
 				<< "\tModel: " << drive->get_model_name() << "\n"
-				<< "\tType: " << StorageDevice::get_type_readable_name(drive->get_type()) << "\n"
+				<< "\tDetected type: " << StorageDevice::get_type_readable_name(drive->get_detected_type()) << "\n"
 				<< "\tSMART status: " << StorageDevice::get_status_name(drive->get_smart_status()) << "\n"
 				);
 

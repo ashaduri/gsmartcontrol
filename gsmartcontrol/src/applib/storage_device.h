@@ -28,35 +28,35 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 
 		// these may be used to force smartctl to a special type, as well as
 		// to display the correct icon
-		enum type_t {
-			type_unknown,  // unknown. will be autodetected by smartctl
-			type_invalid,  // this is set by smartctl executor if it detects invalid type (but not if it's scsi).
-			type_cddvd,  // unsupported by smartctl, only basic info is given.
-			type_scsi  // this is used to force "-d scsi" to execute IDENTIFY command.
+		enum detected_type_t {
+			detected_type_unknown,  // unknown. will be autodetected by smartctl
+			detected_type_invalid,  // this is set by smartctl executor if it detects invalid type (but not if it's scsi).
+			detected_type_cddvd,  // unsupported by smartctl, only basic info is given.
+			detected_type_scsi  // this is used to force "-d scsi" to execute IDENTIFY command.
 		};
 
 
 		// this gives a string which can be displayed in outputs
-		static std::string get_type_readable_name(type_t type)
+		static std::string get_type_readable_name(detected_type_t type)
 		{
 			switch (type) {
-				case type_unknown: return "unknown";
-				case type_invalid: return "invalid";
-				case type_cddvd: return "cd/dvd";
-				case type_scsi: return "scsi";
+				case detected_type_unknown: return "unknown";
+				case detected_type_invalid: return "invalid";
+				case detected_type_cddvd: return "cd/dvd";
+				case detected_type_scsi: return "scsi";
 			}
 			return "[internal_error]";
 		}
 
 
 		// this gives a string which, if not empty, can be given as a parameter of "-d".
-		static std::string get_type_arg_name(type_t type)
+		static std::string get_type_arg_name(detected_type_t type)
 		{
 			switch (type) {
-				case type_unknown: return "";
-				case type_invalid: return "";
-				case type_cddvd: return "";
-				case type_scsi: return "scsi";
+				case detected_type_unknown: return "";
+				case detected_type_invalid: return "";
+				case detected_type_cddvd: return "";
+				case detected_type_scsi: return "scsi";
 			}
 			return "";
 		}
@@ -84,7 +84,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 
 		StorageDevice(const std::string& dev_or_vfile, bool is_virtual = false)
 		{
-			type_ = type_unknown;
+			detected_type_ = detected_type_unknown;
 			// force_type_ = false;
 			is_virtual_ = is_virtual;
 			is_manually_added_ = false;
@@ -120,7 +120,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 			fully_parsed_ = other.fully_parsed_;
 			test_is_active_ = other.test_is_active_;
 
-			type_ = other.type_;
+			detected_type_ = other.detected_type_;
 			smart_supported_ = other.smart_supported_;
 			smart_enabled_ = other.smart_enabled_;
 			aodc_status_ = other.aodc_status_;
@@ -210,6 +210,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		}
 
 
+		/// Get device name without path. For example, "sda".
 		std::string get_device_base() const
 		{
 			if (is_virtual_)
@@ -241,14 +242,14 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 
 
 
-		void set_type(type_t t)
+		void set_detected_type(detected_type_t t)
 		{
-			type_ = t;
+			detected_type_ = t;
 		}
 
-		type_t get_type() const
+		detected_type_t get_detected_type() const
 		{
-			return type_;
+			return detected_type_;
 		}
 
 
@@ -386,6 +387,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		std::string full_output_;  // "smartctl --all" output
 
 		std::string device_;  // e.g. /dev/sda. empty if virtual.
+// 		std::string type_;  // 
 
 		// bool force_type_;  // force "-d type" to smartctl, e.g. "-d scsi". DISCONTINUED, use per-device options.
 		bool is_virtual_;  // if true, then this is not a real device - merely a loaded description of it.
@@ -399,7 +401,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		bool test_is_active_;
 
 		// these are detected through info output
-		type_t type_;  // e.g. type_ata
+		detected_type_t detected_type_;  // e.g. type_unknown
 		hz::OptionalValue<bool> smart_supported_;
 		hz::OptionalValue<bool> smart_enabled_;
 		mutable hz::OptionalValue<status_t> aodc_status_;  // cached aodc status.
@@ -424,8 +426,8 @@ typedef hz::intrusive_ptr<StorageDevice> StorageDeviceRefPtr;
 // for sorting, hard drives first
 inline bool operator< (const StorageDeviceRefPtr& d1, const StorageDeviceRefPtr& d2)
 {
-	if (d1->get_type() != d2->get_type()) {
-		return (d1->get_type() == StorageDevice::type_unknown);  // hard drives first
+	if (d1->get_detected_type() != d2->get_detected_type()) {
+		return (d1->get_detected_type() == StorageDevice::detected_type_unknown);  // hard drives first
 	}
 	return d1->get_device_base() < d2->get_device_base();
 }
