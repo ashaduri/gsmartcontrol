@@ -20,8 +20,138 @@
 
 
 
-// Fetch and parse basic info
-// note: this will clear the non-basic properties!
+
+std::string StorageDevice::get_type_readable_name(StorageDevice::detected_type_t type)
+{
+    switch (type) {
+    case detected_type_unknown:
+        return "unknown";
+    case detected_type_invalid:
+        return "invalid";
+    case detected_type_cddvd:
+        return "cd/dvd";
+    case detected_type_scsi:
+        return "scsi";
+    }
+    return "[internal_error]";
+}
+
+
+
+std::string StorageDevice::get_type_arg_name(StorageDevice::detected_type_t type)
+{
+    switch (type) {
+    case detected_type_unknown:
+        return "";
+    case detected_type_invalid:
+        return "";
+    case detected_type_cddvd:
+        return "";
+    case detected_type_scsi:
+        return "scsi";
+    }
+    return "";
+}
+
+
+
+std::string StorageDevice::get_status_name(StorageDevice::status_t status, bool use_yesno)
+{
+    switch (status) {
+    case status_enabled:
+        return (use_yesno ? "Yes" : "Enabled");
+    case status_disabled:
+        return (use_yesno ? "No" : "Disabled");
+    case status_unsupported:
+        return "Unsupported";
+    case status_unknown:
+        return "Unknown";
+    };
+    return "[internal_error]";
+}
+
+
+
+StorageDevice::StorageDevice(const string& dev_or_vfile, bool is_virtual)
+{
+    detected_type_ = detected_type_unknown;
+    // force_type_ = false;
+    is_virtual_ = is_virtual;
+    is_manually_added_ = false;
+    fully_parsed_ = false;
+    test_is_active_ = false;
+
+    if (is_virtual) {
+        virtual_file_ = dev_or_vfile;
+    } else {
+        device_ = dev_or_vfile;
+    }
+}
+
+
+
+StorageDevice::StorageDevice(const StorageDevice& other)
+{
+    *this = other;
+}
+
+
+
+StorageDevice& StorageDevice::operator=(const StorageDevice& other)
+{
+    info_output_ = other.info_output_;
+    full_output_ = other.full_output_;
+
+    device_ = other.device_;
+	type_arg_ = other.type_arg_;
+	extra_args_ = other.extra_args_;
+
+    // force_type_ = other.force_type_;
+    is_virtual_ = other.is_virtual_;
+    virtual_file_ = other.virtual_file_;
+    is_manually_added_ = other.is_manually_added_;
+
+    fully_parsed_ = other.fully_parsed_;
+    test_is_active_ = other.test_is_active_;
+
+    detected_type_ = other.detected_type_;
+    smart_supported_ = other.smart_supported_;
+    smart_enabled_ = other.smart_enabled_;
+    aodc_status_ = other.aodc_status_;
+    model_name_ = other.model_name_;
+    family_name_ = other.family_name_;
+    size_ = other.size_;
+    health_property_ = other.health_property_;
+
+    properties_ = other.properties_;
+
+    return *this;
+}
+
+
+
+void StorageDevice::clear_fetched(bool including_outputs) {
+    if (including_outputs) {
+        info_output_.clear();
+        full_output_.clear();
+    }
+
+    fully_parsed_ = false;
+    test_is_active_ = false;  // not sure
+
+    smart_supported_.reset();
+    smart_enabled_.reset();
+    model_name_.reset();
+    aodc_status_.reset();
+    family_name_.reset();
+    size_.reset();
+    health_property_.reset();
+
+    properties_.clear();
+}
+
+
+
 std::string StorageDevice::fetch_basic_data_and_parse(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 {
 	if (this->test_is_active_)
@@ -58,8 +188,6 @@ std::string StorageDevice::fetch_basic_data_and_parse(hz::intrusive_ptr<CmdexSyn
 
 
 
-
-// note: this will clear the non-basic properties!
 std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_signal)
 {
 	this->clear_fetched(false);  // clear everything fetched before, except outputs
@@ -148,7 +276,6 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 
 
 
-// fetch complete data (basic too), parse it.
 std::string StorageDevice::fetch_data_and_parse(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 {
 	if (this->test_is_active_)
@@ -188,9 +315,6 @@ std::string StorageDevice::fetch_data_and_parse(hz::intrusive_ptr<CmdexSync> sma
 
 
 
-
-// parses full info. if failed, tries to parse it as basic info.
-// returns an error message on error.
 std::string StorageDevice::parse_data()
 {
 	this->clear_fetched(false);  // clear everything fetched before, except outputs
@@ -233,7 +357,13 @@ std::string StorageDevice::parse_data()
 
 
 
-// returns error message on error, empty string on success
+bool StorageDevice::get_fully_parsed() const
+{
+	return fully_parsed_;
+}
+
+
+
 std::string StorageDevice::set_smart_enabled(bool b, hz::intrusive_ptr<CmdexSync> smartctl_ex)
 {
 	if (this->test_is_active_)
@@ -273,7 +403,6 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 
 
 
-// returns error message on error, empty string on success
 std::string StorageDevice::set_aodc_enabled(bool b, hz::intrusive_ptr<CmdexSync> smartctl_ex)
 {
 	if (this->test_is_active_)
@@ -305,16 +434,6 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 
 	return "Unknown error occurred.";
 }
-
-
-
-
-// get only the filename portion
-std::string StorageDevice::get_virtual_filename() const
-{
-	return (is_virtual_ ? hz::FsPath(virtual_file_).get_basename() : std::string());
-}
-
 
 
 
@@ -396,7 +515,6 @@ StorageDevice::status_t StorageDevice::get_aodc_status() const
 
 
 
-// returns empty string on error, format size string on success.
 std::string StorageDevice::get_device_size_str() const
 {
 	return (size_.defined() ? size_.value() : "");
@@ -419,6 +537,211 @@ StorageProperty StorageDevice::get_health_property() const
 
 
 
+string StorageDevice::get_device() const
+{
+	return device_;
+}
+
+
+
+string StorageDevice::get_device_base() const
+{
+	if (is_virtual_)
+		return "";
+
+	std::string::size_type pos = device_.rfind('/');  // find basename
+	if (pos == std::string::npos)
+		return device_;  // fall back
+	return device_.substr(pos+1, std::string::npos);
+}
+
+
+
+string StorageDevice::get_device_pretty(bool extended) const
+{
+	std::string ret;
+	if (this->get_is_virtual()) {
+		ret = "Virtual";
+		if (extended) {
+			std::string vf = this->get_virtual_filename();
+			ret += (" (" + (vf.empty() ? "[empty]" : vf) + ")");
+		}
+	} else {
+		ret = (extended ? this->get_device() : this->get_device_base());
+	}
+
+	return ret;
+}
+
+
+
+void StorageDevice::set_detected_type(StorageDevice::detected_type_t t)
+{
+	detected_type_ = t;
+}
+
+
+
+StorageDevice::detected_type_t StorageDevice::get_detected_type() const
+{
+	return detected_type_;
+}
+
+
+
+void StorageDevice::set_type_argument(const string& arg)
+{
+	type_arg_ = arg;
+}
+
+
+
+std::string StorageDevice::get_type_argument() const
+{
+	return type_arg_;
+}
+
+
+
+void StorageDevice::set_extra_argument(const string& args)
+{
+	extra_args_ = args;
+}
+
+
+
+std::string StorageDevice::get_extra_arguments() const
+{
+	return extra_args_;
+}
+
+
+
+bool StorageDevice::get_is_virtual() const
+{
+	return is_virtual_;
+}
+
+
+
+string StorageDevice::get_virtual_file() const
+{
+	return (is_virtual_ ? virtual_file_ : std::string());
+}
+
+
+
+std::string StorageDevice::get_virtual_filename() const
+{
+	return (is_virtual_ ? hz::FsPath(virtual_file_).get_basename() : std::string());
+}
+
+
+
+const SmartctlParser::prop_list_t& StorageDevice::get_properties() const
+{
+	return properties_;
+}
+
+
+
+StorageProperty StorageDevice::lookup_property(const string& generic_name, StorageProperty::section_t section, StorageProperty::subsection_t subsection) const
+{
+	for (SmartctlParser::prop_list_t::const_iterator iter = properties_.begin(); iter != properties_.end(); ++iter) {
+		if (section != StorageProperty::section_unknown && iter->section != section)
+			continue;
+		if (subsection != StorageProperty::subsection_unknown && iter->subsection != subsection)
+			continue;
+
+		if (iter->generic_name == generic_name)
+			return *iter;
+	}
+	return StorageProperty();  // check with .empty()
+}
+
+
+
+string StorageDevice::get_model_name() const
+{
+	return (model_name_.defined() ? model_name_.value() : "");
+}
+
+
+
+string StorageDevice::get_family_name() const
+{
+	return (family_name_.defined() ? family_name_.value() : "");
+}
+
+
+
+string StorageDevice::get_serial_number() const
+{
+	return (serial_number_.defined() ? serial_number_.value() : "");
+}
+
+
+
+void StorageDevice::set_info_output(const string& s)
+{
+	info_output_ = s;
+}
+
+
+
+string StorageDevice::get_info_output() const
+{
+	return info_output_;
+}
+
+
+
+void StorageDevice::set_full_output(const string& s)
+{
+	full_output_ = s;
+}
+
+
+
+string StorageDevice::get_full_output() const
+{
+	return full_output_;
+}
+
+
+
+void StorageDevice::set_is_manually_added(bool b)
+{
+	is_manually_added_ = b;
+}
+
+
+
+bool StorageDevice::get_is_manually_added() const
+{
+	return is_manually_added_;
+}
+
+
+
+void StorageDevice::set_test_is_active(bool b)
+{
+	bool changed = (test_is_active_ != b);
+	test_is_active_ = b;
+	if (changed) {
+		signal_changed.emit(this);  // so that everybody stops any test-aborting operations.
+	}
+}
+
+
+
+bool StorageDevice::get_test_is_active() const
+{
+	return test_is_active_;
+}
+
+
+
 std::string StorageDevice::get_save_filename() const
 {
 	std::string model = this->get_model_name();  // may be empty
@@ -433,7 +756,6 @@ std::string StorageDevice::get_save_filename() const
 
 	return hz::filename_make_safe(filename_format);
 }
-
 
 
 
@@ -462,7 +784,6 @@ std::string StorageDevice::get_device_options() const
 
 
 
-// Returns error message on error, empty string on success
 std::string StorageDevice::execute_smartctl(const std::string& command_options,
 		hz::intrusive_ptr<CmdexSync> smartctl_ex, std::string& smartctl_output, bool check_type)
 {
@@ -543,6 +864,19 @@ std::string StorageDevice::execute_smartctl(const std::string& command_options,
 	return std::string();
 }
 
+
+
+void StorageDevice::set_fully_parsed(bool b)
+{
+	fully_parsed_ = b;
+}
+
+
+
+void StorageDevice::set_properties(const SmartctlParser::prop_list_t& props)
+{
+	properties_ = props;
+}
 
 
 
