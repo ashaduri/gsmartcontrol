@@ -243,7 +243,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 			Glib::RefPtr<Gdk::Pixbuf> icon;
-			if (drive->get_type() == StorageDevice::type_cddvd) {
+			if (drive->get_detected_type() == StorageDevice::detected_type_cddvd) {
 				icon = cddvd_icon;
 			} else {
 				icon = hd_icon;
