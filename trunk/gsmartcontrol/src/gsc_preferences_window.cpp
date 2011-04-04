@@ -17,8 +17,10 @@
 #include <gdk/gdkkeysyms.h>  // GDK_Escape
 
 #include "hz/fs_path.h"
+#include "hz/string_sprintf.h"
 #include "rconfig/rconfig_mini.h"
 #include "applib/storage_settings.h"
+#include "applib/app_gtkmm_utils.h"
 
 #include "gsc_preferences_window.h"
 
@@ -208,6 +210,13 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const app_ui
 
 	Gtk::Entry* device_options_device_entry = 0;
 	APP_UI_RES_AUTO_CONNECT(device_options_device_entry, changed);
+	Glib::ustring device_options_tooltip = "Device name (for example, %s)";
+#ifdef _WIN32
+	device_options_tooltip = hz::string_sprintf(device_options_tooltip.c_str(), "\"pd0\" for the first physical drive");
+#else
+	device_options_tooltip = hz::string_sprintf(device_options_tooltip.c_str(), "\"/dev/sda\"");
+#endif
+	app_gtkmm_set_widget_tooltip(*device_options_device_entry, device_options_tooltip);
 
 	Gtk::Entry* device_options_parameter_entry = 0;
 	APP_UI_RES_AUTO_CONNECT(device_options_parameter_entry, changed);

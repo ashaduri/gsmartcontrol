@@ -38,11 +38,8 @@ TODO:
 
 Add debian/ubuntu's su-to-root support to gsmartcontrol-root.
 
-Add support for SSD smartctl attribute names (they're totally different).
-	Check smartctl sources, they print those names.
-	Use smartctl-returned names for searching by default. If it's "Unknown_Attribute"
-		or unknown name, then use our ID db.
 
+Set tooltips wherever we have "No description available".
 
 
 Testing:
@@ -81,10 +78,9 @@ Rework drive properties UI:
 	use 48-bit or not or auto.
 	Enable/disable/dont_touch SMART on startup for this drive.
 	Enable/disable/dont_touch AODC on startup for this drive.
-
-Add --init-smart-only option to only apply the SMART/AODC enabling status
-	from the drive properties.
-	Add also --no-init-smart to avoid doing that on GUI startup.
+	Add --init-smart-only option to only apply the SMART/AODC enabling status
+		from the drive properties.
+		Add also --no-init-smart to avoid doing that on GUI startup.
 
 Notifications:
 	Tied to (drive::subdrive, notif_key, exact_value(optional)).
@@ -110,8 +106,7 @@ Monitor:
 	Periodically see if drives were added / removed (possibly use OS callbacks
 		instead of polling?)
 
-Options->Prefs->Drives
-	Add a hint about "pd0" for Windows version.
++Add a hint about "pd0" for Windows version.
 
 If a drive is not recognized, suggest using -d (sat, sat,12, ...)
 	Refer the user to
