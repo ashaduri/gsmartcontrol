@@ -61,20 +61,14 @@ Add support for launching with consolehelper (from usermode package).
 
 If the detection executes "smartctl -i", don't execute it again afterwards.
 
-When adding device, have an option to specify "-d" type and other parameters.
-	This is needed to support multi-disk devices.
-	Maybe make "-d" a dropdown?
-		Not sure, "-l aaa /tmp" doesn't list all types. Also raid...
 
-Add support for multiple drives behind devices.
-	Add support for specifying these drives on gsmartcontrol command-line,
-		each one with optional smartctl parameters.
-	Use :: as delimiter, as in device::-d_string::other_options.
-		Show in UI as device (-d_string).
-		Preferences will match it as device::-d_string
+When adding device via GUI, have an option to specify "-d" type and other parameters.
+	Maybe make "-d" a dropdown?
+		Just list common types (sat,12; sat,16; scsi, ...?)
+
 
 Rework drive properties UI:
-	add properties for each multi-drive.
+	add properties for each multi-drive (with type in a separate entry).
 	smartctl options
 	use 48-bit or not or auto.
 	Enable/disable/dont_touch SMART on startup for this drive.

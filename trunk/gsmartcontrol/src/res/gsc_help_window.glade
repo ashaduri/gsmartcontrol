@@ -1,7 +1,6 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Thu Sep  4 22:08:44 2008 -->
+<?xml version="1.0"?>
 <glade-interface>
+  <requires-version lib="gtk+" version="2.12"/>
   <widget class="GtkWindow" id="gsc_help_window">
     <property name="title" translatable="yes">Help - GSmartControl</property>
     <property name="default_width">630</property>
@@ -9,8 +8,8 @@
     <child>
       <widget class="GtkVBox" id="vbox1">
         <property name="visible">True</property>
-        <property name="border_width">5</property>
-        <property name="spacing">5</property>
+        <property name="border_width">12</property>
+        <property name="spacing">12</property>
         <child>
           <widget class="GtkHPaned" id="hpaned1">
             <property name="visible">True</property>
@@ -19,7 +18,7 @@
             <child>
               <widget class="GtkVBox" id="vbox2">
                 <property name="visible">True</property>
-                <property name="spacing">5</property>
+                <property name="spacing">6</property>
                 <child>
                   <widget class="GtkLabel" id="label4">
                     <property name="visible">True</property>
@@ -44,7 +43,6 @@
                         <property name="tooltip_text">Topics</property>
                         <property name="tooltip" translatable="yes">Topics</property>
                         <property name="headers_visible">False</property>
-                        <property name="headers_clickable">True</property>
                       </widget>
                     </child>
                   </widget>
