@@ -31,6 +31,7 @@
 
 #include "gsc_main_window_iconview.h"
 #include "gsc_main_window.h"
+#include "gsc_add_device_window.h"
 
 
 
@@ -1195,71 +1196,10 @@ GscInfoWindow* GscMainWindow::show_device_info_window(StorageDeviceRefPtr drive)
 
 void GscMainWindow::show_add_device_chooser()
 {
-#ifdef _WIN32
-
-	// A simple text entry dialog, since there are no device files on win32.
-
-	static std::string last_str;
-	if (last_str.empty())
-		last_str = "pd0";
-
-	std::string dev;
-	if (gui_show_text_entry_dialog("Add Device", "Enter a device name",
-			"For example, pd0 means the first physical drive",
-			dev, last_str, this, false)) {
-		last_str = dev;  // safe for the future
-		std::string type_arg = "";  /// TODO
-		std::string extra_args = "";  /// TODO
-		// both the GUI and the API is in utf-8, no conversion is necessary.
-		this->add_device(dev, type_arg, extra_args);
-	}
-
-
-#else  // non-win32:
-
-	// Show a file chooser
-
-	static std::string last_dir;
-	if (last_dir.empty())
-		last_dir = "/dev";
-
-	Gtk::FileChooserDialog dialog(*this, "Choose Device File...",
-			Gtk::FILE_CHOOSER_ACTION_OPEN);
-
-	// Add response buttons the the dialog
-	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
-	dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_ACCEPT);
-
-	if (!last_dir.empty())
-		dialog.set_current_folder(last_dir);
-
-	// Show the dialog and wait for a user response
-	int result = dialog.run();  // the main cycle blocks here
-
-	// Handle the response
-	switch (result) {
-		case Gtk::RESPONSE_ACCEPT:
-		{
-			last_dir = dialog.get_current_folder();  // safe for the future
-
-			std::string file = dialog.get_filename();  // in fs encoding
-			std::string type_arg = "";  /// TODO
-			std::string extra_args = "";  /// TODO
-			this->add_device(file, type_arg, extra_args);
-			break;
-		}
-
-		case Gtk::RESPONSE_CANCEL: case Gtk::RESPONSE_DELETE_EVENT:
-			// nothing, the dialog is closed already
-			break;
-
-		default:
-			debug_out_error("app", DBG_FUNC_MSG << "Unknown dialog response code: " << result << ".\n");
-			break;
-	}
-
-#endif  // non-win32
-
+	GscAddDeviceWindow* window = GscAddDeviceWindow::create();
+	window->set_main_window(this);
+	window->set_transient_for(*this);
+	window->show();
 }
 
 

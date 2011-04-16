@@ -35,7 +35,7 @@ class GscPreferencesWindow : public AppUIResWidget<GscPreferencesWindow, true> {
 		{ }
 
 
-		void update_device_widgets(const std::string& device, const std::string& params);
+		void update_device_widgets(const std::string& device, const std::string& type, const std::string& params);
 
 		void device_widget_set_remove_possible(bool b);
 
@@ -89,6 +89,8 @@ class GscPreferencesWindow : public AppUIResWidget<GscPreferencesWindow, true> {
 		void on_device_options_add_device_button_clicked();
 
 		void on_device_options_device_entry_changed();
+
+		void on_device_options_type_entry_changed();
 
 		void on_device_options_parameter_entry_changed();
 

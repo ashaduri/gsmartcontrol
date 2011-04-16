@@ -38,16 +38,20 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		{
 			Gtk::TreeModelColumnRecord model_columns;
 
-			// Device, [Parameters], [Device Real].
+			// Device, Type, [Parameters], [Device Real], [Type Real].
 			// Device may hold "<empty>", while Device Real is "".
+			// Type may hold "<all>", while Type Real is "".
 
 			model_columns.add(col_device);
 			this->append_column("Device", col_device);
 			this->set_search_column(col_device.index());
 
-			model_columns.add(col_parameters);
+			model_columns.add(col_type);
+			this->append_column("Type", col_type);
 
+			model_columns.add(col_parameters);
 			model_columns.add(col_device_real);
+			model_columns.add(col_type_real);
 
 
 			// create a TreeModel (ListStore)
@@ -78,12 +82,14 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		}
 
 
-		void add_new_row(const std::string& device, const std::string& params, bool select = true)
+		void add_new_row(const std::string& device, const std::string& type, const std::string& params, bool select = true)
 		{
 			Gtk::TreeRow row = *(model->append());
 			row[col_device] = (device.empty() ? "<empty>" : device);
+			row[col_type] = (type.empty() ? "<all>" : type);
 			row[col_parameters] = params;
 			row[col_device_real] = device;
+			row[col_type_real] = type;
 
 			if (select)
 				this->get_selection()->select(row);
@@ -96,6 +102,16 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 				Gtk::TreeRow row = *(this->get_selection()->get_selected());
 				row[col_device] = (device.empty() ? "<empty>" : device);
 				row[col_device_real] = device;
+			}
+		}
+
+
+		void update_selected_row_type(const std::string& type)
+		{
+			if (this->get_selection()->count_selected_rows()) {
+				Gtk::TreeRow row = *(this->get_selection()->get_selected());
+				row[col_type] = (type.empty() ? "<all>" : type);
+				row[col_type_real] = type;
 			}
 		}
 
@@ -125,7 +141,12 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		{
 			clear_all();
 			for (device_option_map_t::const_iterator iter = devmap.begin(); iter != devmap.end(); ++iter) {
-				this->add_new_row(iter->first, iter->second, false);
+				std::vector<std::string> parts;
+				hz::string_split(iter->first, "::", parts, 2);
+				std::string dev = (parts.size() > 0 ? parts.at(0) : "");
+				std::string type = (parts.size() > 1 ? parts.at(1) : "");
+				std::string params = iter->second;
+				this->add_new_row(dev, type, params, false);
 			}
 		}
 
@@ -137,8 +158,16 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 			Gtk::TreeNodeChildren children = model->children();
 			for (Gtk::TreeNodeChildren::iterator iter = children.begin(); iter != children.end(); ++iter) {
 				Gtk::TreeModel::Row row = *iter;
-				if (!row.get_value(col_device_real).empty() && devmap.find(row.get_value(col_device_real)) == devmap.end())
-					devmap[row.get_value(col_device_real)] = row.get_value(col_parameters);
+				std::string dev = row.get_value(col_device_real);
+				if (!dev.empty()) {
+					std::string par = row.get_value(col_type_real);
+					if (!par.empty()) {
+						dev += "::" + par;
+					}
+					if (devmap.find(dev) == devmap.end()) {
+						devmap[dev] = row.get_value(col_parameters);
+					}
+				}
 			}
 
 			return devmap;
@@ -149,10 +178,11 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		// callback
 		void on_selection_changed()
 		{
-			std::string dev, par;
+			std::string dev, type, par;
 			if (this->get_selection()->count_selected_rows()) {
 				Gtk::TreeRow row = *(this->get_selection()->get_selected());
 				dev = row[col_device_real];
+				type = row[col_type_real];
 				par = row[col_parameters];
 				preferences_window->device_widget_set_remove_possible(true);
 
@@ -160,7 +190,7 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 				preferences_window->device_widget_set_remove_possible(false);
 			}
 
-			preferences_window->update_device_widgets(dev, par);
+			preferences_window->update_device_widgets(dev, type, par);
 		}
 
 
@@ -168,8 +198,10 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		Glib::RefPtr<Gtk::ListStore> model;
 
 		Gtk::TreeModelColumn<Glib::ustring> col_device;
+		Gtk::TreeModelColumn<Glib::ustring> col_type;
 		Gtk::TreeModelColumn<std::string> col_parameters;
 		Gtk::TreeModelColumn<std::string> col_device_real;
+		Gtk::TreeModelColumn<std::string> col_type_real;
 
 		GscPreferencesWindow* preferences_window;
 
@@ -210,15 +242,17 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const app_ui
 
 	Gtk::Entry* device_options_device_entry = 0;
 	APP_UI_RES_AUTO_CONNECT(device_options_device_entry, changed);
-	Glib::ustring device_options_tooltip = "Format: <device name>::<type>, where \"::<type>\" part is optional. "
-			" An example of device name would be %s. Type is an argument of smartctl -d option and can be "
-			" used to specify a drive behind a RAID device, e.g. /dev/twa0::3ware,2";
+	Glib::ustring device_options_tooltip = "Device name, e.g. %s.";
 #ifdef _WIN32
 	device_options_tooltip = hz::string_sprintf(device_options_tooltip.c_str(), "\"pd0\" for the first physical drive");
 #else
 	device_options_tooltip = hz::string_sprintf(device_options_tooltip.c_str(), "\"/dev/sda\"");
 #endif
-	app_gtkmm_set_widget_tooltip(*device_options_device_entry, device_options_tooltip);
+	Gtk::Label* device_options_device_label = lookup_widget<Gtk::Label*>("device_options_device_label");
+	app_gtkmm_set_widget_tooltip(*device_options_device_label, device_options_tooltip);
+
+	Gtk::Entry* device_options_type_entry = 0;
+	APP_UI_RES_AUTO_CONNECT(device_options_type_entry, changed);
 
 	Gtk::Entry* device_options_parameter_entry = 0;
 	APP_UI_RES_AUTO_CONNECT(device_options_parameter_entry, changed);
@@ -258,12 +292,15 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const app_ui
 
 
 
-void GscPreferencesWindow::update_device_widgets(const std::string& device, const std::string& params)
+void GscPreferencesWindow::update_device_widgets(const std::string& device, const std::string& type, const std::string& params)
 {
 	Gtk::Entry* entry = 0;
 
 	if ((entry = this->lookup_widget<Gtk::Entry*>("device_options_device_entry")))
 		entry->set_text(device);
+
+	if ((entry = this->lookup_widget<Gtk::Entry*>("device_options_type_entry")))
+		entry->set_text(type);
 
 	if ((entry = this->lookup_widget<Gtk::Entry*>("device_options_parameter_entry")))
 		entry->set_text(params);
@@ -480,18 +517,21 @@ void GscPreferencesWindow::on_device_options_remove_device_button_clicked()
 void GscPreferencesWindow::on_device_options_add_device_button_clicked()
 {
 	Gtk::Entry* entry = 0;
-	std::string dev, par;
+	std::string dev, type, par;
 
 	if ((entry = this->lookup_widget<Gtk::Entry*>("device_options_device_entry")))
 		dev = entry->get_text();
+
+	if ((entry = this->lookup_widget<Gtk::Entry*>("device_options_type_entry")))
+		type = entry->get_text();
 
 	if ((entry = this->lookup_widget<Gtk::Entry*>("device_options_parameter_entry")))
 		par = entry->get_text();
 
 	if (device_options_treeview->has_selected_row()) {
-		device_options_treeview->add_new_row("", "");  // without this it would clone the existing.
+		device_options_treeview->add_new_row("", "", "");  // without this it would clone the existing.
 	} else {
-		device_options_treeview->add_new_row(dev, par);
+		device_options_treeview->add_new_row(dev, type, par);
 	}
 }
 
@@ -502,6 +542,15 @@ void GscPreferencesWindow::on_device_options_device_entry_changed()
 	Gtk::Entry* entry = 0;
 	if ((entry = this->lookup_widget<Gtk::Entry*>("device_options_device_entry")))
 		device_options_treeview->update_selected_row_device(entry->get_text());
+}
+
+
+
+void GscPreferencesWindow::on_device_options_type_entry_changed()
+{
+	Gtk::Entry* entry = 0;
+	if ((entry = this->lookup_widget<Gtk::Entry*>("device_options_type_entry")))
+		device_options_treeview->update_selected_row_type(entry->get_text());
 }
 
 

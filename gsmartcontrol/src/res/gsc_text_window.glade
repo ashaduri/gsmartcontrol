@@ -43,8 +43,16 @@
             <property name="spacing">6</property>
             <property name="homogeneous">True</property>
             <child>
-              <widget class="GtkLabel" id="label2">
+              <widget class="GtkButton" id="save_as_button">
                 <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="tooltip_text">Saved displayed text as...</property>
+                <property name="tooltip" translatable="yes">Saved displayed text as...</property>
+                <property name="label" translatable="yes">gtk-save-as</property>
+                <property name="use_stock">True</property>
+                <property name="response_id">0</property>
+                <accelerator key="S" signal="activate" modifiers="GDK_CONTROL_MASK"/>
               </widget>
             </child>
             <child>
@@ -56,16 +64,8 @@
               </packing>
             </child>
             <child>
-              <widget class="GtkButton" id="save_as_button">
+              <widget class="GtkLabel" id="label2">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="tooltip_text">Saved displayed text as...</property>
-                <property name="tooltip" translatable="yes">Saved displayed text as...</property>
-                <property name="label" translatable="yes">gtk-save-as</property>
-                <property name="use_stock">True</property>
-                <property name="response_id">0</property>
-                <accelerator key="S" signal="activate" modifiers="GDK_CONTROL_MASK"/>
               </widget>
               <packing>
                 <property name="position">2</property>

@@ -68,8 +68,6 @@ When adding device via GUI, have an option to specify "-d" type and other parame
 
 
 Rework drive properties UI:
-	add properties for each multi-drive (with type in a separate entry).
-	smartctl options
 	use 48-bit or not or auto.
 	Enable/disable/dont_touch SMART on startup for this drive.
 	Enable/disable/dont_touch AODC on startup for this drive.
