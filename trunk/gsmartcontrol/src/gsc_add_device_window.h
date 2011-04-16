@@ -10,6 +10,7 @@
 #include <gtkmm/window.h>
 
 #include "applib/app_ui_res_utils.h"
+#include <gtkmm/treemodelcolumn.h>
 
 
 
@@ -69,7 +70,6 @@ class GscAddDeviceWindow : public AppUIResWidget<GscAddDeviceWindow, true> {
 	private:
 
 		GscMainWindow* main_window_;  ///< The main window that created us
-
 
 };
 

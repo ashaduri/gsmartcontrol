@@ -8,6 +8,7 @@
 #include <gtkmm/entry.h>
 #include <gtkmm/filechooserdialog.h>
 #include <gtkmm/stock.h>
+#include <gtkmm/comboboxentry.h>
 #include <gdk/gdkkeysyms.h>  // GDK_Escape
 
 #include "hz/fs_path.h"
@@ -68,7 +69,40 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, const app_ui_res
 #endif
 
 
-	// initial state of OK button
+	// Populate type combo with common types
+	Gtk::ComboBoxEntry* type_combo = lookup_widget<Gtk::ComboBoxEntry*>("device_type_combo");
+	if (type_combo) {
+		Gtk::TreeModelColumnRecord column_record; ///< Columns for type combo
+		Gtk::TreeModelColumn<Glib::ustring> col_type; ///< Model column
+
+		column_record.add(col_type);
+
+		Glib::RefPtr<Gtk::ListStore> model = Gtk::ListStore::create(column_record);
+		type_combo->set_model(model);
+		type_combo->set_text_column(col_type);
+
+		(*(model->append()))[col_type] = "sat,12";
+		(*(model->append()))[col_type] = "sat,16";
+		(*(model->append()))[col_type] = "usbcypress";
+		(*(model->append()))[col_type] = "usbjmicron";
+		(*(model->append()))[col_type] = "usbsunplus";
+		(*(model->append()))[col_type] = "ata";
+		(*(model->append()))[col_type] = "scsi";
+#if defined CONFIG_KERNEL_LINUX
+		(*(model->append()))[col_type] = "marvell";
+		(*(model->append()))[col_type] = "megaraid,N";
+		(*(model->append()))[col_type] = "areca,N";
+#endif
+#if defined CONFIG_KERNEL_LINUX || defined CONFIG_KERNEL_FREEBSD || defined CONFIG_KERNEL_DRAGONFLY
+		(*(model->append()))[col_type] = "3ware,N";  // this option is not needed in windows
+		(*(model->append()))[col_type] = "cciss,N";
+		(*(model->append()))[col_type] = "hpt,L/M";
+		(*(model->append()))[col_type] = "hpt,L/M/N";
+#endif
+	}
+
+
+	// This sets the initial state of OK button
 	on_device_name_entry_changed();
 
 	// show();
