@@ -347,6 +347,7 @@ AC_SUBST(WINDOWS_ARCH)
 
 
 RES_FILES="src/res/gsc_about_dialog.glade \
+	src/res/gsc_add_device_window.glade \
 	src/res/gsc_executor_log_window.glade \
 	src/res/gsc_help_window.glade \
 	src/res/gsc_info_window.glade \

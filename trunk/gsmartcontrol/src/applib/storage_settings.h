@@ -27,16 +27,22 @@ inline device_option_map_t app_unserialize_device_option_map(const std::string& 
 	hz::Bin2AsciiEncoder enc;
 
 	std::vector<std::string> pairs;
-	hz::string_split(str, ';', pairs, true);
+	hz::string_split(str, ";", pairs, true);
 
 	device_option_map_t option_map;
 	for (std::vector<std::string>::const_iterator iter = pairs.begin(); iter != pairs.end(); ++iter) {
 		std::vector<std::string> dev_entry;
-		hz::string_split(*iter, ':', dev_entry, true);
+		hz::string_split(*iter, ":", dev_entry, true, 2);
 
+		std::string dev, opt;
 		if (dev_entry.size() == 2) {
-			std::string dev = hz::string_trim_copy(enc.decode(dev_entry[0]));
-			std::string opt = hz::string_trim_copy(enc.decode(dev_entry[1]));
+			dev = dev_entry.at(0);  // includes type (separated by encoded "::")
+			opt = dev_entry.at(1);
+		}
+
+		if (dev != "") {
+			dev = hz::string_trim_copy(enc.decode(dev));
+			opt = hz::string_trim_copy(enc.decode(opt));
 
 			// ignore potentially harmful chars
 			if (!dev.empty() && !opt.empty()
@@ -62,7 +68,7 @@ inline std::string app_serialize_device_option_map(const device_option_map_t& op
 			pairs.push_back(enc.encode(iter->first) + ":" + enc.encode(iter->second));
 	}
 
-	return hz::string_join(pairs, ';');
+	return hz::string_join(pairs, ";");
 }
 
 

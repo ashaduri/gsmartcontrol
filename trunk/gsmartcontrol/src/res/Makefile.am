@@ -16,7 +16,7 @@ libres_a_SOURCES =
 # List _all_ sources that may be compiled. This is basically the same list as
 # in configure.ac, but with .cpp extensions and without paths.
 EXTRA_libres_a_SOURCES = gsc_about_dialog.glade.cpp gsc_about_dialog.ui.cpp \
-	gsc_executor_log_window.glade.cpp gsc_executor_log_window.ui.cpp \
+	gsc_add_device_window.glade.cpp gsc_add_drive_window.ui.cpp \
 	gsc_executor_log_window.glade.cpp gsc_executor_log_window.ui.cpp \
 	gsc_help_window.glade.cpp gsc_help_window.ui.cpp \
 	gsc_info_window.glade.cpp gsc_info_window.ui.cpp \
