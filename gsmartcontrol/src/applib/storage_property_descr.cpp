@@ -43,7 +43,7 @@ namespace {
 			// Note: The first one with the same ID is the one displayed in case smartctl
 			// doesn't return a name. See atacmds.cpp in smartmontools. The rest are
 			// from drivedb.h, which contain overrides.
-			// Based on: smartmontools r3287 (2011-03-09).
+			// Based on: smartmontools r3312 2011-04-05.
 
 			// "default" means it's in the default smartctl DB.
 			// "non-default" means it's in drivedb.h.
@@ -473,6 +473,9 @@ namespace {
 			add(232, "Available_Reservd_Space", "Available reserved space", "",
 					"Number of reserved blocks remaining. The Normalized value indicates percentage, with 100 meaning new and 10 meaning the drive being close to its end of life.");
 			// Transcend SSD: Firmware_Version_information (non-default) (description?)
+			add(232, "Firmware_Version_Info", "Firmware Version Information", "",
+					"Firmware version information (year, month, day, channels, banks).");
+			// Same as Firmware_Version_Info, but in older smartctl versions.
 			add(232, "Firmware_Version_information", "Firmware Version Information", "",
 					"Firmware version information (year, month, day, channels, banks).");
 			// Intel SSD: Media_Wearout_Indicator (default) (description?)
