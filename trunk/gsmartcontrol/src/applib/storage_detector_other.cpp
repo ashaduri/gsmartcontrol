@@ -24,9 +24,11 @@
 
 
 
-std::string detect_drives_other(std::vector<std::string>& devices)
+std::string detect_drives_other(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting through /dev...\n");
+
+	std::vector<std::string> devices;
 
 	std::string sdev_config_path;
 	#if defined CONFIG_KERNEL_SOLARIS
@@ -252,6 +254,10 @@ std::string detect_drives_other(std::vector<std::string>& devices)
 	#endif
 
 	hz::shell_sort(devices.begin(), devices.end());
+
+	for (int i = 0; i < devices.size(); ++i) {
+		drives.push_back(StorageDeviceRefPtr(new StorageDevice(devices.at(i))));
+	}
 
 	return std::string();
 }

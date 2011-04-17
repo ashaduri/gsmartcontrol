@@ -14,6 +14,7 @@
 
 #include "storage_device.h"
 #include "cmdex_sync.h"
+#include "executor_factory.h"
 
 
 
@@ -28,17 +29,18 @@ class StorageDetector {
 
 
 		// detects a list of drives. returns detection error if error occurs.
-		std::string detect(std::vector<StorageDeviceRefPtr>& put_drives_here);
+		std::string detect(std::vector<StorageDeviceRefPtr>& put_drives_here,
+				ExecutorFactoryRefPtr ex_factory);
 
 
 		// fetch basic data of "drives" elements
 		std::string fetch_basic_data(std::vector<StorageDeviceRefPtr>& drives,
-				hz::intrusive_ptr<CmdexSync> smartctl_ex = 0, bool return_first_error = false);
+				ExecutorFactoryRefPtr ex_factory, bool return_first_error = false);
 
 
 		// do both of the above, return detection error.
 		std::string detect_and_fetch_basic_data(std::vector<StorageDeviceRefPtr>& put_drives_here,
-				hz::intrusive_ptr<CmdexSync> smartctl_ex = 0);
+				ExecutorFactoryRefPtr ex_factory);
 
 
 // 		void add_match_patterns(std::vector<std::string>& patterns)

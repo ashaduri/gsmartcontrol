@@ -24,7 +24,8 @@ int main()
 // 	sd.add_match_patterns(match_patterns);
 	sd.add_blacklist_patterns(blacklist_patterns);
 
-	std::string error_msg = sd.detect_and_fetch_basic_data(drives);
+	ExecutorFactoryRefPtr ex_factory(new ExecutorFactory(false));
+	std::string error_msg = sd.detect_and_fetch_basic_data(drives, ex_factory);
 	if (!error_msg.empty()) {
 		std::cerr << error_msg << "\n";
 

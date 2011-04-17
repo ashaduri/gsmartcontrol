@@ -103,7 +103,7 @@ std::string SelfTest::start(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 		return "Invalid test specified";
 
 	std::string output;
-	std::string error_msg = drive_->execute_smartctl("-t " + test_param, smartctl_ex, output);  // --test=
+	std::string error_msg = drive_->execute_device_smartctl("-t " + test_param, smartctl_ex, output);  // --test=
 
 	if (!error_msg.empty())  // checks for empty output too
 		return error_msg;
@@ -163,7 +163,7 @@ std::string SelfTest::force_stop(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 
 	// To abort non-captive short, long and conveyance tests, use "--abort".
 	std::string output;
-	std::string error_msg = drive_->execute_smartctl("-X", smartctl_ex, output);  // --abort
+	std::string error_msg = drive_->execute_device_smartctl("-X", smartctl_ex, output);  // --abort
 
 	if (!error_msg.empty())  // checks for empty output too
 		return error_msg;
@@ -202,8 +202,8 @@ std::string SelfTest::update(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 		return "Invalid drive given.";
 
 	std::string output;
-// 	std::string error_msg = drive_->execute_smartctl("-l selftest", smartctl_ex, output);  // --log=
-	std::string error_msg = drive_->execute_smartctl("-c", smartctl_ex, output);  // --capabilities
+// 	std::string error_msg = drive_->execute_device_smartctl("-l selftest", smartctl_ex, output);  // --log=
+	std::string error_msg = drive_->execute_device_smartctl("-c", smartctl_ex, output);  // --capabilities
 
 	if (!error_msg.empty())  // checks for empty output too
 		return error_msg;
