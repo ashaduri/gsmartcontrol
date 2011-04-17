@@ -167,9 +167,6 @@ RAID:
 		Seems to be the same as Linux (uses the same driver?).
 		Detection: unknown.
 
-	Intel Matrix RAID Windows:
-		Added to smartmontools SVN version on 2011-02-04. Experimental.
-
 
 
 
