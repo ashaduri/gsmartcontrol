@@ -34,12 +34,19 @@ tw_cli (part of 3DM2) is automatically added to system PATH,
 	HKEY_USERS\.DEFAULT\Software\3ware\3DM2, InstallPath
 Another option for detection (whether it's 3ware) would be getting
 	\\.\PhysicalDrive0 properties, like smartctl does.
-Newer (> 5.39.1) smartctl supports --scan-open, which will give us:
+Newer (added after 5.39.1) smartctl supports --scan-open, which will give us:
 	/dev/sda,0 -d ata (opened)
 	/dev/sda,1 -d ata (opened)
 -d 3ware is not needed under Windows. We should treat sda as pd0
 	and remove pd0 from PhysicalDrive-detected list.
 Running smartctl on sda gives almost the same result as on sda,0.
+
+
+Intel Matrix RAID (since smartmontools SVN version on 2011-02-04):
+Call as: "/dev/csmi[0-9],N" where N is the port behind the logical
+	scsi controller "\\.\Scsi[0-9]:".
+	The prefix "/dev/" is optional.
+	This is detected (with /dev/ prefix) by --scan-open.
 */
 
 
