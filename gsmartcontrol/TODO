@@ -42,6 +42,7 @@ Add debian/ubuntu's su-to-root support to gsmartcontrol-root.
 Set tooltips wherever we have "No description available".
 
 
+
 Testing:
 	If ETA time has elapsed, but it's still only at 10% completion,
 		ETA 0 is displayed. Fix.
@@ -60,15 +61,6 @@ Add support for launching with consolehelper (from usermode package).
 		http://fedoranews.org/contributors/matt_hansen/nautilus/
 
 If the detection executes "smartctl -i", don't execute it again afterwards.
-
-
-New smartctl prints World Wide Name (WWN) of ATA device, use it
-Sector size
-
-
-When adding device via GUI, have an option to specify "-d" type and other parameters.
-	Maybe make "-d" a dropdown?
-		Just list common types (sat,12; sat,16; scsi, ...?)
 
 
 Rework drive properties UI:
