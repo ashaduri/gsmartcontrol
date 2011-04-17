@@ -42,6 +42,8 @@ Add debian/ubuntu's su-to-root support to gsmartcontrol-root.
 Set tooltips wherever we have "No description available".
 
 
+!!! Allow quitting when test is running (ask first).
+
 
 Testing:
 	If ETA time has elapsed, but it's still only at 10% completion,
@@ -50,7 +52,7 @@ Testing:
 		Can't reproduce it?
 	Detect running tests on launch (maybe ask the user too? some tests
 		may be stuck due to bad firmware).
-	Allow quitting when test is running (ask first).
+
 
 Add support for launching with consolehelper (from usermode package).
 	Fedora uses this by default.
@@ -123,30 +125,6 @@ RAID:
 	3ware FreeBSD:
 		Call as: smartctl -i -d 3ware,[0-127] /dev/twa0  (or twe0)
 		Detection: unknown.
-
-	3ware Windows (XP so far, maybe the same under the others):
-		For 3ware 9xxx only.
-		Call as: smartctl -i sd[a-z],N
-			N is port, a-z is logical drive (unit) provided by controller.
-			N is limited to [0, 31] in the code.
-			The sd[a-z] device actually exists as \\.\PhysicalDrive[0-N].
-				No idea how to check if it's 3ware.
-		Call as: smarctl -i tw_cli/cx/py
-			This runs tw_cli tool and parses the output; controller x, port y.
-			tw_cli is needed for 64-bit systems, as well as older controllers.
-			In tw_cli mode only limited information-gathering is supported.
-		tw_cli (part of 3DM2) is automatically added to system PATH,
-			no need to look for it.
-		3DM2 install can be detected by checking:
-			HKEY_USERS\.DEFAULT\Software\3ware\3DM2, InstallPath
-		Another option for detection (whether it's 3ware) would be getting
-			\\.\PhysicalDrive0 properties, like smartctl does.
-		Newer (> 5.39.1) smartctl supports --scan-open, which will give us:
-			/dev/sda,0 -d ata (opened)
-			/dev/sda,1 -d ata (opened)
-		-d 3ware is not needed under Windows. We should treat sda as pd0
-			and remove pd0 from PhysicalDrive-detected list.
-		Running smartctl on sda gives almost the same result as on sda,0.
 
 
 	LSI MegaRAID (SCSI/SAS), Linux:

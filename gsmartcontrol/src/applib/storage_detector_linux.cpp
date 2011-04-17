@@ -260,7 +260,7 @@ inline std::string tw_cli_get_drives(const std::string& dev, int controller_no,
 	pcrecpp::RE port_re = app_pcre_re("/^p([0-9])+[ \\t]+([^\\t\\n]+)/mi");
 	for (std::size_t i = 0; i < lines.size(); ++i) {
 		std::string port_str, status;
-		if (port_re.PartialMatch(lines.at(i), &port_str, &status)) {
+		if (port_re.PartialMatch(hz::string_trim_copy(lines.at(i)), &port_str, &status)) {
 			if (status != "NOT-PRESENT") {
 				int port = -1;
 				hz::string_is_numeric(port_str, port);
