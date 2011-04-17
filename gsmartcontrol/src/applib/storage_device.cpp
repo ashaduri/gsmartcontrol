@@ -4,8 +4,6 @@
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
-#include <glibmm.h>  // Glib::shell_quote()
-
 #include "rconfig/rconfig_mini.h"
 #include "hz/string_algo.h"  // string_trim_copy, string_any_to_unix_copy
 #include "hz/fs_path.h"  // FsPath
@@ -55,18 +53,33 @@ std::string StorageDevice::get_status_name(StorageDevice::status_t status, bool 
 
 StorageDevice::StorageDevice(const string& dev_or_vfile, bool is_virtual)
 {
-    detected_type_ = detected_type_unknown;
-    // force_type_ = false;
-    is_virtual_ = is_virtual;
-    is_manually_added_ = false;
-    fully_parsed_ = false;
-    test_is_active_ = false;
+	detected_type_ = detected_type_unknown;
+	// force_type_ = false;
+	is_virtual_ = is_virtual;
+	is_manually_added_ = false;
+	fully_parsed_ = false;
+	test_is_active_ = false;
 
-    if (is_virtual) {
-        virtual_file_ = dev_or_vfile;
-    } else {
-        device_ = dev_or_vfile;
-    }
+	if (is_virtual) {
+		virtual_file_ = dev_or_vfile;
+	} else {
+		device_ = dev_or_vfile;
+	}
+}
+
+
+
+StorageDevice::StorageDevice(const string& dev, const string& type_arg)
+{
+	detected_type_ = detected_type_unknown;
+	// force_type_ = false;
+	is_virtual_ = false;
+	is_manually_added_ = false;
+	fully_parsed_ = false;
+	test_is_active_ = false;
+
+	device_ = dev;
+	type_arg_ = type_arg;
 }
 
 
@@ -144,7 +157,7 @@ std::string StorageDevice::fetch_basic_data_and_parse(hz::intrusive_ptr<CmdexSyn
 	// We don't use "--all" - it may cause really screwed up the output (tests, etc...).
 	// This looks just like "--info" only on non-smart devices.
 	// --info --health --capabilities
-	std::string error_msg = execute_smartctl("-i -H -c", smartctl_ex, output, true);  // set type to invalid if needed
+	std::string error_msg = execute_device_smartctl("-i -H -c", smartctl_ex, output, true);  // set type to invalid if needed
 
 	// Smartctl 5.39 cvs/svn version defaults to usb type on at least linux and windows.
 	// This means that the old SCSI identify command isn't executed by default,
@@ -272,10 +285,10 @@ std::string StorageDevice::fetch_data_and_parse(hz::intrusive_ptr<CmdexSync> sma
 	if (this->get_type_argument() == "scsi") {  // not sure about correctness... FIXME probably fails with RAID/scsi
 		// This doesn't do much yet, but just in case...
 		// SCSI equivalent of -a:
-		error_msg = execute_smartctl("-H -i -A -l error -l selftest", smartctl_ex, output);
+		error_msg = execute_device_smartctl("-H -i -A -l error -l selftest", smartctl_ex, output);
 	} else {
 		// ATA equivalent of -a:
-		error_msg = execute_smartctl("-H -i -c -A -l error -l selftest -l selective",
+		error_msg = execute_device_smartctl("-H -i -c -A -l error -l selftest -l selective",
 				smartctl_ex, output, true);  // set type to invalid if needed
 	}
 	// See notes above (in fetch_basic_data_and_parse()).
@@ -367,7 +380,7 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 
 	std::string output;
 	// --smart=on --saveauto=on, --smart=off
-	std::string error_msg = execute_smartctl((b ? "-s on -S on" : "-s off"), smartctl_ex, output);
+	std::string error_msg = execute_device_smartctl((b ? "-s on -S on" : "-s off"), smartctl_ex, output);
 	if (!error_msg.empty())
 		return error_msg;
 
@@ -402,7 +415,7 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 */
 	std::string output;
 	// --offlineauto=on, --offlineauto=off
-	std::string error_msg = execute_smartctl((b ? "-o on" : "-o off"), smartctl_ex, output);
+	std::string error_msg = execute_device_smartctl((b ? "-o on" : "-o off"), smartctl_ex, output);
 	if (!error_msg.empty())
 		return error_msg;
 
@@ -771,7 +784,7 @@ std::string StorageDevice::get_device_options() const
 
 
 
-std::string StorageDevice::execute_smartctl(const std::string& command_options,
+std::string StorageDevice::execute_device_smartctl(const std::string& command_options,
 		hz::intrusive_ptr<CmdexSync> smartctl_ex, std::string& smartctl_output, bool check_type)
 {
 	// don't forbid running on currently tested drive - we need to call this from the test code.
@@ -783,69 +796,22 @@ std::string StorageDevice::execute_smartctl(const std::string& command_options,
 
 	std::string device = get_device();
 
-#ifndef _WIN32  // win32 doesn't have slashes in devices names
-	{
-		std::string::size_type pos = device.rfind('/');  // find basename
-		if (pos == std::string::npos) {
-			debug_out_error("app", DBG_FUNC_MSG << "Invalid device name \"" << device << "\".\n");
-			return "Invalid device name specified.";
-		}
-	}
-#endif
+	std::string error_msg = execute_smartctl(device, this->get_device_options(),
+			command_options, smartctl_ex, smartctl_output);
 
-	if (!smartctl_ex)  // if it doesn't exist, create a default one
-		smartctl_ex = new SmartctlExecutor();  // will be auto-deleted
-
-	std::string smartctl_binary = get_smartctl_binary();
-
-	if (smartctl_binary.empty()) {
-		debug_out_error("app", DBG_FUNC_MSG << "Smartctl binary is not set in config.\n");
-		return "Smartctl binary is not specified in configuration.";
-	}
-
-	std::string smartctl_def_options;
-	rconfig::get_data("system/smartctl_options", smartctl_def_options);
-
-	if (!smartctl_def_options.empty())
-		smartctl_def_options += " ";
-
-
-	std::string device_specific_options = this->get_device_options();
-	if (!device_specific_options.empty())
-		device_specific_options += " ";
-
-
-	smartctl_ex->set_command(Glib::shell_quote(smartctl_binary),
-			smartctl_def_options + device_specific_options + command_options + " " + Glib::shell_quote(device));
-
-	if (!smartctl_ex->execute() || !smartctl_ex->get_error_msg().empty()) {
+	if (!error_msg.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Error while executing smartctl binary.\n");
-
-		std::string output = smartctl_ex->get_stdout_str();
-
-		// check if it's a device permission error.
-		// Smartctl open device: /dev/sdb failed: Permission denied
-		if (app_pcre_match("/Smartctl open device.+Permission denied/mi", output)) {
-			return "Permission denied while opening device.";
-		}
 
 		// Smartctl 5.39 cvs/svn version defaults to usb type on at least linux and windows.
 		// This means that the old SCSI identify command isn't executed by default,
 		// and there is no information about the device manufacturer/etc... in the output.
 		// We detect this and set the device type to scsi to at least have _some_ info.
 		if (check_type && this->get_detected_type() == detected_type_unknown
-				&& app_pcre_match("/specify device type with the -d option/mi", output)) {
+				&& app_pcre_match("/specify device type with the -d option/mi", smartctl_output)) {
 			this->set_detected_type(detected_type_invalid);
 		}
 
-		return smartctl_ex->get_error_msg();
-	}
-
-	// any_to_unix is needed for windows
-	smartctl_output = hz::string_trim_copy(hz::string_any_to_unix_copy(smartctl_ex->get_stdout_str()));
-	if (smartctl_output.empty()) {
-		debug_out_error("app", DBG_FUNC_MSG << "Smartctl returned an empty output.\n");
-		return "Smartctl returned an empty output.";
+		return error_msg;
 	}
 
 	return std::string();

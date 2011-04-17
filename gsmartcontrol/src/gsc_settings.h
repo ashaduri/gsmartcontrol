@@ -32,8 +32,10 @@ inline void init_default_settings()
 
 #ifndef _WIN32
 	rconfig::set_default_data("system/smartctl_binary", "smartctl");  // must be in PATH or use absolute path.
+	rconfig::set_default_data("system/tw_cli_binary", "tw_cli");  // must be in PATH or use absolute path.
 #else
 	rconfig::set_default_data("system/smartctl_binary", "smartctl-nc.exe");  // use no-console version by default.
+	rconfig::set_default_data("system/tw_cli_binary", "tw_cli.exe");
 #endif
 	// search for "smartctl-nc.exe" in smartmontools installation first.
 	rconfig::set_default_data("system/win32_search_smartctl_in_smartmontools", true);
@@ -46,6 +48,8 @@ inline void init_default_settings()
 
 	rconfig::set_default_data("system/linux_udev_byid_path", "/dev/disk/by-id");  // linux hard disk device links here
 	rconfig::set_default_data("system/linux_proc_partitions_path", "/proc/partitions");  // file in linux /proc/partitions format
+	rconfig::set_default_data("system/linux_proc_devices_path", "/proc/devices");  // file in linux /proc/devices format
+	rconfig::set_default_data("system/linux_proc_scsi_scsi_path", "/proc/scsi/scsi");  // file in linux /proc/scsi/scsi format
 	rconfig::set_default_data("system/solaris_dev_path", "/dev/rdsk");  // path to /dev/rdsk for solaris.
 	rconfig::set_default_data("system/unix_sdev_path", "/dev");  // path to /dev. used by other unices
 // 	rconfig::set_default_data("system/device_match_patterns", "");  // semicolon-separated PCRE patterns

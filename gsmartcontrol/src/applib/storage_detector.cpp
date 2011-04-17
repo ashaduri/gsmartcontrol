@@ -19,68 +19,37 @@
 
 
 
-std::string StorageDetector::detect(std::vector<StorageDeviceRefPtr>& drives)
+std::string StorageDetector::detect(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Starting drive detection.\n");
 
-	std::vector<std::string> devices;
+	std::vector<StorageDeviceRefPtr> all_detected;
 	std::string error_msg;
-	bool found = false;
 
 	// Try each one and move to next if it fails.
 
 #if defined CONFIG_KERNEL_LINUX
 
-	// Disable by-id detection - it's unreliable on broken systems.
-	// For example, on Ubuntu 8.04, /dev/disk/by-id contains two device
-	// links for two drives, but both point to the same sdb (instead of
-	// sda and sdb). Plus, there are no "*-partN" files (not that we need them).
-/*
-	if (!found) {
-		error_msg = detect_drives_linux_udev_byid(devices);  // linux udev
-		// we check for devices vector emptiness because it could be a dummy directory
-		// with no files, so treat it as an error.
-		if (error_msg.empty() && !devices.empty()) {
-			found = true;
-		}
-	}
-*/
-	if (!found) {
-		error_msg = detect_drives_linux_proc_partitions(devices);  // linux /proc/partitions as fallback.
-		if (error_msg.empty() && !devices.empty()) {
-			found = true;
-		}
-	}
+	error_msg = detect_drives_linux(all_detected, ex_factory);  // linux /proc/partitions as fallback.
 
 #elif defined CONFIG_KERNEL_FAMILY_WINDOWS
 
-	if (!found) {
-		error_msg = detect_drives_win32(devices);  // win32
-		if (error_msg.empty() && !devices.empty()) {
-			found = true;
-		}
-	}
-
+	error_msg = detect_drives_win32(all_detected, ex_factory);  // win32
 
 #else  // freebsd, etc...
 
-	if (!found) {
-		error_msg = detect_drives_other(devices);  // bsd, etc... . scans /dev.
-		if (error_msg.empty() && !devices.empty()) {
-			found = true;
-		}
-	}
+	error_msg = detect_drives_other(all_detected, ex_factory);  // bsd, etc... . scans /dev.
 
 #endif
 
-	if (!found) {
+	if (all_detected.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Cannot detect drives: None of the drive detection methods returned any drives.\n");
 		return error_msg;  // last error message should be ok.
 	}
 
 
-	for (std::vector<std::string>::const_iterator iter = devices.begin(); iter != devices.end(); ++iter) {
-		std::string dev = *iter;
+	for (std::vector<StorageDeviceRefPtr>::iterator iter = all_detected.begin(); iter != all_detected.end(); ++iter) {
+		StorageDeviceRefPtr drive = *iter;
 
 		// try to match against patterns
 // 		for (unsigned int i = 0; i < match_patterns_.size(); i++) {
@@ -91,13 +60,12 @@ std::string StorageDetector::detect(std::vector<StorageDeviceRefPtr>& drives)
 			// matched, check the blacklist
 			bool blacked = false;
 			for (unsigned int j = 0; j < blacklist_patterns_.size(); j++) {
-				if (app_pcre_match(blacklist_patterns_[j], dev)) {  // matched the blacklist too
+				if (app_pcre_match(blacklist_patterns_[j], drive->get_device())) {  // matched the blacklist too
 					blacked = true;
 					break;
 				}
 			}
 
-			StorageDeviceRefPtr drive(new StorageDevice(dev));
 			debug_out_info("app", "Found device: \"" << drive->get_device() << "\".\n");
 
 			if (!blacked) {
@@ -119,16 +87,12 @@ std::string StorageDetector::detect(std::vector<StorageDeviceRefPtr>& drives)
 
 
 std::string StorageDetector::fetch_basic_data(std::vector<StorageDeviceRefPtr>& drives,
-		hz::intrusive_ptr<CmdexSync> smartctl_ex, bool return_first_error)
+		ExecutorFactoryRefPtr ex_factory, bool return_first_error)
 {
 	fetch_data_errors_.clear();
 	fetch_data_error_outputs_.clear();
 
-
-	// If it doesn't exist, create a default one. Even though it will be auto-created later,
-	// we need it here to get its errors afterwards.
-	if (!smartctl_ex)
-		smartctl_ex = new SmartctlExecutor();  // will be auto-deleted
+	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
 
 	for (unsigned int i = 0; i < drives.size(); ++i) {
 		StorageDeviceRefPtr drive = drives[i];
@@ -168,12 +132,12 @@ std::string StorageDetector::fetch_basic_data(std::vector<StorageDeviceRefPtr>& 
 
 
 std::string StorageDetector::detect_and_fetch_basic_data(std::vector<StorageDeviceRefPtr>& put_drives_here,
-		hz::intrusive_ptr<CmdexSync> smartctl_ex)
+		ExecutorFactoryRefPtr ex_factory)
 {
-	std::string error_msg = detect(put_drives_here);
+	std::string error_msg = detect(put_drives_here, ex_factory);
 
 	if (error_msg.empty())
-		fetch_basic_data(put_drives_here, smartctl_ex, false);  // ignore its errors, there may be plenty of them.
+		fetch_basic_data(put_drives_here, ex_factory, false);  // ignore its errors, there may be plenty of them.
 
 	return error_msg;
 }

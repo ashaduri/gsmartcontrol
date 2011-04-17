@@ -32,6 +32,7 @@
 #include "gsc_main_window_iconview.h"
 #include "gsc_main_window.h"
 #include "gsc_add_device_window.h"
+#include "applib/executor_factory.h"
 
 
 
@@ -984,10 +985,9 @@ void GscMainWindow::rescan_devices()
 	sd.add_blacklist_patterns(blacklist_patterns);
 
 
-	SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
-	ex->create_running_dialog(this);  // pass this as parent
+	ExecutorFactoryRefPtr ex_factory(new ExecutorFactory(true, this));  // run it with GUI support
 
-	std::string error_msg = sd.detect_and_fetch_basic_data(drives, ex);  // run it with GUI support
+	std::string error_msg = sd.detect_and_fetch_basic_data(drives, ex_factory);
 
 	bool error = false;
 
@@ -1052,14 +1052,13 @@ bool GscMainWindow::add_device(const std::string& file, const std::string& type_
 	d->set_extra_arguments(extra_args);
 	d->set_is_manually_added(true);
 
-	SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
-	ex->create_running_dialog(this);  // pass this as parent
+	ExecutorFactoryRefPtr ex_factory(new ExecutorFactory(true, this));  // pass this as dialog parent
 
 	std::vector<StorageDeviceRefPtr> tmp_drives;
 	tmp_drives.push_back(d);
 
 	StorageDetector sd;
-	std::string error_msg = sd.fetch_basic_data(tmp_drives, ex, true);  // return its first error
+	std::string error_msg = sd.fetch_basic_data(tmp_drives, ex_factory, true);  // return its first error
 	if (!error_msg.empty()) {
 		gsc_executor_error_dialog_show("An error occurred while adding the device", error_msg, this);
 

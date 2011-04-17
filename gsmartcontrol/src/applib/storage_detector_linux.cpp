@@ -12,6 +12,7 @@
 #include <algorithm>  // std::find
 #include <cstdio>  // std::fgets(), std::FILE
 #include <cerrno>  // ENXIO
+#include <glibmm.h>
 
 #include "hz/debug.h"
 #include "hz/fs_path_utils.h"
@@ -21,6 +22,8 @@
 #include "app_pcrecpp.h"
 
 
+
+namespace {
 
 
 // Linux 2.6 with udev. Scan /dev/disk/by-id - the directory entries there
@@ -44,7 +47,7 @@ scsi-SATA_ST3500630AS_9QG0R38D-part1
 /*
 // We don't use udev anymore - not all distros have it, and e.g. Ubuntu
 // has it all wrong (two symlinks (sda, sdb) pointing both to sdb).
-std::string detect_drives_linux_udev_byid(std::vector<std::string>& devices)
+inline std::string detect_drives_linux_udev_byid(std::vector<std::string>& devices)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting through device scan directory /dev/disk/by-id...\n");
 
@@ -113,7 +116,7 @@ std::string detect_drives_linux_udev_byid(std::vector<std::string>& devices)
 
 // Procfs files don't support SEEK_END or ftello() (I think). Anyway, they can't
 // be read through hz::File::get_contents, so use this function instead.
-inline bool read_proc_partitions_file(hz::File& file, std::vector<std::string>& lines)
+inline bool read_proc_file(hz::File& file, std::vector<std::string>& lines)
 {
 	if (!file.open("rb"))  // closed automatically
 		return false;  // the error message is in File itself.
@@ -133,9 +136,180 @@ inline bool read_proc_partitions_file(hz::File& file, std::vector<std::string>& 
 
 
 
+// Read /proc/partitions file. Return error message on error.
+inline std::string read_proc_partitions_file(std::vector<std::string>& lines)
+{
+	std::string path;
+	if (!rconfig::get_data("system/linux_proc_partitions_path", path) || path.empty()) {
+		debug_out_warn("app", DBG_FUNC_MSG << "Partitions file path is not set.\n");
+		return "Partitions file path is not set.";
+	}
+
+	hz::File file(path);
+	if (!read_proc_file(file, lines)) {  // this outputs to debug too
+		std::string error_msg = file.get_error_utf8();  // save before calling other file functions
+		if (!file.exists()) {
+			debug_out_warn("app", DBG_FUNC_MSG << "Partitions file doesn't exist.\n");
+		} else {
+			debug_out_error("app", DBG_FUNC_MSG << "Partitions file exists but cannot be read.\n");
+		}
+		return error_msg;
+	}
+
+	return std::string();
+}
+
+
+
+// Read /proc/partitions file. Return error message on error.
+inline std::string read_proc_devices_file(std::vector<std::string>& lines)
+{
+	std::string path;
+	if (!rconfig::get_data("system/linux_proc_devices_path", path) || path.empty()) {
+		debug_out_warn("app", DBG_FUNC_MSG << "Devices file path is not set.\n");
+		return "Devices file path is not set.";
+	}
+
+	hz::File file(path);
+	if (!read_proc_file(file, lines)) {  // this outputs to debug too
+		std::string error_msg = file.get_error_utf8();  // save before calling other file functions
+		if (!file.exists()) {
+			debug_out_warn("app", DBG_FUNC_MSG << "Devices file doesn't exist.\n");
+		} else {
+			debug_out_error("app", DBG_FUNC_MSG << "Devices file exists but cannot be read.\n");
+		}
+		return error_msg;
+	}
+
+	return std::string();
+}
+
+
+
+// Read /proc/partitions file. Return error message on error.
+inline std::string read_proc_scsi_scsi_file(std::vector<std::string>& lines)
+{
+	std::string path;
+	if (!rconfig::get_data("system/linux_proc_scsi_scsi_path", path) || path.empty()) {
+		debug_out_warn("app", DBG_FUNC_MSG << "SCSI file path is not set.\n");
+		return "SCSI file path is not set.";
+	}
+
+	hz::File file(path);
+	if (!read_proc_file(file, lines)) {  // this outputs to debug too
+		std::string error_msg = file.get_error_utf8();  // save before calling other file functions
+		if (!file.exists()) {
+			debug_out_warn("app", DBG_FUNC_MSG << "SCSI file doesn't exist.\n");
+		} else {
+			debug_out_error("app", DBG_FUNC_MSG << "SCSI file exists but cannot be read.\n");
+		}
+		return error_msg;
+	}
+
+	return std::string();
+}
+
+
+
+/// Get number of ports using tw_cli. Return -1 on error.
+inline std::string tw_cli_get_drives(const std::string& dev, int controller_no,
+		std::vector<StorageDeviceRefPtr> drives, ExecutorFactoryRefPtr ex_factory)
+{
+	hz::intrusive_ptr<CmdexSync> executor = ex_factory->create_executor(ExecutorFactory::ExecutorTwCli);
+
+	std::string binary;
+	rconfig::get_data("system/tw_cli_binary", binary);
+
+	if (binary.empty()) {
+		debug_out_error("app", DBG_FUNC_MSG << "tw_cli binary is not set in config.\n");
+		return "tw_cli binary is not specified in configuration.";
+	}
+
+	std::string command_options = hz::string_sprintf("/c%d show all", controller_no);
+
+	std::vector<std::string> binaries;  // binaries to try
+	// Note: tw_cli is automatically added to PATH in windows, no need to look for it.
+	binaries.push_back(binary);
+#ifdef CONFIG_KERNEL_LINUX
+	// tw_cli may be named tw_cli.x86 or tw_cli.x86_64 in linux
+	binaries.push_back(binary + ".x86");
+	binaries.push_back(binary + ".x86_64");
+#endif
+
+	for (std::size_t i = 0; i < binaries.size(); ++i) {
+		executor->set_command(Glib::shell_quote(binaries.at(i)), command_options);
+
+		if (!executor->execute() || !executor->get_error_msg().empty()) {
+			debug_out_warn("app", DBG_FUNC_MSG << "Error while executing tw_cli binary.\n");
+		} else {
+			break;  // found it
+		}
+	}
+
+	// any_to_unix is needed for windows
+	std::string output = hz::string_trim_copy(hz::string_any_to_unix_copy(executor->get_stdout_str()));
+	if (output.empty()) {
+		debug_out_error("app", DBG_FUNC_MSG << "tw_cli returned an empty output.\n");
+		return "tw_cli returned an empty output.";
+	}
+
+	// split to lines
+	std::vector<std::string> lines;
+	hz::string_split(output, '\n', lines, true);
+
+	pcrecpp::RE port_re = app_pcre_re("/^p([0-9])+[ \\t]+([^\\t\\n]+)/mi");
+	for (std::size_t i = 0; i < lines.size(); ++i) {
+		std::string port_str, status;
+		if (port_re.PartialMatch(lines.at(i), &port_str, &status)) {
+			if (status != "NOT-PRESENT") {
+				int port = -1;
+				hz::string_is_numeric(port_str, port);
+				if (port != -1) {
+					drives.push_back(StorageDeviceRefPtr(new StorageDevice(dev, "3ware," + hz::number_to_string(port))));
+				}
+			}
+		}
+	}
+
+	return std::string();
+}
+
+
+
+/// Get number of ports by sequentially running smartctl on each port, until
+/// one of the gives an error. Return -1 on error.
+inline std::string smartctl_get_drives(const std::string& dev, const std::string& type,
+	  int from, int to, std::vector<StorageDeviceRefPtr> drives, ExecutorFactoryRefPtr ex_factory)
+{
+	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
+
+	for (int i = from; i <= to; ++i) {
+		std::string type_arg = hz::string_sprintf(type.c_str(), i);
+
+		std::string output;
+		std::string error_msg = execute_smartctl(dev, "-d " + type_arg, "-i", smartctl_ex, output);
+
+		// if we've reached smartctl port limit (older versions may have smaller limits), abort.
+		if (app_pcre_match("/VALID ARGUMENTS ARE/mi", output)) {
+			break;
+		}
+
+		if (!error_msg.empty()) {
+			debug_out_info("app", "Sequential port scan aborted with error: " << error_msg);
+		} else {
+			drives.push_back(StorageDeviceRefPtr(new StorageDevice(dev, type_arg)));
+		}
+	}
+
+	return std::string();
+}
+
+
+
+
 // Linux (tested with 2.4 and 2.6) /proc/partitions. Parses the file, appends /dev to each entry.
 // Note that file format changed from 2.4 to 2.6 (some statistics fields moved to another file).
-// No /proc/partitions on at least freebsd, solaris and osx, afaik.
+// No /proc/partitions on freebsd, solaris or osx, afaik.
 /*
 Sample 1 (2.4, devfs, with statistics):
 ------------------------------------------------------------
@@ -175,33 +349,15 @@ major minor  #blocks  name
 254 8 1966080 mmcblk1
 254 9 2007032 mmcblk1p1
 */
-std::string detect_drives_linux_proc_partitions(std::vector<std::string>& devices)
+inline std::string detect_drives_linux_proc_partitions(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting through /proc/partitions...\n");
 
-	std::string parts_file;
-	if (!rconfig::get_data("system/linux_proc_partitions_path", parts_file) || parts_file.empty()) {
-		debug_out_warn("app", DBG_FUNC_MSG << "Partitions file path is not set.\n");
-		return "Partitions file path is not set.";
-	}
-
-	hz::File file(parts_file);
-// 		std::string contents;
 	std::vector<std::string> lines;
-// 		if (!f.get_contents(contents)) {
-	if (!read_proc_partitions_file(file, lines)) {  // this outputs to debug too
-		std::string error_msg = file.get_error_utf8();  // save before calling other file functions
-		if (!file.exists()) {
-			debug_out_warn("app", DBG_FUNC_MSG << "Partitions file doesn't exist.\n");
-		} else {
-			debug_out_error("app", DBG_FUNC_MSG << "Partitions file exists but cannot be read.\n");
-		}
+	std::string error_msg = read_proc_partitions_file(lines);
+	if (!error_msg.empty()) {
 		return error_msg;
 	}
-
-// 		debug_out_dump("app", DBG_FUNC_MSG << "Dumping partitions file:\n" << contents << "\n");
-
-// 		hz::string_split(contents, '\n', lines, true);
 
 	std::vector<std::string> blacklist;
 	// fixme: not sure about how partitions are visible with twa0.
@@ -213,8 +369,9 @@ std::string detect_drives_linux_proc_partitions(std::vector<std::string>& device
 	blacklist.push_back("/md[0-9]*$/");  // linux software raid
 	blacklist.push_back("/dm-[0-9]*$/");  // linux device mapper
 
+	std::vector<std::string> devices;
 
-	for (unsigned int i = 0; i < lines.size(); ++i) {
+	for (std::size_t i = 0; i < lines.size(); ++i) {
 		std::string line = hz::string_trim_copy(lines[i]);
 		if (line.empty() || app_pcre_match("/^major/", line))  // file header
 			continue;
@@ -241,8 +398,134 @@ std::string detect_drives_linux_proc_partitions(std::vector<std::string>& device
 			devices.push_back(path);
 	}
 
+	for (std::size_t i = 0; i < devices.size(); ++i) {
+		drives.push_back(StorageDeviceRefPtr(new StorageDevice(devices.at(i))));
+	}
+
 	return std::string();
 }
+
+
+
+/**
+Detect drives behind 3ware RAID controller.
+
+3ware Linux:
+Call as: smartctl -i -d 3ware,[0-127] /dev/twa[0-15]  (or twe[0-15])
+Use twe* for [678]xxx series, and twa* for 9xxx series.
+Note: twe* devices are limited to [0-15] ports (not sure about this).
+Note: /dev/tw* devices may not exist, they are created by smartctl on the first run.
+Note: for twe*, /dev/sda may also exist (to be used with -d 3ware,N), we should
+	somehow detect and ignore them.
+Note: when specifying non-existent port, either a "Device Read Identity Failed"
+	error, or a "blank" info may be returned.
+Detection:
+Grep /proc/devices for "twa" or "twe" (e.g. "251 twa"). Use this for /dev/tw* part.
+Grep /proc/scsi/scsi for AMCC or 3ware (LSI too?), use number of matched lines N
+	for /dev/tw*[0, N-1].
+For detecting the number of ports, use "tw_cli /c0 show all", 0 being the controller N.
+	If there's no tw_cli, we'll have to scan all 128 ports.
+
+Implementation notes: it seems that twe uses "3ware" and twa uses "AMCC".
+We can't handle a situation with both twa and twe present, since we don't know
+how they will be ordered for tw_cli.
+*/
+inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
+{
+	std::vector<std::string> lines;
+	std::string error_msg = read_proc_devices_file(lines);
+	if (!error_msg.empty()) {
+		return error_msg;
+	}
+
+	bool twa_found = false;
+	bool twe_found = false;
+
+	// Check /proc/devices for twa or twe
+	for (std::size_t i = 0; i < lines.size(); ++i) {
+		std::string dev;
+		if (app_pcre_match("/^[ \\t]*[0-9]+[ \\t]+(tw[ae])/", hz::string_trim_copy(lines[i]), &dev)) {
+			debug_out_dump("app", DBG_FUNC_MSG << "Found " << dev << " entry in devices file.\n");
+			if (dev == "twa") {
+				twa_found = true;
+			} else if (dev == "twe") {
+				twe_found = true;
+			} else {
+				DBG_ASSERT(0);  // error in regexp?
+			}
+		}
+	}
+
+	if (!twa_found && !twe_found) {
+		return std::string();  // no controllers
+	}
+
+	// Count number of AMCC / 3ware entries in /proc/scsi/scsi
+	int num_controllers = 0;
+
+	lines.clear();
+	error_msg = read_proc_scsi_scsi_file(lines);
+	if (!error_msg.empty()) {
+		return error_msg;
+	}
+
+	for (std::size_t i = 0; i < lines.size(); ++i) {
+		if (app_pcre_match("/ (AMCC)|(3ware) /i", hz::string_trim_copy(lines[i]))) {
+			++num_controllers;
+		}
+	}
+	if (num_controllers == 0) {
+		debug_out_warn("app", DBG_FUNC_MSG << "3ware entry found in devices file, but SCSI file contains no known entries.\n");
+		return std::string();
+	}
+
+	for (int i = 0; i < num_controllers; ++i) {
+		// we can't handle both twa and twe in one system, so assume twa by default
+		std::string dev = std::string("/dev/") + (twa_found ? "twa" : "twe") + hz::number_to_string(i);
+
+		error_msg = tw_cli_get_drives(dev, i, drives, ex_factory);
+		if (!error_msg.empty()) {  // no tw_cli
+			error_msg = smartctl_get_drives(dev, "3ware,%d", 0, (twa_found ? 127 : 15), drives, ex_factory);
+		}
+
+		if (!error_msg.empty()) {
+			debug_out_warn("app", DBG_FUNC_MSG << "Couldn't get number of ports on a 3ware controller.\n");
+		}
+	}
+
+	return error_msg;
+}
+
+
+}  // anon ns
+
+
+
+
+std::string detect_drives_linux(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
+{
+	std::vector<std::string> error_msgs;
+	std::string error_msg;
+
+	// Disable by-id detection - it's unreliable on broken systems.
+	// For example, on Ubuntu 8.04, /dev/disk/by-id contains two device
+	// links for two drives, but both point to the same sdb (instead of
+	// sda and sdb). Plus, there are no "*-partN" files (not that we need them).
+// 	error_msg = detect_drives_linux_udev_byid(devices);  // linux udev
+
+	error_msg = detect_drives_linux_proc_partitions(drives, ex_factory);
+	if (!error_msg.empty()) {
+		error_msgs.push_back(error_msg);
+	}
+
+	error_msg = detect_drives_linux_3ware(drives, ex_factory);
+	if (!error_msg.empty()) {
+		error_msgs.push_back(error_msg);
+	}
+
+	return hz::string_join(error_msgs, "\n");
+}
+
 
 
 

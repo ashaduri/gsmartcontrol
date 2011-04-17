@@ -19,7 +19,7 @@
 // "\\.\PhysicalDriveN" (winnt only).
 // http://msdn.microsoft.com/en-us/library/aa365247(VS.85).aspx
 
-std::string detect_drives_win32(std::vector<std::string>& devices)
+std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
 	for (int drive_num = 0; ; ++drive_num) {
 		std::string name = hz::string_sprintf("\\\\.\\PhysicalDrive%d", drive_num);
@@ -37,7 +37,7 @@ std::string detect_drives_win32(std::vector<std::string>& devices)
 
 		CloseHandle(h);
 
-		devices.push_back(hz::string_sprintf("pd%d", drive_num));
+		drives.push_back(new StorageDevice(hz::string_sprintf("pd%d", drive_num)));
 	}
 
 	return std::string();

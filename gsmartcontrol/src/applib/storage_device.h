@@ -55,6 +55,9 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		/// Constructor
 		StorageDevice(const std::string& dev_or_vfile, bool is_virtual = false);
 
+		/// Constructor
+		StorageDevice(const std::string& dev, const std::string& type_arg);
+
 		/// Copy constructor
 		StorageDevice(const StorageDevice& other);
 
@@ -210,7 +213,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 
 		/// Execute smartctl on this device. Nothing is modified in this class.
 		/// \return error message on error, empty string on success
-		std::string execute_smartctl(const std::string& command_options,
+		std::string execute_device_smartctl(const std::string& command_options,
 				hz::intrusive_ptr<CmdexSync> smartctl_ex, std::string& output, bool check_type = false);
 
 

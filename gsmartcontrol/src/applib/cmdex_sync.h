@@ -202,6 +202,7 @@ class CmdexSync : public hz::intrusive_ptr_referenced, public sigc::trackable {
 			return error_msg_;
 		}
 
+		/// Set a message to display when running. %s in \c msg will be replaced by the command.
 		void set_running_msg(const std::string& msg)
 		{
 			running_msg_ = msg;

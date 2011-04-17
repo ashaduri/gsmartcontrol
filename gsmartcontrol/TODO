@@ -120,22 +120,6 @@ RAID:
 			is older than "V1.46 2009-01-06", notify the user (maybe its better to grep
 			the smartctl output for that on port 0?).
 
-	3ware Linux:
-		Call as: smartctl -i -d 3ware,[0-127] /dev/twa[0-15]  (or twe[0-15])
-		Use twe* for [678]xxx series, and twa* for 9xxx series.
-		Note: twe* devices are limited to [0-15] ports (not sure about this).
-		Note: /dev/tw* devices may not exist, they are created by smartctl on the first run.
-		Note: for twe*, /dev/sda may also exist (to be used with -d 3ware,N), we should
-			somehow detect and ignore them.
-		Note: when specifying non-existent port, either a "Device Read Identity Failed"
-			error, or a "blank" info may be returned.
-		Detection:
-		Grep /proc/devices for "twa" or "twe" (e.g. "251 twa"). Use this for /dev/tw* part.
-		Grep /proc/scsi/scsi for AMCC (3ware, LSI too?), use number of matched lines N
-			for /dev/tw*[0, N-1].
-		For detecting the number of ports, use "tw_cli /c0 show all", 0 being the controller N.
-			If there's no tw_cli, we'll have to scan all 127 ports.
-
 	3ware FreeBSD:
 		Call as: smartctl -i -d 3ware,[0-127] /dev/twa0  (or twe0)
 		Detection: unknown.

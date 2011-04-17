@@ -132,16 +132,13 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 				if ( !((exit_code & exit_cant_parse) || (exit_code & exit_open_failed)) )
 					return;
 
-			// ignore giochannel errors - higher level errors will be triggered, and they more user-friendly.
+				// ignore giochannel errors - higher level errors will be triggered, and they more user-friendly.
 			} else if (error_type == "giochannel" || error_type == "custom") {
 				return;
 			}
 
 			this->set_error_msg(e->get_message());
 		}
-
-
-
 
 };
 
@@ -150,10 +147,18 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 
 typedef SmartctlExecutorGeneric<CmdexSync> SmartctlExecutor;
 
+typedef hz::intrusive_ptr<SmartctlExecutor> SmartctlExecutorRefPtr;
+
 
 
 // returns an empty string if not found.
 std::string get_smartctl_binary();
+
+
+std::string execute_smartctl(const std::string& device, const std::string& device_opts,
+		const std::string& command_options,
+		hz::intrusive_ptr<CmdexSync> smartctl_ex, std::string& smartctl_output);
+
 
 
 
