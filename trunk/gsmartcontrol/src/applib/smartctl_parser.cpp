@@ -159,7 +159,7 @@ bool SmartctlParser::parse_full(const std::string& full)
 	} else {
 		{
 			StorageProperty p;
-			p.set_name("Smartctl version", "smartctl_version");
+			p.set_name("Smartctl version", "smartctl_version", "Smartctl Version");
 			p.reported_value = version;
 			p.value_type = StorageProperty::value_type_string;
 			p.value_string = p.reported_value;
@@ -168,7 +168,7 @@ bool SmartctlParser::parse_full(const std::string& full)
 		}
 		{
 			StorageProperty p;
-			p.set_name("Smartctl version", "smartctl_version_full");
+			p.set_name("Smartctl version", "smartctl_version_full", "Smartctl Version");
 			p.reported_value = version_full;
 			p.value_type = StorageProperty::value_type_string;
 			p.value_string = p.reported_value;
@@ -405,7 +405,14 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 			|| app_pcre_match("/Device Model/mi", p.reported_name)
 			|| app_pcre_match("/Serial Number/mi", p.reported_name)
 			|| app_pcre_match("/Firmware Version/mi", p.reported_name)
+			|| app_pcre_match("/Sector Sizes/mi", p.reported_name)  // prints 2 values (phys/logical, if they're different)
+			|| app_pcre_match("/Sector Size/mi", p.reported_name)  // prints a single value (if it's not 512)
 			) {
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/LU WWN Device Id/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "wwn_id", "World Wide Name");
 		p.value_type = StorageProperty::value_type_string;
 		p.value_string = p.reported_value;
 
