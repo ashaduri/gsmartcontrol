@@ -228,7 +228,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	if (app_pcre_match("/^Device Model:[ \\t]*(.*)$/mi", info_output_, &model)) {  // HD's and cdroms
 		model_name_ = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(model), ' ');
 
-	} else if (app_pcre_match("/^Device:[ \\t]*(.*)$/mi", info_output_, &model)) {  // usb flash drives
+	} else if (app_pcre_match("/^(?:Device|Product):[ \\t]*(.*)$/mi", info_output_, &model)) {  // usb flash drives
 		model_name_ = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(model), ' ');
 	}
 

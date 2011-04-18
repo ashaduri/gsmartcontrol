@@ -109,11 +109,11 @@ std::string execute_smartctl(const std::string& device, const std::string& devic
 	if (!smartctl_ex->execute() || !smartctl_ex->get_error_msg().empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Error while executing smartctl binary.\n");
 
-		std::string output = smartctl_ex->get_stdout_str();
+		smartctl_output = smartctl_ex->get_stdout_str();
 
 		// check if it's a device permission error.
 		// Smartctl open device: /dev/sdb failed: Permission denied
-		if (app_pcre_match("/Smartctl open device.+Permission denied/mi", output)) {
+		if (app_pcre_match("/Smartctl open device.+Permission denied/mi", smartctl_output)) {
 			return "Permission denied while opening device.";
 		}
 

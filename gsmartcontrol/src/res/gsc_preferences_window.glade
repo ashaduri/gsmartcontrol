@@ -171,8 +171,8 @@
                                         <child>
                                           <widget class="GtkLabel" id="label8">
                                             <property name="visible">True</property>
-                                            <property name="tooltip_text">Global parameters for smartctl. These parameters will be used every time the progam invokes smartctl.</property>
-                                            <property name="tooltip" translatable="yes">Global parameters for smartctl. These parameters will be used every time the progam invokes smartctl.</property>
+                                            <property name="tooltip_text">Global parameters for smartctl. These parameters will be used every time the progam invokes smartctl. Must be shell-escaped.</property>
+                                            <property name="tooltip" translatable="yes">Global parameters for smartctl. These parameters will be used every time the progam invokes smartctl. Must be shell-escaped.</property>
                                             <property name="label" translatable="yes">Smartctl parameters:</property>
                                             <property name="use_underline">True</property>
                                           </widget>
@@ -185,8 +185,8 @@
                                         <child>
                                           <widget class="GtkLabel" id="label7">
                                             <property name="visible">True</property>
-                                            <property name="tooltip_text">A path to smartctl binary. If the path is not absolute, the binary will be looked for in user's $PATH.</property>
-                                            <property name="tooltip" translatable="yes">A path to smartctl binary. If the path is not absolute, the binary will be looked for in user's $PATH.</property>
+                                            <property name="tooltip_text">A path to smartctl binary. If the path is not absolute, the binary will be looked for in user's PATH.</property>
+                                            <property name="tooltip" translatable="yes">A path to smartctl binary. If the path is not absolute, the binary will be looked for in user's PATH.</property>
                                             <property name="xalign">1</property>
                                             <property name="label" translatable="yes">S_martctl binary:</property>
                                             <property name="use_underline">True</property>
@@ -399,6 +399,8 @@
                                               <widget class="GtkEntry" id="device_options_parameter_entry">
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">True</property>
+                                                <property name="tooltip_text">Smartctl parameters (for example, "-T permissive" or "-d usbsunplus")</property>
+                                                <property name="tooltip" translatable="yes">Smartctl parameters (for example, "-T permissive" or "-d usbsunplus")</property>
                                               </widget>
                                               <packing>
                                                 <property name="left_attach">1</property>
@@ -410,8 +412,8 @@
                                             <child>
                                               <widget class="GtkLabel" id="label67">
                                                 <property name="visible">True</property>
-                                                <property name="tooltip_text">Smartctl parameters for this device. For example, to use older smartctl versions with libata devices, use "-d ata".</property>
-                                                <property name="tooltip" translatable="yes">Smartctl parameters for this device. For example, to use older smartctl versions with libata devices, use "-d ata".</property>
+                                                <property name="tooltip_text">Smartctl parameters (for example, "-T permissive" or "-d usbsunplus")</property>
+                                                <property name="tooltip" translatable="yes">Smartctl parameters (for example, "-T permissive" or "-d usbsunplus")</property>
                                                 <property name="xalign">1</property>
                                                 <property name="label" translatable="yes">_Parameters:</property>
                                                 <property name="use_underline">True</property>
@@ -446,10 +448,8 @@
                                               </packing>
                                             </child>
                                             <child>
-                                              <widget class="GtkLabel" id="label66">
+                                              <widget class="GtkLabel" id="device_options_type_label">
                                                 <property name="visible">True</property>
-                                                <property name="tooltip_text">Match only this type of device (as specified to -d smartctl parameter). Leave empty for all types. This can be used to specify a drive behind a RAID device, e.g. 3ware,2.</property>
-                                                <property name="tooltip" translatable="yes">Match only this type of device (as specified to -d smartctl parameter). Leave empty for all types. This can be used to specify a drive behind a RAID device, e.g. 3ware,2.</property>
                                                 <property name="xalign">1</property>
                                                 <property name="label" translatable="yes">_Type:</property>
                                                 <property name="use_underline">True</property>

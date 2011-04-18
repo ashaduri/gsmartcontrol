@@ -38,18 +38,33 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, const app_ui_res
 	APP_UI_RES_AUTO_CONNECT(device_name_browse_button, clicked);
 
 
-	Glib::ustring device_name_tooltip = "Device name, e.g. %s.";
-#ifdef _WIN32
-	device_name_tooltip = hz::string_sprintf(device_name_tooltip.c_str(), "\"pd0\" for the first physical drive");
-#else
-	device_name_tooltip = hz::string_sprintf(device_name_tooltip.c_str(), "\"/dev/sda\" or \"/dev/twa0\"");
+	Glib::ustring device_name_tooltip = "Device name";
+#if defined CONFIG_KERNEL_FAMILY_WINDOWS
+	device_name_tooltip = "Device name (for example, use \"pd0\" for the first physical drive)";
+#elif defined CONFIG_KERNEL_LINUX
+	device_name_tooltip = "Device name (for example, /dev/sda or /dev/twa0)";
 #endif
-	Gtk::Label* device_name_label = lookup_widget<Gtk::Label*>("device_name_label");
-	app_gtkmm_set_widget_tooltip(*device_name_label, device_name_tooltip);
-
+	if (Gtk::Label* device_name_label = lookup_widget<Gtk::Label*>("device_name_label")) {
+		app_gtkmm_set_widget_tooltip(*device_name_label, device_name_tooltip);
+	}
 
 	Gtk::Entry* device_name_entry = 0;
 	APP_UI_RES_AUTO_CONNECT(device_name_entry, changed);
+	if (device_name_entry) {
+		app_gtkmm_set_widget_tooltip(*device_name_entry, device_name_tooltip);
+	}
+
+
+	Glib::ustring device_type_tooltip = "Smartctl -d option parameter";
+#if defined CONFIG_KERNEL_LINUX
+	device_type_tooltip = "Smartctl -d option parameter. For example, use 3ware,1 for a second drive behind a 3ware RAID controller.";
+#endif
+	if (Gtk::Label* device_type_label = lookup_widget<Gtk::Label*>("device_type_label")) {
+		app_gtkmm_set_widget_tooltip(*device_type_label, device_type_tooltip);
+	}
+	if (Gtk::Entry* device_type_entry = lookup_widget<Gtk::Entry*>("device_type_entry")) {
+		app_gtkmm_set_widget_tooltip(*device_type_entry, device_type_tooltip);
+	}
 
 
 	// Accelerators
@@ -61,7 +76,7 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, const app_ui_res
 	}
 
 
-#ifndef _WIN32
+#ifdef _WIN32
 	// "Browse" doesn't make sense in win32, hide it.
 	if (device_name_browse_button) {
 		device_name_browse_button->hide();

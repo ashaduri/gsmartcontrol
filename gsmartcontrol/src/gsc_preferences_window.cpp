@@ -240,19 +240,38 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const app_ui
 	Gtk::Button* device_options_remove_device_button = 0;
 	APP_UI_RES_AUTO_CONNECT(device_options_remove_device_button, clicked);
 
+
 	Gtk::Entry* device_options_device_entry = 0;
 	APP_UI_RES_AUTO_CONNECT(device_options_device_entry, changed);
-	Glib::ustring device_options_tooltip = "Device name, e.g. %s.";
-#ifdef _WIN32
-	device_options_tooltip = hz::string_sprintf(device_options_tooltip.c_str(), "\"pd0\" for the first physical drive");
-#else
-	device_options_tooltip = hz::string_sprintf(device_options_tooltip.c_str(), "\"/dev/sda\"");
+
+	Glib::ustring device_options_tooltip = "Device name";
+#if defined CONFIG_KERNEL_FAMILY_WINDOWS
+	device_options_tooltip = "Device name (for example, use \"pd0\" for the first physical drive)";
+#elif defined CONFIG_KERNEL_LINUX
+	device_options_tooltip = "Device name (for example, /dev/sda or /dev/twa0)";
 #endif
-	Gtk::Label* device_options_device_label = lookup_widget<Gtk::Label*>("device_options_device_label");
-	app_gtkmm_set_widget_tooltip(*device_options_device_label, device_options_tooltip);
+	if (Gtk::Label* device_options_device_label = lookup_widget<Gtk::Label*>("device_options_device_label")) {
+		app_gtkmm_set_widget_tooltip(*device_options_device_label, device_options_tooltip);
+	}
+	if (device_options_device_entry) {
+		app_gtkmm_set_widget_tooltip(*device_options_device_entry, device_options_tooltip);
+	}
+
 
 	Gtk::Entry* device_options_type_entry = 0;
 	APP_UI_RES_AUTO_CONNECT(device_options_type_entry, changed);
+
+	Glib::ustring device_type_tooltip = "Match only this type of device (as specified to -d smartctl parameter)";
+#if defined CONFIG_KERNEL_LINUX
+	device_type_tooltip = "Match only this type of device (as specified to -d smartctl parameter). Leave empty for all types. This can be used to specify a drive behind a RAID device, e.g. \"3ware,2\".";
+#endif
+	if (Gtk::Label* device_options_type_label = lookup_widget<Gtk::Label*>("device_options_type_label")) {
+		app_gtkmm_set_widget_tooltip(*device_options_type_label, device_type_tooltip);
+	}
+	if (device_options_type_entry) {
+		app_gtkmm_set_widget_tooltip(*device_options_type_entry, device_type_tooltip);
+	}
+
 
 	Gtk::Entry* device_options_parameter_entry = 0;
 	APP_UI_RES_AUTO_CONNECT(device_options_parameter_entry, changed);
