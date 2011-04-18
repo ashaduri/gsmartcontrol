@@ -116,8 +116,8 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDeviceRefPtr>& dr
 // 	/dev/sda -d sat # /dev/sda [SAT], ATA device
 
 	// we only pick the ones with ports
-	pcrecpp::RE port_re = app_pcre_re("/^(\\/dev/\\[a-z0-9]),([0-9])+[ \\t]+-d[ \\t]+([^\\t\\n]+)/i");
-	pcrecpp::RE dev_re = app_pcre_re("/^\\/dev\\/sd([a-z])$/");
+	pcrecpp::RE port_re = app_pcre_re("/^(/dev/[a-z0-9]),([0-9])+[ \\t]+-d[ \\t]+([^\\t\\n]+)/i");
+	pcrecpp::RE dev_re = app_pcre_re("/^/dev/sd([a-z])$/");
 
 	for (std::size_t i = 0; i < lines.size(); ++i) {
 		std::string dev, port_str, type;

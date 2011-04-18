@@ -36,13 +36,21 @@ Bugs / patches:
 
 TODO:
 
-Add debian/ubuntu's su-to-root support to gsmartcontrol-root.
 
+Add debian/ubuntu's su-to-root support to gsmartcontrol-root.
 
 Set tooltips wherever we have "No description available".
 
-
 !!! Allow quitting when test is running (ask first).
+
++"Add Device" window needs tooltips on both labels and entries.
++	Don't mention -d 3ware on windows in the tooltip.
++	Both points go for the preferences window as well.
+
++Fixed usb drive re-detection with scsi.
++Fixed invalid regexps in tw_cli parsing.
++Added support for "Product" field of USB drives (used instead of Device in newer smartctl)
+
 
 
 Testing:
