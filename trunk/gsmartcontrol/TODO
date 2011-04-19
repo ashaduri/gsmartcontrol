@@ -43,13 +43,17 @@ Set tooltips wherever we have "No description available".
 
 !!! Allow quitting when test is running (ask first).
 
-+"Add Device" window needs tooltips on both labels and entries.
-+	Don't mention -d 3ware on windows in the tooltip.
-+	Both points go for the preferences window as well.
+Display -d type in the main window, tooltip, drive info window.
+	Otherwise it's just /dev/twa0.
 
-+Fixed usb drive re-detection with scsi.
-+Fixed invalid regexps in tw_cli parsing.
-+Added support for "Product" field of USB drives (used instead of Device in newer smartctl)
+When running smartctl on drives, run them on the driveptr-s directly,
+	(use -i -H -c options, maybe even drive->fetch...()), so that the drive
+	remembers it.
+
+Linux: Detect scsi number for 3ware and use that for tw_cli controller.
+
+Windows: If smartctl --scan-open returns no "sd*,port"-style devices,
+	check if 3dm2 is installed and execute "tw_cli show" to get the controllers.
 
 
 

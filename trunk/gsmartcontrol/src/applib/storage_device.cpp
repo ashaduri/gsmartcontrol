@@ -153,11 +153,10 @@ std::string StorageDevice::fetch_basic_data_and_parse(hz::intrusive_ptr<CmdexSyn
 
 	this->clear_fetched();  // clear everything fetched before, including outputs
 
-	std::string output;
 	// We don't use "--all" - it may cause really screwed up the output (tests, etc...).
 	// This looks just like "--info" only on non-smart devices.
 	// --info --health --capabilities
-	std::string error_msg = execute_device_smartctl("-i -H -c", smartctl_ex, output, true);  // set type to invalid if needed
+	std::string error_msg = execute_device_smartctl("-i -H -c", smartctl_ex, this->info_output_, true);  // set type to invalid if needed
 
 	// Smartctl 5.39 cvs/svn version defaults to usb type on at least linux and windows.
 	// This means that the old SCSI identify command isn't executed by default,
@@ -173,8 +172,6 @@ std::string StorageDevice::fetch_basic_data_and_parse(hz::intrusive_ptr<CmdexSyn
 	// we do this after the scsi stuff.
 	if (!error_msg.empty())
 		return error_msg;
-
-	this->info_output_ = output;
 
 	// Set some properties too - they are needed for e.g. AODC status, etc...
 	return this->parse_basic_data(true);

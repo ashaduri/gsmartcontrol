@@ -68,7 +68,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		// clear everything fetched before.
 		void clear_fetched(bool including_outputs = true);
 
-		/// Calls "smartctl --info" (info section), then parse_basic_data().
+		/// Calls "smartctl -i -H -c" (info section, health, capabilities), then parse_basic_data().
 		/// Called during drive detection.
 		/// Note: this will clear the non-basic properties!
 		std::string fetch_basic_data_and_parse(hz::intrusive_ptr<CmdexSync> smartctl_ex = 0);
