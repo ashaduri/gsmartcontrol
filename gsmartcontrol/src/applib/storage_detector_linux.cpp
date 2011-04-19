@@ -213,7 +213,7 @@ inline std::string read_proc_scsi_scsi_file(std::vector<std::string>& lines)
 
 /// Get number of ports using tw_cli. Return -1 on error.
 inline std::string tw_cli_get_drives(const std::string& dev, int controller_no,
-		std::vector<StorageDeviceRefPtr> drives, ExecutorFactoryRefPtr ex_factory)
+		std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
 	hz::intrusive_ptr<CmdexSync> executor = ex_factory->create_executor(ExecutorFactory::ExecutorTwCli);
 
@@ -279,7 +279,7 @@ inline std::string tw_cli_get_drives(const std::string& dev, int controller_no,
 /// Get number of ports by sequentially running smartctl on each port, until
 /// one of the gives an error. Return -1 on error.
 inline std::string smartctl_get_drives(const std::string& dev, const std::string& type,
-	  int from, int to, std::vector<StorageDeviceRefPtr> drives, ExecutorFactoryRefPtr ex_factory)
+	  int from, int to, std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
 	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
 
@@ -295,7 +295,7 @@ inline std::string smartctl_get_drives(const std::string& dev, const std::string
 		}
 
 		if (!error_msg.empty()) {
-			debug_out_info("app", "Sequential port scan aborted with error: " << error_msg);
+			debug_out_info("app", "Smartctl returned with an error: " << error_msg);
 		} else {
 			drives.push_back(StorageDeviceRefPtr(new StorageDevice(dev, type_arg)));
 		}
@@ -398,8 +398,17 @@ inline std::string detect_drives_linux_proc_partitions(std::vector<StorageDevice
 			devices.push_back(path);
 	}
 
+	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
+
 	for (std::size_t i = 0; i < devices.size(); ++i) {
-		drives.push_back(StorageDeviceRefPtr(new StorageDevice(devices.at(i))));
+		StorageDeviceRefPtr drive(new StorageDevice(devices.at(i)));
+		drive->fetch_basic_data_and_parse(smartctl_ex);
+
+		// 3ware controllers also export themselves as sd*. Smartctl detects that,
+		// so we can avoid adding them.
+		if (!app_pcre_match("/AMCC/3ware controller/im", drive->get_info_output())) {
+			drives.push_back(drive);
+		}
 	}
 
 	return std::string();
@@ -423,8 +432,10 @@ Detection:
 Grep /proc/devices for "twa" or "twe" (e.g. "251 twa"). Use this for /dev/tw* part.
 Grep /proc/scsi/scsi for AMCC or 3ware (LSI too?), use number of matched lines N
 	for /dev/tw*[0, N-1].
-For detecting the number of ports, use "tw_cli /c0 show all", 0 being the controller N.
-	If there's no tw_cli, we'll have to scan all 128 ports.
+For detecting the number of ports, use "tw_cli /cK show all", K being the controller
+	scsi number, which is displayed as scsiK in the scsi file.
+	If there's no tw_cli, we'll have to scan all the ports (up to supported maximum).
+	This is too slow however, so scan only 24.
 
 Implementation notes: it seems that twe uses "3ware" and twa uses "AMCC".
 We can't handle a situation with both twa and twe present, since we don't know
@@ -485,7 +496,8 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 
 		error_msg = tw_cli_get_drives(dev, i, drives, ex_factory);
 		if (!error_msg.empty()) {  // no tw_cli
-			error_msg = smartctl_get_drives(dev, "3ware,%d", 0, (twa_found ? 127 : 15), drives, ex_factory);
+			// 128 smartctl calls are too much (it's too slow). Settle for 24.
+			error_msg = smartctl_get_drives(dev, "3ware,%d", 0, (twa_found ? 24 : 15), drives, ex_factory);
 		}
 
 		if (!error_msg.empty()) {
