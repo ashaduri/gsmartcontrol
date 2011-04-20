@@ -43,9 +43,6 @@ Set tooltips wherever we have "No description available".
 
 !!! Allow quitting when test is running (ask first).
 
-Display -d type in the main window, tooltip, drive info window.
-	Otherwise it's just /dev/twa0.
-
 When running smartctl on drives, run them on the driveptr-s directly,
 	(use -i -H -c options, maybe even drive->fetch...()), so that the drive
 	remembers it.
@@ -56,8 +53,6 @@ Linux: Detect scsi number for 3ware and use that for tw_cli controller.
 Windows: If smartctl --scan-open returns no "sd*,port"-style devices,
 	check if 3dm2 is installed and execute "tw_cli show" to get the controllers,
 	then use the tw_cli variant of smartctl.
-
-Windows (xp only?): fix not detecting --scan-open output with ports properly.
 
 
 

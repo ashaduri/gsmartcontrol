@@ -232,7 +232,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 				std::string vfile = drive->get_virtual_filename();
 				tooltip_strs.push_back("Loaded from: " + (vfile.empty() ? "[empty]" : Glib::Markup::escape_text(vfile)));
 			} else {
-				tooltip_strs.push_back("Device: <b>" + Glib::Markup::escape_text(drive->get_device()) + "</b>");
+				tooltip_strs.push_back("Device: <b>" + Glib::Markup::escape_text(drive->get_device_with_type()) + "</b>");
 			}
 			tooltip_strs.push_back("SMART status: <b>"
 					+ StorageDevice::get_status_name(drive->get_smart_status(), false) + "</b>");

@@ -552,20 +552,28 @@ string StorageDevice::get_device_base() const
 
 
 
-string StorageDevice::get_device_pretty(bool extended) const
+string StorageDevice::get_device_pretty() const
 {
 	std::string ret;
 	if (this->get_is_virtual()) {
 		ret = "Virtual";
-		if (extended) {
-			std::string vf = this->get_virtual_filename();
-			ret += (" (" + (vf.empty() ? "[empty]" : vf) + ")");
-		}
+		std::string vf = this->get_virtual_filename();
+		ret += (" (" + (vf.empty() ? "[empty]" : vf) + ")");
 	} else {
-		ret = (extended ? this->get_device() : this->get_device_base());
+		ret = this->get_device_with_type();
 	}
-
 	return ret;
+}
+
+
+
+string StorageDevice::get_device_with_type() const
+{
+	std::string device = get_device();
+	if (!get_type_argument().empty()) {
+		device += " (" + get_type_argument() + ")";
+	}
+	return device;
 }
 
 
