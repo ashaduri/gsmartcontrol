@@ -212,7 +212,7 @@ inline std::string read_proc_scsi_scsi_file(std::vector<std::string>& lines)
 
 
 /// Get number of ports using tw_cli. Return -1 on error.
-inline std::string tw_cli_get_drives(const std::string& dev, int controller_no,
+inline std::string tw_cli_get_drives(const std::string& dev, int scsi_host_no,
 		std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
 	hz::intrusive_ptr<CmdexSync> executor = ex_factory->create_executor(ExecutorFactory::ExecutorTwCli);
@@ -225,7 +225,7 @@ inline std::string tw_cli_get_drives(const std::string& dev, int controller_no,
 		return "tw_cli binary is not specified in configuration.";
 	}
 
-	std::string command_options = hz::string_sprintf("/c%d show all", controller_no);
+	std::string command_options = hz::string_sprintf("/c%d show all", scsi_host_no);
 
 	std::vector<std::string> binaries;  // binaries to try
 	// Note: tw_cli is automatically added to PATH in windows, no need to look for it.
@@ -471,30 +471,37 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 		return std::string();  // no controllers
 	}
 
-	// Count number of AMCC / 3ware entries in /proc/scsi/scsi
-	int num_controllers = 0;
-
 	lines.clear();
 	error_msg = read_proc_scsi_scsi_file(lines);
 	if (!error_msg.empty()) {
 		return error_msg;
 	}
 
+
+	int num_controllers = 0;
+	int last_scsi_host = 0;
+
+	pcrecpp::RE host_re = app_pcre_re("^Host: scsi([0-9]+)");
+
 	for (std::size_t i = 0; i < lines.size(); ++i) {
-		if (app_pcre_match("/ (AMCC)|(3ware) /i", hz::string_trim_copy(lines[i]))) {
-			++num_controllers;
+		// The format of this file is scsi host number on one line, vendor on another.
+		// debug_out_error("app", "SCSI Line: " << hz::string_trim_copy(lines[i]) << "\n");
+		std::string scsi_host_str;
+		if (host_re.PartialMatch(hz::string_trim_copy(lines[i]), &scsi_host_str)) {
+			// debug_out_dump("app", "SCSI Host " << scsi_host_str << " found.\n");
+			hz::string_is_numeric(scsi_host_str, last_scsi_host);
 		}
-	}
-	if (num_controllers == 0) {
-		debug_out_warn("app", DBG_FUNC_MSG << "3ware entry found in devices file, but SCSI file contains no known entries.\n");
-		return std::string();
-	}
+		if (!app_pcre_match("/Vendor: (AMCC)|(3ware) /i", hz::string_trim_copy(lines[i]))) {
+			continue;  // not a supported controller
+		}
 
-	for (int i = 0; i < num_controllers; ++i) {
-		// we can't handle both twa and twe in one system, so assume twa by default
-		std::string dev = std::string("/dev/") + (twa_found ? "twa" : "twe") + hz::number_to_string(i);
+		debug_out_dump("app", "Found AMCC/3ware controller in SCSI file, SCSI host " << last_scsi_host << ".\n");
 
-		error_msg = tw_cli_get_drives(dev, i, drives, ex_factory);
+		// We can't handle both twa and twe in one system, so assume twa by default.
+		// We can't map twaX to scsiY, so lets assume the relative order is the same.
+		std::string dev = std::string("/dev/") + (twa_found ? "twa" : "twe") + hz::number_to_string(num_controllers);
+
+		error_msg = tw_cli_get_drives(dev, last_scsi_host, drives, ex_factory);
 		if (!error_msg.empty()) {  // no tw_cli
 			// 128 smartctl calls are too much (it's too slow). Settle for 24.
 			error_msg = smartctl_get_drives(dev, "3ware,%d", 0, (twa_found ? 24 : 15), drives, ex_factory);
@@ -503,6 +510,12 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 		if (!error_msg.empty()) {
 			debug_out_warn("app", DBG_FUNC_MSG << "Couldn't get number of ports on a 3ware controller.\n");
 		}
+
+		++num_controllers;
+	}
+
+	if (num_controllers == 0) {
+		debug_out_warn("app", DBG_FUNC_MSG << "3ware entry found in devices file, but SCSI file contains no known entries.\n");
 	}
 
 	return error_msg;
