@@ -273,7 +273,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		// fetch all smartctl info, even if it already has it (to refresh it).
 		if (scan) {
 			SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
-			ex->create_running_dialog(this, "Running %s on " + drive->get_device() + "...");
+			ex->create_running_dialog(this, "Running %s on " + drive->get_device_with_type() + "...");
 			std::string error_msg = drive->fetch_data_and_parse(ex);  // run it with GUI support
 
 			if (!error_msg.empty()) {
@@ -329,7 +329,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 
 	{
-		std::string device = drive->get_device_pretty(true);
+		std::string device = drive->get_device_pretty();
 		std::string model = (drive->get_model_name().empty() ? "Unknown model" : drive->get_model_name());
 
 		this->set_title("Device Information - " + device + ": " + model + " - GSmartControl");

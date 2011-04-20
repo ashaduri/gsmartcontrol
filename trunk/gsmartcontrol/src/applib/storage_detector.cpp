@@ -66,14 +66,14 @@ std::string StorageDetector::detect(std::vector<StorageDeviceRefPtr>& drives, Ex
 				}
 			}
 
-			debug_out_info("app", "Found device: \"" << drive->get_device() << "\".\n");
+			debug_out_info("app", "Found device: " << drive->get_device_with_type() << ".\n");
 
 			if (!blacked) {
 				drives.push_back(drive);
 // 				break;  // no need to match other patters, go to next device
 
 			} else {  // blacklisted
-				debug_out_info("app", "Device \"" << drive->get_device() << "\" is blacklisted, ignoring.\n");
+				debug_out_info("app", "Device " << drive->get_device_with_type() << " is blacklisted, ignoring.\n");
 // 				break;  // go to next device
 			}
 // 		}
@@ -98,7 +98,7 @@ std::string StorageDetector::fetch_basic_data(std::vector<StorageDeviceRefPtr>& 
 		StorageDeviceRefPtr drive = drives[i];
 		debug_out_info("app", "Retrieving basic information about the device...\n");
 
-		smartctl_ex->set_running_msg("Running %s on " + drive->get_device() + "...");
+		smartctl_ex->set_running_msg("Running %s on " + drive->get_device_with_type() + "...");
 
 		// don't show any errors here - we don't want a screen flood.
 		// no need for gui-based executors here, we already show the message in

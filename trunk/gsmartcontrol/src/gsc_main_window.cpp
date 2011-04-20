@@ -896,7 +896,7 @@ void GscMainWindow::update_status_widgets()
 		return;
 	}
 
-	std::string device = (drive->get_is_virtual() ? ("Virtual: " + drive->get_virtual_filename()) : drive->get_device());
+	std::string device = (drive->get_is_virtual() ? ("Virtual: " + drive->get_virtual_filename()) : drive->get_device_with_type());
 	std::string size = drive->get_device_size_str();
 	std::string model = (drive->get_model_name().empty() ? std::string("Unknown model") : drive->get_model_name());
 	std::string family = (drive->get_family_name().empty() ? "Unknown" : drive->get_family_name());
@@ -1144,7 +1144,7 @@ GscInfoWindow* GscMainWindow::show_device_info_window(StorageDeviceRefPtr drive)
 
 		if (status == Gtk::RESPONSE_YES) {
 			SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
-			ex->create_running_dialog(this, "Running %s on " + drive->get_device() + "...");
+			ex->create_running_dialog(this, "Running %s on " + drive->get_device_with_type() + "...");
 			std::string error_msg = drive->set_smart_enabled(true, ex);  // run it with GUI support
 
 			if (!error_msg.empty()) {
@@ -1158,7 +1158,7 @@ GscInfoWindow* GscMainWindow::show_device_info_window(StorageDeviceRefPtr drive)
 	// Parse non-virtual drives here.
 	if (!drive->get_is_virtual()) {
 		SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
-		ex->create_running_dialog(this, "Running %s on " + drive->get_device() + "...");
+		ex->create_running_dialog(this, "Running %s on " + drive->get_device_with_type() + "...");
 		std::string error_msg = drive->fetch_data_and_parse(ex);  // run it with GUI support
 
 		if (!error_msg.empty()) {

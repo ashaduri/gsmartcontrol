@@ -118,7 +118,10 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		std::string get_device_base() const;
 
 		/// Get device name for display purposes
-		std::string get_device_pretty(bool extended = false) const;
+		std::string get_device_pretty() const;
+
+		/// Get device name for display purposes (with a type argument in parentheses)
+		std::string get_device_with_type() const;
 
 
 		/// Set detected type
