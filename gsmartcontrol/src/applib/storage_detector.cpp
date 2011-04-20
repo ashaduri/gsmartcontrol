@@ -118,7 +118,8 @@ std::string StorageDetector::fetch_basic_data(std::vector<StorageDeviceRefPtr>& 
 			fetch_data_error_outputs_.push_back(smartctl_ex->get_stdout_str());
 		}
 
-		debug_out_dump("app", "Device information for " << drive->get_device() << ":\n"
+		debug_out_dump("app", "Device information for " << drive->get_device()
+				<< " (type: \"" << drive->get_type_argument() << "\"):\n"
 				<< "\tModel: " << drive->get_model_name() << "\n"
 				<< "\tDetected type: " << StorageDevice::get_type_readable_name(drive->get_detected_type()) << "\n"
 				<< "\tSMART status: " << StorageDevice::get_status_name(drive->get_smart_status()) << "\n"

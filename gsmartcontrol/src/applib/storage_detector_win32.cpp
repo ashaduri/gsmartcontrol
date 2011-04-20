@@ -107,16 +107,17 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDeviceRefPtr>& dr
 		return "Smartctl doesn't support --scan-open switch.";
 	}
 
+
 	std::vector<std::string> lines;
 	hz::string_split(output, '\n', lines, true);
-
 
 // 	/dev/sda,0 -d ata (opened)
 // 	/dev/sda,1 -d ata (opened)
 // 	/dev/sda -d sat # /dev/sda [SAT], ATA device
+// /dev/sde,2 -d ata [ATA] (opened)
 
 	// we only pick the ones with ports
-	pcrecpp::RE port_re = app_pcre_re("/^(/dev/[a-z0-9]),([0-9])+[ \\t]+-d[ \\t]+([^\\t\\n]+)/i");
+	pcrecpp::RE port_re = app_pcre_re("/^(/dev/[a-z0-9]+),([0-9]+)[ \\t]+-d[ \\t]+([^ \\t\\n]+)/i");
 	pcrecpp::RE dev_re = app_pcre_re("/^/dev/sd([a-z])$/");
 
 	for (std::size_t i = 0; i < lines.size(); ++i) {
