@@ -170,8 +170,12 @@ std::string StorageDevice::fetch_basic_data_and_parse(hz::intrusive_ptr<CmdexSyn
 
 	// Since the type error leads to "command line didn't parse" error here,
 	// we do this after the scsi stuff.
-	if (!error_msg.empty())
+	if (!error_msg.empty()) {
+		// Still try to parse something. For some reason, running smartctl on usb flash drive
+		// under winxp returns "command line didn't parse", while actually printing its name.
+		this->parse_basic_data(false, true);
 		return error_msg;
+	}
 
 	// Set some properties too - they are needed for e.g. AODC status, etc...
 	return this->parse_basic_data(true);
