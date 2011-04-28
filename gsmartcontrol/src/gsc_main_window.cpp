@@ -436,6 +436,28 @@ bool GscMainWindow::create_widgets()
 
 
 
+namespace {
+
+	/// Return true if the user agrees to quit
+	inline bool ask_about_quit_on_test(Gtk::Window& parent)
+	{
+		int status = 0;
+		{
+			Gtk::MessageDialog dialog(parent,
+					"\nOne of the drives is performing a test. Do you really want to quit?\n\n"
+					"<small>The test will continue to run in the background, but you won't be"
+					" able to monitor it using GSmartControl.</small>",
+					true, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO, true);
+			status = dialog.run();
+		}
+		return (status == Gtk::RESPONSE_YES);
+	}
+	
+}
+
+
+
+
 // NOTE: Do NOT bind the Glib::RefPtr<Gtk::Action> parameter to this function.
 // Doing so causes valgrind errors on window destroy (and Send Report dialogs on win32).
 // Probably a gtkmm bug. Use action maps or Gtk::Action* instead.
@@ -466,8 +488,9 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 		case action_quit:
 			// if at least one drive is having a test performed, disallow.
 			if (this->testing_active()) {
-				gui_show_warn_dialog("Please wait until all tests are finished.", this);
-				break;
+				if (!ask_about_quit_on_test(*this)) {
+					break;
+				}
 			}
 			app_quit();  // ends the main loop
 			break;
@@ -952,16 +975,25 @@ void GscMainWindow::rescan_devices()
 	// ignore double-scan (may happen because we use gtk loop iterations here).
 	if (this->scanning_)
 		return;
-	this->scanning_ = true;
 
 	// don't manipulate window sensitiveness here - it breaks things
 	// (cursors, gtk errors pop out, etc...)
 
 	// if at least one drive is having a test performed, disallow.
 	if (this->testing_active()) {
-		gui_show_warn_dialog("Please wait until all tests are finished.", this);
-		return;
+		int status = 0;
+		{
+			Gtk::MessageDialog dialog(*this,
+					"\nThis operation may abort any running tests. Do you wish to continue?",
+					true, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO, true);
+			status = dialog.run();
+		}
+		if (status != Gtk::RESPONSE_YES) {
+			return;
+		}
 	}
+
+	this->scanning_ = true;
 
 // 	std::string match_str = rconfig::get_data<std::string>("system/device_match_patterns");
 	std::string blacklist_str = rconfig::get_data<std::string>("system/device_blacklist_patterns");
@@ -1249,8 +1281,9 @@ bool GscMainWindow::on_delete_event_before(GdkEventAny* e)
 {
 	// if at least one drive is having a test performed, disallow.
 	if (this->testing_active()) {
-		gui_show_warn_dialog("Please wait until all tests are finished.", this);
-		return true;  // handled
+		if (!ask_about_quit_on_test(*this)) {
+			return true;  // handled
+		}
 	}
 	app_quit();  // ends the main loop
 	return true;  // event handled, don't call default virtual handler
