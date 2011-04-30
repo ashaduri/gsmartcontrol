@@ -45,8 +45,9 @@ fi
 # They're basically the same, only the order is different.
 # sux requires xterm to ask for the password.
 # xdg-su is basically like this script, except worse :)
-gnome_sus="gnomesu gksu kdesu beesu xdg-su sux";
-kde_sus="kdesu gnomesu gksu beesu xdg-su sux";
+# su-to-root is a debian/ubuntu official method (although gksu is available).
+gnome_sus="su-to-root gnomesu gksu kdesu beesu xdg-su sux";
+kde_sus="su-to-root kdesu gnomesu gksu beesu xdg-su sux";
 other_sus="$gnome_sus";
 
 
@@ -97,6 +98,7 @@ export PATH="$EXTRA_PATHS:$PATH"
 # gnomesu -c 'gsmartcontrol --no-scan'
 # kdesu -c 'gsmartcontrol --no-scan'
 # beesu -P 'gsmartcontrol --no-scan'
+# su-to-root -X -c 'gsmartcontrol --no-scan'
 # xterm -e sux -c 'gsmartcontrol --no-scan'  # sux asks for password in a terminal
 
 full_cmd="";
@@ -112,6 +114,9 @@ elif [ "$found_su" = "gksu" ]; then
 
 elif [ "$found_su" = "beesu" ]; then
 	full_cmd="$found_su -P '$EXEC_BIN $@'";
+
+elif [ "$found_su" = "su-to-root" ]; then
+	full_cmd="$found_su -X -c '$EXEC_BIN $@'";
 
 else  # gnomesu, kdesu, xdg-su
 	full_cmd="$found_su -c '$EXEC_BIN $@'";

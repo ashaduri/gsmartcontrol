@@ -41,8 +41,6 @@ Add debian/ubuntu's su-to-root support to gsmartcontrol-root.
 
 Set tooltips wherever we have "No description available".
 
-Allow quitting when test is running (ask first).
-
 When running smartctl on drives, run them on the driveptr-s directly,
 	(use -i -H -c options, maybe even drive->fetch...()), so that the drive
 	remembers it.
