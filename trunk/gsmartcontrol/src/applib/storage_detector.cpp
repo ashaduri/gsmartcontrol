@@ -103,7 +103,10 @@ std::string StorageDetector::fetch_basic_data(std::vector<StorageDeviceRefPtr>& 
 		// don't show any errors here - we don't want a screen flood.
 		// no need for gui-based executors here, we already show the message in
 		// iconview background (if called from main window)
-		std::string error_msg = drive->fetch_basic_data_and_parse(smartctl_ex);
+		std::string error_msg;
+		if (drive->get_info_output().empty()) {  // if not fetched during detection
+			error_msg = drive->fetch_basic_data_and_parse(smartctl_ex);
+		}
 
 		// normally we skip drives with errors - possibly scsi, etc...
 		if (return_first_error && !error_msg.empty())
