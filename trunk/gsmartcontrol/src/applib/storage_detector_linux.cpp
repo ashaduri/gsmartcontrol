@@ -12,14 +12,14 @@
 #include <algorithm>  // std::find
 #include <cstdio>  // std::fgets(), std::FILE
 #include <cerrno>  // ENXIO
-#include <glibmm.h>
 
 #include "hz/debug.h"
 #include "hz/fs_path_utils.h"
 #include "hz/fs_file.h"
 #include "rconfig/rconfig_mini.h"
-
 #include "app_pcrecpp.h"
+#include "storage_detector_helpers.h"
+
 
 
 
@@ -204,71 +204,6 @@ inline std::string read_proc_scsi_scsi_file(std::vector<std::string>& lines)
 			debug_out_error("app", DBG_FUNC_MSG << "SCSI file exists but cannot be read.\n");
 		}
 		return error_msg;
-	}
-
-	return std::string();
-}
-
-
-
-/// Get number of ports using tw_cli. Return -1 on error.
-inline std::string tw_cli_get_drives(const std::string& dev, int scsi_host_no,
-		std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
-{
-	hz::intrusive_ptr<CmdexSync> executor = ex_factory->create_executor(ExecutorFactory::ExecutorTwCli);
-
-	std::string binary;
-	rconfig::get_data("system/tw_cli_binary", binary);
-
-	if (binary.empty()) {
-		debug_out_error("app", DBG_FUNC_MSG << "tw_cli binary is not set in config.\n");
-		return "tw_cli binary is not specified in configuration.";
-	}
-
-	std::string command_options = hz::string_sprintf("/c%d show all", scsi_host_no);
-
-	std::vector<std::string> binaries;  // binaries to try
-	// Note: tw_cli is automatically added to PATH in windows, no need to look for it.
-	binaries.push_back(binary);
-#ifdef CONFIG_KERNEL_LINUX
-	// tw_cli may be named tw_cli.x86 or tw_cli.x86_64 in linux
-	binaries.push_back(binary + ".x86_64");  // try this first
-	binaries.push_back(binary + ".x86");
-#endif
-
-	for (std::size_t i = 0; i < binaries.size(); ++i) {
-		executor->set_command(Glib::shell_quote(binaries.at(i)), command_options);
-
-		if (!executor->execute() || !executor->get_error_msg().empty()) {
-			debug_out_warn("app", DBG_FUNC_MSG << "Error while executing tw_cli binary.\n");
-		} else {
-			break;  // found it
-		}
-	}
-
-	// any_to_unix is needed for windows
-	std::string output = hz::string_trim_copy(hz::string_any_to_unix_copy(executor->get_stdout_str()));
-	if (output.empty()) {
-		debug_out_error("app", DBG_FUNC_MSG << "tw_cli returned an empty output.\n");
-		return "tw_cli returned an empty output.";
-	}
-
-	// split to lines
-	std::vector<std::string> lines;
-	hz::string_split(output, '\n', lines, true);
-
-	pcrecpp::RE port_re = app_pcre_re("/^p([0-9])+[ \\t]+([^\\t\\n]+)/mi");
-	for (std::size_t i = 0; i < lines.size(); ++i) {
-		std::string port_str, status;
-		if (port_re.PartialMatch(hz::string_trim_copy(lines.at(i)), &port_str, &status)) {
-			if (status != "NOT-PRESENT") {
-				int port = -1;
-				hz::string_is_numeric(port_str, port);
-				if (port != -1) {
-					drives.push_back(StorageDeviceRefPtr(new StorageDevice(dev, "3ware," + hz::number_to_string(port))));
-				}
-			}
-		}
 	}
 
 	return std::string();
@@ -503,7 +438,7 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 		// We can't map twaX to scsiY, so lets assume the relative order is the same.
 		std::string dev = std::string("/dev/") + (twa_found ? "twa" : "twe") + hz::number_to_string(num_controllers);
 
-		error_msg = tw_cli_get_drives(dev, last_scsi_host, drives, ex_factory);
+		error_msg = tw_cli_get_drives(dev, last_scsi_host, drives, ex_factory, false);
 		if (!error_msg.empty()) {  // no tw_cli
 			int max_ports = rconfig::get_data<int32_t>("system/linux_max_scan_ports");
 			max_ports = std::max(max_ports, 23);  // 128 smartctl calls are too much (it's too slow). Settle for 24.

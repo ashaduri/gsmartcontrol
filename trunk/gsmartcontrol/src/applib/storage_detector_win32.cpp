@@ -11,9 +11,11 @@
 #include <windows.h>  // CreateFileA(), CloseHandle(), etc...
 #include <glibmm.h>
 
+#include "hz/win32_tools.h"
 #include "hz/string_sprintf.h"
 #include "rconfig/rconfig_mini.h"
 #include "app_pcrecpp.h"
+#include "storage_detector_helpers.h"
 
 
 /*
@@ -26,7 +28,7 @@ Call as: smartctl -i sd[a-z],N
 		No idea how to check if it's 3ware.
 Call as: smarctl -i tw_cli/cx/py
 	This runs tw_cli tool and parses the output; controller x, port y.
-	tw_cli is needed for 64-bit systems, as well as older controllers.
+	tw_cli may be needed for older controllers / drivers.
 	In tw_cli mode only limited information-gathering is supported.
 tw_cli (part of 3DM2) is automatically added to system PATH,
 	no need to look for it.
@@ -153,6 +155,7 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 {
 	std::vector<int> used_pds;
 	std::string error_msg = get_scan_open_multiport_devices(drives, ex_factory, used_pds);
+	bool multiport_found = !drives.empty();
 
 	for (int drive_num = 0; ; ++drive_num) {
 		std::string name = hz::string_sprintf("\\\\.\\PhysicalDrive%d", drive_num);
@@ -175,6 +178,27 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 			drives.push_back(new StorageDevice(dev));
 		}
 	}
+
+
+	// If smartctl --scan-open returns no "sd*,port"-style devices,
+	// check if 3dm2 is installed and execute "tw_cli show" to get
+	// the controllers, then use the tw_cli variant of smartctl.
+
+	if (!multiport_found) {
+		std::string inst_path;
+		hz::win32_get_registry_value_string(HKEY_USERS, ".DEFAULT\\Software\\3ware\\3DM2", "InstallPath", inst_path);
+
+		if (!inst_path.empty()) {
+			std::vector<int> controllers;
+			error_msg = tw_cli_get_controllers(ex_factory, controllers);
+			// ignore the error message above, it's of no use.
+			for (std::size_t i = 0; i < controllers.size(); ++i) {
+				// don't specify device, it's ignored in tw_cli mode
+				tw_cli_get_drives("", controllers.at(i), drives, ex_factory, true);
+			}
+		}
+	}
+
 
 	return std::string();
 }
