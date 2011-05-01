@@ -36,13 +36,6 @@ Bugs / patches:
 
 TODO:
 
-Set tooltips wherever we have "No description available".
-
-When running smartctl on drives, run them on the driveptr-s directly,
-	(use -i -H -c options, maybe even drive->fetch...()), so that the drive
-	remembers it.
-If the detection executes "smartctl -i", don't execute it again afterwards.
-
 Windows: If smartctl --scan-open returns no "sd*,port"-style devices,
 	check if 3dm2 is installed and execute "tw_cli show" to get the controllers,
 	then use the tw_cli variant of smartctl.
