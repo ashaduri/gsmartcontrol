@@ -740,11 +740,19 @@ bool storage_property_autoset_description(StorageProperty& p)
 
 	// Section Info
 	} else if (p.section == StorageProperty::section_info) {
-		found = auto_set(p, "Serial Number", "Serial number, unique to each physical drive.")
-		|| auto_set(p, "User Capacity", "User-serviceable drive capacity as reported to an operating system.")
+		found = auto_set(p, "model_family", "Model family (from smartctl database)")
+		|| auto_set(p, "device_model", "Device model")
+		|| auto_set(p, "serial_number", "Serial number, unique to each physical drive")
+		|| auto_set(p, "capacity", "User-serviceable drive capacity as reported to an operating system")
 		|| auto_set(p, "in_smartctl_db", "Whether the device is in smartctl database or not. If it is, additional information may be provided; otherwise, Raw values of some attributes may be incorrectly formatted.")
 		|| auto_set(p, "smart_supported", "Whether the device supports SMART. If not, then only very limited information will be available.")
 		|| auto_set(p, "smart_enabled", "Whether the device has SMART enabled. If not, most of the reported values will be incorrect.");
+
+		// set just its name as a tooltip
+		if (!found) {
+			p.set_description(p.readable_name);
+			found = true;
+		}
 
 	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_health) {
 		found = auto_set(p, "overall_health", "Overall health self-assessment test result. Note: If the drive passes this test, it doesn't mean it's OK. "
@@ -765,17 +773,21 @@ bool storage_property_autoset_description(StorageProperty& p)
 		|| auto_set(p, "sct_cap_group", "Drive properties related to temperature information.");
 
 	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_attributes) {
-		auto_set_attr(p);
-		found = true;  // true, because auto_set_attr() may set "Unknown attribute", which is still "found".
-
+		found = auto_set(p, "data_structure_version", p.readable_name.c_str());
+		if (!found) {
+			auto_set_attr(p);
+			found = true;  // true, because auto_set_attr() may set "Unknown attribute", which is still "found".
+		}
 
 	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_error_log) {
+		found = auto_set(p, "error_log_version", p.readable_name.c_str());
 		found = auto_set(p, "error_count", "Number of errors in error log. Note: Some manufacturers may list completely harmless errors in this log "
 			"(e.g., command invalid, not implemented, etc...).");
 // 		|| auto_set(p, "error_log_unsupported", "This device does not support error logging.");  // the property text already says that
 
 
 	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_selftest_log) {
+		found = auto_set(p, "selftest_log_version", p.readable_name.c_str());
 		found = auto_set(p, "selftest_num_entries", "Number of tests in selftest log. Note: This log usually contains only the last 20 or so manual tests. ");
 // 		|| auto_set(p, "selftest_log_unsupported", "This device does not support self-test logging.");  // the property text already says that
 

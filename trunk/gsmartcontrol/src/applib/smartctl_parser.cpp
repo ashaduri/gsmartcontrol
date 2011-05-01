@@ -401,14 +401,34 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 	}
 
 
-	if (app_pcre_match("/Model Family/mi", p.reported_name)
-			|| app_pcre_match("/Device Model/mi", p.reported_name)
-			|| app_pcre_match("/Serial Number/mi", p.reported_name)
-			|| app_pcre_match("/Firmware Version/mi", p.reported_name)
-			|| app_pcre_match("/Sector Sizes/mi", p.reported_name)  // prints 2 values (phys/logical, if they're different)
-			|| app_pcre_match("/Sector Size/mi", p.reported_name)  // prints a single value (if it's not 512)
-			) {
+	if (app_pcre_match("/Model Family/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "model_family", "Model Family");
 		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/Device Model/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "device_model", "Device Model");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/Serial Number/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "serial_number", "Serial Number");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/Firmware Version/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "firmware_version", "Firmware Version");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/Sector Sizes/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "sector_sizes", "Sector Sizes");
+		p.value_type = StorageProperty::value_type_string;  // prints 2 values (phys/logical, if they're different)
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/Sector Size/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "sector_size", "Sector Size");
+		p.value_type = StorageProperty::value_type_string;  // prints a single value (if it's not 512)
 		p.value_string = p.reported_value;
 
 	} else if (app_pcre_match("/LU WWN Device Id/mi", p.reported_name)) {
@@ -427,6 +447,7 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 		p.value_string = p.reported_value;
 
 	} else if (app_pcre_match("/User Capacity/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "capacity", "Capacity");
 		p.value_type = StorageProperty::value_type_integer;
 		uint64_t v = 0;
 		if ((p.readable_value = parse_byte_size(p.reported_value, v, true)).empty()) {
@@ -1082,7 +1103,7 @@ bool SmartctlParser::parse_section_data_subsection_attributes(const std::string&
 				hz::string_is_numeric(value, value_num, false);
 
 				StorageProperty p(pt);
-				p.set_name(name);
+				p.set_name(name, "data_structure_version");
 				p.reported_value = value;
 				p.value_type = StorageProperty::value_type_integer;
 				p.value_integer = value_num;
