@@ -232,8 +232,8 @@ inline std::string tw_cli_get_drives(const std::string& dev, int scsi_host_no,
 	binaries.push_back(binary);
 #ifdef CONFIG_KERNEL_LINUX
 	// tw_cli may be named tw_cli.x86 or tw_cli.x86_64 in linux
+	binaries.push_back(binary + ".x86_64");  // try this first
 	binaries.push_back(binary + ".x86");
-	binaries.push_back(binary + ".x86_64");
 #endif
 
 	for (std::size_t i = 0; i < binaries.size(); ++i) {
@@ -285,9 +285,11 @@ inline std::string smartctl_get_drives(const std::string& dev, const std::string
 
 	for (int i = from; i <= to; ++i) {
 		std::string type_arg = hz::string_sprintf(type.c_str(), i);
+		StorageDeviceRefPtr drive(new StorageDevice(dev, type_arg));
 
-		std::string output;
-		std::string error_msg = execute_smartctl(dev, "-d " + type_arg, "-i", smartctl_ex, output);
+// 		std::string error_msg = execute_smartctl(dev, "-d " + type_arg, "-i", smartctl_ex, output);
+		std::string error_msg = drive->fetch_basic_data_and_parse(smartctl_ex);
+		std::string output = drive->get_info_output();
 
 		// if we've reached smartctl port limit (older versions may have smaller limits), abort.
 		if (app_pcre_match("/VALID ARGUMENTS ARE/mi", output)) {
@@ -297,7 +299,7 @@ inline std::string smartctl_get_drives(const std::string& dev, const std::string
 		if (!error_msg.empty()) {
 			debug_out_info("app", "Smartctl returned with an error: " << error_msg);
 		} else {
-			drives.push_back(StorageDeviceRefPtr(new StorageDevice(dev, type_arg)));
+			drives.push_back(drive);
 		}
 	}
 
@@ -503,8 +505,9 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 
 		error_msg = tw_cli_get_drives(dev, last_scsi_host, drives, ex_factory);
 		if (!error_msg.empty()) {  // no tw_cli
-			// 128 smartctl calls are too much (it's too slow). Settle for 24.
-			error_msg = smartctl_get_drives(dev, "3ware,%d", 0, (twa_found ? 24 : 15), drives, ex_factory);
+			int max_ports = rconfig::get_data<int32_t>("system/linux_max_scan_ports");
+			max_ports = std::max(max_ports, 23);  // 128 smartctl calls are too much (it's too slow). Settle for 24.
+			error_msg = smartctl_get_drives(dev, "3ware,%d", 0, max_ports, drives, ex_factory);
 		}
 
 		if (!error_msg.empty()) {
