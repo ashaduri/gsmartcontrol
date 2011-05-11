@@ -36,10 +36,6 @@ Bugs / patches:
 
 TODO:
 
-+Windows: If smartctl --scan-open returns no "sd*,port"-style devices,
-	check if 3dm2 is installed and execute "tw_cli show" to get the controllers,
-	then use the tw_cli variant of smartctl.
-
 
 Support brief format of attributes (-f brief).
 	At least as a parse-only thing (no sorting through columns)

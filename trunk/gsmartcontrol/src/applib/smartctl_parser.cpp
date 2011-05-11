@@ -1050,29 +1050,46 @@ bool SmartctlParser::parse_section_data_subsection_attributes(const std::string&
 	hz::string_split(sub, '\n', lines, true);
 
 	// Format notes:
-	// * Before 5.1-14, no UPDATED column was present.
+	// * Before 5.1-14, no UPDATED column was present in "old" format.
 	// * Most, but not all attribute names are with underscores. However, I encountered one
 	// named "Head flying hours" and there are slashes sometimes as well.
 	// So, parse until we encounter the next column.
-	// * One WD drive had non-integer flags, something like "PO--C-", with several
-	// lines of their descriptions after the attributes block (each line started with spaces and |).
+	// * "Old" format: One WD drive had non-integer flags, something like "PO--C-", with several
+	// lines of their descriptions after the attributes block (each line started with spaces and |)
+	// (seems to be a CVS version from 2006).
 	// * SSD drives may show "---" in value/worst/threshold fields.
 
+	// "old" format (used in -a):
+	// "ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE"
 	// "  1 Raw_Read_Error_Rate     0x000f   115   099   006    Pre-fail  Always       -       90981479"
 	// " 12 Power_Cycle_Count       0x0000   ---   ---   ---    Old_age   Offline      -       167"
 
+	// "brief" format (used in -x):
+	// "ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE"
+	// "  1 Raw_Read_Error_Rate     POSR--   118   099   006    -    174772734"
+
+	enum {
+		FormatStyleOld,
+		FormatStyleNoUpdated,  // old format without UPDATED column
+		FormatStyleBrief
+	};
+
 	bool attr_found = false;  // at least one attribute was found
-	bool attr_format_with_updated = false;  // UPDATED column present
+	int attr_format_style = FormatStyleOld;
 
-	std::string base_re = "[ \\t]*([0-9]+) ([^\\t\\n]+)[ \\t]+((?:0x[a-fA-F0-9]+)|(?:[A-Z-]{2,}))[ \\t]+"  // name / flag
-			"([0-9-]+)[ \\t]+([0-9-]+)[ \\t]+([0-9-]+)[ \\t]+"  // value / worst / threshold
-			"([^ \\t\\n]+)[ \\t]+";  // type
+	std::string space_re = "[ \\t]+";
 
-	pcrecpp::RE re_up = app_pcre_re("/" + base_re
-			+ "([^ \\t\\n]+)[ \\t]+([^ \\t\\n]+)[ \\t]+(.+)[ \\t]*/mi");  // updated / when_failed / raw
+	std::string flag_re = "((?:0x[a-fA-F0-9]+)|(?:[A-Z+-]{2,}))";
+	std::string base_re = "[ \\t]*([0-9]+) ([^\\t\\n]+)" + space_re + flag_re + space_re  // name / flag
+			+ "([0-9-]+)" + space_re + "([0-9-]+)" + space_re + "([0-9-]+)" + space_re;  // value / worst / threshold
+	std::string type_re = "([^ \\t\\n]+)" + space_re;
+	std::string updated_re = "([^ \\t\\n]+)" + space_re;
+	std::string failed_re = "([^ \\t\\n]+)" + space_re;
+	std::string raw_re = "(.+)[ \\t]*";
 
-	pcrecpp::RE re_noup = app_pcre_re("/" + base_re
-			+ "([^ \\t\\n]+)[ \\t]+(.+)[ \\t]*/mi");  // when_failed / raw
+	pcrecpp::RE re_old_up = app_pcre_re("/" + base_re + type_re + updated_re + failed_re + raw_re + "/mi");
+	pcrecpp::RE re_old_noup = app_pcre_re("/" + base_re + type_re + failed_re + raw_re + "/mi");
+	pcrecpp::RE re_brief = app_pcre_re("/" + base_re + failed_re + raw_re + "/mi");
 
 	pcrecpp::RE re_flag_descr = app_pcre_re("/^[\\t ]+\\|/mi");
 
@@ -1085,7 +1102,12 @@ bool SmartctlParser::parse_section_data_subsection_attributes(const std::string&
 			continue;
 
 		if (app_pcre_match("/ATTRIBUTE_NAME/mi", line)) {
-			attr_format_with_updated = (app_pcre_match("/UPDATED/mi", line));
+			// detect format type
+			if (!app_pcre_match("/WHEN_FAILED/mi", line)) {
+				attr_format_style = FormatStyleBrief;
+			} else if (!app_pcre_match("/UPDATED/mi", line)) {
+				attr_format_style = FormatStyleNoUpdated;
+			}
 			continue;  // we don't need this line
 		}
 
@@ -1120,15 +1142,22 @@ bool SmartctlParser::parse_section_data_subsection_attributes(const std::string&
 
 			bool matched = true;
 
-			if (attr_format_with_updated) {
-				if (!re_up.FullMatch(line, &id, &name, &flag, &value, &worst, &threshold, &attr_type,
+			if (attr_format_style == FormatStyleOld) {
+				if (!re_old_up.FullMatch(line, &id, &name, &flag, &value, &worst, &threshold, &attr_type,
 						&update_type, &when_failed, &raw_value)) {
 					matched = false;
 					debug_out_warn("app", DBG_FUNC_MSG << "Cannot parse attribute line.\n");
 				}
 
-			} else {  // no UPDATED column
-				if (!re_noup.FullMatch(line, &id, &name, &flag, &value, &worst, &threshold, &attr_type,
+			} else if (attr_format_style == FormatStyleNoUpdated) {
+				if (!re_old_noup.FullMatch(line, &id, &name, &flag, &value, &worst, &threshold, &attr_type,
+						&when_failed, &raw_value)) {
+					matched = false;
+					debug_out_warn("app", DBG_FUNC_MSG << "Cannot parse attribute line.\n");
+				}
+
+			} else if (attr_format_style == FormatStyleBrief) {
+				if (!re_brief.FullMatch(line, &id, &name, &flag, &value, &worst, &threshold,
 						&when_failed, &raw_value)) {
 					matched = false;
 					debug_out_warn("app", DBG_FUNC_MSG << "Cannot parse attribute line.\n");
@@ -1158,19 +1187,37 @@ bool SmartctlParser::parse_section_data_subsection_attributes(const std::string&
 				a.threshold = threshold_value;
 			}
 
-			a.attr_type = (attr_type == "Pre-fail" ? StorageAttribute::attr_type_prefail
-					: (attr_type == "Old_age" ? StorageAttribute::attr_type_oldage : StorageAttribute::attr_type_unknown));
+			if (attr_format_style == FormatStyleBrief) {
+				a.attr_type = app_pcre_match("/P/", a.flag) ? StorageAttribute::attr_type_prefail : StorageAttribute::attr_type_oldage;
+			} else {
+				if (attr_type == "Pre-fail") {
+					a.attr_type = StorageAttribute::attr_type_prefail;
+				} else if (attr_type == "Old_age") {
+					a.attr_type = StorageAttribute::attr_type_oldage;
+				} else {
+					a.attr_type = StorageAttribute::attr_type_unknown;
+				}
+			}
 
-			a.update_type = (update_type == "Always" ? StorageAttribute::update_type_always
-					: (update_type == "Offline" ? StorageAttribute::update_type_offline : StorageAttribute::update_type_unknown));
+			if (attr_format_style == FormatStyleBrief) {
+				a.update_type = app_pcre_match("/O/", a.flag) ? StorageAttribute::update_type_always : StorageAttribute::update_type_offline;
+			} else {
+				if (update_type == "Always") {
+					a.update_type = StorageAttribute::update_type_always;
+				} else if (update_type == "Offline") {
+					a.update_type = StorageAttribute::update_type_offline;
+				} else {
+					a.update_type = StorageAttribute::update_type_unknown;
+				}
+			}
 
 			a.when_failed = StorageAttribute::fail_time_unknown;
 			hz::string_trim(when_failed);
 			if (when_failed == "-") {
 				a.when_failed = StorageAttribute::fail_time_none;
-			} else if (when_failed == "In_the_past") {
+			} else if (when_failed == "In_the_past" || when_failed == "Past") {  // the second one if from brief format
 				a.when_failed = StorageAttribute::fail_time_past;
-			} else if (when_failed == "FAILING_NOW") {
+			} else if (when_failed == "FAILING_NOW" || when_failed == "NOW") {  // the second one if from brief format
 				a.when_failed = StorageAttribute::fail_time_now;
 			}
 
