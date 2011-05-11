@@ -605,7 +605,15 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		Gtk::TreeModelColumn<std::string> col_flag_value;
 		model_columns.add(col_flag_value);
 		num_tree_cols = app_gtkmm_create_tree_view_column(col_flag_value, *treeview,
-				"Flag", "Flag value", false);
+				"Flag", "Flag value\n\n"
+				"If given in POSRCK+ format, the presence of each letter indicates that the flag is on.\n"
+				"P: pre-failure warning\n"
+				"O: updated continuously\n"
+				"S: speed / performance attribute\n"
+				"R: error rate\n"
+				"C: event count\n"
+				"K: auto-keep\n"
+				"+: undocumented bits present", false);
 
 		Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
 		model_columns.add(col_tooltip);
