@@ -11,7 +11,7 @@ Standards-Version: 3.7.3
 
 Package: gsmartcontrol
 Architecture: any
-#Depends: ${shlibs:Depends}, ${misc:Depends}, smartmontools
+#Depends: ${shlibs:Depends}, ${misc:Depends}, smartmontools, menu
 Depends: ${shlibs:Depends}, smartmontools, menu
 Description: Hard disk drive health inspection tool
  GSmartControl is a graphical user interface for smartctl (from smartmontools

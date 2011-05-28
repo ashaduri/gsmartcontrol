@@ -220,7 +220,7 @@ inline bool parse_cmdline_args(CmdArgs& args, int& argc, char**& argv)
 		{ "add-device", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &(args.arg_add_device),
 				"Add this device to device list. The format of the device is \"<device>::<type>::<extra_args>\", where type and extra_args are optional."
 				" This option is useful with --no-scan to list certain drives only. You can specify this option multiple times."
-				"Example: --add-device /dev/sda --add-device /dev/twa0::3ware,2 --add-device '/dev/sdb::::-T permissive'", NULL },
+				" Example: --add-device /dev/sda --add-device /dev/twa0::3ware,2 --add-device '/dev/sdb::::-T permissive'", NULL },
 		{ NULL }
 	};
 

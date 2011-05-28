@@ -10,8 +10,8 @@ Technology) data on modern hard disk drives. It allows you to inspect the
 drive's SMART data to determine its health, as well as run various tests on
 it.
 
-Note: Only ATA drives (both PATA and SATA) and various USB to ATA bridges are
-supported for now.
+Note: GSmartControl supports ATA drives (both PATA and SATA), various USB to
+ATA bridges and drives behind 3ware RAID controllers.
 
 http://gsmartcontrol.berlios.de
 
@@ -101,11 +101,10 @@ You need to have the following software installed:
 * Gtkmm, version 2.6 or higher - see http://www.gtkmm.org .
 
 * libglademm, version 2.4 or higher - see http://www.gtkmm.org .
-Note: libglademm is not needed when using GTK 2.12 and Gtkmm 2.12.
+Note: libglademm is not needed when using GTK / Gtkmm 2.12 or newer.
 
 Note that having GTK+ 2.12 and Gtkmm 2.12 is HIGHLY recommended. While earlier
 versions may work, they may produce suboptimal results and buggy behavior.
-Libglademm is not needed when using GTK / Gtkmm 2.12.
 
 Most of these packages are probably already provided by your distribution.
 Here are the packages you need to have to build GSmartControl on some Linux
@@ -144,8 +143,8 @@ The following operating systems are supported:
 * OpenBSD - Tested with OpenBSD 4.3 / x86-64 / gcc-3.3.5.
 
 * Windows (2000 SP4 or newer) - Tested with Windows 2000 SP4, Windows XP SP3,
-Windows Vista SP2, Windows 7. The Windows port uses pd0, pd1, etc... for
-physical drives 0, 1, etc... .
+Windows Vista SP2 (32-bit and 64-bit), Windows 7 SP1 (32-bit and 64-bit). The
+Windows port uses pd0, pd1, etc... for physical drives 0, 1, etc... .
 
 * Solaris - Tested with Solaris 10 / x86 / gcc-3.4.3 / blastwave,
 Solaris 10 / x86 / sunstudio12 / sunfreeware. OpenSolaris should work but has
@@ -213,8 +212,12 @@ The most important parameters are:
 
 --add-virtual - Load smartctl data from file, creating a virtual drive.
 
---add-device - Add this device to device list. Useful with --no-scan to list
-certain drives only.
+--add-device - Add this device to device list. The format of the device is
+    "<device>::<type>::<extra_args>", where type and extra_args are optional.
+    This option is useful with --no-scan to list certain drives only. You can
+    specify this option multiple times.
+    Example: --add-device /dev/sda --add-device /dev/twa0::3ware,2
+    --add-device '/dev/sdb::::-T permissive'
 
 -v, --verbose - Enable verbose logging; same as --verbosity-level 5.
 
@@ -282,8 +285,8 @@ For more information, see smartctl and smartd documentation.
 
 Known Issues
 
-Only ATA drives (both PATA and SATA) and various USB to ATA bridges are
-supported for now. The main reasons are:
+Only ATA drives (both PATA and SATA), various USB to ATA bridges and drives
+behind 3ware RAID controllers are supported for now. The main reasons are:
 
 * We can't support drives which don't work with smartmontools. This affects
 drives which don't support SMART or don't export SMART data correctly (e.g.
@@ -330,7 +333,7 @@ If you still think it's a GSmartControl issue, please collect the following
 information about your system. Without it, it may be very hard or impossible
 to fix the bug.
 
-* Which operating system you use (for example, openSUSE Linux 11.0).
+* Which operating system you use (for example, openSUSE Linux 11.4).
 
 * Which version of GTK and Gtkmm you have installed. Finding this out is very
 distribution-specific. For example, on openSUSE it would be
