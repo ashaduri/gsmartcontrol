@@ -1,5 +1,5 @@
 
-Version 0.8.6, released on -----------
+Version 0.8.6, released on 2011-05-29
 	Previous test result is cleared in GUI when running new tests now.
 	Windows: Vastly improved installer, supports built-in GTK+ now.
 	Windows: A proper method of privilege escalation is used for Vista/7.

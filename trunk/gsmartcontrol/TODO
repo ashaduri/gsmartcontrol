@@ -37,8 +37,10 @@ Bugs / patches:
 TODO:
 
 
-Support brief format of attributes (-f brief).
-	At least as a parse-only thing (no sorting through columns)
+Include 5.41.
+Update readme for RAID, NEWS.
+test, release.
+
 
 
 Testing:
@@ -47,7 +49,7 @@ Testing:
 	If smartctl -t ... returns an error, testing=true should not be set.
 		Can't reproduce it?
 	Detect running tests on launch (maybe ask the user too? some tests
-		may be stuck due to bad firmware).
+		may be stuck due to bad firmware, e.g. 3ware/windows).
 
 
 Add support for launching with consolehelper (from usermode package).
