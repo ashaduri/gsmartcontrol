@@ -18,6 +18,7 @@
 #include "hz/fs_path_utils.h"
 #include "hz/fs_path.h"
 #include "hz/fs_file.h"
+#include "hz/fs_dir.h"
 #include "rconfig/rconfig_mini.h"
 #include "app_pcrecpp.h"
 
@@ -175,7 +176,7 @@ std::string detect_drives_other(std::vector<StorageDeviceRefPtr>& drives, Execut
 
 	std::vector<std::string> matched_devices;
 
-	for (unsigned int i = 0; i < all_devices.size(); ++i) {
+	for (std::size_t i = 0; i < all_devices.size(); ++i) {
 		std::string entry = all_devices[i];
 		if (entry == "." || entry == "..")
 			continue;
@@ -231,7 +232,7 @@ std::string detect_drives_other(std::vector<StorageDeviceRefPtr>& drives, Execut
 					<< matched_devices.size() << ", no need for filtering them out.\n");
 		}
 
-		for (unsigned int i = 0; i < matched_devices.size(); ++i) {
+		for (std::size_t i = 0; i < matched_devices.size(); ++i) {
 			hz::File dev_file(matched_devices[i]);
 
 			// we check errno because OS may deny us for some other reason on valid devices.
@@ -247,7 +248,7 @@ std::string detect_drives_other(std::vector<StorageDeviceRefPtr>& drives, Execut
 		}
 
 	#else  // not *BSD
-		for (unsigned int i = 0; i < matched_devices.size(); ++i) {
+		for (std::size_t i = 0; i < matched_devices.size(); ++i) {
 			devices.push_back(matched_devices[i]);
 		}
 
@@ -255,7 +256,7 @@ std::string detect_drives_other(std::vector<StorageDeviceRefPtr>& drives, Execut
 
 	hz::shell_sort(devices.begin(), devices.end());
 
-	for (int i = 0; i < devices.size(); ++i) {
+	for (std::size_t i = 0; i < devices.size(); ++i) {
 		drives.push_back(StorageDeviceRefPtr(new StorageDevice(devices.at(i))));
 	}
 
