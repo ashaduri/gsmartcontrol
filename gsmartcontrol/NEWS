@@ -1,10 +1,28 @@
 
 Version 0.8.6, released on 2011-05-29
-	Previous test result is cleared in GUI when running new tests now.
-	Windows: Vastly improved installer, supports built-in GTK+ now.
-	Windows: A proper method of privilege escalation is used for Vista/7.
-	Windows: GSmartControl works on Windows 7 now.
-	Updated copyright for files with Whatever License to use Unlicense.
+	Support detecting drives behind 3ware controllers (Linux, Windows),
+		including tw_cli/cx/px mode in Windows. Having tw_cli is recommended
+		but not required.
+	Added support for specifying -d option and extra parameters via command
+		line, "Add Device" and "Preferences" dialogs. This change effectively
+		adds full support for multiple drives behind a single device name.
+	Beesu and su-to-root are supported by gsmartcontrol-root script now.
+	Completely revamped the attribute database and its handling, should be a
+		lot more usable and forward-compatible now.
+	SSD attributes are supported now.
+	In-program help has been expanded considerably.
+	General improvements to user interface have been implemented (better GNOME
+		HIG compliance, better tooltips, dialogs, etc...).
+	Added ability to show smartctl output for devices whose info could not be
+		parsed fully.
+	Attributes in "brief" format are supported now.
+	The parser has been updated to reflect the recent changes in smartctl.
+	Quit and rescan operations are no longer denied without confirmation when
+		tests are running.
+	Vastly improved the Windows NSIS installer.
+	Better support for Windows Vista and 7.
+	Changed copyright notices for files with Whatever License to use Unlicense.
+	Added other minor features and fixed lots of bugs.
 
 Version 0.8.5, released on 2009-09-05
 	GSmartControl now uses XDG config directory for per-user configuration on

@@ -37,9 +37,8 @@ Bugs / patches:
 TODO:
 
 
-Include 5.41.
-Update readme for RAID, NEWS.
-test, release.
+test, release RC version for testing.
+	Update to drivedb.h from 5.41, include 5.41 into release.
 
 
 
