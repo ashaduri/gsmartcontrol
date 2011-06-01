@@ -16,7 +16,7 @@ binary was compiled for 32-bit Windows, and should work on both 32-bit and
 64-bit Windows. The binary was statically compiled against Gtkmm
 (http://www.gtkmm.org/) and related libraries, and PCRE (http://www.pcre.org/).
 
-* Smartctl binaries (from smartmontools 5.39.1, http://smartmontools.sf.net/)
+* Smartctl binaries (from smartmontools 5.41, http://smartmontools.sf.net/)
 - smartctl-nc.exe (compiled without console output), smartctl.exe (compiled
 with console output).
 

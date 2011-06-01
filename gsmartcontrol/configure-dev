@@ -31,7 +31,7 @@ case $type in
 		flags="CC=i386-pc-mingw32-gcc CXX=i386-pc-mingw32-g++ \
 			PKG_CONFIG_PATH=/cross/w32/target/lib/pkgconfig PKG_CONFIG_LIBDIR=\"\" \
 			PATH=\"/cross/w32/gcc-bin:/cross/w32/target/bin:$PATH\" \
-			--with-windows-gtk-name=gtk2-runtime-2.16.6-2010-02-24-ash --disable-user-flags \
+			--with-windows-gtk-name=gtk2-runtime-2.16.6-2010-05-12-ash --disable-user-flags \
 			--enable-optimize-options --enable-tests --build=i686-linux --host=i386-pc-mingw32" ;;
 	win32-debug)
 		flags="CC=i386-pc-mingw32-gcc CXX=i386-pc-mingw32-g++ \
