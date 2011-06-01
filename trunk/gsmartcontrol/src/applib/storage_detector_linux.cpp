@@ -342,8 +342,9 @@ inline std::string detect_drives_linux_proc_partitions(std::vector<StorageDevice
 		drive->fetch_basic_data_and_parse(smartctl_ex);
 
 		// 3ware controllers also export themselves as sd*. Smartctl detects that,
-		// so we can avoid adding them.
-		if (!app_pcre_match("/AMCC/3ware controller/im", drive->get_info_output())) {
+		// so we can avoid adding them. Older smartctl (5.38) prints "AMCC", newer one
+		// prints "AMCC/3ware controller".
+		if (!app_pcre_match("/AMCC/im", drive->get_info_output()) && !app_pcre_match("/3ware controller/im", drive->get_info_output())) {
 			drives.push_back(drive);
 		}
 	}
