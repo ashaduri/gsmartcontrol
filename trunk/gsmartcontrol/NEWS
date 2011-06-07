@@ -8,8 +8,8 @@ Version 0.8.6, released on 2011-05-29
 		adds full support for multiple drives behind a single device name.
 	Beesu and su-to-root are supported by gsmartcontrol-root script now.
 	Completely revamped the attribute database and its handling, should be a
-		lot more usable and forward-compatible now.
-	SSD attributes are supported now.
+		lot more usable and forward-compatible now; SSD attributes are also
+		included.
 	In-program help has been expanded considerably.
 	General improvements to user interface have been implemented (better GNOME
 		HIG compliance, better tooltips, dialogs, etc...).
@@ -19,10 +19,10 @@ Version 0.8.6, released on 2011-05-29
 	The parser has been updated to reflect the recent changes in smartctl.
 	Quit and rescan operations are no longer denied without confirmation when
 		tests are running.
-	Vastly improved the Windows NSIS installer.
+	The Windows NSIS installer has been vastly improved.
 	Better support for Windows Vista and 7.
 	Changed copyright notices for files with Whatever License to use Unlicense.
-	Added other minor features and fixed lots of bugs.
+	Added other minor features and fixed quite a few bugs.
 
 Version 0.8.5, released on 2009-09-05
 	GSmartControl now uses XDG config directory for per-user configuration on
