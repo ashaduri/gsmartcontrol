@@ -43,7 +43,7 @@ namespace {
 			// Note: The first one with the same ID is the one displayed in case smartctl
 			// doesn't return a name. See atacmds.cpp in smartmontools. The rest are
 			// from drivedb.h, which contain overrides.
-			// Based on: smartmontools r3312 2011-04-05.
+			// Based on: smartmontools r3362 2011-06-07.
 
 			// "default" means it's in the default smartctl DB.
 			// "non-default" means it's in drivedb.h.
@@ -131,24 +131,39 @@ namespace {
 			// STEC CF: Translation Table Rebuild (custom)
 			add(103, "", "Translation Table Rebuild", "",
 					"Indicates power backup fault or internal error resulting in loss of system unit tables.");
+			// Various SSDs: (non-default) (description?)
+			add(168, "SATA_Phy_Error_Count", "SATA Physical Error Count", "",
+					"");
 			// STEC CF: Reserved Block Count (non-default)
 			add(170, "Reserve_Block_Count", "Reserved Block Count", "",
 					"Number of reserved (spare) blocks for bad block handling.");
-			// Sandforce SSD, STEC CF: Program Fail Count (non-default)
+			// Crucial / Marvell SSD: Grown Failing Block Count (non-default) (description?)
+			add(170, "Grown_Failing_Block_Ct", "Grown Failing Block Count", "",
+					"");
+			// Various SSDs: (non-default) (description?)
+			add(170, "Bad_Block_Count", "Bad Block Count", "",
+					"");
+			// Sandforce SSD, STEC CF, Crucial / Marvell SSD: Program Fail Count (non-default)
 			add(171, "Program_Fail_Count", "Program Fail Count", "",
 					"Number of flash program (write) failures. High values may indicate old drive age or other problems.");
-			// Sandforce SSD, STEC CF: Erase Fail Count (non-default)
+			// Sandforce SSD, STEC CF, Crucial / Marvell SSD: Erase Fail Count (non-default)
 			add(172, "Erase_Fail_Count", "Erase Fail Count", "",
 					"Number of flash erase command failures. High values may indicate old drive age or other problems.");
-			// STEC CF: Wear Leveling Count (custom) (description?)
+			// Various SSDs (non-default) (description?)
+			add(173, "Erase_Count", "Erase Count", "",
+					"");
+			// STEC CF, Crucial / Marvell SSD: Wear Leveling Count (custom) (description?)
 			add(173, "", "Wear Leveling Count", "",
 					"Indicates the difference between the most worn block and the least worn block.");
-			// Sandforce SSD: Unexpected Power Loss (non-default)
+			// Sandforce SSD, Crucial / Marvell SSD: Unexpected Power Loss (non-default)
 			add(174, "Unexpect_Power_Loss_Ct", "Unexpected Power Loss", "",
 					"Number of unexpected power loss events.");
 			// Program_Fail_Count_Chip (default)
 			add(175, "Program_Fail_Count_Chip", "Program Fail Count (Chip)", "",
 					"Number of flash program (write) failures. High values may indicate old drive age or other problems.");
+			// Various SSDs: Bad_Cluster_Table_Count (non-default) (description?)
+			add(175, "Bad_Cluster_Table_Count", "Bad Cluster Table Count", "",
+					"");
 			// Erase_Fail_Count_Chip (default)
 			add(176, "Erase_Fail_Count_Chip", "Erase Fail Count (Chip)", "",
 					"Number of flash erase command failures. High values may indicate old drive age or other problems.");
@@ -172,6 +187,9 @@ namespace {
 					"Number of flash program (write) failures. High values may indicate old drive age or other problems.");
 			// Sandforce SSD: Program_Fail_Count (non-default) (Sandforce says it's identical to 171)
 			add(181, "Program_Fail_Count");
+			// Crucial / Marvell SSD: Program_Fail_Count (non-default) (description?)
+			add(181, "Non4k_Aligned_Access", "Non-4k Aligned Access", "",
+					"");
 			// Erase_Fail_Count_Total (default) (description?)
 			add(182, "Erase_Fail_Count_Total", "Erase Fail Count", "",
 					"Number of flash erase command failures. High values may indicate old drive age or other problems.");
@@ -180,8 +198,8 @@ namespace {
 			// Runtime_Bad_Block (default) (description?)
 			add(183, "Runtime_Bad_Block", "Runtime Bad Blocks", "",
 					"");
-			// Samsung, WD: SATA Downshift Error Count (custom) (description?)
-			add(183, "", "SATA Downshift Error Count", "",  // unused
+			// Samsung, WD, Crucial / Marvell SSD: SATA Downshift Error Count (non-default) (description?)
+			add(183, "SATA_Iface_Downshift", "SATA Downshift Error Count", "",  // unused
 					"");
 			// End to End Error (default) (description?)
 			add(184, "End-to-End_Error", "End to End Error", "",
@@ -210,6 +228,9 @@ namespace {
 					"If an unsafe fly height condition is encountered, the write process is stopped, and the information "
 					"is rewritten or reallocated to a safe region of the drive. This attribute indicates the count of "
 					"these errors detected over the lifetime of the drive.");
+			// Crucial / Marvell SSD (non-default)
+			add(189, "Factory_Bad_Block_Ct", "Factory Bad Block Count", "",
+					"Factory-determined number of initial bad blocks.");
 			// Airflow Temperature (default) (WD Caviar (may be 50 less), Samsung). Temperature or (100 - temp.) on Seagate/Maxtor.
 			add(190, "Airflow_Temperature_Cel", "Airflow Temperature", "",
 					"Indicates temperature (in Celsius), 100 - temperature, or something completely different (highly depends on manufacturer and model).");
@@ -224,6 +245,8 @@ namespace {
 					"Raw value indicates the number of unsafe (unclean) shutdown events over the drive lifetime. "
 					"An unsafe shutdown occurs whenever the device is powered off without "
 					"STANDBY IMMEDIATE being the last command.");
+			// Various SSDs (non-default)
+			add(192, "Unexpect_Power_Loss_Ct");
 			// Fujitsu: Emergency Retract Cycle Count (non-default)
 			add(192, "Emerg_Retract_Cycle_Ct", "Emergency Retract Cycle Count", "",
 					"Number of times the heads were loaded off the media during emergency conditions.");
@@ -326,6 +349,9 @@ namespace {
 			// Indilinx Barefoot SSD: Error_Bits_Flash_Tot_Ct (non-default) (description?)
 			add(202, "Error_Bits_Flash_Tot_Ct", "Total Count of Error Bits", "",
 					"");
+			// Crucial / Marvell SSD: Perc_Rated_Life_Used (non-default)
+			add(202, "Perc_Rated_Life_Used", "Rated life used (percent)", "",
+					"");
 			// Maxtor: ECC Errors (default) (description?)
 			add(203, "Corr_Read_Errors_Tot_Ct", "ECC Errors", "",
 					"Number of ECC errors.");
@@ -363,6 +389,9 @@ namespace {
 			// Indilinx Barefoot SSD: Min_Erase_Count (non-default) (description?)
 			add(206, "Min_Erase_Count", "Minimum Erase Count", "",
 					"The minimum of individual erase counts of all the blocks.");
+			// Crucial / Marvell SSD: Write_Error_Rate (non-default) (description?)
+			add(206, "Write_Error_Rate", "Write Error Rate", "",
+					"");
 			// Spin High Current (default)
 			add(207, "Spin_High_Current", "Spin High Current", "",
 					"Amount of high current needed or used to spin up the drive.");
@@ -424,7 +453,7 @@ namespace {
 					"Total number of load cycles.");
 			// Intel SSD: Host_Writes_32MiB (non-default) (description?)
 			add(225, "Host_Writes_32MiB", "Host Writes (32 MiB)", "",
-					"Total number of sectors written by the host system. The Raw value is increased by 1 for every 65536 sectors written by the host.");
+					"Total number of sectors written by the host system. The Raw value is increased by 1 for every 32 MiB written by the host.");
 			// Load-in Time (default)
 			add(226, "Load-in_Time", "Load-in Time", "",
 					"Total time of loading on the magnetic heads actuator. Indicates total time in which the drive was under load (on the assumption that the magnetic heads were in operating mode and out of the parking area).");
@@ -512,12 +541,18 @@ namespace {
 			// Sandforce SSD: Lifetime_Writes_GiB (non-default) (maybe in 64GiB increments?)
 			add(241, "Lifetime_Writes_GiB", "Total GiB Written", "",
 					"Total GiB written during lifetime.");
+			// Intel SSD: Host_Writes_32MiB (non-default) (description?)
+			add(241, "Host_Writes_32MiB", "Host Writes (32 MiB)", "",
+					"Total number of sectors written by the host system. The Raw value is increased by 1 for every 32 MiB written by the host.");
 			// Total_LBAs_Read (default) (description?)
 			add(242, "Total_LBAs_Read", "Total LBAs Read", "",
 					"Logical blocks read during lifetime.");
 			// Sandforce SSD: Lifetime_Writes_GiB (non-default) (maybe in 64GiB increments?)
 			add(242, "Lifetime_Reads_GiB", "Total GiB Read", "",
 					"Total GiB read during lifetime.");
+			// Intel SSD: Host_Reads_32MiB (non-default) (description?)
+			add(242, "Host_Reads_32MiB", "Host Reads (32 MiB)", "",
+					"Total number of sectors written by the host system. The Raw value is increased by 1 for every 32 MiB read by the host.");
 			// Read Error Retry Rate (default) (description?)
 			add(250, "Read_Error_Retry_Rate", "Read Error Retry Rate", "",
 					"Number of errors found while reading.");
