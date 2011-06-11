@@ -43,7 +43,7 @@ namespace {
 			// Note: The first one with the same ID is the one displayed in case smartctl
 			// doesn't return a name. See atacmds.cpp in smartmontools. The rest are
 			// from drivedb.h, which contain overrides.
-			// Based on: smartmontools r3362 2011-06-07.
+			// Based on: smartmontools 5.41.
 
 			// "default" means it's in the default smartctl DB.
 			// "non-default" means it's in drivedb.h.
@@ -219,6 +219,8 @@ namespace {
 			// Reported Uncorrectable (default)
 			add(187, "Reported_Uncorrect", "Reported Uncorrectable", "",
 					"Number of errors that could not be recovered using hardware ECC (Error-Correcting Code).");
+			// Samsung SSD: Reported Uncorrectable (non-default)
+			add(187, "Uncorrectable_Error_Cnt");
 			// Command Timeout (default)
 			add(188, "Command_Timeout", "Command Timeout", "",
 					"Number of aborted operations due to drive timeout. High values may indicate problems with cabling or power supply.");
@@ -234,6 +236,9 @@ namespace {
 			// Airflow Temperature (default) (WD Caviar (may be 50 less), Samsung). Temperature or (100 - temp.) on Seagate/Maxtor.
 			add(190, "Airflow_Temperature_Cel", "Airflow Temperature", "",
 					"Indicates temperature (in Celsius), 100 - temperature, or something completely different (highly depends on manufacturer and model).");
+			// Samsung SSD (non-default) (description?)
+			add(190, "Temperature_Exceed_Cnt", "Temperature Exceed Count", "",
+					"");
 			// G-sense error rate (default) (same as 221?)
 			add(191, "G-Sense_Error_Rate", "G-Sense Error Rate", "",
 					"Number of errors caused by externally-induced shock and vibration (Raw value). May indicate incorrect installation.");
@@ -256,6 +261,8 @@ namespace {
 			// Temperature Celsius (default) (same as 231). This is the most common one. Some Samsungs: 10xTemp.
 			add(194, "Temperature_Celsius", "Temperature (Celsius)", "temperature_celsius",
 					"Drive temperature. The Raw value shows built-in heat sensor registrations (in Celsius). Increases in average drive temperature often signal spindle motor problems (unless the increases are caused by environmental factors).");
+			// Samsung SSD: Temperature Celsius (non-default) (not sure about the value)
+			add(194, "Airflow_Temperature");
 			// Temperature Celsius x 10 (non-default) 
 			add(194, "Temperature_Celsius_x10", "Temperature (Celsius) x 10", "temperature_celsius_x10",
 					"Drive temperature. The Raw value shows built-in heat sensor registrations (in Celsius * 10). Increases in average drive temperature often signal spindle motor problems (unless the increases are caused by environmental factors).");
@@ -267,6 +274,9 @@ namespace {
 			// Sandforce SSD: ECC_Uncorr_Error_Count (non-default) (description?)
 			add(195, "ECC_Uncorr_Error_Count", "Uncorrected ECC Error Count", "",
 					"Number of uncorrectable errors (UECC).");
+			// Samsung SSD (non-default) (description?)
+			add(195, "ECC_Rate", "Uncorrected ECC Error Rate", "",
+					"");
 			// Indilinx Barefoot SSD: Program_Failure_Blk_Ct (non-default) (description?)
 			add(195, "Program_Failure_Blk_Ct", "Program Failure Block Count", "",
 					"Number of flash program (write) failures.");
@@ -314,6 +324,9 @@ namespace {
 			// Sandforce SSD: SATA_CRC_Error_Count (non-default) (description?)
 			add(199, "SATA_CRC_Error_Count", "SATA CRC Error Count", "",
 					"Number of errors in data transfer via the SATA interface cable (Raw value).");
+			// Samsung SSD (non-default) (description?)
+			add(199, "CRC_Error_Count", "CRC Error Count", "",
+					"Number of errors in data transfer via the interface cable (Raw value).");
 			// Indilinx Barefoot SSD: Write_Sectors_Tot_Ct (non-default) (description?)
 			add(199, "Write_Sectors_Tot_Ct", "Total Written Sectors", "",
 					"Total count of written sectors.");
@@ -331,6 +344,9 @@ namespace {
 					"Uncorrected read errors reported to the operating system (Raw value). If the value is non-zero, you should back up your data.");
 			// Sandforce SSD: Unc_Soft_Read_Err_Rate (non-default)
 			add(201, "Unc_Soft_Read_Err_Rate");
+			// Samsung SSD: (non-default) (description?)
+			add(201, "Supercap_Status", "Supercapacitor Health", "",
+					"");
 			// Maxtor: Off Track Errors (custom)
 			add(201, "", "Off Track Errors", "",  // unused
 					"");
@@ -349,8 +365,11 @@ namespace {
 			// Indilinx Barefoot SSD: Error_Bits_Flash_Tot_Ct (non-default) (description?)
 			add(202, "Error_Bits_Flash_Tot_Ct", "Total Count of Error Bits", "",
 					"");
-			// Crucial / Marvell SSD: Perc_Rated_Life_Used (non-default)
+			// Crucial / Marvell SSD: Perc_Rated_Life_Used (non-default) (description?)
 			add(202, "Perc_Rated_Life_Used", "Rated life used (percent)", "",
+					"");
+			// Samsung SSD: (non-default) (description?)
+			add(202, "Exception_Mode_Status", "Exception Mode Status", "",
 					"");
 			// Maxtor: ECC Errors (default) (description?)
 			add(203, "Corr_Read_Errors_Tot_Ct", "ECC Errors", "",
