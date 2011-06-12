@@ -1,0 +1,28 @@
+
+GSmartControl - Hard disk drive health inspection tool
+Version @VERSION@
+
+The latest version of this distribution, as well as the source code of
+GSmartControl, can be found at
+http://gsmartcontrol.berlios.de
+and
+http://developer.berlios.de/project/showfiles.php?group_id=10075
+
+
+This distribution includes:
+
+* GSmartControl binary (gsmartcontrol.exe) and associated resources. The
+binary was compiled for 32-bit Windows, and should work on both 32-bit and
+64-bit Windows. The binary was statically compiled against Gtkmm
+(http://www.gtkmm.org/) and related libraries, and PCRE (http://www.pcre.org/).
+
+* Smartctl binaries (from smartmontools 5.41, http://smartmontools.sf.net/)
+- smartctl-nc.exe (compiled without console output), smartctl.exe (compiled
+with console output).
+
+* GTK+ for Windows Runtime package (@GTK_INSTALLER_NAME@)
+from http://gtk-win.sf.net, either in original or unpacked form.
+
+
+The combined distribution is multi-licensed under GNU GPL versions 2 and 3.
+See LICENSE_gpl2.txt and LICENSE_gpl3.txt for details.
