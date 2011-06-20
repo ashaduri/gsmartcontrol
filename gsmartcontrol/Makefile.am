@@ -68,7 +68,7 @@ src-rpm: dist
 
 
 # NSIS installer support.
-# Requires wine, installed NSIS, smartctl-nc.exe, smartctl.exe.
+# Requires wine, installed NSIS, smartctl-nc.exe, smartctl.exe, update-smart-drivedb.exe.
 # Gtkmm dlls and pcre dlls are required if linking against them.
 # dos2unix on build machine.
 # Execute only with win32 build present.
@@ -91,6 +91,8 @@ win-dist-clean: win-dist-cleanup
 win-dist-prepare-all: nsis-dist-prepare win-zip-dist-prepare
 
 
+# Don't strip smartctl (it will only change the header), and
+# don't strip update-smart-drivedb (it will break its CRC check).
 win-dist-prepare: all
 	$(MKDIR_P) win-dist
 	cp $(top_srcdir)/data/icon_*.png win-dist/
@@ -100,13 +102,14 @@ win-dist-prepare: all
 	cp $(top_srcdir)/AUTHORS.txt $(top_srcdir)/LICENSE_* $(top_srcdir)/README.txt win-dist/doc/
 	cp $(top_srcdir)/NEWS win-dist/doc/NEWS.txt
 
-	cp "@WINDOWS_BINDIR@"/smartctl-nc.exe win-dist/
-	cp "@WINDOWS_BINDIR@"/smartctl.exe win-dist/
-
 	cp src/gsmartcontrol.exe src/gsmartcontrol.exe.manifest win-dist/
 
 	unix2dos win-dist/doc/*.txt
 	$(STRIP) win-dist/*.exe
+
+	cp -p "@WINDOWS_BINDIR@"/smartctl-nc.exe win-dist/
+	cp -p "@WINDOWS_BINDIR@"/smartctl.exe win-dist/
+	cp -p "@WINDOWS_BINDIR@"/update-smart-drivedb.exe win-dist/
 
 
 nsis-dist-prepare: win-dist-prepare

@@ -1,5 +1,5 @@
 
-Version 0.8.6, released on 2011-05-29
+Version 0.8.6, released on 2011-06-12
 	Support detecting drives behind 3ware controllers (Linux, Windows),
 		including tw_cli/cx/px mode in Windows. Having tw_cli is recommended
 		but not required.

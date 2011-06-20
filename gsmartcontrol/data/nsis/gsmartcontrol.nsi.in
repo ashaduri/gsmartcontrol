@@ -158,6 +158,7 @@ SectionIn 1 RO
 	; File *.dll
 	File smartctl-nc.exe
 	File smartctl.exe
+	File update-smart-drivedb.exe
 
 	; Include the "doc" directory completely, excluding the file we're not using (e.g. the -nogtk file in gtk installer).
 !ifdef NO_GTK
@@ -400,6 +401,14 @@ Section Uninstall
 	; Delete "$INSTDIR\*.dll"
 	Delete "$INSTDIR\smartctl-nc.exe"
 	Delete "$INSTDIR\smartctl.exe"
+	Delete "$INSTDIR\update-smart-drivedb.exe"
+
+	; update-smart-drivedb may leave these
+	Delete "$INSTDIR\drivedb.h"
+	Delete "$INSTDIR\drivedb.h.new"
+	Delete "$INSTDIR\drivedb.h.old"
+	Delete "$INSTDIR\drivedb.h.error"
+	Delete "$INSTDIR\drivedb.h.lastcheck"
 
 	RMDir /r "$INSTDIR\doc"
 
@@ -408,6 +417,9 @@ Section Uninstall
 	Delete "$INSTDIR\*stderr.txt"
 
 	RMDir "$INSTDIR"  ; only if empty
+
+	; For some reason, sometimes it's not deleted in the sections, so do it here.
+	Delete "$INSTDIR\${GTK_INSTALLER_EXE}"
 
 !ifndef NO_GTK
 	StrCmp $gtk_mode "private" skip_exe_PATH_remove

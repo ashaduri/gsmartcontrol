@@ -18,7 +18,7 @@ binary was compiled for 32-bit Windows, and should work on both 32-bit and
 
 * Smartctl binaries (from smartmontools 5.41, http://smartmontools.sf.net/)
 - smartctl-nc.exe (compiled without console output), smartctl.exe (compiled
-with console output).
+with console output), update-smart-drivedb.exe (drive database updater).
 
 * GTK+ for Windows Runtime package (@GTK_INSTALLER_NAME@)
 from http://gtk-win.sf.net, either in original or unpacked form.
