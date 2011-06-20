@@ -22,7 +22,7 @@ binary was compiled for 32-bit Windows, and should work on both 32-bit and
 
 * Smartctl binaries (from smartmontools 5.41, http://smartmontools.sf.net/)
 - smartctl-nc.exe (compiled without console output), smartctl.exe (compiled
-with console output).
+with console output), update-smart-drivedb.exe (drive database updater).
 
 
 The combined distribution is multi-licensed under GNU GPL versions 2 and 3.

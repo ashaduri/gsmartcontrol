@@ -101,7 +101,7 @@ You need to have the following software installed:
 * Gtkmm, version 2.6 or higher - see http://www.gtkmm.org .
 
 * libglademm, version 2.4 or higher - see http://www.gtkmm.org .
-Note: libglademm is not needed when using GTK / Gtkmm 2.12 or newer.
+Note: libglademm is not needed when using GTK+ / Gtkmm 2.12 or newer.
 
 Note that having GTK+ 2.12 and Gtkmm 2.12 is HIGHLY recommended. While earlier
 versions may work, they may produce suboptimal results and buggy behavior.
