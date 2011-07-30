@@ -10,6 +10,7 @@
 
 #include <windows.h>  // CreateFileA(), CloseHandle(), etc...
 #include <glibmm.h>
+#include <set>
 
 #include "hz/win32_tools.h"
 #include "hz/string_sprintf.h"
@@ -19,7 +20,7 @@
 
 
 /*
-3ware Windows (XP so far, maybe the same under the others):
+3ware Windows:
 For 3ware 9xxx only.
 Call as: smartctl -i sd[a-z],N
 	N is port, a-z is logical drive (unit) provided by controller.
@@ -72,7 +73,7 @@ namespace {
 /// a port parameter. We don't pick the others because the may
 /// conflict with pd* devices, and we like pd* better than sd*.
 std::string get_scan_open_multiport_devices(std::vector<StorageDeviceRefPtr>& drives,
-		ExecutorFactoryRefPtr ex_factory, std::vector<int>& equivalent_pds)
+		ExecutorFactoryRefPtr ex_factory, std::set<int>& equivalent_pds)
 {
 	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
 
@@ -128,7 +129,7 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDeviceRefPtr>& dr
 			std::string letter;
 			if (dev_re.PartialMatch(dev, &letter)) {
 				// don't use pd* devices equivalent to these sd* devices.
-				equivalent_pds.push_back(letter.at(0) - 'a');
+				equivalent_pds.insert(letter.at(0) - 'a');
 			}
 
 			std::string full_dev = dev + "," + port_str;
@@ -153,16 +154,32 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDeviceRefPtr>& dr
 
 std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
-	std::vector<int> used_pds;
+	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
+
+	// Fetch multiport devices using --scan-open.
+	std::set<int> used_pds;
 	std::string error_msg = get_scan_open_multiport_devices(drives, ex_factory, used_pds);
 	bool multiport_found = !drives.empty();
 
+	// Find out their serial numbers
+	std::set<std::string> serials;
+	for (std::size_t i = 0; i < drives.size(); ++i) {
+		std::string local_error = drives.at(i)->fetch_basic_data_and_parse(smartctl_ex);
+		if (!local_error.empty()) {
+			debug_out_info("app", "Smartctl returned with an error: " << error_msg << "\n");
+			// Don't exit, just report it.
+		}
+		if (!drives.at(i)->get_serial_number().empty()) {
+			serials.insert(drives.at(i)->get_model_name() + "_" + drives.at(i)->get_serial_number());
+		}
+	}
+
+	// Scan PhysicalDrive entries
 	for (int drive_num = 0; ; ++drive_num) {
 		std::string name = hz::string_sprintf("\\\\.\\PhysicalDrive%d", drive_num);
 
-		// If the drive is openable, then it's there.
+		// If the drive is openable, then it's there. Yes, CreateFile() is open, not create.
 		// NOTE: Administrative privileges are required to open it.
-		// Yes, CreateFile() is open, not create. Yes, it's silly (ah, win32...).
 		// We don't use any long/unopenable files here, so use the ANSI version.
 		HANDLE h = CreateFileA(name.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
 				NULL, OPEN_EXISTING, 0, NULL);
@@ -173,10 +190,31 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 
 		CloseHandle(h);
 
-		if (std::find(used_pds.begin(), used_pds.end(), drive_num) == used_pds.end()) {
-			std::string dev = hz::string_sprintf("pd%d", drive_num);
-			drives.push_back(new StorageDevice(dev));
+		// If the drive was already encountered in --scan-open (with a port number), skip it.
+		if (used_pds.count(drive_num) > 0) {
+			continue;
 		}
+
+		StorageDeviceRefPtr drive(new StorageDevice(hz::string_sprintf("pd%d", drive_num)));
+
+		// Sometimes, a single physical drive may be accessible from both "/.//PhysicalDriveN"
+		// and "/.//Scsi2" (e.g. pd0 and csmi2,1). Prefer the port-having one (which is from --scan-open).
+		// The only way to detect these duplicates is to compare them using serial numbers.
+		if (multiport_found) {
+			std::string local_error = drive->fetch_basic_data_and_parse(smartctl_ex);
+			if (!local_error.empty()) {
+				debug_out_info("app", "Smartctl returned with an error: " << error_msg << "\n");
+				// Don't exit, just report it.
+			}
+			if (!drive->get_serial_number().empty()
+						&& serials.count(drive->get_model_name() + "_" + drive->get_serial_number()) > 0) {
+				debug_out_info("app", "Skipping duplicate drive: model: \"" << drive->get_model_name()
+						<< "\", S/N: \"" << drive->get_serial_number() << "\".\n");
+				continue;
+			}
+		}
+
+		drives.push_back(drive);
 	}
 
 

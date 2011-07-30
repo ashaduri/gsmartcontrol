@@ -37,8 +37,7 @@ Bugs / patches:
 TODO:
 
 
-Delete drivedb.h (and all related drivedb* files) on uninstall - windows.
-	add menu item - "update drive database" (not sure about linux, should
+Add menu item - "update drive database" (not sure about linux, should
 	check if it's supported first; also need to run it in terminal).
 
 

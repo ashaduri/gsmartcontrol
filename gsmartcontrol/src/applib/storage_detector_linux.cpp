@@ -232,7 +232,7 @@ inline std::string smartctl_get_drives(const std::string& dev, const std::string
 		}
 
 		if (!error_msg.empty()) {
-			debug_out_info("app", "Smartctl returned with an error: " << error_msg);
+			debug_out_info("app", "Smartctl returned with an error: " << error_msg << "\n");
 		} else {
 			drives.push_back(drive);
 		}
