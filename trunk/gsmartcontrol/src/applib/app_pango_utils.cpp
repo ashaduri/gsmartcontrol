@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #include <pango/pango.h>  // pango_parse_markup()
 
@@ -48,3 +53,5 @@ bool app_pango_strip_markup(const std::string& str, std::string& stripped)
 
 
 
+
+/// @}

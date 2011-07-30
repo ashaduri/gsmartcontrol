@@ -3,27 +3,42 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #ifndef APP_PCRECPP_H
 #define APP_PCRECPP_H
 
 // A wrapper header for bundled pcrecpp
 
-// disable all that declspec BS
+// disable all that declspec noise
 #ifndef PCRE_STATIC
-#	define PCRE_STATIC
+	#define PCRE_STATIC
 #endif
 
 
 #include "pcrecpp/pcrecpp_internal.h"
 #include "pcrecpp/pcrecpp.h"
 
-
 #include <string>
 #include "hz/debug.h"
 
 
 
+/// Take a string of characters where each character represents a modifier
+/// and return the appropriate pcre options.
+/// - i - case insensitive match.
+/// - m - multiline, read past the first line.
+/// - s - dot matches newlines.
+/// - E - $ matches only the end of the string (D in php, not available in perl).
+/// - X - strict escape parsing (not available in perl).
+/// - x - ignore whitespaces.
+/// - 8 - handles UTF8 characters in pattern (u in php, not available in perl).
+/// - U - ungreedy, reverses * and *? (not available in perl).
+/// - N - disables matching parentheses (not available in perl or php).
 inline pcrecpp::RE_Options app_pcre_get_options(const char* modifiers)
 {
 	// ANYCRLF means any of crlf, cr, lf. Used in ^ and $.
@@ -59,13 +74,12 @@ inline pcrecpp::RE_Options app_pcre_get_options(const char* modifiers)
 
 
 
-
-// Accept pattern in form of "/pattern/modifiers".
-// Note: Slashes should be escaped within the pattern.
-// If the string doesn't start with a slash, it is treated as an ordinary pattern
-// without modifiers.
-// This function will make a RE object with ANYCRLF option set for portability
-// across various pcre builds.
+/// Accept pattern in form of "/pattern/modifiers".
+/// Note: Slashes should be escaped within the pattern.
+/// If the string doesn't start with a slash, it is treated as an ordinary pattern
+/// without modifiers.
+/// This function will make a RE object with ANYCRLF option set for portability
+/// across various pcre builds.
 inline pcrecpp::RE app_pcre_re(const std::string& perl_pattern)
 {
 	if (perl_pattern.size() >= 2 && perl_pattern[0] == '/') {
@@ -84,7 +98,7 @@ inline pcrecpp::RE app_pcre_re(const std::string& perl_pattern)
 
 
 
-
+/// Match a string against a pattern in "/pattern/modifiers" format.
 inline bool app_pcre_match(const std::string& perl_pattern, const std::string& str,
 		const pcrecpp::Arg& ptr1 = pcrecpp::RE::no_arg,
 		const pcrecpp::Arg& ptr2 = pcrecpp::RE::no_arg,
@@ -108,7 +122,9 @@ inline bool app_pcre_match(const std::string& perl_pattern, const std::string& s
 }
 
 
-// This is needed to avoid confusion with RE.
+
+/// Match a string against a pattern in "/pattern/modifiers" format.
+/// This overload is needed to avoid confusion with RE.
 inline bool app_pcre_match(const char* perl_pattern, const std::string& str,
 		const pcrecpp::Arg& ptr1 = pcrecpp::RE::no_arg,
 		const pcrecpp::Arg& ptr2 = pcrecpp::RE::no_arg,
@@ -132,6 +148,8 @@ inline bool app_pcre_match(const char* perl_pattern, const std::string& str,
 }
 
 
+
+/// Match a string against a pattern in "/pattern/modifiers" format.
 inline bool app_pcre_match(const pcrecpp::RE& re, const std::string& str,
 		const pcrecpp::Arg& ptr1 = pcrecpp::RE::no_arg,
 		const pcrecpp::Arg& ptr2 = pcrecpp::RE::no_arg,
@@ -156,22 +174,23 @@ inline bool app_pcre_match(const pcrecpp::RE& re, const std::string& str,
 
 
 
-
-// Replaces every occurence of pattern with replacement in subject.
+/// Replace every occurence of pattern with replacement string in \c subject.
+/// The pattern is in "/pattern/modifiers" format.
 inline int app_pcre_replace(const std::string& perl_pattern, const std::string& replacement, std::string& subject)
 {
 	return app_pcre_re(perl_pattern).GlobalReplace(replacement, &subject);
 }
 
 
-// Replaces every occurence of pattern with replacement in subject.
+/// Replace every occurence of pattern with replacement string in \c subject.
+/// The pattern is in "/pattern/modifiers" format.
 inline int app_pcre_replace(const char* perl_pattern, const std::string& replacement, std::string& subject)
 {
 	return app_pcre_replace(std::string(perl_pattern), replacement, subject);
 }
 
 
-// Replaces every occurence of pattern with replacement in subject.
+/// Replace every occurence of pattern with replacement string in \c subject.
 inline int app_pcre_replace(const pcrecpp::RE& re, const std::string& replacement, std::string& subject)
 {
 	return re.GlobalReplace(replacement, &subject);
@@ -179,22 +198,25 @@ inline int app_pcre_replace(const pcrecpp::RE& re, const std::string& replacemen
 
 
 
-
-// Replaces first occurence of pattern with replacement in subject.
+/// Replace the first occurence of pattern with replacement string in \c subject.
+/// The pattern is in "/pattern/modifiers" format.
 inline bool app_pcre_replace_once(const std::string& perl_pattern, const std::string& replacement, std::string& subject)
 {
 	return app_pcre_re(perl_pattern).Replace(replacement, &subject);
 }
 
 
-// Replaces first occurence of pattern with replacement in subject.
+
+/// Replace the first occurence of pattern with replacement string in \c subject.
+/// The pattern is in "/pattern/modifiers" format.
 inline bool app_pcre_replace_once(const char* perl_pattern, const std::string& replacement, std::string& subject)
 {
 	return app_pcre_replace_once(std::string(perl_pattern), replacement, subject);
 }
 
 
-// Replaces first occurence of pattern with replacement in subject.
+
+/// Replace first occurence of pattern with replacement string in \c subject.
 inline bool app_pcre_replace_once(const pcrecpp::RE& re, const std::string& replacement, std::string& subject)
 {
 	return re.Replace(replacement, &subject);
@@ -202,7 +224,8 @@ inline bool app_pcre_replace_once(const pcrecpp::RE& re, const std::string& repl
 
 
 
-// Escape a string to be used as a regular expression
+/// Escape a string to be used inside a regular expression. The result
+/// won't contain any special expression characters.
 inline std::string app_pcre_escape(const std::string& str)
 {
 	return pcrecpp::RE::QuoteMeta(str);
@@ -213,3 +236,5 @@ inline std::string app_pcre_escape(const std::string& str)
 
 
 #endif
+
+/// @}

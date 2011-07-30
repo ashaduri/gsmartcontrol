@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #include <gtkmm/main.h>  // Gtk::Main
 
@@ -146,9 +151,6 @@ void CmdexSyncGui::set_running_dialog_abort_mode(bool aborting)
 
 
 
-
-// this function is called every time something happens
-// with the executor.
 bool CmdexSyncGui::execute_tick_func(tick_status_t status)
 {
 	if (status == status_starting) {
@@ -240,4 +242,4 @@ bool CmdexSyncGui::execute_tick_func(tick_status_t status)
 
 
 
-
+/// @}

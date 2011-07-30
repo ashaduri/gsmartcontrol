@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #include "hz/hz_config.h"  // CONFIG_*
 
@@ -151,3 +156,5 @@ std::string StorageDetector::detect_and_fetch_basic_data(std::vector<StorageDevi
 
 
 
+
+/// @}

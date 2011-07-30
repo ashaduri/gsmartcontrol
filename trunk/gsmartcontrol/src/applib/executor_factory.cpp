@@ -3,6 +3,11 @@
       (C) 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #include "hz/debug.h"
 #include "executor_factory.h"
@@ -49,3 +54,5 @@ hz::intrusive_ptr<CmdexSync> ExecutorFactory::create_executor(ExecutorFactory::T
 
 
 
+
+/// @}

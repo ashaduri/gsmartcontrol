@@ -37,6 +37,7 @@ Bugs / patches:
 TODO:
 
 
+
 Add menu item - "update drive database" (not sure about linux, should
 	check if it's supported first; also need to run it in terminal).
 
@@ -57,6 +58,7 @@ Add support for launching with consolehelper (from usermode package).
 		requirement. consolehelper-gtk is not supposed to be launched by user,
 		but I think we can check it with "which".
 		http://fedoranews.org/contributors/matt_hansen/nautilus/
+		We have an experimental rpm.
 
 
 Rework drive properties UI:

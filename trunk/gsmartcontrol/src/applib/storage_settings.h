@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #ifndef STORAGE_SETTINGS_H
 #define STORAGE_SETTINGS_H
@@ -17,11 +22,12 @@
 
 
 
-
+/// A map of Device => Options
 typedef std::map<std::string, std::string> device_option_map_t;
 
 
 
+/// Unserialize device option map from a string
 inline device_option_map_t app_unserialize_device_option_map(const std::string& str)
 {
 	hz::Bin2AsciiEncoder enc;
@@ -58,6 +64,7 @@ inline device_option_map_t app_unserialize_device_option_map(const std::string& 
 
 
 
+/// Serialize device option map from a string (to store it in config file, for example)
 inline std::string app_serialize_device_option_map(const device_option_map_t& option_map)
 {
 	hz::Bin2AsciiEncoder enc;
@@ -73,7 +80,7 @@ inline std::string app_serialize_device_option_map(const device_option_map_t& op
 
 
 
-
+/// Read device option map from config and get the options for (dev, type_arg) pair.
 inline std::string app_get_device_option(const std::string& dev, const std::string& type_arg)
 {
 	if (dev.empty())
@@ -113,3 +120,5 @@ inline std::string app_get_device_option(const std::string& dev, const std::stri
 
 
 #endif
+
+/// @}

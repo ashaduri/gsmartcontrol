@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #ifndef STORAGE_DETECTOR_LINUX_H
 #define STORAGE_DETECTOR_LINUX_H
@@ -19,7 +24,7 @@
 
 
 
-/// Detect drives in linux
+/// Detect drives in Linux
 std::string detect_drives_linux(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory);
 
 
@@ -28,3 +33,5 @@ std::string detect_drives_linux(std::vector<StorageDeviceRefPtr>& drives, Execut
 
 
 #endif
+
+/// @}

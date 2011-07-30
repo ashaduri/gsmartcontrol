@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #ifndef STORAGE_DEVICE_H
 #define STORAGE_DEVICE_H
@@ -270,17 +275,21 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 
 
 
-
+/// A reference-counting pointer to StorageDevice
 typedef hz::intrusive_ptr<StorageDevice> StorageDeviceRefPtr;
 
 
-// for sorting, hard drives first
+
+/// Operator for sorting, hard drives first, then device name base
 inline bool operator< (const StorageDeviceRefPtr& d1, const StorageDeviceRefPtr& d2)
 {
 	if (d1->get_detected_type() != d2->get_detected_type()) {
 		return (d1->get_detected_type() == StorageDevice::detected_type_unknown);  // hard drives first
 	}
-	return d1->get_device_base() < d2->get_device_base();
+	if (d1->get_device_base() != d2->get_device_base()) {
+		return d1->get_device_base() < d2->get_device_base();
+	}
+	return d1->get_type_argument() < d2->get_type_argument();  // for multi-port devices
 }
 
 
@@ -290,3 +299,5 @@ inline bool operator< (const StorageDeviceRefPtr& d1, const StorageDeviceRefPtr&
 
 
 #endif
+
+/// @}

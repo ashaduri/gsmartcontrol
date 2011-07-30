@@ -3,6 +3,11 @@
       (C) 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #ifndef STORAGE_DETECTOR_HELPERS_H
 #define STORAGE_DETECTOR_HELPERS_H
@@ -15,7 +20,6 @@
 #include "storage_device.h"
 #include "rconfig/rconfig_mini.h"
 #include "app_pcrecpp.h"
-
 
 
 
@@ -155,5 +159,6 @@ inline std::string tw_cli_get_controllers(ExecutorFactoryRefPtr ex_factory, std:
 
 
 
-
 #endif
+
+/// @}

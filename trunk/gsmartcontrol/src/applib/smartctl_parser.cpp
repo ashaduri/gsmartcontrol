@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #include <clocale>  // localeconv
 
@@ -23,6 +28,8 @@
 namespace {
 
 
+	/// Get storage property by checksum error name (which corresponds to
+	/// an output section).
 	inline StorageProperty app_get_checksum_error_property(const std::string& name)
 	{
 		StorageProperty p;
@@ -1604,7 +1611,6 @@ bool SmartctlParser::parse_section_data_subsection_selective_selftest_log(const 
 
 
 
-
 // adds a property into property list, looks up and sets its description.
 // Yes, there's no place for this in the Parser, but whatever...
 void SmartctlParser::add_property(StorageProperty p)
@@ -1621,4 +1627,4 @@ void SmartctlParser::add_property(StorageProperty p)
 
 
 
-
+/// @}

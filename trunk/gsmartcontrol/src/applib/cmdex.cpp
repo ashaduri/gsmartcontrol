@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #include <sys/types.h>
 #include <cerrno>  // errno (not std::errno, it may be a macro)
@@ -37,25 +42,28 @@ extern "C" {
 
 	// callbacks
 
-
+	/// Child process watcher callback
 	inline void cmdex_child_watch_handler(GPid arg_pid, int waitpid_status, gpointer data)
 	{
 		Cmdex::on_child_watch_handler(arg_pid, waitpid_status, data);
 	}
 
 
+	/// Child process stdout handler callback
 	inline gboolean cmdex_on_channel_io_stdout(GIOChannel* source, GIOCondition cond, gpointer data)
 	{
 		return Cmdex::on_channel_io(source, cond, static_cast<Cmdex*>(data), Cmdex::channel_type_stdout);
 	}
 
+
+	/// Child process stderr handler callback
 	inline gboolean cmdex_on_channel_io_stderr(GIOChannel* source, GIOCondition cond, gpointer data)
 	{
 		return Cmdex::on_channel_io(source, cond, static_cast<Cmdex*>(data), Cmdex::channel_type_stderr);
 	}
 
 
-
+	/// Child process termination timeout handler
 	inline gboolean cmdex_on_term_timeout(gpointer data)
 	{
 		DBG_FUNCTION_ENTER_MSG;
@@ -65,11 +73,12 @@ extern "C" {
 	}
 
 
+	/// Child process kill timeout handler
 	inline gboolean cmdex_on_kill_timeout(gpointer data)
 	{
 		DBG_FUNCTION_ENTER_MSG;
 		Cmdex* self = static_cast<Cmdex*>(data);
-		self->try_stop(hz::SIGNAL_SIGTERM);
+		self->try_stop(hz::SIGNAL_SIGKILL);
 		return false;  // one-time call
 	}
 
@@ -256,6 +265,12 @@ bool Cmdex::try_stop(hz::signal_t sig)
 	return false;
 }
 
+
+
+bool Cmdex::try_kill()
+{
+	return try_stop(hz::SIGNAL_SIGKILL);
+}
 
 
 
@@ -447,4 +462,4 @@ gboolean Cmdex::on_channel_io(GIOChannel* source,
 
 
 
-
+/// @}

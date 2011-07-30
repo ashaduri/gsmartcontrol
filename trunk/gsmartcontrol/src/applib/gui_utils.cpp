@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/dialog.h>
@@ -17,6 +22,7 @@
 
 namespace {
 
+	/// Show a message dialog
 	inline void show_dialog(const std::string& message, const std::string& sec_message,
 			Gtk::Window* parent, Gtk::MessageType type, bool sec_msg_markup)
 	{
@@ -169,3 +175,5 @@ bool gui_show_text_entry_dialog(const std::string& title, const std::string& mes
 
 
 
+
+/// @}
