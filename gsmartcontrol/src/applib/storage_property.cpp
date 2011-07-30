@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #include <map>
 #include <ostream>  // not iosfwd - it doesn't work
@@ -183,5 +188,4 @@ std::string StorageProperty::format_value(bool add_reported_too) const
 
 
 
-
-
+/// @}

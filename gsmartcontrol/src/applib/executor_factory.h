@@ -1,8 +1,13 @@
 /**************************************************************************
  Copyright:
-      (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #ifndef EXECUTOR_FACTORY_H
 #define EXECUTOR_FACTORY_H
@@ -47,9 +52,12 @@ class ExecutorFactory : public hz::intrusive_ptr_referenced {
 
 
 
+/// A reference-counting pointer to ExecutorFactory
 typedef hz::intrusive_ptr<ExecutorFactory> ExecutorFactoryRefPtr;
 
 
 
 
 #endif
+
+/// @}

@@ -3,6 +3,11 @@
       (C) 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #ifndef TW_CLI_EXECUTOR_H
 #define TW_CLI_EXECUTOR_H
@@ -15,9 +20,9 @@
 /// Executor for tw_cli (3ware utility)
 template<class ExecutorSync>
 class TwCliExecutorGeneric : public ExecutorSync {
-
 	public:
 
+		/// Constructor
 		TwCliExecutorGeneric(const std::string& cmd, const std::string& cmdargs)
 			: ExecutorSync(cmd, cmdargs)
 		{
@@ -25,35 +30,36 @@ class TwCliExecutorGeneric : public ExecutorSync {
 		}
 
 
+		/// Constructor
 		TwCliExecutorGeneric()
 		{
 			this->construct();
 		}
 
 
+		/// Virtual destructor
 		virtual ~TwCliExecutorGeneric()
 		{ }
 
 
-
 	protected:
 
+		/// Called from constructors
 		void construct()
 		{
-			ExecutorSync::cmdex_.set_exit_status_translator(&TwCliExecutorGeneric::translate_exit_status, NULL);
+			ExecutorSync::get_command_executor().set_exit_status_translator(&TwCliExecutorGeneric::translate_exit_status, NULL);
 			this->set_error_header("An error occurred while executing tw_cli:\n\n");
 		}
 
 
-
+		/// Exit status translate handler
 		static std::string translate_exit_status(int status, void* user_data)
 		{
 			return std::string();
 		}
 
 
-
-		// import the last error from cmdex_ and clear all errors there
+		/// Import the last error from command executor and clear all errors there
 		virtual void import_error()
 		{
 			Cmdex& cmdex = this->get_command_executor();
@@ -82,7 +88,8 @@ class TwCliExecutorGeneric : public ExecutorSync {
 		}
 
 
-		// The warnings are already printed via debug_* in cmdex.
+		/// This is called when an error occurs in command executor.
+		/// Note: The warnings are already printed via debug_* in cmdex.
 		virtual void on_error_warn(hz::ErrorBase* e)
 		{
 			if (!e)
@@ -104,14 +111,18 @@ class TwCliExecutorGeneric : public ExecutorSync {
 
 
 
+/// tw_cli executor without GUI support
 typedef TwCliExecutorGeneric<CmdexSync> TwCliExecutor;
 
+/// A reference-counting pointer to TwCliExecutor
 typedef hz::intrusive_ptr<TwCliExecutor> TwCliExecutorRefPtr;
 
 
 
+/// tw_cli executor with GUI support
 typedef TwCliExecutorGeneric<CmdexSyncGui> TwCliExecutorGui;
 
+/// A reference-counting pointer to TwCliExecutorGui
 typedef hz::intrusive_ptr<TwCliExecutorGui> TwCliExecutorGuiRefPtr;
 
 
@@ -119,5 +130,6 @@ typedef hz::intrusive_ptr<TwCliExecutorGui> TwCliExecutorGuiRefPtr;
 
 
 
-
 #endif
+
+/// @}

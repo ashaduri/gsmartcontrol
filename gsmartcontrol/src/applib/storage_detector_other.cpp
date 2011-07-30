@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #include "storage_detector_win32.h"
 
@@ -268,3 +273,5 @@ std::string detect_drives_other(std::vector<StorageDeviceRefPtr>& drives, Execut
 
 
 #endif  // !defined CONFIG_KERNEL_LINUX && !defined CONFIG_KERNEL_FAMILY_WINDOWS
+
+/// @}

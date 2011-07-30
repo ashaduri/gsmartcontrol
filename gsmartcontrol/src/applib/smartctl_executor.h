@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #ifndef SMARTCTL_EXECUTOR_H
 #define SMARTCTL_EXECUTOR_H
@@ -12,11 +17,12 @@
 
 
 
+/// Smartctl executor template.
 template<class ExecutorSync>
 class SmartctlExecutorGeneric : public ExecutorSync {
-
 	public:
 
+		/// Constructor
 		SmartctlExecutorGeneric(const std::string& cmd, const std::string& cmdargs)
 			: ExecutorSync(cmd, cmdargs)
 		{
@@ -24,12 +30,14 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 		}
 
 
+		/// Constructor
 		SmartctlExecutorGeneric()
 		{
 			this->construct();
 		}
 
 
+		/// Virtual destructor
 		virtual ~SmartctlExecutorGeneric()
 		{ }
 
@@ -37,25 +45,27 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 
 	protected:
 
+		/// Called by constructors
 		void construct()
 		{
-			ExecutorSync::cmdex_.set_exit_status_translator(&SmartctlExecutorGeneric::translate_exit_status, NULL);
+			ExecutorSync::get_command_executor().set_exit_status_translator(&SmartctlExecutorGeneric::translate_exit_status, NULL);
 			this->set_error_header("An error occurred while executing smartctl:\n\n");
 		}
 
 
 		enum {
-			exit_cant_parse = 1 << 0,
-			exit_open_failed = 1 << 1,
-			exit_smart_failed = 1 << 2,
-			exit_disk_failing = 1 << 3,
-			exit_prefail_threshold = 1 << 4,
-			exit_threshold_in_past = 1 << 5,
-			exit_error_log = 1 << 6,
-			exit_self_test_log = 1 << 7
+			exit_cant_parse = 1 << 0,  ///< Smartctl error code bit
+			exit_open_failed = 1 << 1,  ///< Smartctl error code bit
+			exit_smart_failed = 1 << 2,  ///< Smartctl error code bit
+			exit_disk_failing = 1 << 3,  ///< Smartctl error code bit
+			exit_prefail_threshold = 1 << 4,  ///< Smartctl error code bit
+			exit_threshold_in_past = 1 << 5,  ///< Smartctl error code bit
+			exit_error_log = 1 << 6,  ///< Smartctl error code bit
+			exit_self_test_log = 1 << 7  ///< Smartctl error code bit
 		};
 
 
+		/// Translate smartctl error code to a readable message
 		static std::string translate_exit_status(int status, void* user_data)
 		{
 			const char* table[] = {
@@ -84,7 +94,7 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 		}
 
 
-		// import the last error from cmdex_ and clear all errors there
+		/// Import the last error from command executor and clear all errors there
 		virtual void import_error()
 		{
 			Cmdex& cmdex = this->get_command_executor();
@@ -114,7 +124,8 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 
 
 
-		// The warnings are already printed via debug_* in cmdex.
+		/// This is called when an error occurs in command executor.
+		/// Note: The warnings are already printed via debug_* in cmdex.
 		virtual void on_error_warn(hz::ErrorBase* e)
 		{
 			if (!e)
@@ -145,16 +156,20 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 
 
 
+/// Smartctl executor without GUI support
 typedef SmartctlExecutorGeneric<CmdexSync> SmartctlExecutor;
 
+/// A reference-counting pointer to SmartctlExecutor
 typedef hz::intrusive_ptr<SmartctlExecutor> SmartctlExecutorRefPtr;
 
 
 
-// returns an empty string if not found.
+/// Get smartctl binary (from config, etc...). Returns an empty string if not found.
 std::string get_smartctl_binary();
 
 
+/// Execute smartctl on device \c device.
+/// \return error message on error, empty string on success.
 std::string execute_smartctl(const std::string& device, const std::string& device_opts,
 		const std::string& command_options,
 		hz::intrusive_ptr<CmdexSync> smartctl_ex, std::string& smartctl_output);
@@ -164,3 +179,5 @@ std::string execute_smartctl(const std::string& device, const std::string& devic
 
 
 #endif
+
+/// @}

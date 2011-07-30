@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #include "rconfig/rconfig_mini.h"
 #include "hz/string_algo.h"  // string_trim_copy, string_any_to_unix_copy
@@ -845,3 +850,5 @@ void StorageDevice::set_properties(const SmartctlParser::prop_list_t& props)
 
 
 
+
+/// @}

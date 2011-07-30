@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #include <glib.h>  // g_usleep()
 
@@ -12,11 +17,14 @@
 
 namespace {
 
+	/// "Execution finished" signal
 	static sigc::signal<void, const CmdexSyncCommandInfo&> s_cmdex_sync_signal_execute_finish;
 
+	/// Mutex for "Execution finished" signal
 	static hz::SyncPolicyMtDefault::Mutex s_cmdex_sync_signal_execute_finish_mutex;
 
 }
+
 
 
 cmdex_signal_execute_finish_type cmdex_sync_signal_execute_finish()
@@ -137,3 +145,5 @@ void CmdexSync::import_error()
 
 
 
+
+/// @}

@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #include <algorithm>  // std::max, std::min
 #include <cmath>  // std::floor
@@ -284,6 +289,4 @@ std::string SelfTest::update(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 
 
 
-
-
-
+/// @}

@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #ifndef APP_UI_RES_UTILS_H
 #define APP_UI_RES_UTILS_H
@@ -39,13 +44,12 @@
 
 
 
-// Use these in window class definitions to declare ui resources.
-// E.g. HZ_RES_DATA_INIT(main_window) will search for
-// main_window.glade or main_window.ui (depending on whether
-// you're using libglade or gtkbuilder) in data file search paths.
-// Or, if you're using compiled-in buffers, it will make them available.
-
-
+/// \def APP_UI_RES_DATA_INIT(res_name)
+/// Use these in window class definitions to declare ui resources.
+/// E.g. APP_UI_RES_DATA_INIT(main_window) will search for
+/// main_window.glade or main_window.ui (depending on whether
+/// you're using libglade or gtkbuilder) in data file search paths.
+/// Or, if you're using compiled-in buffers, it will make them available.
 #if defined ENABLE_LIBGLADE && ENABLE_LIBGLADE
 
 	#define APP_UI_RES_DATA_INIT(res_name) \
@@ -85,6 +89,12 @@
 
 
 
+
+/// \typedef app_ui_res_ref_t
+/// A reference-counting pointer to application UI resource
+
+/// \fn bool app_ui_res_create_from(app_ui_res_ref_t& ref, const unsigned char* buf, unsigned int buf_size, std::string& error_msg)
+/// Create application UI resource from a static buffer.
 
 #if defined ENABLE_LIBGLADE && ENABLE_LIBGLADE
 
@@ -166,6 +176,7 @@
 
 #else  // none, just avoid compilation errors
 
+	/// A dummy structure that can be used to emulate a (non-functional) resource.
 	struct AppUIResDummy {
 		template<typename T>
 		void get_widget_derived(const Glib::ustring& name, T*& widget)
@@ -192,8 +203,8 @@
 
 // These allow easy attaching of glade widget signals to member functions
 
-// Connect member function (callback) to signal signal_name on widget
-// widget_name, where widget_name is the widget's glade/gtkbuilder name.
+/// Connect member function (callback) to signal \c signal_name on widget
+/// \c ui_element, where \c ui_element is the widget's glade/gtkbuilder name.
 #define APP_UI_RES_CONNECT(ui_element, signal_name, callback) \
 	if (true) { \
 		if (!ui_element) \
@@ -204,7 +215,9 @@
 	} else (void)0
 
 
-// Same as above, but default callback name to on_<widget_name>_<signal_name>.
+/// Connect member function (callback) with a name of \c on_<widget_name>_<signal_name>
+/// to signal \c signal_name on widget \c ui_element, where \c ui_element is the
+/// widget's glade/gtkbuilder name.
 #define APP_UI_RES_AUTO_CONNECT(ui_element, signal_name) \
 	APP_UI_RES_CONNECT(ui_element, signal_name, on_ ## ui_element ## _ ## signal_name)
 
@@ -212,13 +225,15 @@
 
 
 
-// Inherit from this when using Glade-enabled windows (or any other objects).
-
+/// Inherit this when using Glade-enabled windows (or any other glade-enabled objects).
+/// \c Child is the child class that inherits all the functionality of having instance lifetime
+/// management and other benefits.
+/// If \c MultiInstance is false, create() will return the same instance each time.
 template<class Child, bool MultiInstance, class WidgetType = Gtk::Window>
 class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, MultiInstance> {
-
 	public:
 
+		/// Instance class type, which is also the parent class.
 		typedef hz::InstanceManager<Child, MultiInstance> instance_class;
 
 #if defined ENABLE_LIBGLADE && ENABLE_LIBGLADE
@@ -229,7 +244,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 		friend class hz::InstanceManager<Child, MultiInstance>;  // allow construction through instance class
 
 
-		// overload parent's function because of non-trivial constructor
+		/// Override parent hz::InstanceManager's function because of non-trivial constructor
 		static Child* create()
 		{
 			if (hz::InstanceManager<Child, MultiInstance>::has_single_instance())  // for single-instance objects
@@ -273,19 +288,21 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 		}
 
 
-
+		/// Get UI resource
 		app_ui_res_ref_t get_ui()
 		{
 			return ref_ui_;
 		}
 
 
-
+		/// Find a widget in UI and return it.
 		Gtk::Widget* lookup_widget(const Glib::ustring& name)
 		{
 			return lookup_widget<Gtk::Widget*>(name);
 		}
 
+
+		/// Find a widget in UI and return it.
 		template<typename WidgetPtr>
 		WidgetPtr lookup_widget(const Glib::ustring& name)
 		{
@@ -293,6 +310,8 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 			return lookup_widget(name, w);
 		}
 
+
+		/// Find a widget in UI and return it.
 		template<typename WidgetPtr>
 		WidgetPtr lookup_widget(const Glib::ustring& name, WidgetPtr& w)
 		{
@@ -301,6 +320,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 		}
 
 
+		/// Find an object in UI and return it.
 		Glib::Object* lookup_object(const Glib::ustring& name)
 		{
 #if defined ENABLE_LIBGLADE && ENABLE_LIBGLADE
@@ -312,6 +332,8 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 #endif
 		}
 
+
+		/// Find an object in UI and return it.
 		template<typename ObjectPtr>
 		ObjectPtr lookup_object(const Glib::ustring& name)
 		{
@@ -319,6 +341,8 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 			return lookup_object(name, obj);
 		}
 
+
+		/// Find an object in UI and return it.
 		template<typename ObjectPtr>
 		ObjectPtr lookup_object(const Glib::ustring& name, ObjectPtr& obj)
 		{
@@ -329,14 +353,13 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 
 	protected:
 
-		// This is needed by APP_GLADE_ macros
-		typedef Child self_type;
-		typedef WidgetType widget_type;
+		typedef Child self_type;  ///< This is needed by APP_GLADE_ macros
+		typedef WidgetType widget_type;  ///< This is needed by APP_GLADE_ macros
 
 
 		// protected constructor / destructor, use create() / destroy() instead of new / delete.
 
-		// glade needs this constructor in a child.
+		// Glade needs this constructor in a child.
 		// BaseObjectType is a C type, defined in specific Gtk:: widget class.
 		AppUIResWidget(typename WidgetType::BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
 				: WidgetType(gtkcobj), ref_ui_(ref_ui)
@@ -359,6 +382,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 		}
 
 
+		/// Virtual destructor
 		virtual ~AppUIResWidget()
 		{ }
 
@@ -391,7 +415,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 
 	private:
 
-		app_ui_res_ref_t ref_ui_;
+		app_ui_res_ref_t ref_ui_;  ///< UI resource
 
 };
 
@@ -400,6 +424,6 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 
 
 
-
-
 #endif
+
+/// @}

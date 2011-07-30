@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #include <gtkmm.h>
 #include <gtk/gtk.h>  // gtk_* stuff
@@ -111,7 +116,7 @@ void app_gtkmm_combobox_unset_model(Gtk::ComboBox* box)
 
 namespace {
 
-	// helper function for gtkmm_set_treeview_tooltip_column()
+	/// A helper function for gtkmm_set_treeview_tooltip_column()
 	inline bool app_on_treeview_motion_notify_event_tooltip(GdkEventMotion* event, Gtk::TreeView* treeview,
 			Gtk::TreeModelColumn<Glib::ustring> tooltip_column)
 	{
@@ -130,7 +135,7 @@ namespace {
 	}
 
 
-	// helper function for gtkmm_set_iconview_tooltip_column()
+	/// A helper function for gtkmm_set_iconview_tooltip_column()
 	inline bool app_on_iconview_motion_notify_event_tooltip(GdkEventMotion* event, Gtk::IconView* iconview,
 			Gtk::TreeModelColumn<Glib::ustring> tooltip_column, Glib::RefPtr<Gtk::ListStore> model)
 	{
@@ -210,3 +215,5 @@ bool app_gtkmm_icon_theme_has_icon(Glib::RefPtr<Gtk::IconTheme> theme,
 
 
 
+
+/// @}

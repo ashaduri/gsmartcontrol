@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #include <glibmm.h>  // Glib::shell_quote()
 
@@ -16,7 +21,6 @@
 
 
 
-// returns an empty string if not found.
 std::string get_smartctl_binary()
 {
 	std::string smartctl_binary;
@@ -133,3 +137,5 @@ std::string execute_smartctl(const std::string& device, const std::string& devic
 
 
 
+
+/// @}

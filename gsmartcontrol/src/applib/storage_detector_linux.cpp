@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #include "storage_detector_linux.h"
 
@@ -114,8 +119,8 @@ inline std::string detect_drives_linux_udev_byid(std::vector<std::string>& devic
 
 
 
-// Procfs files don't support SEEK_END or ftello() (I think). Anyway, they can't
-// be read through hz::File::get_contents, so use this function instead.
+/// Procfs files don't support SEEK_END or ftello() (I think). They can't
+/// be read through hz::File::get_contents, so use this function instead.
 inline bool read_proc_file(hz::File& file, std::vector<std::string>& lines)
 {
 	if (!file.open("rb"))  // closed automatically
@@ -136,7 +141,7 @@ inline bool read_proc_file(hz::File& file, std::vector<std::string>& lines)
 
 
 
-// Read /proc/partitions file. Return error message on error.
+/// Read /proc/partitions file. Return error message on error.
 inline std::string read_proc_partitions_file(std::vector<std::string>& lines)
 {
 	std::string path;
@@ -161,7 +166,7 @@ inline std::string read_proc_partitions_file(std::vector<std::string>& lines)
 
 
 
-// Read /proc/partitions file. Return error message on error.
+/// Read /proc/devices file. Return error message on error.
 inline std::string read_proc_devices_file(std::vector<std::string>& lines)
 {
 	std::string path;
@@ -186,7 +191,7 @@ inline std::string read_proc_devices_file(std::vector<std::string>& lines)
 
 
 
-// Read /proc/partitions file. Return error message on error.
+// Read /proc/scsi/scsi file. Return error message on error.
 inline std::string read_proc_scsi_scsi_file(std::vector<std::string>& lines)
 {
 	std::string path;
@@ -244,10 +249,11 @@ inline std::string smartctl_get_drives(const std::string& dev, const std::string
 
 
 
-// Linux (tested with 2.4 and 2.6) /proc/partitions. Parses the file, appends /dev to each entry.
-// Note that file format changed from 2.4 to 2.6 (some statistics fields moved to another file).
-// No /proc/partitions on freebsd, solaris or osx, afaik.
-/*
+/**
+Linux (tested with 2.4 and 2.6) /proc/partitions. Parses the file, appends /dev to each entry.
+Note that file format changed from 2.4 to 2.6 (some statistics fields moved to another file).
+No /proc/partitions on freebsd, solaris or osx, afaik.
+
 Sample 1 (2.4, devfs, with statistics):
 ------------------------------------------------------------
 # cat /proc/partitions
@@ -260,6 +266,7 @@ major minor  #blocks  name     rio rmerge rsect ruse wio wmerge wsect wuse runni
 3     4          1 ide/host0/bus0/target0/lun0/part4 0 0 0 0 0 0 0 0 0 0 0
 3     5     514048 ide/host0/bus0/target0/lun0/part5 1458 7877 74680 9070 2140 18285 166272 42490 0 10100 52000
 ------------------------------------------------------------
+
 Sample 2 (2.6):
 ------------------------------------------------------------
 # cat /proc/partitions
@@ -271,6 +278,7 @@ major minor  #blocks  name
 	8     2       7560 sda2
 	8     3          1 sda3
 ------------------------------------------------------------
+
 Sample 3 (2.6 on nokia n8xx, spaces may be missing):
 ------------------------------------------------------------
 # cat /proc/partitions
@@ -495,3 +503,5 @@ std::string detect_drives_linux(std::vector<StorageDeviceRefPtr>& drives, Execut
 
 
 #endif  // CONFIG_KERNEL_LINUX
+
+/// @}

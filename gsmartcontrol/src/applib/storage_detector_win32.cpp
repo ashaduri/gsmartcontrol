@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #include "storage_detector_win32.h"
 
@@ -19,8 +24,9 @@
 #include "storage_detector_helpers.h"
 
 
-/*
-3ware Windows:
+/**
+\file
+3ware Windows detection:
 For 3ware 9xxx only.
 Call as: smartctl -i sd[a-z],N
 	N is port, a-z is logical drive (unit) provided by controller.
@@ -50,18 +56,19 @@ Call as: "/dev/csmi[0-9],N" where N is the port behind the logical
 	scsi controller "\\.\Scsi[0-9]:".
 	The prefix "/dev/" is optional.
 	This is detected (with /dev/ prefix) by --scan-open.
-*/
 
 
-/**
-	smartctl --scan-open output for win32 (3ware):
-	/dev/sda,0 -d ata (opened)
-	/dev/sda,1 -d ata (opened)
 
-	smartctl --scan-open output for linux:
-	/dev/sda -d sat # /dev/sda [SAT], ATA device
-	/dev/sdb -d sat # /dev/sdb [SAT], ATA device
-	/dev/sdc -d sat # /dev/sdc [SAT], ATA device
+smartctl --scan-open output for win32 (3ware):
+------------------------------------------------------------------
+/dev/sda,0 -d ata (opened)
+/dev/sda,1 -d ata (opened)
+
+smartctl --scan-open output for linux:
+/dev/sda -d sat # /dev/sda [SAT], ATA device
+/dev/sdb -d sat # /dev/sdb [SAT], ATA device
+/dev/sdc -d sat # /dev/sdc [SAT], ATA device
+------------------------------------------------------------------
 */
 
 
@@ -245,3 +252,5 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 
 
 #endif  // CONFIG_KERNEL_FAMILY_WINDOWS
+
+/// @}

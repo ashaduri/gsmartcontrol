@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #ifndef WRAPPING_LABEL_H
 #define WRAPPING_LABEL_H
@@ -12,14 +17,15 @@
 #include "app_gtkmm_features.h"  // APP_GTKMM_CONNECT_VIRTUAL
 
 
-// An auto-wrapping label. The GtkLabel widget has a bug
-// (or "design decision", as gtk devs say), when the widget can't
-// control its wrapping width according to parent container's size.
-// This should fix that.
 
+/// An auto-wrapping label. The GtkLabel widget has a bug
+/// (or "design decision", as gtk devs say), when the widget can't
+/// control its wrapping width according to parent container's size.
+/// This class should fix that.
 class WrappingLabel : public Gtk::Label {
 	public:
 
+		/// Constructor
 		WrappingLabel(const Glib::ustring& label, Gtk::AlignmentEnum xalign,
 				Gtk::AlignmentEnum yalign = Gtk::ALIGN_CENTER, bool mnemonic = false)
 				: Gtk::Label(label, xalign, yalign, mnemonic)
@@ -27,39 +33,43 @@ class WrappingLabel : public Gtk::Label {
 			this->construct();
 		}
 
+		/// Constructor
 		WrappingLabel(const Glib::ustring& label, float xalign, float yalign, bool mnemonic = false)
 				: Gtk::Label(label, xalign, yalign, mnemonic)
 		{
 			this->construct();
 		}
 
+		/// Constructor
 		WrappingLabel (const Glib::ustring& label, bool mnemonic=false)
 				: Gtk::Label(label, mnemonic)
 		{
 			this->construct();
 		}
 
+		/// Constructor
 		WrappingLabel()
 		{
 			this->construct();
 		}
 
 
-		// override parent's similar functions
-
-		void set_text(const Glib::ustring& label)
+		// Reimplemented from Gtk::Label
+		virtual void set_text(const Glib::ustring& label)
 		{
 			Label::set_text(label);
 			set_width(width_);
 		}
 
-		void set_markup(const Glib::ustring& label)
+		// Reimplemented from Gtk::Label
+		virtual void set_markup(const Glib::ustring& label)
 		{
 			Label::set_markup(label);
 			set_width(width_);
 		}
 
-		void set_label(const Glib::ustring& label)
+		// Reimplemented from Gtk::Label
+		virtual void set_label(const Glib::ustring& label)
 		{
 			Label::set_label(label);
 			set_width(width_);
@@ -68,14 +78,15 @@ class WrappingLabel : public Gtk::Label {
 
 	protected:
 
-		// Override parent's default handlers
-
+		/// size_allocate handler
 		void on_size_allocate_before(Gtk::Allocation& alloc)
 		{
 			Gtk::Label::on_size_allocate(alloc);
 			set_width(alloc.get_width());
 		}
 
+
+		/// size_request handler
 		void on_size_request_before(Gtk::Requisition* req)
 		{
 			int w = 0, h = 0;
@@ -85,8 +96,22 @@ class WrappingLabel : public Gtk::Label {
 		}
 
 
+		/// Set widget width
+		void set_width(int width)
+		{
+			if (width == 0)
+				return;
+			get_layout()->set_width(width * Pango::SCALE);
+			if (width_ != width) {
+				width_ = width;
+				queue_resize();
+			}
+		}
+
+
 	private:
 
+		/// Called from constructors
 		void construct()
 		{
 			width_ = 0;
@@ -100,19 +125,7 @@ class WrappingLabel : public Gtk::Label {
 		}
 
 
-		void set_width(int width)
-		{
-			if (width == 0)
-				return;
-			get_layout()->set_width(width * Pango::SCALE);
-			if (width_ != width) {
-				width_ = width;
-				queue_resize();
-			}
-		}
-
-
-		int width_;  // wrapping width
+		int width_;  ///< wrapping width
 
 };
 
@@ -121,3 +134,5 @@ class WrappingLabel : public Gtk::Label {
 
 
 #endif
+
+/// @}
