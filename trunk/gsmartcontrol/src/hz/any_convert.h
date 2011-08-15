@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_ANY_CONVERT_H
 #define HZ_ANY_CONVERT_H
@@ -14,11 +19,13 @@
 #include "string_num.h"  // string_is_numeric(), number_to_string()
 #include "type_categories.h"  // type_check_category
 
-// Loose conversions:
-// Try to convert any type to any other type as long as specialization
-// for any_convert is defined.
-// String conversions to numbers are _not_ strictly checked.
-// Numeric types are converted by static_cast between each other.
+
+/// \file
+/// Loose conversions:
+/// Try to convert any type to any other type as long as specialization
+/// for any_convert is defined.
+/// String conversions to numbers are _not_ strictly checked.
+/// Numeric types are converted by static_cast between each other.
 
 
 
@@ -28,260 +35,16 @@ namespace hz {
 
 
 
-
+/// This can be used for inheritance to provide a const static \c value member
+/// that is either true or false.
 template<bool v = false>
 struct AnyConvertibleValue {
 	static const bool value = v;
 };
 
 
-/*
-// The actual implementation. This class may be specialized to provide needed conversions.
-template<typename From, typename To,
-		typename SpecCatFrom = typename type_check_category<From>::type,
-		typename SpecCatTo = typename type_check_category<To>::type>
-struct any_convert_impl : public AnyConvertibleValue<false> {
-	static bool func(From from, From& to)
-	{
-		return false;
-	}
-};
 
-
-
-
-// same-spec spec
-template<typename From, typename To, typename Spec>
-struct any_convert_impl<From, To, Spec, Spec> : public AnyConvertibleValue<true> {
-	static bool func(From from, To& to)
-	{
-		to = static_cast<To>(from);
-		return true;
-	}
-};
-
-
-
-
-
-
-// from bool to char
-template<typename From, typename To>
-struct any_convert_impl<From, To, type_cat_bool, type_cat_char> : public AnyConvertibleValue<true> {
-	static bool func(From from, To& to)
-	{
-		to = static_cast<To>(from);
-		return true;
-	}
-};
-
-// from bool to int
-template<typename From, typename To>
-struct any_convert_impl<From, To, type_cat_bool, type_cat_int> : public AnyConvertibleValue<true> {
-	static bool func(From from, To& to)
-	{
-		to = static_cast<To>(from);
-		return true;
-	}
-};
-
-// from bool to float
-template<typename From, typename To>
-struct any_convert_impl<From, To, type_cat_bool, type_cat_float> : public AnyConvertibleValue<true> {
-	static bool func(From from, To& to)
-	{
-		to = static_cast<To>(from);
-		return true;
-	}
-};
-
-
-
-
-// from char to bool
-template<typename From, typename To>
-struct any_convert_impl<From, To, type_cat_char, type_cat_bool> : public AnyConvertibleValue<true> {
-	static bool func(From from, To& to)
-	{
-		to = static_cast<To>(from);
-		return true;
-	}
-};
-
-// from char to int
-template<typename From, typename To>
-struct any_convert_impl<From, To, type_cat_char, type_cat_int> : public AnyConvertibleValue<true> {
-	static bool func(From from, To& to)
-	{
-		to = static_cast<To>(from);
-		return true;
-	}
-};
-
-// from char to float
-template<typename From, typename To>
-struct any_convert_impl<From, To, type_cat_char, type_cat_float> : public AnyConvertibleValue<true> {
-	static bool func(From from, To& to)
-	{
-		to = static_cast<To>(from);
-		return true;
-	}
-};
-
-
-
-
-// from int to bool
-template<typename From, typename To>
-struct any_convert_impl<From, To, type_cat_int, type_cat_bool> : public AnyConvertibleValue<true> {
-	static bool func(From from, To& to)
-	{
-		to = static_cast<To>(from);
-		return true;
-	}
-};
-
-// from int to char
-template<typename From, typename To>
-struct any_convert_impl<From, To, type_cat_int, type_cat_char> : public AnyConvertibleValue<true> {
-	static bool func(From from, To& to)
-	{
-		to = static_cast<To>(from);
-		return true;
-	}
-};
-
-// from int to float
-template<typename From, typename To>
-struct any_convert_impl<From, To, type_cat_int, type_cat_float> : public AnyConvertibleValue<true> {
-	static bool func(From from, To& to)
-	{
-		to = static_cast<To>(from);
-		return true;
-	}
-};
-
-
-
-
-// from float to bool
-template<typename From, typename To>
-struct any_convert_impl<From, To, type_cat_float, type_cat_bool> : public AnyConvertibleValue<true> {
-	static bool func(From from, To& to)
-	{
-		to = static_cast<To>(static_cast<int>(from));  // avoid "unsafe use of !=" warning
-		return true;
-	}
-};
-
-// from float to char
-template<typename From, typename To>
-struct any_convert_impl<From, To, type_cat_float, type_cat_char> : public AnyConvertibleValue<true> {
-	static bool func(From from, To& to)
-	{
-		to = static_cast<To>(from);
-		return true;
-	}
-};
-
-// from float to int
-template<typename From, typename To>
-struct any_convert_impl<From, To, type_cat_float, type_cat_int> : public AnyConvertibleValue<true> {
-	static bool func(From from, To& to)
-	{
-		to = static_cast<To>(from);
-		return true;
-	}
-};
-
-
-
-
-
-// from bool to string
-template<typename From>
-struct any_convert_impl<From, std::string, type_cat_bool, type_cat_unknown> : public AnyConvertibleValue<true> {
-	static bool func(From from, std::string& to)
-	{
-		to = hz::number_to_string(from);
-		return true;
-	}
-};
-
-// from char to string
-template<typename From>
-struct any_convert_impl<From, std::string, type_cat_char, type_cat_unknown> : public AnyConvertibleValue<true> {
-	static bool func(From from, std::string& to)
-	{
-		to = hz::number_to_string(from);
-		return true;
-	}
-};
-
-// from int to string
-template<typename From>
-struct any_convert_impl<From, std::string, type_cat_int, type_cat_unknown> : public AnyConvertibleValue<true> {
-	static bool func(From from, std::string& to)
-	{
-		to = hz::number_to_string(from);
-		return true;
-	}
-};
-
-// from float to string
-template<typename From>
-struct any_convert_impl<From, std::string, type_cat_float, type_cat_unknown> : public AnyConvertibleValue<true> {
-	static bool func(From from, std::string& to)
-	{
-		to = hz::number_to_string(from);
-		return true;
-	}
-};
-
-
-
-
-
-// from string to bool
-template<typename To>
-struct any_convert_impl<std::string, To, type_cat_unknown, type_cat_bool> : public AnyConvertibleValue<true> {
-	static bool func(const std::string& from, To& to)
-	{
-		return hz::string_is_numeric(from, to, false);
-	}
-};
-
-// from string to char
-template<typename To>
-struct any_convert_impl<std::string, To, type_cat_unknown, type_cat_char> : public AnyConvertibleValue<true> {
-	static bool func(const std::string& from, To& to)
-	{
-		return hz::string_is_numeric(from, to, false);
-	}
-};
-
-// from string to int
-template<typename To>
-struct any_convert_impl<std::string, To, type_cat_unknown, type_cat_int> : public AnyConvertibleValue<true> {
-	static bool func(const std::string& from, To& to)
-	{
-		return hz::string_is_numeric(from, to, false);
-	}
-};
-
-// from string to float
-template<typename To>
-struct any_convert_impl<std::string, To, type_cat_unknown, type_cat_float> : public AnyConvertibleValue<true> {
-	static bool func(const std::string& from, To& to)
-	{
-		return hz::string_is_numeric(from, to, false);
-	}
-};
-
-*/
-
-
-
+/// Convert \c from to \c to using loose conversion methods.
 template<typename From, typename To>
 inline bool any_convert(From from, To& to)
 {
@@ -289,7 +52,8 @@ inline bool any_convert(From from, To& to)
 }
 
 
-// same-type spec
+/// Convert \c from to \c to using loose conversion methods.
+/// This is a same-type specialization.
 template<typename From>
 inline bool any_convert(From from, From& to)
 {
@@ -299,12 +63,16 @@ inline bool any_convert(From from, From& to)
 
 
 
-// master struct, default to non-convertible
+/// The structure that says whether type \c From is convertible to type \c To
+/// using loose conversion methods.
+/// This is the master struct, defaults to non-convertible.
 template<typename From, typename To>
 struct any_convertible : public AnyConvertibleValue<false> { };
 
 
-// same-type spec
+/// The structure that says whether type \c From is convertible to type \c To
+/// using loose conversion methods.
+// Same-type specialization
 template<typename From>
 struct any_convertible<From, From> : public AnyConvertibleValue<true> { };
 
@@ -312,28 +80,8 @@ struct any_convertible<From, From> : public AnyConvertibleValue<true> { };
 // specific type specs - see below.
 
 
-/*
-template<typename From, typename To>
-inline bool any_convert(From from, To& to)
-{
-	return any_convert_impl<From, To>::func(from, to);
-}
-*/
-
-
-
-/*
-// you may use this to check if it's convertible or not
-template<typename From, typename To>
-struct is_any_convertible : public AnyConvertibleValue<
-	any_convert_impl<From, To>::value || type_is_same<From, To>::value> { };
-*/
-
-
-
-
-
-
+/// Define \c any_convertible specialization for \c from_type and \c to_type, saying that
+/// they're convertible. Also print \c any_convert function header.
 #define DEFINE_ANY_CONVERT_SPEC(from_type, to_type) \
 	template<> \
 	struct any_convertible<from_type, to_type> : public AnyConvertibleValue<true> { }; \
@@ -343,6 +91,7 @@ struct is_any_convertible : public AnyConvertibleValue<
 
 
 
+/// Define \c any_convertible and \c any_convert specializations using static_cast.
 #define DEFINE_ANY_CONVERT_SPEC_STATIC(from_type, to_type) \
 	DEFINE_ANY_CONVERT_SPEC(from_type, to_type) \
 	{ \
@@ -350,6 +99,7 @@ struct is_any_convertible : public AnyConvertibleValue<
 		return true; \
 	}
 
+/// Define \c any_convertible and \c any_convert specializations using static_cast using bool.
 #define DEFINE_ANY_CONVERT_SPEC_STATIC_TOBOOL(from_type) \
 	DEFINE_ANY_CONVERT_SPEC(from_type, bool) \
 	{ \
@@ -357,6 +107,7 @@ struct is_any_convertible : public AnyConvertibleValue<
 		return true; \
 	}
 
+/// Define \c any_convertible and \c any_convert specializations using hz::number_to_string().
 #define DEFINE_ANY_CONVERT_SPEC_NUMTOSTRING(from_type) \
 	DEFINE_ANY_CONVERT_SPEC(from_type, std::string) \
 	{ \
@@ -364,6 +115,7 @@ struct is_any_convertible : public AnyConvertibleValue<
 		return true; \
 	}
 
+/// Define \c any_convertible and \c any_convert specializations using hz::string_is_numeric().
 #define DEFINE_ANY_CONVERT_SPEC_STRINGTONUM(to_type) \
 	DEFINE_ANY_CONVERT_SPEC(std::string, to_type) \
 	{ \
@@ -390,6 +142,7 @@ struct is_any_convertible : public AnyConvertibleValue<
 #endif
 
 
+/// Define \c any_convertible and \c any_convert specializations for all built-in types as \c To.
 #define DEFINE_ANY_CONVERT_SPEC_ALL(from_type) \
 	DEFINE_ANY_CONVERT_SPEC_STATIC_TOBOOL(from_type) \
 	DEFINE_ANY_CONVERT_SPEC_STATIC(from_type, char) \
@@ -452,3 +205,5 @@ DEFINE_ANY_CONVERT_SPEC_ALL(long double)
 
 
 #endif
+
+/// @}

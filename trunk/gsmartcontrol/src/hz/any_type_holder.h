@@ -4,13 +4,20 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_boost_1_0.txt file
 ***************************************************************************/
+/// \file
+/// \author Kevlin Henney
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_ANY_TYPE_HOLDER_H
 #define HZ_ANY_TYPE_HOLDER_H
 
 #include "hz_config.h"  // feature macros
 
-/*
+/**
+\file
 Internal header, do not include manually.
 */
 
@@ -35,21 +42,26 @@ namespace internal {
 
 
 
-// base class for content
+/// Base class for content of hz::any_type
 struct AnyHolderBase {
 
+	/// Virtual destructor
 	virtual ~AnyHolderBase() { }
 
 #if !(defined DISABLE_RTTI && DISABLE_RTTI)
+	/// Get std::type_info for the wrapped variable
 	virtual const std::type_info& type() const = 0;
 #endif
+	/// Clone the wrapped variable
 	virtual AnyHolderBase* clone() const = 0;
 
+	/// Send the wrapped variable to std::ostream
 	virtual void to_stream(std::ostream& os) const = 0;
 
 
 #if !(defined DISABLE_ANY_CONVERT && DISABLE_ANY_CONVERT)
 
+	/// Convert the wrapped variable to argument type
 	virtual bool convert(bool& val) const = 0;
 
 	virtual bool convert(char& val) const = 0;
@@ -84,30 +96,34 @@ struct AnyHolderBase {
 
 
 
-// child class for content, holds the actual value
+/// Child class for content, holds the actual value
 template<typename ValueType>
 struct AnyHolder : public AnyHolderBase {
 
+	/// Type of the wrapped variable
 	typedef ValueType value_type;
 
+	/// Constructor
 	AnyHolder(const ValueType& val)
 		: value(val)
 	{ }
 
 
 #if !(defined DISABLE_RTTI && DISABLE_RTTI)
+	/// Get std::type_info object for the wrapped variable
 	const std::type_info& type() const
 	{
 		return typeid(ValueType);
 	}
 #endif
 
+	/// Clone the wrapped variable. Note that this is not a deep clone.
 	AnyHolderBase* clone() const
 	{
 		return new AnyHolder(value);
 	}
 
-
+	/// Send the wrapped variable to std::ostream
 	inline void to_stream(std::ostream& os) const;
 // 	{
 // 		AnyPrinter<ValueType>::to_stream(os, value);
@@ -117,6 +133,7 @@ struct AnyHolder : public AnyHolderBase {
 
 #if !(defined DISABLE_ANY_CONVERT && DISABLE_ANY_CONVERT)
 
+	// Reimplemented from AnyHolderBase
 	bool convert(bool& val) const { return any_convert(value, val); }
 
 	bool convert(char& val) const { return any_convert(value, val); }
@@ -146,7 +163,7 @@ struct AnyHolder : public AnyHolderBase {
 #endif // DISABLE_ANY_CONVERT
 
 
-	ValueType value;  // the actual data
+	ValueType value;  ///< The wrapped data
 };
 
 
@@ -162,3 +179,5 @@ struct AnyHolder : public AnyHolderBase {
 
 
 #endif
+
+/// @}

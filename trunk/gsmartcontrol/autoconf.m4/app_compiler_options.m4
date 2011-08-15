@@ -30,7 +30,7 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 	# ---- Common compiler options (warnings, etc...)
 
 	AC_ARG_ENABLE(common-options, AS_HELP_STRING([--enable-common-options=<compiler>|auto|none],
-			[enable useful compilation options (warnings, mostly). Accepted values are auto, none, gnu, intel, sun. (Default: auto)]),
+			[enable useful compilation options (warnings, mostly). Accepted values are auto, none, gnu, clang, intel, sun. (Default: auto)]),
 		[app_cv_compiler_common_options=${enableval}], [app_cv_compiler_common_options=auto])
 
 	# the default value is "yes" (if no value given after =), treat it as auto.
@@ -47,8 +47,8 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 
 	if test "x$app_cv_compiler_common_options" != "xnone"; then
 
-		# gcc / gnu environment, mingw, cygwin.
-		if test "x$app_cv_compiler_common_options" = "xgnu"; then
+		# gcc (or clang) / gnu environment, mingw, cygwin.
+		if test "x$app_cv_compiler_common_options" = "xgnu" ||  test "x$app_cv_compiler_common_options" = "xclang"; then
 
 			if test "x$app_cv_target_os_env" = "xmingw32" || test "x$app_cv_target_os_env" = "xmingw64" \
 					|| test "x$app_cv_target_os_env" = "xcygwin"; then
@@ -63,6 +63,10 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 			app_cv_compiler_tmp_var="-Wall -Wcast-align -Wcast-qual -Wconversion \
 -Wctor-dtor-privacy -Wfloat-equal -Wnon-virtual-dtor -Woverloaded-virtual \
 -Wpointer-arith -Wshadow -Wsign-compare -Wsign-promo -Wundef -Wwrite-strings";
+			if test "x$app_cv_compiler_common_options" = "xclang"; then
+				# these are really annoying
+				app_cv_compiler_tmp_var="$app_cv_compiler_tmp_var -Wno-sign-conversion -Wno-format-security"
+			fi
 			app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags $app_cv_compiler_tmp_var";
 			app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags $app_cv_compiler_tmp_var";
 
@@ -102,7 +106,7 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 	# ---- Compiler options for debug builds
 
 	AC_ARG_ENABLE(debug-options, AS_HELP_STRING([--enable-debug-options=<compiler>|auto|none],
-			[enable debug build options. Accepted values are auto, none, gnu, intel, sun. (Default: none)]),
+			[enable debug build options. Accepted values are auto, none, gnu, clang, intel, sun. (Default: none)]),
 		[app_cv_compiler_debug_options=${enableval}], [app_cv_compiler_debug_options=none])
 
 	# the default value is "yes" (if no value given after =), treat it as auto.
@@ -124,7 +128,7 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 		AC_DEFINE([DEBUG_BUILD], [1], [Defined for debug builds])
 
 		# gcc, mingw
-		if test "x$app_cv_compiler_debug_options" = "xgnu"; then
+		if test "x$app_cv_compiler_debug_options" = "xgnu" || test "x$app_cv_compiler_debug_options" = "xclang"; then
 			# We could put libstdc++ debug options here, but it generates binary-incompatible
 			# C++ code, which leads to runtime errors with e.g. libsigc++.
 			app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -g3 -O0";
@@ -154,7 +158,7 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 	# ---- Compiler options for optimized builds
 
 	AC_ARG_ENABLE(optimize-options, AS_HELP_STRING([--enable-optimize-options=<compiler>|auto|none],
-			[enable optimized build options. Accepted values are auto, none, gnu, intel, sun. (Default: none)]),
+			[enable optimized build options. Accepted values are auto, none, gnu, clang, intel, sun. (Default: none)]),
 		[app_cv_compiler_optimize_options=${enableval}], [app_cv_compiler_optimize_options=none])
 
 	# the default value is "yes" (if no value given after =), treat it as auto.
@@ -172,7 +176,7 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 	if test "x$app_cv_compiler_optimize_options" != "xnone"; then
 
 		# gcc, mingw
-		if test "x$app_cv_compiler_optimize_options" = "xgnu"; then
+		if test "x$app_cv_compiler_optimize_options" = "xgnu" || test "x$app_cv_compiler_optimize_options" = "xclang"; then
 			# -mtune=generic is since gcc 4.0 iirc
 			if test "x$app_cv_target_os_env" = "xmingw32"; then
 				app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -g0 -O3 -s -march=i686";

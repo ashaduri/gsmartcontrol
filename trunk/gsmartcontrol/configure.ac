@@ -454,7 +454,8 @@ ADDITIONAL_INCLUDES="-I\$(top_builddir) -I\$(top_srcdir)/src -I\$(top_srcdir)/sr
 # (e.g. gccfss (gcc frontend / sun backend), etc...).
 # We use -include only when using pch.
 if test "x$app_cv_compiler_gcc_pch" = "xyes"; then
-	if test "$ax_cv_cxx_compiler_vendor" = "gnu" || test "$ax_cv_cxx_compiler_vendor" = "intel" || test "$ax_cv_cxx_compiler_vendor" = "pathscale"; then
+	if test "$ax_cv_cxx_compiler_vendor" = "gnu" || test "$ax_cv_cxx_compiler_vendor" = "clang" \
+			|| test "$ax_cv_cxx_compiler_vendor" = "intel" || test "$ax_cv_cxx_compiler_vendor" = "pathscale"; then
 		# This auto-includes this file when compiling any file. Benefits include pch support.
 		ADDITIONAL_INCLUDES="$ADDITIONAL_INCLUDES -include global_macros.h"
 	fi

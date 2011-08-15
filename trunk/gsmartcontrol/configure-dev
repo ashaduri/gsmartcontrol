@@ -8,7 +8,7 @@ configure_script="$2";
 if [ "$type" == "" ]; then
 	echo "Usage: $0 <type> [<configure_script>]"
 	echo "where <type> is one of:"
-	echo "debug optimized icc win32 win32-debug win64-debug sun portland open64";
+	echo "debug optimized icc clang win32 win32-debug win64-debug sun portland open64";
 	echo "<configure_script> is ../configure by default"
 	exit 1;
 fi
@@ -25,6 +25,8 @@ case $type in
 		flags="--disable-user-flags --enable-optimize-options --enable-tests" ;;
 	debug)
 		flags="--enable-debug-options --enable-tests" ;;
+	clang)
+		flags="CC=clang CXX=clang++ --enable-debug-options --enable-tests" ;;
 	icc)
 		flags="CC=icc64 CXX=icpc64 --disable-user-flags --enable-tests" ;;
 	win32)
