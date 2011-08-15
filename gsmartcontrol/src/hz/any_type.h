@@ -4,17 +4,23 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_boost_1_0.txt file
 ***************************************************************************/
+/// \file
+/// \author Kevlin Henney
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_ANY_TYPE_H
 #define HZ_ANY_TYPE_H
 
 #include "hz_config.h"  // feature macros
 
-/*
+/**
+\file
 any_type library (any type one-element container), based on boost::any.
 
 Original notes and copyright info follow:
-*/
 
 // what:  variant type boost::any
 // who:   contributed by Kevlin Henney,
@@ -36,6 +42,7 @@ Original notes and copyright info follow:
 
 // - Define DISABLE_ANY_CONVERT=1 to disable all .convert functions
 // (avoids dependency on any_convert.h)
+*/
 
 
 #if !(defined DISABLE_RTTI && DISABLE_RTTI)
@@ -56,38 +63,43 @@ namespace hz {
 
 
 
+/// An object of this type can contain any variable of any type in it.
 class any_type {
-
 	public:
 
+		/// Constructor
 		any_type()
 			: content(0)
 		{ }
 
-		// construct from a specific data type
+		/// Construct from a value
 		template<typename ValueType>
 		any_type(const ValueType& value)
 			: content(new internal::AnyHolder<ValueType>(value))
 		{ }
 
-		// copy constructor
+		/// Copy constructor
 		any_type(const any_type& other)
 			: content(other.content ? other.content->clone() : 0)
 		{ }
 
+		/// Destructor
         ~any_type()
         {
             delete content;
         }
 
+		/// Swap *this with rhs
 		inline any_type& swap(any_type& rhs);
 
 
+		/// Check whether the wrapped variable is set
 		bool empty() const
 		{
 			return !content;
 		}
 
+		/// Remove the wrapped variable
 		void clear()
 		{
 			delete content;
@@ -96,52 +108,58 @@ class any_type {
 
 
 #if !(defined DISABLE_RTTI && DISABLE_RTTI)
+		/// Get type info of the wrapped variable
 		const std::type_info& type() const
 		{
 			return (content ? content->type() : typeid(void));
 		}
 
 
+		/// Check whether the wrapped variable is of type T.
 		template<typename T> inline
 		bool is_type() const;  // e.g. is_type<int>
 #endif
 
 
 
-		// get the value into _exactly_ the same type.
+		/// Get the value into a variable of _exactly_ the same type.
+		/// \return false if casting fails
 		template<typename T> inline
-		bool get(T& put_it_here) const;  // returns false if cast failed
+		bool get(T& put_it_here) const;
 
 
+		/// Get the value using _exactly_ the same type.
+		/// \throw bad_any_cast if casting fails
 		template<typename T> inline
 		T get() const;  // this may throw if cast fails!
 
 
 #if !(defined DISABLE_ANY_CONVERT && DISABLE_ANY_CONVERT)
-		// convert the value into a castable type.
+		/// Convert the value into a castable type using any_convert().
 		template<typename T> inline
 		bool convert(T& val) const;
 
+		/// Convert the value into a castable type using any_convert().
+		/// \throw bad_any_cast if casting fails
 		template<typename T> inline
-		T convert() const;  // this may throw if cast fails!
+		T convert() const;
 #endif
 
 
 
-		// assignment operator from specific type
+		/// Assignment operator from specific type
 		template<typename ValueType>
 		any_type& operator= (const ValueType& value)
 		{
-			// any_type(value).swap(*this);
 			delete content;
 			content = new internal::AnyHolder<ValueType>(value);
 			return *this;
 		}
 
 
+		/// Assignment operator from another any_type
 		any_type& operator= (const any_type& other)
 		{
-// 			any_type(other).swap(*this);
 			delete content;
 			content = other.content->clone();
 			return *this;
@@ -149,14 +167,15 @@ class any_type {
 
 
 
-		// a helper class for easy << usage.
+		/// A helper class for easy operator<<() usage.
 		struct StreamHelper {
 			StreamHelper(internal::AnyHolderBase* c) : content(c) { }
 			internal::AnyHolderBase* content;
 		};
 
 
-		// example:  std::cerr << any_type_object.to_stream()
+		/// A helper function to send any_type to a stream.
+		/// Example:  std::cerr << any_type_object.to_stream()
 		StreamHelper to_stream() const
 		{
 			return StreamHelper(content);
@@ -166,21 +185,25 @@ class any_type {
 
 		// helper classes for enabling <<.
 
+		/// A helper struct for operator<<()
 		template<typename T>
 		struct is_default_printable
 			: public type_integral_constant<bool, (type_is_integral<T>::value
 				|| type_is_floating_point<T>::value || type_is_pointer<T>::value)> { };
 
 
+		/// A helper struct for operator<<()
 		template<bool b>
 		struct printable {
 			static const bool value = b;
 		};
 
-		// you may specialize this to <A>, with "public printable<true>" to enable default printing
+		/// A helper struct for operator<<().
+		// You may specialize this to <A>, with "public printable<true>" to enable default printing
 		template<typename T>
 		struct set_printable : public printable<false> { };
 
+		/// A helper struct for operator<<()
 		template<typename T>
 		struct is_printable {
 			static const bool value = (is_default_printable<T>::value || set_printable<T>::value);
@@ -188,13 +211,13 @@ class any_type {
 
 
 
-		internal::AnyHolderBase* content;  // pointer to Holder<T>
+		internal::AnyHolderBase* content;  ///< Pointer to internal::AnyHolder<T>
 
 };
 
 
 
-
+/// Operator<<() for any_type::StreamHelper. See any_type::to_stream().
 inline std::ostream& operator<< (std::ostream& os, const any_type::StreamHelper& sh)
 {
 	if (sh.content)
@@ -205,7 +228,7 @@ inline std::ostream& operator<< (std::ostream& os, const any_type::StreamHelper&
 
 
 
-// this is thrown in case of bad reference casts
+/// This is thrown in case of bad reference casts
 DEFINE_BAD_CAST_EXCEPTION(bad_any_cast,
 		"Data type mismatch for AnyType. Original type: \"%s\", requested type: \"%s\".",
 		"Data type mismatch for AnyType.");
@@ -218,8 +241,8 @@ DEFINE_BAD_CAST_EXCEPTION(bad_any_cast,
 
 
 
-// cast a "pointer to any_type" to a "pointer to value_type"
-template<typename ValueType> inline
+/// Cast a "pointer to any_type" to a "pointer to value_type"
+template<typename ValueType>
 ValueType any_cast(any_type* operand)
 {
 	typedef typename type_remove_pointer<ValueType>::type nopointer;
@@ -236,8 +259,8 @@ ValueType any_cast(any_type* operand)
 }
 
 
-// const variant of the above
-template<typename ValueType> inline
+/// Cast a "pointer to any_type" to a "pointer to value_type"
+template<typename ValueType>
 const ValueType any_cast(const any_type* operand)
 {
 	return any_cast<ValueType>(const_cast<any_type*>(operand));
@@ -246,8 +269,8 @@ const ValueType any_cast(const any_type* operand)
 
 
 
-// cast an any_type object to value_type
-template<typename ValueType> inline
+/// Cast an any_type object to value_type
+template<typename ValueType>
 ValueType any_cast(any_type& operand)
 {
 	typedef typename type_remove_reference<ValueType>::type nonref;
@@ -264,8 +287,8 @@ ValueType any_cast(any_type& operand)
 }
 
 
-// const variant of the above
-template<typename ValueType> inline
+/// Cast an any_type object to value_type
+template<typename ValueType>
 ValueType any_cast(const any_type& operand)
 {
 	typedef typename type_remove_reference<ValueType>::type nonref;
@@ -330,7 +353,6 @@ T any_type::get() const
 
 #if !(defined DISABLE_ANY_CONVERT && DISABLE_ANY_CONVERT)
 
-// convert the value into a castable type.
 template<typename T> inline
 bool any_type::convert(T& val) const
 {
@@ -358,7 +380,7 @@ T any_type::convert() const
 
 namespace internal {
 
-	// you may specialize this for <T, true> to enable custom printing.
+	/// You may specialize this for <T, true> to enable custom printing.
 	template <class ValueType, bool b = !any_type::is_printable<ValueType>::value >
 	struct AnyPrinter {
 		static void to_stream(std::ostream& os, const ValueType& value)
@@ -367,7 +389,7 @@ namespace internal {
 		}
 	};
 
-	// specialization
+	/// Specialization
 	template <class ValueType>
 	struct AnyPrinter<ValueType, false> {
 		static void to_stream(std::ostream& os, const ValueType& value)
@@ -395,20 +417,20 @@ namespace internal {
 
 
 
-// Use this to add supported types to any_type::to_stream().
-// Any type may be added if it supports operator <<.
-
+/// Use this to add supported types to any_type::to_stream().
+/// Any type may be added if it supports operator <<.
 #define ANY_TYPE_SET_PRINTABLE(type, truefalse) \
 	namespace hz { \
 		template<> struct any_type::set_printable<type> : public any_type::printable<truefalse> { }; \
 	}
 
 
+
 }  // ns
 
 
 
-
+/// Make std::string printable using any_type::to_stream().
 ANY_TYPE_SET_PRINTABLE(std::string, true)
 
 
@@ -416,3 +438,5 @@ ANY_TYPE_SET_PRINTABLE(std::string, true)
 
 
 #endif
+
+/// @}

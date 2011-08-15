@@ -55,8 +55,8 @@ AC_DEFUN([APP_GET_MT_FLAGS], [
 		linux)
 			# glibc manual says that defining either _REENTRANT or _THREAD_SAFE
 			# enables some thread-safe implementations of glibc functions.
-			if test "$ax_cv_cxx_compiler_vendor" = "gnu" || test "$ax_cv_cxx_compiler_vendor" = "intel" \
-					|| test "$ax_cv_cxx_compiler_vendor" = "pathscale"; then
+			if test "$ax_cv_cxx_compiler_vendor" = "gnu" || test "$ax_cv_cxx_compiler_vendor" = "clang" \
+					|| test "$ax_cv_cxx_compiler_vendor" = "intel" || test "$ax_cv_cxx_compiler_vendor" = "pathscale"; then
 				app_cv_target_thread_cflags="-pthread -D_MT -D_THREAD_SAFE"
 				app_cv_target_thread_cxxflags="-pthread -D_MT -D_THREAD_SAFE"
 				app_cv_target_thread_libs="-pthread"
@@ -77,12 +77,12 @@ AC_DEFUN([APP_GET_MT_FLAGS], [
 			;;
 
 		windows*)
-			# NOTE: Not sure about cygwin.
+			# NOTE: Not sure about cygwin or clang.
 			# NOTE: This only enables multithreaded code generation. For linking
 			# with pthreads-win32 you need additional flags.
 			# gcc man page: -mthreads: Support thread-safe exception handling on Mingw32.
 			# -mthreads defines -D_MT, and links with -lmingwthrd.
-			if test "$ax_cv_cxx_compiler_vendor" = "gnu"; then
+			if test "$ax_cv_cxx_compiler_vendor" = "gnu" || test "$ax_cv_cxx_compiler_vendor" = "clang"; then
 				app_cv_target_thread_cflags="-mthreads -D_THREAD_SAFE"
 				app_cv_target_thread_cxxflags="-mthreads -D_THREAD_SAFE"
 				app_cv_target_thread_libs="-mthreads"
@@ -104,7 +104,7 @@ AC_DEFUN([APP_GET_MT_FLAGS], [
 			# NOTE: Not sure about debian gnu/kfreebsd and gnu/netbsd.
 			# Freebsd had -kthread, but it has been discontinued (afaik).
 			# For freebsd -pthread replaces libc with libc_r.
-			if test "$ax_cv_cxx_compiler_vendor" = "gnu"; then
+			if test "$ax_cv_cxx_compiler_vendor" = "gnu" || test "$ax_cv_cxx_compiler_vendor" = "clang"; then
 				app_cv_target_thread_cflags="-pthread -D_MT -D_THREAD_SAFE"
 				app_cv_target_thread_cxxflags="-pthread -D_MT -D_THREAD_SAFE"
 				app_cv_target_thread_libs="-pthread"
@@ -113,7 +113,7 @@ AC_DEFUN([APP_GET_MT_FLAGS], [
 			;;
 
 		openbsd)
-			if test "$ax_cv_cxx_compiler_vendor" = "gnu"; then
+			if test "$ax_cv_cxx_compiler_vendor" = "gnu" || test "$ax_cv_cxx_compiler_vendor" = "clang"; then
 				app_cv_target_thread_cflags="-pthread -D_REENTRANT"
 				app_cv_target_thread_cxxflags="-pthread -D_REENTRANT"
 				app_cv_target_thread_libs="-pthread"
@@ -123,7 +123,7 @@ AC_DEFUN([APP_GET_MT_FLAGS], [
 
 		netbsd)
 			# See sys/featuretest.h
-			if test "$ax_cv_cxx_compiler_vendor" = "gnu"; then
+			if test "$ax_cv_cxx_compiler_vendor" = "gnu" || test "$ax_cv_cxx_compiler_vendor" = "clang"; then
 				app_cv_target_thread_cflags="-pthread -D_REENTRANT"
 				app_cv_target_thread_cxxflags="-pthread -D_REENTRANT"
 				app_cv_target_thread_libs="-pthread"
@@ -132,7 +132,7 @@ AC_DEFUN([APP_GET_MT_FLAGS], [
 			;;
 
 		solaris)
-			if test "$ax_cv_cxx_compiler_vendor" = "gnu"; then
+			if test "$ax_cv_cxx_compiler_vendor" = "gnu" || test "$ax_cv_cxx_compiler_vendor" = "clang"; then
 				# gnu documentation mentions -threads (and its aliases, -pthreads and -pthread).
 				# _REENTRANT is needed to enable some thread-safe equivalents of standard
 				# functions.
@@ -159,14 +159,14 @@ AC_DEFUN([APP_GET_MT_FLAGS], [
 			;;
 
 		darwin)
-			if test "$ax_cv_cxx_compiler_vendor" = "gnu"; then
+			if test "$ax_cv_cxx_compiler_vendor" = "gnu" || test "$ax_cv_cxx_compiler_vendor" = "clang"; then
 				# Darwin produces mt code by default, and -pthread is an error.
 				app_cv_target_thread_found="yes"
 			fi
 			;;
 
 		qnx)
-			if test "$ax_cv_cxx_compiler_vendor" = "gnu"; then
+			if test "$ax_cv_cxx_compiler_vendor" = "gnu" || test "$ax_cv_cxx_compiler_vendor" = "clang"; then
 				# afaik, gcc/qnx produces mt code by default (at least on newer qnx releases),
 				# so no flags are needed.
 				app_cv_target_thread_found="yes"

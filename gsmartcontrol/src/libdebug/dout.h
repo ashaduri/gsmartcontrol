@@ -232,9 +232,9 @@ void debug_indent_reset();
 
 namespace debug_internal {
 
-	class DebugIndent;
-	class DebugUnindent;
-	class DebugResetIndent;
+	struct DebugIndent;
+	struct DebugUnindent;
+	struct DebugResetIndent;
 
 
 

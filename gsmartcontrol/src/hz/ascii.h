@@ -5,6 +5,12 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author The Regents of the University of California
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_ASCII_H
 #define HZ_ASCII_H
@@ -12,8 +18,9 @@
 #include "hz_config.h"  // feature macros
 
 
-// Part of this file (specifically, ascii_strtoi() implementation)
-// is derived from FreeBSD's strtol() and friends.
+/// \file
+/// Part of this file (specifically, ascii_strtoi() implementation)
+/// is derived from FreeBSD's strtol() and friends.
 
 // The original FreeBSD copyright header follows:
 /*-
@@ -79,9 +86,9 @@ namespace hz {
 
 
 
-// Implementation of std::isspace().
-// This function always behaves like the standard function
-// does in Classic locale.
+/// Implementation of std::isspace().
+/// This function always behaves like the standard function
+/// does in Classic locale (regardless of current locale).
 inline bool ascii_isspace(char c)
 {
 	return (c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\v');
@@ -89,11 +96,11 @@ inline bool ascii_isspace(char c)
 
 
 
-// Implementation of std::strtoX() for every native integral type:
-// char (numerical value), wchar_t (numerical value),
-// int, short, long, long long, plus their signed/unsigned variants.
-// This function always behaves like the standard functions do
-// in Classic locale.
+/// Implementation of std::strtoX() functions for every native integral type:
+/// char (numerical value), wchar_t (numerical value),
+/// int, short, long, long long, plus their signed/unsigned variants.
+/// This function always behaves like the standard functions do
+/// in Classic locale.
 template<typename T> inline
 T ascii_strtoi(const char* nptr, char** endptr, int base)
 {
@@ -232,7 +239,7 @@ namespace internal {
 
 	// proxy functions for system strtod family.
 
-	// we use struct because the errors are easier on the user this way.
+	/// We use struct because the errors are easier on the user this way.
 	template<typename T>
 	struct ascii_strtof_impl { };
 
@@ -328,9 +335,9 @@ namespace internal {
 // on overflow, +/-HUGE_VAL[L|F] is returned, and errno is set to ERANGE.
 // on underflow, 0 is returned and errno is set to ERANGE.
 
-// A unified strtod/strtof/strtold.
-// This function always behaves like the standard functions do
-// in Classic locale.
+/// Implementation of strtod/strtof/strtold for any floating-point type.
+/// This function always behaves like the standard functions do
+/// in Classic locale.
 template<typename T> inline
 T ascii_strtof(const char* nptr, char** endptr)
 {
@@ -497,7 +504,8 @@ namespace {
 
 
 
-// Note: Parameter "base" is ignored for floating point types.
+/// Create any number (integral or floating point) from a string.
+/// Note: Parameter "base" is ignored for floating point types.
 template<typename T> inline
 T ascii_strton(const char* nptr, char** endptr, int base = 0)
 {
@@ -514,3 +522,5 @@ T ascii_strton(const char* nptr, char** endptr, int base = 0)
 
 
 #endif
+
+/// @}

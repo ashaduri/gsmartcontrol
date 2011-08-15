@@ -215,18 +215,19 @@ class ErrorCodeHolder<void> : public ErrorBase {
 
 // Error class. Instantiate this in user code.
 template<typename CodeType>
-struct Error : public ErrorCodeHolder<CodeType> {
+class Error : public ErrorCodeHolder<CodeType> {
+	public:
 
-	Error(const std::string& type_, ErrorLevel::level_t level_, const CodeType& code_,
-			const std::string& msg)
-		: ErrorCodeHolder<CodeType>(type_, level_, code_, msg)
-	{ }
+		Error(const std::string& type_, ErrorLevel::level_t level_, const CodeType& code_,
+				const std::string& msg)
+			: ErrorCodeHolder<CodeType>(type_, level_, code_, msg)
+		{ }
 
-	ErrorBase* clone()  // needed for copying by base pointers
-	{
-		return new Error(ErrorCodeHolder<CodeType>::type, ErrorCodeHolder<CodeType>::level,
-				ErrorCodeHolder<CodeType>::code, ErrorCodeHolder<CodeType>::message);
-	}
+		ErrorBase* clone()  // needed for copying by base pointers
+		{
+			return new Error(ErrorCodeHolder<CodeType>::type, ErrorCodeHolder<CodeType>::level,
+					ErrorCodeHolder<CodeType>::code, ErrorCodeHolder<CodeType>::message);
+		}
 };
 
 
@@ -234,17 +235,18 @@ struct Error : public ErrorCodeHolder<CodeType> {
 
 // Error class specialization for void (helpful for custom messages).
 template<>
-struct Error<void> : public ErrorCodeHolder<void> {
+class Error<void> : public ErrorCodeHolder<void> {
+	public:
 
-	Error(const std::string& type_, ErrorLevel::level_t level_, const std::string& msg)
-		: ErrorCodeHolder<void>(type_, level_, msg)
-	{ }
+		Error(const std::string& type_, ErrorLevel::level_t level_, const std::string& msg)
+			: ErrorCodeHolder<void>(type_, level_, msg)
+		{ }
 
-	ErrorBase* clone()  // needed for copying by base pointers
-	{
-		return new Error(ErrorCodeHolder<void>::type, ErrorCodeHolder<void>::level,
-				ErrorCodeHolder<void>::message);
-	}
+		ErrorBase* clone()  // needed for copying by base pointers
+		{
+			return new Error(ErrorCodeHolder<void>::type, ErrorCodeHolder<void>::level,
+					ErrorCodeHolder<void>::message);
+		}
 };
 
 
@@ -252,32 +254,33 @@ struct Error<void> : public ErrorCodeHolder<void> {
 
 // int specialization for signal, errno; message is auto-evaluated.
 template<>
-struct Error<int> : public ErrorCodeHolder<int> {
+class Error<int> : public ErrorCodeHolder<int> {
+	public:
 
-	Error(const std::string& type_, ErrorLevel::level_t level_, int code_, const std::string& msg)
-		: ErrorCodeHolder<int>(type_, level_, code_, msg)
-	{ }
+		Error(const std::string& type_, ErrorLevel::level_t level_, int code_, const std::string& msg)
+			: ErrorCodeHolder<int>(type_, level_, code_, msg)
+		{ }
 
-	Error(const std::string& type_, ErrorLevel::level_t level_, int code_)
-		: ErrorCodeHolder<int>(type_, level_, code)
-	{
-		if (type == "errno") {
-			message = hz::errno_string(code_);
+		Error(const std::string& type_, ErrorLevel::level_t level_, int code_)
+			: ErrorCodeHolder<int>(type_, level_, code)
+		{
+			if (type == "errno") {
+				message = hz::errno_string(code_);
 
-		} else if (type == "signal") {
-			// hz::signal_string should be translated already
-			message = HZ__("Child exited with signal: ") + hz::signal_to_string(code_);
+			} else if (type == "signal") {
+				// hz::signal_string should be translated already
+				message = HZ__("Child exited with signal: ") + hz::signal_to_string(code_);
 
-		} else {  // nothing else supported here. use constructor with a message.
-			DBG_ASSERT(0);
+			} else {  // nothing else supported here. use constructor with a message.
+				DBG_ASSERT(0);
+			}
 		}
-	}
 
-	ErrorBase* clone()  // needed for copying by base pointers
-	{
-		return new Error(ErrorCodeHolder<int>::type, ErrorCodeHolder<int>::level,
-				ErrorCodeHolder<int>::code, ErrorCodeHolder<int>::message);
-	}
+		ErrorBase* clone()  // needed for copying by base pointers
+		{
+			return new Error(ErrorCodeHolder<int>::type, ErrorCodeHolder<int>::level,
+					ErrorCodeHolder<int>::code, ErrorCodeHolder<int>::message);
+		}
 };
 
 
