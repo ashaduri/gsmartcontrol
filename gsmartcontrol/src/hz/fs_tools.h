@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_FS_TOOLS_H
 #define HZ_FS_TOOLS_H
@@ -26,30 +31,33 @@
 #endif
 
 
-// Filesystem utilities
+/**
+\file
+Filesystem utilities
+*/
 
 
 namespace hz {
 
 
 
-// Get the current user's configuration file directory (in native fs encoding
-// for UNIX, utf-8 for windows).
+/// Get the current user's configuration file directory (in native fs encoding
+/// for UNIX, utf-8 for windows). E.g. "$HOME/.config" in UNIX.
 inline std::string get_user_config_dir();
 
-// Get the current user's home directory (in native fs encoding for UNIX,
-// utf-8 for windows). This function always returns something.
-// Note that the directory may not actually exist at all.
+/// Get the current user's home directory (in native fs encoding for UNIX,
+/// utf-8 for windows). This function always returns something, but
+/// note that the directory may not actually exist at all.
 inline std::string get_home_dir();
 
-// Get current working directory
+/// Get current working directory
 inline std::string get_current_dir();
 
-// Change current directory.
+/// Change current directory.
 inline bool set_current_dir(const std::string& dir);
 
-// Get temporary directory of a system (can be user-specific).
-// For windows it seems to be in UTF-8, for others - in fs encoding.
+/// Get temporary directory of a system (can be user-specific).
+/// For windows it seems to be in UTF-8, for others - in fs encoding.
 inline std::string get_tmp_dir();
 
 
@@ -59,8 +67,6 @@ inline std::string get_tmp_dir();
 
 
 
-// Get the current user's configuration file directory (in native fs encoding
-// for UNIX, utf-8 for windows).
 inline std::string get_user_config_dir()
 {
 	std::string dir;
@@ -82,10 +88,6 @@ inline std::string get_user_config_dir()
 
 
 
-
-// Get the current user's home directory (in native fs encoding for UNIX,
-// utf-8 for windows). This function always returns something.
-// Note that the directory may not actually exist at all.
 inline std::string get_home_dir()
 {
 	// Do NOT use g_get_home_dir, it doesn't work consistently in win32
@@ -125,7 +127,6 @@ inline std::string get_home_dir()
 
 
 
-// Get current working directory
 inline std::string get_current_dir()
 {
 	std::string dir;
@@ -160,7 +161,6 @@ inline std::string get_current_dir()
 
 
 
-// Change current directory.
 inline bool set_current_dir(const std::string& dir)
 {
 #ifdef _WIN32
@@ -173,8 +173,6 @@ inline bool set_current_dir(const std::string& dir)
 
 
 
-// Get temporary directory of a system (can be user-specific).
-// For windows it's in UTF-8, for others - in fs encoding.
 inline std::string get_tmp_dir()
 {
 	std::string dir;
@@ -212,3 +210,5 @@ inline std::string get_tmp_dir()
 
 
 #endif
+
+/// @}

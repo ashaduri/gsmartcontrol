@@ -3,6 +3,11 @@
       (C) 2009 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_FS_DIR_PLATFORM_H
 #define HZ_FS_DIR_PLATFORM_H
@@ -40,45 +45,51 @@ namespace hz {
 #ifndef _WIN32
 
 
-typedef DIR* directory_handle_type;
-typedef struct dirent* directory_entry_handle_type;
+typedef DIR* directory_handle_type;  ///< Native directory handle
+typedef struct dirent* directory_entry_handle_type;  ///< Native directory entry handle
 
-// Linux man pages say off_t, bit POSIX and glibc have long.
+// Linux man pages say off_t, but POSIX and glibc have long.
 // typedef off_t directory_offset_type;
-typedef long directory_offset_type;
+typedef long directory_offset_type;  ///< Directory entry offset type
 
 
-inline directory_handle_type directory_open(const char* path)  // NULL on error, also sets errno.
+/// Open directory. NULL on error, also sets errno.
+inline directory_handle_type directory_open(const char* path)
 {
 	return opendir(path);
 }
 
-inline int directory_close(directory_handle_type dir)  // 0 on success, -1 on error (also sets errno).
+/// Close directory. 0 on success, -1 on error (also sets errno).
+inline int directory_close(directory_handle_type dir)
 {
 	return closedir(dir);
 }
 
+/// Rewind directory
 inline void directory_rewind(directory_handle_type dir)
 {
 	return rewinddir(dir);
 }
 
-inline directory_entry_handle_type directory_read(directory_handle_type dir)  // sets errno and returns NULL on error
+/// Read current entry. On error, returns NULL and sets errno.
+inline directory_entry_handle_type directory_read(directory_handle_type dir)
 {
 	return readdir(dir);
 }
 
+/// Return current position as a native offset.
 inline directory_offset_type directory_tell(directory_handle_type dir)
 {
 	return telldir(dir);
 }
 
-// return to the position given by directory_tell().
+/// Go to the position given by directory_tell().
 inline void directory_seek(directory_handle_type dir, directory_offset_type pos)
 {
 	seekdir(dir, pos);
 }
 
+/// Get current entry name
 inline std::string directory_entry_name(directory_entry_handle_type entry)
 {
 	return (entry && entry->d_name) ? entry->d_name : "";
@@ -335,3 +346,5 @@ inline std::string directory_entry_name(directory_entry_handle_type entry)
 
 
 #endif
+
+/// @}

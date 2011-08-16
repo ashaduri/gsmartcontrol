@@ -3,6 +3,11 @@
       (C) 2009 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib
+/// \weakgroup applib
+/// @{
 
 #ifndef HZ_CSTDINT_H
 #define HZ_CSTDINT_H
@@ -38,3 +43,5 @@
 
 
 #endif
+
+/// @}

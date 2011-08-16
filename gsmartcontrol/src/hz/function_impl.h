@@ -1,14 +1,22 @@
 /**************************************************************************
  Copyright:
-      (C) 2007 - 2010  Thiago Rosso Adams <thiago.adams 'at' gmail.com>
+      (C) 2007 - 2011  Thiago Rosso Adams <thiago.adams 'at' gmail.com>
       (C) 2009 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Thiago Rosso Adams
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 // TODO: HZIFY
 
-// See function.h for details.
-
+/**
+\file
+See function.h for details.
+*/
 
 #if FUNC_NUM_ARGS == 0
 #define FUNC_USE_COMMA_IF
@@ -363,3 +371,5 @@ namespace std {
 #undef FUNC_USE_COMMA_IF
 #undef USING_FUNCTION
 #undef USING_FUNCTIONM
+
+/// @}

@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_DEBUG_H
 #define HZ_DEBUG_H
@@ -23,13 +28,16 @@
 #endif
 */
 
-// This file is a link between libhz (and its users) and libdebug.
-// It provides a way to write in libdebug-like API without actually
-// using libdebug.
+/**
+\file
+This file is a link between libhz (and its users) and libdebug.
+It provides a way to write in libdebug-like API without actually
+using libdebug.
 
-// Note that it provides only output functions. The setup functions
-// cannot be emulated (but you probably won't need them in libraries
-// anyway).
+Note that it provides only output functions. The setup functions
+cannot be emulated (but you probably won't need them in libraries
+anyway).
+*/
 
 
 // Use libdebug as is
@@ -354,3 +362,5 @@
 
 
 #endif
+
+/// @}

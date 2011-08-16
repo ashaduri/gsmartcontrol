@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_ERRNO_STRING_H
 #define HZ_ERRNO_STRING_H
@@ -51,13 +56,13 @@
 namespace hz {
 
 
-// Note: This function may return messages in native language,
-// possibly using LC_MESSAGES to select the language.
-// If Glib is enabled, it returns messages in UTF-8 format.
-
 // TODO: make messages always in utf-8 (convert from locale).
 
-// portable strerror() version for std::string.
+
+/// Portable version of strerror() for std::string.
+/// Note: This function may return messages in native language,
+/// possibly using LC_MESSAGES to select the language.
+/// If Glib is enabled, it returns messages in UTF-8 format.
 inline std::string errno_string(int errno_value);
 
 
@@ -67,7 +72,6 @@ inline std::string errno_string(int errno_value);
 
 
 
-// Portable strerror() implementation
 inline std::string errno_string(int errno_value)
 {
 	std::string msg;
@@ -138,3 +142,5 @@ inline std::string errno_string(int errno_value)
 
 
 #endif
+
+/// @}

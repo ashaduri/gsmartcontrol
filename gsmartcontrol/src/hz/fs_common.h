@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_FS_COMMON_H
 #define HZ_FS_COMMON_H
@@ -19,6 +24,12 @@
 
 namespace hz {
 
+
+/// \var const char DIR_SEPARATOR
+/// Directory path separator (character)
+
+/// \var static const char* const DIR_SEPARATOR_S
+/// Directory path separator (string)
 
 
 // these have internal linkage (const integral types).
@@ -43,3 +54,5 @@ namespace hz {
 
 
 #endif
+
+/// @}

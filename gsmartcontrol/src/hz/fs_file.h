@@ -3,81 +3,87 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_FS_FILE_H
 #define HZ_FS_FILE_H
 
 #include "hz_config.h"  // feature macros
 
+/**
+\file
+This API accepts/gives utf-8 filenames/paths on win32,
+current locale filenames/paths on others (just like glib).
 
-// This API accepts/gives utf-8 filenames/paths on win32,
-// current locale filenames/paths on others (just like glib).
 
+Notes on 64-bit file support:
 
-// Notes on 64-bit file support:
+Glibc/Linux:
+Glibc/Linux, Solaris and (to some extent) QNX implement "transitional"
+interface when used on 32-bit processors.
+http://www.gnu.org/software/libc/manual/html_mono/libc.html
+ftello() and fseeko() are available in glibc if _LARGEFILE_SOURCE is
+defined, which is also enabled by (_XOPEN_SOURCE >= 500 || _GNU_SOURCE).
 
-// Glibc/Linux:
-// Glibc/Linux, Solaris and (to some extent) QNX implement "transitional"
-// interface when used on 32-bit processors.
-// http://www.gnu.org/software/libc/manual/html_mono/libc.html
-// ftello() and fseeko() are available in glibc if _LARGEFILE_SOURCE is
-// defined, which is also enabled by (_XOPEN_SOURCE >= 500 || _GNU_SOURCE).
+ftello64() is available in glibc if _LARGEFILE64_SOURCE is defined,
+which is enabled with _GNU_SOURCE.
 
-// ftello64() is available in glibc if _LARGEFILE64_SOURCE is defined,
-// which is enabled with _GNU_SOURCE.
+Defining _FILE_OFFSET_BITS=64 replaces fopen() & friends with fopen64()
+and friends transparently. If ftello() is available, it's replaced by ftello64() too
+(same for fseeko()). Note that this won't make ftello64() available for applications.
+Note that the replacement happens on asm level if the compiler supports it,
+so, for example, libstdc++'s cstdio will correctly provide fopen64 as std::fopen().
+GCC, Sun and Intel support the transparent conversion. If it's unsupported,
+glibc falls back to macro-based substitution, which will fail since cstdio
+undefines those macros.
 
-// Defining _FILE_OFFSET_BITS=64 replaces fopen() & friends with fopen64()
-// and friends transparently. If ftello() is available, it's replaced by ftello64() too
-// (same for fseeko()). Note that this won't make ftello64() available for applications.
-// Note that the replacement happens on asm level if the compiler supports it,
-// so, for example, libstdc++'s cstdio will correctly provide fopen64 as std::fopen().
-// GCC, Sun and Intel support the transparent conversion. If it's unsupported,
-// glibc falls back to macro-based substitution, which will fail since cstdio
-// undefines those macros.
+Solaris:
+http://docs.sun.com/app/docs/doc/817-3946/6mjgmt4mp?l=en&a=view
+http://docs.sun.com/app/docs/doc/816-5175/standards-5?l=en&a=view
+Solaris seems to have the same rules regarding _LARGEFILE*_SOURCE
+and _FILE_OFFSET_BITS as glibc. _LARGEFILE64_SOURCE implies
+_LARGEFILE_SOURCE as well.
+Both _LARGEFILE*_SOURCE macros are automatically defined if:
+* No explicit standards-conforming environment is requested (neither
+_POSIX_SOURCE nor _XOPEN_SOURCE is defined and the value of
+__STDC__ does not imply standards conformance), OR:
+* Extended system interfaces are explicitly requested (__EXTENSIONS__
+is defined).
 
-// Solaris:
-// http://docs.sun.com/app/docs/doc/817-3946/6mjgmt4mp?l=en&a=view
-// http://docs.sun.com/app/docs/doc/816-5175/standards-5?l=en&a=view
-// Solaris seems to have the same rules regarding _LARGEFILE*_SOURCE
-// and _FILE_OFFSET_BITS as glibc. _LARGEFILE64_SOURCE implies
-// _LARGEFILE_SOURCE as well.
-// Both _LARGEFILE*_SOURCE macros are automatically defined if:
-// * No explicit standards-conforming environment is requested (neither
-// _POSIX_SOURCE nor _XOPEN_SOURCE is defined and the value of
-// __STDC__ does not imply standards conformance), OR:
-// * Extended system interfaces are explicitly requested (__EXTENSIONS__
-// is defined).
+NetBSD:
+(_LARGEFILE_SOURCE || _XOPEN_SOURCE >= 500 || _NETBSD_SOURCE)
+enables fseeko() and ftello().
+If none of the major feature macros are defined, _NETBSD_SOURCE is assumed.
+fopen() and friends use 64-bit offsets by default (off_t is always 64 bits). No
+*64() functions are present.
 
-// NetBSD:
-// (_LARGEFILE_SOURCE || _XOPEN_SOURCE >= 500 || _NETBSD_SOURCE)
-// enables fseeko() and ftello().
-// If none of the major feature macros are defined, _NETBSD_SOURCE is assumed.
-// fopen() and friends use 64-bit offsets by default (off_t is always 64 bits). No
-// *64() functions are present.
+OpenBSD:
+fseeko() and ftello() are always defined.
+fopen() and friends use 64-bit offsets (off_t is always 64 bits). No *64() functions
+are present.
 
-// OpenBSD:
-// fseeko() and ftello() are always defined.
-// fopen() and friends use 64-bit offsets (off_t is always 64 bits). No *64() functions
-// are present.
+FreeBSD:
+__POSIX_VISIBLE >= 200112 (enabled by default) enables fseeko() / ftello().
+off_t and friends always operate in 64 bits. No *64() functions
+are present.
 
-// FreeBSD:
-// __POSIX_VISIBLE >= 200112 (enabled by default) enables fseeko() / ftello().
-// off_t and friends always operate in 64 bits. No *64() functions
-// are present.
+QNX:
+There is no _LARGEFILE_SOURCE, fseeko() / ftello() are always available.
+_LARGEFILE64_SOURCE enables *64() variants. _FILE_OFFSET_BITS=64
+replaces ordinary functions with *64() equivalents (through asm conversion).
+_QNX_SOURCE (default) enables everything.
 
-// QNX:
-// There is no _LARGEFILE_SOURCE, fseeko() / ftello() are always available.
-// _LARGEFILE64_SOURCE enables *64() variants. _FILE_OFFSET_BITS=64
-// replaces ordinary functions with *64() equivalents (through asm conversion).
-// _QNX_SOURCE (default) enables everything.
+Darwin:
+off_t is 64-bit. Seems to be lifted from FreeBSD.
 
-// Darwin:
-// off_t is 64-bit. Seems to be lifted from FreeBSD.
-
-// Windows:
-// All off_t-related functions use long on Windows. There is no fseeko() / ftello().
-// One has to use _fseeki64() and friends explicitly.
-
+Windows:
+All off_t-related functions use long on Windows. There is no fseeko() / ftello().
+One has to use _fseeki64() and friends explicitly.
+*/
 
 #include <string>
 #include <cstddef>  // std::size_t
@@ -108,10 +114,12 @@ namespace hz {
 
 
 
-// Offset & size type. may be uint32_t or uint64_t, depending on system and compilation flags.
-// Note: It is usually discouraged to use this type in headers, because the library may be
-// compiled with one size and the application with another. However, this problem is rather
-// limited if using header-only approach, as we do.
+
+/// \typedef file_size_t
+/// Offset & size type. may be uint32_t or uint64_t, depending on system and compilation flags.
+/// Note: It is usually discouraged to use this type in headers, because the library may be
+/// compiled with one size and the application with another. However, this problem is rather
+/// limited if using header-only approach, like we do.
 
 #if defined HAVE_POSIX_OFF_T_FUNCS && HAVE_POSIX_OFF_T_FUNCS
 	typedef off_t file_size_t;  // off_t is in stdio.h, available in all self-respecting unix systems.
@@ -147,37 +155,40 @@ Should have similar thing with static buffers.
 */
 
 
-
+/// A class that represents a file. This can be thought of as a
+/// wrapper around std::FILE*.
 class File : public FsPath {
-
 	public:
+
+		/// Native handle type.
 		typedef std::FILE* handle_type;  // std::FILE must be identical to ::FILE in C++.
 
+		/// Constructor
 		File() : file_(NULL)
 		{ }
 
-		// Create a File object with path "path". This will NOT open the file.
+		/// Create a File object with path "path". This will NOT open the file.
 		File(const std::string& path) : file_(NULL)
 		{
 			this->set_path(path);
 		}
 
-		// Create a File object with path "path". This will NOT open the file.
+		/// Create a File object with path "path". This will NOT open the file.
 		File(const FsPath& path) : file_(NULL)
 		{
 			this->set_path(path.get_path());
 		}
 
-		// Create a File object and open a file "path" points to.
-		// You should check the success status with bad().
+		/// Create a File object and open a file "path" points to.
+		/// You should check the success status with bad().
 		File(const std::string& path, const std::string& open_mode) : file_(NULL)
 		{
 			this->set_path(path);
 			this->open(open_mode);
 		}
 
-		// Create a File object and open a file "path" points to.
-		// You should check the success status with bad().
+		/// Create a File object and open a file "path" points to.
+		/// You should check the success status with bad().
 		File(const FsPath& path, const std::string& open_mode) : file_(NULL)
 		{
 			this->set_path(path.get_path());
@@ -186,11 +197,14 @@ class File : public FsPath {
 
 
 	private:
+
 		// Between move semantics (confusing and error-prone) and denying copying,
 		// I choose to deny.
 
-		File(const File& other);  // copy constructor. needed to override File(const FsPath&).
+		/// Private copy constructor to deny copying
+		File(const File& other);
 
+		/// Private assignment operator to deny copying
 		File& operator= (const File& other);
 
 
@@ -209,7 +223,7 @@ class File : public FsPath {
 */
 
 
-		// Destructor which invokes close() if needed.
+		/// Destructor which invokes close() if needed.
 		virtual ~File()
 		{
 			if (file_)
@@ -220,53 +234,71 @@ class File : public FsPath {
 		// --- these may set bad() status
 
 
-		// Open the file with open_mode.
+		/// Open the file with open_mode (standard std::fopen open mode).
 		inline bool open(const std::string& open_mode);
 
-		// Open the previously opened file.
+		/// Close the previously opened file.
 		inline bool close();
 
-		// Get native file handle (obtained using fopen())
+		/// Get native file handle (obtained using std::fopen() or similar)
 		handle_type get_handle()
 		{
 			return file_;
 		}
 
 
-		// Returns false on error. You must call "delete[] put_data_here".
-		// If the file is larger than 100M (by default), the function refuses to load it.
-		// Note: No additional trailing 0 is written to data!
+		/// Get file contents. \c put_data_here will be allocated to whatever
+		/// size is needed to contain all the data. The size is written to \c put_size_here.
+		/// You must call "delete[] put_data_here" afterwards.
+		/// If the file is larger than \c max_size (100M by default), the function refuses to load it.
+		/// Note: No additional trailing 0 is written to data!
+		/// \return false on failure (error is also set).
 		inline bool get_contents(unsigned char*& put_data_here,
 				file_size_t& put_size_here, file_size_t max_size = 104857600);
 
-		// Same as above, but puts data into already allocated buffer.
-		// If the buffer is of insufficient size, false is returned and buffer is left untouched.
-		// If any other error occurs, the buffer may be left in unspecified state.
+		/// Same as other versions of get_contents(), but puts data into an already
+		/// allocated buffer of size \c buf_size.
+		/// If the size is insufficient, false is returned and buffer is left untouched.
+		/// If any other error occurs, the buffer is left in unspecified state.
+		/// Internal usage only: If buf_size is -1, the buffer will be automatically allocated.
+		/// TODO: Support files which are not seekable and don't have a size attribute (e.g. /proc/*).
+		/// \return false on failure (error is also set).
 		inline bool get_contents_noalloc(unsigned char*& put_data_here, file_size_t buf_size,
 				file_size_t& put_size_here, file_size_t max_size = 104857600);
 
-		// same as above, but for std::string (no terminating 0 is needed inside the file).
+		/// Same as other versions of get_contents(), but for std::string
+		/// (no terminating 0 is needed inside the file, the string is 0-terminated anyway).
+		/// \return false on failure (error is also set).
 		inline bool get_contents(std::string& put_data_here, file_size_t max_size = 104857600);
 
-		// write data to file, creating or truncating it beforehand. (no terminating 0 is needed inside data).
+		/// Write data to file, creating or truncating it beforehand.
+		/// \c data may or may not be 0-terminated (it's irrelevant).
+		/// \return false on failure (error is also set).
 		inline bool put_contents(const unsigned char* data, file_size_t data_size);
 
-		// same as above, for std::string (no terminating 0 is needed inside data or anywhere else)
+		/// Same as the other version of put_contents(), but writes data from std::string.
+		/// No terminating 0 is written to the file.
+		/// \return false on failure (error is also set).
 		inline bool put_contents(const std::string& data);
 
 
-		// Do NOT assign the result to int - you'll break LFS support.
+		/// Get file size. Do NOT assign the result to int - you'll break LFS support.
+		/// If \c use_read is true, the file is read completely to determine its size.
+		/// This is needed for special files (like in /proc), which have 0 size if queried
+		/// the standard way.
+		/// \return false on failure (error is also set).
 		inline bool get_size(file_size_t& put_here, bool use_read = false);
 
 
-		// Move (rename) a file to "to". The destination will be overwritten (if it exists and
-		// it's not a directory (even in win32)). This function is subject to rename() limitations.
-		// On error it sets errors in both the returned and current objects. returns the new path.
+		/// Move (rename) a file to \c to. The destination will be overwritten if it exists and
+		/// it's not a directory (this is true even for win32, where renaming usually fails if
+		/// the destination exists). This function is subject to rename() limitations.
+		/// \return false on failure (error is also set).
 		inline bool move(const std::string& to);
 
-		// Copy one file to a "to" destination (with destination being a filename).
-		// If "to" already exists, overwrite it. Return the new path.
-		// On error the errors are set in both the returned and current objects.
+		/// Copy the file to a destination file specified by \c to.
+		/// If \c to already exists, overwrite it.
+		/// \return false on failure (error is also set).
 		inline bool copy(const std::string& to);
 
 		// remove() is in Path (parent).
@@ -276,13 +308,13 @@ class File : public FsPath {
 		// These are similar to their system equivalents. Additionally, they
 		// use the best OS-dependent function if available.
 
-		// Same as std::fopen().
+		/// Same as std::fopen(), but platform-independent (properly handles charsets, etc...).
 		static inline handle_type platform_fopen(const char* file, const char* open_mode);
 
-		// Same as fseek[o]().
+		/// Same as fseek[o](), but platform-independent.
 		static inline int platform_fseek(handle_type stream, file_size_t offset, int whence);
 
-		// Same as ftell[o]().
+		/// Same as ftell[o](), but platform-independent.
 		static inline file_size_t platform_ftell(handle_type stream);
 
 
@@ -295,7 +327,7 @@ class File : public FsPath {
 // 		const File& operator=(const File& other);  // don't allow it. allow only from non-const.
 
 
-		handle_type file_;  // FILE*
+		handle_type file_;  ///< File handle (FILE*)
 
 };
 
@@ -323,7 +355,6 @@ inline File& File::operator= (File& other)
 
 
 
-// Open the file with open_mode.
 inline bool File::open(const std::string& open_mode)
 {
 	clear_error();
@@ -349,7 +380,7 @@ inline bool File::open(const std::string& open_mode)
 }
 
 
-// Open the previously opened file.
+
 inline bool File::close()
 {
 	clear_error();
@@ -366,9 +397,6 @@ inline bool File::close()
 
 
 
-// Returns false on error. You must call "delete[] put_data_here".
-// If the file is larger than 100M (by default), the function refuses to load it.
-// Note: No additional trailing 0 is written to data!
 inline bool File::get_contents(unsigned char*& put_data_here,
 		file_size_t& put_size_here, file_size_t max_size)
 {
@@ -377,11 +405,6 @@ inline bool File::get_contents(unsigned char*& put_data_here,
 
 
 
-// Same as above, but puts data into already allocated buffer.
-// If the buffer is of insufficient size, false is returned and buffer is left untouched.
-// If any other error occurs, the buffer may be left in unspecified state.
-// Internal usage only: If buf_size is -1, the buffer will be automatically allocated.
-// FIXME: Support files which are not seekable and don't have a size attribute (e.g. /proc/*).
 inline bool File::get_contents_noalloc(unsigned char*& put_data_here, file_size_t buf_size,
 		file_size_t& put_size_here, file_size_t max_size)
 {
@@ -462,7 +485,6 @@ inline bool File::get_contents_noalloc(unsigned char*& put_data_here, file_size_
 
 
 
-// same as above, but for std::string (no terminating 0 is needed inside the file).
 inline bool File::get_contents(std::string& put_data_here, file_size_t max_size)
 {
 	file_size_t size = 0;
@@ -481,7 +503,6 @@ inline bool File::get_contents(std::string& put_data_here, file_size_t max_size)
 
 
 
-// write data to file, creating or truncating it beforehand. (no terminating 0 is needed inside data).
 inline bool File::put_contents(const unsigned char* data, file_size_t data_size)
 {
 	clear_error();
@@ -529,7 +550,7 @@ inline bool File::put_contents(const unsigned char* data, file_size_t data_size)
 }
 
 
-// same as above, for std::string (no terminating 0 is needed inside data or anywhere else)
+
 inline bool File::put_contents(const std::string& data)
 {
 	return put_contents(reinterpret_cast<const unsigned char*>(data.data()), static_cast<file_size_t>(data.size()));
@@ -537,9 +558,6 @@ inline bool File::put_contents(const std::string& data)
 
 
 
-
-// Do NOT assign the result to int - you'll break LFS support.
-// use_read parameter forces actual reading of a file, useful for files in /proc.
 inline bool File::get_size(file_size_t& put_here, bool use_read)
 {
 	clear_error();
@@ -632,9 +650,6 @@ inline bool File::get_size(file_size_t& put_here, bool use_read)
 
 
 
-// Move (rename) a file to "to". The destination will be overwritten (if it exists and
-// it's not a directory (even in win32)). This function is subject to rename() limitations.
-// On error it sets errors in both the returned and current objects. returns the new path.
 inline bool File::move(const std::string& to)
 {
 	clear_error();
@@ -682,9 +697,6 @@ inline bool File::move(const std::string& to)
 
 
 
-// Copy one file to a "to" destination (with destination being a filename).
-// If "to" already exists, overwrite it. Return the new path.
-// On error the errors are set in both the returned and current objects.
 inline bool File::copy(const std::string& to)
 {
 	clear_error();
@@ -805,9 +817,6 @@ inline bool File::copy(const std::string& to)
 
 
 
-
-
-// Same as std::fopen().
 File::handle_type inline File::platform_fopen(const char* file, const char* open_mode)
 {
 	// Don't validate parameters, they will be validated by the called functions.
@@ -826,7 +835,6 @@ File::handle_type inline File::platform_fopen(const char* file, const char* open
 
 
 
-// Same as fseek[o]().
 int inline File::platform_fseek(handle_type stream, file_size_t offset, int whence)
 {
 	// Don't validate parameters, they will be validated by the called functions.
@@ -841,7 +849,6 @@ int inline File::platform_fseek(handle_type stream, file_size_t offset, int when
 
 
 
-// Same as ftell[o]().
 file_size_t inline File::platform_ftell(handle_type stream)
 {
 #if defined HAVE_POSIX_OFF_T_FUNCS && HAVE_POSIX_OFF_T_FUNCS
@@ -863,3 +870,5 @@ file_size_t inline File::platform_ftell(handle_type stream)
 
 
 #endif
+
+/// @}

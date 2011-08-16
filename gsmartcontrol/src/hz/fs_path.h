@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_FS_PATH_H
 #define HZ_FS_PATH_H
@@ -33,11 +38,13 @@
 #include "win32_tools.h"  // hz::win32_* charset conversion
 
 
-// Filesystem path and file manipulation.
+/**
+\file
+Filesystem path and file manipulation.
 
-// This API accepts/gives utf-8 filenames/paths on win32,
-// current locale filenames/paths on others (just like glib).
-
+This API accepts/gives utf-8 filenames/paths on win32,
+current locale filenames/paths on others (just like glib).
+*/
 
 
 namespace hz {
@@ -45,19 +52,19 @@ namespace hz {
 
 
 
-// The sole purpose of this class is to enforce privacy of its members.
-// You can not construct an object of this class.
+/// The sole purpose of this class is to enforce privacy of its members.
+/// You can not construct an object of this class.
 class FsPathHolder {
-
 	protected:  // construct only from children
 
+		/// Constructor
 		FsPathHolder()
 #ifdef _WIN32
 				: utf16_path_(0)
 #endif
 		{ }
 
-		// you should check the success status with bad().
+		/// Constructor.
 		FsPathHolder(const std::string& path) : path_(path)
 #ifdef _WIN32
 				, utf16_path_(0)
@@ -67,6 +74,7 @@ class FsPathHolder {
 
 	public:
 
+		/// Virtual destructor
 		virtual ~FsPathHolder()
 		{
 #ifdef _WIN32
@@ -77,6 +85,7 @@ class FsPathHolder {
 
 		// --- these will _not_ set bad() status
 
+		/// Set current path.
 		void set_path(const std::string& path)
 		{
 			path_ = path;
@@ -86,23 +95,25 @@ class FsPathHolder {
 #endif
 		}
 
+		/// Get current path
 		std::string get_path() const
 		{
 			return path_;
 		}
 
-		// same as get_path()
+		/// Same as get_path()
 		std::string str() const
 		{
 			return path_;
 		}
 
-		// same as get_path().c_str()
+		/// Same as get_path().c_str()
 		const char* c_str() const
 		{
 			return path_.c_str();
 		}
 
+		/// Check if current path string is empty
 		bool empty() const
 		{
 			return path_.empty();
@@ -111,7 +122,8 @@ class FsPathHolder {
 
 		// These are sort-of internal
 #ifdef _WIN32
-		// Note: This may actually return 0 if it's unsupported or the encoded string is invalid.
+		/// Get path in UTF-16 format and store it (convert it from UTF-8)
+		/// Note: This may actually return 0 if it's unsupported or the encoded string is invalid.
 		const wchar_t* get_utf16() const
 		{
 			if (!utf16_path_)
@@ -119,6 +131,7 @@ class FsPathHolder {
 			return utf16_path_;
 		}
 
+		/// Set path in UTF-16 format. Also convert it to UTF-8 and store it.
 		bool set_utf16(const wchar_t* path)
 		{
 			char* utf8 = win32_utf16_to_utf8(path);
@@ -134,10 +147,10 @@ class FsPathHolder {
 
 	private:  // don't let children modify path_ directly, it will desync utf16_path_.
 
-		std::string path_;  // current path. always utf-8 in windows.
+		std::string path_;  ///< Current path. Always UTF-8 in windows.
 
 #ifdef _WIN32
-		mutable wchar_t* utf16_path_;
+		mutable wchar_t* utf16_path_;  ///< Same as path_, but in UTF-16.
 #endif
 
 };
@@ -145,26 +158,28 @@ class FsPathHolder {
 
 
 
-
-
-
+/// A class representing a filesystem path.
 class FsPath : public FsPathHolder, public FsErrorHolder {
-
 	public:
 
+		/// \typedef mode_type
+		/// mkdir() mode type.
+
 #ifdef _WIN32
-		typedef _mode_t mode_type;  // they have some kind of unhealthy love for underscores.
+		typedef _mode_t mode_type;  // they have some kind of unhealthy love for leading underscores.
 #else
 		typedef mode_t mode_type;
 #endif
 
+		/// Constructor
 		FsPath()
 		{ }
 
-		// you should check the success status with bad().
+		/// Constructor, sets current path
 		FsPath(const std::string& path) : FsPathHolder(path)
 		{ }
 
+		/// Destructor
 		virtual ~FsPath()
 		{ }
 
@@ -173,50 +188,50 @@ class FsPath : public FsPathHolder, public FsErrorHolder {
 		// --- these will _not_ set bad() status
 
 
-		// Convert path from unknown format to native (e.g. unix paths to win32).
-		// The current object is also modified.
+		/// Convert path from unknown format to native (e.g. unix paths to win32).
+		/// The current object is also modified.
 		inline FsPath& to_native();
 
-		// Remove trailing separators in path (unless they are parts of root component).
-		// The current object is also modified.
+		/// Remove trailing separators in path (unless they are parts of the root component).
+		/// The current object is also modified.
 		inline FsPath& trim_trailing();
 
-		// Go up "steps" steps. The current object is also modified.
+		/// Go up \c steps steps. The current object is also modified.
 		inline FsPath& go_up(unsigned int steps = 1);
 
-		// Append a partial (e.g. relative) path. It doesn't matter if it starts with a
-		// separator. The current object is also modified.
+		/// Append a partial (e.g. relative) path. It doesn't matter if it starts with a
+		/// separator. The current object is also modified.
 		inline FsPath& append(const std::string& partial_path);
 
-		// Compress a path - remove double separators, trailing
-		// separator, "/./" components, and deal with "/../" if possible.
-		// Note: This function performs its operations on strings, not real paths.
-		// The current object is also modified.
+		/// Compress a path - remove double separators, trailing
+		/// separator, "/./" components, and deal with "/../" if possible.
+		/// Note: This function performs its operations on strings, not real paths.
+		/// The current object is also modified.
 		inline FsPath& compress();
 
 
-		// get the path truncated by 1 level, e.g. /usr/local/ -> /usr.
+		/// Get the path truncated by 1 level, e.g. /usr/local/ -> /usr.
 		inline std::string get_dirname() const;
 
-		// get the basename of path, e.g. /usr/local/ -> local; /a/b/c -> c.
+		/// Get the basename of path, e.g. /usr/local/ -> local; /a/b/c -> c.
 		inline std::string get_basename() const;
 
-		// Get root path of current path. e.g. '/' or 'D:\'.
-		// May not work with relative paths under win32.
+		/// Get root path of current path. e.g. '/' or 'D:\'.
+		/// May not work with relative paths under win32.
 		inline std::string get_root() const;
 
-		// Check if the path corresponds to root (drive / share in win32).
+		/// Check if the path corresponds to root (drive / share in win32).
 		inline bool is_root() const;
 
-		// Get an extension of the last component.
+		/// Get an extension of the last component.
 		inline std::string get_extension() const;
 
-		// check if the path is absolute (only for native paths). returns 0 if it's not.
-		// the returned value is a position past the root component (e.g. 3 for C:\temp).
+		/// Check if the path is absolute (only for native paths). returns 0 if it's not.
+		/// the returned value is a position past the root component (e.g. 3 for C:\temp).
 		inline std::string::size_type is_absolute() const;
 
-		// check if the current path is a subpath of supplied argument.
-		// e.g. /usr/local/bin is a subpath of /usr. Note: This doesn't check real paths, only strings.
+		/// Check if the current path is a subpath of supplied argument.
+		/// e.g. /usr/local/bin is a subpath of /usr. Note: This doesn't check real paths, only strings.
 		inline bool is_subpath_of(const std::string& superpath) const;
 
 
@@ -224,74 +239,75 @@ class FsPath : public FsPathHolder, public FsErrorHolder {
 		// --- these may set bad() status
 
 
-		// Check if the existing file can be fopen'ed with "rb", or the directory has read perms.
-		// Note: This function should be use only as an utility function (e.g. for GUI notification);
-		// other uses are not logically concurrent-safe (therefore, insecure).
-		// bad() status is set on failure.
+		/// Check if the existing file can be fopen'ed with "rb", or the directory has read perms.
+		/// Note: This function should be use only as an utility function (e.g. for GUI notification);
+		/// other uses are not logically concurrent-safe (and therefore, insecure).
+		/// bad() status is set on failure.
 		inline bool is_readable();
 
-		// Check if the existing or soon to be created file is writable, or if files can be created in this dir.
-		// Note: The same security considerations apply to this function as to is_readable().
-		// bad() status is set on failure.
+		/// Check if the existing or soon to be created file is writable, or if files can be created in this dir.
+		/// Note: The same security considerations apply to this function as to is_readable().
+		/// bad() status is set on failure.
 		inline bool is_writable();
 
 
-		// Check if anything exists at this path.
-		// Note: The same security considerations apply to this function as to is_readable().
-		// bad() status is set on failure.
+		/// Check if anything exists at this path.
+		/// Note: The same security considerations apply to this function as to is_readable().
+		/// bad() status is set on failure.
 		inline bool exists();
 
-		// Check if it's a file (any type, including block, etc..,). Will also match for symlinks to files.
-		// Note: The same security considerations apply to this function as to is_readable().
-		// bad() status is set on error.
+		/// Check if it's a file (any type, including block, etc..,). Will also match for symlinks to files.
+		/// Note: The same security considerations apply to this function as to is_readable().
+		/// bad() status is set on error.
 		inline bool is_file();
 
-		// Check if it's a regular file. Will also match for symlinks to files.
-		// Note: The same security considerations apply to this function as to is_readable().
-		// bad() status is set on failure.
+		/// Check if it's a regular file. Will also match for symlinks to files.
+		/// Note: The same security considerations apply to this function as to is_readable().
+		/// bad() status is set on failure.
 		inline bool is_regular();
 
-		// Check if it's a directory.
-		// Note: The same security considerations apply to this function as to is_readable().
-		// bad() status is set on error.
+		/// Check if it's a directory.
+		/// Note: The same security considerations apply to this function as to is_readable().
+		/// bad() status is set on error.
 		inline bool is_dir();
 
-		// Check if it's a symlink.
-		// Note: The same security considerations apply to this function as to is_readable().
-		// bad() status is set on failure.
+		/// Check if it's a symlink.
+		/// Note: The same security considerations apply to this function as to is_readable().
+		/// bad() status is set on failure.
 		inline bool is_symlink();
 
-		// If current path is a symbolic link, put its destination into dest.
-		// Note: You should avoid calling this in loop, you may end up with an
-		// infinite loop if the links point to each other.
-		// Note: The returned path may be relative to the link's directory.
-		// If error occurs, false is returned and bad() status is set.
-		// If current path is not a symbolic link, false is returned, bad() is _not_ set.
-		// If false is returned, dest is untouched.
+		/// If current path is a symbolic link, put its destination into \c dest.
+		/// Note: You should avoid calling this in loop, you may end up with an
+		/// infinite loop if the links point to each other.
+		/// Note: The returned path may be relative to the link's directory.
+		/// If error occurs, false is returned and bad() status is set.
+		/// If current path is not a symbolic link, false is returned, bad() is _not_ set.
+		/// If false is returned, dest is untouched.
 		inline bool get_link_destination(std::string& dest);
 
-		// Do NOT assign the result to int - std::time_t is implementation-defined.
-		// Usually it's seconds since epoch, see time(2) for details.
-		// bad() status is set on failure and false is returned.
+		/// Get "last modified time" property.
+		/// Do NOT assign the result to int - std::time_t is implementation-defined.
+		/// Usually it's seconds since epoch, see time(2) for details.
+		/// bad() status is set on failure and false is returned.
 		inline bool get_last_modified(std::time_t& put_here);
 
-		// Set the last modified time. It will also change the last access
-		// time as a side effect.
-		// bad() status is set on failure and false is returned.
+		/// Set the last modified time. It will also change the last access
+		/// time as a side effect.
+		/// bad() status is set on failure and false is returned.
 		inline bool set_last_modified(std::time_t t);
 
 
-		// Create a directory (assuming that the parent directory already exists).
-		// octal_mode parameter is ignored on Windows.
-		// Note: If creating with parents, when failing to create one of the directories,
-		// it won't remove the previously created ones.
-		// Note: If creating with parents, the supplied path _must_ be absolute.
-		// bad() status is set on failure and false is returned.
+		/// Create a directory (assuming that the parent directory already exists).
+		/// octal_mode parameter is ignored on Windows.
+		/// Note: If creating with parents, when failing to create one of the directories,
+		/// it won't remove the previously created ones.
+		/// Note: If creating with parents, the supplied path _must_ be absolute.
+		/// bad() status is set on failure and false is returned.
 		inline bool make_dir(mode_type octal_mode, bool with_parents);
 
 
-		// Remove a file or directory.
-		// bad() status is set on failure and false is returned.
+		/// Remove a file or directory.
+		/// bad() status is set on failure and false is returned.
 		inline bool remove(bool recursive = false);
 
 
@@ -305,8 +321,6 @@ class FsPath : public FsPathHolder, public FsErrorHolder {
 
 
 
-// Convert path from unknown format to native (e.g. unix paths to win32).
-// The current object is also modified.
 inline FsPath& FsPath::to_native()
 {
 	this->set_path(path_to_native(this->get_path()));
@@ -314,8 +328,7 @@ inline FsPath& FsPath::to_native()
 }
 
 
-// Remove trailing separators in path (unless they are parts of root component).
-// The current object is also modified.
+
 inline FsPath& FsPath::trim_trailing()
 {
 	this->set_path(path_trim_trailing_separators(this->get_path()));
@@ -323,7 +336,7 @@ inline FsPath& FsPath::trim_trailing()
 }
 
 
-// Go up "steps" steps. The current object is also modified.
+
 inline FsPath& FsPath::go_up(unsigned int steps)
 {
 	std::string p = this->get_path();
@@ -332,6 +345,7 @@ inline FsPath& FsPath::go_up(unsigned int steps)
 	this->set_path(p);
 	return *this;
 }
+
 
 
 inline FsPath& FsPath::append(const std::string& partial_path)
@@ -350,8 +364,7 @@ inline FsPath& FsPath::append(const std::string& partial_path)
 }
 
 
-// Compress a path - remove double separators, trailing
-// separator, "/./" components, and deal with "/../" if possible.
+
 inline FsPath& FsPath::compress()
 {
 	this->set_path(path_compress(this->get_path()));
@@ -359,29 +372,28 @@ inline FsPath& FsPath::compress()
 }
 
 
-// get the path truncated by 1 level, e.g. /usr/local/ -> /usr.
+
 inline std::string FsPath::get_dirname() const
 {
 	return path_get_dirname(this->get_path());
 }
 
 
-// get the basename of path, e.g. /usr/local/ -> local; /a/b -> b.
+
 inline std::string FsPath::get_basename() const
 {
 	return path_get_basename(this->get_path());
 }
 
 
-// Get root path of current path. e.g. '/' or 'D:\'.
-// May not work with relative paths under win32.
+
 inline std::string FsPath::get_root() const
 {
 	return path_get_root(this->get_path());
 }
 
 
-// Check if the path corresponds to root (drive / share in win32).
+
 inline bool FsPath::is_root() const
 {
 	std::string p = path_trim_trailing_separators(this->get_path());
@@ -389,7 +401,7 @@ inline bool FsPath::is_root() const
 }
 
 
-// Get an extension of the last component.
+
 inline std::string FsPath::get_extension() const
 {
 	std::string base = get_basename();
@@ -400,16 +412,14 @@ inline std::string FsPath::get_extension() const
 }
 
 
-// check if the path is absolute (only for native paths). returns 0 if it's not.
-// the returned value is a position past the root component (e.g. 3 for C:\temp).
+
 inline std::string::size_type FsPath::is_absolute() const
 {
 	return path_is_absolute(this->get_path());
 }
 
 
-// check if the current path is a subpath of supplied argument.
-// e.g. /usr/local/bin is a subpath of /usr. Note: This doesn't check real paths, only strings.
+
 inline bool FsPath::is_subpath_of(const std::string& superpath) const
 {
 	return (this->get_path().compare(0, superpath.length(), superpath) == 0);
@@ -417,11 +427,6 @@ inline bool FsPath::is_subpath_of(const std::string& superpath) const
 
 
 
-
-
-// Check if the existing file can be fopen'ed with "rb", or the directory has read perms.
-// Note: This function should be use only as an utility function (e.g. for GUI notification);
-// other uses are not concurrent-safe (therefore, insecure).
 inline bool FsPath::is_readable()
 {
 	clear_error();
@@ -448,9 +453,6 @@ inline bool FsPath::is_readable()
 
 
 
-// Check if the existing or soon to be created file is writable, or if files can be created in this dir.
-// Note: The same security considerations apply to this function as to is_readable().
-// bad() status is set on failure.
 inline bool FsPath::is_writable()
 {
 	clear_error();
@@ -532,10 +534,6 @@ inline bool FsPath::is_writable()
 
 
 
-
-// Check if anything exists at this path.
-// Note: The same security considerations apply to this function as to is_readable().
-// bad() status is set on failure.
 inline bool FsPath::exists()
 {
 	clear_error();
@@ -561,9 +559,7 @@ inline bool FsPath::exists()
 }
 
 
-// Check if it's a file (any type, including block, etc..,). Will also match for symlinks to files.
-// Note: The same security considerations apply to this function as to is_readable().
-// bad() status is set on error.
+
 inline bool FsPath::is_file()
 {
 	clear_error();
@@ -599,9 +595,7 @@ inline bool FsPath::is_file()
 }
 
 
-// Check if it's a regular file. Will also match for symlinks to files.
-// Note: The same security considerations apply to this function as to is_readable().
-// bad() status is set on failure.
+
 inline bool FsPath::is_regular()
 {
 	clear_error();
@@ -641,9 +635,7 @@ inline bool FsPath::is_regular()
 }
 
 
-// Check if it's a directory.
-// Note: The same security considerations apply to this function as to is_readable().
-// bad() status is set on error.
+
 inline bool FsPath::is_dir()
 {
 	clear_error();
@@ -679,9 +671,7 @@ inline bool FsPath::is_dir()
 }
 
 
-// Check if it's a symlink.
-// Note: The same security considerations apply to this function as to is_readable().
-// bad() status is set on failure.
+
 inline bool FsPath::is_symlink()
 {
 	clear_error();
@@ -714,13 +704,6 @@ inline bool FsPath::is_symlink()
 
 
 
-// If current path is a symbolic link, put its destination into dest.
-// Note: You should avoid calling this in loop, you may end up with an
-// infinite loop if the links point to each other.
-// Note: The returned path may be relative to the link's directory.
-// If error occurs, false is returned and bad() status is set.
-// If current path is not a symbolic link, false is returned, bad() is _not_ set.
-// If false is returned, dest is untouched.
 inline bool FsPath::get_link_destination(std::string& dest)
 {
 	clear_error();
@@ -767,7 +750,6 @@ inline bool FsPath::get_link_destination(std::string& dest)
 	return true;
 #endif
 }
-
 
 
 
@@ -831,9 +813,6 @@ inline bool FsPath::set_last_modified(std::time_t t)
 
 
 
-
-// Create a directory. Returns true if successful or if the directory already exists.
-// octal_mode parameter is ignored on Windows.
 inline bool FsPath::make_dir(mode_type octal_mode, bool with_parents)
 {
 	// debug_out_dump("hz", DBG_FUNC_MSG << "Path: \"" << path_ << "\"\n");
@@ -882,8 +861,9 @@ inline bool FsPath::make_dir(mode_type octal_mode, bool with_parents)
 namespace internal {
 
 
-	// Helper function, internal.
-	// returns the number of not removed files. 0 on success. pass directory only.
+	/// Helper function, internal.
+	/// Remove Remove directory recursively.
+	/// \return the number of not removed files. 0 on success. pass directory only.
 	inline int path_remove_dir_recursive(const std::string& path)
 	{
 		hz::FsPath p(path);
@@ -959,7 +939,6 @@ namespace internal {
 
 
 
-// Remove file or directory.
 inline bool FsPath::remove(bool recursive)
 {
 	clear_error();
@@ -1020,3 +999,5 @@ inline bool FsPath::remove(bool recursive)
 
 
 #endif
+
+/// @}

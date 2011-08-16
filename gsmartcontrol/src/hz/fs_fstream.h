@@ -3,6 +3,11 @@
       (C) 2009 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_FS_FSTREAM_H
 #define HZ_FS_FSTREAM_H
@@ -13,16 +18,20 @@
 
 // #include "hz/win32_tools.h"  // win32_utf8_to_utf16, win32_utf16_to_utf8.
 
+/**
+\file
+TODO Implement all this.
 
-// The problem with std::fstream is the following:
-// Under windows (what else), fstream (and fopen(), which libstdc++'s fstream
-// is implemented upon) accepts filenames in user's current locale encoding.
-// The problem is that the filesystem stores filenames in utf-16, and not all
-// utf-16 filenames are representable through user's locale encoding. This means
-// that not all files are openable through fstream/fopen()!
-// The MS fstream implementation has additional open() method which accepts
-// wchar_t* strings (in utf-16, that is). However, there's no such method in mingw.
-// So, the only way to open all files on windows is to use _wfopen().
+The problem with std::fstream is the following:
+Under windows (what else), fstream (and fopen(), which libstdc++'s fstream
+is implemented upon) accepts filenames in user's current locale encoding.
+The problem is that the filesystem stores filenames in utf-16, and not all
+utf-16 filenames are representable in user's locale encoding. This means
+that not all files are openable through fstream/fopen()!
+The MS fstream implementation has additional open() method which accepts
+wchar_t* strings (in utf-16, that is). However, there's no such method in mingw.
+So, the only way to open all files on windows is to use _wfopen().
+*/
 
 
 namespace hz {
@@ -76,3 +85,5 @@ class ifstream : public std::ifstream {
 
 
 #endif
+
+/// @}

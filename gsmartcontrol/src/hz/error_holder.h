@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_ERROR_HOLDER_H
 #define HZ_ERROR_HOLDER_H
@@ -23,30 +28,30 @@ namespace hz {
 
 
 
-// LockPolicy is a class with methods to lock / unlock current object access
-// for use in multi-threaded environments. See sync.h for more info.
-
-// A class wishing to implement Error holding storage should inherit from this.
+/// A class wishing to implement Error holding storage should inherit this.
+/// Unless specified otherwise, all methods are thread-safe if the
+/// thread-safe locking policy is provided.
+/// \tparam LockPolicy_ A class with methods to lock / unlock current object access
+/// for use in multi-threaded environments. See sync.h for more info.
 template <class LockPolicy_>
 class ErrorHolder {
-
 	public:
 
-		typedef std::vector<ErrorBase*> error_list_t;
-		typedef ptr_container<error_list_t> ptr_error_list_t;
+		typedef std::vector<ErrorBase*> error_list_t;  ///< A list of ErrorBase* pointers
+		typedef ptr_container<error_list_t> ptr_error_list_t;  ///< A list of auto-deleted pointers to error_list_t
 
-		typedef LockPolicy_ ErrorLockPolicy;
-		typedef typename ErrorLockPolicy::ScopedLock ErrorScopedLock;
+		typedef LockPolicy_ ErrorLockPolicy;  ///< Locking policy
+		typedef typename ErrorLockPolicy::ScopedLock ErrorScopedLock;  ///< Scoped lock class
 
-		// make it its own friend for mutex visibility
+		/// Make it its own friend for mutex visibility
 		template<class T> friend class ErrorHolder;
 
-
+		/// Virtual destructor
 		virtual ~ErrorHolder()
 		{ }
 
 
-		// add an error to error list.
+		/// Add an error to the error list
 		template<class E>
 		void push_error(const E& e, bool do_lock = true)
 		{
@@ -58,7 +63,7 @@ class ErrorHolder {
 		}
 
 
-
+		/// Remove last error from the error list
 		template<class E>
 		void pop_last_error(E& e, bool do_lock = true)
 		{
@@ -67,7 +72,7 @@ class ErrorHolder {
 		}
 
 
-
+		/// Import errors from another object
 		template<class T>
 		void import_errors(ErrorHolder<T>& other, bool do_lock_this = true, bool do_lock_other = true)
 		{
@@ -112,7 +117,7 @@ class ErrorHolder {
 		}
 
 
-
+		/// Check if there are any errors in this class.
 		bool has_errors(bool do_lock = true) const
 		{
 			ErrorScopedLock locker(error_object_mutex_, do_lock);
@@ -120,10 +125,10 @@ class ErrorHolder {
 		}
 
 
-
-		// NOTE: You MUST do additional locking (and possibly pass do_lock=false here)
-		// if you intend to use the elements of the returned array. If you don't do that,
-		// this class may just delete its pointers and you'll be left with dangling pointers.
+		/// Get a list of errors.
+		/// NOTE: You MUST do additional locking (and possibly pass do_lock=false here)
+		/// if you intend to use the elements of the returned array. If you don't do that,
+		/// this class may just delete its pointers and you'll be left with dangling pointers.
 		error_list_t get_errors(bool do_lock = true) const
 		{
 			ErrorScopedLock locker(error_object_mutex_, do_lock);
@@ -133,7 +138,8 @@ class ErrorHolder {
 		}
 
 
-		// you MUST delete the elements of the returned container!
+		/// Get a cloned list of errors.
+		/// You MUST delete the elements of the returned container!
 		template<class ReturnedContainer>
 		void get_errors_cloned(ReturnedContainer& put_here, bool do_lock = true) const
 		{
@@ -144,24 +150,28 @@ class ErrorHolder {
 
 		// These functions are the recommended way to access the errors container.
 
+		/// A begin() function for the error list.
 		error_list_t::iterator errors_begin(bool do_lock = true)
 		{
 			ErrorScopedLock locker(error_object_mutex_, do_lock);
 			return errors_.begin();
 		}
 
+		/// A begin() function for the error list (const version).
 		error_list_t::const_iterator errors_begin(bool do_lock = true) const
 		{
 			ErrorScopedLock locker(error_object_mutex_, do_lock);
 			return errors_.begin();
 		}
 
+		/// An end() function for the error list.
 		error_list_t::iterator errors_end(bool do_lock = true)
 		{
 			ErrorScopedLock locker(error_object_mutex_, do_lock);
 			return errors_.end();
 		}
 
+		/// An end() function for the error list (const version).
 		error_list_t::const_iterator errors_end(bool do_lock = true) const
 		{
 			ErrorScopedLock locker(error_object_mutex_, do_lock);
@@ -169,6 +179,7 @@ class ErrorHolder {
 		}
 
 
+		/// Clear the error list
 		void clear_errors(bool do_lock = true)
 		{
 			ErrorScopedLock locker(error_object_mutex_, do_lock);
@@ -176,19 +187,23 @@ class ErrorHolder {
 		}
 
 
+		/// Lock the error list
 		void errors_lock()
 		{
 			ErrorLockPolicy::lock(error_object_mutex_);
 		}
 
 
+		/// Unlock the error list
 		void errors_unlock()
 		{
 			ErrorLockPolicy::unlock(error_object_mutex_);
 		}
 
 
-		// This is called on push_error. Override in children if needed.
+		/// This function is called every time push_error() is invoked.
+		/// The default implementation prints the message using libdebug.
+		/// Override in children if needed.
 		virtual void error_warn(ErrorBase* e)
 		{
 			std::string msg = e->get_type() + ": " + e->get_message() + "\n";
@@ -206,20 +221,20 @@ class ErrorHolder {
 		}
 
 
-
 	protected:
-		ptr_error_list_t errors_;  // the newest errors are the last
 
-		mutable typename ErrorLockPolicy::Mutex error_object_mutex_;
+		ptr_error_list_t errors_;  ///< Error list. The newest errors at the end.
+
+		mutable typename ErrorLockPolicy::Mutex error_object_mutex_;  ///< Mutex to protect multi-threaded access.
 
 };
 
 
 
-// no locks
+/// An error holder with no locking.
 typedef ErrorHolder<SyncPolicyNone> ErrorHolderST;
 
-// error holder does its own locking through mutexes
+/// An error holder that does its own locking through mutexes.
 typedef ErrorHolder<SyncPolicyMtDefault> ErrorHolderMT;
 
 
@@ -232,3 +247,5 @@ typedef ErrorHolder<SyncPolicyMtDefault> ErrorHolderMT;
 
 
 #endif
+
+/// @}

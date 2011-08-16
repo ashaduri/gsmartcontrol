@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_BIN2ASCII_ENCODER_H
 #define HZ_BIN2ASCII_ENCODER_H
@@ -15,36 +20,30 @@
 
 
 
-/*
-A class to convert a binary string to ascii string, while still retaining
-ascii character readability. Safe to put inside double-quotes.
-
-Note: The url_mode flag sets enables the URL-style encoding.
-However, I'm not sure if it's correct.
-*/
-
-
 namespace hz {
 
 
+/// A class to convert a binary string to ascii string, while still retaining
+/// ascii character readability. The result can be put inside double quotes.
 class Bin2AsciiEncoder {
-
 	public:
 
+		/// Constructor.
+		/// \param url_mode This enables URL-style encoding (not sure if it's correct, though).
 		Bin2AsciiEncoder(bool url_mode = false) : url_mode_(url_mode)
 		{ }
 
 
-		// encode the passed string (src.data()).
+		/// Encode the passed string (src.data()).
 		inline std::string encode(const std::string& src) const;
 
 
-		// decode the passed string (src.data()).
-		// returns an empty string on failure (provided that src is not empty).
+		/// Decode the passed string (src.data()).
+		/// \return empty string on failure (provided that src is not empty), decoded string on success.
 		inline std::string decode(const std::string& src) const;
 
 
-		// check whether the string can be an encoded string
+		/// Check whether the string can be an encoded string.
 		bool string_is_encoded(const std::string& s) const
 		{
 			return (s.find_first_not_of(url_mode_ ?
@@ -52,7 +51,7 @@ class Bin2AsciiEncoder {
 		}
 
 
-		// check whether the char can occur in an encoded string
+		/// Check whether a character can occur in an encoded string
 		bool char_is_encoded(char c) const
 		{
 			return std::strchr((url_mode_ ?
@@ -60,24 +59,21 @@ class Bin2AsciiEncoder {
 		}
 
 
-
 	private:
 
-
+		/// Static member holder
 		template<typename Dummy>
 		struct StaticHolder {
-			// for description of these, see below.
-			static const char* const encoded_chars;
-			static const char* const encoded_chars_url;
+			static const char* const encoded_chars;  ///< Characters which may appear in encoded string (no-url mode).
+			static const char* const encoded_chars_url;  ///<Characters which may appear in encoded string (url mode). Note: '+' is a special case.
 		};
 
-		typedef StaticHolder<void> char_holder;
+		typedef StaticHolder<void> char_holder;  ///< Static member holder instantiation
+
+		bool url_mode_;  ///< URL encoding mode (or not)
 
 
-		bool url_mode_;  // url encoding mode
-
-
-		// helper function
+		/// Get a byte value of a hex digit
 		char char_from_hex_digit(char c) const
 		{
 			if (c >= '0' && c <= '9') {
@@ -97,7 +93,6 @@ class Bin2AsciiEncoder {
 
 
 
-// chars which may appear in encoded string.
 template<typename Dummy>
 const char* const Bin2AsciiEncoder::StaticHolder<Dummy>::encoded_chars =
 	"!^&()_-+=|.<>%"
@@ -106,7 +101,6 @@ const char* const Bin2AsciiEncoder::StaticHolder<Dummy>::encoded_chars =
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 
-// same, but for url_mode. note: '+' is a special case.
 template<typename Dummy>
 const char* const Bin2AsciiEncoder::StaticHolder<Dummy>::encoded_chars_url =
 	"-_.!~*'()+%"
@@ -116,8 +110,6 @@ const char* const Bin2AsciiEncoder::StaticHolder<Dummy>::encoded_chars_url =
 
 
 
-
-// encode the passed string (src.data()).
 inline std::string Bin2AsciiEncoder::encode(const std::string& src) const
 {
 	std::size_t src_size = src.size();
@@ -151,9 +143,6 @@ inline std::string Bin2AsciiEncoder::encode(const std::string& src) const
 
 
 
-
-// decode the passed string (src.data()).
-// returns an empty string on failure (provided that src is not empty).
 inline std::string Bin2AsciiEncoder::decode(const std::string& src) const
 {
 	std::size_t src_size = src.size();
@@ -200,3 +189,5 @@ inline std::string Bin2AsciiEncoder::decode(const std::string& src) const
 
 
 #endif
+
+/// @}

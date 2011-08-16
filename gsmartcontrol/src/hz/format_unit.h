@@ -3,6 +3,11 @@
       (C) 2003 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_FORMAT_UNIT_H
 #define HZ_FORMAT_UNIT_H
@@ -32,9 +37,9 @@ namespace hz {
 
 
 
-// Format byte or bit size in human-readable way, e.g. KB, mb, etc...
-// Note that kilobit always means 1000 bits, there's no confusion with that (as opposed to kilobyte).
-// This function honors the SI rules, e.g. GiB for binary, GB for decimal (as defined by SI).
+/// Format byte or bit size in human-readable way, e.g. KB, mb, etc...
+/// Note that kilobit always means 1000 bits, there's no confusion with that (as opposed to kilobyte).
+/// This function honors the SI rules, e.g. GiB for binary, GB for decimal (as defined by SI).
 inline std::string format_size(uint64_t size, bool use_decimal = false, bool size_is_bits = false)
 {
 	const uint64_t multiplier = (use_decimal ? 1000 : 1024);
@@ -123,7 +128,8 @@ inline std::string format_size(uint64_t size, bool use_decimal = false, bool siz
 
 
 
-
+/// Format time length (e.g. 330 seconds) in a human-readable manner
+/// (e.g. "5 min 30 sec").
 inline std::string format_time_length(int64_t secs)
 {
 	// don't use uints here - there bring bugs.
@@ -186,9 +192,9 @@ inline std::string format_time_length(int64_t secs)
 
 
 
-// Format date specified by ltmp (pointer to tm structure).
-// See strftime() documentation for details. To print ISO datetime
-// use "%Y-%m-%d %H:%M:%S" (sometimes 'T' is used instead of space).
+/// Format a date specified by \c ltmp (pointer to tm structure).
+/// See strftime() documentation for format details. To print ISO datetime
+/// use "%Y-%m-%d %H:%M:%S" (sometimes 'T' is used instead of space).
 inline std::string format_date(const std::string& format, const struct std::tm* ltmp, bool use_locale = true)
 {
 	if (!ltmp || format.empty())
@@ -226,7 +232,8 @@ inline std::string format_date(const std::string& format, const struct std::tm* 
 
 
 
-// Format date specified by timet (seconds since Epoch).
+/// Format a date specified by \c timet (seconds since Epoch).
+/// See strftime() documentation for format details.
 inline std::string format_date(const std::string& format, std::time_t timet, bool use_locale = true)
 {
 #if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
@@ -250,7 +257,8 @@ inline std::string format_date(const std::string& format, std::time_t timet, boo
 
 
 
-// Format current date.
+/// Format current date.
+/// See strftime() documentation for format details.
 inline std::string format_date(const std::string& format, bool use_locale = true)
 {
 	const std::time_t timet = std::time(NULL);
@@ -271,3 +279,5 @@ inline std::string format_date(const std::string& format, bool use_locale = true
 
 
 #endif
+
+/// @}
