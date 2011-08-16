@@ -38,8 +38,9 @@ HZ library internal implementation helpers.
 */
 
 
-// Define HZ_USE_GLOBAL_MACROS=1 from a compiler option to enable
-// auto-inclusion of global_macros.h.
+/// \def HZ_USE_GLOBAL_MACROS
+/// Define HZ_USE_GLOBAL_MACROS=1 from a compiler option to enable
+/// auto-inclusion of global_macros.h.
 
 #if defined HZ_USE_GLOBAL_MACROS && HZ_USE_GLOBAL_MACROS
 	// define manually
@@ -76,7 +77,8 @@ HZ library internal implementation helpers.
 
 
 
-
+/// \def DISABLE_RTTI
+/// Defined to 0 or 1. If 1, RTTI is disabled.
 #ifndef DISABLE_RTTI
 	// No auto-detection here...
 	// There's __GXX_RTTI (not used here; since gcc >= 4.3 (?)), but I'm not sure if it's valid.
@@ -86,8 +88,10 @@ HZ library internal implementation helpers.
 
 
 
-// some auto-detection (gcc 3.3 or later (I think))
+/// \def DISABLE_EXCEPTIONS
+/// Defined to 0 or 1. If 1, exceptions are disabled.
 #ifndef DISABLE_EXCEPTIONS
+	// some auto-detection (gcc 3.3 or later (I think))
 	#if defined __GNUC__ && ((__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3)) && !defined __EXCEPTIONS
 		#define DISABLE_EXCEPTIONS 0
 	#else
@@ -97,8 +101,9 @@ HZ library internal implementation helpers.
 
 
 
-
-#ifndef HAVE_CXX_EXTERN_C_OVERLOAD  // overloading on extern "C" function pointer arguments
+/// \def HAVE_CXX_EXTERN_C_OVERLOAD
+/// Defined to 0 or 1. If 1, compiler supports overloading on extern "C" function pointer arguments.
+#ifndef HAVE_CXX_EXTERN_C_OVERLOAD
 	#ifdef __SUNPRO_CC
 		#define HAVE_CXX_EXTERN_C_OVERLOAD 1
 	#else
@@ -109,7 +114,9 @@ HZ library internal implementation helpers.
 
 
 
-#ifndef HAVE_VERBOSE_TERMINATE_HANDLER  // __gnu_cxx::__verbose_terminate_handler
+/// \def HAVE_VERBOSE_TERMINATE_HANDLER
+/// Defined to 0 or 1. If 1, compiler supports __gnu_cxx::__verbose_terminate_handler.
+#ifndef HAVE_VERBOSE_TERMINATE_HANDLER
 	#if defined __GNUC__
 		#define HAVE_VERBOSE_TERMINATE_HANDLER 1
 	#else
@@ -119,8 +126,9 @@ HZ library internal implementation helpers.
 
 
 
-
-#ifndef HAVE_GCC_ABI_DEMANGLE  // ::abi::__cxa_demangle
+/// \def HAVE_GCC_ABI_DEMANGLE
+/// Defined to 0 or 1. If 1, compiler supports ::abi::__cxa_demangle.
+#ifndef HAVE_GCC_ABI_DEMANGLE
 	// This also works with intel/linux (__GNUC__ is defined by default in it).
 	#if defined __GNUC__
 		#define HAVE_GCC_ABI_DEMANGLE 1
@@ -132,6 +140,8 @@ HZ library internal implementation helpers.
 
 
 
+/// \def HAVE_CXX___func__
+/// Defined to 0 or 1. If 1, compiler supports __func__.
 #ifndef HAVE_CXX___func__
 	// this is a C99 thing, but I don't know of any other compiler which supports it
 	#if defined __GNUC__
@@ -141,6 +151,9 @@ HZ library internal implementation helpers.
 	#endif
 #endif
 
+
+/// \def HAVE_CXX___FUNCTION__
+/// Defined to 0 or 1. If 1, compiler supports __FUNCTION__.
 #ifndef HAVE_CXX___FUNCTION__
 	// suncc supports this, but only with extensions enabled (can we check those?)
 	#if defined __GNUC__ || defined _MSC_VER
@@ -153,8 +166,10 @@ HZ library internal implementation helpers.
 
 
 
-// If some of the functions have different requirements, they are listed separately.
-#ifndef HAVE_WIN_SE_FUNCS  // Win32's *_s() functions (since msvc 2005/8.0)
+/// \def HAVE_WIN_SE_FUNCS
+/// Defined to 0 or 1. If 1, compiler supports Win32's "secure" *_s() functions (since msvc 2005/8.0).
+/// If some of the functions have different requirements, they are listed separately.
+#ifndef HAVE_WIN_SE_FUNCS
 	#if defined _MSC_VER && _MSC_VER >= 1400
 		#define HAVE_WIN_SE_FUNCS 1
 	#else
@@ -165,7 +180,9 @@ HZ library internal implementation helpers.
 
 
 
-#ifndef HAVE_POSIX_OFF_T_FUNCS  // fseeko/ftello. See fs_file.h for details.
+/// \def HAVE_POSIX_OFF_T_FUNCS
+/// Defined to 0 or 1. If 1, compiler supports fseeko/ftello. See fs_file.h for details.
+#ifndef HAVE_POSIX_OFF_T_FUNCS
 	// It's quite hard to detect, so we just enable for any non-win32.
 	#if defined _WIN32
 		#define HAVE_POSIX_OFF_T_FUNCS 0
@@ -177,7 +194,9 @@ HZ library internal implementation helpers.
 
 
 
-#ifndef HAVE_WIN_LFS_FUNCS  // LFS on win32
+/// \def HAVE_WIN_LFS_FUNCS
+/// Defined to 0 or 1. If 1, compiler supports LFS (large file support) functions on win32.
+#ifndef HAVE_WIN_LFS_FUNCS
 	// enable if it's msvc >= 2005, or we're linking to newer msvcrt with mingw.
 	#if defined _WIN32 && ( (defined _MSC_VER >= 1400) \
 			|| (defined __GNUC__ && defined __MSVCRT_VERSION__ && __MSVCRT_VERSION__ >= 0x800) )
@@ -190,7 +209,9 @@ HZ library internal implementation helpers.
 
 
 
-#ifndef HAVE_XSI_STRERROR_R  // XSI-style strerror_r()
+/// \def HAVE_XSI_STRERROR_R
+/// Defined to 0 or 1. If 1, compiler supports XSI-style strerror_r().
+#ifndef HAVE_XSI_STRERROR_R
 	#if ((defined _POSIX_C_SOURCE && _POSIX_C_SOURCE >= 200112L) \
 			|| (defined _XOPEN_SOURCE && _XOPEN_SOURCE >= 600)) && !defined _GNU_SOURCE
 		#define HAVE_XSI_STRERROR_R 1
@@ -199,7 +220,10 @@ HZ library internal implementation helpers.
 	#endif
 #endif
 
-#ifndef HAVE_GNU_STRERROR_R  // GNU-style strerror_r()
+
+/// \def HAVE_GNU_STRERROR_R
+/// Defined to 0 or 1. If 1, compiler supports GNU-style strerror_r().
+#ifndef HAVE_GNU_STRERROR_R
 	// _GNU_SOURCE excludes HAVE_XSI_STRERROR_R
 	#if defined _GNU_SOURCE
 		#define HAVE_GNU_STRERROR_R 1
@@ -211,15 +235,14 @@ HZ library internal implementation helpers.
 
 
 
-// Whether the *printf() family (but not _*printf() or *printf_s()) behaves
-// according to ISO specification in terms of 0-termination, return value
-// and accepting %lld, %llu and %Lf format specifiers.
-
-// Note: If using mingw runtime >= 3.15 and __USE_MINGW_ANSI_STDIO,
-// mingw supports both C99/POSIX and msvcrt format specifiers.
-// This includes proper printing of long double (%Lf), %lld and %llu, etc...
-// This does _not_ affect _snprintf() and similar non-standard functions.
-
+/// \def HAVE_ISO_STDIO
+/// Defined to 0 or 1. If 1, the *printf() family (but not _*printf() or *printf_s()) behaves
+/// according to ISO specification in terms of 0-termination, return value
+/// and accepting %lld, %llu and %Lf format specifiers.
+/// Note: If using mingw runtime >= 3.15 and __USE_MINGW_ANSI_STDIO,
+/// mingw supports both C99/POSIX and msvcrt format specifiers.
+/// This includes proper printing of long double (%Lf), %lld and %llu, etc...
+/// This does _not_ affect _snprintf() and similar non-standard functions.
 #ifndef HAVE_ISO_STDIO
 	// On win32, assume only with mingw with ansi/iso extensions.
 	// for others, assume it's always there.
@@ -233,8 +256,9 @@ HZ library internal implementation helpers.
 
 
 
-
-#ifndef HAVE__SNPRINTF  // Win32's _snprintf (broken 0-termination)
+/// \def HAVE__SNPRINTF
+/// Defined to 0 or 1. If 1, the compiler has Win32's _snprintf (broken 0-termination).
+#ifndef HAVE__SNPRINTF
 	#if defined _WIN32
 		#define HAVE__SNPRINTF 1
 	#else
@@ -243,7 +267,9 @@ HZ library internal implementation helpers.
 #endif
 
 
-#ifndef HAVE__VSNPRINTF  // Win32's _vsnprintf (broken 0-termination)
+/// \def HAVE__VSNPRINTF
+/// Defined to 0 or 1. If 1, the compiler has Win32's _vsnprintf (broken 0-termination).
+#ifndef HAVE__VSNPRINTF
 	#if defined _WIN32
 		#define HAVE__SNPRINTF 1
 	#else
@@ -252,7 +278,9 @@ HZ library internal implementation helpers.
 #endif
 
 
-#ifndef HAVE_SNPRINTF_S  // snprintf_s (msvc 2005/8.0)
+/// \def HAVE_SNPRINTF_S
+/// Defined to 0 or 1. If 1, the compiler has snprintf_s (msvc 2005/8.0).
+#ifndef HAVE_SNPRINTF_S
 	#if defined _MSC_VER && _MSC_VER >= 1400
 		#define HAVE_SNPRINTF_S 1
 	#else
@@ -261,7 +289,9 @@ HZ library internal implementation helpers.
 #endif
 
 
-#ifndef HAVE_VSNPRINTF_S  // vsnprintf_s (msvc 2005/8.0)
+/// \def HAVE_VSNPRINTF_S
+/// Defined to 0 or 1. If 1, the compiler has vsnprintf_s (msvc 2005/8.0).
+#ifndef HAVE_VSNPRINTF_S
 	#if defined _MSC_VER && _MSC_VER >= 1400
 		#define HAVE_VSNPRINTF_S 1
 	#else
@@ -270,7 +300,9 @@ HZ library internal implementation helpers.
 #endif
 
 
-#ifndef HAVE_VASPRINTF  // vasprintf() (GNU/glibc extension)
+/// \def HAVE_VASPRINTF
+/// Defined to 0 or 1. If 1, the compiler has vasprintf() (GNU/glibc extension).
+#ifndef HAVE_VASPRINTF
 	#if defined _GNU_SOURCE
 		#define HAVE_VASPRINTF 1
 	#else
@@ -281,6 +313,8 @@ HZ library internal implementation helpers.
 
 
 
+/// \def HAVE_REENTRANT_LOCALTIME
+/// Defined to 0 or 1. If 1, localtime() is reentrant.
 #ifndef HAVE_REENTRANT_LOCALTIME
 	// win32 and solaris localtime() is reentrant
 	#if defined _WIN32 || defined sun || defined __sun
@@ -293,7 +327,8 @@ HZ library internal implementation helpers.
 
 
 
-// setenv, unsetenv
+/// \def HAVE_SETENV
+/// Defined to 0 or 1. If 1, the compiler has setenv() and unsetenv().
 #ifndef HAVE_SETENV
 	// setenv(), unsetenv() glibc feature test macros:
 	// _BSD_SOURCE || _POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600.

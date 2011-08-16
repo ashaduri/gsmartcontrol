@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_FS_PATH_UTILS_H
 #define HZ_FS_PATH_UTILS_H
@@ -20,42 +25,46 @@
 #include "fs_common.h"  // separator
 
 
-// Filesystem path string manipulation.
-// For windows, always supply utf-8 or current locale-encoded strings.
-// Paths like \\.\ and \\?\ are not supported for windows (yet).
-
+/**
+\file
+Filesystem path string manipulation.
+For windows, always supply utf-8 or current locale-encoded strings.
+Paths like \\.\ and \\?\ are not supported for windows (yet).
+*/
 
 namespace hz {
 
 
 
-// Convert path from unknown format to native (e.g. unix paths to win32).
-// Same as Path(path).to_native().str()
+/// Convert path from unknown format to native (e.g. unix paths to win32).
+/// Same as FsPath(path).to_native().str()
 inline std::string path_to_native(const std::string& path);
 
-// Remove trailing slashes in path (unless they are part of root component).
+/// Remove trailing slashes in path (unless they are part of root component).
 inline std::string path_trim_trailing_separators(const std::string& path);
 
-// Check if the path is absolute (only for native paths). Return 0 if it's not.
-// The returned value is a position past the root component (e.g. 3 for C:\temp).
+/// Check if the path is absolute (only for native paths). Return 0 if it's not.
+/// The returned value is a position past the root component (e.g. 3 for C:\temp).
 inline std::string::size_type path_is_absolute(const std::string& path);
 
 
-// Get the path truncated by 1 level, e.g. /usr/local/ -> /usr.
+/// Get the path truncated by 1 level, e.g. /usr/local/ -> /usr.
 inline std::string path_get_dirname(const std::string& path);
 
-// Get the basename of path, e.g. /usr/local/ -> local; /a/b -> b.
+/// Get the basename of path, e.g. /usr/local/ -> local; /a/b -> b.
 inline std::string path_get_basename(const std::string& path);
 
-// Get root path of current path. e.g. '/' or 'D:\'.
-// May not work with relative paths under win32.
+/// Get root path of current path. e.g. '/' or 'D:\'.
+/// May not work with relative paths under win32.
 inline std::string path_get_root(const std::string& path);
 
 
-// Change the supplied filename so that it's safe to create it.
+/// Change the supplied filename so that it's safe to create it
+/// (remove any potentially harmful characters from it).
 inline std::string filename_make_safe(const std::string& filename);
 
-// Change the supplied path so that it's safe to create it.
+/// Change the supplied path so that it's safe to create it
+/// (remove any potentially harmful characters from it).
 inline std::string path_make_safe(const std::string& path);
 
 
@@ -66,8 +75,6 @@ inline std::string path_make_safe(const std::string& path);
 
 
 
-// Convert path from unknown format to native (e.g. unix paths to win32).
-// Same as Path(path).to_native().str()
 inline std::string path_to_native(const std::string& path)
 {
 	std::string s(path);
@@ -87,7 +94,6 @@ inline std::string path_to_native(const std::string& path)
 
 
 
-// Remove trailing slashes in path (unless they are part of root component).
 inline std::string path_trim_trailing_separators(const std::string& path)
 {
 	std::string::size_type apos = path_is_absolute(path);  // first position of non-abs portion
@@ -103,8 +109,6 @@ inline std::string path_trim_trailing_separators(const std::string& path)
 
 
 
-// Check if the path is absolute (only for native paths). Return 0 if it's not.
-// The returned value is a position past the root component (e.g. 3 for C:\temp).
 inline std::string::size_type path_is_absolute(const std::string& path)
 {
 #ifndef _WIN32
@@ -127,8 +131,6 @@ inline std::string::size_type path_is_absolute(const std::string& path)
 
 
 
-
-// Get the path truncated by 1 level, e.g. /usr/local/ -> /usr.
 inline std::string path_get_dirname(const std::string& path)
 {
 // GLib (as of 2.14.1) has a bug in g_path_get_dirname() implementation:
@@ -176,7 +178,6 @@ inline std::string path_get_dirname(const std::string& path)
 
 
 
-// Get the basename of path, e.g. /usr/local/ -> local; /a/b -> b.
 inline std::string path_get_basename(const std::string& path)
 {
 #if !defined _WIN32
@@ -206,8 +207,6 @@ inline std::string path_get_basename(const std::string& path)
 
 
 
-// Get root path of current path. e.g. '/' or 'D:\'.
-// May not work with relative paths under win32.
 inline std::string path_get_root(const std::string& path)
 {
 #if !defined _WIN32
@@ -229,10 +228,6 @@ inline std::string path_get_root(const std::string& path)
 
 
 
-
-// Compress a path - remove double separators, trailing
-// separator, "/./" components, and deal with "/../" if possible.
-// Note: This function performs its operations on strings, not real paths.
 inline std::string path_compress(const std::string& path)
 {
 	std::string::size_type rel_pos = path_is_absolute(path);
@@ -286,8 +281,6 @@ inline std::string path_compress(const std::string& path)
 
 
 
-
-// Change the supplied filename so that it's safe to create it on any filesystem.
 inline std::string filename_make_safe(const std::string& filename)
 {
 	std::string s(filename);
@@ -307,7 +300,6 @@ inline std::string filename_make_safe(const std::string& filename)
 
 
 
-// Change the supplied path so that it's safe to create it.
 inline std::string path_make_safe(const std::string& path)
 {
 	std::string s(path);
@@ -335,3 +327,5 @@ inline std::string path_make_safe(const std::string& path)
 
 
 #endif
+
+/// @}

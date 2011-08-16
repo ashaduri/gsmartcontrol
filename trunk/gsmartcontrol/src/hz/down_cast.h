@@ -3,6 +3,11 @@
       (C) 2003 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_DOWN_CAST_H
 #define HZ_DOWN_CAST_H
@@ -18,14 +23,13 @@
 namespace hz {
 
 
-// Perform a down cast.
-
-// This cast works with polymorphic and non-polymorphic types.
-// If RTTI is disabled, it will revert to static_cast; otherwise,
-// dynamic_cast is used for polymorphic types and static_cast
-// for non-polymorphic types.
-
-// Use with pointers only!
+/// Perform a down cast (pointers only!).
+/// This cast works with polymorphic and non-polymorphic types.
+/// If RTTI is disabled, it will revert to static_cast; otherwise,
+/// dynamic_cast is used for polymorphic types and static_cast
+/// for non-polymorphic types.
+template<typename Target, typename Source> inline
+Target down_cast(const Source& arg);
 
 
 
@@ -95,3 +99,5 @@ Target down_cast(const Source& arg)
 
 
 #endif
+
+/// @}

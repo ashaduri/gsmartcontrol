@@ -1,9 +1,15 @@
 /**************************************************************************
  Copyright:
-      (C) 2007 - 2010  Thiago Rosso Adams <thiago.adams 'at' gmail.com>
+      (C) 2007 - 2011  Thiago Rosso Adams <thiago.adams 'at' gmail.com>
       (C) 2009 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Thiago Rosso Adams
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_SCOPED_PTR_H
 #define HZ_SCOPED_PTR_H
@@ -12,23 +18,22 @@
 
 // TODO: HZIFY
 
-/*
+/**
+\file
 Heavily based on implementation found at
 http://www.thradams.com/codeblog/tr1functional2.htm
 
 Original notes and copyright info follow:
-*/
 
-//
-// Copyright (C) 2007, Thiago Adams (thiago.adams@gmail.com)
-// This is the implementation of std::tr1::function proposed in tr1.
-// See details in: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf
-//
-// Permission to copy, use, modify, sell and distribute this software
-// is granted provided this copyright notice appears in all copies.
-// This software is provided "as is" without express or implied
-// warranty, and with no claim as to its suitability for any purpose.
-//
+Copyright (C) 2007, Thiago Adams (thiago.adams@gmail.com)
+This is the implementation of std::tr1::function proposed in tr1.
+See details in: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf
+
+Permission to copy, use, modify, sell and distribute this software
+is granted provided this copyright notice appears in all copies.
+This software is provided "as is" without express or implied
+warranty, and with no claim as to its suitability for any purpose.
+*/
 
 #include <functional>
 #include <cassert>
@@ -191,3 +196,5 @@ namespace hz {
 
 
 #endif  // hg
+
+/// @}

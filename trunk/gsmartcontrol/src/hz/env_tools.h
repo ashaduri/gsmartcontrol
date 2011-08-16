@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_ENV_TOOLS_H
 #define HZ_ENV_TOOLS_H
@@ -23,15 +28,18 @@
 #endif
 
 
-// Environment manipulation functions.
-// On windows, these always work with utf-8 strings.
-
+/**
+\file
+Environment manipulation functions.
+On windows, these always work with utf-8 strings.
+*/
 
 
 namespace hz {
 
 
-
+/// Get environment variable value.
+/// \return false if error or no such variable.
 inline bool env_get_value(const std::string& name, std::string& value)
 {
 	if (name.empty())
@@ -111,7 +119,9 @@ inline bool env_get_value(const std::string& name, std::string& value)
 
 
 
-// return true on success.
+/// Set environment variable. If \c overwrite is false, the value won't
+/// be overwritten if it already exists.
+/// \return true if the value was written successfully.
 inline bool env_set_value(const std::string& name, const std::string& value, bool overwrite = true)
 {
 	if (name.empty() || name.find('=') != std::string::npos)
@@ -163,6 +173,7 @@ inline bool env_set_value(const std::string& name, const std::string& value, boo
 
 
 
+/// Unset an environment variable
 inline bool env_unset_value(const std::string& name)
 {
 	if (name.empty() || name.find('=') != std::string::npos)
@@ -193,13 +204,19 @@ inline bool env_unset_value(const std::string& name)
 
 
 
-// Temporarily change a value of an environment variable.
-
+/// Temporarily change a value of an environment variable (for as long
+/// as an object of this class exists).
 class ScopedEnv {
 
 	public:
 
-		// change environment variable value.
+		/// Constructor.
+		/// \param name variable name
+		/// \param value variable value to set
+		/// \param do_change if false, no operation will be performed. This is useful if you need
+		/// 	to conditionally set a variable (you can't practically declare a scoped variable inside
+		/// 	a conditional block to be used outside it).
+		/// \param overwrite if false and the variable already exists, don't change it.
 		ScopedEnv(const std::string& name, const std::string& value, bool do_change = true, bool overwrite = true)
 				: name_(name), do_change_(do_change), old_set_(false), error_(false)
 		{
@@ -213,7 +230,8 @@ class ScopedEnv {
 			}
 		}
 
-		// change back
+
+		/// Destructor, changes back the variable to the old value
 		~ScopedEnv()
 		{
 			if (do_change_) {
@@ -226,19 +244,21 @@ class ScopedEnv {
 		}
 
 
+		/// If true, there was an error setting the value.
 		bool bad() const
 		{
 			return error_;
 		}
 
 
-		// check if the old value was set
+		/// Check if there was a value before we set it
 		bool get_old_set() const
 		{
 			return old_set_;
 		}
 
-		// get old value
+
+		/// Get the old variable value
 		std::string get_old_value() const
 		{
 			return old_value_;
@@ -246,11 +266,12 @@ class ScopedEnv {
 
 
 	private:
-		std::string name_;
-		std::string old_value_;
-		bool do_change_;
-		bool old_set_;
-		bool error_;
+
+		std::string name_;  ///< Variable name
+		std::string old_value_;  ///< Old value
+		bool do_change_;  ///< If false, don't do anything
+		bool old_set_;  ///< If false, there was no variable before we set it
+		bool error_;  ///< If true, there was an error setting the value
 
 };
 
@@ -264,3 +285,5 @@ class ScopedEnv {
 
 
 #endif
+
+/// @}

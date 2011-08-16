@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_EXCEPTIONS_H
 #define HZ_EXCEPTIONS_H
@@ -14,28 +19,30 @@
 // #include <stdexcept>  // standard exceptions, derived from std::exception
 
 
+/**
+Define DISABLE_EXCEPTIONS=1 to disable exception use
+(only applicable when using the macros defined below).
+Useful for e.g. gcc's -fno-exceptions, etc...
+*/
 
-// Define DISABLE_EXCEPTIONS=1 to disable exception use
-// (only applicable when using the macros defined below).
-// Useful for e.g. gcc's -fno-exceptions, etc...
+/// \def THROW_FATAL(ex)
+/// If you use -fno-exceptions gcc switch (or similar), define
+/// DISABLE_EXCEPTIONS and no throw statement will occur if
+/// you use THROW_FATAL instead of throw (calling this will cause abort()
+/// after printing an error message to stderr).
+/// Otherwise, it's equivalent to a simple <tt>throw ex</tt>.
+/// Note: The exceptions MUST have a what() member function for this to work.
+/// Do NOT put ex into parentheses. gcc-3.3 gives syntax errors about that (huh?).
+
+/// \def THROW_WARN(ex)
+/// Same as THROW_FATAL(ex), but no abort() in case of no-exceptions.
 
 
 #if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
 
-
-	// If you use -fno-exceptions gcc switch (or similar), define
-	// DISABLE_EXCEPTIONS and no throw statement will occur if
-	// you use THROW_FATAL instead of throw.
-
-	// Note: The exceptions MUST have a what() member function
-	// for this to work.
-
-	// Do NOT put ex into parentheses. gcc-3.3 gives syntax errors about that (huh?).
-
 	#define THROW_FATAL(ex) \
 		throw ex
 
-	// same as above, but no abort() in case of no-exceptions
 	#define THROW_WARN(ex) \
 		throw ex
 
@@ -71,3 +78,5 @@
 
 
 #endif
+
+/// @}

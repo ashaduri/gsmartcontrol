@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_I18N_H
 #define HZ_I18N_H
@@ -10,21 +15,26 @@
 #include "hz_config.h"  // feature macros
 
 
-// Gettext bridge for internationalization. Sort of like gettext.h,
-// but a lot simpler / lighter.
-// This file is for internal use in hz. The application is expected
-// to use gettext.h or similar mechanisms.
+/**
+\file
+Gettext bridge for internationalization. Sort of like gettext.h,
+but a lot simpler / lighter.
+This file is for internal use in hz. The application is expected
+to use gettext.h or similar mechanisms.
 
-// Note: If you are using UTF-8 to display messages in your application
-// but system locale is not UTF-8, then you need to call gettext's
-// bind_textdomain_codeset(package, "UTF-8");
-// to enable locale -> UTF-8 conversion for translated messages.
+Note: If you are using UTF-8 to display messages in your application
+but system locale is not UTF-8, then you need to call gettext's
+bind_textdomain_codeset(package, "UTF-8");
+to enable locale -> UTF-8 conversion for translated messages.
+*/
 
 
 namespace hz {
 
 
-// Usually NLS can be disabled through the configure --disable-nls option.
+/// \def ENABLE_NLS
+/// Defined to 0 or 1. If 1, enable native language support.
+/// Usually NLS can be disabled through the configure --disable-nls option.
 #if defined ENABLE_NLS && ENABLE_NLS
 
 	#include <libintl.h>  // gettext functions
@@ -66,33 +76,33 @@ namespace hz {
 
 	// ------- Mark and translate
 
-	// The main gettext function. Marks and translates at runtime.
-	// You need to pass --keyword=HZ__ to xgettext when extracting messages.
+	/// The main gettext function. Marks and translates at runtime.
+	/// You need to pass --keyword=HZ__ to xgettext when extracting messages.
 	#define HZ__(String) gettext(String)
 
-	// Same as above, but specifies a context too, to e.g.
-	// disambiguate two "Open" menu entries as ("File", "Open") and ("Printer", "Open").
-	// You MUST pass --keyword=C_:1c,2 to xgettext when extracting messages.
+	/// Same as HZ__(), but specifies a context too, to e.g.
+	/// disambiguate two "Open" menu entries as ("File", "Open") and ("Printer", "Open").
+	/// You MUST pass --keyword=C_:1c,2 to xgettext when extracting messages.
 	#define HZ_C_(Context, String) i18n_C_helper((Context "\004" String), (String))
 
 
 	// ------- Mark only
 
-	// The no-op marking of a string for translation.
-	// You MUST pass --keyword=HZ_N_ to xgettext when extracting messages.
+	/// The no-op marking of a string for translation.
+	/// You MUST pass --keyword=HZ_N_ to xgettext when extracting messages.
 	#define HZ_N_(String) (String)
 
-	// Same as above, but accepts context too.
-	// --keyword=HZ_NC_:1c,2
+	/// Same as HZ_N_(), but accepts context too.
+	/// --keyword=HZ_NC_:1c,2
 	#define HZ_NC_(Context, String) (String)
 
 
 	// ------- Translate only
 
-	// Translate a dynamic string.
+	/// Translate a dynamic string.
 	#define HZ_R_(String) gettext(String)
 
-	// Same as above, but accepts context too.
+	/// Same as HZ_R_(), but accepts context too.
 	#define HZ_RC_(Context, String) i18n_R_helper((Context), (String))
 
 
@@ -115,3 +125,5 @@ namespace hz {
 
 
 #endif
+
+/// @}

@@ -3,6 +3,11 @@
       (C) 2004 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_DATA_FILE_H
 #define HZ_DATA_FILE_H
@@ -21,22 +26,23 @@ namespace hz {
 
 
 
+/// Static variable holder
 template<typename Dummy>
 struct DataFileStaticHolderTemplate {
-	static std::vector<std::string> search_directories;
+	static std::vector<std::string> search_directories;  ///< Search directories for data files
 };
 
 // definitions
 template<typename Dummy> std::vector<std::string> DataFileStaticHolderTemplate<Dummy>::search_directories;
 
-typedef DataFileStaticHolderTemplate<void> DataFileStaticHolder;  // one (and only) specialization.
+typedef DataFileStaticHolderTemplate<void> DataFileStaticHolder;  ///< Static variable holder (one (and only) specialization)
 
 
 
 //------------------------------------------------------------------------
 
 
-// Add a directory path
+/// Add a directory to a search path
 inline void data_file_add_search_directory(const std::string& path)
 {
 	if (!path.empty())
@@ -44,14 +50,16 @@ inline void data_file_add_search_directory(const std::string& path)
 }
 
 
-// Get currently registered search directories (a copy is returned)
+
+/// Get currently registered search directories (a copy is returned)
 inline std::vector<std::string> data_file_get_search_directories()
 {
 	return DataFileStaticHolder::search_directories;
 }
 
 
-// Set search directory list.
+
+/// Set a directory list for a search path
 inline void data_file_set_search_directories(const std::vector<std::string>& dirs)
 {
 	DataFileStaticHolder::search_directories = dirs;
@@ -59,11 +67,8 @@ inline void data_file_set_search_directories(const std::vector<std::string>& dir
 
 
 
-//------------------------------------------------------------------------
-
-
-
-// Return a full path to filename, or empty string on "not found".
+/// Find a data file (using a file name) in a search directory list.
+/// \return A full path to filename, or empty string on "not found".
 inline std::string data_file_find(const std::string& filename, bool allow_to_be_directory = false)
 {
 	if (filename.empty())
@@ -118,3 +123,5 @@ inline std::string data_file_find(const std::string& filename, bool allow_to_be_
 
 
 #endif
+
+/// @}
