@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_LAUNCH_URL_H
 #define HZ_LAUNCH_URL_H
@@ -26,17 +31,13 @@
 
 
 
-// Note: Glib / GDK only.
-
-// TODO: Use gtk_show_uri() if gtk 2.14.
-
-
 namespace hz {
 
 
 
 	namespace internal {
 
+		/// Spawn the command (internal helper function)
 		inline bool launch_url_helper_do_launch(const std::string& command, GError** errorptr, GdkScreen* screen)
 		{
 			if (screen)
@@ -48,11 +49,13 @@ namespace hz {
 
 
 
-	// Open URL in browser or mailto: link in mail client.
-	// Return error message on error, empty string otherwise.
-	// The link is in utf-8 in windows.
+	/// Open URL in browser or mailto: link in mail client.
+	/// Return error message on error, empty string otherwise.
+	/// The link is in utf-8 in windows.
+	/// Note: This works using Glib / GDK only.
 	inline std::string launch_url(const std::string& link, GdkScreen* screen = 0)
 	{
+		// TODO: Use gtk_show_uri() if gtk 2.14.
 		if (link.empty())
 			return "Error while executing a command: Empty URI specified.";
 
@@ -141,3 +144,5 @@ namespace hz {
 
 
 #endif
+
+/// @}

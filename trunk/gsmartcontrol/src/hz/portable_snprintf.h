@@ -3,6 +3,11 @@
       (C) 2009 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_PORTABLE_SNPRINTF_H
 #define HZ_PORTABLE_SNPRINTF_H
@@ -10,9 +15,17 @@
 #include "hz_config.h"  // feature macros
 
 
-// Compilation options:
-// - Define ENABLE_GLIB to 1 to enable glib-related code (portable ISO-compatible (v)snprintf).
+/**
+\file
+Compilation options:
+- Define \c ENABLE_GLIB to 1 to enable glib-related code (portable ISO-compatible (v)snprintf).
 
+Keep in mind that these format types are non-portable (the first one is MS variant,
+the second one is standard):
+- %I64d, %lld (long long int),
+- %I64u, %llu (unsigned long long int),
+- %f, %Lf (long double; needs casting to double under non-ANSI mingw if using %f).
+*/
 
 
 namespace hz {
@@ -20,19 +33,22 @@ namespace hz {
 
 // Note: There are macros, so they are not namespaced.
 
-// portable_snprintf() and portable_vsnprintf() are snprintf() and vsnprintf()
-// wrappers that always behave according to ISO standard in terms of 0-termination.
 
-// There types are non-portable (the first one is MS variant, the second one is standard):
-// %I64d, %lld (long long int),
-// %I64u, %llu (unsigned long long int),
-// %f, %Lf (long double; needs casting to double under non-ANSI mingw if using %f).
+/// \def HAVE_PORTABLE_SNPRINTF_MS
+/// If 1, portable_snprintf() and portable_vsnprintf() accept I64d, I64u.
+/// Users are expected to check this macro to see if the format is supported.
 
-// HAVE_PORTABLE_SNPRINTF_MS - portable_snprintf() accepts I64d, I64u.
-// HAVE_PORTABLE_SNPRINTF_ISO - portable_snprintf() accepts lld, llu, Lf.
+/// \def HAVE_PORTABLE_SNPRINTF_ISO
+/// If 1, portable_snprintf() and portable_vsnprintf() accept lld, llu, Lf.
+/// Users are expected to check this macro to see if the format is supported.
 
 
-// Usage: void portable_snprintf(char *str, size_t size, const char *format, ...);
+
+/// \def portable_snprintf(buf, buf_size, ...)
+/// snprintf() wrapper that always behaves according to ISO standard in terms of 0-termination.
+/// Note that this is a macro, and therefore not namespaced.
+/// Use it like this:
+/// \code void portable_snprintf(char *str, size_t size, const char *format, ...); \endcode
 
 #if defined ENABLE_GLIB && ENABLE_GLIB
 	#include <glib.h>  // g_snprintf
@@ -96,7 +112,11 @@ namespace hz {
 
 
 
-// Usage: void portable_vsnprintf(char *str, size_t size, const char *format, va_list ap);
+/// \def portable_vsnprintf(buf, buf_size, ...)
+/// vsnprintf() wrapper that always behaves according to ISO standard in terms of 0-termination.
+/// Note that this is a macro, and therefore not namespaced.
+/// Use it like this:
+/// \code void portable_vsnprintf(char *str, size_t size, const char *format, va_list ap); \endcode
 
 #if defined ENABLE_GLIB && ENABLE_GLIB
 	#include <glib.h>  // g_vsnprintf
@@ -171,3 +191,5 @@ namespace hz {
 
 
 #endif
+
+/// @}

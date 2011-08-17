@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_PROCESS_SIGNAL_H
 #define HZ_PROCESS_SIGNAL_H
@@ -34,9 +39,11 @@
 
 
 
-// Compilation options:
-// Define ENABLE_GLIB to 1 to enable glib-related code (portable signal messages).
-
+/**
+\file
+Compilation options:
+- Define ENABLE_GLIB to 1 to enable glib-related code (portable signal messages).
+*/
 
 
 // win32 doesn't have signal W* macros, define them (this is _very_ rough,
@@ -55,39 +62,53 @@
 namespace hz {
 
 
-// Note: This function may return messages in native language,
-// possibly using LC_MESSAGES to select the language.
-// If Glib is enabled, it returns messages in UTF-8 format.
 
-
-// portable strsignal() version for std::string.
+/// Portable strsignal() version for std::string.
+/// Note: This function may return messages in native language,
+/// possibly using LC_MESSAGES to select the language.
+/// If Glib is enabled, it returns messages in UTF-8 format.
 inline std::string signal_string(int signal_value);
 
+
+/// \typedef process_id_t
+/// Process handle
+
+/// \enum signal_t
+/// Sendable signals
+
+/// \var signal_t SIGNAL_SIGNONE
+/// Verify that the process exists
+
+/// \var signal_t SIGNAL_SIGTERM
+/// Ask the process to terminate itself
+
+/// \var signal_t SIGNAL_SIGKILL
+/// Nuke the process
 
 #ifdef _WIN32
 	typedef HANDLE process_id_t;  // process handle, not process id
 
-	enum signal_t {  // sendable signals
-		SIGNAL_SIGNONE,  // verify that process exists
-		SIGNAL_SIGTERM,  // ask to terminate
-		SIGNAL_SIGKILL  // nuke
+	enum signal_t {
+		SIGNAL_SIGNONE,
+		SIGNAL_SIGTERM,
+		SIGNAL_SIGKILL
 	};
 
 #else
 
 	typedef pid_t process_id_t;
 
-	enum signal_t {  // sendable signals
-		SIGNAL_SIGNONE = 0,  // verify that process exists
-		SIGNAL_SIGTERM = SIGTERM,  // ask to terminate
-		SIGNAL_SIGKILL = SIGKILL  // nuke
+	enum signal_t {
+		SIGNAL_SIGNONE = 0,
+		SIGNAL_SIGTERM = SIGTERM,
+		SIGNAL_SIGKILL = SIGKILL
 	};
 
 #endif
 
 
-// Portable kill(). Works with signal_t signals only.
-// Process groups are not supported under win32.
+/// Portable kill(). Works with signal_t signals only.
+/// Process groups are not supported under win32.
 inline int process_signal_send(process_id_t process_handle, signal_t sig);
 
 
@@ -97,7 +118,6 @@ inline int process_signal_send(process_id_t process_handle, signal_t sig);
 
 
 
-// portable strsignal() version for std::string.
 inline std::string signal_to_string(int signal_value)
 {
 	std::string msg;
@@ -173,8 +193,6 @@ namespace internal {
 
 #else
 
-	// Works with signal_t signals only.
-	// Process groups are not supported under win32.
 	inline int process_signal_send(process_id_t process_handle, signal_t sig)
 	{
 		if (process_handle <= 0) {
@@ -276,3 +294,5 @@ namespace internal {
 
 
 #endif
+
+/// @}

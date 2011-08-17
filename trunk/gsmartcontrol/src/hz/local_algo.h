@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_LOCAL_ALGO_H
 #define HZ_LOCAL_ALGO_H
@@ -16,10 +21,11 @@
 namespace hz {
 
 
-
-// These standard-like algorithms are here to avoid including huge
-// standard headers in a header-only library.
-
+/**
+\file
+These standard-like algorithms are here to avoid including huge
+standard headers in a header-only library.
+*/
 
 
 // -------------------------------- Shell Sort
@@ -27,12 +33,13 @@ namespace hz {
 
 namespace internal {
 
-	// Helpers
+	/// Helper for shell_sort
 	template<class T>
 	struct shell_sort_helper {  // works for operators
 		typedef typename T::value_type value_type;
 	};
 
+	/// Specialization
 	template<class T>
 	struct shell_sort_helper<T*> {  // needed for C arrays
 		typedef T value_type;
@@ -42,10 +49,9 @@ namespace internal {
 
 
 
-// Shell sort is one of the fastest on small datasets (<1000),
-// and has a small memory footprint.
-
-// Shell sort. Works for most STL containers.
+/// Shell sort. Works for most STL containers.
+/// Shell sort is one of the fastest on small datasets (<1000),
+/// and has a small memory footprint.
 template<class RandomIter> inline
 void shell_sort(RandomIter first, RandomIter last)
 {
@@ -64,7 +70,8 @@ void shell_sort(RandomIter first, RandomIter last)
 }
 
 
-// Same as above, but with custom comparator function
+
+/// Same as the other shell_sort(), but with custom comparator function
 template<class RandomIter, class Comparator> inline
 void shell_sort(RandomIter first, RandomIter last, Comparator less_than_func)
 {
@@ -84,11 +91,8 @@ void shell_sort(RandomIter first, RandomIter last, Comparator less_than_func)
 
 
 
-
-// -------------------------------- Binary Search
-
-
-
+/// Binary search.
+/// \return iterator to found element, or \c end if not found.
 template<typename RandomIter, typename ValueType> inline
 RandomIter returning_binary_search(RandomIter begin, RandomIter end, const ValueType& value)
 {
@@ -108,6 +112,9 @@ RandomIter returning_binary_search(RandomIter begin, RandomIter end, const Value
 }
 
 
+
+/// Binary search with custom comparator.
+/// \return iterator to found element, or \c end if not found.
 template<typename RandomIter, typename ValueType, typename LessComparator> inline
 RandomIter returning_binary_search(RandomIter begin, RandomIter end,
 		const ValueType& value, LessComparator comp)
@@ -139,3 +146,5 @@ RandomIter returning_binary_search(RandomIter begin, RandomIter end,
 
 
 #endif
+
+/// @}

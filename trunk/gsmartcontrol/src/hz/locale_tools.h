@@ -3,6 +3,11 @@
       (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_LOCALE_TOOLS_H
 #define HZ_LOCALE_TOOLS_H
@@ -18,16 +23,20 @@
 namespace hz {
 
 
-// NOTE: The POSIX man page for setlocale (which libstdc++ is based on)
-// states: "The locale state is common to all threads within a process."
-// This may have rather serious implications for thread-safety.
+/**
+\file
+Locale manipulation facilities
 
-// However, for glibc, libstdc++ uses the "uselocale" extension, which
-// sets locale on per-thread basis.
+Note: The POSIX man page for setlocale (which libstdc++ is based on)
+states: "The locale state is common to all threads within a process."
+This may have rather serious implications for thread-safety.
+However, for glibc, libstdc++ uses the "uselocale" extension, which
+sets locale on per-thread basis.
+*/
 
 
-
-// Set the C standard library locale
+/// Set the C standard library locale, storing the previous one into \c old_locale.
+/// \return false on failure
 inline bool locale_c_set(const std::string& loc, std::string& old_locale)
 {
 	// even though undocumented, glibc returns 0 when the locale string is invalid.
@@ -40,14 +49,17 @@ inline bool locale_c_set(const std::string& loc, std::string& old_locale)
 }
 
 
-// Set the C standard library locale
+
+/// Set the C standard library locale.
+/// \return false on failure
 inline bool locale_c_set(const std::string& loc)
 {
 	return std::setlocale(LC_ALL, loc.c_str());  // returns 0 if invalid
 }
 
 
-// Get current C standard library locale
+
+/// Get current C standard library locale.
 inline std::string locale_c_get()
 {
 	return std::setlocale(LC_ALL, 0);
@@ -55,8 +67,9 @@ inline std::string locale_c_get()
 
 
 
-
-// Set the C++ standard library locale (may also set the C locale)
+/// Set the C++ standard library locale (may also set the C locale depending
+/// on implementation), storing the previous one into \c old_locale.
+/// \return false on failure (no exception is thrown)
 inline bool locale_cpp_set(const std::locale& loc, std::locale& old_locale)
 {
 #if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
@@ -77,7 +90,10 @@ inline bool locale_cpp_set(const std::locale& loc, std::locale& old_locale)
 }
 
 
-// Set the C++ standard library locale (may also set the C locale)
+
+/// Set the C++ standard library locale (may also set the C locale depending
+/// on implementation), storing the previous one's name into \c old_locale.
+/// \return false on failure (no exception is thrown)
 inline bool locale_cpp_set(const std::locale& loc, std::string& old_locale)
 {
 #if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
@@ -94,7 +110,10 @@ inline bool locale_cpp_set(const std::locale& loc, std::string& old_locale)
 }
 
 
-// Set the C++ standard library locale (may also set the C locale)
+
+/// Set the C++ standard library locale (may also set the C locale depending
+/// on implementation).
+/// \return false on failure (no exception is thrown)
 inline bool locale_cpp_set(const std::locale& loc)
 {
 #if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
@@ -112,8 +131,9 @@ inline bool locale_cpp_set(const std::locale& loc)
 
 
 
-
-// Set the C++ standard library locale (may also set the C locale)
+/// Set the C++ standard library locale name (may also set the C locale depending
+/// on implementation), storing the previous one into \c old_locale.
+/// \return false on failure (no exception is thrown)
 inline bool locale_cpp_set(const std::string& loc, std::locale& old_locale)
 {
 #if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
@@ -130,7 +150,9 @@ inline bool locale_cpp_set(const std::string& loc, std::locale& old_locale)
 }
 
 
-// Set the C++ standard library locale (may also set the C locale)
+/// Set the C++ standard library locale name (may also set the C locale depending
+/// on implementation), storing the previous one's name into \c old_locale.
+/// \return false on failure (no exception is thrown)
 inline bool locale_cpp_set(const std::string& loc, std::string& old_locale)
 {
 #if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
@@ -147,7 +169,9 @@ inline bool locale_cpp_set(const std::string& loc, std::string& old_locale)
 }
 
 
-// Set the C++ standard library locale (may also set the C locale)
+/// Set the C++ standard library locale name (may also set the C locale depending
+/// on implementation).
+/// \return false on failure (no exception is thrown)
 inline bool locale_cpp_set(const std::string& loc)
 {
 #if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
@@ -165,18 +189,22 @@ inline bool locale_cpp_set(const std::string& loc)
 
 
 
-// Get current C++ standard library locale
+/// Get current C++ standard library locale. This has no definition,
+/// use one of the specializations.
 template<typename ReturnType>
-ReturnType locale_cpp_get();  // no definition - use the specializations below.
+ReturnType locale_cpp_get();
 
 
+/// Get current C++ standard library locale as a string.
+/// May return "*" if it's not representable as a string.
 template<> inline
 std::string locale_cpp_get<std::string>()
 {
-	return std::locale().name();  // may return "*" if it's not representable as a string
+	return std::locale().name();
 }
 
 
+/// Get current C++ standard library locale std::locale object.
 template<> inline
 std::locale locale_cpp_get<std::locale>()
 {
@@ -187,14 +215,12 @@ std::locale locale_cpp_get<std::locale>()
 
 
 
-
-
-// Temporarily change the C standard library locale
+/// Temporarily change the C standard library locale as long
+/// as this object lives.
 class ScopedCLocale {
-
 	public:
 
-		// change to classic locale (aka "C")
+		/// Change to classic locale (aka "C")
 		ScopedCLocale(bool do_change = true) : do_change_(do_change), bad_(false)
 		{
 			if (do_change_) {  // avoid unnecessary const char* -> string conversion overhead
@@ -202,7 +228,7 @@ class ScopedCLocale {
 			}
 		}
 
-		// change to user-specified locale loc.
+		/// Change to user-specified locale loc.
 		ScopedCLocale(const std::string& loc, bool do_change = true) : do_change_(do_change), bad_(false)
 		{
 			if (do_change_) {
@@ -210,25 +236,25 @@ class ScopedCLocale {
 			}
 		}
 
-		// change back
+		/// Change back the locale
 		~ScopedCLocale()
 		{
 			this->restore();
 		}
 
-		// get old locale
+		/// Get the old locale
 		std::string old() const
 		{
 			return old_locale_;
 		}
 
-		// Returns true if locale setting was unsuccessful
+		/// Return true if locale setting was unsuccessful
 		bool bad() const
 		{
 			return bad_;
 		}
 
-		// Restore the locale. Invoked by destructor.
+		/// Restore the locale. Invoked by destructor.
 		bool restore()
 		{
 			if (do_change_ && !bad_) {
@@ -240,20 +266,21 @@ class ScopedCLocale {
 
 
 	private:
-		std::string old_locale_;
-		bool do_change_;
-		bool bad_;
+
+		std::string old_locale_;  ///< Old locale
+		bool do_change_;  ///< Whether we changed something or not
+		bool bad_;  ///< If true, there was some error
 
 };
 
 
 
-// Temporarily change the C++ standard library locale (may also set the C locale)
+/// Temporarily change the C++ standard library locale, as long as this
+/// object lives. This may also set the C locale depending on implementation.
 class ScopedCppLocale {
-
 	public:
 
-		// change to classic locale (aka "C")
+		/// Change to classic locale (aka "C")
 		ScopedCppLocale(bool do_change = true) : do_change_(do_change), bad_(false)
 		{
 			if (do_change) {
@@ -261,7 +288,7 @@ class ScopedCppLocale {
 			}
 		}
 
-		// change to user-specified locale loc.
+		/// Change to user-specified locale loc.
 		ScopedCppLocale(const std::string& loc, bool do_change = true) : do_change_(do_change), bad_(false)
 		{
 			if (do_change_) {
@@ -269,7 +296,7 @@ class ScopedCppLocale {
 			}
 		}
 
-		// change to user-specified locale loc.
+		/// Change to user-specified locale loc.
 		ScopedCppLocale(const std::locale& loc, bool do_change = true) : do_change_(do_change), bad_(false)
 		{
 			if (do_change_) {
@@ -277,25 +304,25 @@ class ScopedCppLocale {
 			}
 		}
 
-		// change back
+		/// Change the locale back to the old one
 		~ScopedCppLocale()
 		{
 			this->restore();
 		}
 
-		// get old locale
+		/// Get the old locale
 		std::locale old() const
 		{
 			return old_locale_;
 		}
 
-		// Returns true if locale setting was unsuccessful
+		/// Return true if locale setting was unsuccessful
 		bool bad() const
 		{
 			return bad_;
 		}
 
-		// Restore the locale. Invoked by destructor.
+		/// Restore the locale. Invoked by destructor.
 		bool restore()
 		{
 			if (do_change_ && !bad_) {
@@ -307,9 +334,10 @@ class ScopedCppLocale {
 
 
 	private:
-		std::locale old_locale_;
-		bool do_change_;
-		bool bad_;
+
+		std::locale old_locale_;  ///< The old locale
+		bool do_change_;  ///< Whether we changed the locale or not
+		bool bad_;  ///< If true, there was an error setting the locale
 
 };
 
@@ -323,3 +351,5 @@ class ScopedCppLocale {
 
 
 #endif
+
+/// @}
