@@ -1061,9 +1061,10 @@ bool SmartctlParser::parse_section_data_subsection_attributes(const std::string&
 	// * Most, but not all attribute names are with underscores. However, I encountered one
 	// named "Head flying hours" and there are slashes sometimes as well.
 	// So, parse until we encounter the next column.
-	// * "Old" format: One WD drive had non-integer flags, something like "PO--C-", with several
+	// * "Old Brief" format: One WD drive had non-integer flags, something like "PO--C-", with several
 	// lines of their descriptions after the attributes block (each line started with spaces and |)
-	// (seems to be a CVS version from 2006).
+	// (seems to be a CVS version from 2006). We don't support this (it's difficult to separate
+	// the name with spaces from the flag).
 	// * SSD drives may show "---" in value/worst/threshold fields.
 
 	// "old" format (used in -a):
@@ -1086,17 +1087,22 @@ bool SmartctlParser::parse_section_data_subsection_attributes(const std::string&
 
 	std::string space_re = "[ \\t]+";
 
-	std::string flag_re = "((?:0x[a-fA-F0-9]+)|(?:[A-Z+-]{2,}))";
-	std::string base_re = "[ \\t]*([0-9]+) ([^\\t\\n]+)" + space_re + flag_re + space_re  // name / flag
-			+ "([0-9-]+)" + space_re + "([0-9-]+)" + space_re + "([0-9-]+)" + space_re;  // value / worst / threshold
+	std::string old_flag_re = "(0x[a-fA-F0-9]+)";
+	std::string brief_flag_re = "([A-Z+-]{2,})";
+	// We allow name with spaces only in the old format, not in brief.
+	// This has to do with the name end detection - it's either 0x (flag's start) in the old format,
+	// or a space in the brief format.
+	std::string old_base_re = "[ \\t]*([0-9]+) ([^ \\t\\n]+(?:[^0-9\\t\\n]+)*)" + space_re + old_flag_re + space_re;  // ID / name / flag
+	std::string brief_base_re = "[ \\t]*([0-9]+) ([^ \\t\\n]+)" + space_re + brief_flag_re + space_re;  // ID / name / flag
+	std::string vals_re = "([0-9-]+)" + space_re + "([0-9-]+)" + space_re + "([0-9-]+)" + space_re;  // value / worst / threshold
 	std::string type_re = "([^ \\t\\n]+)" + space_re;
 	std::string updated_re = "([^ \\t\\n]+)" + space_re;
 	std::string failed_re = "([^ \\t\\n]+)" + space_re;
 	std::string raw_re = "(.+)[ \\t]*";
 
-	pcrecpp::RE re_old_up = app_pcre_re("/" + base_re + type_re + updated_re + failed_re + raw_re + "/mi");
-	pcrecpp::RE re_old_noup = app_pcre_re("/" + base_re + type_re + failed_re + raw_re + "/mi");
-	pcrecpp::RE re_brief = app_pcre_re("/" + base_re + failed_re + raw_re + "/mi");
+	pcrecpp::RE re_old_up = app_pcre_re("/" + old_base_re + vals_re + type_re + updated_re + failed_re + raw_re + "/mi");
+	pcrecpp::RE re_old_noup = app_pcre_re("/" + old_base_re + vals_re + type_re + failed_re + raw_re + "/mi");
+	pcrecpp::RE re_brief = app_pcre_re("/" + brief_base_re + vals_re + failed_re + raw_re + "/mi");
 
 	pcrecpp::RE re_flag_descr = app_pcre_re("/^[\\t ]+\\|/mi");
 
