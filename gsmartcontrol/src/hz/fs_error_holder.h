@@ -151,7 +151,7 @@ class FsErrorHolder {
 #if defined ENABLE_GLIB && ENABLE_GLIB
 
 
-	std::string FsErrorHolder::get_error_locale()
+	inline std::string FsErrorHolder::get_error_locale()
 	{
 		// Note: Paths are in filesystem charset. On win32 it's always utf-8.
 		// Errno string is in libc locale charset or utf8 (if using glib).
@@ -183,7 +183,7 @@ class FsErrorHolder {
 
 
 
-	std::string FsErrorHolder::get_error_utf8()
+	inline std::string FsErrorHolder::get_error_utf8()
 	{
 		// Paths are in filesystem charset, convert to utf8.
 	// 	gchar* cp1utf8 = g_filename_to_utf8(error_path1_.c_str(), -1, NULL, NULL, NULL);
@@ -216,7 +216,7 @@ class FsErrorHolder {
 	// This _should_ work on windows, but since we're using this function
 	// for console and console in windows is screwed up (uses DOS charsets(!)),
 	// we can't promise anything.
-	std::string FsErrorHolder::get_error_locale()
+	inline std::string FsErrorHolder::get_error_locale()
 	{
 		std::string msg = error_format_;  // gettext-supplied charset (locale, probably)
 
@@ -248,7 +248,7 @@ class FsErrorHolder {
 
 
 	// This works correctly in windows, since we use only utf-8 paths there.
-	std::string FsErrorHolder::get_error_utf8()
+	inline std::string FsErrorHolder::get_error_utf8()
 	{
 		return this->get_error_locale();
 	}

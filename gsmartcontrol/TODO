@@ -37,6 +37,10 @@ Bugs / patches:
 TODO:
 
 
+Don't issue warnings for attributes whose raw values are not numbers completely
+	(e.g. they are space-separated numbers in some format)
+
+
 
 Add menu item - "update drive database" (not sure about linux, should
 	check if it's supported first; also need to run it in terminal).
