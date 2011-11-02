@@ -37,9 +37,17 @@ Bugs / patches:
 TODO:
 
 
+Update the man page with new options and stuff.
+
+
+Change all metion of berlios.
+
+
 Don't issue warnings for attributes whose raw values are not numbers completely
 	(e.g. they are space-separated numbers in some format)
 
+
+investiage the new "-l ssd" and "-l devstat" options (since 5.42)
 
 
 Add menu item - "update drive database" (not sure about linux, should
@@ -121,6 +129,8 @@ RAID:
 		Notification: If /sys/bus/scsi/devices/hostN/scsi_host/hostN/host_fw_version
 			is older than "V1.46 2009-01-06", notify the user (maybe its better to grep
 			the smartctl output for that on port 0?).
+
+	Areca FreeBSD: unresearched. since 5.42.
 
 	3ware FreeBSD:
 		Call as: smartctl -i -d 3ware,[0-127] /dev/twa0  (or twe0)
