@@ -17,30 +17,14 @@
 // Glib-based policy.
 
 
-// Note: g_static_mutex_*lock() functions may give warnings about breaking strict-aliasing rules.
-// The warnings are completely harmless and visible on some versions of glib only.
-// However, due to their number, I decided to implement this workaround.
-
-#ifndef _WIN32
-	// same as stock version, but an additional cast to (void*) is added.
-	#define hz_glib_static_mutex_get_mutex(mutex) \
-		( g_thread_use_default_impl ? ((GMutex*) ((void*)((mutex)->static_mutex.pad))) : \
-		g_static_mutex_get_mutex_impl_shortcut(&((mutex)->runtime_mutex)) )
-
-#else
-	// win32 has different definition of this macro, so default to stock version.
-	#define hz_glib_static_mutex_get_mutex(mutex) g_static_mutex_get_mutex(mutex)
-#endif
-
-
 #define hz_glib_static_mutex_lock(mutex) \
-	g_mutex_lock(hz_glib_static_mutex_get_mutex(mutex))
+	g_mutex_lock(g_static_mutex_get_mutex(mutex))
 
 #define hz_glib_static_mutex_trylock(mutex) \
-	g_mutex_trylock(hz_glib_static_mutex_get_mutex(mutex))
+	g_mutex_trylock(g_static_mutex_get_mutex(mutex))
 
 #define hz_glib_static_mutex_unlock(mutex) \
-	g_mutex_unlock(hz_glib_static_mutex_get_mutex(mutex))
+	g_mutex_unlock(g_static_mutex_get_mutex(mutex))
 
 
 
