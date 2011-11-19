@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 ############################################################################
 # Copyright:
 #      (C) 2008 - 2010  Alexander Shaduri <ashaduri 'at' gmail.com>
@@ -86,9 +86,10 @@ fi
 # Add these directories _before_ existing PATH, so that the user is not
 # tricked into running it from some other path (we're running as root with
 # the user's env after all).
+# Add @prefix@/sbin as well (freebsd seems to require it).
 # Note that beesu won't show a GUI login box if /usr/sbin is before /usr/bin,
 # so add it first as well.
-EXTRA_PATHS="/usr/bin:/usr/sbin:/usr/local/sbin";
+EXTRA_PATHS="/usr/bin:/usr/sbin:/usr/local/sbin:@prefix@/sbin";
 export PATH="$EXTRA_PATHS:$PATH"
 
 
