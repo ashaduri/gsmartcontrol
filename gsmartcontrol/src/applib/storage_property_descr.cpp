@@ -341,12 +341,12 @@ namespace {
 				// Indilinx Barefoot SSD: Write_Sectors_Tot_Ct (non-default) (description?)
 				add(199, "Write_Sectors_Tot_Ct", "Total Written Sectors", "",
 						"Total count of written sectors.");
-				// WD: Multi-Zone Error Rate (default). (maybe head flying height too (?)) (description?)
+				// WD: Multi-Zone Error Rate (default). (maybe head flying height too (?))
 				add(200, "Multi_Zone_Error_Rate", "Multi Zone Error Rate", "",
-						"");
+						"Number of errors found when writing to sectors (Raw value). The higher the value, the worse the disk surface condition and/or mechanical subsystem is.");
 				// Fujitsu: Write Error Rate (non-default)
 				add(200, "Write_Error_Count", "Write Error Count", "",
-						"Number of errors found when writing to sectors (Raw value). The higher the value, the worse the disk surface condition and/or mechanical subsystem is.");
+                        "Number of errors found when writing to sectors (Raw value). The higher the value, the worse the disk surface condition and/or mechanical subsystem is.");
 				// Indilinx Barefoot SSD: Read_Commands_Tot_Ct (non-default) (description?)
 				add(200, "Read_Commands_Tot_Ct", "Total Read Commands Issued", "",
 						"Total count of read commands issued.");
