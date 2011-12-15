@@ -322,25 +322,7 @@ void GscExecutorLogWindow::on_tree_selection_changed()
 		if (output_textview) {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = output_textview->get_buffer();
 			if (buffer) {
-
-				// Under win32, we can't execute smartctl under C locale. Smartctl
-				// uses locale information only for thousands separator in User Capacity.
-				// We can parse that, but we need to insert that text into a textarea
-				// widget, which may error out on invalid utf8 char.
-				// So, we convert the whole output to utf8, hoping that the result is ok.
-				// Note that a separator converted to utf8 may be a different sequence
-				// of chars, so we parse it as original charset, but insert into a textarea
-				// as utf8.
-				std::string buf_text = entry->std_output;
-				#ifdef _WIN32
-				try {
-					buf_text = Glib::locale_to_utf8(buf_text);
-				} catch (Glib::ConvertError& e) {
-					buf_text = "";  // inserting invalid utf8 may trigger a segfault, so empty better.
-				}
-				#endif
-
-				buffer->set_text(buf_text);
+				buffer->set_text(app_output_make_valid(entry->std_output));
 
 				Glib::RefPtr<Gtk::TextTag> tag;
 				Glib::RefPtr<Gtk::TextTagTable> table = buffer->get_tag_table();
@@ -354,15 +336,11 @@ void GscExecutorLogWindow::on_tree_selection_changed()
 			}
 		}
 
-		// Hide in win32 because it is known to cause segfaults there (see above).
-		// Not anymore...
-// #ifndef _WIN32
 		Gtk::Entry* command_entry = this->lookup_widget<Gtk::Entry*>("command_entry");
 		if (command_entry) {
 			std::string cmd_text = entry->command + " " + entry->parameters;
-			command_entry->set_text(cmd_text);
+			command_entry->set_text(app_output_make_valid(cmd_text));
 		}
-// #endif
 
 		Gtk::Button* window_save_current_button = this->lookup_widget<Gtk::Button*>("window_save_current_button");
 		if (window_save_current_button)

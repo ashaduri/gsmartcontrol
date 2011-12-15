@@ -18,6 +18,7 @@
 #include "hz/fs_file.h"
 
 #include "applib/app_ui_res_utils.h"
+#include "applib/app_gtkmm_utils.h"
 
 
 
@@ -87,7 +88,7 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 			Gtk::TextView* textview = this->template lookup_widget<Gtk::TextView*>("main_textview");
 			if (textview) {
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-				buffer->set_text(contents);
+				buffer->set_text(app_output_make_valid(contents));
 
 				if (use_monospace) {
 					Glib::RefPtr<Gtk::TextTag> tag = buffer->create_tag();
