@@ -86,18 +86,7 @@ void gsc_no_info_dialog_show(const std::string& message, const std::string& sec_
 
 	if (response == Gtk::RESPONSE_HELP) {
 		GscTextWindow<SmartctlOutputInstance>* win = GscTextWindow<SmartctlOutputInstance>::create();
-		// make save visible and enable monospace font
-
-		std::string buf_text = output;
-		// We receive locale'd thousands separators in win32, so convert them.
-		#ifdef _WIN32
-		try {
-			buf_text = Glib::locale_to_utf8(buf_text);
-		} catch (Glib::ConvertError& e) {
-			buf_text = "";  // inserting invalid utf8 may trigger a segfault, so empty is better.
-		}
-		#endif
-		win->set_text(output_window_title, buf_text, true, true);
+		win->set_text(output_window_title, output, true, true);
 
 		if (!default_save_filename.empty())
 			win->set_save_filename(default_save_filename);

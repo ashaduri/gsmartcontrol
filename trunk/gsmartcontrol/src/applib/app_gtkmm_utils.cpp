@@ -12,6 +12,7 @@
 #include <gtkmm.h>
 #include <gtk/gtk.h>  // gtk_* stuff
 #include <vector>
+#include <glibmm.h>
 
 #include "app_gtkmm_features.h"  // APP_GTKMM_OLD_TOOLTIPS
 
@@ -193,7 +194,6 @@ void gtkmm_set_iconview_tooltip_column(Gtk::IconView* iconview,
 
 
 
-
 bool app_gtkmm_icon_theme_has_icon(Glib::RefPtr<Gtk::IconTheme> theme,
 		const Glib::ustring& icon_name, int size)
 {
@@ -208,6 +208,81 @@ bool app_gtkmm_icon_theme_has_icon(Glib::RefPtr<Gtk::IconTheme> theme,
 	}
 
 	return false;
+}
+
+
+
+namespace {
+
+	/// This has been copied from _g_utf8_make_valid() (glib-2.20.4).
+	/// _g_utf8_make_valid() is GLib's private function for auto-correcting
+	/// the potentially invalid utf-8 data.
+	inline gchar* gsc_g_utf8_make_valid (const gchar* name)
+	{
+		GString* string;
+		const gchar* remainder, *invalid;
+		gint remaining_bytes, valid_bytes;
+
+		g_return_val_if_fail (name != NULL, NULL);
+
+		string = NULL;
+		remainder = name;
+		remaining_bytes = gint(strlen(name));
+
+		while (remaining_bytes != 0) {
+			if (g_utf8_validate (remainder, remaining_bytes, &invalid))
+				break;
+
+			valid_bytes = gint(invalid - remainder);
+
+			if (string == NULL)
+				string = g_string_sized_new (remaining_bytes);
+
+			g_string_append_len (string, remainder, valid_bytes);
+			/* append U+FFFD REPLACEMENT CHARACTER */
+			g_string_append (string, "\357\277\275");
+
+			remaining_bytes -= valid_bytes + 1;
+			remainder = invalid + 1;
+		}
+
+		if (string == NULL)
+			return g_strdup (name);
+
+		g_string_append (string, remainder);
+
+		g_assert (g_utf8_validate (string->str, -1, NULL));
+
+		return g_string_free (string, FALSE);
+	}
+
+}
+
+
+
+Glib::ustring app_utf8_make_valid(const Glib::ustring& str)
+{
+	char* s = gsc_g_utf8_make_valid(str.c_str());
+	if (!s) {
+		return Glib::ustring();
+	}
+	Glib::ustring res(s);
+	g_free(s);
+	return res;
+}
+
+
+
+Glib::ustring app_output_make_valid(const Glib::ustring& str)
+{
+	#ifdef _WIN32
+	try {
+		return app_utf8_make_valid(Glib::locale_to_utf8(str));
+	} catch (Glib::ConvertError& e) {
+		// nothing, try to fix as it is
+	}
+	#endif
+	return app_utf8_make_valid(str);
 }
 
 

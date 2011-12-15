@@ -99,6 +99,17 @@ bool app_gtkmm_icon_theme_has_icon(Glib::RefPtr<Gtk::IconTheme> theme,
 		const Glib::ustring& icon_name, int size);
 
 
+/// Convert a possibly invalid utf-8 string to valid utf-8.
+/// \param str string to test and fix.
+/// \param in_locale If true, \c str will be converted from locale charset to utf-8 first.
+Glib::ustring app_utf8_make_valid(const Glib::ustring& str);
+
+
+/// Make command output a valid utf-8 string. Essentially, this calls app_utf8_make_valid(),
+/// supplying true for \c in_locale under Win32, and false under other systems.
+/// The reason for this is that in Win32 we can't execute commands under C locale,
+/// but we do execute them under C in other systems.
+Glib::ustring app_output_make_valid(const Glib::ustring& str);
 
 
 

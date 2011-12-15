@@ -1261,22 +1261,12 @@ bool GscInfoWindow::on_delete_event_before(GdkEventAny* e)
 
 
 
-
 void GscInfoWindow::on_view_output_button_clicked()
 {
 	GscTextWindow<SmartctlOutputInstance>* win = GscTextWindow<SmartctlOutputInstance>::create();
 	// make save visible and enable monospace font
 
-	std::string buf_text = this->drive->get_full_output();
-	// We receive locale'd thousands separators in win32, so convert them.
-	#ifdef _WIN32
-	try {
-		buf_text = Glib::locale_to_utf8(buf_text);
-	} catch (Glib::ConvertError& e) {
-		buf_text = "";  // inserting invalid utf8 may trigger a segfault, so empty better.
-	}
-	#endif
-	win->set_text("Smartctl Output", buf_text, true, true);
+	win->set_text("Smartctl Output", this->drive->get_full_output(), true, true);
 
 	std::string filename = drive->get_save_filename();
 	if (!filename.empty())
