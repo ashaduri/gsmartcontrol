@@ -40,7 +40,7 @@ TODO:
 Update the man page with new options and stuff.
 
 
-Change all metion of berlios.
+See whether we should prefer intel matrix or sda, filter duplicates accordingly.
 
 
 3ware detection:
