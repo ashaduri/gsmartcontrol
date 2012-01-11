@@ -202,22 +202,24 @@ The most important parameters are:
 
 -?, --help - Show help options.
 
--V, --version - Display version information.
+-l, --no-locale - Don't use system locale.
 
--l, --no-locale - Disable locale.
+-V, --version - Display version information.
 
 --no-scan - Don't scan devices on startup.
 
---no-hide-tabs - Don't hide non-identity tabs when SMART is disabled.
+--no-hide-tabs - Don't hide non-identity tabs when SMART is disabled. Useful
+for debugging.
 
---add-virtual - Load smartctl data from file, creating a virtual drive.
+--add-virtual - Load smartctl data from file, creating a virtual drive. You
+can specify this option multiple times.
 
 --add-device - Add this device to device list. The format of the device is
-    "<device>::<type>::<extra_args>", where type and extra_args are optional.
-    This option is useful with --no-scan to list certain drives only. You can
-    specify this option multiple times.
-    Example: --add-device /dev/sda --add-device /dev/twa0::3ware,2
-    --add-device '/dev/sdb::::-T permissive'
+"<device>::<type>::<extra_args>", where type and extra_args are optional. This
+option is useful with --no-scan to list certain drives only. You can specify
+this option multiple times.
+Example: --add-device /dev/sda --add-device /dev/twa0::3ware,2 --add-device
+'/dev/sdb::::-T permissive'.
 
 -v, --verbose - Enable verbose logging; same as --verbosity-level 5.
 

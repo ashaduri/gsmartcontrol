@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2011 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 /// \file

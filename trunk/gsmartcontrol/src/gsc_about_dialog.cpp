@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
@@ -47,7 +47,7 @@ GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, const app_ui_res_ref_t& 
 	set_license(LicenseTextResData().get_string());
 
 	// spammers go away
-	set_copyright("Copyright (C) 2008 - 2011  Alexander Shaduri " "<ashaduri" "" "@" "" "" "gmail.com>");
+	set_copyright("Copyright (C) 2008 - 2012  Alexander Shaduri " "<ashaduri" "" "@" "" "" "gmail.com>");
 
 
 	std::string authors_str = AuthorsTextResData().get_string();

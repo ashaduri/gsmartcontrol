@@ -1,7 +1,7 @@
 /**************************************************************************
  Copyright:
       (C) 2000 - 2010  Kevlin Henney
-      (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_boost_1_0.txt file
 ***************************************************************************/
 

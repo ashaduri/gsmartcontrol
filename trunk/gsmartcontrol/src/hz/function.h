@@ -1,7 +1,7 @@
 /**************************************************************************
  Copyright:
-      (C) 2007 - 2011  Thiago Rosso Adams <thiago.adams 'at' gmail.com>
-      (C) 2009 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2007 - 2012  Thiago Rosso Adams <thiago.adams 'at' gmail.com>
+      (C) 2009 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
 /// \file
