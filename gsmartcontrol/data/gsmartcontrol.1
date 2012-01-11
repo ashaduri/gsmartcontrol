@@ -37,7 +37,7 @@ Show logging options
 .SS "Application Options:"
 .TP
 \fB\-l\fP, \fB\-\-no\-locale\fP
-Disable locale
+Don't use system locale
 .TP
 \fB\-V\fP, \fB\-\-version\fP
 Display version information
@@ -49,10 +49,17 @@ Don't scan devices on startup
 Don't hide non\-identity tabs when SMART is disabled. Useful for debugging.
 .TP
 \fB\-\-add\-virtual\fP
-Load smartctl data from file, creating a virtual drive
+Load smartctl data from file, creating a virtual drive. You
+can specify this option multiple times.
 .TP
 \fB\-\-add\-device\fP
-Add this device to device list. Useful with \fB\-\-no\-scan\fP to list certain drives only.
+Add this device to device list. The format of the device is
+\fI<device>::<type>::<extra_args>\fP, where type and extra_args are optional.
+This option is useful with \fB\-\-no\-scan\fP to list certain drives only. You
+can specify this option multiple times. Example:\fR
+.nf
+\-\-add\-device /dev/sda \-\-add\-device /dev/twa0::3ware,2 \-\-add\-device '/dev/sdb::::-T permissive'
+.fi
 .TP
 \fB\-\-display\fP=\fIDISPLAY\fP
 X display to use
@@ -67,8 +74,8 @@ Disable logging; same as \fB\-\-verbosity\-level\fP 0
 Set verbosity level [0\-5]
 .PP
 .SH COPYRIGHT
-Copyright \(co 2008 \- 2009  Alexander Shaduri <ashaduri \'at\' gmail.com>
+Copyright \(co 2008 \- 2012  Alexander Shaduri <ashaduri \'at\' gmail.com>
 .PP
 .SH AUTHOR
 This manual page was originally written by Giuseppe Iuculano
-<giuseppe@iuculano.it>, for the Debian project.
+<giuseppe@iuculano.it> for the Debian project.

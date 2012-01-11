@@ -37,7 +37,9 @@ Bugs / patches:
 TODO:
 
 
-Update the man page with new options and stuff.
+Remove mandatory first parameter of gsmartcontrol-root, detect it
+	automatically.
+	Update the man page.
 
 
 See whether we should prefer intel matrix or sda, filter duplicates accordingly.

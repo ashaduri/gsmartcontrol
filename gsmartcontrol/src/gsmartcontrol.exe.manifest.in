@@ -24,4 +24,5 @@
 			<dpiAware>true</dpiAware>
 		</asmv3:windowsSettings>
 	</asmv3:application>
+
 </assembly>

@@ -1,7 +1,7 @@
 /**************************************************************************
  Copyright:
       (C) 2001 - 2010  Peter Dimov
-      (C) 2008 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_boost_1_0.txt file
 ***************************************************************************/
 /// \file

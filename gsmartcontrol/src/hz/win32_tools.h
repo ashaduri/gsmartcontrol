@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2003 - 2011  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2003 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
 /// \file
@@ -282,7 +282,7 @@ inline bool win32_get_registry_value_string(HKEY base,
 	bool status = (RegQueryValueExW(reg_key, wkey, 0, &type, NULL, &nbytes) == ERROR_SUCCESS);
 
 	if (status) {
-		DWORD buf_len = (nbytes % 2 ? (nbytes+1) : nbytes);  // 00-terminate on 2-byte boundary, in case the value isn't.
+		DWORD buf_len = ((nbytes % 2) ? (nbytes+1) : nbytes);  // 00-terminate on 2-byte boundary, in case the value isn't.
 		BYTE* result = new BYTE[buf_len];
 		result[buf_len-1] = result[buf_len-2] = result[buf_len-3] = 0;
 
