@@ -244,9 +244,9 @@ inline std::string win32_get_special_folder(int csidl, bool auto_create)
 // Usually C:\Windows or something like that.
 inline std::string win32_get_windows_directory()
 {
-	wchar_t buf[MAX_PATH];
-	GetWindowsDirectoryW(buf, MAX_PATH);
-	return (buf[0] ? win32_utf16_to_utf8_string(buf) : "C:\\");
+	wchar_t buf[MAX_PATH] = {0};
+	UINT status = GetWindowsDirectoryW(buf, MAX_PATH);
+	return ((status != 0 && buf[0]) ? win32_utf16_to_utf8_string(buf) : "C:\\");
 }
 
 
@@ -479,7 +479,7 @@ namespace internal {
 				bool empty = (std::fgetc(file) == EOF);
 				std::fclose(file);
 				if (empty) {
-					_wremove(Win32RedirectHolder::stdout_file);
+					(void)_wremove(Win32RedirectHolder::stdout_file);  // ignore possible failure
 				}
 			}
 		}
@@ -497,7 +497,7 @@ namespace internal {
 				bool empty = (std::fgetc(file) == EOF);
 				std::fclose(file);
 				if (empty) {
-					_wremove(Win32RedirectHolder::stderr_file);
+					(void)_wremove(Win32RedirectHolder::stderr_file);  // ignore possible failure
 				}
 			}
 		}
