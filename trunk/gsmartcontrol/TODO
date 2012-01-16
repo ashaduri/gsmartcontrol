@@ -37,12 +37,21 @@ Bugs / patches:
 TODO:
 
 
+Update the spec and gsmartcontrol-root script according to Fedora package:
+	https://admin.fedoraproject.org/pkgdb/applications/Gsmartcontrol
+	https://bugzilla.redhat.com/show_bug.cgi?id=697247
+
+
 Remove mandatory first parameter of gsmartcontrol-root, detect it
 	automatically.
 	Update the man page.
 
 
 See whether we should prefer intel matrix or sda, filter duplicates accordingly.
+
+
+Add warnings for SSD lifetime attributes
+	http://sourceforge.net/apps/trac/smartmontools/wiki/FAQ#TheSSD_Life_LeftAttributeofmynewSandForcebasedSSDreportszero
 
 
 3ware detection:
@@ -112,6 +121,12 @@ Monitor:
 	Periodically re-run smartctl to refresh the notifications.
 	Periodically see if drives were added / removed (possibly use OS callbacks
 		instead of polling?)
+
+Win7 widget:
+	Can be done in html/js.
+	Shows temperature
+	Detects drives
+	Opens GSmartControl
 
 If a drive is not recognized, suggest using -d (sat, sat,12, ...)
 	Refer the user to
