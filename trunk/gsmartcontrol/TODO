@@ -50,8 +50,8 @@ Remove mandatory first parameter of gsmartcontrol-root, detect it
 See whether we should prefer intel matrix or sda, filter duplicates accordingly.
 
 
-Add warnings for SSD lifetime attributes
-	http://sourceforge.net/apps/trac/smartmontools/wiki/FAQ#TheSSD_Life_LeftAttributeofmynewSandForcebasedSSDreportszero
+Add an option to display the device and/or the S/N in the main icon list
+	so that the 12x RAID list view looks a bit less generic.
 
 
 3ware detection:
@@ -64,7 +64,10 @@ Don't issue warnings for attributes whose raw values are not numbers completely
 	(e.g. they are space-separated numbers in some format)
 
 
-investiage the new "-l ssd" and "-l devstat" options (since 5.42)
+Add warnings for SSD lifetime attributes
+	http://sourceforge.net/apps/trac/smartmontools/wiki/FAQ#TheSSD_Life_LeftAttributeofmynewSandForcebasedSSDreportszero
+
+Investiage the new "-l ssd" and "-l devstat" options (since 5.42)
 
 
 Add menu item - "update drive database" (not sure about linux, should

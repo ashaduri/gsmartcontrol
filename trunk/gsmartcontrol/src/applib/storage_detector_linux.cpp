@@ -191,8 +191,10 @@ inline std::string read_proc_devices_file(std::vector<std::string>& lines)
 
 
 
-// Read /proc/scsi/scsi file. Return error message on error.
-inline std::string read_proc_scsi_scsi_file(std::vector<std::string>& lines)
+/// Read /proc/scsi/scsi file. Return error message on error.
+/// \c vendors_models is filled with (scsi host #, trimmed vendors line) pairs.
+/// Note that scsi host # is not unique.
+inline std::string read_proc_scsi_scsi_file(std::vector< std::pair<int, std::string> >& vendors_models)
 {
 	std::string path;
 	if (!rconfig::get_data("system/linux_proc_scsi_scsi_path", path) || path.empty()) {
@@ -201,6 +203,8 @@ inline std::string read_proc_scsi_scsi_file(std::vector<std::string>& lines)
 	}
 
 	hz::File file(path);
+	std::vector<std::string> lines;
+
 	if (!read_proc_file(file, lines)) {  // this outputs to debug too
 		std::string error_msg = file.get_error_utf8();  // save before calling other file functions
 		if (!file.exists()) {
@@ -209,6 +213,72 @@ inline std::string read_proc_scsi_scsi_file(std::vector<std::string>& lines)
 			debug_out_error("app", DBG_FUNC_MSG << "SCSI file exists but cannot be read.\n");
 		}
 		return error_msg;
+	}
+
+	int last_scsi_host = -1;
+	pcrecpp::RE host_re = app_pcre_re("^Host: scsi([0-9]+)");
+
+	for (std::size_t i = 0; i < lines.size(); ++i) {
+		std::string trimmed = hz::string_trim_copy(lines[i]);
+		// The format of this file is scsi host number on one line, vendor on another,
+		// some other info on the third.
+		// debug_out_error("app", "SCSI Line: " << hz::string_trim_copy(lines[i]) << "\n");
+		std::string scsi_host_str;
+		if (host_re.PartialMatch(trimmed, &scsi_host_str)) {
+			// debug_out_dump("app", "SCSI Host " << scsi_host_str << " found.\n");
+			hz::string_is_numeric(scsi_host_str, last_scsi_host);
+
+		} else if (last_scsi_host != -1 && app_pcre_match("/Vendor: /i", trimmed)) {
+			vendors_models.push_back(std::make_pair(last_scsi_host, trimmed));
+		}
+	}
+
+	return std::string();
+}
+
+
+
+/// host	chan	id	lun	type	opens	qdepth	busy	online
+/// Read /proc/scsi/sg/devices file. Return error message on error.
+/// \c sg_entries is filled with lines parsed as ints.
+/// Each line index corresponds to N in /dev/sgN.
+inline std::string read_proc_scsi_sg_devices_file(std::vector< std::vector<int> >& sg_entries)
+{
+	std::string path;
+	if (!rconfig::get_data("system/linux_proc_scsi_sg_devices_path", path) || path.empty()) {
+		debug_out_warn("app", DBG_FUNC_MSG << "Sg devices file path is not set.\n");
+		return "Sg devices path is not set.";
+	}
+
+	hz::File file(path);
+	std::vector<std::string> lines;
+
+	if (!read_proc_file(file, lines)) {  // this outputs to debug too
+		std::string error_msg = file.get_error_utf8();  // save before calling other file functions
+		if (!file.exists()) {
+			debug_out_warn("app", DBG_FUNC_MSG << "Sg devices file doesn't exist.\n");
+		} else {
+			debug_out_error("app", DBG_FUNC_MSG << "Sg devices file exists but cannot be read.\n");
+		}
+		return error_msg;
+	}
+
+	pcrecpp::RE parse_re = app_pcre_re("^([0-9-]+)\\s+([0-9-]+)\\s+([0-9-]+)\\s+([0-9-]+)\\s+([0-9-]+)\\s+([0-9-]+)\\s+([0-9-]+)\\s+([0-9-]+)\\s+([0-9-]+)");
+
+	for (std::size_t i = 0; i < lines.size(); ++i) {
+		std::string trimmed = hz::string_trim_copy(lines[i]);
+		std::vector<std::string> line(9);
+		if (parse_re.PartialMatch(trimmed, &line[0], &line[1], &line[2], &line[3], &line[4], &line[5], &line[6], &line[7], &line[8])) {
+			std::vector<int> line_num(line.size(), -1);
+			for (std::size_t j = 0; j < line_num.size(); ++j) {
+				hz::string_is_numeric(line[j], line_num[j]);
+			}
+			sg_entries.resize(i+1);  // maintain the line indices
+			sg_entries[i] = line_num;
+
+		} else {
+			debug_out_warn("app", DBG_FUNC_MSG << "Sg devices line offset " << i << " has invalid format.\n");
+		}
 	}
 
 	return std::string();
@@ -401,7 +471,7 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 	// Check /proc/devices for twa or twe
 	for (std::size_t i = 0; i < lines.size(); ++i) {
 		std::string dev;
-		if (app_pcre_match("/^[ \\t]*[0-9]+[ \\t]+(tw[ae])/", hz::string_trim_copy(lines[i]), &dev)) {
+		if (app_pcre_match("/^[ \\t]*[0-9]+[ \\t]+(tw[ae])(?:[ \\t]*|$)/", hz::string_trim_copy(lines[i]), &dev)) {
 			debug_out_dump("app", DBG_FUNC_MSG << "Found " << dev << " entry in devices file.\n");
 			if (dev == "twa") {
 				twa_found = true;
@@ -418,36 +488,28 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 	}
 
 	lines.clear();
-	error_msg = read_proc_scsi_scsi_file(lines);
+
+	std::vector< std::pair<int, std::string> > vendors_models;
+	error_msg = read_proc_scsi_scsi_file(vendors_models);
 	if (!error_msg.empty()) {
 		return error_msg;
 	}
 
 
 	int num_controllers = 0;
-	int last_scsi_host = 0;
 
-	pcrecpp::RE host_re = app_pcre_re("^Host: scsi([0-9]+)");
-
-	for (std::size_t i = 0; i < lines.size(); ++i) {
-		// The format of this file is scsi host number on one line, vendor on another.
-		// debug_out_error("app", "SCSI Line: " << hz::string_trim_copy(lines[i]) << "\n");
-		std::string scsi_host_str;
-		if (host_re.PartialMatch(hz::string_trim_copy(lines[i]), &scsi_host_str)) {
-			// debug_out_dump("app", "SCSI Host " << scsi_host_str << " found.\n");
-			hz::string_is_numeric(scsi_host_str, last_scsi_host);
-		}
-		if (!app_pcre_match("/Vendor: (AMCC)|(3ware) /i", hz::string_trim_copy(lines[i]))) {
+	for (std::size_t i = 0; i < vendors_models.size(); ++i) {
+		if (!app_pcre_match("/Vendor: (AMCC)|(3ware) /i", vendors_models[i].second)) {
 			continue;  // not a supported controller
 		}
 
-		debug_out_dump("app", "Found AMCC/3ware controller in SCSI file, SCSI host " << last_scsi_host << ".\n");
+		debug_out_dump("app", "Found AMCC/3ware controller in SCSI file, SCSI host " << vendors_models[i].first << ".\n");
 
 		// We can't handle both twa and twe in one system, so assume twa by default.
 		// We can't map twaX to scsiY, so lets assume the relative order is the same.
 		std::string dev = std::string("/dev/") + (twa_found ? "twa" : "twe") + hz::number_to_string(num_controllers);
 
-		error_msg = tw_cli_get_drives(dev, last_scsi_host, drives, ex_factory, false);
+		error_msg = tw_cli_get_drives(dev, vendors_models[i].first, drives, ex_factory, false);
 		if (!error_msg.empty()) {  // no tw_cli
 			int max_ports = rconfig::get_data<int32_t>("system/linux_max_scan_ports");
 			max_ports = std::max(max_ports, 23);  // 128 smartctl calls are too much (it's too slow). Settle for 24.
@@ -467,6 +529,112 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 
 	return error_msg;
 }
+
+
+
+/**
+Detect drives behind Adaptec RAID controller.
+Tested using Adaptec RAID 5805 (SAS / SATA controller).
+
+Adaptec Linux detection strategy:
+Check /proc/devices for "aac"; if it's there, continue.
+Check /proc/scsi/scsi for "Vendor: Adaptec"; get its host (e.g. scsi6).
+Check which lines correspond to e.g. host 6 in /proc/scsi/sg/devices; the
+line order (e.g. fourth and fifth lines) correspond to /dev/sg* device (e.g.
+/dev/sg3 and /dev/sg4).
+Note: This will get us at least 2 unusable devices - /dev/sdc (the volume)
+and /dev/sg3 (the controller). I think the controller can be filtered out
+using "id > 0" requirement (the third column of /proc/scsi/sg/devices.
+Try "-d sat" by default. If it fails ("Device Read Identity Failed:" ? not
+sure how to detect the failure), fall back to "-d scsi".
+*/
+inline std::string detect_drives_linux_adaptec(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
+{
+	std::vector<std::string> lines;
+	std::string error_msg = read_proc_devices_file(lines);
+	if (!error_msg.empty()) {
+		return error_msg;
+	}
+
+	bool aac_found = false;
+
+	// Check /proc/devices for twa or twe
+	for (std::size_t i = 0; i < lines.size(); ++i) {
+		if (app_pcre_match("/^[ \\t]*[0-9]+[ \\t]+aac(?:[ \\t]*|$)/", hz::string_trim_copy(lines[i]))) {
+			debug_out_dump("app", DBG_FUNC_MSG << "Found aac entry in devices file.\n");
+			aac_found = true;
+		}
+	}
+	if (!aac_found) {
+		return std::string();  // no controllers
+	}
+
+	lines.clear();
+
+	std::vector< std::pair<int, std::string> > vendors_models;
+	error_msg = read_proc_scsi_scsi_file(vendors_models);
+	if (!error_msg.empty()) {
+		return error_msg;
+	}
+
+	std::vector< std::vector<int> > sg_entries;
+	error_msg = read_proc_scsi_sg_devices_file(sg_entries);
+	if (!error_msg.empty()) {
+		return error_msg;
+	}
+
+	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
+
+	int num_controllers = 0;
+
+	for (std::size_t i = 0; i < vendors_models.size(); ++i) {
+		if (!app_pcre_match("/Vendor: Adaptec /i", vendors_models[i].second)) {
+			continue;  // not a supported controller
+		}
+		int host_num = vendors_models[i].first;
+		debug_out_dump("app", "Found Adaptec controller in SCSI file, SCSI host " << host_num << ".\n");
+
+		for (std::size_t sg_num = 0; sg_num < sg_entries.size(); ++sg_num) {
+			if (sg_entries[sg_num].size() < 3) {
+				// We need at least 3 columns in that file
+				continue;
+			}
+			if (sg_entries[sg_num][0] != host_num || sg_entries[sg_num][2] <= 0) {
+				// Different scsi host, or scsi id is 0 (the controller, probably)
+				continue;
+			}
+
+			std::string dev = std::string("/dev/sg") + hz::number_to_string(sg_num);
+			StorageDeviceRefPtr drive(new StorageDevice(dev, std::string("sat")));
+
+			std::string local_error_msg = drive->fetch_basic_data_and_parse(smartctl_ex);
+			std::string output = drive->get_info_output();
+
+			// Note: Not sure about this, have to check with real SAS drives
+			if (app_pcre_match("/Device Read Identity Failed/mi", output)) {
+				// "-d sat" didn't work, default back to smartctl's "-d scsi"
+				drive->clear_fetched();
+				drive->set_type_argument("");
+				local_error_msg = drive->fetch_basic_data_and_parse(smartctl_ex);
+			}
+
+			if (!local_error_msg.empty()) {
+				debug_out_info("app", "Smartctl returned with an error: " << local_error_msg << "\n");
+			} else {
+				drives.push_back(drive);
+			}
+		}
+
+		++num_controllers;
+	}
+
+	if (num_controllers == 0) {
+		debug_out_warn("app", DBG_FUNC_MSG << "Adaptec entry found in devices file, but SCSI file contains no known entries.\n");
+	}
+
+	return error_msg;
+}
+
 
 
 }  // anon ns
@@ -491,6 +659,11 @@ std::string detect_drives_linux(std::vector<StorageDeviceRefPtr>& drives, Execut
 	}
 
 	error_msg = detect_drives_linux_3ware(drives, ex_factory);
+	if (!error_msg.empty()) {
+		error_msgs.push_back(error_msg);
+	}
+
+	error_msg = detect_drives_linux_adaptec(drives, ex_factory);
 	if (!error_msg.empty()) {
 		error_msgs.push_back(error_msg);
 	}
