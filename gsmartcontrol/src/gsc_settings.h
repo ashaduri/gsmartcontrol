@@ -50,6 +50,7 @@ inline void init_default_settings()
 	rconfig::set_default_data("system/linux_proc_partitions_path", "/proc/partitions");  // file in linux /proc/partitions format
 	rconfig::set_default_data("system/linux_proc_devices_path", "/proc/devices");  // file in linux /proc/devices format
 	rconfig::set_default_data("system/linux_proc_scsi_scsi_path", "/proc/scsi/scsi");  // file in linux /proc/scsi/scsi format
+	rconfig::set_default_data("system/linux_proc_scsi_sg_devices_path", "/proc/scsi/sg/devices");  // file in linux /proc/scsi/sg/devices format
 	rconfig::set_default_data("system/linux_max_scan_ports", int32_t(23));  // maximum number of RAID ports to scan if no other method is available
 	rconfig::set_default_data("system/solaris_dev_path", "/dev/rdsk");  // path to /dev/rdsk for solaris.
 	rconfig::set_default_data("system/unix_sdev_path", "/dev");  // path to /dev. used by other unices
