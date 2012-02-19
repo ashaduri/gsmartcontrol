@@ -236,12 +236,31 @@ inline bool parse_cmdline_args(CmdArgs& args, int& argc, char**& argv)
 	// libdebug options; this will also automatically apply them
 	g_option_context_add_group(context, debug_get_option_group());
 
-	g_option_context_parse(context, &argc, &argv, &error);
-	g_option_context_free(context);
-	if (error)
+	// The command-line parser stops at the first unknown option. Since this
+	// is kind of inconsistent, we abort altogether.
+	bool parsed = g_option_context_parse(context, &argc, &argv, &error);
+
+	if (error) {
+		std::string error_text = "\n" + std::string("Error parsing command-line options: ");
+		error_text += (error->message ? error->message : "invalid error");
+		error_text += "\n\n";
 		g_error_free(error);
 
-	return true;
+#if (GLIB_CHECK_VERSION(2,14,0))
+		gchar* help_text = g_option_context_get_help(context, true, NULL);
+		if (help_text) {
+			error_text += help_text;
+			g_free(help_text);
+		}
+#else
+		error_text += "Exiting.\n";
+#endif
+
+		std::fprintf(stderr, "%s", error_text.c_str());
+	}
+	g_option_context_free(context);
+
+	return parsed;
 }
 
 
