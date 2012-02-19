@@ -17,6 +17,9 @@
 #include <algorithm>  // std::find
 #include <cstdio>  // std::fgets(), std::FILE
 #include <cerrno>  // ENXIO
+#include <set>
+#include <vector>
+#include <utility>  // std::pair
 
 #include "hz/debug.h"
 #include "hz/fs_path_utils.h"
@@ -496,18 +499,28 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 	}
 
 
-	int num_controllers = 0;
+	std::set<int> controller_hosts;
 
 	for (std::size_t i = 0; i < vendors_models.size(); ++i) {
 		if (!app_pcre_match("/Vendor: (AMCC)|(3ware) /i", vendors_models[i].second)) {
 			continue;  // not a supported controller
 		}
 
-		debug_out_dump("app", "Found AMCC/3ware controller in SCSI file, SCSI host " << vendors_models[i].first << ".\n");
+		int host_num = vendors_models[i].first;
+
+		debug_out_dump("app", "Found AMCC/3ware controller in SCSI file, SCSI host " << host_num << ".\n");
+
+		// Skip additional adapters with the same host, since they are the same adapters
+		// with different LUNs.
+		if (controller_hosts.find(host_num) != controller_hosts.end()) {
+			debug_out_dump("app", "Skipping adapter with SCSI host " << host_num << ", host already found.\n");
+			continue;
+		}
+		controller_hosts.insert(host_num);
 
 		// We can't handle both twa and twe in one system, so assume twa by default.
 		// We can't map twaX to scsiY, so lets assume the relative order is the same.
-		std::string dev = std::string("/dev/") + (twa_found ? "twa" : "twe") + hz::number_to_string(num_controllers);
+		std::string dev = std::string("/dev/") + (twa_found ? "twa" : "twe") + hz::number_to_string(controller_hosts.size() - 1);
 
 		error_msg = tw_cli_get_drives(dev, vendors_models[i].first, drives, ex_factory, false);
 		if (!error_msg.empty()) {  // no tw_cli
@@ -519,11 +532,9 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 		if (!error_msg.empty()) {
 			debug_out_warn("app", DBG_FUNC_MSG << "Couldn't get number of ports on a 3ware controller.\n");
 		}
-
-		++num_controllers;
 	}
 
-	if (num_controllers == 0) {
+	if (controller_hosts.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "3ware entry found in devices file, but SCSI file contains no known entries.\n");
 	}
 
@@ -585,7 +596,7 @@ inline std::string detect_drives_linux_adaptec(std::vector<StorageDeviceRefPtr>&
 
 	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
 
-	int num_controllers = 0;
+	std::set<int> controller_hosts;
 
 	for (std::size_t i = 0; i < vendors_models.size(); ++i) {
 		if (!app_pcre_match("/Vendor: Adaptec /i", vendors_models[i].second)) {
@@ -593,6 +604,15 @@ inline std::string detect_drives_linux_adaptec(std::vector<StorageDeviceRefPtr>&
 		}
 		int host_num = vendors_models[i].first;
 		debug_out_dump("app", "Found Adaptec controller in SCSI file, SCSI host " << host_num << ".\n");
+
+		// Skip additional adapters with the same host, since they are the same adapters
+		// with different LUNs.
+		if (controller_hosts.find(host_num) != controller_hosts.end()) {
+			debug_out_dump("app", "Skipping adapter with SCSI host " << host_num << ", host already found.\n");
+			continue;
+		}
+
+		controller_hosts.insert(host_num);
 
 		for (std::size_t sg_num = 0; sg_num < sg_entries.size(); ++sg_num) {
 			if (sg_entries[sg_num].size() < 3) {
@@ -624,11 +644,9 @@ inline std::string detect_drives_linux_adaptec(std::vector<StorageDeviceRefPtr>&
 				drives.push_back(drive);
 			}
 		}
-
-		++num_controllers;
 	}
 
-	if (num_controllers == 0) {
+	if (controller_hosts.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Adaptec entry found in devices file, but SCSI file contains no known entries.\n");
 	}
 

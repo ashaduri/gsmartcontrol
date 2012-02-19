@@ -25,6 +25,7 @@
 
 
 /// Get number of ports using tw_cli. Return -1 on error.
+/// Note that the drives are inserted in the order they are detected.
 inline std::string tw_cli_get_drives(const std::string& dev, int scsi_host_no,
 		std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory, bool use_tw_cli_dev)
 {
@@ -70,7 +71,8 @@ inline std::string tw_cli_get_drives(const std::string& dev, int scsi_host_no,
 	std::vector<std::string> lines;
 	hz::string_split(output, '\n', lines, true);
 
-	pcrecpp::RE port_re = app_pcre_re("/^p([0-9])+[ \\t]+([^\\t\\n]+)/mi");
+	// Note that the ports may be printed in any order. We sort the drives themselves in the end.
+	pcrecpp::RE port_re = app_pcre_re("/^p([0-9]+)[ \\t]+([^\\t\\n]+)/mi");
 	for (std::size_t i = 0; i < lines.size(); ++i) {
 		std::string port_str, status;
 		if (port_re.PartialMatch(hz::string_trim_copy(lines.at(i)), &port_str, &status)) {
@@ -94,7 +96,7 @@ inline std::string tw_cli_get_drives(const std::string& dev, int scsi_host_no,
 
 
 
-/// Return 3ware SCSI host numbers (same as /c switch to tw_cli)
+/// Return 3ware SCSI host numbers (same as /c switch to tw_cli).
 /// \return error string on error
 inline std::string tw_cli_get_controllers(ExecutorFactoryRefPtr ex_factory, std::vector<int>& controllers)
 {
@@ -138,7 +140,7 @@ inline std::string tw_cli_get_controllers(ExecutorFactoryRefPtr ex_factory, std:
 	std::vector<std::string> lines;
 	hz::string_split(output, '\n', lines, true);
 
-	pcrecpp::RE controller_re = app_pcre_re("/^c([0-9])+[ \\t]+/mi");
+	pcrecpp::RE controller_re = app_pcre_re("/^c([0-9]+)[ \\t]+/mi");
 	for (std::size_t i = 0; i < lines.size(); ++i) {
 		std::string controller_str;
 		if (controller_re.PartialMatch(hz::string_trim_copy(lines.at(i)), &controller_str)) {
@@ -149,6 +151,10 @@ inline std::string tw_cli_get_controllers(ExecutorFactoryRefPtr ex_factory, std:
 			}
 		}
 	}
+
+	// Sort them. This affects only the further detection order, since the drives
+	// are sorted in the end anyway.
+	std::sort(controllers.begin(), controllers.end());
 
 	return std::string();
 }

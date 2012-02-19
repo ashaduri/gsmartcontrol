@@ -54,12 +54,6 @@ Add an option to display the device and/or the S/N in the main icon list
 	so that the 12x RAID list view looks a bit less generic.
 
 
-3ware detection:
-	sort the drives.
-	sort the controllers.
-	ignore controllers with the same scsi host number in /proc/scsi/scsi.
-
-
 Don't issue warnings for attributes whose raw values are not numbers completely
 	(e.g. they are space-separated numbers in some format)
 

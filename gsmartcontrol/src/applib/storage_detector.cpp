@@ -9,6 +9,8 @@
 /// \weakgroup applib
 /// @{
 
+#include <algorithm>
+
 #include "hz/hz_config.h"  // CONFIG_*
 
 #include "hz/debug.h"
@@ -82,8 +84,10 @@ std::string StorageDetector::detect(std::vector<StorageDeviceRefPtr>& drives, Ex
 // 				break;  // go to next device
 			}
 // 		}
-
 	}
+
+	// Sort the drives, because their order is not quite defined
+	std::sort(drives.begin(), drives.end());
 
 	debug_out_info("app", DBG_FUNC_MSG << "Drive detection finished.\n");
 	return std::string();
