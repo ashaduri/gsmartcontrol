@@ -27,6 +27,10 @@
 class StorageDevice;
 
 
+typedef hz::intrusive_ptr<StorageDevice> StorageDeviceRefPtr;
+
+
+
 /// This class represents a single drive
 class StorageDevice : public hz::intrusive_ptr_referenced {
 
@@ -55,6 +59,10 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 
 		/// Get displayable name for status_t.
 		static std::string get_status_name(status_t status, bool use_yesno = false);
+
+
+		/// Comparison function for sorting the devices
+		static bool order_less_than(const StorageDeviceRefPtr& a, const StorageDeviceRefPtr& b);
 
 
 		/// Constructor
@@ -275,21 +283,23 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 
 
 
-/// A reference-counting pointer to StorageDevice
-typedef hz::intrusive_ptr<StorageDevice> StorageDeviceRefPtr;
-
-
 
 /// Operator for sorting, hard drives first, then device name base
-inline bool operator< (const StorageDeviceRefPtr& d1, const StorageDeviceRefPtr& d2)
+inline bool operator< (const StorageDeviceRefPtr& a, const StorageDeviceRefPtr& b)
 {
-	if (d1->get_detected_type() != d2->get_detected_type()) {
-		return (d1->get_detected_type() == StorageDevice::detected_type_unknown);  // hard drives first
+// 	if (a->get_detected_type() != a->get_detected_type()) {
+// 		return (a->get_detected_type() == StorageDevice::detected_type_unknown);  // hard drives first
+// 	}
+	if (a->get_is_virtual() != b->get_is_virtual()) {
+		return int(a->get_is_virtual()) < int(b->get_is_virtual());
 	}
-	if (d1->get_device_base() != d2->get_device_base()) {
-		return d1->get_device_base() < d2->get_device_base();
+	if (a->get_is_virtual()) {
+		return a->get_virtual_file() < b->get_virtual_file();
 	}
-	return d1->get_type_argument() < d2->get_type_argument();  // for multi-port devices
+	if (a->get_device_base() != b->get_device_base()) {
+		return a->get_device_base() < b->get_device_base();
+	}
+	return a->get_type_argument() < b->get_type_argument();
 }
 
 

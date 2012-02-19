@@ -5,7 +5,6 @@
 ***************************************************************************/
 
 #include <gtkmm.h>
-#include <algorithm>  // std::sort
 #include <vector>
 
 #include "hz/string_algo.h"  // string_split
@@ -1045,8 +1044,6 @@ void GscMainWindow::rescan_devices()
 
 	// add them anyway, in case the error was only on one drive.
 	} else { // if (!error) {
-		std::sort(drives.begin(), drives.end());  // hard drives first
-
 		// add them to iconview
 		for (unsigned int i = 0; i < drives.size(); ++i) {
 			if (rconfig::get_data<bool>("gui/show_smart_capable_only")) {
