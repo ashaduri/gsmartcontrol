@@ -56,18 +56,25 @@ Call as: "/dev/csmi[0-9],N" where N is the port behind the logical
 	scsi controller "\\.\Scsi[0-9]:".
 	The prefix "/dev/" is optional.
 	This is detected (with /dev/ prefix) by --scan-open.
+The drives may be duplicated as pdX (with X and N being unrelated).
+	This usually happens when Intel RAID drivers are installed, even
+	if no RAID configuration is present. For example, on a laptop with
+	Intel chipset and Intel drivers installed, we have /dev/csmi0,0 and
+	pd0 for the first HDD, and /dev/csmi0,1 for DVD (no pdX entry there).
+	This is what --scan-open looks like:
+------------------------------------------------------------------
+/dev/sda -d ata # /dev/sda, ATA device
+/dev/csmi0,0 -d ata # /dev/csmi0,0, ATA device
+/dev/csmi0,1 -d ata # /dev/csmi0,1, ATA device
+------------------------------------------------------------------
+	We filter out pdX devices using serial numbers (unless "-q noserial"
+	is given to smartctl), and prefer csmi to pd (since csmi provides more features).
 
 
-
-smartctl --scan-open output for win32 (3ware):
+smartctl --scan-open output for win32 with 3ware RAID:
 ------------------------------------------------------------------
 /dev/sda,0 -d ata (opened)
 /dev/sda,1 -d ata (opened)
-
-smartctl --scan-open output for linux:
-/dev/sda -d sat # /dev/sda [SAT], ATA device
-/dev/sdb -d sat # /dev/sdb [SAT], ATA device
-/dev/sdc -d sat # /dev/sdc [SAT], ATA device
 ------------------------------------------------------------------
 */
 
@@ -158,7 +165,6 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDeviceRefPtr>& dr
 // (or /dev/pdN, /dev/ being optional) where N comes from
 // "\\.\PhysicalDriveN" (winnt only).
 // http://msdn.microsoft.com/en-us/library/aa365247(VS.85).aspx
-
 std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
 	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
@@ -177,12 +183,19 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 			// Don't exit, just report it.
 		}
 		if (!drives.at(i)->get_serial_number().empty()) {
+			// add model as well, who knows, there may be duplicates across vendors
 			serials.insert(drives.at(i)->get_model_name() + "_" + drives.at(i)->get_serial_number());
 		}
 	}
 
 	// Scan PhysicalDrive entries
 	for (int drive_num = 0; ; ++drive_num) {
+
+		// If the drive was already encountered in --scan-open (with a port number), skip it.
+		if (used_pds.count(drive_num) > 0) {
+			continue;
+		}
+
 		std::string name = hz::string_sprintf("\\\\.\\PhysicalDrive%d", drive_num);
 
 		// If the drive is openable, then it's there. Yes, CreateFile() is open, not create.
@@ -197,22 +210,19 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 
 		CloseHandle(h);
 
-		// If the drive was already encountered in --scan-open (with a port number), skip it.
-		if (used_pds.count(drive_num) > 0) {
-			continue;
-		}
-
 		StorageDeviceRefPtr drive(new StorageDevice(hz::string_sprintf("pd%d", drive_num)));
 
 		// Sometimes, a single physical drive may be accessible from both "/.//PhysicalDriveN"
-		// and "/.//Scsi2" (e.g. pd0 and csmi2,1). Prefer the port-having one (which is from --scan-open).
+		// and "/.//Scsi2" (e.g. pd0 and csmi2,1). Prefer the port-having ones (which is from --scan-open),
+		// they contain more information.
 		// The only way to detect these duplicates is to compare them using serial numbers.
-		if (multiport_found) {
+		if (!serials.empty()) {
 			std::string local_error = drive->fetch_basic_data_and_parse(smartctl_ex);
 			if (!local_error.empty()) {
 				debug_out_info("app", "Smartctl returned with an error: " << error_msg << "\n");
 				// Don't exit, just report it.
 			}
+			// A serial may be empty if "-q noserial" was given to smartctl.
 			if (!drive->get_serial_number().empty()
 						&& serials.count(drive->get_model_name() + "_" + drive->get_serial_number()) > 0) {
 				debug_out_info("app", "Skipping duplicate drive: model: \"" << drive->get_model_name()
@@ -228,7 +238,6 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 	// If smartctl --scan-open returns no "sd*,port"-style devices,
 	// check if 3dm2 is installed and execute "tw_cli show" to get
 	// the controllers, then use the tw_cli variant of smartctl.
-
 	if (!multiport_found) {
 		std::string inst_path;
 		hz::win32_get_registry_value_string(HKEY_USERS, ".DEFAULT\\Software\\3ware\\3DM2", "InstallPath", inst_path);
