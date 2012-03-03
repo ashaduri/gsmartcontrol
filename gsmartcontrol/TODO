@@ -126,23 +126,8 @@ If a drive is not recognized, suggest using -d (sat, sat,12, ...)
 RAID:
 	http://sourceforge.net/apps/trac/smartmontools/wiki/Supported_RAID-Controllers
 
-	Areca Linux:
-		Call as: smartctl -i -d areca,[1-24] /dev/sg0
-		Detection:
-		Check if /proc/scsi/sg/device_strs contains "Areca       RAID controller".
-			If not, there's no Areca controller present.
-		Check /proc/scsi/sg/devices, the line # with type 3 is the sg* number.
-			The "host" field value is the N value in /sys, see below.
-		Check /sys/bus/scsi/devices/hostN/scsi_host/hostN/host_fw_hd_channels, set
-			its contents as the number of ports. If not present, use 24.
-		Probe each port for a valid drive: If the output contains "Device Read Identity Failed",
-			then there is no drive on that port (or Areca has an old firmware, nothing we can
-			do there).
-		Notification: If /sys/bus/scsi/devices/hostN/scsi_host/hostN/host_fw_version
-			is older than "V1.46 2009-01-06", notify the user (maybe its better to grep
-			the smartctl output for that on port 0?).
-
-	Areca FreeBSD: unresearched. since 5.42.
+	Areca FreeBSD: since 5.42.
+		Call as: smartctl -a -d areca,[1-24] /dev/arcmsr1
 
 	3ware FreeBSD:
 		Call as: smartctl -i -d 3ware,[0-127] /dev/twa0  (or twe0)
@@ -182,7 +167,8 @@ RAID:
 		It may not return the "SMART Health Status: OK" line in smartctl -i for some reason?
 			(It returns it in -a though, and in some freebsd output I found).
 		If no /dev/cciss exists, you may need to run "cd /dev; ./MAKEDEV cciss".
-		Smartctl SVN has some /dev/sg* stuff, check it out.
+		Smartctl SVN has some /dev/sg* stuff, check it out. (?)
+			May need "-d sat+cciss,N" for SATA.
 
 	CCISS (HP (Compaq) Smart Array Controller) FreeBSD:
 		Seems to be the same as Linux (uses the same driver?).
