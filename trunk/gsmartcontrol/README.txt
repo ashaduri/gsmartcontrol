@@ -148,9 +148,7 @@ Windows port uses pd0, pd1, etc... for physical drives 0, 1, etc... .
 
 * Solaris - Tested with Solaris 10 / x86 / gcc-3.4.3 / blastwave,
 Solaris 10 / x86 / sunstudio12 / sunfreeware. OpenSolaris should work but has
-not been tested yet. Note: smartctl doesn't seem to support ATA under Solaris,
-while GSmartControl doesn't support SCSI yet. This only leaves various USB to
-ATA bridges. See smartctl (5), -d option for details.
+not been tested yet.
 
 * Mac OS X - 3rd-party testing by Fink project.
 

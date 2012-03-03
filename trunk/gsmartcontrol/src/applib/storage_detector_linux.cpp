@@ -144,6 +144,18 @@ inline bool read_proc_file(hz::File& file, std::vector<std::string>& lines)
 
 
 
+/// Read a file completely from /proc
+inline bool read_proc_complete_file(hz::File& file, std::string& contents)
+{
+	// The crude way
+	std::vector<std::string> lines;
+	bool status = read_proc_file(file, lines);
+	contents = hz::string_join(lines, '\n');
+	return status;
+}
+
+
+
 /// Read /proc/partitions file. Return error message on error.
 inline std::string read_proc_partitions_file(std::vector<std::string>& lines)
 {
@@ -438,17 +450,18 @@ inline std::string detect_drives_linux_proc_partitions(std::vector<StorageDevice
 /**
 Detect drives behind 3ware RAID controller.
 
-3ware Linux:
-Call as: smartctl -i -d 3ware,[0-127] /dev/twa[0-15]  (or twe[0-15])
-Use twe* for [678]xxx series, and twa* for 9xxx series.
+3ware Linux (3w-9xxx, 3w-xxxx, 3w-sas drivers):
+Call as: smartctl -i -d 3ware,[0-127] /dev/twa[0-15]  (or twe[0-15], or twl[0-15])
+Use twe* for [678]xxx series (), twa* for 9xxx series, twl* for 9750 series.
 Note: twe* devices are limited to [0-15] ports (not sure about this).
 Note: /dev/tw* devices may not exist, they are created by smartctl on the first run.
 Note: for twe*, /dev/sda may also exist (to be used with -d 3ware,N), we should
 	somehow detect and ignore them.
 Note: when specifying non-existent port, either a "Device Read Identity Failed"
 	error, or a "blank" info may be returned.
+
 Detection:
-Grep /proc/devices for "twa" or "twe" (e.g. "251 twa"). Use this for /dev/tw* part.
+Grep /proc/devices for "twa", "twe" or "twl" (e.g. "251 twa"). Use this for /dev/tw* part.
 Grep /proc/scsi/scsi for AMCC or 3ware (LSI too?), use number of matched lines N
 	for /dev/tw*[0, N-1].
 For detecting the number of ports, use "tw_cli /cK show all", K being the controller
@@ -456,8 +469,9 @@ For detecting the number of ports, use "tw_cli /cK show all", K being the contro
 	If there's no tw_cli, we'll have to scan all the ports (up to supported maximum).
 	This is too slow however, so scan only 24.
 
-Implementation notes: it seems that twe uses "3ware" and twa uses "AMCC".
-We can't handle a situation with both twa and twe present, since we don't know
+Implementation notes: it seems that twe uses "3ware" and twa uses "AMCC"
+(not sure about twl).
+We can't handle a situation with mixed twa/twe/twl systems, since we don't know
 how they will be ordered for tw_cli.
 */
 inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
@@ -470,23 +484,26 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 
 	bool twa_found = false;
 	bool twe_found = false;
+	bool twl_found = false;
 
 	// Check /proc/devices for twa or twe
 	for (std::size_t i = 0; i < lines.size(); ++i) {
 		std::string dev;
-		if (app_pcre_match("/^[ \\t]*[0-9]+[ \\t]+(tw[ae])(?:[ \\t]*|$)/", hz::string_trim_copy(lines[i]), &dev)) {
+		if (app_pcre_match("/^[ \\t]*[0-9]+[ \\t]+(tw[ael])(?:[ \\t]*|$)/", hz::string_trim_copy(lines[i]), &dev)) {
 			debug_out_dump("app", DBG_FUNC_MSG << "Found " << dev << " entry in devices file.\n");
 			if (dev == "twa") {
 				twa_found = true;
 			} else if (dev == "twe") {
 				twe_found = true;
+			} else if (dev == "twl") {
+				twl_found = true;
 			} else {
 				DBG_ASSERT(0);  // error in regexp?
 			}
 		}
 	}
 
-	if (!twa_found && !twe_found) {
+	if (!twa_found && !twe_found && !twl_found) {
 		return std::string();  // no controllers
 	}
 
@@ -502,13 +519,14 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 	std::set<int> controller_hosts;
 
 	for (std::size_t i = 0; i < vendors_models.size(); ++i) {
+		// TODO Not sure which vendor twl uses.
 		if (!app_pcre_match("/Vendor: (AMCC)|(3ware) /i", vendors_models[i].second)) {
 			continue;  // not a supported controller
 		}
 
 		int host_num = vendors_models[i].first;
 
-		debug_out_dump("app", "Found AMCC/3ware controller in SCSI file, SCSI host " << host_num << ".\n");
+		debug_out_dump("app", "Found AMCC/LSI/3ware controller in SCSI file, SCSI host " << host_num << ".\n");
 
 		// Skip additional adapters with the same host, since they are the same adapters
 		// with different LUNs.
@@ -520,7 +538,13 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 
 		// We can't handle both twa and twe in one system, so assume twa by default.
 		// We can't map twaX to scsiY, so lets assume the relative order is the same.
-		std::string dev = std::string("/dev/") + (twa_found ? "twa" : "twe") + hz::number_to_string(controller_hosts.size() - 1);
+		std::string dev_base = "twa";
+		if (twe_found) {
+			dev_base = "twe";
+		} else if (twl_found) {
+			dev_base = "twl";
+		}
+		std::string dev = std::string("/dev/") + dev_base + hz::number_to_string(controller_hosts.size() - 1);
 
 		error_msg = tw_cli_get_drives(dev, vendors_models[i].first, drives, ex_factory, false);
 		if (!error_msg.empty()) {  // no tw_cli
@@ -530,12 +554,12 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 		}
 
 		if (!error_msg.empty()) {
-			debug_out_warn("app", DBG_FUNC_MSG << "Couldn't get number of ports on a 3ware controller.\n");
+			debug_out_warn("app", DBG_FUNC_MSG << "Couldn't get the drives on ports of AMCC/LSI/3ware controller: " << error_msg << "\n");
 		}
 	}
 
 	if (controller_hosts.empty()) {
-		debug_out_warn("app", DBG_FUNC_MSG << "3ware entry found in devices file, but SCSI file contains no known entries.\n");
+		debug_out_warn("app", DBG_FUNC_MSG << "AMCC/LSI/3ware entry found in devices file, but SCSI file contains no known entries.\n");
 	}
 
 	return error_msg;
@@ -544,8 +568,9 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 
 
 /**
-Detect drives behind Adaptec RAID controller.
+Detect drives behind Adaptec RAID controller (aacraid driver).
 Tested using Adaptec RAID 5805 (SAS / SATA controller).
+Uses /dev/sgN devices (with -d sat for SATA and -d scsi (default) for SCSI).
 
 Adaptec Linux detection strategy:
 Check /proc/devices for "aac"; if it's there, continue.
@@ -655,6 +680,109 @@ inline std::string detect_drives_linux_adaptec(std::vector<StorageDeviceRefPtr>&
 
 
 
+/**
+Areca Linux (arcmsr driver):
+Call as: smartctl -i -d areca,[1-24] /dev/sg0
+
+Detection:
+	There don't seem to be any entries in /proc/devices.
+	Check /proc/scsi/scsi for "Vendor: Areca".
+	(Alternatively, /proc/scsi/sg/device_strs should contain "Areca       RAID controller").
+Detect SCSI host (N in hostN below):
+	It's N of scsiN in /proc/scsi/sg/device_strs of the entry with "Vendor: Areca",
+	which has type 3 in /proc/scsi/sg/devices (to filter out logical volumes) and id 16.
+	The line number in /proc/scsi/sg/devices is X in /dev/sgX.
+Check /sys/bus/scsi/devices/hostN/scsi_host/hostN/host_fw_hd_channels, set
+	its contents as the number of ports. If not present, use 24 (maximum).
+Probe each port for a valid drive: If the output contains "Device Read Identity Failed",
+	then there is no drive on that port (or Areca has an old firmware, nothing we can
+	do there).
+Notification: If /sys/bus/scsi/devices/hostN/scsi_host/hostN/host_fw_version
+	is older than "V1.46 2009-01-06", notify the user (maybe its better to grep
+	the smartctl output for that on port 0?). NOT IMPLEMENTED YET.
+*/
+inline std::string detect_drives_linux_areca(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
+{
+	std::vector< std::pair<int, std::string> > vendors_models;
+	std::string error_msg = read_proc_scsi_scsi_file(vendors_models);
+	if (!error_msg.empty()) {
+		return error_msg;
+	}
+
+	std::set<int> controller_hosts;
+
+	for (std::size_t i = 0; i < vendors_models.size(); ++i) {
+		if (!app_pcre_match("/Vendor: Areca /i", vendors_models[i].second)) {
+			continue;  // not a supported controller
+		}
+		int host_num = vendors_models[i].first;
+		debug_out_dump("app", "Found Areca controller in SCSI file, SCSI host " << host_num << ".\n");
+
+		// Skip additional adapters with the same host (they are volumes)
+		if (controller_hosts.find(host_num) != controller_hosts.end()) {
+			debug_out_dump("app", "Skipping adapter with SCSI host " << host_num << ", host already found.\n");
+			continue;
+		}
+		controller_hosts.insert(host_num);
+	}
+
+	if (controller_hosts.empty()) {
+		return error_msg;
+	}
+
+	std::vector< std::vector<int> > sg_entries;
+	error_msg = read_proc_scsi_sg_devices_file(sg_entries);
+	if (!error_msg.empty()) {
+		return error_msg;
+	}
+
+	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
+
+	for (std::set<int>::iterator iter = controller_hosts.begin(); iter != controller_hosts.end(); ++iter) {
+		const int host_num = *iter;
+
+		for (std::size_t sg_num = 0; sg_num < sg_entries.size(); ++sg_num) {
+			if (sg_entries[sg_num].size() < 5) {
+				// We need at least 5 columns in that file
+				continue;
+			}
+			const int type = sg_entries[sg_num][4];  // type 3 is Areca controller
+			const int id = sg_entries[sg_num][2];  // id should be 16 (as per smartmontools)
+			if (sg_entries[sg_num][0] != host_num || id != 16 || type != 3) {
+				continue;
+			}
+
+			int max_ports = 0;
+
+			std::string ports_path = hz::string_sprintf("/sys/bus/scsi/devices/host%d/scsi_host/host%d/host_fw_hd_channels", host_num, host_num);
+			hz::File ports_file(ports_path);
+			std::string ports_file_contents;
+			if (!read_proc_complete_file(ports_file, ports_file_contents)) {
+				debug_out_warn("app", DBG_FUNC_MSG << "Couldn't read number of ports on Areca controller: "
+						<< ports_file.get_error_utf8() << ", trying manually.\n");
+			} else {
+				hz::string_is_numeric(hz::string_trim_copy(ports_file_contents), max_ports);
+			}
+
+			if (max_ports < 1 || max_ports > 24) {
+				max_ports = 24;  // default to 24 ports (smartctl maximum for Areca)
+			}
+
+			std::string dev = std::string("/dev/sg") + hz::number_to_string(sg_num);
+
+			error_msg = smartctl_get_drives(dev, "areca,%d", 1, max_ports, drives, ex_factory);
+
+			if (!error_msg.empty()) {
+				debug_out_warn("app", DBG_FUNC_MSG << "Couldn't get the drives on ports of Areca controller: " << error_msg << "\n");
+			}
+		}
+	}
+
+	return error_msg;
+}
+
+
+
 }  // anon ns
 
 
@@ -677,6 +805,11 @@ std::string detect_drives_linux(std::vector<StorageDeviceRefPtr>& drives, Execut
 	}
 
 	error_msg = detect_drives_linux_3ware(drives, ex_factory);
+	if (!error_msg.empty()) {
+		error_msgs.push_back(error_msg);
+	}
+
+	error_msg = detect_drives_linux_areca(drives, ex_factory);
 	if (!error_msg.empty()) {
 		error_msgs.push_back(error_msg);
 	}
