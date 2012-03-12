@@ -516,17 +516,19 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 	}
 
 
-	std::set<int> controller_hosts;
+	std::set<int> controller_hosts;  // scsi hosts found for tw*
+	std::map<std::string, int> device_numbers;  // device base (e.g. twa) -> number of times found
 
 	for (std::size_t i = 0; i < vendors_models.size(); ++i) {
-		// TODO Not sure which vendor twl uses.
-		if (!app_pcre_match("/Vendor: (AMCC)|(3ware) /i", vendors_models[i].second)) {
+		// twe: 3ware, twa: AMCC, twl: LSI.
+		std::string vendor;
+		if (!app_pcre_match("/Vendor: (AMCC)|(3ware)|(LSI) /i", vendors_models[i].second, &vendor)) {
 			continue;  // not a supported controller
 		}
 
 		int host_num = vendors_models[i].first;
 
-		debug_out_dump("app", "Found AMCC/LSI/3ware controller in SCSI file, SCSI host " << host_num << ".\n");
+		debug_out_dump("app", "Found LSI/AMCC/3ware controller in SCSI file, SCSI host " << host_num << ".\n");
 
 		// Skip additional adapters with the same host, since they are the same adapters
 		// with different LUNs.
@@ -536,15 +538,29 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 		}
 		controller_hosts.insert(host_num);
 
-		// We can't handle both twa and twe in one system, so assume twa by default.
-		// We can't map twaX to scsiY, so lets assume the relative order is the same.
-		std::string dev_base = "twa";
-		if (twe_found) {
-			dev_base = "twe";
+		std::string dev_base = "twe";
+		if (twa_found) {
+			dev_base = "twa";
 		} else if (twl_found) {
 			dev_base = "twl";
 		}
-		std::string dev = std::string("/dev/") + dev_base + hz::number_to_string(controller_hosts.size() - 1);
+
+		// If there are several different tw* devices present (like 1 twa and 1 twe), we
+		// use the vendor name to differentiate them.
+		if (int(twa_found) + int(twe_found) + int(twl_found) > 1) {
+			if (twa_found && hz::string_to_lower_copy(vendor) == "amcc") {
+				dev_base = "twa";
+			} else if (twe_found && hz::string_to_lower_copy(vendor) == "3ware") {
+				dev_base = "twe";
+			} else if (twl_found && hz::string_to_lower_copy(vendor) == "lsi") {
+				dev_base = "twl";
+			}
+			// else we default to twl, twa, twe (in this order)
+		}
+
+		// We can't map twaX to scsiY, so lets assume the relative order is the same.
+		std::string dev = std::string("/dev/") + dev_base + hz::number_to_string(device_numbers[dev_base]);
+		++device_numbers[dev_base];
 
 		error_msg = tw_cli_get_drives(dev, vendors_models[i].first, drives, ex_factory, false);
 		if (!error_msg.empty()) {  // no tw_cli
@@ -554,7 +570,7 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 		}
 
 		if (!error_msg.empty()) {
-			debug_out_warn("app", DBG_FUNC_MSG << "Couldn't get the drives on ports of AMCC/LSI/3ware controller: " << error_msg << "\n");
+			debug_out_warn("app", DBG_FUNC_MSG << "Couldn't get the drives on ports of LSI/AMCC/3ware controller: " << error_msg << "\n");
 		}
 	}
 
