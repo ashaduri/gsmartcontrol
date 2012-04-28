@@ -24,6 +24,3 @@ Icon=gsmartcontrol
 
 # Run with root permissions.
 Exec="@prefix@/bin/gsmartcontrol-root"
-
-# Build service rpmlint gives errors without this
-X-SuSE-translate=false

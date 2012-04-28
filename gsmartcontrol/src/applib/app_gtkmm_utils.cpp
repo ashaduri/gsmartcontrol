@@ -11,6 +11,7 @@
 
 #include <gtkmm.h>
 #include <gtk/gtk.h>  // gtk_* stuff
+#include <cstring>  // std::strlen
 #include <vector>
 #include <glibmm.h>
 
@@ -219,15 +220,15 @@ namespace {
 	/// the potentially invalid utf-8 data.
 	inline gchar* gsc_g_utf8_make_valid (const gchar* name)
 	{
-		GString* string;
+		GString* str;
 		const gchar* remainder, *invalid;
 		gint remaining_bytes, valid_bytes;
 
 		g_return_val_if_fail (name != NULL, NULL);
 
-		string = NULL;
+		str = NULL;
 		remainder = name;
-		remaining_bytes = gint(strlen(name));
+		remaining_bytes = gint(std::strlen(name));
 
 		while (remaining_bytes != 0) {
 			if (g_utf8_validate (remainder, remaining_bytes, &invalid))
@@ -235,25 +236,25 @@ namespace {
 
 			valid_bytes = gint(invalid - remainder);
 
-			if (string == NULL)
-				string = g_string_sized_new (remaining_bytes);
+			if (str == NULL)
+				str = g_string_sized_new (remaining_bytes);
 
-			g_string_append_len (string, remainder, valid_bytes);
+			g_string_append_len (str, remainder, valid_bytes);
 			/* append U+FFFD REPLACEMENT CHARACTER */
-			g_string_append (string, "\357\277\275");
+			g_string_append (str, "\357\277\275");
 
 			remaining_bytes -= valid_bytes + 1;
 			remainder = invalid + 1;
 		}
 
-		if (string == NULL)
+		if (str == NULL)
 			return g_strdup (name);
 
-		g_string_append (string, remainder);
+		g_string_append (str, remainder);
 
-		g_assert (g_utf8_validate (string->str, -1, NULL));
+		g_assert (g_utf8_validate (str->str, -1, NULL));
 
-		return g_string_free (string, FALSE);
+		return g_string_free (str, FALSE);
 	}
 
 }
