@@ -4,7 +4,7 @@ Release:	1as
 License:	GPLv2, GPLv3
 Url:		http://gsmartcontrol.berlios.de
 Vendor:		Alexander Shaduri <ashaduri 'at' gmail.com>
-Packager:	Alexander Shaduri <ashaduri 'at' gmail.com>
+# Packager:	Alexander Shaduri <ashaduri 'at' gmail.com>
 Source:		gsmartcontrol-%{version}.tar.bz2
 BuildRoot:	%{_tmppath}/%{name}-%{version}-build
 Summary:	GSmartControl - Hard Disk Health Inspection Tool
@@ -14,12 +14,6 @@ Group:		System/Kernel and hardware
 %else
 Group:		Hardware/Other
 %endif
-
-# Support build service rpmlint. Disabled - the build service
-# stopped recognizing the flag for some architectures.
-# %if 0%{?opensuse_bs} && 0%{?suse_version} >= 1010
-# Support: rpmlint-bs
-# %endif
 
 
 # Dependencies for various distributions. The actual deps are:
@@ -45,6 +39,11 @@ BuildRequires: gcc-c++, libstdc++-devel, pcre-devel, gtkmm2-devel >= 2.6.0, libg
 Requires: smartmontools, pcre, gtkmm24 >= 2.6.0, libglademm >= 2.4.0
 BuildRequires: gcc-c++, libstdc++-devel, pcre-devel, gtkmm24-devel >= 2.6.0, libglademm-devel >= 2.4.0
 %endif
+%endif
+BuildRequires: update-desktop-files
+
+%if 0%{?suse_version} >= 1030
+BuildRequires: fdupes
 %endif
 
 %endif
@@ -104,20 +103,38 @@ SMART data to determine its health, as well as run various tests on it.
 
 %build
 # Set up for parallel builds
-numprocs=`egrep -c ^cpu[0-9]+ /proc/stat || :`
-if [ "$numprocs" = "0" ]; then
-	numprocs=1
-fi
-
-make -j$numprocs
-# make
+#numprocs=`grep -E -c ^cpu[0-9]+ /proc/stat || :`
+#if [ "$numprocs" = "0" ]; then
+#	numprocs=1
+#fi
+#make -j$numprocs
+make
 
 
 %install
-# %makeinstall
+# %%makeinstall
 make DESTDIR=%buildroot install-strip
 # Remove the icon cache file "make install" generates, to avoid package conflicts.
 rm -f $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/icon-theme.cache
+
+%if 0%{?suse_version}
+%suse_update_desktop_file -n %{name}
+
+# There are some png file duplicates, hardlink them.
+%if 0%{?suse_version} >= 1030
+%fdupes
+%endif
+
+# We install icons, so this is needed.
+%if 0%{?suse_version} >= 1140
+%post
+%icon_theme_cache_post
+
+%postun
+%icon_theme_cache_postun
+%endif
+
+%endif
 
 
 %if 0%{?mandriva_version}
@@ -137,29 +154,16 @@ rm -rf %buildroot
 %defattr(-,root,root)
 
 %attr(0755,root,root) %{_bindir}/*
-# %attr(0644,root,root) %config(noreplace) %{_sysconfdir}/*
+# %%attr(0644,root,root) %%config(noreplace) %%{_sysconfdir}/*
 
 %doc %{_datadir}/doc/gsmartcontrol
 %doc %{_mandir}/man1/*
 
 %{_datadir}/gsmartcontrol
-# %{_datadir}/gsmartcontrol/*
+# %%{_datadir}/gsmartcontrol/*
 %{_datadir}/applications/*.desktop
 %{_datadir}/icons/*
 %{_datadir}/pixmaps/*
 
 
-
 %changelog
-* Fri Dec 10 2010 Alexander Shaduri <ashaduri 'at' gmail.com>
-- Fixes for Fedora 14.
-
-* Fri Nov 14 2008 Alexander Shaduri <ashaduri 'at' gmail.com>
-- Updated .spec file to incorporate changes from the official Mandriva package.
-
-* Mon Oct 06 2008 Alexander Shaduri <ashaduri 'at' gmail.com>
-- Updated .spec file to support OpenSUSE < 10.3, Fedora and friends,
-	Mandriva (for OpenSUSE Build Service).
-
-* Mon Sep 15 2008 Alexander Shaduri <ashaduri 'at' gmail.com>
-- Initial .spec file.
