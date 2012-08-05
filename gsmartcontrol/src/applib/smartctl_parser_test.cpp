@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_unlicense.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib_tests
+/// \weakgroup applib_tests
+/// @{
 
 #undef HZ_USE_LIBDEBUG
 #define HZ_USE_LIBDEBUG 0
@@ -20,6 +25,7 @@
 
 
 
+/// Main function of the test
 int main(int argc, char** argv)
 {
 	if (argc < 2) {
@@ -78,3 +84,5 @@ int main()
 
 
 
+
+/// @}

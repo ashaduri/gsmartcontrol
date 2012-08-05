@@ -3,6 +3,11 @@
       (C) 2003 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_TYPE_CATEGORIES_H
 #define HZ_TYPE_CATEGORIES_H
@@ -10,9 +15,11 @@
 #include "hz_config.h"  // feature macros
 
 
-
-// Type categories for easy specialization generation
-
+/**
+\file
+Type categories for easy specialization generation.
+This file provides some type facilities in absence of C++11's type_traits header.
+*/
 
 namespace hz {
 
@@ -103,3 +110,5 @@ template<> struct type_check_category<long double> { typedef type_cat_float type
 
 
 #endif
+
+/// @}

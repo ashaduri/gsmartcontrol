@@ -3,6 +3,11 @@
       (C) 2003 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_STATIC_ASSERT_H
 #define HZ_STATIC_ASSERT_H
@@ -10,15 +15,18 @@
 #include "hz_config.h"  // feature macros
 
 
-
-// Note: Please specify the hz namespace explicitly (i.e. hz::static_assertion<>)
-// to avoid conflicts with various other implementations; Better yet,
-// use HZ_STATIC_ASSERT macro.
+/**
+\file
+Note: Please specify the hz namespace explicitly (i.e. hz::static_assertion<>)
+to avoid conflicts with various other implementations; Better yet,
+use HZ_STATIC_ASSERT macro.
+*/
 
 
 namespace hz {
 
 
+	/// Static assertion - similar to C++11's std::static_assert, but for C++98.
 	template<bool B>
 	struct static_assertion;
 
@@ -41,10 +49,9 @@ namespace hz {
 }  // ns
 
 
-// You should use this macro for static checks.
-// msg_identifier doesn't have to be defined as a C++ identifier,
-// it's just a message that will appear in compiler error output.
-
+/// Use this macro for static checks with messages.
+/// \c msg_identifier doesn't have to be defined as a C++ identifier,
+/// it's just a message that will appear in compiler error output.
 #define HZ_STATIC_ASSERT(cond, msg_identifier) \
 	if (true) { \
 		hz::static_assertion<((cond) != 0)> ERROR_##msg_identifier; \
@@ -83,3 +90,5 @@ namespace hz {
 
 
 #endif
+
+/// @}

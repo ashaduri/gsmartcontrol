@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_unlicense.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib_tests
+/// \weakgroup applib_tests
+/// @{
 
 #include <iostream>
 
@@ -19,8 +24,8 @@
 
 class AppUiResTestWindow;
 
-// class AppUiResTestWindow : public Gtk::Window
-// class AppUiResTestWindow : public hz::InstanceManager<AppUiResTestWindow, false>, public Gtk::Window
+
+/// Window for the resource utilities test
 class AppUiResTestWindow : public AppUIResWidget<AppUiResTestWindow, false>
 {
 	public:
@@ -29,11 +34,13 @@ class AppUiResTestWindow : public AppUIResWidget<AppUiResTestWindow, false>
 		APP_UI_RES_DATA_INIT(app_ui_res_test_window);
 
 
+		/// Action types
 		enum action_t {
-			action_quit
+			action_quit  ///< Quit action
 		};
 
-// 		AppUiResTestWindow()
+
+		/// Constructor
 		AppUiResTestWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
 				: AppUIResWidget<AppUiResTestWindow, false>(gtkcobj, ref_ui)
 		{
@@ -54,22 +61,27 @@ class AppUiResTestWindow : public AppUIResWidget<AppUiResTestWindow, false>
 			show_all();
 		}
 
+
+		/// Virtual destructor
 		virtual ~AppUiResTestWindow()
 		{ }
 
 
 	private:
 
+		/// Action callback
 		void on_button_clicked()
 		{
 			std::cerr << "AppUiResTestWindow::on_button_clicked()\n";
 		}
 
+		/// Action callback
 		void on_button_clicked2(action_t action_type)
 		{
 			std::cerr << "AppUiResTestWindow::on_button_clicked2()\n";
 		}
 
+		/// Action callback
 		bool on_delete_event(GdkEventAny* e)
 		{
 			Gtk::Main::quit();
@@ -80,6 +92,7 @@ class AppUiResTestWindow : public AppUIResWidget<AppUiResTestWindow, false>
 
 
 
+/// Main function of the test
 int main(int argc, char *argv[])
 {
     Gtk::Main m(&argc, &argv);
@@ -97,3 +110,5 @@ int main(int argc, char *argv[])
 
 
 
+
+/// @}

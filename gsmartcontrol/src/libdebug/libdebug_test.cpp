@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_unlicense.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup libdebug_tests
+/// \weakgroup libdebug_tests
+/// @{
 
 // The first header should be then one we're testing, to avoid missing
 // header pitfalls.
@@ -11,19 +16,21 @@
 #include <iostream>
 
 
-namespace test {
+/// libdebug namespace for tests
+namespace libdebug_test {
 
-	struct A {
+	/// Libdebug test class
+	struct TestClassA {
 		bool func(int a = 2)
 		{
 			// this prints "func"
 			debug_out_info("default", DBG_FUNC_NAME << "\n");
 
-			// this prints "bool<unnamed>::A::func()" if in anonymous namespace,
-			// else "bool test::A::func()".
+			// this prints "bool<unnamed>::TestClassA::func()" if in anonymous namespace,
+			// else "bool test::TestClass::func()".
 			debug_out_info("default", DBG_FUNC_PRNAME << "\n");
 
-			// prints "test::A::func(): function called."
+			// prints "test::TestClassA::func(): function called."
 			debug_out_info("default", DBG_FUNC_MSG << "function called.\n");
 
 			return true;
@@ -35,8 +42,9 @@ namespace test {
 
 namespace {
 
+	/// Libdebug test struct
 	template<typename U>
-	struct B {
+	struct TestClassB {
 		template<typename V>
 		U func2(V v, int)
 		{
@@ -46,13 +54,15 @@ namespace {
 		}
 	};
 
+	/// Libdebug test struct
 	template<typename T>
-	struct C { };
+	struct TestClassC { };
 
 }
 
 
 
+/// Main function for the test
 int main(int argc, char *argv[])
 {
 
@@ -166,9 +176,9 @@ int main(int argc, char *argv[])
 	os << "";
 
 
-	test::A().func();
+	libdebug_test::TestClassA().func();
 
-	B<unsigned int>().func2(C<char*>(), 0);
+	TestClassB<unsigned int>().func2(TestClassC<char*>(), 0);
 
 // 	debug_out_warn("default", DBG_FUNC_MSG << "Doing something.\n");
 // 	debug_out_warn("default", DBG_FUNC_MSG << "Doing something.\n");
@@ -183,8 +193,4 @@ int main(int argc, char *argv[])
 
 
 
-
-
-
-
-
+/// @}

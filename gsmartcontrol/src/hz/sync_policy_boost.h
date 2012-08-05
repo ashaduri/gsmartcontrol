@@ -13,8 +13,10 @@
 
 #include "sync.h"
 
-
-// Boost.Thread-based policy.
+/**
+\file
+Boost.Thread-based policy.
+*/
 
 
 // ----------------------------- Boost 1.35 version
@@ -31,26 +33,24 @@ namespace hz {
 
 
 
-// Native type notes:
-// Boost scoped_lock doesn't provide the do_lock parameter anymore.
-// It has been replaced by boost::defer_lock_type argument.
-// There is no single lock for shared_mutex - it has shared_lock and unique_lock.
-
-// We use native types for mutex types here, because they meet the requirements.
-// Thus no need to specify locks and other stuff for these separately.
-
+/// Native type notes:
+/// Boost scoped_lock doesn't provide the do_lock parameter anymore.
+/// It has been replaced by boost::defer_lock_type argument.
+/// There is no single lock for shared_mutex - it has shared_lock and unique_lock.
+/// We use native types for mutex types here, because they meet the requirements.
+/// Thus no need to specify locks and other stuff for these separately.
 struct SyncPolicyBoost : public SyncScopedLockProvider<SyncPolicyBoost> {
 
 	// Types:
 
 	typedef boost::mutex Mutex;
-	typedef Mutex NativeMutex;  // supports lock(), try_lock(), unlock()
+	typedef Mutex NativeMutex;  ///< supports lock(), try_lock(), unlock()
 
 	typedef boost::recursive_mutex RecMutex;
-	typedef RecMutex NativeRecMutex;  // supports lock(), try_lock(), unlock()
+	typedef RecMutex NativeRecMutex;  ///< supports lock(), try_lock(), unlock()
 
 	typedef boost::shared_mutex RWMutex;
-	typedef RWMutex NativeRWMutex;  // lock(), try_lock(), unlock() - exclusive. *_shared() - shared.
+	typedef RWMutex NativeRWMutex;  ///< lock(), try_lock(), unlock() - exclusive. *_shared() - shared.
 
 
 	typedef GenericScopedLock<Mutex> ScopedLock;

@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup gsc
+/// \weakgroup gsc
+/// @{
 
 #ifndef GSC_TEXT_WINDOW_H
 #define GSC_TEXT_WINDOW_H
@@ -22,27 +27,26 @@
 
 
 
+/// GscTextWindow InstanceSwitch parameter for smartctl output instance.
 struct SmartctlOutputInstance { static const bool multi_instance = true; };
 
 
 
-// use create() / destroy() with this class instead of new / delete!
-
-
-// InstanceSwitch: e.g. supply 3 different classes to use 3 different single-instance windows.
+/// A generic text-displaying window.
+/// Use create() / destroy() with this class instead of new / delete!
+/// \tparam InstanceSwitch e.g. supply 3 different classes to use 3 different single-instance windows.
 template<class InstanceSwitch>
 class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, InstanceSwitch::multi_instance> {
-
 	public:
 
 		// name of glade/ui file without a .glade/.ui extension and quotes
 		APP_UI_RES_DATA_INIT(gsc_text_window);
 
-		// needed for glade, not inherited from parent because of templates
+		/// Self type, needed for glade, not inherited from parent because of templates
 		typedef GscTextWindow<InstanceSwitch> self_type;
 
 
-		// glade/gtkbuilder needs this constructor
+		/// Constructor, gtkbuilder/glade needs this.
 		GscTextWindow(typename Gtk::Window::BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
 				: AppUIResWidget<GscTextWindow<InstanceSwitch>, InstanceSwitch::multi_instance>(gtkcobj, ref_ui)
 		{
@@ -65,19 +69,18 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 						Gdk::ModifierType(0), Gtk::AccelFlags(0));
 			}
 
-
-			// ---------------
-
 			// show();  // better show later, after set_text().
 
 			default_title_ = this->get_title();
 		}
 
 
+		/// Virtual destructor
 		virtual ~GscTextWindow()
 		{ }
 
 
+		/// Set the text to display
 		void set_text(const Glib::ustring& title, const Glib::ustring& contents,
 				bool save_visible = false, bool use_monospace = false)
 		{
@@ -110,6 +113,7 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 		}
 
 
+		/// Set the default file name to be shown on Save As
 		void set_save_filename(const std::string& filename)
 		{
 			save_filename_ = filename;
@@ -119,12 +123,13 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 	protected:
 
 
-		// -------------------- Callbacks
+		// -------------------- callbacks
 
 
-		// ---------- override virtual methods
+		// ---------- overriden virtual methods
 
-		// by default, delete_event calls hide().
+		/// Destroy this object on delete event (by default it calls hide()).
+		/// Reimplemented from Gtk::Window.
 		bool on_delete_event_before(GdkEventAny* e)
 		{
 			this->destroy(this);  // deletes this object and nullifies instance
@@ -134,6 +139,7 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 
 		// ---------- other callbacks
 
+		/// Button click callback
 		void on_save_as_button_clicked()
 		{
 			static std::string last_dir;
@@ -183,16 +189,18 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 		}
 
 
+		/// Button click callback
 		void on_close_window_button_clicked()
 		{
 			this->destroy(this);
 		}
 
 
+	private:
 
-		Glib::ustring default_title_;
-		Glib::ustring contents_;
-		std::string save_filename_;
+		Glib::ustring default_title_;  ///< Window title
+		Glib::ustring contents_;  ///< The text to display
+		std::string save_filename_;  ///< Default filename for Save As
 
 
 };
@@ -203,3 +211,5 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 
 
 #endif
+
+/// @}

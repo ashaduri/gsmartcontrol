@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup gsc
+/// \weakgroup gsc
+/// @{
 
 #include <gtkmm/messagedialog.h>
 #include <gtkmm/stock.h>
@@ -16,6 +21,7 @@
 
 namespace {
 
+	/// Helper function
 	inline int show_executor_dialog(Gtk::MessageType type,
 			const std::string& message, const std::string& sec_message,
 			Gtk::Window* parent, bool sec_msg_markup, bool show_output_button)
@@ -99,3 +105,5 @@ void gsc_no_info_dialog_show(const std::string& message, const std::string& sec_
 
 
 
+
+/// @}

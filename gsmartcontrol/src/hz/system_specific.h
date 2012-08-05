@@ -14,11 +14,13 @@
 
 #include "hz_config.h"  // feature macros
 
+/**
+\file
+System/compiler-specific stuff goes here...
+*/
 
-// System/compiler-specific stuff goes here...
-
-
-// returns true if gcc version is greater or equal to specified.
+/// \def HZ_GCC_CHECK_VERSION(major, minor, micro)
+/// returns true if gcc version is greater or equal to specified.
 #ifndef HZ_GCC_CHECK_VERSION
 	#define HZ_GCC_CHECK_VERSION(major, minor, micro) \
 			( defined (__GNUC__) && ( \
@@ -30,7 +32,8 @@
 
 
 
-// Wrap gcc's attributes
+/// \def HZ_GCC_ATTR(a)
+/// Wrap gcc's attributes. Evaluates to nothing in non-gcc-compatible compilers.
 #ifndef HZ_GCC_ATTR
 	#ifdef __GNUC__
 		#define HZ_GCC_ATTR(a) __attribute__((a))
@@ -40,22 +43,27 @@
 #endif
 
 
-// For easy printf format checks.
+/// \def HZ_FUNC_PRINTF_ISO_CHECK(format_idx, check_idx)
+/// Easy compile-time printf format checks.
+/// See http://gcc.gnu.org/onlinedocs/gcc-4.4.1/gcc/Function-Attributes.html
+
+/// \def HZ_FUNC_PRINTF_MS_CHECK(format_idx, check_idx)
+/// Easy compile-time printf format checks (windows version of format specifiers).
+/// ms_printf is available since gcc 4.4.
+/// Note: When using __USE_MINGW_ANSI_STDIO, mingw uses
+/// its own *printf() implementation (rather than msvcrt), which accepts
+/// both MS-style and standard format specifiers.
+/// ms_printf gives warnings on standard specifiers, but we still keep
+/// it so that the code will be portable to other win32 environments.
+/// TODO: Check if simply specifying "printf" selects the correct
+/// version for mingw.
+
 
 #ifndef HZ_FUNC_PRINTF_ISO_CHECK
-	// See http://gcc.gnu.org/onlinedocs/gcc-4.4.1/gcc/Function-Attributes.html
 	#define HZ_FUNC_PRINTF_ISO_CHECK(format_idx, check_idx) HZ_GCC_ATTR(format(printf, format_idx, check_idx))
 #endif
 
 #ifndef HZ_FUNC_PRINTF_MS_CHECK
-	// ms_printf is available since gcc 4.4.
-	// Note: When using __USE_MINGW_ANSI_STDIO, mingw uses
-	// its own *printf() implementation (rather than msvcrt), which accepts
-	// both MS-style and standard format specifiers.
-	// ms_printf gives warnings on standard specifiers, but we still keep
-	// it so that the code will be portable to other win32 environments.
-	// TODO: Check if simply specifying "printf" selects the correct
-	// version for mingw.
 	#if defined _WIN32 && HZ_GCC_CHECK_VERSION(4, 4, 0)
 		#define HZ_FUNC_PRINTF_MS_CHECK(format_idx, check_idx) HZ_GCC_ATTR(format(ms_printf, format_idx, check_idx))
 	#else

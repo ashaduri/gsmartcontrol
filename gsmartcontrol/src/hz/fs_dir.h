@@ -146,7 +146,7 @@ namespace internal {
 /// Filtering functor for Dir::list(). No filtering - leave all entries.
 struct DirFilterNone {
 
-	/// whether to use operator() with FsPaths instead of strings.
+	/// Whether to use operator() with FsPaths instead of strings.
 	bool use_path_objects()
 	{
 		return false;
@@ -575,8 +575,8 @@ class Dir : public FsPath {
 // 		const Dir& operator=(const Dir& other);  // don't allow it. allow only from non-const.
 
 
-		handle_type dir_;  // Native handle (DIR*)
-		entry_handle_type entry_;  // Current entry (dirent*)
+		handle_type dir_;  ///< Native handle (DIR*)
+		entry_handle_type entry_;  ///< Current entry (dirent*)
 
 };
 

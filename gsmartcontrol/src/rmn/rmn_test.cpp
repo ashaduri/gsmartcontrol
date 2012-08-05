@@ -4,6 +4,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_unlicense.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup rmn_tests
+/// \weakgroup rmn_tests
+/// @{
 
 #undef INTRUSIVE_PTR_RUNTIME_CHECKS
 #define INTRUSIVE_PTR_RUNTIME_CHECKS 1
@@ -33,6 +38,7 @@
 
 
 
+/// Main function for the test
 int main()
 {
 
@@ -140,3 +146,6 @@ int main()
 
 
 
+
+
+/// @}

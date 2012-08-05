@@ -16,6 +16,9 @@
 
 #include <ostream>  // std::ostream, operator<<(ostream, const char*). iosfwd is not enough.
 
+#if __cplusplus > 201100L
+	#include <utility>  // move
+#endif
 
 
 namespace hz {
@@ -35,47 +38,66 @@ class OptionalValue {
 		{ }
 
 
+#if __cplusplus > 201100L
+		/// Construct from value \c v, setting the state to defined.
+		explicit OptionalValue(T v) : value_(std::move(v)), defined_(true)
+		{ }
+#else
 		/// Construct from value \c v, setting the state to defined.
 		OptionalValue(const T& v) : value_(v), defined_(true)
 		{ }
+#endif
 
 
-		/// Assignment operator
-		OptionalValue operator= (const OptionalValue<T>& other)
-		{
-			value_ = other.value_;
-			defined_ = other.defined_;
-			return *this;
-		}
+		// Don't Define any of the following: move, copy, destruct.
+		// This will make the compiler generate the defaults.
+
+// 		/// Assignment operator
+// 		OptionalValue& operator= (const OptionalValue<T>& other)
+// 		{
+// 			value_ = other.value_;
+// 			defined_ = other.defined_;
+// 			return *this;
+// 		}
+
+// 		/// Assignment operator
+// 		OptionalValue& operator= (OptionalValue<T>& other)
+// 		{
+// 			value_ = other.value_;
+// 			defined_ = other.defined_;
+// 			return *this;
+// 		}
 
 
-		/// Assignment operator
-		OptionalValue operator= (OptionalValue<T>& other)
-		{
-			value_ = other.value_;
-			defined_ = other.defined_;
-			return *this;
-		}
-
-
+#if __cplusplus > 201100L
 		/// Assignment operator.
 		/// \post state is defined.
-		OptionalValue operator= (const T& v)
+		OptionalValue& operator= (T v)
+		{
+			value_ = std::move(v);
+			defined_ = true;
+			return *this;
+		}
+#else
+		/// Assignment operator.
+		/// \post state is defined.
+		OptionalValue& operator= (const T& v)
 		{
 			value_ = v;
 			defined_ = true;
 			return *this;
 		}
+#endif
 
 
-		/// Assignment operator.
-		/// \post state is defined.
-		OptionalValue operator= (T& v)
-		{
-			value_ = v;
-			defined_ = true;
-			return *this;
-		}
+// 		/// Assignment operator.
+// 		/// \post state is defined.
+// 		OptionalValue& operator= (T& v)
+// 		{
+// 			value_ = v;
+// 			defined_ = true;
+// 			return *this;
+// 		}
 
 
 		/// Comparison operator

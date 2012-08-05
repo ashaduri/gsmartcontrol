@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_unlicense.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz_tests
+/// \weakgroup hz_tests
+/// @{
 
 // disable libdebug, we don't link to it
 #undef HZ_USE_LIBDEBUG
@@ -21,20 +26,23 @@
 #include <errno.h>  // E*
 
 
-#define DECLARE_EVALUE(a) \
+/// Helper macro for the test - declares E* value (e.g. EACCES).
+#define TEST_DECLARE_EVALUE(a) \
 	values[a] = #a
 
 
+
+/// Main function for the test
 int main()
 {
 	std::map<int, std::string> values;
 
-	DECLARE_EVALUE(EACCES);
-	DECLARE_EVALUE(EAGAIN);
-	DECLARE_EVALUE(EBUSY);
-	DECLARE_EVALUE(ENOENT);
-	DECLARE_EVALUE(EEXIST);
-// 	DECLARE_EVALUE(ELOOP);  // not on win32
+	TEST_DECLARE_EVALUE(EACCES);
+	TEST_DECLARE_EVALUE(EAGAIN);
+	TEST_DECLARE_EVALUE(EBUSY);
+	TEST_DECLARE_EVALUE(ENOENT);
+	TEST_DECLARE_EVALUE(EEXIST);
+// 	TEST_DECLARE_EVALUE(ELOOP);  // not on win32
 
 	for(std::map<int, std::string>::const_iterator iter = values.begin(); iter != values.end(); ++iter) {
 		std::cout << iter->second << ": " << hz::errno_string(iter->first) << "\n";
@@ -46,3 +54,5 @@ int main()
 
 
 
+
+/// @}

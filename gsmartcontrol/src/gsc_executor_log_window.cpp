@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup gsc
+/// \weakgroup gsc
+/// @{
 
 #include <sstream>
 #include <cstddef>  // std::size_t
@@ -58,16 +63,15 @@ GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, const app_ui
 	Gtk::TreeView* treeview = this->lookup_widget<Gtk::TreeView*>("command_list_treeview");
 	if (treeview) {
 		Gtk::TreeModelColumnRecord model_columns;
-		int num_tree_cols = 0;
 
 		// #, Command + parameters, [EntryPtr]
 
 		model_columns.add(col_num);
-		num_tree_cols = app_gtkmm_create_tree_view_column(col_num, *treeview,
+		app_gtkmm_create_tree_view_column(col_num, *treeview,
 				"#", "# of executed command", true);  // sortable
 
 		model_columns.add(col_command);
-		num_tree_cols = app_gtkmm_create_tree_view_column(col_command, *treeview,
+		app_gtkmm_create_tree_view_column(col_command, *treeview,
 				"Command", "Command with parameters", true);  // sortable
 
 		model_columns.add(col_entry);
@@ -168,6 +172,20 @@ void GscExecutorLogWindow::on_command_output_received(const CmdexSyncCommandInfo
 	}
 }
 
+
+
+bool GscExecutorLogWindow::on_delete_event_before(GdkEventAny* e)
+{
+	this->hide();
+	return true;  // event handled, don't call default virtual handler
+}
+
+
+
+void GscExecutorLogWindow::on_window_close_button_clicked()
+{
+	this->hide();  // hide only, don't destroy
+}
 
 
 
@@ -354,3 +372,5 @@ void GscExecutorLogWindow::on_tree_selection_changed()
 
 
 
+
+/// @}

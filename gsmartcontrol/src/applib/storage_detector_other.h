@@ -23,7 +23,7 @@
 #if !defined CONFIG_KERNEL_LINUX && !defined CONFIG_KERNEL_FAMILY_WINDOWS
 
 
-/// Detect drives in FreeBSD, Solaris, etc... .
+/// Detect drives in FreeBSD, Solaris, etc... (all except Linux and Windows).
 std::string detect_drives_other(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory);
 
 

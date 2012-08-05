@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup gsc
+/// \weakgroup gsc
+/// @{
 
 #ifndef GSC_MAIN_WINDOW_ICONVIEW_H
 #define GSC_MAIN_WINDOW_ICONVIEW_H
@@ -19,30 +24,32 @@
 #include "hz/string_algo.h"  // string_join
 #include "hz/debug.h"
 #include "hz/data_file.h"  // data_file_find
+#include "applib/app_gtkmm_utils.h"
+#include "applib/storage_property_colors.h"
 
 #include "gsc_main_window.h"
 
 
 
-
-// Note: The IconView must have a fixed icon width set (e.g. in glade file).
-// Otherwise, it doesn't re-compute it when clearing and adding new icons.
-
+/// The icon view of the main window (shows a drive list).
+/// Note: The IconView must have a fixed icon width set (e.g. in glade file).
+/// Otherwise, it doesn't re-compute it when clearing and adding new icons.
 class GscMainWindowIconView : public Gtk::IconView {
 	public:
 
-		typedef GscMainWindowIconView self_type;  // needed for CONNECT_VIRTUAL
+		typedef GscMainWindowIconView self_type;  ///< Self type, needed for CONNECT_VIRTUAL
 
+		/// Message type to show
 		enum message_t {
-			message_none,
-			message_scan_disabled,
-			message_scanning,
-			message_no_drives_found,
-			message_no_smartctl
+			message_none,  ///< No message
+			message_scan_disabled,  ///< Scanning is disabled
+			message_scanning,  ///< Scanning drives...
+			message_no_drives_found,  ///< No drives found
+			message_no_smartctl  ///< No smartctl installed
 		};
 
 
-		// glade/gtkbuilder needs this constructor
+		/// Constructor, gtkbuilder/glade needs this.
 		GscMainWindowIconView(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
 				: Gtk::IconView(gtkcobj), num_icons(0), main_window(0), empty_view_message(message_none)
 		{
@@ -125,15 +132,28 @@ class GscMainWindowIconView : public Gtk::IconView {
 		}
 
 
-
+		/// Set the parent window
 		void set_main_window(GscMainWindow* w)
 		{
 			main_window = w;
 		}
 
 
+		/// Set the message type to display when there are no icons to show
+		void set_empty_view_message(message_t message)
+		{
+			empty_view_message = message;
+		}
 
-		// override default event handler
+
+		/// Get the number of icons currently displayed
+		unsigned int get_num_icons() const
+		{
+			return num_icons;
+		}
+
+
+		/// Overridden from Gtk::Widget
 		bool on_expose_event_before(GdkEventExpose* exp_event)
 		{
 			// this->on_expose_event(exp_event);  // parent's stuff
@@ -170,6 +190,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 
+		/// Add a drive entry to the icon view
 		void add_entry(StorageDeviceRefPtr drive, bool scroll_to_it = false)
 		{
 			if (!drive)
@@ -202,7 +223,8 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 
-		// this should be called to update the icon of already refreshed drive
+		/// Decorate a drive entry (colorize it if it has errors, etc...).
+		/// This should be called to update the icon of already refreshed drive.
 		void decorate_entry(Gtk::TreePath model_path)
 		{
 			if (model_path.empty())
@@ -214,7 +236,8 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 
-		// this should be called to update the icon of already refreshed drive
+		/// Decorate a drive entry (colorize it if it has errors, etc...).
+		/// This should be called to update the icon of already refreshed drive.
 		void decorate_entry(Gtk::TreeModel::Row& row)
 		{
 			StorageDeviceRefPtr drive = row[col_drive_ptr];
@@ -291,6 +314,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 
+		/// Remove drive entry
 		void remove_entry(const Gtk::TreePath& model_path)
 		{
 			Gtk::TreeModel::Row row = *(ref_list_model->get_iter(model_path));
@@ -298,6 +322,8 @@ class GscMainWindowIconView : public Gtk::IconView {
 		}
 
 
+
+		/// Remove selected drive entry
 		void remove_selected_drive()
 		{
 			if (this->get_selected_items().size()) {
@@ -308,6 +334,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 
+		/// Remove all entries
 		void clear_all()
 		{
 			num_icons = 0;
@@ -323,6 +350,8 @@ class GscMainWindowIconView : public Gtk::IconView {
 		}
 
 
+
+		/// Get selected drive
 		StorageDeviceRefPtr get_selected_drive()
 		{
 			StorageDeviceRefPtr drive = 0;
@@ -335,6 +364,8 @@ class GscMainWindowIconView : public Gtk::IconView {
 		}
 
 
+
+		/// Get tree path by a drive
 		Gtk::TreePath get_path_by_drive(StorageDevice* drive)
 		{
 			Gtk::TreeNodeChildren children = ref_list_model->children();
@@ -349,6 +380,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 
+		/// Update menu actions in the Drives menu
 		void update_menu_actions()
 		{
 			// if there's nothing selected, disable items from "Drives" menu
@@ -365,7 +397,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 		}
 
 
-		// callback
+		/// Callback
 		void on_iconview_item_activated(const Gtk::TreePath& model_path)
 		{
 			debug_out_info("app", DBG_FUNC << "\n");
@@ -379,7 +411,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 		}
 
 
-		// callback
+		/// Callback
 		void on_iconview_selection_changed()
 		{
 			// Must do it here - if done during menu activation, the actions won't work
@@ -390,7 +422,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 		}
 
 
-		// callback
+		/// Callback
 		bool on_iconview_button_press_event(GdkEventButton* event_button)
 		{
 			// select and show popup menu on right-click
@@ -437,7 +469,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 		}
 
 
-		// callback attached to StorageDevice
+		/// Callback attached to StorageDevice, updates its view.
 		void on_drive_changed(StorageDevice* drive)
 		{
 			Gtk::TreePath model_path = this->get_path_by_drive(drive);
@@ -447,24 +479,25 @@ class GscMainWindowIconView : public Gtk::IconView {
 		}
 
 
+	private:
 
-		Gtk::TreeModel::ColumnRecord columns;
+		Gtk::TreeModel::ColumnRecord columns;  ///< Model columns
 
-		Gtk::TreeModelColumn<std::string> col_name;
-		Gtk::TreeModelColumn<Glib::ustring> col_description;
-		Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > col_pixbuf;
-		Gtk::TreeModelColumn<StorageDeviceRefPtr> col_drive_ptr;
+		Gtk::TreeModelColumn<std::string> col_name;  ///< Model column
+		Gtk::TreeModelColumn<Glib::ustring> col_description;  ///< Model column
+		Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > col_pixbuf;  ///< Model column
+		Gtk::TreeModelColumn<StorageDeviceRefPtr> col_drive_ptr;  ///< Model column
 
-		Glib::RefPtr<Gtk::ListStore> ref_list_model;
-		unsigned int num_icons;  // track the number of icons, because liststore makes it difficult to count them.
+		Glib::RefPtr<Gtk::ListStore> ref_list_model;  ///< The icon view model
+		unsigned int num_icons;  ///< Track the number of icons, because liststore makes it difficult to count them.
 
 		// available icons
-		Glib::RefPtr<Gdk::Pixbuf> hd_icon;
-		Glib::RefPtr<Gdk::Pixbuf> cddvd_icon;
+		Glib::RefPtr<Gdk::Pixbuf> hd_icon;  ///< Icon pixbuf
+		Glib::RefPtr<Gdk::Pixbuf> cddvd_icon;  ///< Icon pixbuf
 
-		GscMainWindow* main_window;
+		GscMainWindow* main_window;  ///< The main window, our parent
 
-		message_t empty_view_message;  // message displayed when no icons
+		message_t empty_view_message;  ///< Message type to display when not showing any icons
 
 };
 
@@ -476,3 +509,5 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 #endif
+
+/// @}

@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_STRING_NUM_H
 #define HZ_STRING_NUM_H
@@ -24,41 +29,42 @@
 #include "ascii.h"  // ascii_*
 
 
-
-// String to number and number to string conversions
+/**
+\file
+String to number and number to string conversions
+*/
 
 
 
 namespace hz {
 
 
-	// Check whether a string represents a numeric value (the value must
-	// be represented in C locale).
+	/// Check whether a string represents a numeric value (the value must
+	/// be represented in C locale).
 
-	// strict == true indicates that the whole string must represent a number exactly.
-	// strict == false allows the string to contain the number only in its beginning
-	// (ignores any leading spaces and trailing garbage).
-	// base has an effect only for integral types. For bool it specifies whether to
-	// accept "true" and "false" (as opposed to 1 and 0). For others, base should
-	// be between 2 and 36 inclusive.
-
-	// This function has no definition, only specializations.
+	/// strict == true indicates that the whole string must represent a number exactly.
+	/// strict == false allows the string to contain the number only in its beginning
+	/// (ignores any leading spaces and trailing garbage).
+	/// base has an effect only for integral types. For bool it specifies whether to
+	/// accept "true" and "false" (as opposed to 1 and 0). For others, base should
+	/// be between 2 and 36 inclusive.
+	/// This function has no definition, only specializations.
 	template<typename T> inline
 	bool string_is_numeric(const std::string& s, T& number, bool strict, int base_or_boolalpha);
 
-	// Short version with default base. (Needed because default base is different for bool and int).
+	/// Short version with default base. (Needed because default base is different for bool and int).
 	template<typename T> inline
 	bool string_is_numeric(const std::string& s, T& number, bool strict = true);
 
 
-	// Convert numeric value to string. alpha_or_base_or_precision means:
-	// for bool, 0 means 1/0, 1 means true/false;
-	// for int family (including char), it's the base to format in (8, 10, 16 are definitely supported);
-	// for float family, it controls the number of digits after comma.
+	/// Convert numeric value to string. alpha_or_base_or_precision means:
+	/// for bool, 0 means 1/0, 1 means true/false;
+	/// for int family (including char), it's the base to format in (8, 10, 16 are definitely supported);
+	/// for float family, it controls the number of digits after comma.
 	template<typename T> inline
 	std::string number_to_string(T number, int alpha_or_base_or_precision);
 
-	// Short version with default base / precision.
+	/// Short version with default base / precision.
 	template<typename T> inline
 	std::string number_to_string(T number);
 
@@ -321,3 +327,5 @@ std::string number_to_string(T number)
 
 
 #endif
+
+/// @}

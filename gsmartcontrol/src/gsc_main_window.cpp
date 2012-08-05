@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup gsc
+/// \weakgroup gsc
+/// @{
 
 #include <gtkmm.h>
 #include <vector>
@@ -123,7 +128,7 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 void GscMainWindow::populate_iconview(bool smartctl_valid)
 {
 	if (!smartctl_valid) {
-		iconview->empty_view_message = GscMainWindowIconView::message_no_smartctl;
+		iconview->set_empty_view_message(GscMainWindowIconView::message_no_smartctl);
 		iconview->clear_all();  // the message won't be shown without invalidating the region.
 		while (Gtk::Main::events_pending())  // give expose event the time it needs
 			Gtk::Main::iteration();
@@ -133,7 +138,7 @@ void GscMainWindow::populate_iconview(bool smartctl_valid)
 		rescan_devices();  // scan for devices and fill the iconview
 
 	} else {
-		iconview->empty_view_message = GscMainWindowIconView::message_scan_disabled;
+		iconview->set_empty_view_message(GscMainWindowIconView::message_scan_disabled);
 		iconview->clear_all();  // the message won't be shown without invalidating the region.
 		while (Gtk::Main::events_pending())  // give expose event the time it needs
 			Gtk::Main::iteration();
@@ -1002,7 +1007,7 @@ void GscMainWindow::rescan_devices()
 // 	hz::string_split(match_str, ';', match_patterns, true);
 	hz::string_split(blacklist_str, ';', blacklist_patterns, true);
 
-	iconview->empty_view_message = GscMainWindowIconView::message_scanning;
+	iconview->set_empty_view_message(GscMainWindowIconView::message_scanning);
 
 	iconview->clear_all();  // clear previous icons, invalidate region to update the message.
 	while (Gtk::Main::events_pending())  // give expose event the time it needs
@@ -1056,8 +1061,8 @@ void GscMainWindow::rescan_devices()
 	}
 
 	// in case there are no drives in the system.
-	if (iconview->num_icons == 0)
-		iconview->empty_view_message = GscMainWindowIconView::message_no_drives_found;
+	if (iconview->get_num_icons() == 0)
+		iconview->set_empty_view_message(GscMainWindowIconView::message_no_drives_found);
 
 	this->scanning_ = false;
 }
@@ -1290,3 +1295,5 @@ bool GscMainWindow::on_delete_event_before(GdkEventAny* e)
 
 
 
+
+/// @}

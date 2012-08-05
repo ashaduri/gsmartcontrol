@@ -19,7 +19,7 @@
 // It contains all the C99 stdint.h stuff in global namespace.
 
 
-// C++0x defines these automatically for cstdint, so we do it too for compatibility.
+// C++11 defines these automatically for cstdint, so we do it too for compatibility.
 #ifndef __STDC_LIMIT_MACROS
 	#define __STDC_LIMIT_MACROS
 #endif

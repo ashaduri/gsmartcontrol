@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup gsc
+/// \weakgroup gsc
+/// @{
 
 #ifndef GSC_SETTINGS_H
 #define GSC_SETTINGS_H
@@ -12,16 +17,12 @@
 
 
 
-// Initialize ALL default settings here.
-
-// Absolute paths go to root node, relative ones go to /config and /default.
-
-// Note: There must be no degradation if /config is removed entirely
-// during runtime. /default must provide every path which /config could
-// have held.
-// ALL runtime (that is, non-config-file-writable) settings go to /runtime.
-
-
+/// Initializes ALL default settings.
+/// Absolute paths go to root node, relative ones go to /config and /default.
+/// Note: There must be no degradation if /config is removed entirely
+/// during runtime. /default must provide every path which /config could
+/// have held.
+/// ALL runtime (that is, non-config-file-writable) settings go to /runtime.
 inline void init_default_settings()
 {
 	// Populate /default
@@ -80,3 +81,5 @@ inline void init_default_settings()
 
 
 #endif
+
+/// @}

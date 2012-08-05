@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_SYNC_H
 #define HZ_SYNC_H
@@ -18,7 +23,9 @@
 
 
 
-/*
+/**
+\file
+<pre>
 Threading policies providing synchronization primitives
 through wrapping existing thread libraries.
 
@@ -194,7 +201,7 @@ Out-of-policy Class templates:
 		class C {
 			// use Policy::ScopedLock, etc...
 		};
-
+</tt>
 */
 
 
@@ -204,14 +211,17 @@ namespace hz {
 
 
 
-// This is thrown in case of really bad problems
+/// This is thrown in case of really bad problems
 struct sync_resource_error : virtual public std::exception {  // from <exception>
 
+	/// Constructor
 	sync_resource_error(const std::string& why) : why_(why)
 	{ }
 
+	/// Virtual destructor
 	virtual ~sync_resource_error() throw() { }
 
+	// Reimplemented from std::exception
  	virtual const char* what() const throw()
 	{
 		msg = "hz::sync_resource_error: " + why_;
@@ -220,8 +230,8 @@ struct sync_resource_error : virtual public std::exception {  // from <exception
 
 	// yes, they should not be strings, to avoid memory allocations.
 	// no, I don't know how to return const char* without memory allocations.
-	const std::string why_;
-	mutable std::string msg;  // This must be a member to avoid its destruction on function call return. use what().
+	const std::string why_;  ///< The reason.
+	mutable std::string msg;  ///< The message (used in implementation of what()). This must be a member to avoid its destruction on function call return. use what().
 };
 
 
@@ -231,8 +241,7 @@ struct sync_resource_error : virtual public std::exception {  // from <exception
 
 
 
-// These class provides commonly used classes for policies.
-
+// This class provides commonly used classes for policies.
 template<typename Policy>
 struct SyncScopedLockProvider {
 
@@ -396,15 +405,15 @@ struct SyncScopedLockProvider {
 
 
 
-// A type useful for dummy mutexes, etc...
-// TypeChanger may be used to generate different (non-inter-convertible)
-// types, for e.g. function overloading.
+/// A type useful for dummy mutexes, etc...
+/// TypeChanger may be used to generate different (non-inter-convertible)
+/// types, for e.g. function overloading.
 template<int TypeChanger>
 struct SyncEmptyType { };
 
 
 
-// Classes may use this in single-threaded or non-locking environments.
+/// Classes may use this in single-threaded or non-locking environments.
 struct SyncPolicyNone {
 	// We use different types here to avoid user errors such as mixing
 	// types when developing with single-threaded version.
@@ -443,7 +452,7 @@ struct SyncPolicyNone {
 	static void unlock(NativeRWMutex& m, bool for_write = false) { }
 
 
-	// Dummy scoped lock, does absolutely nothing. Works for all of them
+	/// Dummy scoped lock, does absolutely nothing. Works with all the mutex types.
 	template<typename MutexType>
 	class GenericScopedLock : public hz::noncopyable {
 		public:
@@ -625,3 +634,5 @@ template<> struct SyncGetPolicy<SyncPolicyNone::NativeRWMutex> { typedef SyncPol
 
 
 #endif
+
+/// @}

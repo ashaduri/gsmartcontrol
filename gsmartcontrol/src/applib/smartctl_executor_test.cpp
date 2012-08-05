@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_unlicense.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup applib_tests
+/// \weakgroup applib_tests
+/// @{
 
 #include <iostream>
 #include <gtkmm/main.h>
@@ -12,6 +17,7 @@
 
 
 
+/// Main function of the test
 int main(int argc, char** argv)
 {
 // 	Glib::thread_init();
@@ -51,3 +57,5 @@ int main(int argc, char** argv)
 
 
 
+
+/// @}

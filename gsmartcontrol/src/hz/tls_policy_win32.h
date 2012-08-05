@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_TLS_POLICY_WIN32_H
 #define HZ_TLS_POLICY_WIN32_H
@@ -23,21 +28,22 @@
 #endif
 
 
+/**
+\file
+Win32-threads-based thread-local storage.
 
-// Win32 Threads-based TLS.
-
-// NOTE: On-thread-exit cleanup functions ARE NOT implemented.
-// They are called on object destruction and reset(), however.
-// Implementing on-thread-exit callbacks requires some really ugly
-// hacks, introducing some really ugly problems and limitations.
-// See http://lists.boost.org/Archives/boost/2003/02/44905.php
-
+NOTE On-thread-exit cleanup functions ARE NOT implemented.
+They are called on object destruction and reset(), however.
+Implementing on-thread-exit callbacks requires some really ugly
+hacks, introducing some really ugly problems and limitations.
+See http://lists.boost.org/Archives/boost/2003/02/44905.php
+*/
 
 
 namespace hz {
 
 
-
+/// Win32-threads-based TLS policy
 class TlsPolicyWin32 {
 	public:
 
@@ -88,8 +94,8 @@ class TlsPolicyWin32 {
 	private:
 
 		DWORD key_;
-		native_cleanup_func_t native_cleanup_;  // may be NULL
-		bool inited_;  // if the key has been associated with the non-NULL value at least once.
+		native_cleanup_func_t native_cleanup_;  ///< may be NULL
+		bool inited_;  ///< True if the key has been associated with the non-NULL value at least once.
 
 		TlsPolicyWin32(const TlsPolicyWin32&);
 		TlsPolicyWin32& operator= (const TlsPolicyWin32& from);
@@ -105,3 +111,5 @@ class TlsPolicyWin32 {
 
 
 #endif
+
+/// @}

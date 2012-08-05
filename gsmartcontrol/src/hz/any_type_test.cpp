@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_unlicense.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz_tests
+/// \weakgroup hz_tests
+/// @{
 
 // disable libdebug, we don't link to it
 #undef HZ_USE_LIBDEBUG
@@ -27,7 +32,8 @@
 using namespace hz;
 
 
-struct A {
+/// TestClass test structure
+struct TestClass {
 
 	typedef std::list<any_type> any_list;
 
@@ -91,19 +97,19 @@ struct A {
 
 
 
-// enable printing A.
-// This needs operator<< and and ANY_TYPE_SET_PRINTABLE specialization.
-
-inline std::ostream& operator<< (std::ostream& os, A a)
+/// enable printing TestClass.
+/// This needs operator<< and and ANY_TYPE_SET_PRINTABLE specialization.
+inline std::ostream& operator<< (std::ostream& os, TestClass a)
 {
-	return (os << "A\n");
+	return (os << "TestClass\n");
 }
 
-ANY_TYPE_SET_PRINTABLE(A, true);
+ANY_TYPE_SET_PRINTABLE(TestClass, true);
 
 
 
 
+/// Main function for the test
 int main()
 {
 
@@ -112,7 +118,7 @@ int main()
 	std::cerr << a1.to_stream() << "\n";
 
 
-	A b;
+	TestClass b;
 	any_type b1 = b;
 // 	std::cerr << b;
 	std::cerr << b1.to_stream() << "\n";
@@ -156,3 +162,5 @@ int main()
 
 
 
+
+/// @}

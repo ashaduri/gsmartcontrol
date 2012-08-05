@@ -3,6 +3,11 @@
       (C) 2011 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup gsc
+/// \weakgroup gsc
+/// @{
 
 #ifndef GSC_ADD_DEVICE_WINDOW_H
 #define GSC_ADD_DEVICE_WINDOW_H
@@ -10,7 +15,6 @@
 #include <gtkmm/window.h>
 
 #include "applib/app_ui_res_utils.h"
-#include <gtkmm/treemodelcolumn.h>
 
 
 
@@ -20,21 +24,21 @@ class GscMainWindow;
 /// The "Add Device" window.
 /// Use create() / destroy() with this class instead of new / delete!
 class GscAddDeviceWindow : public AppUIResWidget<GscAddDeviceWindow, true> {
-
 	public:
 
 		// name of glade/ui file without a .glade/.ui extension and quotes
 		APP_UI_RES_DATA_INIT(gsc_add_device_window);
 
 
-		/// glade/gtkbuilder needs this constructor
+		/// Constructor, gtkbuilder/glade needs this.
 		GscAddDeviceWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui);
 
-		/// Compiler requirement
+		/// Virtual destructor
 		virtual ~GscAddDeviceWindow()
 		{ }
 
 
+		/// Set the main window.
 		/// On OK button click main_window->add_device() will be called.
 		void set_main_window(GscMainWindow* main_window);
 
@@ -42,14 +46,11 @@ class GscAddDeviceWindow : public AppUIResWidget<GscAddDeviceWindow, true> {
 	protected:
 
 
-		// ---------- override virtual methods
+		// ---------- overriden virtual methods
 
 		/// Destroy this object on delete event (by default it calls hide()).
-		bool on_delete_event_before(GdkEventAny* e)
-		{
-			destroy(this);  // deletes this object and nullifies instance
-			return true;  // event handled, don't call default virtual handler
-		}
+		/// Reimplemented from Gtk::Window.
+		bool on_delete_event_before(GdkEventAny* e);
 
 
 		// ---------- other callbacks
@@ -79,3 +80,5 @@ class GscAddDeviceWindow : public AppUIResWidget<GscAddDeviceWindow, true> {
 
 
 #endif
+
+/// @}

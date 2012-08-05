@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup gsc
+/// \weakgroup gsc
+/// @{
 
 #ifndef GSC_ABOUT_DIALOG_H
 #define GSC_ABOUT_DIALOG_H
@@ -15,10 +20,9 @@
 
 
 
-// use create() / destroy() with this class instead of new / delete!
-
+/// The About dialog.
+/// Use create() / destroy() with this class instead of new / delete!
 class GscAboutDialog : public AppUIResWidget<GscAboutDialog, false, Gtk::AboutDialog> {
-
 	public:
 
 		// name of glade/ui file without a .glade/.ui extension and quotes
@@ -32,10 +36,10 @@ class GscAboutDialog : public AppUIResWidget<GscAboutDialog, false, Gtk::AboutDi
 		HZ_RES_DATA_INIT_NAMED(AUTHORS_txt, "AUTHORS.txt", AuthorsTextResData);
 
 
-		// glade/gtkbuilder needs this constructor
+		/// Constructor, gtkbuilder/glade needs this.
 		GscAboutDialog(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui);
 
-
+		/// Virtual destructor
 		virtual ~GscAboutDialog()
 		{ }
 
@@ -45,11 +49,14 @@ class GscAboutDialog : public AppUIResWidget<GscAboutDialog, false, Gtk::AboutDi
 
 		// -------------------- Callbacks
 
+		/// Callback - activate an URL
 		void on_activate_url(Gtk::AboutDialog& about_dialog, const Glib::ustring& link);
 
+		/// Callback - activate an email
 		void on_activate_email(Gtk::AboutDialog& about_dialog, const Glib::ustring& link);
 
 
+		/// Callback - dialog response
 		void on_response_before(int response_id);
 
 
@@ -73,3 +80,5 @@ class GscAboutDialog : public AppUIResWidget<GscAboutDialog, false, Gtk::AboutDi
 
 
 #endif
+
+/// @}

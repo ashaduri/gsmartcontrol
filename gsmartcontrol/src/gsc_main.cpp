@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup gsc
+/// \weakgroup gsc
+/// @{
 
 #include <iostream>  // cerr
 #include <exception>  // std::exception, std::set_terminate()
@@ -15,6 +20,7 @@
 
 
 
+/// Application main function
 int main(int argc, char* argv[])
 {
 	// we still leave __GNUC__ for autoconf-less setups.
@@ -67,3 +73,5 @@ int main(int argc, char* argv[])
 
 
 
+
+/// @}

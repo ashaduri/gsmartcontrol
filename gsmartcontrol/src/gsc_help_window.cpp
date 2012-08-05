@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup gsc
+/// \weakgroup gsc
+/// @{
 
 #include <vector>
 #include <gtkmm/button.h>
@@ -47,11 +52,9 @@ GscHelpWindow::GscHelpWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 	Gtk::TreeView* treeview = this->lookup_widget<Gtk::TreeView*>("topics_treeview");
 	if (treeview) {
 		Gtk::TreeModelColumnRecord model_columns;
-		int num_tree_cols = 0;
-
 		// Topic
 		model_columns.add(col_topic);
-		num_tree_cols = app_gtkmm_create_tree_view_column(col_topic, *treeview, "Topic", "Topic");
+		app_gtkmm_create_tree_view_column(col_topic, *treeview, "Topic", "Topic");
 
 		// create a TreeModel (ListStore)
 		list_store = Gtk::ListStore::create(model_columns);
@@ -185,6 +188,20 @@ void GscHelpWindow::set_topic(const Glib::ustring& topic)
 
 
 
+bool GscHelpWindow::on_delete_event_before(GdkEventAny* e)
+{
+	destroy(this);
+	return true;  // event handled, don't call default virtual handler
+}
+
+
+
+void GscHelpWindow::on_window_close_button_clicked()
+{
+	destroy(this);
+}
+
+
 
 void GscHelpWindow::on_tree_selection_changed()
 {
@@ -203,3 +220,5 @@ void GscHelpWindow::on_tree_selection_changed()
 
 
 
+
+/// @}

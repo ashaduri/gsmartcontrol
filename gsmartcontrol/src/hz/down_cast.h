@@ -52,6 +52,8 @@ Target down_cast(const Source& arg)
 
 namespace internal {
 
+	/// Helper for down_cast, uses dynamic_cast unless the types are non-polymorphic,
+	/// in which case static_cast is used.
 	template<typename Target, typename Source,
 			bool Polymorphic = type_is_polymorphic<typename type_remove_pointer<Target>::type>::value
 					&& type_is_polymorphic<typename type_remove_pointer<Source>::type>::value >
@@ -64,7 +66,7 @@ namespace internal {
 	};
 
 
-	// non-polymorphic specialization
+	/// Non-polymorphic specialization
 	template<typename Target, typename Source>
 	struct down_cast_helper<Target, Source, false>
 	{

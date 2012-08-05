@@ -97,11 +97,11 @@ void CmdexSyncGui::show_hide_dialog(bool show)
 
 void CmdexSyncGui::update_dialog_show_timer()
 {
-	double timeout = 0.600;  // 0.6 sec for normal dialogs
+	double timeout = 1.;  // 1 sec for normal dialogs
 	if (running_dialog_abort_mode_)
-		timeout = 0.150;  // 0.15 sec for aborting... dialogs
+		timeout = 0.2;  // 0.2 sec for aborting... dialogs
 
-	if (!running_dialog_shown_ && running_dialog_timer_.elapsed() > 1.000) {  // 1 sec
+	if (!running_dialog_shown_ && running_dialog_timer_.elapsed() > timeout) {
 
 		// without first making it sensitive, the "whole label selected" problem may occur.
 		running_dialog_->set_response_sensitive(Gtk::RESPONSE_CANCEL, true);

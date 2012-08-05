@@ -14,48 +14,49 @@
 #include "sync.h"
 
 
-// Glibmm-based policy.
+/**
+\file
+Glibmm-based policy.
+*/
 
 
 namespace hz {
 
 
-// Note: For this policy to work, you MUST initialize GThread system
-// by calling one of the following (doesn't matter which exactly) beforehand:
-// Glib::thread_init();  // glibmm
-// or
-// g_thread_init(NULL);  // glib
-// or
-// SyncPolicyGlibmm::init();  // sync's wrapper
-
-// Note: Unlike Glib::RecMutex (and the types in Glib policy), Glib::Mutex will give
-// errors if GThread is not initialized (as described above). Glib::RecMutex and
-// Glib::RWLock will just silently do nothing.
-
-
-// Native type notes:
-// Glib::Mutex::Lock has acquire() / release().
-// Glib::RecMutex::Lock has acquire() / release(). Different class than Glib::Mutex::Lock.
-// Glib::RWLock has reader_lock() / writer_lock() / reader_unlock() / writer_unlock().
-// Glib::RWLock::ReaderLock and Glib::RWLock::WriterLock are _two_ classes.
-
-// Glibmm doesn't throw any exceptions for these types, nor does this policy.
-
-// We use native types for mutex types here, because they meet the requirements.
-// Thus no need to specify locks and other stuff for these separately.
-
+/// Note: For this policy to work, you MUST initialize GThread system
+/// by calling one of the following (doesn't matter which exactly) beforehand:
+/// Glib::thread_init();  // glibmm
+/// or
+/// g_thread_init(NULL);  // glib
+/// or
+/// SyncPolicyGlibmm::init();  // sync's wrapper
+///
+/// Note: Unlike Glib::RecMutex (and the types in Glib policy), Glib::Mutex will give
+/// errors if GThread is not initialized (as described above). Glib::RecMutex and
+/// Glib::RWLock will just silently do nothing.
+///
+/// Native type notes:
+/// Glib::Mutex::Lock has acquire() / release().
+/// Glib::RecMutex::Lock has acquire() / release(). Different class than Glib::Mutex::Lock.
+/// Glib::RWLock has reader_lock() / writer_lock() / reader_unlock() / writer_unlock().
+/// Glib::RWLock::ReaderLock and Glib::RWLock::WriterLock are _two_ classes.
+///
+/// Glibmm doesn't throw any exceptions for these types, nor does this policy.
+///
+/// We use native types for mutex types here, because they meet the requirements.
+/// Thus no need to specify locks and other stuff for these separately.
 struct SyncPolicyGlibmm : public SyncScopedLockProvider<SyncPolicyGlibmm> {
 
 	// Types:
 
 	typedef Glib::Mutex Mutex;
-	typedef Mutex NativeMutex;  // supports lock(), unlock()
+	typedef Mutex NativeMutex;  ///< supports lock(), unlock()
 
 	typedef Glib::RecMutex RecMutex;
-	typedef RecMutex NativeRecMutex;  // supports lock(), unlock()
+	typedef RecMutex NativeRecMutex;  ///< supports lock(), unlock()
 
 	typedef Glib::RWLock RWMutex;
-	typedef RWMutex NativeRWMutex;  // reader_(|try|un)lock(), writer_(|try|un)lock()
+	typedef RWMutex NativeRWMutex;  ///< reader_(|try|un)lock(), writer_(|try|un)lock()
 
 
 	typedef GenericScopedLock<Mutex> ScopedLock;
@@ -79,7 +80,7 @@ struct SyncPolicyGlibmm : public SyncScopedLockProvider<SyncPolicyGlibmm> {
 
 	// Static methods
 
-	// If threads are unavailable, this will abort.
+	/// If glibmm threads are unavailable, this will abort.
 	static bool init() { if (!Glib::thread_supported()) Glib::thread_init(); return true; }
 
 	static void lock(Mutex& m) { m.lock(); }
