@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_STRING_ALGO_H
 #define HZ_STRING_ALGO_H
@@ -21,11 +26,11 @@ namespace hz {
 // --------------------------------------------- Split
 
 
-// Split a string into components by character (delimiter), appending the
-// components (without delimiters) to container "append_here".
-// If skip_empty is true, then empty components will be omitted.
-// If "limit" is more than 0, only put a maximum of "limit" number of
-// elements into vector, with the last one containing the rest of the string.
+/// Split a string into components by character (delimiter), appending the
+/// components (without delimiters) to container "append_here".
+/// If skip_empty is true, then empty components will be omitted.
+/// If "limit" is more than 0, only put a maximum of "limit" number of
+/// elements into vector, with the last one containing the rest of the string.
 template<class Container> inline
 void string_split(const std::string& str, char delimiter,
 		Container& append_here, bool skip_empty = false, typename Container::difference_type limit = 0)
@@ -61,11 +66,11 @@ void string_split(const std::string& str, char delimiter,
 
 
 
-// Split a string into components by another string (delimiter), appending the
-// components (without delimiters) to container "append_here".
-// If skip_empty is true, then empty components will be omitted.
-// If "limit" is more than 0, only put a maximum of "limit" number of
-// elements into vector, with the last one containing the rest of the string.
+/// Split a string into components by another string (delimiter), appending the
+/// components (without delimiters) to container "append_here".
+/// If skip_empty is true, then empty components will be omitted.
+/// If "limit" is more than 0, only put a maximum of "limit" number of
+/// elements into vector, with the last one containing the rest of the string.
 template<class Container> inline
 void string_split(const std::string& str, const std::string& delimiter,
 		Container& append_here, bool skip_empty = false, typename Container::difference_type limit = 0)
@@ -112,7 +117,7 @@ void string_split(const std::string& str, const std::string& delimiter,
 // --------------------------------------------- Join
 
 
-// Join elements of container v into a string, using glue between them.
+/// Join elements of container v into a string, using glue between them.
 template<class Container> inline
 std::string string_join(const Container& v, char glue)
 {
@@ -131,7 +136,7 @@ std::string string_join(const Container& v, char glue)
 
 
 
-// Join elements of container v into a string, using glue between them.
+/// Join elements of container v into a string, using glue between them.
 template<class Container> inline
 std::string string_join(const Container& v, const std::string& glue)
 {
@@ -154,8 +159,8 @@ std::string string_join(const Container& v, const std::string& glue)
 // --------------------------------------------- Trim
 
 
-// Trim a string s from both sides (modifying s). Return true if s was modified.
-// Trimming removes all trim_chars that occur on either side of the string s.
+/// Trim a string s from both sides (modifying s). Return true if s was modified.
+/// Trimming removes all trim_chars that occur on either side of the string s.
 inline bool string_trim(std::string& s, const std::string& trim_chars = " \t\r\n")
 {
 	if (trim_chars.empty())
@@ -177,8 +182,8 @@ inline bool string_trim(std::string& s, const std::string& trim_chars = " \t\r\n
 }
 
 
-// Trim a string s from both sides (not modifying s), returning the changed string.
-// Trimming removes all trim_chars that occur on either side of the string s.
+/// Trim a string s from both sides (not modifying s), returning the changed string.
+/// Trimming removes all trim_chars that occur on either side of the string s.
 inline std::string string_trim_copy(const std::string& s, const std::string& trim_chars = " \t\r\n")
 {
 	std::string ret(s);
@@ -189,8 +194,8 @@ inline std::string string_trim_copy(const std::string& s, const std::string& tri
 
 
 
-// Trim a string s from the left (modifying s). Return true if s was modified.
-// Trimming removes all trim_chars that occur on the left side of the string s.
+/// Trim a string s from the left (modifying s). Return true if s was modified.
+/// Trimming removes all trim_chars that occur on the left side of the string s.
 inline bool string_trim_left(std::string& s, const std::string& trim_chars = " \t\r\n")
 {
 	if (trim_chars.empty())
@@ -208,8 +213,8 @@ inline bool string_trim_left(std::string& s, const std::string& trim_chars = " \
 }
 
 
-// Trim a string s from the left (not modifying s), returning the changed string.
-// Trimming removes all trim_chars that occur on the left side of the string s.
+/// Trim a string s from the left (not modifying s), returning the changed string.
+/// Trimming removes all trim_chars that occur on the left side of the string s.
 inline std::string string_trim_left_copy(const std::string& s, const std::string& trim_chars = " \t\r\n")
 {
 	std::string ret(s);
@@ -220,8 +225,8 @@ inline std::string string_trim_left_copy(const std::string& s, const std::string
 
 
 
-// Trim a string s from the right (modifying s). Return true if s was modified.
-// Trimming removes all trim_chars that occur on the right side of the string s.
+/// Trim a string s from the right (modifying s). Return true if s was modified.
+/// Trimming removes all trim_chars that occur on the right side of the string s.
 inline bool string_trim_right(std::string& s, const std::string& trim_chars = " \t\r\n")
 {
 	if (trim_chars.empty())
@@ -237,8 +242,8 @@ inline bool string_trim_right(std::string& s, const std::string& trim_chars = " 
 }
 
 
-// Trim a string s from the right (not modifying s), returning the changed string.
-// Trimming removes all trim_chars that occur on the right side of the string s.
+/// Trim a string s from the right (not modifying s), returning the changed string.
+/// Trimming removes all trim_chars that occur on the right side of the string s.
 inline std::string string_trim_right_copy(const std::string& s, const std::string& trim_chars = " \t\r\n")
 {
 	std::string ret(s);
@@ -251,8 +256,8 @@ inline std::string string_trim_right_copy(const std::string& s, const std::strin
 // --------------------------------------------- Erase
 
 
-// Erase the left side of string s if it contains substring_to_erase,
-// modifying s. Returns true if s was modified.
+/// Erase the left side of string s if it contains substring_to_erase,
+/// modifying s. Returns true if s was modified.
 inline bool string_erase_left(std::string& s, const std::string& substring_to_erase)
 {
 	if (substring_to_erase.empty())
@@ -268,8 +273,8 @@ inline bool string_erase_left(std::string& s, const std::string& substring_to_er
 }
 
 
-// Erase the left side of string s if it contains substring_to_erase,
-// not modifying s, returning the changed string.
+/// Erase the left side of string s if it contains substring_to_erase,
+/// not modifying s, returning the changed string.
 inline std::string string_erase_left_copy(const std::string& s, const std::string& substring_to_erase)
 {
 	std::string ret(s);
@@ -280,8 +285,8 @@ inline std::string string_erase_left_copy(const std::string& s, const std::strin
 
 
 
-// Erase the right side of string s if it contains substring_to_erase,
-// modifying s. Returns true if s was modified.
+/// Erase the right side of string s if it contains substring_to_erase,
+/// modifying s. Returns true if s was modified.
 inline bool string_erase_right(std::string& s, const std::string& substring_to_erase)
 {
 	std::string::size_type sub_size = substring_to_erase.size();
@@ -301,8 +306,8 @@ inline bool string_erase_right(std::string& s, const std::string& substring_to_e
 }
 
 
-// Erase the right side of string s if it contains substring_to_erase,
-// not modifying s, returning the changed string.
+/// Erase the right side of string s if it contains substring_to_erase,
+/// not modifying s, returning the changed string.
 inline std::string string_erase_right_copy(const std::string& s, const std::string& substring_to_erase)
 {
 	std::string ret(s);
@@ -315,9 +320,9 @@ inline std::string string_erase_right_copy(const std::string& s, const std::stri
 // --------------------------------------------- Misc. Transformations
 
 
-// remove adjacent duplicate chars inside s (modifying s).
-// returns true if s was modified.
-// useful for e.g. removing extra spaces inside the string.
+/// remove adjacent duplicate chars inside s (modifying s).
+/// returns true if s was modified.
+/// useful for e.g. removing extra spaces inside the string.
 inline bool string_remove_adjacent_duplicates(std::string& s, char c, unsigned int max_out_adjacent = 1)
 {
 	if (s.size() <= max_out_adjacent)
@@ -341,7 +346,7 @@ inline bool string_remove_adjacent_duplicates(std::string& s, char c, unsigned i
 }
 
 
-// remove adjacent duplicate chars inside s, not modifying s, returning the changed string.
+/// remove adjacent duplicate chars inside s, not modifying s, returning the changed string.
 inline std::string string_remove_adjacent_duplicates_copy(const std::string& s, char c, unsigned int max_out_adjacent = 1)
 {
 	std::string ret(s);
@@ -359,7 +364,7 @@ inline std::string string_remove_adjacent_duplicates_copy(const std::string& s, 
 // original string (as opposed to previous result).
 
 
-// Replace from with to inside s (modifying s). Return number of replacements made.
+/// Replace from with to inside s (modifying s). Return number of replacements made.
 inline std::string::size_type string_replace(std::string& s,
 		const std::string& from, const std::string& to, int max_replacements = -1)
 {
@@ -385,7 +390,7 @@ inline std::string::size_type string_replace(std::string& s,
 }
 
 
-// Replace from with to inside s, not modifying s, returning the changed string.
+/// Replace from with to inside s, not modifying s, returning the changed string.
 inline std::string string_replace_copy(const std::string& s,
 		const std::string& from, const std::string& to, int max_replacements = -1)
 {
@@ -397,7 +402,7 @@ inline std::string string_replace_copy(const std::string& s,
 
 
 
-// replace from with to inside s (modifying s). char version.
+/// Replace from with to inside s (modifying s). char version.
 inline std::string::size_type string_replace(std::string& s,
 		char from, char to, int max_replacements = -1)
 {
@@ -417,7 +422,7 @@ inline std::string::size_type string_replace(std::string& s,
 }
 
 
-// replace from with to inside s, not modifying s, returning the changed string. char version.
+/// Replace from with to inside s, not modifying s, returning the changed string. char version.
 inline std::string string_replace_copy(const std::string& s,
 		char from, char to, 	int max_replacements = -1)
 {
@@ -430,9 +435,9 @@ inline std::string string_replace_copy(const std::string& s,
 
 
 
-// replace from_chars[0] with to_chars[0], from_chars[1] with to_chars[1], etc... in s (modifying s).
-// from_chars.size() must be equal to to_chars.size().
-// Note: This is a multi-pass algorithm (there are from_chars.size() iterations).
+/// Replace from_chars[0] with to_chars[0], from_chars[1] with to_chars[1], etc... in s (modifying s).
+/// from_chars.size() must be equal to to_chars.size().
+/// Note: This is a multi-pass algorithm (there are from_chars.size() iterations).
 inline std::string::size_type string_replace_chars(std::string& s,
 		const std::string& from_chars, const std::string& to_chars, int max_replacements = -1)
 {
@@ -461,10 +466,10 @@ inline std::string::size_type string_replace_chars(std::string& s,
 }
 
 
-// replace from_chars[0] with to_chars[0], from_chars[1] with to_chars[1], etc... in s,
-// not modifying s, returning the changed string.
-// from_chars.size() must be equal to to_chars.size().
-// Note: This is a multi-pass algorithm (there are from_chars.size() iterations).
+/// Replace from_chars[0] with to_chars[0], from_chars[1] with to_chars[1], etc... in s,
+/// not modifying s, returning the changed string.
+/// from_chars.size() must be equal to to_chars.size().
+/// Note: This is a multi-pass algorithm (there are from_chars.size() iterations).
 inline std::string string_replace_chars_copy(const std::string& s,
 		const std::string& from_chars, const std::string& to_chars, int max_replacements = -1)
 {
@@ -477,7 +482,7 @@ inline std::string string_replace_chars_copy(const std::string& s,
 
 
 
-// replace all chars from from_chars with to_char (modifying s).
+/// Replace all chars from from_chars with to_char (modifying s).
 inline std::string::size_type string_replace_chars(std::string& s,
 		const std::string& from_chars, char to_char, int max_replacements = -1)
 {
@@ -498,7 +503,7 @@ inline std::string::size_type string_replace_chars(std::string& s,
 }
 
 
-// replace all chars from from_chars with to_char, not modifying s, returning the changed string.
+/// Replace all chars from from_chars with to_char, not modifying s, returning the changed string.
 inline std::string string_replace_chars_copy(const std::string& s,
 		const std::string& from_chars, char to_char, int max_replacements = -1)
 {
@@ -511,15 +516,15 @@ inline std::string string_replace_chars_copy(const std::string& s,
 
 
 
-// replace from_strings[0] with to_strings[0], from_strings[1] with to_strings[1], etc...
-// in s (modifying s). Returns total number of replacements performed.
-// from_strings.size() must be equal to to_strings.size().
-// Note: This is a multi-pass algorithm (there are from_strings.size() iterations).
+/// Replace from_strings[0] with to_strings[0], from_strings[1] with to_strings[1], etc...
+/// in s (modifying s). Returns total number of replacements performed.
+/// from_strings.size() must be equal to to_strings.size().
+/// Note: This is a multi-pass algorithm (there are from_strings.size() iterations).
 
-// Implementation note: We cannot use "template<template<class> C1>", because
-// it appears that it was a gcc extension, removed in 4.1 (C1 cannot bind to std::vector,
-// which has 2 (or more, implementation dependent) template parameters. gcc 4.1
-// allowed this because vector's other parameters have defaults).
+/// Implementation note: We cannot use "template<template<class> C1>", because
+/// it appears that it was a gcc extension, removed in 4.1 (C1 cannot bind to std::vector,
+/// which has 2 (or more, implementation dependent) template parameters. gcc 4.1
+/// allowed this because vector's other parameters have defaults).
 template<class Container1, class Container2> inline
 std::string::size_type string_replace_array(std::string& s,
 		const Container1& from_strings, const Container2& to_strings, int max_replacements = -1)
@@ -551,10 +556,10 @@ std::string::size_type string_replace_array(std::string& s,
 }
 
 
-// replace from_strings[0] with to_strings[0], from_strings[1] with to_strings[1], etc... in s,
-// not modifying s, returning the changed string.
-// from_strings.size() must be equal to to_strings.size().
-// Note: This is a multi-pass algorithm (there are from_strings.size() iterations).
+/// Eeplace from_strings[0] with to_strings[0], from_strings[1] with to_strings[1], etc... in s,
+/// not modifying s, returning the changed string.
+/// from_strings.size() must be equal to to_strings.size().
+/// Note: This is a multi-pass algorithm (there are from_strings.size() iterations).
 template<class Container1, class Container2> inline
 std::string string_replace_array_copy(const std::string& s,
 		const Container1& from_strings, const Container2& to_strings, int max_replacements = -1)
@@ -568,9 +573,9 @@ std::string string_replace_array_copy(const std::string& s,
 
 
 
-// replace all strings in from_strings with to_string in s (modifying s).
-// Returns total number of replacements performed.
-// Note: This is a one-pass algorithm.
+/// Replace all strings in from_strings with to_string in s (modifying s).
+/// Returns total number of replacements performed.
+/// Note: This is a one-pass algorithm.
 template<class Container> inline
 std::string::size_type string_replace_array(std::string& s,
 		const Container& from_strings, const std::string& to_string, int max_replacements = -1)
@@ -600,8 +605,8 @@ std::string::size_type string_replace_array(std::string& s,
 }
 
 
-// replace all strings in from_strings with to_string in s, not modifying s, returning the changed string.
-// Note: This is a one-pass algorithm.
+/// Replace all strings in from_strings with to_string in s, not modifying s, returning the changed string.
+/// Note: This is a one-pass algorithm.
 template<class Container> inline
 std::string string_replace_array_copy(const std::string& s,
 		const Container& from_strings, const std::string& to_string, int max_replacements = -1)
@@ -614,7 +619,7 @@ std::string string_replace_array_copy(const std::string& s,
 
 
 
-// same as above, but needed to avoid conflict with all-template version
+/// Same as the other overloads, but needed to avoid conflict with all-template version
 template<class Container> inline
 std::string::size_type string_replace_array(std::string& s,
 		const Container& from_strings, const char* to_string, int max_replacements = -1)
@@ -623,7 +628,7 @@ std::string::size_type string_replace_array(std::string& s,
 }
 
 
-// same as above, but needed to avoid conflict with all-template version
+// Same as the other overloads, but needed to avoid conflict with all-template version
 template<class Container> inline
 std::string string_replace_array_copy(const std::string& s,
 		const Container& from_strings, const char* to_string, int max_replacements = -1)
@@ -637,8 +642,8 @@ std::string string_replace_array_copy(const std::string& s,
 // --------------------------------------------- Utility
 
 
-// Auto-detect and convert mac/dos/unix newline formats in s (modifying s) to unix format.
-// Returns number of newline replacements made.
+/// Auto-detect and convert mac/dos/unix newline formats in s (modifying s) to unix format.
+/// Returns number of newline replacements made.
 inline std::string::size_type string_any_to_unix(std::string& s)
 {
 	std::string::size_type n = hz::string_replace(s, "\r\n", "\n");  // dos
@@ -648,10 +653,10 @@ inline std::string::size_type string_any_to_unix(std::string& s)
 
 
 
-// replace from_chars[0] with to_chars[0], from_chars[1] with to_chars[1], etc... in s,
-// not modifying s, returning the changed string.
-// from_chars.size() must be equal to to_chars.size().
-// Note: This is a multi-pass algorithm (there are from_chars.size() iterations).
+/// Replace from_chars[0] with to_chars[0], from_chars[1] with to_chars[1], etc... in s,
+/// not modifying s, returning the changed string.
+/// from_chars.size() must be equal to to_chars.size().
+/// Note: This is a multi-pass algorithm (there are from_chars.size() iterations).
 inline std::string string_any_to_unix_copy(const std::string& s)
 {
 	std::string ret(s);
@@ -661,7 +666,7 @@ inline std::string string_any_to_unix_copy(const std::string& s)
 
 
 
-// Convert s to lowercase (modifying s). Return size of the string.
+/// Convert s to lowercase (modifying s). Return size of the string.
 inline std::string::size_type string_to_lower(std::string& s)
 {
 	const std::string::size_type len = s.size();
@@ -673,7 +678,7 @@ inline std::string::size_type string_to_lower(std::string& s)
 
 
 
-// Convert s to lowercase, not modifying s, returning the changed string.
+/// Convert s to lowercase, not modifying s, returning the changed string.
 inline std::string string_to_lower_copy(const std::string& s)
 {
 	std::string ret(s);
@@ -683,7 +688,7 @@ inline std::string string_to_lower_copy(const std::string& s)
 
 
 
-// Convert s to uppercase (modifying s). Return size of the string.
+/// Convert s to uppercase (modifying s). Return size of the string.
 inline std::string::size_type string_to_upper(std::string& s)
 {
 	const std::string::size_type len = s.size();
@@ -695,7 +700,7 @@ inline std::string::size_type string_to_upper(std::string& s)
 
 
 
-// Convert s to uppercase, not modifying s, returning the changed string.
+/// Convert s to uppercase, not modifying s, returning the changed string.
 inline std::string string_to_upper_copy(const std::string& s)
 {
 	std::string ret(s);
@@ -713,3 +718,5 @@ inline std::string string_to_upper_copy(const std::string& s)
 
 
 #endif
+
+/// @}

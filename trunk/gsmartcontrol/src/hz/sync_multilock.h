@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_SYNC_MULTILOCK_H
 #define HZ_SYNC_MULTILOCK_H
@@ -21,17 +26,18 @@
 namespace hz {
 
 
+/**
+\file
+This is a mutex order-based multi-locking facility.
 
-// This is a mutex order-based multi-locking facility.
-
-// This link: http://lists.boost.org/Archives/boost/2008/02/132853.php
-// has an interesting discussion about several approaches to multi-lock.
-// However, the faster the method, the more details it uses from an underlying
-// implementation. In such light, the most generic (straightforward) seems
-// to be the order-based one. If the user requires a very fast method,
-// he/she should roll out their own multi-lock implementation, depending on
-// their needs.
-
+This link: http://lists.boost.org/Archives/boost/2008/02/132853.php
+has an interesting discussion about several approaches to multi-lock.
+However, the faster the method, the more details it uses from an underlying
+implementation. In such light, the most generic (straightforward) seems
+to be the order-based one. If the user requires a very fast method,
+he/she should roll out their own multi-lock implementation, depending on
+their needs.
+*/
 
 // TODO:
 // SyncMultiTryLock (.status() returns 0-based index of first failed lock, or -1 on success, as in boost),
@@ -39,10 +45,11 @@ namespace hz {
 // SyncMultiTryLockUniType, and SyncMultiLockEmpty variants.
 
 
+/// A helper internal struct
 struct MultiLockNullPolicy  // used only in typedef below
 { };
 
-// Specialization for SyncGetPolicy on NullType, to avoid errors.
+/// Specialization for SyncGetPolicy on NullType, to avoid errors.
 template<> struct SyncGetPolicy<NullType> {
 	typedef MultiLockNullPolicy type;
 };
@@ -51,18 +58,21 @@ template<> struct SyncGetPolicy<NullType> {
 
 namespace internal {
 
-	// Helper class: index / mutex pointer holder
+	/// Helper class: index / mutex pointer holder
 	struct MultiLockPair {
+		/// Constructor
 		MultiLockPair() : m(0), index(0)  // for default construction
 		{ }
 
+		/// Constructor
 		MultiLockPair(void* m_, int index_) : m(m_), index(index_)
 		{ }
 
-		void* m;  // mutex
-		int index;  // 1-based
+		void* m;  ///< mutex
+		int index;  ///< Index, 1-based
 	};
 
+	/// Comparison operator, compares by address
 	inline bool operator< (const MultiLockPair& m1, const MultiLockPair& m2)
 	{
 		return m1.m < m2.m;  // compare by address
@@ -70,47 +80,54 @@ namespace internal {
 
 
 
-	// Base class for SyncMultiLock. It provides mutex member,
-	// and lock/unlock facility. Its specialization for NullType
-	// should be eliminated through empty-base-optimization by compiler.
+	/// Base class for SyncMultiLock. It provides mutex member,
+	/// and lock/unlock facility. Its specialization for NullType
+	/// should be eliminated through empty-base-optimization by compiler.
 	template<int BaseCounter, class Mutex, class LockPolicy>
 	class MultiLockBase {
 		protected:
+			/// Constructor
 			MultiLockBase(Mutex* m) : mutex(m)
 			{ }
 
+			/// Lock the mutex
 			void lock()
 			{
 				LockPolicy::lock(*mutex);
 			}
 
+			/// Try locking the mutex
 			bool trylock()
 			{
 				return LockPolicy::trylock(*mutex);
 			}
 
+			/// Unlock the mutex
 			void unlock()
 			{
 				LockPolicy::unlock(*mutex);
 			}
 
 		private:
-			Mutex* mutex;
+			Mutex* mutex;  ///< The mutex
 	};
 
 
-	// Specialization for NullType, to disable all activity.
+	/// Specialization for NullType, to disable all activity.
 	template<int BaseCounter, class LockPolicy>
 	class MultiLockBase<BaseCounter, NullType, LockPolicy> {
 		protected:
+			/// Dummy implementation
 			void lock()
 			{ }
 
+			/// Dummy implementation
 			bool trylock()
 			{
 				return true;  // no errors here
 			}
 
+			/// Dummy implementation
 			void unlock()
 			{ }
 	};
@@ -120,11 +137,9 @@ namespace internal {
 
 
 
-// The main class - SyncMultiLock<>.
-// This is a scoped lock supporting multiple mutexes (up to 10),
-// locking them always in the same order.
-// Note: Mutexes don't have to have the same type.
-
+/// SyncMultiLock<> is a scoped lock supporting multiple mutexes (up to 10),
+/// locking them always in the same order.
+/// Note: Mutexes don't have to be of the same type.
 template<
 		class Mutex1,
 		class Mutex2 = NullType,
@@ -161,6 +176,7 @@ class SyncMultiLock :
 
 	public:
 
+		/// Constructor
 		SyncMultiLock(Mutex1& m1, bool do_lock1 = true) :
 				internal::MultiLockBase<1, Mutex1, LockPolicy1>(&m1),
 				mutexes_(0), size_(0)
@@ -172,7 +188,7 @@ class SyncMultiLock :
 			}
 		}
 
-
+		/// Constructor
 		SyncMultiLock(Mutex1& m1, Mutex2& m2,
 				bool do_lock1 = true, bool do_lock2 = true) :
 				internal::MultiLockBase<1, Mutex1, LockPolicy1>(&m1),
@@ -185,7 +201,7 @@ class SyncMultiLock :
 			this->sort_lock();
 		}
 
-
+		/// Constructor
 		SyncMultiLock(Mutex1& m1, Mutex2& m2, Mutex3& m3,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true) :
 				internal::MultiLockBase<1, Mutex1, LockPolicy1>(&m1),
@@ -200,7 +216,7 @@ class SyncMultiLock :
 			this->sort_lock();
 		}
 
-
+		/// Constructor
 		SyncMultiLock(Mutex1& m1, Mutex2& m2, Mutex3& m3, Mutex4& m4,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true) :
 				internal::MultiLockBase<1, Mutex1, LockPolicy1>(&m1),
@@ -217,7 +233,7 @@ class SyncMultiLock :
 			this->sort_lock();
 		}
 
-
+		/// Constructor
 		SyncMultiLock(Mutex1& m1, Mutex2& m2, Mutex3& m3, Mutex4& m4, Mutex5& m5,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true, bool do_lock5 = true) :
 				internal::MultiLockBase<1, Mutex1, LockPolicy1>(&m1),
@@ -236,7 +252,7 @@ class SyncMultiLock :
 			this->sort_lock();
 		}
 
-
+		/// Constructor
 		SyncMultiLock(Mutex1& m1, Mutex2& m2, Mutex3& m3, Mutex4& m4, Mutex5& m5,
 				Mutex6& m6,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true, bool do_lock5 = true,
@@ -259,7 +275,7 @@ class SyncMultiLock :
 			this->sort_lock();
 		}
 
-
+		/// Constructor
 		SyncMultiLock(Mutex1& m1, Mutex2& m2, Mutex3& m3, Mutex4& m4, Mutex5& m5,
 				Mutex6& m6, Mutex7& m7,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true, bool do_lock5 = true,
@@ -284,7 +300,7 @@ class SyncMultiLock :
 			this->sort_lock();
 		}
 
-
+		/// Constructor
 		SyncMultiLock(Mutex1& m1, Mutex2& m2, Mutex3& m3, Mutex4& m4, Mutex5& m5,
 				Mutex6& m6, Mutex7& m7, Mutex8& m8,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true, bool do_lock5 = true,
@@ -311,7 +327,7 @@ class SyncMultiLock :
 			this->sort_lock();
 		}
 
-
+		/// Constructor
 		SyncMultiLock(Mutex1& m1, Mutex2& m2, Mutex3& m3, Mutex4& m4, Mutex5& m5,
 				Mutex6& m6, Mutex7& m7, Mutex8& m8, Mutex9& m9,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true, bool do_lock5 = true,
@@ -340,7 +356,7 @@ class SyncMultiLock :
 			this->sort_lock();
 		}
 
-
+		/// Constructor
 		SyncMultiLock(Mutex1& m1, Mutex2& m2, Mutex3& m3, Mutex4& m4, Mutex5& m5,
 				Mutex6& m6, Mutex7& m7, Mutex8& m8, Mutex9& m9, Mutex10& m10,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true, bool do_lock5 = true,
@@ -373,8 +389,7 @@ class SyncMultiLock :
 
 
 
-
-
+		/// Destructor, unlocks the mutexes
 		~SyncMultiLock()
 		{
 			for (std::size_t i = size_; i > 0; --i) {  // unlock reverse order
@@ -396,6 +411,7 @@ class SyncMultiLock :
 		}
 
 
+		/// Sort the mutexes and lock them
 		void sort_lock()
 		{
 			shell_sort(mutexes_, mutexes_ + size_);  // sort by mutex addresses
@@ -419,11 +435,12 @@ class SyncMultiLock :
 
 	private:
 
-		internal::MultiLockPair* mutexes_;  // array of MultiLockPair* for sorting
-		std::size_t size_;  // array size
+		internal::MultiLockPair* mutexes_;  ///< array of MultiLockPair* for sorting
+		std::size_t size_;  ///< array size
 
-		// forbid copying
+		/// Forbid copying
 		SyncMultiLock(const SyncMultiLock& from);
+		/// Forbid copying
 		SyncMultiLock& operator= (const SyncMultiLock& from);
 
 };
@@ -434,15 +451,13 @@ class SyncMultiLock :
 
 
 
-// A scoped lock supporting multiple mutexes (up to 10 with positional
-// parameters, unlimited with array-based constructors), locking them
-// always in the same order. The mutexes must have the same type.
-
-// Compared to a variant above, this one has a slightly less memory
-// footprint, is slightly faster and handles unlimited number
-// (for all practical purposes) of mutexes, all at the
-// cost of requiring mutexes to be of the same type.
-
+/// A scoped lock supporting multiple mutexes (up to 10 with positional
+/// parameters, unlimited with array-based constructors), locking them
+/// always in the same order. The mutexes must have the same type.
+/// Compared to SyncMultiLock, this one has a slightly less memory
+/// footprint, is slightly faster and handles unlimited number
+/// (for all practical purposes) of mutexes, all at the
+/// cost of requiring mutexes to be of the same type.
 template<class Mutex, class LockPolicy = typename SyncGetPolicy<Mutex>::type>
 class SyncMultiLockUniType {
 	public:
@@ -450,7 +465,7 @@ class SyncMultiLockUniType {
 
 		// -------------------------------- passed as an array
 
-
+		/// Constructor
 		template<std::size_t size>
 		SyncMultiLockUniType(Mutex* (&mutexes)[size], bool do_lock = true)
 				: mutexes_(0), size_(0)
@@ -465,7 +480,8 @@ class SyncMultiLockUniType {
 		}
 
 
-		// for gcc earlier than 4.2 this will be selected for STL containers.
+		/// Constructor.
+		/// For gcc earlier than 4.2 this will be selected for STL containers.
 		template<template<class ElemType> class Container>
 		SyncMultiLockUniType(const Container<Mutex*>& mutexes, bool do_lock = true)
 				: mutexes_(0), size_(0)
@@ -522,6 +538,7 @@ class SyncMultiLockUniType {
 		// -------------------------------- passed directly
 
 
+		/// Constructor
 		SyncMultiLockUniType(Mutex& mutex1,
 				bool do_lock1 = true) : mutexes_(0), size_(0)
 		{
@@ -532,6 +549,7 @@ class SyncMultiLockUniType {
 			}
 		}
 
+		/// Constructor
 		SyncMultiLockUniType(Mutex& mutex1, Mutex& mutex2,
 				bool do_lock1 = true, bool do_lock2 = true) : size_(0)
 		{
@@ -541,6 +559,7 @@ class SyncMultiLockUniType {
 			this->sort_lock();
 		}
 
+		/// Constructor
 		SyncMultiLockUniType(Mutex& mutex1, Mutex& mutex2, Mutex& mutex3,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true) : size_(0)
 		{
@@ -551,6 +570,7 @@ class SyncMultiLockUniType {
 			this->sort_lock();
 		}
 
+		/// Constructor
 		SyncMultiLockUniType(Mutex& mutex1, Mutex& mutex2, Mutex& mutex3, Mutex& mutex4,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true) : size_(0)
 		{
@@ -562,6 +582,7 @@ class SyncMultiLockUniType {
 			this->sort_lock();
 		}
 
+		/// Constructor
 		SyncMultiLockUniType(Mutex& mutex1, Mutex& mutex2, Mutex& mutex3, Mutex& mutex4, Mutex& mutex5,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true, bool do_lock5 = true) : size_(0)
 		{
@@ -574,6 +595,7 @@ class SyncMultiLockUniType {
 			this->sort_lock();
 		}
 
+		/// Constructor
 		SyncMultiLockUniType(Mutex& mutex1, Mutex& mutex2, Mutex& mutex3, Mutex& mutex4, Mutex& mutex5,
 				Mutex& mutex6,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true, bool do_lock5 = true,
@@ -589,6 +611,7 @@ class SyncMultiLockUniType {
 			this->sort_lock();
 		}
 
+		/// Constructor
 		SyncMultiLockUniType(Mutex& mutex1, Mutex& mutex2, Mutex& mutex3, Mutex& mutex4, Mutex& mutex5,
 				Mutex& mutex6, Mutex& mutex7,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true, bool do_lock5 = true,
@@ -605,6 +628,7 @@ class SyncMultiLockUniType {
 			this->sort_lock();
 		}
 
+		/// Constructor
 		SyncMultiLockUniType(Mutex& mutex1, Mutex& mutex2, Mutex& mutex3, Mutex& mutex4, Mutex& mutex5,
 				Mutex& mutex6, Mutex& mutex7, Mutex& mutex8,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true, bool do_lock5 = true,
@@ -622,6 +646,7 @@ class SyncMultiLockUniType {
 			this->sort_lock();
 		}
 
+		/// Constructor
 		SyncMultiLockUniType(Mutex& mutex1, Mutex& mutex2, Mutex& mutex3, Mutex& mutex4, Mutex& mutex5,
 				Mutex& mutex6, Mutex& mutex7, Mutex& mutex8, Mutex& mutex9,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true, bool do_lock5 = true,
@@ -640,6 +665,7 @@ class SyncMultiLockUniType {
 			this->sort_lock();
 		}
 
+		/// Constructor
 		SyncMultiLockUniType(Mutex& mutex1, Mutex& mutex2, Mutex& mutex3, Mutex& mutex4, Mutex& mutex5,
 				Mutex& mutex6, Mutex& mutex7, Mutex& mutex8, Mutex& mutex9, Mutex& mutex10,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true, bool do_lock5 = true,
@@ -660,6 +686,7 @@ class SyncMultiLockUniType {
 		}
 
 
+		/// Destructor, unlocks the mutexes (in reverse order)
 		~SyncMultiLockUniType()
 		{
 			for (std::size_t i = size_; i > 0; --i) {  // unlock in reverse order
@@ -669,6 +696,7 @@ class SyncMultiLockUniType {
 		}
 
 
+		/// Sort and lock the mutexes
 		void sort_lock()
 		{
 			shell_sort(mutexes_, mutexes_ + size_);
@@ -679,42 +707,45 @@ class SyncMultiLockUniType {
 
 
 	private:
-		Mutex** mutexes_;  // array of Mutex*
-		std::size_t size_;
 
-		// resolve ambiguity with earlier gcc versions
+		Mutex** mutexes_;  ///< array of Mutex*
+		std::size_t size_;  ///< Size of mutexes_
+
 #if defined(__INTEL_COMPILER) || (!defined __GNUC__) || HZ_GCC_CHECK_VERSION(4, 2, 0)
+		/// Deny copying, resolve ambiguity with earlier gcc versions
 		SyncMultiLockUniType(const SyncMultiLockUniType& from);
 #endif
+
+		/// Deny copying
 		SyncMultiLockUniType& operator= (const SyncMultiLockUniType& from);
 };
 
 
 
 
-
-// This one does nothing. Useful for None policy.
-
+/// A multi-lock which does nothing. Useful for None policy.
 template<class Mutex>
 class SyncMultiLockEmpty {
 	public:
 
 		// -------------------------------- passed as an array
 
+		/// Constructor
 		template<std::size_t size>
 		SyncMultiLockEmpty(Mutex* (&mutexes)[size], bool do_lock = true)
 		{ }
 
-		// constructors for various containers
+		/// Constructor for various containers
 		template<template<class ElemType> class Container>
 		SyncMultiLockEmpty(const Container<Mutex*>& mutexes, bool do_lock = true)
 		{ }
 
-		// STL containers mainly fall into this one
+		/// Constructor for STL-like containers
 		template<class CT2, template<class ElemType, class> class Container>
 		SyncMultiLockEmpty(const Container<Mutex*, CT2>& mutexes, bool do_lock = true)
 		{ }
 
+		/// Constructor
 		template<class CT2, class CT3, template<class ElemType, class, class> class Container>
 		SyncMultiLockEmpty(const Container<Mutex*, CT2, CT3>& mutexes, bool do_lock = true)
 		{ }
@@ -722,58 +753,73 @@ class SyncMultiLockEmpty {
 
 		// -------------------------------- passed directly
 
+		/// Constructor
 		SyncMultiLockEmpty(Mutex& mutex1,
 				bool do_lock1 = true)
 		{ }
 
+		/// Constructor
 		SyncMultiLockEmpty(Mutex& mutex1, Mutex& mutex2,
 				bool do_lock1 = true, bool do_lock2 = true)
 		{ }
 
+		/// Constructor
 		SyncMultiLockEmpty(Mutex& mutex1, Mutex& mutex2, Mutex& mutex3,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true)
 		{ }
 
+		/// Constructor
 		SyncMultiLockEmpty(Mutex& mutex1, Mutex& mutex2, Mutex& mutex3, Mutex& mutex4,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true)
 		{ }
 
+		/// Constructor
 		SyncMultiLockEmpty(Mutex& mutex1, Mutex& mutex2, Mutex& mutex3, Mutex& mutex4, Mutex& mutex5,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true, bool do_lock5 = true)
 		{ }
 
+		/// Constructor
 		SyncMultiLockEmpty(Mutex& mutex1, Mutex& mutex2, Mutex& mutex3, Mutex& mutex4, Mutex& mutex5,
 				Mutex& mutex6,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true, bool do_lock5 = true,
 				bool do_lock6 = true)
 		{ }
 
+		/// Constructor
 		SyncMultiLockEmpty(Mutex& mutex1, Mutex& mutex2, Mutex& mutex3, Mutex& mutex4, Mutex& mutex5,
 				Mutex& mutex6, Mutex& mutex7,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true, bool do_lock5 = true,
 				bool do_lock6 = true, bool do_lock7 = true)
 		{ }
 
+		/// Constructor
 		SyncMultiLockEmpty(Mutex& mutex1, Mutex& mutex2, Mutex& mutex3, Mutex& mutex4, Mutex& mutex5,
 				Mutex& mutex6, Mutex& mutex7, Mutex& mutex8,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true, bool do_lock5 = true,
 				bool do_lock6 = true, bool do_lock7 = true, bool do_lock8 = true)
 		{ }
 
+		/// Constructor
 		SyncMultiLockEmpty(Mutex& mutex1, Mutex& mutex2, Mutex& mutex3, Mutex& mutex4, Mutex& mutex5,
 				Mutex& mutex6, Mutex& mutex7, Mutex& mutex8, Mutex& mutex9,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true, bool do_lock5 = true,
 				bool do_lock6 = true, bool do_lock7 = true, bool do_lock8 = true, bool do_lock9 = true)
 		{ }
 
+		/// Constructor
 		SyncMultiLockEmpty(Mutex& mutex1, Mutex& mutex2, Mutex& mutex3, Mutex& mutex4, Mutex& mutex5,
 				Mutex& mutex6, Mutex& mutex7, Mutex& mutex8, Mutex& mutex9, Mutex& mutex10,
 				bool do_lock1 = true, bool do_lock2 = true, bool do_lock3 = true, bool do_lock4 = true, bool do_lock5 = true,
 				bool do_lock6 = true, bool do_lock7 = true, bool do_lock8 = true, bool do_lock9 = true, bool do_lock10 = true)
 		{ }
 
+
 	private:
+
+		/// Disallow copying
 		SyncMultiLockEmpty(const SyncMultiLockEmpty& from);
+
+		/// Disallow copying
 		SyncMultiLockEmpty& operator= (const SyncMultiLockEmpty& from);
 };
 
@@ -789,3 +835,5 @@ class SyncMultiLockEmpty {
 
 
 #endif
+
+/// @}

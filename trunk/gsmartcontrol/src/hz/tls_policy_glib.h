@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_TLS_POLICY_GLIB_H
 #define HZ_TLS_POLICY_GLIB_H
@@ -12,7 +17,10 @@
 #include <glib.h>
 
 
-// Glib-based TLS.
+/**
+\file
+Glib-based thread-local storage.
+*/
 
 
 namespace hz {
@@ -28,7 +36,7 @@ extern "C" {
 #endif
 
 
-
+/// Glib-based TLS policy
 class TlsPolicyGlib {
 	public:
 
@@ -69,7 +77,7 @@ class TlsPolicyGlib {
 	private:
 
 		mutable GStaticPrivate key_;
-		tls_policy_glib_cleanup_func_t native_cleanup_;  // may be NULL
+		tls_policy_glib_cleanup_func_t native_cleanup_;  ///< may be NULL
 
 		TlsPolicyGlib(const TlsPolicyGlib&);
 		TlsPolicyGlib& operator= (const TlsPolicyGlib& from);
@@ -88,3 +96,5 @@ class TlsPolicyGlib {
 
 
 #endif
+
+/// @}

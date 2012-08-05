@@ -244,6 +244,7 @@ namespace internal {
 	struct ascii_strtof_impl { };
 
 
+	/// Specialization
 	template<>
 	struct ascii_strtof_impl<double> {
 		static double func(const char* nptr, char** endptr)
@@ -255,6 +256,7 @@ namespace internal {
 
 	// Note: strtold() and strtof() are C99 / _XOPEN_SOURCE >= 600.
 
+	/// Specialization
 	template<>
 	struct ascii_strtof_impl<float> {
 		static float func(const char* nptr, char** endptr)
@@ -291,6 +293,7 @@ namespace internal {
 	};
 
 
+	/// Specialization
 	template<>
 	struct ascii_strtof_impl<long double> {
 		static long double func(const char* nptr, char** endptr)
@@ -479,9 +482,11 @@ T ascii_strtof(const char* nptr, char** endptr)
 
 namespace {
 
+	/// Helper struct to choose the correct implementation
 	template<bool IsInt, bool IsFloat>
 	struct ascii_strton_impl { };
 
+	/// Specialization
 	template<bool IsInt>
 	struct ascii_strton_impl<IsInt, true> {
 		template<typename T> inline
@@ -491,6 +496,7 @@ namespace {
 		}
 	};
 
+	/// Specialization
 	template<bool IsFloat>
 	struct ascii_strton_impl<true, IsFloat> {
 		template<typename T> inline

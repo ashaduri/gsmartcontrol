@@ -16,17 +16,19 @@
 
 #include "system_specific.h"  // HZ_FUNC_PRINTF_*_CHECK
 
+/**
+\file
+This is a helper file for string_sprintf.h. It is useful if you need
+the macros only, but not the implementation (useful for header files).
+*/
 
-// This is a helper file for string_sprintf.h. It is useful if you need
-// the macros only, but not the implementation (useful for header files).
 
+/// \def HAVE_STRING_SPRINTF_MS
+/// whether the MS (%I64d and %I64u) specifiers are supported.
 
+/// \def HAVE_STRING_SPRINTF_ISO
+/// whether the ISO (%lld, %llu, %Lf) specifiers are supported.
 
-// HAVE_STRING_SPRINTF_MS - whether the MS (%I64d and %I64u)
-// specifiers are supported.
-
-// HAVE_STRING_SPRINTF_ISO - whether the ISO
-// (%lld, %llu, %Lf) specifiers are supported.
 
 #if defined ENABLE_GLIB && ENABLE_GLIB
 	#define HAVE_STRING_SPRINTF_MS 0

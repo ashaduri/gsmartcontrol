@@ -24,18 +24,21 @@
 #include "sync.h"
 
 
-// Posix Threads-based policy.
+/**
+\file
+Posix Threads-based policy.
 
-// Note: RecMutex assumes that pthread_mutexattr_settype
-// and PTHREAD_MUTEX_RECURSIVE work on current platform.
+Note: RecMutex assumes that pthread_mutexattr_settype
+and PTHREAD_MUTEX_RECURSIVE work on current platform.
 
-// NOTE: This file requires UNIX98 support, enabled via _XOPEN_SOURCE >= 500
-// in glibc. Solaris doesn't need any additional feature macros.
+NOTE: This file requires UNIX98 support, enabled via _XOPEN_SOURCE >= 500
+in glibc. Solaris doesn't need any additional feature macros.
 
-// Configuration macros:
-// This enables PTHREAD_MUTEX_ERRORCHECK flag on
-// non-recursive mutexes, which may perform some additional
-// checking on some systems.
+Configuration macros:
+This enables PTHREAD_MUTEX_ERRORCHECK flag on
+non-recursive mutexes, which may perform some additional
+checking on some systems.
+*/
 #ifndef HZ_SYNC_PTHREAD_ERROR_CHECKS
 	#define HZ_SYNC_PTHREAD_ERROR_CHECKS 1
 #endif
@@ -47,6 +50,7 @@ namespace hz {
 
 namespace internal {
 
+	/// Throw exception on pthread error
 	inline void sync_pthread_throw_exception(const std::string& msg, int errno_value = 0)
 	{
 		if (errno_value == 0) {
@@ -60,7 +64,8 @@ namespace internal {
 
 
 
-// Attempting to destroy a locked mutex results in undefined behavior.
+/// C++ wrapper for pthreads mutex.
+/// Attempting to destroy a locked mutex results in undefined behavior.
 class MutexPthread : public hz::noncopyable {
 	public:
 
@@ -151,6 +156,7 @@ class MutexPthread : public hz::noncopyable {
 
 
 
+/// C++ wrapper for pthreads recursive mutex.
 class RecMutexPthread : public hz::noncopyable {
 	public:
 
@@ -260,6 +266,7 @@ class RecMutexPthread : public hz::noncopyable {
 
 
 
+/// C++ wrapper for pthreads RW lock.
 class RWMutexPthread : public hz::noncopyable {
 	public:
 
@@ -335,9 +342,8 @@ class RWMutexPthread : public hz::noncopyable {
 
 
 
-// Native type notes: none.
-
-
+/// Pthreads policy.
+/// Native type notes: none.
 struct SyncPolicyPthread : public SyncScopedLockProvider<SyncPolicyPthread> {
 
 	// Types:
@@ -346,7 +352,7 @@ struct SyncPolicyPthread : public SyncScopedLockProvider<SyncPolicyPthread> {
 	typedef Mutex::native_type NativeMutex;
 
 	typedef RecMutexPthread RecMutex;
-	typedef RecMutex::native_type NativeRecMutex;  // same type as NativeMutex
+	typedef RecMutex::native_type NativeRecMutex;  ///< same type as NativeMutex
 
 	typedef RWMutexPthread RWMutex;
 	typedef RWMutex::native_type NativeRWMutex;

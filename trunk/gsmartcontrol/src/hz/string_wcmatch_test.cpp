@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_unlicense.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz_tests
+/// \weakgroup hz_tests
+/// @{
 
 // disable libdebug, we don't link to it
 #undef HZ_USE_LIBDEBUG
@@ -19,7 +24,7 @@
 #include <ios>
 
 
-
+/// Main function for the test
 int main()
 {
 	std::cerr << std::boolalpha << hz::string_wcmatch("*aa", "21345") << "\n";  // false
@@ -35,3 +40,5 @@ int main()
 
 
 
+
+/// @}

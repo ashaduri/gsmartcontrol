@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_TLS_BOOST_H
 #define HZ_TLS_BOOST_H
@@ -12,7 +17,10 @@
 #include <boost/thread/tss.hpp>
 
 
-// Boost-based TLS.
+/**
+\file
+Boost-based thread-local storage.
+*/
 
 
 namespace hz {
@@ -92,3 +100,5 @@ class thread_local_c_ptr<void, TlsPolicyBoost, cleanup_func> {
 
 
 #endif
+
+/// @}

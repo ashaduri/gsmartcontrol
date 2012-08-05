@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup gsc
+/// \weakgroup gsc
+/// @{
 
 #include <vector>  // better use vector, it's needed by others too
 #include <algorithm>  // std::min, std::max
@@ -29,16 +34,19 @@
 
 
 
+/// A label for StorageProperty
 struct PropertyLabel {
+	/// Constructor
 	PropertyLabel(const std::string& label_, const StorageProperty* prop) :
 		label(label_), property(prop)
 	{ }
 
-	std::string label;
-	const StorageProperty* property;
+	std::string label;  ///< Label text
+	const StorageProperty* property;  ///< Storage property
 };
 
 
+/// A vector of PropertyLabel objects
 typedef std::vector<PropertyLabel> label_list_t;
 
 
@@ -47,6 +55,7 @@ typedef std::vector<PropertyLabel> label_list_t;
 namespace {
 
 
+	/// Set "top" labels - the generic text at the top of each tab page.
 	inline void app_set_top_labels(Gtk::VBox* vbox, const label_list_t& label_strings)
 	{
 		if (!vbox)
@@ -93,6 +102,7 @@ namespace {
 
 
 
+	/// Cell renderer functions for attribute cells
 	inline void app_attr_cell_renderer_func(Gtk::CellRenderer* cr, const Gtk::TreeModel::iterator& iter,
 			Gtk::TreeModelColumn<const StorageProperty*> storage_column)
 	{
@@ -115,6 +125,8 @@ namespace {
 	}
 
 
+
+	/// Highlight a tab label according to \c warning
 	inline void app_highlight_tab_label(Gtk::Widget* label_widget,
 			StorageProperty::warning_t warning, const Glib::ustring& original_label)
 	{
@@ -134,7 +146,7 @@ namespace {
 
 
 
-	// scroll to appropriate error in text when row is selected in tree.
+	/// Scroll to appropriate error in text when row is selected in tree.
 	inline void on_error_log_treeview_row_selected(GscInfoWindow* window,
 			Gtk::TreeModelColumn<Glib::ustring> mark_name_column)
 	{
@@ -158,7 +170,6 @@ namespace {
 
 
 
-// glade/gtkbuilder needs this constructor
 GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
 		: AppUIResWidget<GscInfoWindow, true>(gtkcobj, ref_ui),
 		device_name_label(0), test_force_bar_update(true)
@@ -259,9 +270,17 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 
 
 
+void GscInfoWindow::set_drive(StorageDeviceRefPtr d)
+{
+	if (drive)  // if an old drive is present, disconnect our callback from it.
+		drive_changed_connection.disconnect();
+	drive = d;
+	drive_changed_connection = drive->signal_changed.connect(sigc::mem_fun(this,
+			&GscInfoWindow::on_drive_changed));
+}
 
 
-// fill the dialog with info from "drive".
+
 void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Scan " << (scan ? "" : "not ") << "requested.\n");
@@ -1238,8 +1257,18 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 
 
 
+void GscInfoWindow::refresh_info(bool clear_tests_too)
+{
+	this->set_sensitive(false);  // make insensitive until filled. helps with pressed F5 problem.
 
-// show tests tab.
+	// this->clear_ui_info();  // no need, fill_ui_with_info() will call it.
+	this->fill_ui_with_info(true, true, clear_tests_too);
+
+	this->set_sensitive(true);  // make sensitive again.
+}
+
+
+
 void GscInfoWindow::show_tests()
 {
 	Gtk::Notebook* book = lookup_widget<Gtk::Notebook*>("main_notebook");
@@ -1257,6 +1286,13 @@ bool GscInfoWindow::on_delete_event_before(GdkEventAny* e)
 	}
 	destroy(this);  // deletes this object and nullifies instance
 	return true;  // event handled, don't call default virtual handler
+}
+
+
+
+void GscInfoWindow::on_refresh_info_button_clicked()
+{
+	this->refresh_info();
 }
 
 
@@ -1682,4 +1718,4 @@ void GscInfoWindow::on_drive_changed(StorageDevice* pdrive)
 
 
 
-
+/// @}

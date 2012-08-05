@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup gsc
+/// \weakgroup gsc
+/// @{
 
 #ifndef GSC_EXECUTOR_ERROR_DIALOG_H
 #define GSC_EXECUTOR_ERROR_DIALOG_H
@@ -30,3 +35,5 @@ void gsc_no_info_dialog_show(const std::string& message, const std::string& sec_
 
 
 #endif
+
+/// @}

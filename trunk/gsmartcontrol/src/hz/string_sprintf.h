@@ -80,15 +80,15 @@ namespace hz {
 inline int string_vsprintf_get_buffer_size(const char* format, std::va_list ap) HZ_FUNC_STRING_SPRINTF_CHECK(1, 0);
 
 
-/// same as string_vsprintf_get_buffer_size(), but using varargs.
+/// Same as string_vsprintf_get_buffer_size(), but using varargs.
 inline int string_sprintf_get_buffer_size(const char* format, ...) HZ_FUNC_STRING_SPRINTF_CHECK(1, 2);
 
 
-/// auto-allocating std::string-returning portable vsprintf
+/// Auto-allocating std::string-returning portable vsprintf
 inline std::string string_vsprintf(const char* format, std::va_list ap) HZ_FUNC_STRING_SPRINTF_CHECK(1, 0);
 
 
-/// same as string_vsprintf(), but using varargs
+/// Same as string_vsprintf(), but using varargs
 inline std::string string_sprintf(const char* format, ...) HZ_FUNC_STRING_SPRINTF_CHECK(1, 2);
 
 

@@ -359,8 +359,8 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 
 		// protected constructor / destructor, use create() / destroy() instead of new / delete.
 
-		// Glade needs this constructor in a child.
-		// BaseObjectType is a C type, defined in specific Gtk:: widget class.
+		/// Glade needs this constructor in a child.
+		/// BaseObjectType is a C type, defined in specific Gtk:: widget class.
 		AppUIResWidget(typename WidgetType::BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
 				: WidgetType(gtkcobj), ref_ui_(ref_ui)
 		{
@@ -390,6 +390,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 #if defined APP_GTKMM_OLD_TOOLTIPS && APP_GTKMM_OLD_TOOLTIPS
 		// differentiate Window and its children from other widgets through overloading
 
+		/// Create tooltips for a window
 		void create_tooltips_data(Gtk::Window* window)
 		{
 			if (window) {
@@ -400,17 +401,10 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 			}
 		}
 
+		/// Create tooltips for an object (a dummy function used for overload).
 		void create_tooltips_data(Gtk::Object* o)
 		{ }
 #endif
-
-
-
-	protected:
-
-// 		void on_rescan_devices_toolbutton_clicked()
-// 		{
-// 		}
 
 
 	private:

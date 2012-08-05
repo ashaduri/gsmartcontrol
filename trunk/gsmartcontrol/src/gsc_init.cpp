@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup gsc
+/// \weakgroup gsc
+/// @{
 
 #include <string>
 // #include <locale.h>  // _configthreadlocale (win32)
@@ -40,14 +45,19 @@
 
 namespace {
 
+	/// Config file in user's HOME
 	static std::string s_home_config_file;
 
 
+	/// Libdebug channel buffer
 	static debug_channel_base_ptr s_debug_buf_channel;
+
+	/// Libdebug channel buffer stream
 	static std::ostringstream s_debug_buf_channel_stream;
 
 
-	// This function is not thread-safe. The channel must be locked properly.
+	/// Get libdebug buffer channel (create new one if unavailable).
+	/// This function is not thread-safe. The channel must be locked properly.
 	inline debug_channel_base_ptr app_get_debug_buf_channel()
 	{
 		if (!s_debug_buf_channel)
@@ -58,7 +68,7 @@ namespace {
 }
 
 
-// This should be called from one thread only.
+
 std::string app_get_debug_buffer_str()
 {
 	debug_channel_base_ptr channel = app_get_debug_buf_channel();
@@ -71,107 +81,112 @@ std::string app_get_debug_buffer_str()
 
 
 
+namespace {
 
-inline bool app_init_config()
-{
-	// $XDG_CONFIG_DIRS defaults to /etc/xdg, which is really silly.
-	// Actually, the whole specification is silly imho, since instead of
-	// removing just one directory/file I have to remove 3 now (and tell
-	// the users to do the same thing). And the *_DIRS stuff completely
-	// breaks parallel installations of the same program. Implementing
-	// only $XDG_CONFIG_HOME is harmless enough, so we do it.
 
-	s_home_config_file = hz::get_user_config_dir() + hz::DIR_SEPARATOR_S
-			+ "gsmartcontrol" + hz::DIR_SEPARATOR_S + "gsmartcontrol.conf";
+	/// Find the configuration files and load them.
+	inline bool app_init_config()
+	{
+		// $XDG_CONFIG_DIRS defaults to /etc/xdg, which is really silly.
+		// Actually, the whole specification is silly imho, since instead of
+		// removing just one directory/file I have to remove 3 now (and tell
+		// the users to do the same thing). And the *_DIRS stuff completely
+		// breaks parallel installations of the same program. Implementing
+		// only $XDG_CONFIG_HOME is harmless enough, so we do it.
 
-	std::string global_config_file;
-	std::string old_local_config;  // pre-XDG and pre-CSIDL_APPDATA file for migration
+		s_home_config_file = hz::get_user_config_dir() + hz::DIR_SEPARATOR_S
+				+ "gsmartcontrol" + hz::DIR_SEPARATOR_S + "gsmartcontrol.conf";
 
-#ifdef _WIN32
-	global_config_file = "gsmartcontrol.conf";  // CWD, installation dir by default.
+		std::string global_config_file;
+		std::string old_local_config;  // pre-XDG and pre-CSIDL_APPDATA file for migration
 
-	std::string old_config_dir;
-	hz::win32_get_registry_value_string(HKEY_CURRENT_USER,
-			"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Personal", old_config_dir);
+	#ifdef _WIN32
+		global_config_file = "gsmartcontrol.conf";  // CWD, installation dir by default.
 
-	old_local_config = old_config_dir + hz::DIR_SEPARATOR_S + "gsmartcontrol.conf";
+		std::string old_config_dir;
+		hz::win32_get_registry_value_string(HKEY_CURRENT_USER,
+				"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Personal", old_config_dir);
 
-#else
-	global_config_file = std::string(PACKAGE_SYSCONF_DIR)
-			+ hz::DIR_SEPARATOR_S + "gsmartcontrol.conf";
+		old_local_config = old_config_dir + hz::DIR_SEPARATOR_S + "gsmartcontrol.conf";
 
-	old_local_config = hz::get_home_dir() + hz::DIR_SEPARATOR_S + ".gsmartcontrolrc";
-#endif
+	#else
+		global_config_file = std::string(PACKAGE_SYSCONF_DIR)
+				+ hz::DIR_SEPARATOR_S + "gsmartcontrol.conf";
 
-	debug_out_dump("app", DBG_FUNC_MSG << "Global config file: \"" << global_config_file << "\"\n");
-	debug_out_dump("app", DBG_FUNC_MSG << "Local config file: \"" << s_home_config_file << "\"\n");
-	debug_out_dump("app", DBG_FUNC_MSG << "Old local config file: \"" << old_local_config << "\"\n");
+		old_local_config = hz::get_home_dir() + hz::DIR_SEPARATOR_S + ".gsmartcontrolrc";
+	#endif
 
-	hz::FsPath gp(global_config_file);  // Default system-wide settings. This file is empty by default.
-	hz::FsPath hp(s_home_config_file);  // Per-user settings.
-	hz::FsPath op(old_local_config);  // Old user settings, should be migrated.
+		debug_out_dump("app", DBG_FUNC_MSG << "Global config file: \"" << global_config_file << "\"\n");
+		debug_out_dump("app", DBG_FUNC_MSG << "Local config file: \"" << s_home_config_file << "\"\n");
+		debug_out_dump("app", DBG_FUNC_MSG << "Old local config file: \"" << old_local_config << "\"\n");
 
-	if (gp.exists() && gp.is_readable()) {  // load global first
-		rconfig::load_from_file(gp.str());
-	}
+		hz::FsPath gp(global_config_file);  // Default system-wide settings. This file is empty by default.
+		hz::FsPath hp(s_home_config_file);  // Per-user settings.
+		hz::FsPath op(old_local_config);  // Old user settings, should be migrated.
 
-	if (hp.exists() && hp.is_readable()) {  // load local
-		rconfig::load_from_file(hp.str());
-
-	} else {
-		// create the parent directories of the config file
-		hz::FsPath config_loc(hp.get_dirname());
-
-		if (!config_loc.exists()) {
-			config_loc.make_dir(0700, true);  // with parents.
+		if (gp.exists() && gp.is_readable()) {  // load global first
+			rconfig::load_from_file(gp.str());
 		}
 
-		if (op.exists() && op.is_readable()) {  // load the old config if the new one doesn't exist.
-			debug_print_info("app", "Old configuration file found at \"%s\", migrating to \"%s\".\n", op.c_str(), hp.c_str());
-			rconfig::load_from_file(op.str());
-			// force saving of the config to the new location (so that it's preserved in case of crash).
-			if (rconfig::save_to_file(hp.str())) {
-				// remove the old config
-				op.remove();
+		if (hp.exists() && hp.is_readable()) {  // load local
+			rconfig::load_from_file(hp.str());
+
+		} else {
+			// create the parent directories of the config file
+			hz::FsPath config_loc(hp.get_dirname());
+
+			if (!config_loc.exists()) {
+				config_loc.make_dir(0700, true);  // with parents.
+			}
+
+			if (op.exists() && op.is_readable()) {  // load the old config if the new one doesn't exist.
+				debug_print_info("app", "Old configuration file found at \"%s\", migrating to \"%s\".\n", op.c_str(), hp.c_str());
+				rconfig::load_from_file(op.str());
+				// force saving of the config to the new location (so that it's preserved in case of crash).
+				if (rconfig::save_to_file(hp.str())) {
+					// remove the old config
+					op.remove();
+				}
 			}
 		}
+
+
+		rconfig::dump_tree();
+
+		init_default_settings();  // initialize /default
+
+	#if defined ENABLE_GLIB && ENABLE_GLIB
+		rconfig::autosave_set_config_file(s_home_config_file);
+		uint32_t autosave_timeout = rconfig::get_data<uint32_t>("system/config_autosave_timeout");
+		if (autosave_timeout)
+			rconfig::autosave_start(autosave_timeout);
+	#endif
+
+		return true;
 	}
 
 
-	rconfig::dump_tree();
 
-	init_default_settings();  // initialize /default
+	/// If it's the first time the application was started by this user, show a message.
+	inline void app_show_first_boot_message(Gtk::Window* parent)
+	{
+		bool first_boot = false;
+		rconfig::get_data("system/first_boot", first_boot);
 
-#if defined ENABLE_GLIB && ENABLE_GLIB
-	rconfig::autosave_set_config_file(s_home_config_file);
-	uint32_t autosave_timeout = rconfig::get_data<uint32_t>("system/config_autosave_timeout");
-	if (autosave_timeout)
-		rconfig::autosave_start(autosave_timeout);
-#endif
+		if (first_boot) {
+	// 		Glib::ustring msg = "First boot";
+	// 		Gtk::MessageDialog(*parent, msg, false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK, true).run();
+		}
 
-	return true;
-}
-
-
-
-inline void app_show_first_boot_message(Gtk::Window* parent)
-{
-	bool first_boot = false;
-	rconfig::get_data("system/first_boot", first_boot);
-
-	if (first_boot) {
-// 		Glib::ustring msg = "First boot";
-// 		Gtk::MessageDialog(*parent, msg, false, Gtk::MESSAGE_INFO, Gtk::BUTTONS_OK, true).run();
+	// 	rconfig::set_data("system/first_boot", false);  // don't show it again
 	}
 
-// 	rconfig::set_data("system/first_boot", false);  // don't show it again
-}
+}  // anon. ns
 
 
 
-
-// glib message -> libdebug message convertor
 extern "C" {
+	/// Glib message -> libdebug message convertor
 	static void glib_message_handler(const gchar* log_domain, GLogLevelFlags log_level,
 			const gchar* message, gpointer user_data)
 	{
@@ -181,101 +196,112 @@ extern "C" {
 }
 
 
-// Note: Use GLib types here.
-struct CmdArgs {
-	CmdArgs() :
-		// defaults
-		arg_locale(TRUE),
-		arg_version(FALSE),
-		arg_scan(TRUE),
-		arg_hide_tabs(TRUE),
-		arg_add_virtual(NULL),
-		arg_add_device(NULL)
-	{ }
-
-	gboolean arg_locale;  // if false, disable using system locale
-	gboolean arg_version;  // if true, show version and exit
-	gboolean arg_scan;  // if false, don't scan the system for drives on startup
-	gboolean arg_hide_tabs;  // if true, hide additional info tabs when smart is disabled. false may help debugging.
-	gchar** arg_add_virtual;  // load smartctl data from these files as virtual drives
-	gchar** arg_add_device;  // add these device files manually
-};
 
 
+namespace {
 
-inline bool parse_cmdline_args(CmdArgs& args, int& argc, char**& argv)
-{
-	static const GOptionEntry arg_entries[] =
-	{
-		{ "no-locale", 'l', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_locale),
-				"Don't use system locale", NULL },
-		{ "version", 'V', 0, G_OPTION_ARG_NONE, &(args.arg_version),
-				"Display version information", NULL },
-		{ "no-scan", '\0', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_scan),
-				"Don't scan devices on startup", NULL },
-		{ "no-hide-tabs", '\0', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_hide_tabs),
-				"Don't hide non-identity tabs when SMART is disabled. Useful for debugging.", NULL },
-		{ "add-virtual", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &(args.arg_add_virtual),
-				"Load smartctl data from file, creating a virtual drive. You can specify this option multiple times.", NULL },
-		{ "add-device", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &(args.arg_add_device),
-				"Add this device to device list. The format of the device is \"<device>::<type>::<extra_args>\", where type and extra_args are optional."
-				" This option is useful with --no-scan to list certain drives only. You can specify this option multiple times."
-				" Example: --add-device /dev/sda --add-device /dev/twa0::3ware,2 --add-device '/dev/sdb::::-T permissive'", NULL },
-		{ NULL }
+
+	/// Command-line argument values
+	struct CmdArgs {
+		CmdArgs() :
+			// defaults
+			arg_locale(TRUE),
+			arg_version(FALSE),
+			arg_scan(TRUE),
+			arg_hide_tabs(TRUE),
+			arg_add_virtual(NULL),
+			arg_add_device(NULL)
+		{ }
+
+		// Note: Use GLib types here:
+		gboolean arg_locale;  ///< if false, disable using system locale
+		gboolean arg_version;  ///< if true, show version and exit
+		gboolean arg_scan;  ///< if false, don't scan the system for drives on startup
+		gboolean arg_hide_tabs;  ///< if true, hide additional info tabs when smart is disabled. false may help debugging.
+		gchar** arg_add_virtual;  ///< load smartctl data from these files as virtual drives
+		gchar** arg_add_device;  ///< add these device files manually
 	};
 
-	GError* error = 0;
-	GOptionContext* context = g_option_context_new("- A GTK+ GUI for smartmontools");
 
-	// our options
-	g_option_context_add_main_entries(context, arg_entries, NULL);
 
-	// gtk options
-	g_option_context_add_group(context, gtk_get_option_group(false));
+	/// Parse command-line arguments (fills \c args)
+	inline bool parse_cmdline_args(CmdArgs& args, int& argc, char**& argv)
+	{
+		static const GOptionEntry arg_entries[] =
+		{
+			{ "no-locale", 'l', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_locale),
+					"Don't use system locale", NULL },
+			{ "version", 'V', 0, G_OPTION_ARG_NONE, &(args.arg_version),
+					"Display version information", NULL },
+			{ "no-scan", '\0', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_scan),
+					"Don't scan devices on startup", NULL },
+			{ "no-hide-tabs", '\0', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_hide_tabs),
+					"Don't hide non-identity tabs when SMART is disabled. Useful for debugging.", NULL },
+			{ "add-virtual", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &(args.arg_add_virtual),
+					"Load smartctl data from file, creating a virtual drive. You can specify this option multiple times.", NULL },
+			{ "add-device", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &(args.arg_add_device),
+					"Add this device to device list. The format of the device is \"<device>::<type>::<extra_args>\", where type and extra_args are optional."
+					" This option is useful with --no-scan to list certain drives only. You can specify this option multiple times."
+					" Example: --add-device /dev/sda --add-device /dev/twa0::3ware,2 --add-device '/dev/sdb::::-T permissive'", NULL },
+			{ NULL }
+		};
 
-	// libdebug options; this will also automatically apply them
-	g_option_context_add_group(context, debug_get_option_group());
+		GError* error = 0;
+		GOptionContext* context = g_option_context_new("- A GTK+ GUI for smartmontools");
 
-	// The command-line parser stops at the first unknown option. Since this
-	// is kind of inconsistent, we abort altogether.
-	bool parsed = g_option_context_parse(context, &argc, &argv, &error);
+		// our options
+		g_option_context_add_main_entries(context, arg_entries, NULL);
 
-	if (error) {
-		std::string error_text = "\n" + std::string("Error parsing command-line options: ");
-		error_text += (error->message ? error->message : "invalid error");
-		error_text += "\n\n";
-		g_error_free(error);
+		// gtk options
+		g_option_context_add_group(context, gtk_get_option_group(false));
 
-#if (GLIB_CHECK_VERSION(2,14,0))
-		gchar* help_text = g_option_context_get_help(context, true, NULL);
-		if (help_text) {
-			error_text += help_text;
-			g_free(help_text);
+		// libdebug options; this will also automatically apply them
+		g_option_context_add_group(context, debug_get_option_group());
+
+		// The command-line parser stops at the first unknown option. Since this
+		// is kind of inconsistent, we abort altogether.
+		bool parsed = g_option_context_parse(context, &argc, &argv, &error);
+
+		if (error) {
+			std::string error_text = "\n" + std::string("Error parsing command-line options: ");
+			error_text += (error->message ? error->message : "invalid error");
+			error_text += "\n\n";
+			g_error_free(error);
+
+	#if (GLIB_CHECK_VERSION(2,14,0))
+			gchar* help_text = g_option_context_get_help(context, true, NULL);
+			if (help_text) {
+				error_text += help_text;
+				g_free(help_text);
+			}
+	#else
+			error_text += "Exiting.\n";
+	#endif
+
+			std::fprintf(stderr, "%s", error_text.c_str());
 		}
-#else
-		error_text += "Exiting.\n";
-#endif
+		g_option_context_free(context);
 
-		std::fprintf(stderr, "%s", error_text.c_str());
+		return parsed;
 	}
-	g_option_context_free(context);
 
-	return parsed;
+
+
+	/// Print application version information
+	inline void app_print_version_info()
+	{
+		std::string versiontext = std::string("\nGSmartControl version ") + VERSION + "\n";
+
+		std::string warningtext = std::string("\nWarning: GSmartControl");
+		warningtext += " comes with ABSOLUTELY NO WARRANTY.\n";
+		warningtext += "See LICENSE_gsmartcontrol.txt file for details.\n";
+		warningtext += "\nCopyright (C) 2008 - 2012  Alexander Shaduri <ashaduri" "" "@" "" "" "gmail.com>\n\n";
+
+		std::fprintf(stdout, "%s%s", versiontext.c_str(), warningtext.c_str());
+	}
+
 }
 
-
-
-inline void app_print_version_info()
-{
-	std::string versiontext = std::string("\nGSmartControl version ") + VERSION + "\n";
-
-	std::string warningtext = std::string("\nWarning: GSmartControl");
-	warningtext += " comes with ABSOLUTELY NO WARRANTY.\n";
-	warningtext += "See LICENSE_gsmartcontrol.txt file for details.\n";
-	warningtext += "\nCopyright (C) 2008 - 2012  Alexander Shaduri <ashaduri" "" "@" "" "" "gmail.com>\n\n";
-
-	std::fprintf(stdout, "%s%s", versiontext.c_str(), warningtext.c_str());
-}
 
 
 
@@ -528,3 +554,5 @@ void app_quit()
 
 
 
+
+/// @}

@@ -1,4 +1,13 @@
-
+/**************************************************************************
+ Copyright:
+      (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
+ License: See LICENSE_zlib.txt file
+***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_TYPE_PROPERTIES_H
 #define HZ_TYPE_PROPERTIES_H
@@ -8,9 +17,12 @@
 #include <cstddef>  // std::size_t
 
 
+/**
+\file
+Type transformations, properties, etc...
+This file provides some type facilities in absence of C++11's type_traits header.
+*/
 
-// type transformations, properties, etc...
-// some of these things are in C++0x, but we need them now.
 
 
 namespace hz {
@@ -354,3 +366,5 @@ template<> struct type_make_unsigned<long int> { typedef unsigned long int type;
 
 
 #endif
+
+/// @}

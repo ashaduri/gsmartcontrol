@@ -159,10 +159,9 @@ class SmartctlParser {
 
 		prop_list_t properties_;  ///< Parsed data properties
 
-		// These are filled by the appropriate parse_* functions
-		std::string data_full_;  ///< full data
-		std::string data_section_info_;  ///< "info" section data
-		std::string data_section_data_;  ///< "data" section data
+		std::string data_full_;  ///< full data, filled by parse_full()
+		std::string data_section_info_;  ///< "info" section data, filled by parse_section_info()
+		std::string data_section_data_;  ///< "data" section data, filled by parse_section_data()
 
 		std::string error_msg_;  ///< This will be filled with some displayable message on error
 

@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup gsc
+/// \weakgroup gsc
+/// @{
 
 #ifndef GSC_EXECUTOR_LOG_WINDOW_H
 #define GSC_EXECUTOR_LOG_WINDOW_H
@@ -20,81 +25,79 @@
 
 
 
-// use create() / destroy() with this class instead of new / delete!
-
+/// The "Execution Log" window.
+/// Use create() / destroy() with this class instead of new / delete!
 class GscExecutorLogWindow : public AppUIResWidget<GscExecutorLogWindow, false> {
-
 	public:
 
 		// name of glade/ui file without a .glade/.ui extension and quotes
 		APP_UI_RES_DATA_INIT(gsc_executor_log_window);
 
 
-		// glade/gtkbuilder needs this constructor
+		/// Constructor, gtkbuilder/glade needs this.
 		GscExecutorLogWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui);
 
-
+		/// Virtual destructor
 		virtual ~GscExecutorLogWindow()
 		{ }
 
 
-		// Show this window and select the last entry
+		/// Show this window and select the last entry
 		void show_last();
 
 
 	protected:
 
-		// Data
 
-		std::vector<CmdexSyncCommandInfoRefPtr> entries;
-
-
-		Glib::RefPtr<Gtk::ListStore> list_store;
-		Glib::RefPtr<Gtk::TreeSelection> selection;
-
-		Gtk::TreeModelColumn<std::size_t> col_num;
-		Gtk::TreeModelColumn<std::string> col_command;
-		Gtk::TreeModelColumn<CmdexSyncCommandInfoRefPtr> col_entry;
-
-
-		void clear_view_widgets();  // clear entries and textviews
+		/// Clear entries and textviews
+		void clear_view_widgets();
 
 
 
-		// -------------------- Callbacks
+		// -------------------- callbacks
 
-		// Attached to external source
+		/// Callback attached to external source, adds entries in real time.
 		void on_command_output_received(const CmdexSyncCommandInfo& info);
 
 
 
-		// ---------- override virtual methods
+		// ---------- overriden virtual methods
 
-		bool on_delete_event_before(GdkEventAny* e)
-		{
-			this->hide();  // hide only, don't destroy
-			return true;  // event handled, don't call default virtual handler
-		}
+		/// Hide the window, don't destroy.
+		/// Reimplemented from Gtk::Window.
+		bool on_delete_event_before(GdkEventAny* e);
 
 
 		// ---------- other callbacks
 
-		void on_window_close_button_clicked()
-		{
-			this->hide();  // hide only, don't destroy
-		}
+		/// Button click callback
+		void on_window_close_button_clicked();
 
-
+		/// Button click callback
 		void on_window_save_current_button_clicked();
 
-
+		/// Button click callback
 		void on_window_save_all_button_clicked();
 
-
+		/// Button click callback
 		void on_clear_command_list_button_clicked();
 
-
+		/// Callback
 		void on_tree_selection_changed();
+
+
+	private:
+
+		std::vector<CmdexSyncCommandInfoRefPtr> entries;  ///< Command information entries
+
+
+		Glib::RefPtr<Gtk::ListStore> list_store;  ///< List store
+		Glib::RefPtr<Gtk::TreeSelection> selection;  ///< Tree selection
+
+		Gtk::TreeModelColumn<std::size_t> col_num;  ///< Tree column
+		Gtk::TreeModelColumn<std::string> col_command;  ///< Tree column
+		Gtk::TreeModelColumn<CmdexSyncCommandInfoRefPtr> col_entry;  ///< Tree column
+
 
 };
 
@@ -104,3 +107,5 @@ class GscExecutorLogWindow : public AppUIResWidget<GscExecutorLogWindow, false> 
 
 
 #endif
+
+/// @}

@@ -3,12 +3,18 @@
       (C) 2011 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup gsc
+/// \weakgroup gsc
+/// @{
 
 #include <gtkmm/button.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/filechooserdialog.h>
 #include <gtkmm/stock.h>
 #include <gtkmm/comboboxentry.h>
+#include <gtkmm/treemodelcolumn.h>
 #include <gdk/gdkkeysyms.h>  // GDK_Escape
 
 #include "hz/fs_path.h"
@@ -132,6 +138,14 @@ void GscAddDeviceWindow::set_main_window(GscMainWindow* main_window)
 
 
 
+bool GscAddDeviceWindow::on_delete_event_before(GdkEventAny* e)
+{
+	destroy(this);  // deletes this object and nullifies instance
+	return true;  // event handled, don't call default virtual handler
+}
+
+
+
 void GscAddDeviceWindow::on_window_cancel_button_clicked()
 {
 	destroy(this);
@@ -220,3 +234,4 @@ void GscAddDeviceWindow::on_device_name_entry_changed()
 
 
 
+/// @}

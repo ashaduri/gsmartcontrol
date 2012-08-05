@@ -25,14 +25,18 @@
 #include "sync.h"
 
 
-// Win32-Threads-based policy.
+/**
+\file
+Win32-Threads-based policy.
+*/
 
 
 namespace hz {
 
 
 
-// Note: Win32 CRITICAL_SECTION is always recursive.
+/// C++ wrapper for Win32 CRITICAL_SECTION.
+/// Note: Win32 CRITICAL_SECTION is always recursive.
 template<int TypeChanger>
 class MutexWin32 : public hz::noncopyable {
 	public:
@@ -105,6 +109,7 @@ class MutexWin32 : public hz::noncopyable {
 
 
 
+/// Implementation of RW lock for Win32.
 class RWMutexWin32 : public hz::noncopyable {
 
 	public:
@@ -264,11 +269,9 @@ class RWMutexWin32 : public hz::noncopyable {
 
 
 
-
-// Native type notes: none.
-
-// Note: We don't know if we trap all the error conditions - one can never be sure with win32.
-
+/// Win32-threads policy.
+/// Native type notes: none.
+/// Note: We don't know if we trap all the error conditions - one can never be sure with win32.
 struct SyncPolicyWin32 : public SyncScopedLockProvider<SyncPolicyWin32> {
 
 	// Types:
@@ -277,10 +280,10 @@ struct SyncPolicyWin32 : public SyncScopedLockProvider<SyncPolicyWin32> {
 	typedef Mutex::native_type NativeMutex;
 
 	typedef MutexWin32<2> RecMutex;
-	typedef RecMutex::native_type NativeRecMutex;  // same type as NativeMutex
+	typedef RecMutex::native_type NativeRecMutex;  ///< same type as NativeMutex
 
 	typedef RWMutexWin32 RWMutex;
-	typedef RWMutex NativeRWMutex;  // win32 doesn't have a native RWMutex-like type, so use the same type.
+	typedef RWMutex NativeRWMutex;  ///< win32 doesn't have a native RWMutex-like type, so use the same type.
 
 
 	typedef GenericScopedLock<Mutex> ScopedLock;

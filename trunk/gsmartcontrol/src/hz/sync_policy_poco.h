@@ -15,34 +15,33 @@
 #include "sync.h"
 
 
-// Poco-based policy.
+/**
+\file
+Poco-based policy.
+*/
 
 
 namespace hz {
 
 
-// Native type notes:
-// Poco::Mutex is recursive, while Poco::FastMutex is not.
-// Poco::ScopedLock doesn't have "bool do_lock", or anything else for that matter.
-
-
-// Poco doesn't throw any exceptions for these types, nor does this policy.
-
-// We use native types for mutex types here, because they meet the requirements.
-// Thus no need to specify locks and other stuff for these separately.
-
+/// Native type notes:
+/// Poco::Mutex is recursive, while Poco::FastMutex is not.
+/// Poco::ScopedLock doesn't have "bool do_lock", or anything else for that matter.
+/// Poco doesn't throw any exceptions for these types, nor does this policy.
+/// We use native types for mutex types here, because they meet the requirements.
+/// Thus no need to specify locks and other stuff for these separately.
 struct SyncPolicyPoco : public SyncScopedLockProvider<SyncPolicyPoco> {
 
 	// Types:
 
 	typedef Poco::FastMutex Mutex;
-	typedef Mutex NativeMutex;  // supports lock(), tryLock(), unlock()
+	typedef Mutex NativeMutex;  ///< supports lock(), tryLock(), unlock()
 
 	typedef Poco::Mutex RecMutex;
-	typedef RecMutex NativeRecMutex;  // supports lock(), tryLock(), unlock()
+	typedef RecMutex NativeRecMutex;  ///< supports lock(), tryLock(), unlock()
 
 	typedef Poco::RWLock RWMutex;
-	typedef RWMutex NativeRWMutex;  // readLock(), tryReadLock(), writeLock(), tryWriteLock(), unlock().
+	typedef RWMutex NativeRWMutex;  ///< readLock(), tryReadLock(), writeLock(), tryWriteLock(), unlock().
 
 
 	typedef GenericScopedLock<Mutex> ScopedLock;

@@ -27,6 +27,7 @@
 class StorageDevice;
 
 
+/// A reference-counting pointer to StorageDevice
 typedef hz::intrusive_ptr<StorageDevice> StorageDeviceRefPtr;
 
 

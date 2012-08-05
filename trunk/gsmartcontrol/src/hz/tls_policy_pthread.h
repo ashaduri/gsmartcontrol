@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_TLS_POLICY_PTHREAD_H
 #define HZ_TLS_POLICY_PTHREAD_H
@@ -19,8 +24,11 @@
 #endif
 
 
-// POSIX Threads-based TLS.
-// Note that cleanup-function calling policy emulates the Glib one.
+/**
+\file
+Pthreads-based thread-local storage.
+Note that cleanup-function calling policy emulates the Glib one.
+*/
 
 
 namespace hz {
@@ -36,7 +44,7 @@ extern "C" {
 #endif
 
 
-
+/// Pthreads-based TLS policy
 class TlsPolicyPthread {
 	public:
 
@@ -110,3 +118,5 @@ class TlsPolicyPthread {
 
 
 #endif
+
+/// @}

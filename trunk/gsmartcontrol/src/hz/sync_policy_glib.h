@@ -14,15 +14,21 @@
 #include "sync.h"
 
 
-// Glib-based policy.
+/**
+\file
+Glib-based policy.
+*/
 
 
+/// Lock GStaticMutex
 #define hz_glib_static_mutex_lock(mutex) \
 	g_mutex_lock(g_static_mutex_get_mutex(mutex))
 
+/// Try locking GStaticMutex
 #define hz_glib_static_mutex_trylock(mutex) \
 	g_mutex_trylock(g_static_mutex_get_mutex(mutex))
 
+/// Unlock GStaticMutex
 #define hz_glib_static_mutex_unlock(mutex) \
 	g_mutex_unlock(g_static_mutex_get_mutex(mutex))
 
@@ -32,7 +38,7 @@
 namespace hz {
 
 
-
+/// C++ Wrapper for Glib mutex
 class MutexGlib : public hz::noncopyable {
 	public:
 		typedef GStaticMutex native_type;
@@ -65,6 +71,7 @@ class MutexGlib : public hz::noncopyable {
 
 
 
+/// C++ Wrapper for Glib recursive mutex
 class RecMutexGlib : public hz::noncopyable {
 	public:
 		typedef GStaticRecMutex native_type;
@@ -97,6 +104,7 @@ class RecMutexGlib : public hz::noncopyable {
 
 
 
+/// C++ Wrapper for Glib RW lock
 class RWMutexGlib : public hz::noncopyable {
 	public:
 		typedef GStaticRWLock native_type;
@@ -138,24 +146,22 @@ class RWMutexGlib : public hz::noncopyable {
 
 
 
-// Native type notes:
-// MutexGlib's underlying structure is neither guaranteed to be
-// recursive nor to be non-recursive.
-// All these mutexes won't do anything unless gthread is initialized.
-
-// Note: For this policy to work, you MUST initialize GThread system
-// by calling one of the following (doesn't matter which exactly) beforehand:
-// Glib::thread_init();  // glibmm
-// or
-// g_thread_init(NULL);  // glib
-// or
-// SyncPolicyGlib::init();  // sync's wrapper
-
-// If you don't do it, the operations will silently do nothing.
-
-
-// Glib doesn't provide any means to detect errors, so no exceptions here.
-
+/// Native type notes:
+/// MutexGlib's underlying structure is neither guaranteed to be
+/// recursive nor to be non-recursive.
+/// All these mutexes won't do anything unless gthread is initialized.
+/// 
+/// Note: For this policy to work, you MUST initialize GThread system
+/// by calling one of the following (doesn't matter which exactly) beforehand:
+/// Glib::thread_init();  // glibmm
+/// or
+/// g_thread_init(NULL);  // glib
+/// or
+/// SyncPolicyGlib::init();  // sync's wrapper
+/// 
+/// If you don't do it, the operations will silently do nothing.
+/// 
+/// Glib doesn't provide any means to detect errors, so no exceptions here.
 struct SyncPolicyGlib : public SyncScopedLockProvider<SyncPolicyGlib> {
 
 	// Types:
@@ -191,7 +197,7 @@ struct SyncPolicyGlib : public SyncScopedLockProvider<SyncPolicyGlib> {
 
 	// Static methods
 
-	// If threads are unavailable, this will abort.
+	/// If glib threads are unavailable, this will abort.
 	static bool init() { if (!g_thread_supported()) g_thread_init(NULL); return true; }
 
 	static void lock(Mutex& m) { m.lock(); }

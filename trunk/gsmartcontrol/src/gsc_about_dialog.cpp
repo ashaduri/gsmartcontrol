@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup gsc
+/// \weakgroup gsc
+/// @{
 
 #include "hz/hz_config.h"  // VERSION
 
@@ -116,3 +121,4 @@ void GscAboutDialog::on_response_before(int response_id)
 
 
 
+/// @}

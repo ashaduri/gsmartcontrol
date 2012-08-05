@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_unlicense.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz_tests
+/// \weakgroup hz_tests
+/// @{
 
 // disable libdebug, we don't link to it
 #undef HZ_USE_LIBDEBUG
@@ -24,62 +29,62 @@
 
 
 
-struct Base { };
+struct TestBase { };
 
-struct Child : public Base { };
+struct TestChild : public TestBase { };
 
-struct Poly : public Base
+struct TestPoly : public TestBase
 {
-	virtual ~Poly() { }
+	virtual ~TestPoly() { }
 };
 
-struct Poly2 : public Poly
+struct TestPoly2 : public TestPoly
 {
-	virtual ~Poly2() { }
+	virtual ~TestPoly2() { }
 };
 
 
 
 
-
+/// Main function for the test
 int main()
 {
-// 	std::cerr << "Base: " << hz::type_is_polymorphic<Base>::value << "\n";
-// 	std::cerr << "Child: " << hz::type_is_polymorphic<Child>::value << "\n";
-// 	std::cerr << "Poly: " << hz::type_is_polymorphic<Poly>::value << "\n";
+// 	std::cerr << "TestBase: " << hz::type_is_polymorphic<TestBase>::value << "\n";
+// 	std::cerr << "TestChild: " << hz::type_is_polymorphic<TestChild>::value << "\n";
+// 	std::cerr << "TestPoly: " << hz::type_is_polymorphic<TestPoly>::value << "\n";
 
 
 	{
-		Child c;
-		Base* b = &c;
+		TestChild c;
+		TestBase* b = &c;
 
-		hz::down_cast<Child*>(b);  // should use static_cast (both are non-polymorphic)
-// 		static_cast<Child*>(b);
+		hz::down_cast<TestChild*>(b);  // should use static_cast (both are non-polymorphic)
+// 		static_cast<TestChild*>(b);
 	}
 
 	{
-		Poly p;
-		Base* b = &p;
+		TestPoly p;
+		TestBase* b = &p;
 
-		hz::down_cast<Poly*>(b);  // should use static_cast (base is non-polymorphic)
-// 		static_cast<Child*>(b);
+		hz::down_cast<TestPoly*>(b);  // should use static_cast (base is non-polymorphic)
+// 		static_cast<TestChild*>(b);
 	}
 
 	{
-		Poly2 p;
-		Poly* b = &p;
+		TestPoly2 p;
+		TestPoly* b = &p;
 
-		hz::down_cast<Poly2*>(b);  // should use dynamic_cast (both are polymorphic)
-// 		dynamic_cast<Poly2*>(b);
-// 		static_cast<Poly2*>(b);
+		hz::down_cast<TestPoly2*>(b);  // should use dynamic_cast (both are polymorphic)
+// 		dynamic_cast<TestPoly2*>(b);
+// 		static_cast<TestPoly2*>(b);
 	}
 
 /*
 	{
-		Poly p;
-		Base& b = p;
+		TestPoly p;
+		TestBase& b = p;
 
-		hz::down_cast<Poly&>(b);  // should throw an error, only pointers are supported.
+		hz::down_cast<TestPoly&>(b);  // should throw an error, only pointers are supported.
 	}
 */
 
@@ -91,3 +96,5 @@ int main()
 
 
 
+
+/// @}

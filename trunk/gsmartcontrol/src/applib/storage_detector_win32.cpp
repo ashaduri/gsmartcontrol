@@ -26,6 +26,7 @@
 
 /**
 \file
+<tt>
 3ware Windows detection:
 For 3ware 9xxx only.
 Call as: smartctl -i sd[a-z],N
@@ -76,7 +77,7 @@ smartctl --scan-open output for win32 with 3ware RAID:
 /dev/sda,0 -d ata (opened)
 /dev/sda,1 -d ata (opened)
 ------------------------------------------------------------------
-*/
+</tt> */
 
 
 namespace {

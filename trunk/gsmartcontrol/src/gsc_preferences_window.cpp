@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup gsc
+/// \weakgroup gsc
+/// @{
 
 #include <map>
 #include <gtkmm/button.h>
@@ -27,12 +32,14 @@
 
 
 
+/// Device Options tree view of the Preferences window
 class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 	public:
 
-		typedef GscPreferencesDeviceOptionsTreeView self_type;  // needed for CONNECT_VIRTUAL
+		typedef GscPreferencesDeviceOptionsTreeView self_type;  ///< Self type, needed for CONNECT_VIRTUAL
 
-		// glade/gtkbuilder needs this constructor
+
+		/// Constructor, gtkbuilder/glade needs this.
 		GscPreferencesDeviceOptionsTreeView(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
 				: Gtk::TreeView(gtkcobj), preferences_window(0)
 		{
@@ -67,12 +74,14 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		}
 
 
+		/// Set the parent window
 		void set_preferences_window(GscPreferencesWindow* w)
 		{
 			preferences_window = w;
 		}
 
 
+		/// Remove selected row
 		void remove_selected_row()
 		{
 			if (this->get_selection()->count_selected_rows()) {
@@ -82,6 +91,7 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		}
 
 
+		/// Add a new row (for a new device)
 		void add_new_row(const std::string& device, const std::string& type, const std::string& params, bool select = true)
 		{
 			Gtk::TreeRow row = *(model->append());
@@ -96,6 +106,7 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		}
 
 
+		/// Update selected row device entry
 		void update_selected_row_device(const std::string& device)
 		{
 			if (this->get_selection()->count_selected_rows()) {
@@ -106,6 +117,7 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		}
 
 
+		/// Update selected row type entry
 		void update_selected_row_type(const std::string& type)
 		{
 			if (this->get_selection()->count_selected_rows()) {
@@ -116,6 +128,7 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		}
 
 
+		/// Update selected row parameters entry
 		void update_selected_row_params(const std::string& params)
 		{
 			if (this->get_selection()->count_selected_rows()) {
@@ -125,18 +138,21 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		}
 
 
+		/// Remove all rows
 		void clear_all()
 		{
 			model->clear();
 		}
 
 
+		/// Check whether there is a row selected
 		bool has_selected_row()
 		{
 			return this->get_selection()->count_selected_rows();
 		}
 
 
+		/// Set the device map (as loaded from config)
 		void set_device_map(const device_option_map_t& devmap)
 		{
 			clear_all();
@@ -151,6 +167,7 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		}
 
 
+		/// Get the device map (to be saved to config)
 		device_option_map_t get_device_map()
 		{
 			device_option_map_t devmap;
@@ -175,7 +192,7 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 
 
 
-		// callback
+		/// Selection change callback
 		void on_selection_changed()
 		{
 			std::string dev, type, par;
@@ -194,16 +211,17 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		}
 
 
+	private:
 
-		Glib::RefPtr<Gtk::ListStore> model;
+		Glib::RefPtr<Gtk::ListStore> model;  ///< The list model
 
-		Gtk::TreeModelColumn<Glib::ustring> col_device;
-		Gtk::TreeModelColumn<Glib::ustring> col_type;
-		Gtk::TreeModelColumn<std::string> col_parameters;
-		Gtk::TreeModelColumn<std::string> col_device_real;
-		Gtk::TreeModelColumn<std::string> col_type_real;
+		Gtk::TreeModelColumn<Glib::ustring> col_device;  ///< Model column
+		Gtk::TreeModelColumn<Glib::ustring> col_type;  ///< Model column
+		Gtk::TreeModelColumn<std::string> col_parameters;  ///< Model column
+		Gtk::TreeModelColumn<std::string> col_device_real;  ///< Model column
+		Gtk::TreeModelColumn<std::string> col_type_real;  ///< Model column
 
-		GscPreferencesWindow* preferences_window;
+		GscPreferencesWindow* preferences_window;  ///< The parent window
 
 };
 
@@ -338,6 +356,7 @@ void GscPreferencesWindow::device_widget_set_remove_possible(bool b)
 
 namespace {
 
+	/// Set configuration in a smart way - don't set the defaults.
 	template<typename T>
 	inline void prefs_config_set(const std::string& path, const T& data)
 	{
@@ -358,6 +377,7 @@ namespace {
 	}
 
 
+	/// Get configuration for \c path
 	template<typename T>
 	inline bool prefs_config_get(const std::string& path, T& data)
 	{
@@ -461,6 +481,29 @@ void GscPreferencesWindow::export_config()
 	std::string devmap_str = app_serialize_device_option_map(devmap);
 	prefs_config_set("system/smartctl_device_options", devmap_str);
 
+}
+
+
+
+bool GscPreferencesWindow::on_delete_event_before(GdkEventAny* e)
+{
+	destroy(this);  // deletes this object and nullifies instance
+	return true;  // event handled, don't call default virtual handler
+}
+
+
+
+void GscPreferencesWindow::on_window_cancel_button_clicked()
+{
+	destroy(this);
+}
+
+
+
+void GscPreferencesWindow::on_window_ok_button_clicked()
+{
+	export_config();
+	destroy(this);
 }
 
 
@@ -587,3 +630,5 @@ void GscPreferencesWindow::on_device_options_parameter_entry_changed()
 
 
 
+
+/// @}

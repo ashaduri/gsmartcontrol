@@ -4,46 +4,55 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_bsd-ucb.txt file
 ***************************************************************************/
+/// \file
+/// \author Guido van Rossum
+/// \author Alexander Shaduri
+/// \ingroup hz
+/// \weakgroup hz
+/// @{
 
 #ifndef HZ_STRING_WCMATCH_H
 #define HZ_STRING_WCMATCH_H
 
 #include "hz_config.h"  // feature macros
 
+/**
+\file
+Shell-like pattern matching (wildcards).
 
-// Parts of this file are derived from Sudo's fnmatch().
+Parts of this file are derived from Sudo's fnmatch().
 
-// The original copyright header follows:
-/*
- * Copyright (c) 1989, 1993, 1994
- *	The Regents of the University of California.  All rights reserved.
- *
- * This code is derived from software contributed to Berkeley by
- * Guido van Rossum.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+The original copyright header follows:
+
+* Copyright (c) 1989, 1993, 1994
+*	The Regents of the University of California.  All rights reserved.
+*
+* This code is derived from software contributed to Berkeley by
+* Guido van Rossum.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions
+* are met:
+* 1. Redistributions of source code must retain the above copyright
+*    notice, this list of conditions and the following disclaimer.
+* 2. Redistributions in binary form must reproduce the above copyright
+*    notice, this list of conditions and the following disclaimer in the
+*    documentation and/or other materials provided with the distribution.
+* 3. Neither the name of the University nor the names of its contributors
+*    may be used to endorse or promote products derived from this software
+*    without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+* ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+* ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+* OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+* HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+* LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+* OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+* SUCH DAMAGE.
  */
 
 
@@ -82,7 +91,7 @@ namespace internal {
 	};
 
 
-	// helper function
+	/// Helper function
 	inline wc_range_status_t wc_rangematch(const char* pattern, char test, int flags, const char** newp)
 	{
 		int negate = 0, ok = 0;
@@ -147,7 +156,7 @@ namespace internal {
 
 
 
-	/*
+	/**
 	* Function fnmatch() as specified in POSIX 1003.2-1992, section B.6.
 	* Compares a filename or pathname to a pattern.
 	*/
@@ -272,7 +281,7 @@ namespace internal {
 
 
 
-	// return true if pattern has any glob chars in it
+	/// Return true if pattern has any glob chars in it
 	inline bool wc_fnmatch_test(const char* pattern)
 	{
 		bool in_bracket = false;
@@ -313,8 +322,9 @@ namespace internal {
 // -------------- std::string-style API
 
 
-// Check whether str matches pattern, which is a shell wildcard.
-// On non-match or failure false is returned; otherwise, true.
+/// Check whether str matches pattern, which is a shell wildcard.
+/// Supported special symbols are *, ?, [ ], and backslash (for escaping these).
+/// On non-match or failure false is returned; otherwise, true.
 inline bool string_wcmatch(const std::string& pattern, const std::string& str)
 {
 	return (hz::internal::wc_fnmatch(pattern.c_str(), str.c_str(),
@@ -322,7 +332,7 @@ inline bool string_wcmatch(const std::string& pattern, const std::string& str)
 }
 
 
-// Test whether pattern contains any glob characters in it.
+/// Test whether pattern contains any glob characters in it.
 inline bool string_is_wc_pattern(const std::string& pattern)
 {
 	return static_cast<bool>(hz::internal::wc_fnmatch_test(pattern.c_str()));
@@ -335,3 +345,5 @@ inline bool string_is_wc_pattern(const std::string& pattern)
 
 
 #endif
+
+/// @}

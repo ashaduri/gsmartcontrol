@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_unlicense.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup hz_tests
+/// \weakgroup hz_tests
+/// @{
 
 // disable libdebug, we don't link to it
 #undef HZ_USE_LIBDEBUG
@@ -45,6 +50,7 @@
 
 
 
+/// Main function for the test
 int main()
 {
 	using namespace hz;
@@ -97,3 +103,5 @@ int main()
 
 
 
+
+/// @}

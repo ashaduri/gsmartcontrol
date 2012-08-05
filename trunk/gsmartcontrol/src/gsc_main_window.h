@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup gsc
+/// \weakgroup gsc
+/// @{
 
 #ifndef GSC_MAIN_WINDOW_H
 #define GSC_MAIN_WINDOW_H
@@ -28,55 +33,48 @@ class GscInfoWindow;  // declared in gsc_info_window.h
 
 
 
-// use create() / destroy() with this class instead of new / delete!
-
+/// The main window.
+/// Use create() / destroy() with this class instead of new / delete!
 class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
-
 	public:
+
+		friend class GscMainWindowIconView;  // It needs our privates
 
 		// name of glade/ui file without a .glade/.ui extension and quotes
 		APP_UI_RES_DATA_INIT(gsc_main_window);
 
 
-		// glade/gtkbuilder needs this constructor
+		/// Constructor, gtkbuilder/glade needs this.
 		GscMainWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui);
 
-
+		/// Virtual destructor
 		virtual ~GscMainWindow()
 		{ }
 
 
-
-		 // scan for devices and fill the iconview
+		/// Scan for devices and fill the iconview
 		void rescan_devices();
 
 
-		// manually add device file to icon list
+		/// Manually add device file to icon list
 		bool add_device(const std::string& file, const std::string& type_arg, const std::string& extra_args);
 
 
-		// read smartctl data from file, add it as a virtual drive to icon list
+		/// Read smartctl data from file, add it as a virtual drive to icon list
 		bool add_virtual_drive(const std::string& file);
 
 
-		// if at least one drive is having a test performed, return true.
+		/// If at least one drive is having a test performed, return true.
 		bool testing_active() const;
 
 
-		// show the info window for device
+		/// Show the info window for the drive
 		GscInfoWindow* show_device_info_window(StorageDeviceRefPtr drive);
 
 
-		// enable/disable items in Drive menu, set toggles in menu items
-		void set_drive_menu_status(StorageDeviceRefPtr drive);
+	protected:
 
-
-		Gtk::Menu* get_popup_menu(StorageDeviceRefPtr drive);
-
-
-		void update_status_widgets();  // status area, etc...
-
-
+		/// Action type
 		enum action_t {
 			action_quit,
 
@@ -102,41 +100,36 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 		};
 
 
-	protected:
+		/// Enable/disable items in Drive menu, set toggles in menu items
+		void set_drive_menu_status(StorageDeviceRefPtr drive);
 
-		bool create_widgets();  // iconview, gtkuimanager stuff (menus), custom labels
+		/// Get popup menu for a drive
+		Gtk::Menu* get_popup_menu(StorageDeviceRefPtr drive);
 
-		void populate_iconview(bool smartctl_valid);  // scan and populate iconview widget with drive icons
+		/// Update status widgets (status area, etc...)
+		void update_status_widgets();
 
 
+		/// Create the widgets - iconview, gtkuimanager stuff (menus), custom labels
+		bool create_widgets();
+
+		/// scan and populate iconview widget with drive icons
+		void populate_iconview(bool smartctl_valid);
+
+		/// Show "Add Device" window
 		void show_add_device_chooser();
 
+		/// Show "Load Virtual File" dialog
 		void show_load_virtual_file_chooser();
 
 
+		// -------------------- callbacks
 
-		GscMainWindowIconView* iconview;  // created by obj_create()
-		std::vector<StorageDeviceRefPtr> drives;  // scanned drives
+		// ---------- overriden virtual methods
 
-		Glib::RefPtr<Gtk::UIManager> ui_manager;
-		Glib::RefPtr<Gtk::ActionGroup> actiongroup_main;
-		Glib::RefPtr<Gtk::ActionGroup> actiongroup_device;
-		bool action_handling_enabled_;
-		std::map<action_t, Glib::RefPtr<Gtk::Action> > action_map;  // used by on_action_activated().
-
-		WrappingLabel* name_label;
-		WrappingLabel* health_label;
-		WrappingLabel* family_label;
-
-		bool scanning_;
-
-
-		// -------------------- Callbacks
-
-
-		// ---------- override virtual methods
-
-		// by default, delete_event calls hide().
+		/// Quit the application on delete event (by default it calls hide()).
+		/// If some test is running, show a question dialog first.
+		/// Reimplemented from Gtk::Window.
 		bool on_delete_event_before(GdkEventAny* e);
 
 
@@ -144,14 +137,36 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 
 
 // 		void on_action_activated(Glib::RefPtr<Gtk::Action> action, action_t action_type);
+
+		/// Action activate callback
 		void on_action_activated(action_t action_type);
 
+		/// Action callback
 		void on_action_enable_smart_toggled(Gtk::ToggleAction* action);
 
+		/// Action callback
 		void on_action_enable_aodc_toggled(Gtk::ToggleAction* action);
 
+		/// Action callback
 		void on_action_reread_device_data();
 
+
+	private:
+
+		GscMainWindowIconView* iconview;  ///< The main icon view, as created by obj_create()
+		std::vector<StorageDeviceRefPtr> drives;  ///< Scanned drives
+
+		Glib::RefPtr<Gtk::UIManager> ui_manager;  ///< UI manager
+		Glib::RefPtr<Gtk::ActionGroup> actiongroup_main;  ///< Action group
+		Glib::RefPtr<Gtk::ActionGroup> actiongroup_device;  ///< Action group
+		bool action_handling_enabled_;  ///< Whether action handling is enabled or not
+		std::map<action_t, Glib::RefPtr<Gtk::Action> > action_map;  ///< Used by on_action_activated().
+
+		WrappingLabel* name_label;  ///< A UI label
+		WrappingLabel* health_label;  ///< A UI label
+		WrappingLabel* family_label;  ///< A UI label
+
+		bool scanning_;  ///< If the scanning is in process or not
 
 };
 
@@ -161,3 +176,5 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 
 
 #endif
+
+/// @}
