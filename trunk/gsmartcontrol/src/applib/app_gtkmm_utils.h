@@ -101,7 +101,6 @@ bool app_gtkmm_icon_theme_has_icon(Glib::RefPtr<Gtk::IconTheme> theme,
 
 /// Convert a possibly invalid utf-8 string to valid utf-8.
 /// \param str string to test and fix.
-/// \param in_locale If true, \c str will be converted from locale charset to utf-8 first.
 Glib::ustring app_utf8_make_valid(const Glib::ustring& str);
 
 

@@ -5,6 +5,7 @@
  License: See LICENSE_unlicense.txt
 ***************************************************************************/
 /// \file
+/// \author Irakli Elizbarashvili
 /// \author Alexander Shaduri
 /// \ingroup rmn_tests
 /// \weakgroup rmn_tests

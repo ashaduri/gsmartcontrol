@@ -9,10 +9,7 @@
 /// \weakgroup applib
 /// @{
 
-#include "storage_detector_win32.h"
-
 #if !defined CONFIG_KERNEL_LINUX && !defined CONFIG_KERNEL_FAMILY_WINDOWS
-
 
 #if defined CONFIG_KERNEL_OPENBSD || defined CONFIG_KERNEL_NETBSD
 	#include <util.h>  // getrawpartition()
@@ -26,6 +23,7 @@
 #include "hz/fs_dir.h"
 #include "rconfig/rconfig_mini.h"
 #include "app_pcrecpp.h"
+#include "storage_detector_other.h"
 
 
 

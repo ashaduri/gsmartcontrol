@@ -21,6 +21,12 @@
     misrepresented as being the original software.
  3. This notice may not be removed or altered from any source distribution.
 ***************************************************************************/
+/// \file
+/// \author Irakli Elizbarashvili
+/// \author Alexander Shaduri
+/// \ingroup rmn
+/// \weakgroup rmn
+/// @{
 
 #ifndef RMN_RESOURCE_NODE_H
 #define RMN_RESOURCE_NODE_H
@@ -36,9 +42,6 @@
 #include "resource_exception.h"
 
 
-// Define RMN_RESOURCE_NODE_DEBUG=1 to enable
-// debug printing of resource node operations.
-
 
 namespace rmn {
 
@@ -50,32 +53,34 @@ using hz::intrusive_ptr;  // used as rmn::intrusive_ptr by external users.
 // these are in rmn:: namespace because it would be difficult to use
 // them as members of a template class.
 // these have internal linkage (const integral types).
-const char PATH_DELIMITER = '/';
-const char* const PATH_DELIMITER_S = "/";
+const char PATH_DELIMITER = '/';  ///< Rmn path delimiter character
+const char* const PATH_DELIMITER_S = "/";  ///< Rmn path delimiter character as a string (const char*)
 
 
 
+/// Resource node. Resource nodes are nodes of named data.
 template<class Data>
 class resource_node : public resource_base, public Data {
-
 	public:
 
-		typedef resource_node* parent_node_ptr;  // must be able to assign this to node_ptr.
-		// do NOT return parent_node_ptr from public functions, return node_ptr instead.
-		typedef intrusive_ptr<resource_node<Data> > node_ptr;  // ref-counting smart pointer, child type.
-		typedef intrusive_ptr<const resource_node<Data> > node_const_ptr;
+		// Do NOT return parent_node_ptr from public functions, return node_ptr instead.
+		typedef resource_node* parent_node_ptr;  ///< Parent node (non-reference-holding pointer). Must be able to assign this to node_ptr.
+		typedef intrusive_ptr<resource_node<Data> > node_ptr;  ///< Ref-counting smart pointer to node, also child type.
+		typedef intrusive_ptr<const resource_node<Data> > node_const_ptr;  ///< Const pointer version of node_ptr.
 
-		typedef std::list<node_ptr> child_list_t;
-		typedef typename child_list_t::iterator child_iterator;
-		typedef typename child_list_t::const_iterator child_const_iterator;
-		typedef typename child_list_t::size_type child_size_type;
+		typedef std::list<node_ptr> child_list_t;  ///< Child list
+		typedef typename child_list_t::iterator child_iterator;  ///< Child list iterator
+		typedef typename child_list_t::const_iterator child_const_iterator;  ///< Child list const iterator
+		typedef typename child_list_t::size_type child_size_type;  ///< Child list size type
 
-		typedef resource_node<Data> self_type;
+		typedef resource_node<Data> self_type;  ///< Self type
 
 
+		/// Constructor, constructs empty node
 		resource_node() : parent_(0)
 		{ }
 
+		/// Destructor
 		~resource_node()
 		{
 #if defined RMN_RESOURCE_NODE_DEBUG && RMN_RESOURCE_NODE_DEBUG
@@ -84,95 +89,143 @@ class resource_node : public resource_base, public Data {
 		}
 
 
+		/// child_list_t::begin()
 		child_iterator children_begin();
+
+		/// child_list_t::end()
 		child_iterator children_end();
+
+		/// child_list_t::begin() const
 		child_const_iterator children_begin() const;
+
+		/// child_list_t::end() const
 		child_const_iterator children_end() const;
 
+		/// Get number of children for this node
 		child_size_type get_child_count() const;
 
 
-		node_ptr clone() const;  // return a deep copy of current node
+		/// Get a deep copy of the node
+		node_ptr clone() const;
 
-		bool copy_data_from(const node_ptr& src);  // copy data from src to *this.
-		bool copy_data_from(const node_const_ptr& src);  // copy data from src to *this.
+		/// Copy data from other node
+		bool copy_data_from(const node_ptr& src);
 
-		bool deep_copy_from(const node_ptr& src);  // recursively copy src to *this, replacing current node's children and name.
-		bool deep_copy_from(const node_const_ptr& src);  // recursively copy src to *this, replacing current node's children and name.
+		/// Copy data from other node
+		bool copy_data_from(const node_const_ptr& src);
+
+		/// Recursively copy src to *this, replacing current node's children and name.
+		bool deep_copy_from(const node_ptr& src);
+
+		/// Recursively copy src to *this, replacing current node's children and name.
+		bool deep_copy_from(const node_const_ptr& src);
+
+		/// Get node's full path (either from cache or generate it if not available).
+		std::string get_path() const;
 
 
-		std::string get_path() const;  // get a full path from cache or generate it if not available.
-
-
-		// returns false if cast failed if path not found
+		/// Get data by path (absolute or relative).
+		/// Returns false if cast failed if path not found.
 		template<typename T>
 		inline bool get_data_by_path(const std::string& path, T& put_it_here) const;
 
-		// This function throws if:
-		// 	* no such node (rmn::no_such_node);
-		//	* data empty (rmn::empty_data_retrieval);
-		//	* type mismatch (rmn::type_mismatch).
+		/// Get data by path (absolute or relative).
+		/// \throw rmn::no_such_node No such node
+		/// \throw rmn::empty_data_retrieval Data is empty
+		/// \throw rmn::type_mismatch Type mismatch
 		template<typename T>
 		T get_data_by_path(const std::string& path) const;
 
+		/// Set data by path (absolute or relative).
 		template<typename T>
 		inline bool set_data_by_path(const std::string& path, T data);
 
 
-
+		/// Add a child node.
 		bool add_child(node_ptr p);
 
+		/// Create a child note with name \c name.
 		node_ptr create_child(const std::string& name);
 
+		/// Create a child node with name \c name and data \c data
 		template<typename T>
 		node_ptr create_child(const std::string& name, T data);
 
 
+		/// Remove node by absolute path
 		bool remove_node(const std::string& full_path);
+
+		/// Remove direct child node by name
 		bool remove_child_node(const std::string& name);
+
+		/// Remove direct child node by node pointer
 		bool remove_child_node(node_ptr p);
-		void clear_children();  // remove all children
+
+		/// Remove all children
+		void clear_children();
 
 
+		/// Get direct child node by index
 		node_ptr get_child_node(child_size_type n);
+
+		/// Get direct child node by index
 		node_const_ptr get_child_node(child_size_type n) const;
 
+		/// Get direct child node by name
 		node_ptr get_child_node(const std::string& name);
+
+		/// Get direct child node by name
 		node_const_ptr get_child_node(const std::string& name) const;
 
-		// build nodes up to and including path. If allow_side_construction is false,
-		// allow constructing side-nodes (as opposed to subnodes only).
+
+		/// build nodes up to and including path (absolute or relative).
+		/// If allow_side_construction is false, allow constructing side-nodes
+		/// (as opposed to subnodes only).
 		bool build_nodes(const std::string& path, bool allow_side_construction = false);
 
-		node_ptr find_node(const std::string& name);
-		node_const_ptr find_node(const std::string& name) const;
+		/// Find node by path (absolute or relative).
+		node_ptr find_node(const std::string& path);
 
+		/// Find node by path (absolute or relative).
+		node_const_ptr find_node(const std::string& path) const;
+
+		/// Get root node (its path is "/").
 		node_ptr get_root_node();
+
+		/// Get root node (its path is "/").
 		node_const_ptr get_root_node() const;
 
+		/// Get parent node, or null pointer if none.
 		node_ptr get_parent();
+
+		/// Get parent node, or null pointer if none.
 		node_const_ptr get_parent() const;
 
-
-		static bool is_abs_path(const std::string& path)
-		{
-			return (!path.empty() && path[0] == PATH_DELIMITER);
-		}
+		/// Check if path is absolute.
+		static bool is_abs_path(const std::string& path);
 
 
 	protected:
 
+		/// Set node parent
 		bool set_parent(node_ptr p);
+
+		/// Clear node parent (orphan it)
 		bool clear_parent();
 
-		std::string update_path_cache() const;  // update path cache. const because it doesn't change any visible members.
-		void clear_path_cache() const;  // const because no public effect and callable from const methods.
+		/// Update path cache. Const because it doesn't change any visible members.
+		std::string update_path_cache() const;
+
+		/// Clear path cache. Const because no public effect and callable from const methods.
+		void clear_path_cache() const;
 
 
-		child_list_t	children_;
-		parent_node_ptr parent_;
+	private:
 
-		mutable std::string path_cache_;  // path cache
+		child_list_t children_;  ///< Child list (strong reference holding pointers)
+		parent_node_ptr parent_;  ///< Parent node (non-reference-holding pointer)
+
+		mutable std::string path_cache_;  ///< Path cache
 
 };
 
@@ -718,6 +771,13 @@ resource_node<Data>::get_parent() const
 
 
 
+template<class Data> inline
+bool resource_node<Data>::is_abs_path(const std::string& path)
+{
+	return (!path.empty() && path[0] == PATH_DELIMITER);
+}
+
+
 
 template<class Data> inline
 bool resource_node<Data>::set_parent(typename resource_node<Data>::node_ptr p)
@@ -788,3 +848,5 @@ void resource_node<Data>::clear_path_cache() const
 
 
 #endif
+
+/// @}

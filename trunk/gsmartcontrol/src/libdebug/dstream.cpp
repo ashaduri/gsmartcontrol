@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup libdebug
+/// \weakgroup libdebug
+/// @{
 
 #include <ostream>  // std::ostream definition
 
@@ -16,6 +21,7 @@
 
 namespace debug_internal {
 
+	/// Null stream buf - discards anything that is sent to it.
 	class NullStreamBuf : public std::streambuf {
 
 		protected:
@@ -25,15 +31,20 @@ namespace debug_internal {
 
 
 
+	/// Null streambuffer object
 	static NullStreamBuf s_null_streambuf;
+
+	/// Null ostream - discards anything that is sent to it.
 	static std::ostream s_null_stream(&s_null_streambuf);
 
+
+	/// Get null streambuf, see s_null_streambuf.
 	std::streambuf& get_null_streambuf()
 	{
 		return s_null_streambuf;
 	}
 
-
+	/// Get null ostream, see s_null_stream.
 	std::ostream& get_null_stream()
 	{
 		return s_null_stream;
@@ -41,7 +52,6 @@ namespace debug_internal {
 
 
 
-	// This is function thread-safe as long as state is not modified.
 	void DebugStreamBuf::flush_to_channel()
 	{
 		if (!oss_.get())  // tls
@@ -82,3 +92,5 @@ namespace debug_internal {
 
 
 
+
+/// @}

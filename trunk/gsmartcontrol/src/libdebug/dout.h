@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup libdebug
+/// \weakgroup libdebug
+/// @{
 
 #ifndef LIBDEBUG_DOUT_H
 #define LIBDEBUG_DOUT_H
@@ -19,55 +24,76 @@
 #include "dflags.h"
 
 
+/**
+\file
+These functions are thread-safe if the state doesn't change. That is, you may use
+the output functions in different threads, but if you modify the state (channels,
+default format flags, etc...), then you _must_ stop all libdebug activity in _all_
+threads except the one you're modifying with.
+*/
 
-// These functions are thread-safe if the state doesn't change. That is, you may use
-// the output functions in different threads, but if you modify the state (channels,
-// default format flags, etc...), then you _must_ stop all libdebug activity in _all_
-// threads except the one you're modifying with.
 
 
-
-
-// this may throw for invalid domain or level.
+/// Get a libdebug-handled stream for \c level and \c domain.
+/// \throw debug_usage_error if invalid domain or level.
 std::ostream& debug_out(debug_level::flag level, const std::string& domain);
 
 
 
+// These are macros to be able to easily compile-out per-level output.
+
+/// Send an output to debug stream. For example:
+/// \code
+/// debug_out_error("app", DBG_FUNC_MSG << "Error in structure consistency.\n");
+/// debug_out_dump("app", "Error value: " << value << ".\n");
+/// \endcode
 #define debug_out_dump(domain, output) \
 	debug_out(debug_level::dump, domain) << output
 
+/// Send an output to debug stream. \see debug_out_dump().
 #define debug_out_info(domain, output) \
 	debug_out(debug_level::info, domain) << output
 
+/// Send an output to debug stream. \see debug_out_dump().
 #define debug_out_warn(domain, output) \
 	debug_out(debug_level::warn, domain) << output
 
+/// Send an output to debug stream. \see debug_out_dump().
 #define debug_out_error(domain, output) \
 	debug_out(debug_level::error, domain) << output
 
+/// Send an output to debug stream. \see debug_out_dump().
 #define debug_out_fatal(domain, output) \
 	debug_out(debug_level::fatal, domain) << output
 
 
 
-
+/// Send a printf-like-formatted string to libdebug stream.
 void debug_print(debug_level::flag level, const std::string& domain,
 		const char* format, ...) HZ_FUNC_STRING_SPRINTF_CHECK(3, 4);
 
 
-
+/// Send a printf-like-formatted string to libdebug stream. For example:
+/// \code
+/// debug_print_error("app", "Error in %s while handling input parameters.\n", DBG_FUNC);
+/// debug_print_dump("app", "Parameter value: %d.\n", value);
+/// \endcode
 #define debug_print_dump(domain, ...) \
 	debug_print(debug_level::dump, domain, __VA_ARGS__)
 
+/// Send a printf-like-formatted string to libdebug stream. \see debug_print_dump().
 #define debug_print_info(domain, ...) \
 	debug_print(debug_level::info, domain, __VA_ARGS__)
 
+/// Send a printf-like-formatted string to libdebug stream. \see debug_print_dump().
 #define debug_print_warn(domain, ...) \
 	debug_print(debug_level::warn, domain, __VA_ARGS__)
 
+/// Send a printf-like-formatted string to libdebug stream. \see debug_print_dump().
 #define debug_print_error(domain, ...) \
 	debug_print(debug_level::error, domain, __VA_ARGS__)
 
+/// Send a printf-like-formatted string to libdebug stream. \see debug_print_dump().
 #define debug_print_fatal(domain, ...) \
 	debug_print(debug_level::fatal, domain, __VA_ARGS__)
 
@@ -75,10 +101,11 @@ void debug_print(debug_level::flag level, const std::string& domain,
 
 
 
-// Start / stop prefix printing. Useful for large dumps
-
+/// Start prefix printing. Useful for large dumps where you don't want prefixes to
+/// be printed on each debug_* call.
 void debug_begin();
 
+/// Stop prefix printing.
 void debug_end();
 
 
@@ -89,33 +116,35 @@ void debug_end();
 
 namespace debug_internal {
 
-
+	/// Source position object for sending to libdebug streams, prints source position.
 	struct DebugSourcePos {
 
+		/// Constructor
 		inline DebugSourcePos(const std::string& file_, unsigned int line_, const std::string& func_name_, const std::string& func_)
 				: func_name(func_name_), func(func_), line(line_), file(file_), enabled_types(debug_pos::def)
 		{ }
 
-
+		/// Formatted output string
 		std::string str() const;
 
 
-		std::string func_name;  // name only
-		std::string func;  // name with namespaces and classes
-		unsigned int line;
-		std::string file;
+		std::string func_name;  ///< Function name only
+		std::string func;  ///< Function name with namespaces and classes
+		unsigned int line;  ///< Source line
+		std::string file;  ///< Source file
 
-		debug_pos::type enabled_types;
+		debug_pos::type enabled_types;  ///< Enabled formatting types
 	};
 
 
-	// it can serve as a manipulator
+	/// Output operator
 	inline std::ostream& operator<< (std::ostream& os, const DebugSourcePos& pos)
 	{
 		return os << pos.str();
 	}
 
 
+	/// Format the function name
 	inline std::string format_function_msg(const std::string& func, bool add_suffix)
 	{
 		// if it's "bool<unnamed>::A::func(int)" or "bool test::A::func(int)",
@@ -146,14 +175,15 @@ namespace debug_internal {
 // These two may seem pointless, but they actually help to implement
 // zero-overhead (if you define them to something else when libdebug is disabled).
 
-// Current file as const char*.
+/// Current file as const char*.
 #define DBG_FILE __FILE__
 
-// Current line as unsigned int.
+/// Current line as unsigned int.
 #define DBG_LINE __LINE__
 
 
-// Function name (without classes / namespaces) only, e.g. "main".
+/// \def DBG_FUNC_NAME
+/// Function name (without classes / namespaces) only, e.g. "main", as const char*.
 #if defined HAVE_CXX___func__ && HAVE_CXX___func__
 	#define DBG_FUNC_NAME __func__
 #elif defined HAVE_CXX___FUNCTION__ && HAVE_CXX___FUNCTION__
@@ -162,7 +192,9 @@ namespace debug_internal {
 	#define DBG_FUNC_NAME "unknown"
 #endif
 
-// Pretty name is the whole prototype, including return type and classes / namespaces.
+/// \def DBG_FUNC_PRNAME
+/// Function pretty name is the whole function prototype,
+/// including return type and classes / namespaces, as const char*.
 #ifdef __GNUC__
 	#define DBG_FUNC_PRNAME __PRETTY_FUNCTION__
 #else
@@ -170,32 +202,33 @@ namespace debug_internal {
 #endif
 
 
-// "class::function()"
+/// "class::function()", as const char*.
 #define DBG_FUNC (debug_internal::format_function_msg(DBG_FUNC_PRNAME, false).c_str())
 
-// "class::function(): "
+/// "class::function(): ", as const char*.
 #define DBG_FUNC_MSG (debug_internal::format_function_msg(DBG_FUNC_PRNAME, true).c_str())
 
 
-// An object to send into a stream. Prints position.
+/// When sent into std::ostream, this object prints current source position.
 #define DBG_POS debug_internal::DebugSourcePos(DBG_FILE, DBG_LINE, DBG_FUNC_NAME, DBG_FUNC)
 
 
-// Prints "Trace point a reached". Don't need to send into stream, it prints by itself.
+/// A standalone function-like macro, prints "Trace point "a" reached at (source position)"
+/// (\c a is the macro parameter).
 #define DBG_TRACE_POINT_MSG(a) debug_out_dump("default", "TRACE point \"" << #a << "\" reached at " << DBG_POS << ".\n")
 
-// Prints "Trace point reached". Don't need to send into stream, it prints by itself.
+/// A standalone function-like macro, prints "Trace point reached at (source position)".
 #define DBG_TRACE_POINT_AUTO debug_out_dump("default", "TRACE point reached at " << DBG_POS << ".\n")
 
 
-// Prints "ENTER: function_name". Don't need to send into stream, it prints by itself.
+/// A standalone function-like macro, prints "ENTER: "function_name"".
 #define DBG_FUNCTION_ENTER_MSG debug_out_dump("default", "ENTER: \"" << DBG_FUNC << "\"\n")
 
-// Prints "EXIT:  function_name". Don't need to send into stream, it prints by itself.
+/// A standalone function-like macro, prints "EXIT:  "function_name"".
 #define DBG_FUNCTION_EXIT_MSG debug_out_dump("default", "EXIT:  \"" << DBG_FUNC << "\"\n")
 
 
-// Prints msg if assertion fails. Don't need to send into stream, it prints by itself.
+/// A standalone function-like macro, prints \c msg if \c cond evaluates to false.
 #define DBG_ASSERT_MSG(cond, msg) \
 	if (true) { \
 		if (!(cond)) \
@@ -203,7 +236,7 @@ namespace debug_internal {
 	} else (void)0
 
 
-// Prints generic message if assertion fails. Don't need to send into stream, it prints by itself.
+/// A standalone function-like macro, prints generic message if \c cond evaluates to false.
 #define DBG_ASSERT(cond) \
 	if (true) { \
 		if (!(cond)) \
@@ -217,13 +250,13 @@ namespace debug_internal {
 
 
 
-// increase indentation level for all debug levels
+/// Increase indentation level for all debug levels
 void debug_indent_inc(int by = 1);
 
-// decrease
+/// Decrease indentation level for all debug levels
 void debug_indent_dec(int by = 1);
 
-// reset
+/// Reset indentation level to 0 for all debug levels
 void debug_indent_reset();
 
 
@@ -237,34 +270,42 @@ namespace debug_internal {
 	struct DebugResetIndent;
 
 
-
+	/// A stream manipulator that increases the indentation level
 	struct DebugIndent {
+		/// Constructor
 		DebugIndent(int indent_level = 1) : by(indent_level)
 		{ }
 
+		/// Constructs a new DebugIndent object
 		DebugIndent operator() (int indent_level = 1)
 		{
 			return DebugIndent(indent_level);
 		}
 
-		int by;
+		int by;  ///< Number of indentation levels to increase with (may be negative)
 	};
 
 
+	/// A stream manipulator that decreases the indentation level
 	struct DebugUnindent {
+		/// Constructor
 		DebugUnindent(int unindent_level = 1) : by(unindent_level)
 		{ }
 
+		/// Constructs a new DebugUnindent object
 		DebugUnindent operator() (int unindent_level = 1)
 		{
 			return DebugUnindent(unindent_level);
 		}
 
-		int by;
+		int by;  ///< Number of indentation levels to decrease with (may be negative)
 	};
 
 
+	/// A stream manipulator that resets the indentation level to 0
 	struct DebugResetIndent {
+
+		/// Constructs a new DebugResetIndent object
 		DebugResetIndent operator() ()  // just for consistency
 		{
 			return *this;
@@ -274,8 +315,9 @@ namespace debug_internal {
 
 
 	// These operators need to be inside the same namespace that their
-	// operands are for Koenig lookup to work inside _other_ namespaces.
+	// operands are for ADL to work inside _other_ namespaces.
 
+	/// A stream manipulator operator
 	inline std::ostream& operator<< (std::ostream& os, debug_internal::DebugIndent& m)
 	{
 		debug_indent_inc(m.by);
@@ -283,6 +325,7 @@ namespace debug_internal {
 	}
 
 
+	/// A stream manipulator operator
 	inline std::ostream& operator<< (std::ostream& os, debug_internal::DebugUnindent& m)
 	{
 		debug_indent_dec(m.by);
@@ -290,6 +333,7 @@ namespace debug_internal {
 	}
 
 
+	/// A stream manipulator operator
 	inline std::ostream& operator<< (std::ostream& os, debug_internal::DebugResetIndent& m)
 	{
 		debug_indent_reset();
@@ -297,10 +341,15 @@ namespace debug_internal {
 	}
 
 
+	// Manipulator objects:
 
-	// manupulator objects
+	/// Send this to libdebug-backed stream to increase the indentation level by 1.
 	extern DebugIndent debug_indent;
+
+	/// Send this to libdebug-backed stream to decrease the indentation level by 1.
 	extern DebugUnindent debug_unindent;
+
+	/// Send this to libdebug-backed stream to reset the indentation level to 0.
 	extern DebugResetIndent debug_resindent;
 
 
@@ -322,3 +371,5 @@ using debug_internal::debug_resindent;
 
 
 #endif
+
+/// @}

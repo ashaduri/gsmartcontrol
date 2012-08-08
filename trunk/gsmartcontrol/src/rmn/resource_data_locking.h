@@ -20,6 +20,11 @@
     misrepresented as being the original software.
  3. This notice may not be removed or altered from any source distribution.
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup rmn
+/// \weakgroup rmn
+/// @{
 
 #ifndef RMN_RESOURCE_DATA_LOCKING_H
 #define RMN_RESOURCE_DATA_LOCKING_H
@@ -30,7 +35,7 @@
 namespace rmn {
 
 
-// dummy, nothing yet
+/// Rmn sync policy of no synchronization (for single-threaded access)
 struct ResourceSyncPolicyNone {
 
 };
@@ -45,3 +50,5 @@ struct ResourceSyncPolicyNone {
 
 
 #endif
+
+/// @}

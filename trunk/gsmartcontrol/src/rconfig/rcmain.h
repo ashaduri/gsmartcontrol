@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup rconfig
+/// \weakgroup rconfig
+/// @{
 
 #ifndef RCONFIG_RCMAIN_H
 #define RCONFIG_RCMAIN_H
@@ -31,14 +36,20 @@ namespace rconfig {
 
 
 
+/// Rconfig node type
 typedef rmn::resource_node< rmn::ResourceDataAny<rmn::ResourceSyncPolicyNone> > node_t;
+
+/// Rconfig strong reference-holding node pointer
 typedef node_t::node_ptr node_ptr;
 
+/// Locking policy for rconfig (thread-safe)
 typedef hz::SyncPolicyMtDefault ConfigLockPolicy;
 
 
-
+/// Config branch for serializable values ("/config")
 static const char* const s_config_name = "config";
+
+/// Config branch for default config values ("/default")
 static const char* const s_default_name = "default";
 
 
@@ -50,13 +61,13 @@ static const char* const s_default_name = "default";
 // This gives us opportunity to get rid of the cpp file.
 
 
-// specify the same type to get the same set of variables.
+/// Static variable holder
 template<typename Dummy>
 struct NodeStaticHolder {
-	static node_ptr root_node;  // "/"
-	static node_ptr config_node;  // "/config"
-	static node_ptr default_node;  // "/default"
-	static ConfigLockPolicy::Mutex mutex;  // mutex for static variables above
+	static node_ptr root_node;  ///< Node for "/"
+	static node_ptr config_node;  ///< Node for "/config"
+	static node_ptr default_node;  ///< Node for "/default"
+	static ConfigLockPolicy::Mutex mutex;  ///< Mutex for static variables
 };
 
 // definitions
@@ -66,11 +77,13 @@ template<typename Dummy> node_ptr NodeStaticHolder<Dummy>::default_node = 0;
 template<typename Dummy> ConfigLockPolicy::Mutex NodeStaticHolder<Dummy>::mutex;
 
 
-typedef NodeStaticHolder<void> RootHolder;  // one (and only) instantiation.
+// Specify the same template parameter to get the same set of variables.
+typedef NodeStaticHolder<void> RootHolder;  ///< Holder for static variables (one (and only) instantiation).
 
 
 
-// This is called automatically. This function is thread-safe.
+/// Initialize the root node. This is called automatically.
+/// This function is thread-safe.
 inline bool init_root(bool do_lock = true)
 {
 	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex, do_lock);
@@ -108,6 +121,7 @@ inline bool init_root(bool do_lock = true)
 // To use them in a thread-safe environment, you have to lock their access manually.
 
 
+/// Get the root node.
 inline node_ptr get_root()
 {
 	if (!RootHolder::root_node)
@@ -116,6 +130,7 @@ inline node_ptr get_root()
 }
 
 
+/// Get the config branch node
 inline node_ptr get_config_branch()
 {
 	if (!RootHolder::root_node)
@@ -124,6 +139,7 @@ inline node_ptr get_config_branch()
 }
 
 
+/// Get the default branch node
 inline node_ptr get_default_branch()
 {
 	if (!RootHolder::root_node)
@@ -140,8 +156,8 @@ inline node_ptr get_default_branch()
 // To use them in a thread-safe environment, you have to lock their access manually.
 
 
-// Looks in /config, then /default. Useful for searching values (for reading).
-// Note: if path is absolute (starts with "/"), then it's looked up in root ("/").
+/// Get a node by path (relative or absolute). If relative, look in /config, then /default.
+/// Useful for searching values (for reading).
 inline node_ptr get_node(const std::string& path)
 {
 	if (node_t::is_abs_path(path)) {  // absolute path, start from root
@@ -166,8 +182,8 @@ inline node_ptr get_node(const std::string& path)
 
 
 
-// same as above, but only for "/config". additionally, you may create it.
-// Note: if path is absolute (starts with "/"), then it's looked up in root ("/").
+/// Get a node by path (relative or absolute). If relative, look in /config.
+/// If the path doesn't exist, it can be created.
 inline node_ptr get_config_node(std::string path, bool create_if_not_exists = false)
 {
 	if (node_t::is_abs_path(path)) {  // absolute path, start from root
@@ -199,8 +215,8 @@ inline node_ptr get_config_node(std::string path, bool create_if_not_exists = fa
 
 
 
-// same as above, but only for "/default". additionally, you may create it.
-// Note: if path is absolute (starts with "/"), then it's looked up in root ("/").
+/// Get a node by path (relative or absolute). If relative, look in /default.
+/// If the path doesn't exist, it can be created.
 inline node_ptr get_default_node(std::string path, bool create_if_not_exists = false)
 {
 	if (node_t::is_abs_path(path)) {  // absolute path, start from root
@@ -236,7 +252,7 @@ inline node_ptr get_default_node(std::string path, bool create_if_not_exists = f
 // --------------------------------- (Thread-safe) Root node manipulation
 
 
-// Note: This function will clear everything, including /config and /default.
+/// Clear everything, including /config and /default.
 inline void clear_root_all()
 {
 	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
@@ -244,6 +260,7 @@ inline void clear_root_all()
 }
 
 
+/// Clear /config
 inline void clear_config_all()
 {
 	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
@@ -252,6 +269,7 @@ inline void clear_config_all()
 }
 
 
+/// Clear /default
 inline void clear_default_all()
 {
 	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
@@ -268,7 +286,7 @@ inline void clear_default_all()
 
 
 
-// clear data in "/config".
+/// Clear the data in path (the node becomes empty), or "/config" if the path is relative.
 inline void clear_data(const std::string& path)
 {
 	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
@@ -279,7 +297,7 @@ inline void clear_data(const std::string& path)
 }
 
 
-// clear data in "/default".
+/// Clear the data in path (the node becomes empty), or "/default" if the path is relative.
 inline void clear_default_data(const std::string& path)
 {
 	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
@@ -291,8 +309,8 @@ inline void clear_default_data(const std::string& path)
 
 
 
-// Set data in "/config".
-// Note: This will convert "const char*" to std::string!
+/// Set the data in path, or "/config" if the path is relative.
+/// Note: This will convert "const char*" data to std::string.
 template<typename T> inline
 bool set_data(const std::string& path, T data)
 {
@@ -320,8 +338,9 @@ bool set_data(const std::string& path, T data)
 }
 
 
-// Set data in "/default".
-// Note: This will convert "const char*" to std::string!
+
+/// Set the data in path, or "/default" if the path is relative.
+/// Note: This will convert "const char*" data to std::string.
 template<typename T> inline
 bool set_default_data(const std::string& path, T data)
 {
@@ -342,7 +361,8 @@ bool set_default_data(const std::string& path, T data)
 // Note: if path is absolute (starts with "/"), then it's looked up in root ("/").
 
 
-// returns false if cast failed or no such node.
+/// Get the data in path, or "/config" if the path is relative.
+/// \return false if cast failed or no such node.
 template<typename T> inline
 bool get_config_data(const std::string& path, T& put_it_here)
 {
@@ -356,7 +376,8 @@ bool get_config_data(const std::string& path, T& put_it_here)
 
 
 
-// returns false if cast failed or no such node.
+/// Get the data in path, or "/default" if the path is relative.
+/// \return false if cast failed or no such node.
 template<typename T> inline
 bool get_default_data(const std::string& path, T& put_it_here)
 {
@@ -378,6 +399,7 @@ bool get_default_data(const std::string& path, T& put_it_here)
 
 
 
+/// Check if data at path is empty. If the path is relative, look in /config, then /default.
 inline bool data_is_empty(const std::string& path)
 {
 	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
@@ -389,9 +411,11 @@ inline bool data_is_empty(const std::string& path)
 }
 
 
-// this function works only if either RTTI or type tracking is enabled
 #if !(defined DISABLE_RTTI && DISABLE_RTTI) \
 		|| (defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING)
+
+/// Check if data at path is of type \c T. If the path is relative, look in /config, then /default.
+/// This function works only if either RTTI or type tracking is enabled
 template<typename T> inline
 bool data_is_type(const std::string& path)
 {
@@ -402,10 +426,13 @@ bool data_is_type(const std::string& path)
 		return false;  // no such node
 	return node->data_is_type<T>();
 }
+
 #endif
 
 
-// returns false if cast failed or no such node.
+
+/// Get data at path. If the path is relative, look in /config, then /default.
+/// \return false if cast failed or no such node.
 template<typename T> inline
 bool get_data(const std::string& path, T& put_it_here)
 {
@@ -418,10 +445,11 @@ bool get_data(const std::string& path, T& put_it_here)
 }
 
 
-// This function throws if:
-// 	* no such node (rmn::no_such_node);
-//	* data empty (rmn::empty_data_retrieval);
-//	* type mismatch (rmn::type_mismatch).
+
+/// Get data at path. If the path is relative, look in /config, then /default.
+/// \throw rmn::no_such_node No such node
+/// \throw rmn::empty_data_retrieval Data is empty
+/// \throw rmn::type_mismatch Type mismatch
 template<typename T> inline
 T get_data(const std::string& path)
 {
@@ -434,7 +462,10 @@ T get_data(const std::string& path)
 }
 
 
-// more loose conversion - can convert between C++ built-in types and std::string.
+
+/// Similar to get_data(), but with looser conversion - can convert between
+/// C++ built-in types and std::string. Uses hz::any_convert<>.
+/// \return false if casting failed, or empty or invalid type.
 template<typename T> inline
 bool convert_data(const std::string& path, T& put_it_here)  // returns false if cast failed
 {
@@ -447,10 +478,11 @@ bool convert_data(const std::string& path, T& put_it_here)  // returns false if 
 }
 
 
-// This function throws if:
-// 	* no such node (rmn::no_such_node);
-//	* data empty (rmn::empty_data_retrieval);
-//	* type conversion error (rmn::type_convert_error).
+/// Similar to get_data(), but with looser conversion - can convert between
+/// C++ built-in types and std::string. Uses hz::any_convert<>.
+/// \throw rmn::no_such_node No such node
+/// \throw rmn::empty_data_retrieval Data is empty
+/// \throw rmn::type_mismatch Type mismatch
 template<typename T> inline
 T convert_data(const std::string& path)
 {
@@ -472,3 +504,5 @@ T convert_data(const std::string& path)
 
 
 #endif
+
+/// @}

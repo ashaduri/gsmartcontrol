@@ -44,7 +44,7 @@ inline std::string path_to_native(const std::string& path);
 inline std::string path_trim_trailing_separators(const std::string& path);
 
 /// Check if the path is absolute (only for native paths). Return 0 if it's not.
-/// The returned value is a position past the root component (e.g. 3 for C:\temp).
+/// The returned value is a position past the root component (e.g. 3 for C:\\temp).
 inline std::string::size_type path_is_absolute(const std::string& path);
 
 

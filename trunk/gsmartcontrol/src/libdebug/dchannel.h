@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup libdebug
+/// \weakgroup libdebug
+/// @{
 
 #ifndef LIBDEBUG_DCHANNEL_H
 #define LIBDEBUG_DCHANNEL_H
@@ -18,26 +23,34 @@
 
 class DebugChannelBase;
 
+/// Strong reference-holding pointer
 typedef hz::intrusive_ptr<DebugChannelBase> debug_channel_base_ptr;
+
+/// Strong reference-holding pointer
 typedef hz::intrusive_ptr<const DebugChannelBase> debug_channel_base_const_ptr;
 
 
 
-// TODO: Per-channel flags (instead of per-debug-stream flags)!
+// TODO Per-channel flags (instead of per-debug-stream flags).
 
 
-// All channels must be inherited from here.
+/// All channels must inherit this.
 class DebugChannelBase : public hz::intrusive_ptr_referenced_locked<hz::SyncPolicyMtDefault> {
 	public:
+
+		/// Virtual destructor
 		virtual ~DebugChannelBase()
 		{ }
 
 // 		virtual DebugChannelBase* clone() = 0;
 
-		virtual debug_channel_base_ptr clone_ptr() = 0;  // clone for smartpointer
+		/// Clone the channel and return a strong reference-holding pointer
+		virtual debug_channel_base_ptr clone_ptr() = 0;
 
-		virtual debug_channel_base_const_ptr clone_ptr() const = 0;  // clone for smartpointer
+		/// Clone the channel and return a strong reference-holding pointer
+		virtual debug_channel_base_const_ptr clone_ptr() const = 0;
 
+		/// Send a message to channel
 		virtual void send(debug_level::flag level, const std::string& domain,
 				debug_format::type& format_flags, int indent_level, bool is_first_line, const std::string& msg) = 0;
 };
@@ -45,44 +58,44 @@ class DebugChannelBase : public hz::intrusive_ptr_referenced_locked<hz::SyncPoli
 
 
 
-// a helper function for DebugChannel-s. formats a message.
+/// Helper function for DebugChannel objects, formats a message.
 std::string debug_format_message(debug_level::flag level, const std::string& domain,
 				debug_format::type& format_flags, int indent_level, bool is_first_line, const std::string& msg);
 
 
 
-// DebugChannel as a wrapper around std::ostream.
-// Note: Use the _same_ channel instance for same ostreams. Only
-// this way you will get proper ostream locking!
-// The locking is performed manually by the caller. The smartpointer's
-// refcount mutex is re-used for wrapped stream locking.
+/// std::ostream wrapper as a DebugChannel.
+/// Note: Use the _same_ channel instance for the same ostreams, only
+/// this way you will get proper ostream locking. Other than for send(),
+/// the locking must be performed manually by the caller.
+/// The smartpointer's refcount mutex is reused for wrapped stream locking.
 class DebugChannelOStream : public DebugChannelBase {
 	public:
 
+		/// Constructor
 		DebugChannelOStream(std::ostream& os) : os_(os)
 		{ }
 
+		/// Virtual destructor
 		virtual ~DebugChannelOStream()
 		{ }
 
-// 		virtual DebugChannelBase* clone()
-// 		{
-// 			return new DebugChannelOStream(os_);
-// 		}
-
+		// Reimplemented
 		virtual debug_channel_base_ptr clone_ptr()
 		{
 			// this will prevent the object from being copied, which may harm the wrapped stream.
 			return debug_channel_base_ptr(this);  // aka copy.
 		}
 
+		// Reimplemented
 		virtual debug_channel_base_const_ptr clone_ptr() const
 		{
 			// this will prevent the object from being copied, which may harm the wrapped stream.
 			return debug_channel_base_const_ptr(this);  // aka copy.
 		}
 
-		// this function locks the wrapped stream, as long as there's only one instance of this class.
+		/// Reimplemented from DebugChannelBase. This function locks the
+		/// wrapped stream, as long as there's only one instance of this class.
 		virtual void send(debug_level::flag level, const std::string& domain,
 				debug_format::type& format_flags, int indent_level, bool is_first_line, const std::string& msg)
 		{
@@ -93,14 +106,16 @@ class DebugChannelOStream : public DebugChannelBase {
 
 		// Non-debug-API members:
 
-		std::ostream& get_ostream()  // you should lock this channel before getting it!
+		/// Get the ostream. Lock the channel for using the ostream.
+		std::ostream& get_ostream()
 		{
 			return os_;
 		}
 
 
 	private:
-		std::ostream& os_;  // wrapped stream. I think iosfwd is enough for reference.
+
+		std::ostream& os_;  ///< Wrapped ostream
 };
 
 
@@ -109,3 +124,5 @@ class DebugChannelOStream : public DebugChannelBase {
 
 
 #endif
+
+/// @}

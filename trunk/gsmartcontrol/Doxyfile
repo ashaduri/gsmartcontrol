@@ -31,14 +31,14 @@ PROJECT_NAME           = "GSmartControl"
 # This could be handy for archiving the generated documentation or 
 # if some version control system is used.
 
-PROJECT_NUMBER         = 1
+PROJECT_NUMBER         =
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
 # base path where the generated documentation will be put. 
 # If a relative path is entered, it will be relative to the location 
 # where doxygen was started. If left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = doc
+OUTPUT_DIRECTORY       = doxygen_doc
 
 # If the CREATE_SUBDIRS tag is set to YES, then doxygen will create 
 # 4096 sub-directories (in 2 levels) under the output directory of each output 
@@ -697,7 +697,13 @@ EXCLUDE_SYMLINKS       = NO
 # against the file with absolute path, so to exclude all test directories 
 # for example use the pattern */test/*
 
-EXCLUDE_PATTERNS       = 
+EXCLUDE_PATTERNS      = */.svn/*
+EXCLUDE_PATTERNS      += */.git/*
+EXCLUDE_PATTERNS      += */doxygen_doc/*
+EXCLUDE_PATTERNS      += */0*/*
+EXCLUDE_PATTERNS      += */win32/*
+EXCLUDE_PATTERNS      += */win64/*
+EXCLUDE_PATTERNS      += */*.f
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names 
 # (namespaces, classes, functions, etc.) that should be excluded from the 
@@ -1104,7 +1110,7 @@ SERVER_BASED_SEARCH    = NO
 # If the GENERATE_LATEX tag is set to YES (the default) Doxygen will 
 # generate Latex output.
 
-GENERATE_LATEX         = YES
+GENERATE_LATEX         = NO
 
 # The LATEX_OUTPUT tag is used to specify where the LaTeX docs will be put. 
 # If a relative path is entered the value of OUTPUT_DIRECTORY will be 
@@ -1409,9 +1415,74 @@ INCLUDE_FILE_PATTERNS  =
 # undefined via #undef or recursively expanded use the := operator 
 # instead of the = operator.
 
-# _WIN32 is needed so that we don't skip the win32-only functions.
+# Various per-platform macros are defined to not skip platform-specific functions.
 
-PREDEFINED             = DOXYGEN_SHOULD_SKIP_THIS \
+PREDEFINED = DOXYGEN_SHOULD_SKIP_THIS \
+						__GNUC__ \
+						_GNU_SOURCE \
+						HAVE_VERBOSE_TERMINATE_HANDLER=1 \
+						HAVE_GCC_ABI_DEMANGLE=1 \
+						HAVE_CXX___func__=1 \
+						HAVE_CXX___FUNCTION__=1 \
+						HAVE_POSIX_OFF_T_FUNCS=1 \
+						HAVE_WIN_LFS_FUNCS=1 \
+						HAVE_ISO_STDIO=1 \
+						HAVE__SNPRINTF=1 \
+						HAVE__VSNPRINTF=1 \
+						HAVE_VASPRINTF=1 \
+						HAVE_REENTRANT_LOCALTIME=1 \
+						HAVE_SETENV=1 \
+						HAVE_LONG_LONG_INT=1 \
+						HAVE_LONG_LONG=1 \
+						HAVE_UNSIGNED_LONG_LONG_INT=1 \
+						HAVE_UNSIGNED_LONG_LONG=1 \
+						HZ_ENABLE_COMPILED_RES_DATA=1 \
+						RMN_TYPE_TRACKING=1 \
+						CONFIG_HOST_KERNEL_DARWIN=1 \
+						CONFIG_HOST_KERNEL_DRAGONFLY=1 \
+						CONFIG_HOST_KERNEL_FAMILY_WINDOWS=1 \
+						CONFIG_HOST_KERNEL_FREEBSD=1 \
+						CONFIG_HOST_KERNEL_INTERIX=1 \
+						CONFIG_HOST_KERNEL_LINUX=1 \
+						CONFIG_HOST_KERNEL_NETBSD=1 \
+						CONFIG_HOST_KERNEL_OPENBSD=1 \
+						CONFIG_HOST_KERNEL_QNX=1 \
+						CONFIG_HOST_KERNEL_SOLARIS=1 \
+						CONFIG_HOST_KERNEL_UNKNOWN=1 \
+						CONFIG_HOST_KERNEL_WINDOWS32=1 \
+						CONFIG_HOST_KERNEL_WINDOWS64=1 \
+						CONFIG_KERNEL_DARWIN=1 \
+						CONFIG_KERNEL_DRAGONFLY=1 \
+						CONFIG_KERNEL_FAMILY_WINDOWS=1 \
+						CONFIG_KERNEL_FREEBSD=1 \
+						CONFIG_KERNEL_INTERIX=1 \
+						CONFIG_KERNEL_LINUX=1 \
+						CONFIG_KERNEL_NETBSD=1 \
+						CONFIG_KERNEL_OPENBSD=1 \
+						CONFIG_KERNEL_QNX=1 \
+						CONFIG_KERNEL_SOLARIS=1 \
+						CONFIG_KERNEL_UNKNOWN=1 \
+						CONFIG_KERNEL_WINDOWS32=1 \
+						CONFIG_KERNEL_WINDOWS64=1 \
+						CONFIG_KERNEL_LINUX=1 \
+						CONFIG_OS_ENV_CYGWIN=1 \
+						CONFIG_OS_ENV_DARWIN=1 \
+						CONFIG_OS_ENV_DRAGONFLY=1 \
+						CONFIG_OS_ENV_FREEBSD=1 \
+						CONFIG_OS_ENV_GNU=1 \
+						CONFIG_OS_ENV_INTERIX=1 \
+						CONFIG_OS_ENV_MINGW32=1 \
+						CONFIG_OS_ENV_MINGW64=1 \
+						CONFIG_OS_ENV_NETBSD=1 \
+						CONFIG_OS_ENV_OPENBSD=1 \
+						CONFIG_OS_ENV_QNX=1 \
+						CONFIG_OS_ENV_SOLARIS=1 \
+						CONFIG_OS_ENV_UNKNOWN=1 \
+						ENABLE_GTKBUILDER=1 \
+						ENABLE_GLIB=1 \
+						ENABLE_GLIBMM=1 \
+						HAVE_EXCEPTIONS=1 \
+						HAVE_RTTI=1 \
 						"HZ_FUNC_PRINTF_CHECK(a,b)=" \
 						__cplusplus \
 						_WIN32
@@ -1458,7 +1529,7 @@ TAGFILES               = /usr/share/doc/gtkmm-2.4/reference/gtkmm-2.4.tag=/usr/s
 # When a file name is specified after GENERATE_TAGFILE, doxygen will create 
 # a tag file that is based on the input files it reads.
 
-GENERATE_TAGFILE       = doc/gsmartcontrol.tag
+GENERATE_TAGFILE       = doxygen_doc/gsmartcontrol.tag
 
 # If the ALLEXTERNALS tag is set to YES all external classes will be listed 
 # in the class index. If set to NO only the inherited external classes 

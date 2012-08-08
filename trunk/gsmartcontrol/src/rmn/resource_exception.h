@@ -20,6 +20,11 @@
     misrepresented as being the original software.
  3. This notice may not be removed or altered from any source distribution.
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup rmn
+/// \weakgroup rmn
+/// @{
 
 #ifndef RMN_RESOURCE_EXCEPTION_H
 #define RMN_RESOURCE_EXCEPTION_H
@@ -36,26 +41,26 @@ namespace rmn {
 
 
 
-// This is thrown in case of bad casts.
-// Note that this is thrown only if the function has no other means
-// of returning an error (e.g. it's returning a reference).
-
+/// This is thrown in case of bad casts.
+/// Note that this is thrown only if the function has no other means
+/// of returning an error (e.g. it's returning a reference).
 DEFINE_BAD_CAST_EXCEPTION(type_convert_error,
 		"Failed data type conversion from \"%s\" to \"%s\".", "Failed data type conversion.");
 
 
+/// This is thrown if the requested type is different than the stored type.
 DEFINE_BAD_CAST_EXCEPTION(type_mismatch,
 		"Data type mismatch. Original type: \"%s\", requested type: \"%s\".", "Data type mismatch.");
 
 
 
 
-// This is thrown if attempting to retrieve a data from an empty node.
-// Note that this is thrown only if the function has no other means
-// of returning an error (e.g. it's returning a reference).
-
+/// This is thrown if attempting to retrieve a data from an empty node.
+/// Note that this is thrown only if the function has no other means
+/// of returning an error (e.g. it's returning a reference).
 struct empty_data_retrieval : virtual public std::exception {  // from <exception>
 
+	/// Constructor
 	empty_data_retrieval()
 	{ }
 
@@ -63,48 +68,45 @@ struct empty_data_retrieval : virtual public std::exception {  // from <exceptio
 // 	explicit empty_data_retrieval(const std::string& from_path) : path(from_path)
 // 	{ }
 
+	/// Virtual destructor
 	virtual ~empty_data_retrieval() throw() { }
 
-// 	virtual const char* what() const throw()
-// 	{
-// 		const char* p = (path.empty() ? "[unknown path]" : path.c_str());
-// 		msg = std::string("rmn::empty_data_retrieval: Attempted to retrieve an empty data from \"") + p + "\".";
-// 		return msg.c_str();
-// 	}
-
+	/// Reimplemented from std::exception
  	virtual const char* what() const throw()
 	{
 		return "rmn::empty_data_retrieval: Attempt to retrieve data from an empty node.";
 	}
 
-
-// 	std::string path;
-// 	mutable std::string msg;  // This must be a member to avoid its destruction on function call return. use what().
 };
 
 
 
 
 
-// This is thrown if attempting to retrieve a data from a non-existent node.
-// Note that this is thrown only if the function has no other means
-// of returning an error (e.g. it's returning a reference).
-
+/// This is thrown if attempting to retrieve a data from a non-existent node.
+/// Note that this is thrown only if the function has no other means
+/// of returning an error (e.g. it's returning a reference).
 struct no_such_node : virtual public std::exception {  // from <exception>
 
+	/// Constructor
 	no_such_node(const std::string& arg_path) : path(arg_path)
 	{ }
 
+	/// Virtual destructor
 	virtual ~no_such_node() throw() { }
 
+	/// Reimplemented from std::exception
  	virtual const char* what() const throw()
 	{
 		msg = "rmn::no_such_node: Attempt to retrieve information about non-existent path: \"" + path + "\".";
 		return msg.c_str();
 	}
 
-	std::string path;
-	mutable std::string msg;  // This must be a member to avoid its destruction on function call return. use what().
+	private:
+
+		std::string path;  ///< The path of the non-existent node
+		mutable std::string msg;  ///< what() helper. This must be a member to avoid its destruction on function call return.
+
 };
 
 
@@ -116,3 +118,5 @@ struct no_such_node : virtual public std::exception {  // from <exception>
 
 
 #endif
+
+/// @}

@@ -3,14 +3,21 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup libdebug
+/// \weakgroup libdebug
+/// @{
 
 #include "dflags.h"
 
 #include <map>
 
 
+/// Debug level flags implementation
 struct DebugFlags {
 
+	/// Constructor (static)
 	DebugFlags()
 	{
 		level_names[debug_level::fatal] = "fatal";
@@ -26,13 +33,16 @@ struct DebugFlags {
 		level_colors[debug_level::dump] = "\033[1;32m";  // green
 	}
 
+	/// Debug level names
 	std::map<debug_level::flag, const char*> level_names;
+
+	/// Debug level color start sequences
 	std::map<debug_level::flag, const char*> level_colors;
 };
 
 
 
-
+/// Global libdebug level flags
 static DebugFlags s_debug_flags;
 
 
@@ -62,3 +72,5 @@ namespace debug_level {
 
 
 
+
+/// @}

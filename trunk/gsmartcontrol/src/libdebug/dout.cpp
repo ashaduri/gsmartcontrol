@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup libdebug
+/// \weakgroup libdebug
+/// @{
 
 #include <string>
 #include <iosfwd>  // std::ostream definition
@@ -180,3 +185,5 @@ namespace debug_internal {
 
 
 
+
+/// @}

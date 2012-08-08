@@ -271,9 +271,9 @@ HZ library internal implementation helpers.
 /// Defined to 0 or 1. If 1, the compiler has Win32's _vsnprintf (broken 0-termination).
 #ifndef HAVE__VSNPRINTF
 	#if defined _WIN32
-		#define HAVE__SNPRINTF 1
+		#define HAVE__VSNPRINTF 1
 	#else
-		#define HAVE__SNPRINTF 0
+		#define HAVE__VSNPRINTF 0
 	#endif
 #endif
 

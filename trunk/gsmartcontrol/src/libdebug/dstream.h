@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup libdebug
+/// \weakgroup libdebug
+/// @{
 
 #ifndef LIBDEBUG_DSTREAM_H
 #define LIBDEBUG_DSTREAM_H
@@ -24,8 +29,10 @@
 namespace debug_internal {
 
 
+	/// Get null streambuf - a streambuf which does nothing.
 	std::streambuf& get_null_streambuf();
 
+	/// Get null ostream - an ostream which does nothing.
 	std::ostream& get_null_stream();
 
 
@@ -38,9 +45,11 @@ namespace debug_internal {
 	class DebugOutStream;
 
 
+	/// Streambuf for libdebug, used in DebugOutStream implementation.
 	class DebugStreamBuf : public std::streambuf {
 		public:
 
+			/// Constructor
 			DebugStreamBuf(DebugOutStream* dos) : dos_(dos)
 			{
 				// in case of overflow for output, overflow() will be called to _output_ the data.
@@ -60,6 +69,7 @@ namespace debug_internal {
 			}
 
 
+			/// Virtual destructor
 			virtual ~DebugStreamBuf()
 			{
 				sync();
@@ -67,8 +77,8 @@ namespace debug_internal {
 			}
 
 
-			// Force output of the stringstream's contents to the channels.
-			// This is function thread-safe as long as state is not modified.
+			/// Force output of the stringstream's contents to the channels.
+			/// This is function thread-safe as long as state is not modified.
 			void force_output()
 			{
 				flush_to_channel();
@@ -77,9 +87,10 @@ namespace debug_internal {
 
 		protected:
 
-			// overflow happens when a new character is to be written at the put
-			// pointer pptr position, but this has reached the end pointer epptr.
-			virtual int overflow(int c)  // overridden from parent
+			/// Overflow happens when a new character is to be written at the put
+			/// pointer pptr position, but this has reached the end pointer epptr.
+			/// Reimplemented.
+			virtual int overflow(int c)
 			{
 				sync();  // write the buffer contents if available
 				if (c != traits_type::eof()) {
@@ -97,8 +108,9 @@ namespace debug_internal {
 			}
 
 
-			// sort-of flush the buffer. only makes sense if there is a buffer.
-			virtual int sync()  // overridden from parent
+			/// Sort-of flush the buffer. Only makes sense if there is a buffer.
+			/// Reimplemented.
+			virtual int sync()
 			{
 				if (pbase() != pptr()) {  // pptr() - current position; condition is true only if there is something in the buffer.
 	// 				write_out(std::string(pbase(), pptr() - pbase()));
@@ -110,13 +122,7 @@ namespace debug_internal {
 			}
 
 
-			// custom function. write contents if necessary.
-	// 		void write_out(const std::string& str)  // str may be one char, or entire buffer, or in between.
-	// 		{
-	// 		}
-
-
-			// custom function. write contents if necessary.
+			/// Write contents if necessary.
 			void write_char(char c)
 			{
 				if (!oss_.get())
@@ -128,34 +134,40 @@ namespace debug_internal {
 			}
 
 
-			// This is function thread-safe as long as state is not modified.
+			/// Flush contents to debug channel.
+			/// This is function thread-safe as long as state is not modified.
 			void flush_to_channel();
 
 
 		private:
-			DebugOutStream* dos_;
+
+			DebugOutStream* dos_;  ///< Debug output stream
 
 			// It's thread-local because it is not shared between different flows.
 			// we can't provide any manual cleanup, because the only one we can do it
 			// is in main thread, and it's already being done with the destructor.
-			hz::thread_local_ptr<std::ostringstream> oss_;
+			hz::thread_local_ptr<std::ostringstream> oss_;  ///< A buffer for output storage.
 
+			/// Disallow copying
 			DebugStreamBuf(const DebugStreamBuf& from);
 	};
 
 
 
 
+	/// Debug channel list
 	typedef std::vector<debug_channel_base_ptr> channel_list_t;
 
 
 
-	// This is returned by debug_out()
+	/// Debug output stream (inherits std::ostream).
+	/// This is returned by debug_out().
 	class DebugOutStream : public std::ostream, public hz::intrusive_ptr_referenced {
 		public:
 
 			friend class DebugStreamBuf;
 
+			/// Constructor
 			DebugOutStream(debug_level::flag level, const std::string& domain, const debug_format::type& format_flags)
 					: std::ostream(NULL), level_(level), domain_(domain), format_(format_flags), buf_(this)
 			{
@@ -167,6 +179,7 @@ namespace debug_internal {
 // 				set_enabled(false);
 // 			}
 
+			/// Construct with settings from another DebugOutStream.
 			DebugOutStream(const DebugOutStream& other, const std::string& domain)
 					: std::ostream(NULL), level_(other.level_), domain_(domain), format_(other.format_), buf_(this)
 			{
@@ -190,17 +203,21 @@ namespace debug_internal {
 			}
 */
 
+			/// Set format flags
 			void set_format(const debug_format::type& format_flags)
 			{
 				format_ = format_flags;
 			}
 
+			/// Get format flags
 			debug_format::type get_format() const
 			{
 				return format_;
 			}
 
 
+			/// Enable or disable output. If disabled, any data sent to this
+			/// stream is discarded.
 			void set_enabled(bool enabled)
 			{
 				if (enabled)
@@ -209,29 +226,35 @@ namespace debug_internal {
 					rdbuf(&get_null_streambuf());
 			}
 
+			/// Check whether the stream is enabled or not.
 			bool get_enabled() const
 			{
 				return (rdbuf() == &buf_);
 			}
 
 
+			/// Set channel list to send the data to.
 			void set_channels(const channel_list_t& channels)
 			{
 				channels_ = channels;
 			}
 
+			/// Get channel list
 			channel_list_t& get_channels()
 			{
 				return channels_;
 			}
 
-			// this will claim the ownership of the passed parameter
+			/// Add a channel to channel list.
+			/// This will claim the ownership of the passed parameter.
 			void add_channel(debug_channel_base_ptr channel)
 			{
 				channels_.push_back(channel);
 			}
 
 
+			/// Check if the last sent output is still on the same line
+			/// as the first one.
 			bool get_is_first_line()
 			{
 				if (!is_first_line_.get())
@@ -239,6 +262,7 @@ namespace debug_internal {
 				return *is_first_line_;
 			}
 
+			/// Set whether we're on the first line of the output or not.
 			void set_is_first_line(bool b)
 			{
 				if (!is_first_line_.get()) {
@@ -249,9 +273,9 @@ namespace debug_internal {
 			}
 
 
-			// Force output of buf_'s contents to the channels.
-			// This also outputs a prefix if needed.
-			// This is function thread-safe in read-only context.
+			/// Force output of buf_'s contents to the channels.
+			/// This also outputs a prefix if needed.
+			/// This is function thread-safe in read-only context.
 			std::ostream& force_output()
 			{
 				buf_.force_output();
@@ -260,18 +284,19 @@ namespace debug_internal {
 
 
 		private:
-			debug_level::flag level_;
-			std::string domain_;
-			debug_format::type format_;
+
+			debug_level::flag level_;  ///< Debug level of this stream
+			std::string domain_;  ///< Domain of this stream
+			debug_format::type format_;  ///< Format flags
 
 			// It's thread-local because it is not shared between different flows.
 			// we can't provide any manual cleanup, because the only one we can do
 			// is in main thread, and it's already being done with the destructor.
-			hz::thread_local_ptr<bool> is_first_line_;
+			hz::thread_local_ptr<bool> is_first_line_;  ///< Whether it's the first line of output or not
 
-			channel_list_t channels_;
+			channel_list_t channels_;  ///< Channels that the output is sent to
 
-			DebugStreamBuf buf_;  // not thread-local, but its buffer is.
+			DebugStreamBuf buf_;  /// Streambuf for implementation. Not thread-local, but its internal buffer is.
 	};
 
 
@@ -287,3 +312,5 @@ namespace debug_internal {
 
 
 #endif
+
+/// @}

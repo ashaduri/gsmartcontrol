@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup libdebug
+/// \weakgroup libdebug
+/// @{
 
 #include "hz/hz_config.h"  // ENABLE_GLIB, DEBUG_BUILD
 
@@ -28,8 +33,9 @@
 namespace debug_internal {
 
 
-	// internal class. holds values of command line args.
+	/// Internal class, holds values of command line args.
 	struct DebugCmdArgs {
+		/// Constructor
 		DebugCmdArgs() :
 			// defaults
 			verbose(FALSE),
@@ -48,19 +54,21 @@ namespace debug_internal {
 		{ }
 
 		// use glib types here
-		gboolean verbose;
-		gboolean quiet;
-		gint verbosity_level;
-		std::vector<std::string> debug_levels;  // comma-separated names to enable
-		gboolean debug_colorize;
+		gboolean verbose;  ///< Verbose output (enables higher verbosity level)
+		gboolean quiet;  ///< Less verbose output (enables lower verbosity level)
+		gint verbosity_level;  ///< Verbosity level override
+		std::vector<std::string> debug_levels;  ///< Comma-separated names of levels to enable
+		gboolean debug_colorize;  ///< Colorize the output or not
 
-		debug_level::type levels_enabled;  // final vector - not actually an argument, but filled after the actual parsing.
+		debug_level::type levels_enabled;  ///< Final vector - not actually an argument, but filled after the parsing.
 	};
 
 
 
+	/// Libdebug global command-line arguments
 	static DebugCmdArgs s_debug_cmd_args;
 
+	/// Get libdebug command-line arguments
 	inline DebugCmdArgs* debug_get_args_holder()
 	{
 		return &s_debug_cmd_args;
@@ -74,9 +82,11 @@ namespace debug_internal {
 
 extern "C" {
 
+	/// Glib callback for parsing libdebug levels argument
 	static gboolean debug_internal_parse_levels(const gchar* option_name,
 			const gchar* value, gpointer data, GError** error);
 
+	/// Glib callback for performing post-parse phase (parse hook)
 	static gboolean debug_internal_post_parse_func(GOptionContext* context,
 			GOptionGroup *group, gpointer data, GError** error);
 
@@ -224,3 +234,5 @@ GOptionGroup* debug_get_option_group()
 
 
 
+
+/// @}

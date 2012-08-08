@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup libdebug
+/// \weakgroup libdebug
+/// @{
 
 #include "hz/format_unit.h"  // format_date()
 
@@ -10,7 +15,7 @@
 // #include <iostream>  // tmp
 
 
-// a helper function for DebugChannel-s. formats a message.
+
 std::string debug_format_message(debug_level::flag level, const std::string& domain,
 				debug_format::type& format_flags, int indent_level, bool is_first_line, const std::string& msg)
 {
@@ -87,3 +92,4 @@ std::string debug_format_message(debug_level::flag level, const std::string& dom
 
 
 
+/// @}
