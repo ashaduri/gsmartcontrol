@@ -25,7 +25,6 @@
 
 /**
 \file
-<pre>
 Threading policies providing synchronization primitives
 through wrapping existing thread libraries.
 
@@ -45,27 +44,27 @@ Every policy class provides:
 
 	Mutex Types:
 
-		* Mutex type. Possibly a wrapper around native mutex type.
+		- Mutex type. Possibly a wrapper around native mutex type.
 			May or may not be recursive. No guaranteed methods.
 			Guaranteed freeing of resource when destroyed.
-		* NativeMutex type. The underlying mutex type, if available.
+		- NativeMutex type. The underlying mutex type, if available.
 			If not available, it's typedefed as Mutex. No guaranteed
 			methods. Don't declare objects of this type - it is there solely
 			for interaction with existing native mutexes.
 
-		* RecMutex type. Same as Mutex, but recursive. No guaranteed
+		- RecMutex type. Same as Mutex, but recursive. No guaranteed
 			methods. Guaranteed freeing of resource when destroyed.
-		* NativeRecMutex type. Same as NativeMutex, but recursive.
+		- NativeRecMutex type. Same as NativeMutex, but recursive.
 			No guaranteed methods.
 
-		* RWMutex type. A mutex which supports read / write locking.
+		- RWMutex type. A mutex which supports read / write locking.
 			No guaranteed methods.
 			Guaranteed freeing of resource when destroyed.
 			Note: There is no recursion or lock escalation with RWLock.
 			That is, locking it multiple times (read or write), or write-locking
 			while holding a read-lock may work in some situations with some
 			backends, but can also cause a deadlock.
-		* NativeRWMutex type. A cross between NativeMutex and RWMutex.
+		- NativeRWMutex type. A cross between NativeMutex and RWMutex.
 
 		The Native types are needed to give an explicit guarantee that these
 		types are lockable via respective ScopedLock classes and static methods.
@@ -73,7 +72,7 @@ Every policy class provides:
 
 	Static Methods:
 
-		bool init()
+		bool init()\n
 			Initialize the thread backend. The application MUST call this function
 			prior to locking any mutexes from this policy. True is returned in case
 			the backend is initialized successfully, or has been initialized already.
@@ -90,24 +89,24 @@ Every policy class provides:
 		reason for this is that the system is already in unstable state, so
 		throwing a fatal exception seems to be the right choice.
 
-		void lock(MutexType& m)
+		void lock(MutexType& m)\n
 			Preconditions: m must not be locked by current thread.
 			Locks the mutex via the mutex's defined locking facilities.
 			This function will block until m is available for locking.
 
-		bool trylock(MutexType& m)
+		bool trylock(MutexType& m)\n
 			Preconditions: m must not be locked by current thread.
 			Tries to lock the mutex via the mutex's defined locking facilities.
 			This function will return false if lock could not be obtained, and
 			true otherwise.
 
-		void unlock(MutexType& m)
+		void unlock(MutexType& m)\n
 			Preconditions: m must be locked by current thread.
 			Unlocks the previously locked mutex immediately.
 
-		void lock(MutexType& m, bool for_write = false)
-		bool trylock(MutexType& m, bool for_write = false)
-		void unlock(MutexType& m, bool for_write = false)
+		void lock(MutexType& m, bool for_write = false)\n
+		bool trylock(MutexType& m, bool for_write = false)\n
+		void unlock(MutexType& m, bool for_write = false)\n
 			Same as above, but for RWMutex and NativeRWMutex types.
 			The second parameter must be equal for any lock / unlock
 			and trylock / unlock pair. If not, the behaviour is undefined.
@@ -127,20 +126,20 @@ Every policy class provides:
 		In case of error, sync_resource_error is thrown. Note that this exception
 		may be thrown from constructor. In that case, destruction is still necessary.
 
-		template<typename MutexType>
-		class GenericScopedLock
-			Constructor:
-				GenericScopedLock(MutexType& mutex, bool do_lock = true)
+		template\<typename MutexType\>\n
+		class GenericScopedLock\n
+			Constructor:\n
+				GenericScopedLock(MutexType& mutex, bool do_lock = true)\n
 			Guaranteed to accept Mutex, NativeMutex, RecMutex,
 			NativeRecMutex types.
 			If do_lock is true, locks mutex when constructed and unlocks when
 			destroyed. If do_lock is false, no operations are performed.
 			Uses policy's static methods lock() and unlock() for doing it.
 
-		template<typename MutexType>
-		class GenericScopedTryLock
-			Constructor:
-				GenericScopedTryLock(MutexType& mutex, bool do_lock = true)
+		template\<typename MutexType\>\n
+		class GenericScopedTryLock\n
+			Constructor:\n
+				GenericScopedTryLock(MutexType& mutex, bool do_lock = true)\n
 			Guaranteed to accept Mutex, NativeMutex, RecMutex,
 			NativeRecMutex types.
 			Behaves like ScopedTryLock, but provides an additional
@@ -149,42 +148,42 @@ Every policy class provides:
 			the operation (the lock must not be obtained at that point yet).
 			Uses policy's static methods trylock() and unlock() for doing it.
 
-		class GenericScopedRecLock, class GenericScopedRecTryLock
+		class GenericScopedRecLock, class GenericScopedRecTryLock\n
 			There are no such types, use GenericScopedLock and
 			GenericScopedTryLock instead. They accept recursive mutex types
 			too. This is done to avoid requiring knowledge of the exact mutex
 			type (non-recursive or recursive, non-native or native) when locking them.
 
-		template<typename MutexType>
-		class GenericScopedRWLock
-			Constructor:
-				ScopedRWLock(MutexType& mutex, bool for_write = false, bool do_lock = true)
+		template\<typename MutexType\>\n
+		class GenericScopedRWLock\n
+			Constructor:\n
+				ScopedRWLock(MutexType& mutex, bool for_write = false, bool do_lock = true)\n
 			Guaranteed to accept RWMutex, NativeRWMutex types.
 			Behaves similarily to ScopedLock, but works with read / write
 			mutexes instead.
 
-		template<typename MutexType>
-		class GenericScopedRWTryLock
-			Constructor:
-				ScopedRWTryLock(MutexType& mutex, bool for_write = false, bool do_lock = true)
+		template\<typename MutexType\>\n
+		class GenericScopedRWTryLock\n
+			Constructor:\n
+				ScopedRWTryLock(MutexType& mutex, bool for_write = false, bool do_lock = true)\n
 			A cross between ScopedRWLock and ScopedTryLock.
 
 		ScopedLock, ScopedTryLock, ScopedNativeLock, ScopedNativeTryLock,
 		ScopedRecLock, ScopedRecTryLock, ScopedNativeRecLock, ScopedNativeRecTryLock,
-		ScopedRWLock, ScopedRWTryLock, ScopedNativeRWLock, ScopedNativeRWTryLock
+		ScopedRWLock, ScopedRWTryLock, ScopedNativeRWLock, ScopedNativeRWTryLock\n
 			These are typedefs for respective (mutex, generic scoped lock) pairs.
 
 
 Out-of-policy Class templates:
 
-	template<typename MutexType>
-	struct SyncGetPolicy { typedef unspecified_policy_type type; };
+	template\<typename MutexType\>\n
+	struct SyncGetPolicy { typedef unspecified_policy_type type; };\n
 		This struct provides a way to retrieve a policy class type by supplying
 		mutex type. Any mutex type is supported, provided that such mutex type
 		exists in a policy somewhere.
 		For example, to do a locking in a function template where the exact
 		policy or mutex type is unknown, one could write:
-
+\code
 		template<typename MutexType>
 		void f(MutexType& m)
 		{
@@ -192,16 +191,16 @@ Out-of-policy Class templates:
 			// ...
 			// lock is released at the end of scope.
 		}
-
+\endcode
 		This also provides safe defaults for class templates which accept mutexes
 		as their template parameters, for example:
-
+\code
 		template<typename MutexType,
 			typename Policy = typename SyncGetPolicy<MutexType>::type>
 		class C {
 			// use Policy::ScopedLock, etc...
 		};
-</tt>
+\endcode
 */
 
 

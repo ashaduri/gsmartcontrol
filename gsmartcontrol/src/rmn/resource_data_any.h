@@ -20,6 +20,11 @@
     misrepresented as being the original software.
  3. This notice may not be removed or altered from any source distribution.
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup rmn
+/// \weakgroup rmn
+/// @{
 
 #ifndef RMN_RESOURCE_DATA_ANY_H
 #define RMN_RESOURCE_DATA_ANY_H
@@ -35,29 +40,33 @@
 #include "resource_exception.h"
 
 
-// any-type data for resource_node
+/**
+\file
+Any-type data for resource_node
+*/
 
 
 namespace rmn {
 
 
 
-
-// helper class for <<.
+/// Helper class for operator\<\< with std::ostream.
 template<class T>
 struct ResourceDataAnyDumper {
 	ResourceDataAnyDumper(T* o) : obj(o) { }
 
+	/// Dump resource data into \c os
 	void dump(std::ostream& os) const
 	{
 		os << obj->data_.to_stream();
 	}
 
-	T* obj;
+	T* obj;  ///< ResourceDataAny object
 };
 
 
 
+/// Output the data into \c os
 template <class T>
 inline std::ostream& operator<<(std::ostream& os, const ResourceDataAnyDumper<T>& dumper)
 {
@@ -68,15 +77,15 @@ inline std::ostream& operator<<(std::ostream& os, const ResourceDataAnyDumper<T>
 
 
 
-
+/// Resource data which can hold variables of any type.
 template<class LockingPolicy>
 class ResourceDataAny {
 
-	typedef ResourceDataAny<LockingPolicy> self_type;
-
+	typedef ResourceDataAny<LockingPolicy> self_type;  ///< Self type
 
 	public:
 
+		/// Constructor
 		ResourceDataAny()
 #if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
 			: type_(T_EMPTY)
@@ -84,9 +93,9 @@ class ResourceDataAny {
 		{ }
 
 
-
+		/// Copy data from \c src node
 		template<class T>
-		bool copy_data_from(const T& src)  // src node
+		bool copy_data_from(const T& src)
 		{
 			if (!src)
 				return false;
@@ -99,12 +108,14 @@ class ResourceDataAny {
 		}
 
 
+		/// Check whether data is empty
 		bool data_is_empty() const
 		{
 			return data_.empty();
 		}
 
 
+		/// Clear the data, making it empty
 		void clear_data()
 		{
 			data_.clear();
@@ -114,7 +125,7 @@ class ResourceDataAny {
 		}
 
 
-
+		/// Set data of any type
 		template<typename T>
 		inline bool set_data(T data)
 		{
@@ -126,7 +137,7 @@ class ResourceDataAny {
 		}
 
 
-		// const char* -> std::string specialization
+		/// const char* -\> std::string specialization
 		inline bool set_data(const char* data)
 		{
 			data_ = std::string(data);
@@ -137,7 +148,9 @@ class ResourceDataAny {
 		}
 
 
-		// this function works only if either RTTI or type tracking is enabled
+		/// \fn bool data_is_type() const
+		/// Check whether data is of type \c T.
+		/// This function is available only if either RTTI or type tracking is enabled.
 #if !(defined DISABLE_RTTI && DISABLE_RTTI)
 		template<typename T>
 		inline bool data_is_type() const
@@ -156,11 +169,15 @@ class ResourceDataAny {
 
 
 #if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
+		/// Check whether data is of type \c type.
+		/// This function is available only if type tracking is enabled.
 		inline bool data_is_type(node_data_type type) const
 		{
 			return type == type_;
 		}
 
+		/// Get data type.
+		/// This function is available only if type tracking is enabled.
 		inline node_data_type get_type() const
 		{
 			return type_;
@@ -168,8 +185,10 @@ class ResourceDataAny {
 #endif
 
 
+		/// Get data of type \c T.
+		/// \return false if casting failed, or if it's empty or invalid type.
 		template<typename T>
-		inline bool get_data(T& put_it_here) const  // returns false if cast failed
+		inline bool get_data(T& put_it_here) const
 		{
 #if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
 			if (node_data_type_by_real<T>::type != type_)
@@ -179,9 +198,9 @@ class ResourceDataAny {
 		}
 
 
-		// This function throws if:
-		//	* data empty (rmn::empty_data_retrieval);
-		//	* type mismatch (rmn::type_mismatch).
+		/// Return a copy of data of type \c T.
+		/// \throw rmn::empty_data_retrieval Data is empty
+		/// \throw rmn::type_mismatch Type mismatch
 		template<typename T>
 		T get_data() const
 		{
@@ -203,18 +222,20 @@ class ResourceDataAny {
 
 
 
-		// More loose conversion - can convert between C++ built-in types and std::string.
-		// Uses any_convert<>.
+		/// Similar to get_data(), but with looser conversion - can convert between
+		/// C++ built-in types and std::string. Uses hz::any_convert<>.
+		/// \return false if casting failed, or empty or invalid type.
 		template<typename T>
-		inline bool convert_data(T& put_it_here) const  // returns false if cast failed
+		inline bool convert_data(T& put_it_here) const
 		{
-			return data_.convert(put_it_here);  // returns false if empty or invalid type
+			return data_.convert(put_it_here);
 		}
 
 
-		// This function throws if:
-		//	* data empty (rmn::empty_data_retrieval);
-		//	* type conversion error (rmn::type_convert_error).
+		/// Similar to get_data(), but with looser conversion - can convert between
+		/// C++ built-in types and std::string. Uses hz::any_convert<>.
+		/// \throw rmn::empty_data_retrieval Data is empty
+		/// \throw rmn::type_mismatch Type mismatch
 		template<typename T>
 		T convert_data() const
 		{
@@ -242,11 +263,11 @@ class ResourceDataAny {
 
 
 
-
 		template<class T>
 		friend struct ResourceDataAnyDumper;
 
 
+		/// Return a helper object that can be dumped into ostream.
 		inline ResourceDataAnyDumper<const self_type> dump_data_to_stream() const
 		{
 			return ResourceDataAnyDumper<const self_type>(this);
@@ -256,10 +277,10 @@ class ResourceDataAny {
 
 	private:
 
-		hz::any_type data_;
+		hz::any_type data_;  ///< The data
 
 #if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
-		node_data_type type_;
+		node_data_type type_;  ///< Type of the data
 #endif
 
 };
@@ -278,3 +299,5 @@ class ResourceDataAny {
 
 
 #endif
+
+/// @}

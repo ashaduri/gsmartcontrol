@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup rconfig
+/// \weakgroup rconfig
+/// @{
 
 #ifndef RCONFIG_RCAUTOSAVE_H
 #define RCONFIG_RCAUTOSAVE_H
@@ -29,15 +34,16 @@
 namespace rconfig {
 
 
+/// Auto-save sync policy, to avoid race conditions while saving configuration.
 typedef hz::SyncPolicyMtDefault AutoSaveLockPolicy;
 
 
-// specify the same type to get the same set of variables.
+/// Holder for static variables
 template<typename Dummy>
 struct AutoSaveStaticHolder {
-	static std::string config_file;  // config file to autosave to.
-	static bool autosave_enabled;  // autosave enabled or not. this acts as a stopper flag for autosave callback.
-	static AutoSaveLockPolicy::Mutex mutex;  // mutex for variables above.
+	static std::string config_file;  ///< Config file to autosave to.
+	static bool autosave_enabled;  ///< Autosave enabled or not. This acts as a stopper flag for autosave callback.
+	static AutoSaveLockPolicy::Mutex mutex;  // Mutex for the static variables.
 };
 
 // definitions
@@ -46,13 +52,14 @@ template<typename Dummy> bool AutoSaveStaticHolder<Dummy>::autosave_enabled = fa
 template<typename Dummy> AutoSaveLockPolicy::Mutex AutoSaveStaticHolder<Dummy>::mutex;
 
 
+/// Specify the same template parameter to get the same set of variables.
 typedef AutoSaveStaticHolder<void> AutoSaveHolder;  // one (and only) specialization.
 
 
 
 extern "C" {
 
-	// timeout callback. internal.
+	/// Autosave timeout callback for Glib. internal.
 	inline gboolean autosave_timeout_callback(gpointer data)
 	{
 		bool force = (bool)data;
@@ -94,7 +101,7 @@ extern "C" {
 
 
 
-// set config file to autosave to.
+/// Set config file to autosave to.
 inline bool autosave_set_config_file(const std::string& file)
 {
 	if (file.empty()) {
@@ -111,7 +118,7 @@ inline bool autosave_set_config_file(const std::string& file)
 
 
 
-// enable autosave
+/// Enable autosave every \c sec_interval seconds.
 inline bool autosave_start(unsigned int sec_interval)
 {
 	AutoSaveLockPolicy::ScopedLock locker(AutoSaveHolder::mutex);
@@ -132,7 +139,7 @@ inline bool autosave_start(unsigned int sec_interval)
 
 
 
-// disable autosave
+/// Disable autosave
 inline void autosave_stop()
 {
 	debug_print_info("rconfig", "Stopping config autosave.\n");
@@ -145,7 +152,7 @@ inline void autosave_stop()
 
 
 
-// force saving of config
+/// Forcibly save the config now.
 inline bool autosave_force_now()
 {
 	return autosave_timeout_callback((void*)true);  // anyone tell me what is the C++ variant of this?
@@ -163,3 +170,5 @@ inline bool autosave_force_now()
 
 
 #endif
+
+/// @}

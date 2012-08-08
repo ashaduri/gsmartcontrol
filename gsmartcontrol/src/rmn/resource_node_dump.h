@@ -21,6 +21,12 @@
     misrepresented as being the original software.
  3. This notice may not be removed or altered from any source distribution.
 ***************************************************************************/
+/// \file
+/// \author Irakli Elizbarashvili
+/// \author Alexander Shaduri
+/// \ingroup rmn
+/// \weakgroup rmn
+/// @{
 
 #ifndef RMN_RESOURCE_NODE_DUMP_H
 #define RMN_RESOURCE_NODE_DUMP_H
@@ -45,6 +51,7 @@ namespace rmn {
 
 namespace internal {
 
+	/// A helper for resource_node_dump_recursive()
 	template<class Data> inline
 	std::string resource_node_dump_recursive_helper(intrusive_ptr<const resource_node<Data> > node,
 			int internal_dump_offset = 0)
@@ -75,7 +82,7 @@ namespace internal {
 }
 
 
-// Dump node recursively in pretty ascii format (suitable for reading only).
+/// Dump node recursively in pretty ascii format (suitable for reading/debugging only).
 template<class Data> inline
 std::string resource_node_dump_recursive(intrusive_ptr<const resource_node<Data> > node)
 {
@@ -84,7 +91,8 @@ std::string resource_node_dump_recursive(intrusive_ptr<const resource_node<Data>
 
 
 
-// Why the hell doesn't the above capture this one too?
+// Why the hell doesn't the one above capture this one too?
+/// Non-const overload.
 template<class Data> inline
 std::string resource_node_dump_recursive(intrusive_ptr<resource_node<Data> > node,
 		int internal_dump_offset = 0)
@@ -94,7 +102,7 @@ std::string resource_node_dump_recursive(intrusive_ptr<resource_node<Data> > nod
 
 
 
-// Dump node children's _data_ only (non-recursively) in ascii format (suitable for reading only).
+/// Dump node children's _data_ only (non-recursively) in ascii format (suitable for reading/debugging only).
 template<class Data> inline
 std::string resource_node_dump_children_data(intrusive_ptr<const resource_node<Data> > node)
 {
@@ -112,7 +120,7 @@ std::string resource_node_dump_children_data(intrusive_ptr<const resource_node<D
 }
 
 
-
+/// Non-const overload.
 template<class Data> inline
 std::string resource_node_dump_children_data(intrusive_ptr<resource_node<Data> > node)
 {
@@ -127,7 +135,8 @@ std::string resource_node_dump_children_data(intrusive_ptr<resource_node<Data> >
 
 
 
-// This needs to be in global namespace, else it will be looked up in hz::, not rmn::.
+/// std::ostream output operator for resource node.
+/// This needs to be in global namespace, else it will be looked up in hz::, not rmn::.
 template<class Data> inline
 std::ostream& operator<< (std::ostream& os, rmn::intrusive_ptr<const rmn::resource_node<Data> > node)
 {
@@ -136,7 +145,8 @@ std::ostream& operator<< (std::ostream& os, rmn::intrusive_ptr<const rmn::resour
 
 
 
-// This needs to be in global namespace, else it will be looked up in hz::, not rmn::.
+/// std::ostream output operator for resource node.
+/// This needs to be in global namespace, else it will be looked up in hz::, not rmn::.
 template<class Data> inline
 std::ostream& operator<< (std::ostream& os, rmn::intrusive_ptr<rmn::resource_node<Data> > node)
 {
@@ -150,3 +160,5 @@ std::ostream& operator<< (std::ostream& os, rmn::intrusive_ptr<rmn::resource_nod
 
 
 #endif
+
+/// @}

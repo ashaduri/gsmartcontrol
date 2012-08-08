@@ -227,7 +227,7 @@ class FsPath : public FsPathHolder, public FsErrorHolder {
 		inline std::string get_extension() const;
 
 		/// Check if the path is absolute (only for native paths). returns 0 if it's not.
-		/// the returned value is a position past the root component (e.g. 3 for C:\temp).
+		/// the returned value is a position past the root component (e.g. 3 for C:\\temp).
 		inline std::string::size_type is_absolute() const;
 
 		/// Check if the current path is a subpath of supplied argument.

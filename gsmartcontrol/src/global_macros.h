@@ -7,7 +7,8 @@
 #ifndef GLOBAL_MACROS_H
 #define GLOBAL_MACROS_H
 
-/*
+/**
+\file
 This file serves as a compile-time configuration for various
 library components.
 
@@ -23,8 +24,8 @@ Additionally, it may be included through compiler's "-include" option
 #endif
 
 
-// So that others may check whether this file was included or not.
-#define APP_GLOBAL_MACROS_INCLUDED
+/// So that others may check whether this file was included or not.
+#define APP_GLOBAL_MACROS_INCLUDED 1
 
 
 // #ifdef _WIN32

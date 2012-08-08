@@ -21,6 +21,12 @@
     misrepresented as being the original software.
  3. This notice may not be removed or altered from any source distribution.
 ***************************************************************************/
+/// \file
+/// \author Irakli Elizbarashvili
+/// \author Alexander Shaduri
+/// \ingroup rmn
+/// \weakgroup rmn
+/// @{
 
 #ifndef RMN_RESOURCE_SERIALIZATION_H
 #define RMN_RESOURCE_SERIALIZATION_H
@@ -59,15 +65,21 @@ namespace rmn {
 // --------------------------- Version Stuff
 
 
-// current serializer version
+/// Current serializer version identifier
 const char* version_identifier = "!rmn version ";
+
+/// Current serializer major version
 const int version_major = 0;
+
+/// Current serializer minor version
 const int version_minor = 2;
+
+/// Current serializer revision version
 const int version_revision = 1;
 
 
 
-// get serializer version from string like "1.2.1"
+/// Get serializer version from string like "1.2.1"
 inline bool serializer_version_from_string(const std::string& str, int& major, int& minor, int& revision)
 {
 	std::vector<std::string> v;
@@ -84,7 +96,7 @@ inline bool serializer_version_from_string(const std::string& str, int& major, i
 
 
 
-// generate serializer version from ints
+/// Generate serializer version string
 inline std::string serializer_version_to_string(int major, int minor, int revision)
 {
 	std::ostringstream ss;
@@ -95,7 +107,8 @@ inline std::string serializer_version_to_string(int major, int minor, int revisi
 
 
 
-// check if the version in string is the current supported one
+/// Check if the version in string is currently supported.
+/// Return the parsed version in \c major, \c minor, \c revision.
 inline bool serializer_check_version(const std::string& str, int& major, int& minor, int& revision)
 {
 	std::string version_string = serializer_version_to_string(version_major, version_minor, version_revision);
@@ -115,7 +128,7 @@ inline bool serializer_check_version(const std::string& str, int& major, int& mi
 
 
 
-// set _one_ node data, parsing a serialized string value
+/// Set _one_ node data, parsing a serialized string value
 template<class Data> inline
 bool resource_node_set_data_from_string(intrusive_ptr<resource_node<Data> > node,
 		node_data_type type, const std::string& value_str)
@@ -153,6 +166,7 @@ bool resource_node_set_data_from_string(intrusive_ptr<resource_node<Data> > node
 
 
 
+/// Convert node data type to string
 inline std::string node_data_type_to_string(node_data_type type)
 {
 	switch(type) {
@@ -174,6 +188,7 @@ inline std::string node_data_type_to_string(node_data_type type)
 
 
 
+/// Convert a string (serialized node data type) to actual node data type.
 inline node_data_type node_data_type_from_string(const std::string& str)
 {
 	if (str == "empty") return T_EMPTY;
@@ -204,10 +219,12 @@ inline node_data_type node_data_type_from_string(const std::string& str)
 #if (defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING) \
 		|| !(defined DISABLE_RTTI && DISABLE_RTTI)
 
+/// Whether rmn serialization is available or not.
+// Serializer works only if type tracking or RTTI is enabled.
 #define RMN_SERIALIZE_AVAILABLE 1
 
 
-// serialize _one_ node data to string.
+/// Serialize _one_ node data to string (one line).
 template<class Data> inline
 std::string serialize_node_data(intrusive_ptr<const resource_node<Data> > node)
 {
@@ -254,6 +271,7 @@ std::string serialize_node_data(intrusive_ptr<const resource_node<Data> > node)
 }
 
 
+/// Serialize _one_ node data to string (one line). Non-const version.
 template<class Data> inline
 std::string serialize_node_data(intrusive_ptr<resource_node<Data> > node)
 {
@@ -266,7 +284,7 @@ std::string serialize_node_data(intrusive_ptr<resource_node<Data> > node)
 namespace internal {
 
 
-	// non-recursive, one-line serialization. returns "" if not serializable
+	/// Serialization helper. Non-recursive, one-line serialization. Returns "" if not serializable.
 	template<class Data> inline
 	std::string serialize_node_to_string_helper(intrusive_ptr<const resource_node<Data> > node,
 			const char* from_path = 0)
@@ -300,7 +318,7 @@ namespace internal {
 
 
 
-	// version information is NOT prepended!
+	/// Serialization helper. Recursive serialization. Version information is NOT prepended.
 	template<class Data> inline
 	bool serialize_node_to_stream_recursive_helper(intrusive_ptr<const resource_node<Data> > node,
 			std::ostream& os, const char* from_path = 0)
@@ -336,7 +354,7 @@ namespace internal {
 
 
 
-// non-recursive, one-line serialization. returns "" if not serializable
+/// Serialize a single node to string, non-recursively. Creates one line. Returns "" if not serializable.
 template<class Data> inline
 std::string serialize_node_to_string(intrusive_ptr<const resource_node<Data> > node)
 {
@@ -344,7 +362,7 @@ std::string serialize_node_to_string(intrusive_ptr<const resource_node<Data> > n
 }
 
 
-// non-recursive, one-line serialization. returns "" if not serializable
+/// Serialize a single node to string, non-recursively. Creates one line. Returns "" if not serializable.
 template<class Data> inline
 std::string serialize_node_to_string(intrusive_ptr<resource_node<Data> > node)
 {
@@ -353,7 +371,7 @@ std::string serialize_node_to_string(intrusive_ptr<resource_node<Data> > node)
 
 
 
-// from_path is internal. version information is NOT prepended!
+/// Serialize a node to stream, recursively. Version information is NOT prepended.
 template<class Data> inline
 bool serialize_node_to_stream_recursive(intrusive_ptr<const resource_node<Data> > node, std::ostream& os)
 {
@@ -361,7 +379,7 @@ bool serialize_node_to_stream_recursive(intrusive_ptr<const resource_node<Data> 
 }
 
 
-// from_path is internal. version information is NOT prepended!
+/// Serialize a node to stream, recursively. Version information is NOT prepended.
 template<class Data> inline
 bool serialize_node_to_stream_recursive(intrusive_ptr<resource_node<Data> > node, std::ostream& os)
 {
@@ -370,8 +388,7 @@ bool serialize_node_to_stream_recursive(intrusive_ptr<resource_node<Data> > node
 
 
 
-
-// write node data to string recursively
+/// Serialize a node to string, recursively. Version information is prepended.
 template<class Data> inline
 bool serialize_node_to_string_recursive(intrusive_ptr<const resource_node<Data> > node,
 		std::string& put_here)
@@ -392,7 +409,7 @@ bool serialize_node_to_string_recursive(intrusive_ptr<const resource_node<Data> 
 }
 
 
-// write node data to file recursively
+/// Serialize a node to string, recursively. Version information is prepended.
 template<class Data> inline
 bool serialize_node_to_string_recursive(intrusive_ptr<resource_node<Data> > node,
 		std::string& put_here)
@@ -402,7 +419,7 @@ bool serialize_node_to_string_recursive(intrusive_ptr<resource_node<Data> > node
 
 
 
-// write node data to file recursively
+/// Serialize a node to a file, recursively. Version information is prepended.
 template<class Data> inline
 bool serialize_node_to_file_recursive(intrusive_ptr<const resource_node<Data> > node,
 		const std::string& file)
@@ -425,7 +442,7 @@ bool serialize_node_to_file_recursive(intrusive_ptr<const resource_node<Data> > 
 }
 
 
-// write node data to file recursively
+/// Serialize a node to a file, recursively. Version information is prepended.
 template<class Data> inline
 bool serialize_node_to_file_recursive(intrusive_ptr<resource_node<Data> > node,
 		const std::string& file)
@@ -444,7 +461,7 @@ bool serialize_node_to_file_recursive(intrusive_ptr<resource_node<Data> > node,
 
 
 
-// paths supports only alphanumeric characters, '.' and '_' for components.
+/// Check if a string is a vaild path. Paths support only alphanumeric characters, '.' and '_' for components.
 inline bool string_is_path(const std::string& s)
 {
 	if (s.empty())
@@ -462,7 +479,7 @@ inline bool string_is_path(const std::string& s)
 
 
 
-// create (or replace) a node from a serialized node line.
+/// Create (or replace) a node from a serialized node string (one line).
 template<class Data> inline
 typename resource_node<Data>::node_ptr
 create_node_from_serialized_line(intrusive_ptr<resource_node<Data> > under_this_node,
@@ -574,7 +591,7 @@ create_node_from_serialized_line(intrusive_ptr<resource_node<Data> > under_this_
 
 
 
-
+/// Create nodes from a stream, putting the ones with relative paths under \c under_this_node.
 template<class Data> inline
 bool unserialize_nodes_from_stream(intrusive_ptr<resource_node<Data> > under_this_node,
 		std::istream& is)
@@ -604,6 +621,7 @@ bool unserialize_nodes_from_stream(intrusive_ptr<resource_node<Data> > under_thi
 
 
 
+/// Create nodes from a stream, putting the ones with relative paths under \c under_this_node.
 template<class Data> inline
 bool unserialize_nodes_from_string(intrusive_ptr<resource_node<Data> > under_this_node,
 		const std::string& str)
@@ -616,6 +634,7 @@ bool unserialize_nodes_from_string(intrusive_ptr<resource_node<Data> > under_thi
 
 
 
+/// Create nodes from a file, putting the ones with relative paths under \c under_this_node.
 template<class Data> inline
 bool unserialize_nodes_from_file(intrusive_ptr<resource_node<Data> > under_this_node,
 		const std::string& file)
@@ -645,3 +664,5 @@ bool unserialize_nodes_from_file(intrusive_ptr<resource_node<Data> > under_this_
 
 
 #endif
+
+/// @}

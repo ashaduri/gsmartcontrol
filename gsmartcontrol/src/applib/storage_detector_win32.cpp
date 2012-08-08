@@ -9,8 +9,6 @@
 /// \weakgroup applib
 /// @{
 
-#include "storage_detector_win32.h"
-
 #if defined CONFIG_KERNEL_FAMILY_WINDOWS
 
 #include <windows.h>  // CreateFileA(), CloseHandle(), etc...
@@ -21,18 +19,19 @@
 #include "hz/string_sprintf.h"
 #include "rconfig/rconfig_mini.h"
 #include "app_pcrecpp.h"
+#include "storage_detector_win32.h"
 #include "storage_detector_helpers.h"
 
 
 /**
 \file
-<tt>
+<pre>
 3ware Windows detection:
 For 3ware 9xxx only.
 Call as: smartctl -i sd[a-z],N
 	N is port, a-z is logical drive (unit) provided by controller.
 	N is limited to [0, 31] in the code.
-	The sd[a-z] device actually exists as \\.\PhysicalDrive[0-N].
+	The sd[a-z] device actually exists as \\\\.\\PhysicalDrive[0-N].
 		No idea how to check if it's 3ware.
 Call as: smarctl -i tw_cli/cx/py
 	This runs tw_cli tool and parses the output; controller x, port y.
@@ -41,9 +40,9 @@ Call as: smarctl -i tw_cli/cx/py
 tw_cli (part of 3DM2) is automatically added to system PATH,
 	no need to look for it.
 3DM2 install can be detected by checking:
-	HKEY_USERS\.DEFAULT\Software\3ware\3DM2, InstallPath
+	HKEY_USERS\\.DEFAULT\\Software\\3ware\\3DM2, InstallPath
 Another option for detection (whether it's 3ware) would be getting
-	\\.\PhysicalDrive0 properties, like smartctl does.
+	\\\\.\\PhysicalDrive0 properties, like smartctl does.
 Newer (added after 5.39.1) smartctl supports --scan-open, which will give us:
 	/dev/sda,0 -d ata (opened)
 	/dev/sda,1 -d ata (opened)
@@ -54,7 +53,7 @@ Running smartctl on sda gives almost the same result as on sda,0.
 
 Intel Matrix RAID (since smartmontools SVN version on 2011-02-04):
 Call as: "/dev/csmi[0-9],N" where N is the port behind the logical
-	scsi controller "\\.\Scsi[0-9]:".
+	scsi controller "\\\\.\\Scsi[0-9]:".
 	The prefix "/dev/" is optional.
 	This is detected (with /dev/ prefix) by --scan-open.
 The drives may be duplicated as pdX (with X and N being unrelated).
@@ -77,7 +76,8 @@ smartctl --scan-open output for win32 with 3ware RAID:
 /dev/sda,0 -d ata (opened)
 /dev/sda,1 -d ata (opened)
 ------------------------------------------------------------------
-</tt> */
+</pre>
+*/
 
 
 namespace {

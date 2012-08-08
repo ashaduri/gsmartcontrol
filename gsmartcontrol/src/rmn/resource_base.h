@@ -21,6 +21,12 @@
     misrepresented as being the original software.
  3. This notice may not be removed or altered from any source distribution.
 ***************************************************************************/
+/// \file
+/// \author Irakli Elizbarashvili
+/// \author Alexander Shaduri
+/// \ingroup rmn
+/// \weakgroup rmn
+/// @{
 
 #ifndef RMN_RESOURCE_BASE_H
 #define RMN_RESOURCE_BASE_H
@@ -34,29 +40,31 @@
 namespace rmn {
 
 
-// using hz::intrusive_ptr;
 
-
-// This class provides:
-//   1) reference counting (through its base class)
-//   2) naming objects
+/// This class provides:
+/// 1) reference counting (through its base class).
+/// 2) naming objects.
 class resource_base : public hz::intrusive_ptr_referenced {
 	public:
 
+		/// Name comparator
 		struct compare_name;
 
+		/// Constructor
 		resource_base()
 		{ }
 
+		/// Constructor
 		resource_base(const std::string& name) : name_(name)
 		{ }
 
-
+		/// Set resource name
 		void set_name(const std::string& name)
 		{
 			name_ = name;
 		}
 
+		/// Get resource name
 		std::string get_name() const
 		{
 			return name_;
@@ -64,7 +72,8 @@ class resource_base : public hz::intrusive_ptr_referenced {
 
 
 	private:
-		std::string	name_;
+
+		std::string name_;  ///< Resource name
 
 };
 
@@ -77,15 +86,16 @@ class resource_base : public hz::intrusive_ptr_referenced {
 
 
 
-// equality comparator functor
 struct resource_base::compare_name {
 
+	/// Constructor
 	compare_name(const std::string& n)
 	{
 		name = n;
 	}
 
 
+	/// Check two names for equality
 	template<typename T>
 	bool operator() (const T& p) const
 	{
@@ -95,7 +105,7 @@ struct resource_base::compare_name {
 	}
 
 
-	std::string name;
+	std::string name;  ///< Name given in constructor
 
 };
 
@@ -107,3 +117,5 @@ struct resource_base::compare_name {
 
 
 #endif
+
+/// @}

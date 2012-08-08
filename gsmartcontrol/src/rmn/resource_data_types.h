@@ -20,6 +20,11 @@
     misrepresented as being the original software.
  3. This notice may not be removed or altered from any source distribution.
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup rmn
+/// \weakgroup rmn
+/// @{
 
 #ifndef RMN_RESOURCE_DATA_TYPES_H
 #define RMN_RESOURCE_DATA_TYPES_H
@@ -36,31 +41,36 @@ namespace rmn {
 
 
 
-// only serializable and some additional types here.
-
+/// Node data type, used mainly in \c RMN_TYPE_TRACKING.
+/// Only serializable and some additional types are here.
 enum node_data_type {
-	T_EMPTY,  // not really a type, but may be handy
-	T_BOOL,
+	T_EMPTY,  ///< Not really a type, but may be handy
+	T_BOOL,  ///< bool
 
-	T_INT32,  // NOTE: when writing constants, either INT32 or INT64 will be the default.
-	T_UINT32,
-	T_INT64,
-	T_UINT64,
+	T_INT32,  ///< int32_t. NOTE: when writing constants, either \c T_INT32 or \c T_INT64 will be the default.
+	T_UINT32,  ///< uint32_t
+	T_INT64,  ///< int64_t
+	T_UINT64,  ///< uint64_t
 
-	T_DOUBLE,  // default when writing floating point constants.
-	T_FLOAT,
-	T_LDOUBLE,
+	T_DOUBLE,  ///< double. Default when writing floating point constants.
+	T_FLOAT,  ///< float.
+	T_LDOUBLE,  ///< long double. Not recommended if using windows-based compilers.
 
-	T_STRING,
-	T_VOIDPTR,
-	T_UNKNOWN
+	T_STRING,  ///< std::string
+	T_VOIDPTR,  ///< void*
+	T_UNKNOWN  ///< Unknown type
 };
 
 
 
+/// Get node_data_type by type \c T. This struct is specialized for different types.
 template <typename T>
-struct node_data_type_by_real { static const node_data_type type = T_UNKNOWN; };
+struct node_data_type_by_real {
+	/// Node data type
+	static const node_data_type type = T_UNKNOWN;
+};
 
+// specializations
 template<> struct node_data_type_by_real<void> { static const node_data_type type = T_EMPTY; };
 template<> struct node_data_type_by_real<bool> { static const node_data_type type = T_BOOL; };
 template<> struct node_data_type_by_real<int32_t> { static const node_data_type type = T_INT32; };
@@ -74,6 +84,13 @@ template<> struct node_data_type_by_real<std::string> { static const node_data_t
 template<> struct node_data_type_by_real<void*> { static const node_data_type type = T_VOIDPTR; };
 
 
+
+
+/// \fn node_data_type resource_node_get_type(intrusive_ptr<resource_node<Data> > node)
+/// Get node_data_type from rmn node. Const pointer overload.
+
+/// \fn node_data_type resource_node_get_type(intrusive_ptr<const resource_node<Data> > node)
+/// Get node_data_type from rmn node.
 
 
 
@@ -133,3 +150,5 @@ node_data_type resource_node_get_type(intrusive_ptr<resource_node<Data> > node)
 
 
 #endif
+
+/// @}

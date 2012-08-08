@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup libdebug
+/// \weakgroup libdebug
+/// @{
 
 #include <iostream>  // std::cerr, the default output stream
 #include <map>
@@ -22,7 +27,6 @@ namespace debug_internal {
 
 
 
-	// initialize the "default" template domain, set the default enabled levels / format flags
 	void DebugState::setup_default_state()
 	{
 		// defaults:
@@ -66,7 +70,8 @@ namespace debug_internal {
 
 
 
-	// this will initialize the default domain and channels automatically.
+	/// Global libdebug state.
+	/// This will initialize the default domain and channels automatically.
 	static DebugState s_debug_state;
 
 
@@ -81,8 +86,7 @@ namespace debug_internal {
 
 
 
-// returns false if domain is registered already. It will use the "default"
-// domain as a template.
+
 bool debug_register_domain(const std::string& domain)
 {
 	using namespace debug_internal;
@@ -144,8 +148,7 @@ std::vector<std::string> debug_get_registered_domains()
 
 
 
-// enable/disable outstreams. domain "all" means all domains.
-// multiple levels may be passed (OR'ed), as well as debug_level::all.
+
 bool debug_set_enabled(const std::string& domain, const debug_level::type& levels, bool enabled)
 {
 	using namespace debug_internal;
@@ -173,7 +176,6 @@ bool debug_set_enabled(const std::string& domain, const debug_level::type& level
 
 
 
-// see which levels are enabled for domain
 debug_level::type debug_get_enabled(const std::string& domain)
 {
 	using namespace debug_internal;
@@ -198,8 +200,6 @@ debug_level::type debug_get_enabled(const std::string& domain)
 
 
 
-// set format flags for domain / level. domain "all" means all domains.
-// multiple levels may be passed (OR'ed), as well as debug_level::all.
 bool debug_set_format(const std::string& domain, const debug_level::type& levels, const debug_format::type& format)
 {
 	using namespace debug_internal;
@@ -227,7 +227,6 @@ bool debug_set_format(const std::string& domain, const debug_level::type& levels
 
 
 
-// get all enabled format flags for each level in a domain
 std::map<debug_level::flag, debug_format::type> debug_get_formats(const std::string& domain)
 {
 	using namespace debug_internal;
@@ -248,8 +247,6 @@ std::map<debug_level::flag, debug_format::type> debug_get_formats(const std::str
 
 
 
-// enable/disable outstreams. domain "all" means all domains.
-// multiple levels may be passed (OR'ed), as well as debug_level::all.
 bool debug_add_channel(const std::string& domain, const debug_level::type& levels, debug_channel_base_ptr channel)
 {
 	using namespace debug_internal;
@@ -278,8 +275,6 @@ bool debug_add_channel(const std::string& domain, const debug_level::type& level
 
 
 
-// enable/disable outstreams. domain "all" means all domains.
-// multiple levels may be passed (OR'ed), as well as debug_level::all.
 bool debug_clear_channels(const std::string& domain, const debug_level::type& levels)
 {
 	using namespace debug_internal;
@@ -310,3 +305,5 @@ bool debug_clear_channels(const std::string& domain, const debug_level::type& le
 
 
 
+
+/// @}

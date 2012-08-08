@@ -9,8 +9,6 @@
 /// \weakgroup applib
 /// @{
 
-#include "storage_detector_linux.h"
-
 #if defined CONFIG_KERNEL_LINUX
 
 
@@ -26,6 +24,7 @@
 #include "hz/fs_file.h"
 #include "rconfig/rconfig_mini.h"
 #include "app_pcrecpp.h"
+#include "storage_detector_linux.h"
 #include "storage_detector_helpers.h"
 
 
@@ -334,7 +333,8 @@ inline std::string smartctl_get_drives(const std::string& dev, const std::string
 
 
 
-/** <tt>
+/**
+<pre>
 Linux (tested with 2.4 and 2.6) /proc/partitions. Parses the file, appends /dev to each entry.
 Note that file format changed from 2.4 to 2.6 (some statistics fields moved to another file).
 No /proc/partitions on freebsd, solaris or osx, afaik.
@@ -378,7 +378,7 @@ major minor  #blocks  name
 254 1 3928064 mmcblk0p1
 254 8 1966080 mmcblk1
 254 9 2007032 mmcblk1p1
-</tt> */
+</pre> */
 inline std::string detect_drives_linux_proc_partitions(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting through /proc/partitions...\n");
@@ -447,7 +447,7 @@ inline std::string detect_drives_linux_proc_partitions(std::vector<StorageDevice
 
 
 
-/** <tt>
+/** <pre>
 Detect drives behind 3ware RAID controller.
 
 3ware Linux (3w-9xxx, 3w-xxxx, 3w-sas drivers):
@@ -473,7 +473,7 @@ Implementation notes: it seems that twe uses "3ware" and twa uses "AMCC"
 (not sure about twl).
 We can't handle a situation with mixed twa/twe/twl systems, since we don't know
 how they will be ordered for tw_cli.
-</tt> */
+</pre> */
 inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
 	std::vector<std::string> lines;
@@ -583,7 +583,7 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 
 
 
-/** <tt>
+/** <pre>
 Detect drives behind Adaptec RAID controller (aacraid driver).
 Tested using Adaptec RAID 5805 (SAS / SATA controller).
 Uses /dev/sgN devices (with -d sat for SATA and -d scsi (default) for SCSI).
@@ -599,7 +599,7 @@ and /dev/sg3 (the controller). I think the controller can be filtered out
 using "id > 0" requirement (the third column of /proc/scsi/sg/devices.
 Try "-d sat" by default. If it fails ("Device Read Identity Failed:" ? not
 sure how to detect the failure), fall back to "-d scsi".
-</tt> */
+</pre> */
 inline std::string detect_drives_linux_adaptec(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
 	std::vector<std::string> lines;

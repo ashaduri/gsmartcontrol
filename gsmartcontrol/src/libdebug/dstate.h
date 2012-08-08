@@ -3,6 +3,11 @@
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup libdebug
+/// \weakgroup libdebug
+/// @{
 
 #ifndef LIBDEBUG_DSTATE_H
 #define LIBDEBUG_DSTATE_H
@@ -30,34 +35,42 @@ namespace debug_internal {
 	// domain name "all" - used for manipulating all domains.
 
 
+	/// Libdebug global state
 	class DebugState {
 		public:
 
+			/// Debug output stream strong reference-holding pointer
 			typedef hz::intrusive_ptr<DebugOutStream> out_stream_ptr;
+
+			/// A mapping of debug levels to respective streams
 			typedef std::map<debug_level::flag, out_stream_ptr> level_map_t;
+
+			/// A mapping of domains to debug level maps with streams
 			typedef std::map<std::string, level_map_t> domain_map_t;
 
 
+			/// Constructor (statically called), calls setup_default_state().
 			DebugState()
 			{
 				setup_default_state();
 			}
 
 
-			// This function is NOT thread-safe. Call it before using any
-			// other functions in MT environment.
-			// Automatically called by constructor, so usually no problem there.
+			/// Initialize the "default" template domain, set the default enabled levels / format flags.
+			/// This function is NOT thread-safe. Call it before using any
+			/// other functions in MT environment. Automatically called by constructor.
 			void setup_default_state();
 
 
-			// This is function thread-safe in read-only context.
+			/// Get the domain/level mapping.
+			/// This is function thread-safe in read-only context.
 			domain_map_t& get_domain_map()
 			{
 				return domain_map;
 			}
 
 
-			// This is function thread-safe.
+			/// Get current indentation level. This is function thread-safe.
 			int get_indent_level() const
 			{
 				if (!indent_level_.get())
@@ -65,7 +78,7 @@ namespace debug_internal {
 				return *indent_level_;
 			}
 
-			// This is function thread-safe.
+			/// Set current indentation level. This is function thread-safe.
 			void set_indent_level(int indent_level)
 			{
 				if (!indent_level_.get()) {
@@ -75,7 +88,7 @@ namespace debug_internal {
 				}
 			}
 
-			// This is function thread-safe.
+			/// Open a debug_begin() context. This is function thread-safe.
 			void push_inside_begin(bool value = true)
 			{
 				if (!inside_begin_.get())
@@ -83,7 +96,7 @@ namespace debug_internal {
 				inside_begin_->push(value);
 			}
 
-			// This is function thread-safe.
+			/// Close a debug_begin() context. This is function thread-safe.
 			bool pop_inside_begin()
 			{
 				if (!inside_begin_.get())
@@ -96,7 +109,7 @@ namespace debug_internal {
 				return val;
 			}
 
-			// This is function thread-safe.
+			/// Check if we're inside a debug_begin() context. This is function thread-safe.
 			bool get_inside_begin() const
 			{
 				if (!inside_begin_.get())
@@ -108,8 +121,8 @@ namespace debug_internal {
 			}
 
 
-			// Flush all the buffers. This will write prefixes too.
-			// This is function thread-safe in read-only context.
+			/// Flush all the stream buffers. This will write prefixes too.
+			/// This is function thread-safe in read-only context.
 			void force_output()
 			{
 				for(domain_map_t::iterator iter = domain_map.begin(); iter != domain_map.end(); ++iter) {
@@ -121,19 +134,21 @@ namespace debug_internal {
 
 		private:
 
-			// without mutable there's no on-demand allocation for these
+			// Without mutable there's no on-demand allocation for these.
 			// It's thread-local because it is not shared between different flows.
-			// we can't provide any manual cleanup, because the only one we can do
+			// We can't provide any manual cleanup, because the only one we can do
 			// is in main thread, and it's already being done with the destructor.
-			mutable hz::thread_local_ptr<int> indent_level_;
-			mutable hz::thread_local_ptr<std::stack<bool> > inside_begin_;  // true if inside begin() / end() block
 
-			domain_map_t domain_map;
+			mutable hz::thread_local_ptr<int> indent_level_;  ///< Current indentation level
+			mutable hz::thread_local_ptr<std::stack<bool> > inside_begin_;  ///< True if inside debug_begin() / debug_end() block
+
+			domain_map_t domain_map;  ///< Domain / debug level mapping.
 
 	};
 
 
 
+	/// Get global libdebug state
 	DebugState& get_debug_state();
 
 
@@ -147,3 +162,5 @@ namespace debug_internal {
 
 
 #endif
+
+/// @}
