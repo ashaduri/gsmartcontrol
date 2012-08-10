@@ -20,15 +20,7 @@ with existing model, which should be unset.
 
 
 Bugs / patches:
-
 	Patch pangomm for Pango::strip_markup().
-
-+	gtkmm bug: No Gtk::AboutDialog::set_logo(NULL);
-
-+	Gtk::Main m(argc, argv, false);
-		If gtk_get_option_group() and g_option_context_parse() were used before,
-		this generates a warning:
-		(gsmartcontrol:28241): Gtk-WARNING **: gtk_disable_setlocale() must be called before gtk_init()
 
 
 
@@ -41,14 +33,17 @@ Update the .spec and gsmartcontrol-root script according to Fedora package:
 	https://admin.fedoraproject.org/pkgdb/applications/Gsmartcontrol
 	https://bugzilla.redhat.com/show_bug.cgi?id=697247
 
+Add support for launching with consolehelper (from usermode package).
+	Fedora uses this by default.
+	Investigate Fedora selinux situation.
+	usermode-gtk contains consolehelper-gtk, not sure about our package
+		requirement. consolehelper-gtk is not supposed to be launched by user,
+		but I think we can check it with "which".
+		http://fedoranews.org/contributors/matt_hansen/nautilus/
+		We have an experimental rpm.
 
-+Add an option to display the device and/or the S/N in the main icon list
-	so that the 12x RAID list view looks a bit less generic.
 
-
-Don't issue warnings for attributes whose raw values are not numbers completely
-	(e.g. they are space-separated numbers in some format)
-
+Updated smartctl attributes from r3515 to 3587.
 
 Add warnings for SSD lifetime attributes
 	http://sourceforge.net/apps/trac/smartmontools/wiki/FAQ#TheSSD_Life_LeftAttributeofmynewSandForcebasedSSDreportszero
@@ -69,14 +64,19 @@ Testing:
 		may be stuck due to bad firmware, e.g. 3ware/windows).
 
 
-Add support for launching with consolehelper (from usermode package).
-	Fedora uses this by default.
-	Investigate Fedora selinux situation.
-	usermode-gtk contains consolehelper-gtk, not sure about our package
-		requirement. consolehelper-gtk is not supposed to be launched by user,
-		but I think we can check it with "which".
-		http://fedoranews.org/contributors/matt_hansen/nautilus/
-		We have an experimental rpm.
+
+48-bit ATA command support:
+	'-l xerror' -> Extended Comprehensive Error log: An multi-sector and
+	LBA48 capable version of '-l error'. Output is similar, except more
+	entries can exists and the high bytes of the registers are also printed.
+	Some newer drives (Samsung) only write to this log.
+
+	'-l xselftest' -> Extended Self Test Log: An multi-sector and LBA48
+	capable version of '-l selftest'. Output will be similar, except more
+	entries can exists and the LBA values can be somewhat longer.
+
+	"smartctl -l this_wont_exist" gives the list of supported logs - this
+		is needed to detect xerror / xselftest support in smartctl.
 
 
 Rework drive properties UI:
@@ -183,20 +183,6 @@ libdebug:
 	all flags should be per-channel.
 	bug: if -q is passed, Execution log doesn't contain libdebug log. (requires per-channel status control).
 	use format_time() instead of ctime() and friends, with ISO formatting.
-
-
-48-bit ATA command support:
-	'-l xerror' -> Extended Comprehensive Error log: An multi-sector and
-	LBA48 capable version of '-l error'. Output is similar, except more
-	entries can exists and the high bytes of the registers are also printed.
-	Some newer drives (Samsung) only write to this log.
-
-	'-l xselftest' -> Extended Self Test Log: An multi-sector and LBA48
-	capable version of '-l selftest'. Output will be similar, except more
-	entries can exists and the LBA values can be somewhat longer.
-
-	"smartctl -l this_wont_exist" gives the list of supported logs - this
-		is needed to detect xerror / xselftest support in smartctl.
 
 
 

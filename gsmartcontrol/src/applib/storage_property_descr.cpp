@@ -94,7 +94,7 @@ namespace {
 						"Number of reallocated sectors (Raw value). Non-zero Raw value indicates a disk surface failure."
 						"\n\n" + unc_text);
 				// SandForce SSD: Retired_Block_Count (non-default)
-				add(5, "Retired_Block_Count", "Retired Block Rate", "",
+				add(5, "Retired_Block_Count", "Retired Block Rate", "ssd_life_left",
 						"Indicates estimated remaining life of the drive. Normalized value is (100-100*RBC/MRB) where RBC is the number of retired blocks and MRB is the minimum required blocks.");
 				// Read Channel Margin (default)
 				add(6, "Read_Channel_Margin", "Read Channel Margin", "",
@@ -108,8 +108,11 @@ namespace {
 				// Power-On Hours (default) (Maxtor may use minutes, Fujitsu may use seconds, some even temperature?)
 				add(9, "Power_On_Hours", "Power-On Time", "",
 						"Number of hours in power-on state. Raw value shows total count of hours (or minutes, or half-minutes, or seconds, depending on manufacturer) in power-on state.");
-				// SandForce SSD: Power_On_Hours_and_Msec (non-default) (description?)
+				// SandForce, Intel SSD: Power_On_Hours_and_Msec (non-default) (description?)
 				add(9, "Power_On_Hours_and_Msec");
+				// Smart Storage Systems SSD (non-default)
+				add(9, "Proprietary_9", "Internal Attribute", "",
+						"This attribute has been reserved by vendor as internal.");
 				// Spin-up Retry Count (default)
 				add(10, "Spin_Retry_Count", "Spin-Up Retry Count", "spin_up_retry_count",
 						"Number of retries of spin start attempts (Raw value). An increase of this attribute value is a sign of problems in the hard disk mechanical subsystem.");
@@ -142,6 +145,9 @@ namespace {
 				// STEC CF: Translation Table Rebuild (custom)
 				add(103, "", "Translation Table Rebuild", "",
 						"Indicates power backup fault or internal error resulting in loss of system unit tables.");
+				// Smart Storage Systems SSD (non-default) (description?)
+				add(130, "Minimum_Spares_All_Zs", "Minimum Spares All Zs", "",
+						"");
 				// Various SSDs: (non-default) (description?)
 				add(168, "SATA_Phy_Error_Count", "SATA Physical Error Count", "",
 						"");
@@ -150,6 +156,9 @@ namespace {
 						"Number of reserved (spare) blocks for bad block handling.");
 				// Crucial / Marvell SSD: Grown Failing Block Count (non-default) (description?)
 				add(170, "Grown_Failing_Block_Ct", "Grown Failing Block Count", "",
+						"");
+				// Intel SSD: (non-default) (description?)
+				add(170, "Available_Reservd_Space", "Available Reservd Space", "",
 						"");
 				// Various SSDs: (non-default) (description?)
 				add(170, "Bad_Block_Count", "Bad Block Count", "",
@@ -230,7 +239,7 @@ namespace {
 				// Reported Uncorrectable (default)
 				add(187, "Reported_Uncorrect", "Reported Uncorrectable", "",
 						"Number of errors that could not be recovered using hardware ECC (Error-Correcting Code).");
-				// Samsung SSD: Reported Uncorrectable (non-default)
+				// Samsung SSD, Intel SSD: Reported Uncorrectable (non-default)
 				add(187, "Uncorrectable_Error_Cnt");
 				// Command Timeout (default)
 				add(188, "Command_Timeout", "Command Timeout", "",
@@ -277,6 +286,9 @@ namespace {
 				// Temperature Celsius x 10 (non-default)
 				add(194, "Temperature_Celsius_x10", "Temperature (Celsius) x 10", "temperature_celsius_x10",
 						"Drive temperature. The Raw value shows built-in heat sensor registrations (in Celsius * 10). Increases in average drive temperature often signal spindle motor problems (unless the increases are caused by environmental factors).");
+				// Smart Storage Systems SSD (non-default)
+				add(194, "Proprietary_194", "Internal Attribute", "",
+						"This attribute has been reserved by vendor as internal.");
 				// Hardware ECC Recovered (default)
 				add(195, "Hardware_ECC_Recovered", "Hardware ECC Recovered", "",
 						"Number of ECC on the fly errors (Raw value). Users are advised to ignore this attribute.");
@@ -382,11 +394,11 @@ namespace {
 				// Samsung SSD: (non-default) (description?)
 				add(202, "Exception_Mode_Status", "Exception Mode Status", "",
 						"");
-				// Maxtor: ECC Errors (default) (description?)
-				add(203, "Corr_Read_Errors_Tot_Ct", "ECC Errors", "",
-						"Number of ECC errors.");
-				// Run Out Cancel (non-default). (description?)
+				// Run Out Cancel (default). (description?)
 				add(203, "Run_Out_Cancel", "Run Out Cancel", "",
+						"Number of ECC errors.");
+				// Maxtor: ECC Errors (non-default) (description?)
+				add(203, "Corr_Read_Errors_Tot_Ct", "ECC Errors", "",
 						"Number of ECC errors.");
 				// Indilinx Barefoot SSD: Corr_Read_Errors_Tot_Ct (non-default) (description?)
 				add(203, "Corr_Read_Errors_Tot_Ct", "Total Corrected Read Errors", "",
@@ -438,7 +450,7 @@ namespace {
 				add(209, "Offline_Seek_Performnce", "Offline Seek Performance", "",
 						"Seek performance during Offline Data Collection operations.");
 				// Indilinx Barefoot SSD, OCZ SSD: Remaining_Lifetime_Perc (non-default) (description?)
-				add(209, "Remaining_Lifetime_Perc", "Remaining Lifetime %", "",
+				add(209, "Remaining_Lifetime_Perc", "Remaining Lifetime %", "ssd_life_left",
 						"Remaining drive life in % (usually by erase count).");
 				// Vibration During Write (custom). wikipedia says 211, but it's wrong. (description?)
 				add(210, "", "Vibration During Write", "",
@@ -519,12 +531,12 @@ namespace {
 						"Amplitude of heads trembling (GMR-head) in running mode.");
 				// Sandforce SSD: Life_Curve_Status (non-default) (description?)
 				add(230, "Life_Curve_Status", "Life Curve Status", "",
-						"");
+						"Current state of drive operation based upon the Life Curve.");
 				// Temperature (Some drives) (default)
 				add(231, "Temperature_Celsius", "Temperature", "temperature_celsius",
 						"Drive temperature. The Raw value shows built-in heat sensor registrations (in Celsius). Increases in average drive temperature often signal spindle motor problems (unless the increases are caused by environmental factors).");
 				// Sandforce SSD: SSD_Life_Left
-				add(231, "SSD_Life_Left", "SSD Life Left", "",
+				add(231, "SSD_Life_Left", "SSD Life Left", "ssd_life_left",
 						"A measure of drive's estimated life left. A Normalized value of 100 indicates a new drive. "
 						"10 means there are reserved blocks left but Program / Erase cycles have been used. "
 						"0 means insufficient reserved blocks, drive may be in read-only mode to allow recovery of the data.");
@@ -538,7 +550,7 @@ namespace {
 				add(232, "Firmware_Version_information", "Firmware Version Information", "",
 						"Firmware version information (year, month, day, channels, banks).");
 				// Intel SSD: Media_Wearout_Indicator (default) (description?)
-				add(233, "Media_Wearout_Indicator", "Media Wear Out Indicator", "",
+				add(233, "Media_Wearout_Indicator", "Media Wear Out Indicator", "ssd_life_left",
 						"Number of cycles the NAND media has experienced. The Normalized value decreases linearly from 100 to 1 as the average erase cycle "
 						"count increases from 0 to the maximum rated cycles.");
 				// Sandforce SSD: SandForce_Internal (non-default) (description?)
@@ -583,6 +595,9 @@ namespace {
 				// Intel SSD: Host_Reads_32MiB (non-default) (description?)
 				add(242, "Host_Reads_32MiB", "Host Reads (32 MiB)", "",
 						"Total number of sectors written by the host system. The Raw value is increased by 1 for every 32 MiB read by the host.");
+				// Intel SSD: NAND_Writes_1GiB (non-default) (description?)
+				add(249, "NAND_Writes_1GiB", "NAND Writes (1GiB)", "",
+						"");
 				// Read Error Retry Rate (default) (description?)
 				add(250, "Read_Error_Retry_Rate", "Read Error Retry Rate", "",
 						"Number of errors found while reading.");
@@ -955,6 +970,12 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 					&& p.value_attribute.raw_value_int > 0) {
 			w = StorageProperty::warning_notice;
 			reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
+
+		// Current Pending Sector Count
+		} else if ((attr_match(p, "ssd_life_left"))
+					&& p.value_attribute.value.value() < 50) {
+			w = StorageProperty::warning_notice;
+			reason = "The drive has less than half of its life left.";
 
 		}
 
