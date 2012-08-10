@@ -63,6 +63,9 @@ inline void init_default_settings()
 
 	rconfig::set_default_data("gui/smartctl_output_filename_format", "{model}_{serial}_{date}.txt");  // when suggesting filename
 
+	rconfig::set_default_data("gui/icons_show_device_name", false);  // text under icons
+	rconfig::set_default_data("gui/icons_show_serial_number", false);  // text under icons
+
 
 	// Populate /runtime too, just in case. The values don't really matter.
 

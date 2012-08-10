@@ -28,6 +28,7 @@
 #include "applib/storage_property_colors.h"
 
 #include "gsc_main_window.h"
+#include "rconfig/rconfig_mini.h"
 
 
 
@@ -246,8 +247,17 @@ class GscMainWindowIconView : public Gtk::IconView {
 			std::string name;  // = "<big>" + drive->get_device_pretty() + " </big>\n";
 
 			// note: if this wraps, it becomes left-aligned in gtk <= 2.10.
-			name += (drive->get_model_name().empty() ? std::string("Unknown model") : drive->get_model_name());
-
+			name += (drive->get_model_name().empty() ? Glib::ustring("Unknown model") : Glib::Markup::escape_text(drive->get_model_name()));
+			if (rconfig::get_data<bool>("gui/icons_show_device_name")) {
+				if (!drive->get_is_virtual()) {
+					name += "\n" + Glib::Markup::escape_text(drive->get_device_with_type());
+				} else if (!drive->get_virtual_filename().empty()) {
+					name += "\n" + Glib::Markup::escape_text(drive->get_virtual_filename());
+				}
+			}
+			if (rconfig::get_data<bool>("gui/icons_show_serial_number") && !drive->get_serial_number().empty()) {
+				name += "\n" + Glib::Markup::escape_text(drive->get_serial_number());
+			}
 
 			std::vector<std::string> tooltip_strs;
 
@@ -256,6 +266,9 @@ class GscMainWindowIconView : public Gtk::IconView {
 				tooltip_strs.push_back("Loaded from: " + (vfile.empty() ? "[empty]" : Glib::Markup::escape_text(vfile)));
 			} else {
 				tooltip_strs.push_back("Device: <b>" + Glib::Markup::escape_text(drive->get_device_with_type()) + "</b>");
+			}
+			if (!drive->get_serial_number().empty()) {
+				tooltip_strs.push_back("Serial number: <b>" + Glib::Markup::escape_text(drive->get_serial_number()) + "</b>");
 			}
 			tooltip_strs.push_back("SMART status: <b>"
 					+ StorageDevice::get_status_name(drive->get_smart_status(), false) + "</b>");

@@ -9,7 +9,10 @@
 /// \weakgroup applib
 /// @{
 
+#include "hz/hz_config.h"  // CONFIG_*
+
 #if defined CONFIG_KERNEL_FAMILY_WINDOWS
+
 
 #include <windows.h>  // CreateFileA(), CloseHandle(), etc...
 #include <glibmm.h>
@@ -21,6 +24,7 @@
 #include "app_pcrecpp.h"
 #include "storage_detector_win32.h"
 #include "storage_detector_helpers.h"
+
 
 
 /**

@@ -9,7 +9,10 @@
 /// \weakgroup applib
 /// @{
 
+#include "hz/hz_config.h"  // CONFIG_*
+
 #if !defined CONFIG_KERNEL_LINUX && !defined CONFIG_KERNEL_FAMILY_WINDOWS
+
 
 #if defined CONFIG_KERNEL_OPENBSD || defined CONFIG_KERNEL_NETBSD
 	#include <util.h>  // getrawpartition()

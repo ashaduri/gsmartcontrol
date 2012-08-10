@@ -412,6 +412,16 @@ void GscPreferencesWindow::import_config()
 			&& (check = this->lookup_widget<Gtk::CheckButton*>("show_smart_capable_only_check")) )
 		check->set_active(show_smart_capable_only);
 
+	bool icons_show_device_name = 0;
+	if ( prefs_config_get("gui/icons_show_device_name", icons_show_device_name)
+			&& (check = this->lookup_widget<Gtk::CheckButton*>("show_device_name_under_icon_check")) )
+		check->set_active(icons_show_device_name);
+
+	bool icons_show_serial_number = 0;
+	if ( prefs_config_get("gui/icons_show_serial_number", icons_show_serial_number)
+			&& (check = this->lookup_widget<Gtk::CheckButton*>("show_serial_number_under_icon_check")) )
+		check->set_active(icons_show_serial_number);
+
 	bool win32_search_smartctl_in_smartmontools = 0;
 	if ( prefs_config_get("system/win32_search_smartctl_in_smartmontools", win32_search_smartctl_in_smartmontools)
 			&& (check = this->lookup_widget<Gtk::CheckButton*>("search_in_smartmontools_first_check")) )
@@ -461,6 +471,12 @@ void GscPreferencesWindow::export_config()
 
 	if ((check = this->lookup_widget<Gtk::CheckButton*>("show_smart_capable_only_check")))
 		prefs_config_set("gui/show_smart_capable_only", bool(check->get_active()));
+
+	if ((check = this->lookup_widget<Gtk::CheckButton*>("show_device_name_under_icon_check")))
+		prefs_config_set("gui/icons_show_device_name", bool(check->get_active()));
+
+	if ((check = this->lookup_widget<Gtk::CheckButton*>("show_serial_number_under_icon_check")))
+		prefs_config_set("gui/icons_show_serial_number", bool(check->get_active()));
 
 	if ((check = this->lookup_widget<Gtk::CheckButton*>("search_in_smartmontools_first_check")))
 		prefs_config_set("system/win32_search_smartctl_in_smartmontools", bool(check->get_active()));
