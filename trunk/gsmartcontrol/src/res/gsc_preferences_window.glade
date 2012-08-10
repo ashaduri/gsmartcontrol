@@ -40,8 +40,6 @@
                                       <widget class="GtkCheckButton" id="scan_on_startup_check">
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
-                                        <property name="tooltip_text">Scan system for drives on startup</property>
-                                        <property name="tooltip" translatable="yes">Scan system for drives on startup</property>
                                         <property name="label" translatable="yes">_Scan system for drives on startup</property>
                                         <property name="use_underline">True</property>
                                         <property name="response_id">0</property>
@@ -52,15 +50,39 @@
                                       <widget class="GtkCheckButton" id="show_smart_capable_only_check">
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
-                                        <property name="tooltip_text">Show SMART-capable drives only</property>
-                                        <property name="tooltip" translatable="yes">Show SMART-capable drives only</property>
-                                        <property name="label" translatable="yes">S_how SMART-capable drives only</property>
+                                        <property name="label" translatable="yes">Show SMART-capable drives only</property>
                                         <property name="use_underline">True</property>
                                         <property name="response_id">0</property>
                                         <property name="draw_indicator">True</property>
                                       </widget>
                                       <packing>
                                         <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <widget class="GtkCheckButton" id="show_device_name_under_icon_check">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">True</property>
+                                        <property name="label" translatable="yes">Show device name under drive icon</property>
+                                        <property name="use_underline">True</property>
+                                        <property name="response_id">0</property>
+                                        <property name="draw_indicator">True</property>
+                                      </widget>
+                                      <packing>
+                                        <property name="position">2</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <widget class="GtkCheckButton" id="show_serial_number_under_icon_check">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">True</property>
+                                        <property name="label" translatable="yes">Show serial number under drive icon</property>
+                                        <property name="use_underline">True</property>
+                                        <property name="response_id">0</property>
+                                        <property name="draw_indicator">True</property>
+                                      </widget>
+                                      <packing>
+                                        <property name="position">3</property>
                                       </packing>
                                     </child>
                                   </widget>
@@ -108,7 +130,7 @@
                                       <widget class="GtkCheckButton" id="search_in_smartmontools_first_check">
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
-                                        <property name="tooltip_text">Show SMART-capable drives only</property>
+                                        <property name="tooltip_text">If smartmontools is installed, use its smartctl by default</property>
                                         <property name="tooltip" translatable="yes">If smartmontools is installed, use its smartctl by default</property>
                                         <property name="label" translatable="yes">Loo_k for smartctl in smartmontools installation directory first</property>
                                         <property name="use_underline">True</property>
@@ -123,6 +145,47 @@
                                         <property name="n_columns">2</property>
                                         <property name="column_spacing">12</property>
                                         <property name="row_spacing">6</property>
+                                        <child>
+                                          <widget class="GtkLabel" id="label7">
+                                            <property name="visible">True</property>
+                                            <property name="tooltip_text">A path to smartctl binary. If the path is not absolute, the binary will be looked for in user's PATH.</property>
+                                            <property name="tooltip" translatable="yes">A path to smartctl binary. If the path is not absolute, the binary will be looked for in user's PATH.</property>
+                                            <property name="xalign">1</property>
+                                            <property name="label" translatable="yes">S_martctl binary:</property>
+                                            <property name="use_underline">True</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="x_options">GTK_FILL</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkLabel" id="label8">
+                                            <property name="visible">True</property>
+                                            <property name="tooltip_text">Global parameters for smartctl. These parameters will be used every time the progam invokes smartctl. Must be shell-escaped.</property>
+                                            <property name="tooltip" translatable="yes">Global parameters for smartctl. These parameters will be used every time the progam invokes smartctl. Must be shell-escaped.</property>
+                                            <property name="label" translatable="yes">Smartctl parameters:</property>
+                                            <property name="use_underline">True</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="top_attach">1</property>
+                                            <property name="bottom_attach">2</property>
+                                            <property name="x_options">GTK_FILL</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkEntry" id="smartctl_options_entry">
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="tooltip_text">Global parameters for smartctl. These parameters will be used every time the progam invokes smartctl. Must be shell-escaped.</property>
+                                            <property name="tooltip" translatable="yes">Global parameters for smartctl. These parameters will be used every time the progam invokes smartctl. Must be shell-escaped.</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="left_attach">1</property>
+                                            <property name="right_attach">2</property>
+                                            <property name="top_attach">1</property>
+                                            <property name="bottom_attach">2</property>
+                                          </packing>
+                                        </child>
                                         <child>
                                           <widget class="GtkHBox" id="hbox4">
                                             <property name="visible">True</property>
@@ -152,47 +215,6 @@
                                           <packing>
                                             <property name="left_attach">1</property>
                                             <property name="right_attach">2</property>
-                                          </packing>
-                                        </child>
-                                        <child>
-                                          <widget class="GtkEntry" id="smartctl_options_entry">
-                                            <property name="visible">True</property>
-                                            <property name="can_focus">True</property>
-                                            <property name="tooltip_text">Global parameters for smartctl. These parameters will be used every time the progam invokes smartctl. Must be shell-escaped.</property>
-                                            <property name="tooltip" translatable="yes">Global parameters for smartctl. These parameters will be used every time the progam invokes smartctl. Must be shell-escaped.</property>
-                                          </widget>
-                                          <packing>
-                                            <property name="left_attach">1</property>
-                                            <property name="right_attach">2</property>
-                                            <property name="top_attach">1</property>
-                                            <property name="bottom_attach">2</property>
-                                          </packing>
-                                        </child>
-                                        <child>
-                                          <widget class="GtkLabel" id="label8">
-                                            <property name="visible">True</property>
-                                            <property name="tooltip_text">Global parameters for smartctl. These parameters will be used every time the progam invokes smartctl. Must be shell-escaped.</property>
-                                            <property name="tooltip" translatable="yes">Global parameters for smartctl. These parameters will be used every time the progam invokes smartctl. Must be shell-escaped.</property>
-                                            <property name="label" translatable="yes">Smartctl parameters:</property>
-                                            <property name="use_underline">True</property>
-                                          </widget>
-                                          <packing>
-                                            <property name="top_attach">1</property>
-                                            <property name="bottom_attach">2</property>
-                                            <property name="x_options">GTK_FILL</property>
-                                          </packing>
-                                        </child>
-                                        <child>
-                                          <widget class="GtkLabel" id="label7">
-                                            <property name="visible">True</property>
-                                            <property name="tooltip_text">A path to smartctl binary. If the path is not absolute, the binary will be looked for in user's PATH.</property>
-                                            <property name="tooltip" translatable="yes">A path to smartctl binary. If the path is not absolute, the binary will be looked for in user's PATH.</property>
-                                            <property name="xalign">1</property>
-                                            <property name="label" translatable="yes">S_martctl binary:</property>
-                                            <property name="use_underline">True</property>
-                                          </widget>
-                                          <packing>
-                                            <property name="x_options">GTK_FILL</property>
                                           </packing>
                                         </child>
                                       </widget>
@@ -340,6 +362,7 @@
                                               <widget class="GtkTreeView" id="device_options_treeview">
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">True</property>
+                                                <property name="tooltip_text">Device list</property>
                                                 <property name="tooltip" translatable="yes">Device list</property>
                                                 <property name="headers_clickable">False</property>
                                               </widget>
@@ -396,53 +419,24 @@
                                             <property name="column_spacing">12</property>
                                             <property name="row_spacing">6</property>
                                             <child>
-                                              <widget class="GtkEntry" id="device_options_parameter_entry">
+                                              <widget class="GtkLabel" id="label9">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">True</property>
-                                                <property name="tooltip_text">Smartctl parameters (for example, "-T permissive" or "-d usbsunplus")</property>
-                                                <property name="tooltip" translatable="yes">Smartctl parameters (for example, "-T permissive" or "-d usbsunplus")</property>
+                                                <property name="xalign">0</property>
+                                                <property name="label" translatable="yes">&lt;b&gt;Drive Properties:&lt;/b&gt;</property>
+                                                <property name="use_markup">True</property>
                                               </widget>
                                               <packing>
-                                                <property name="left_attach">1</property>
                                                 <property name="right_attach">2</property>
-                                                <property name="top_attach">3</property>
-                                                <property name="bottom_attach">4</property>
                                               </packing>
                                             </child>
                                             <child>
-                                              <widget class="GtkLabel" id="label67">
+                                              <widget class="GtkLabel" id="device_options_device_label">
                                                 <property name="visible">True</property>
-                                                <property name="tooltip_text">Smartctl parameters (for example, "-T permissive" or "-d usbsunplus")</property>
-                                                <property name="tooltip" translatable="yes">Smartctl parameters (for example, "-T permissive" or "-d usbsunplus")</property>
                                                 <property name="xalign">1</property>
-                                                <property name="label" translatable="yes">_Parameters:</property>
+                                                <property name="label" translatable="yes">De_vice:</property>
                                                 <property name="use_underline">True</property>
                                               </widget>
                                               <packing>
-                                                <property name="top_attach">3</property>
-                                                <property name="bottom_attach">4</property>
-                                              </packing>
-                                            </child>
-                                            <child>
-                                              <widget class="GtkEntry" id="device_options_type_entry">
-                                                <property name="visible">True</property>
-                                                <property name="can_focus">True</property>
-                                              </widget>
-                                              <packing>
-                                                <property name="left_attach">1</property>
-                                                <property name="right_attach">2</property>
-                                                <property name="top_attach">2</property>
-                                                <property name="bottom_attach">3</property>
-                                              </packing>
-                                            </child>
-                                            <child>
-                                              <widget class="GtkEntry" id="device_options_device_entry">
-                                                <property name="visible">True</property>
-                                                <property name="can_focus">True</property>
-                                              </widget>
-                                              <packing>
-                                                <property name="left_attach">1</property>
-                                                <property name="right_attach">2</property>
                                                 <property name="top_attach">1</property>
                                                 <property name="bottom_attach">2</property>
                                               </packing>
@@ -460,26 +454,55 @@
                                               </packing>
                                             </child>
                                             <child>
-                                              <widget class="GtkLabel" id="device_options_device_label">
+                                              <widget class="GtkEntry" id="device_options_device_entry">
                                                 <property name="visible">True</property>
-                                                <property name="xalign">1</property>
-                                                <property name="label" translatable="yes">De_vice:</property>
-                                                <property name="use_underline">True</property>
+                                                <property name="can_focus">True</property>
                                               </widget>
                                               <packing>
+                                                <property name="left_attach">1</property>
+                                                <property name="right_attach">2</property>
                                                 <property name="top_attach">1</property>
                                                 <property name="bottom_attach">2</property>
                                               </packing>
                                             </child>
                                             <child>
-                                              <widget class="GtkLabel" id="label9">
+                                              <widget class="GtkEntry" id="device_options_type_entry">
                                                 <property name="visible">True</property>
-                                                <property name="xalign">0</property>
-                                                <property name="label" translatable="yes">&lt;b&gt;Drive Properties:&lt;/b&gt;</property>
-                                                <property name="use_markup">True</property>
+                                                <property name="can_focus">True</property>
                                               </widget>
                                               <packing>
+                                                <property name="left_attach">1</property>
                                                 <property name="right_attach">2</property>
+                                                <property name="top_attach">2</property>
+                                                <property name="bottom_attach">3</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <widget class="GtkLabel" id="label67">
+                                                <property name="visible">True</property>
+                                                <property name="tooltip_text">Smartctl parameters (for example, "-T permissive" or "-d usbsunplus")</property>
+                                                <property name="tooltip" translatable="yes">Smartctl parameters (for example, "-T permissive" or "-d usbsunplus")</property>
+                                                <property name="xalign">1</property>
+                                                <property name="label" translatable="yes">_Parameters:</property>
+                                                <property name="use_underline">True</property>
+                                              </widget>
+                                              <packing>
+                                                <property name="top_attach">3</property>
+                                                <property name="bottom_attach">4</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <widget class="GtkEntry" id="device_options_parameter_entry">
+                                                <property name="visible">True</property>
+                                                <property name="can_focus">True</property>
+                                                <property name="tooltip_text">Smartctl parameters (for example, "-T permissive" or "-d usbsunplus")</property>
+                                                <property name="tooltip" translatable="yes">Smartctl parameters (for example, "-T permissive" or "-d usbsunplus")</property>
+                                              </widget>
+                                              <packing>
+                                                <property name="left_attach">1</property>
+                                                <property name="right_attach">2</property>
+                                                <property name="top_attach">3</property>
+                                                <property name="bottom_attach">4</property>
                                               </packing>
                                             </child>
                                           </widget>
@@ -549,6 +572,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="tooltip_text">Reset all program settings to their defaults</property>
                 <property name="tooltip" translatable="yes">Reset all program settings to their defaults</property>
                 <property name="label" translatable="yes">Reset a_ll</property>
                 <property name="use_underline">True</property>
@@ -568,7 +592,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="tooltip" translatable="yes">Discard all changes</property>
                 <property name="label" translatable="yes">gtk-cancel</property>
                 <property name="use_stock">True</property>
                 <property name="response_id">0</property>
@@ -585,7 +608,6 @@
                 <property name="can_default">True</property>
                 <property name="has_default">True</property>
                 <property name="receives_default">True</property>
-                <property name="tooltip" translatable="yes">Accept configuration</property>
                 <property name="label" translatable="yes">gtk-ok</property>
                 <property name="use_stock">True</property>
                 <property name="response_id">0</property>

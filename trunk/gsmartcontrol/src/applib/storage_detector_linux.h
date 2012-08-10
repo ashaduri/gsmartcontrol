@@ -12,15 +12,16 @@
 #ifndef STORAGE_DETECTOR_LINUX_H
 #define STORAGE_DETECTOR_LINUX_H
 
+#include "hz/hz_config.h"  // CONFIG_*
+
+#if defined CONFIG_KERNEL_LINUX
+
+
 #include <string>
 #include <vector>
 
-#include "hz/hz_config.h"  // CONFIG_*
 #include "executor_factory.h"
 #include "storage_device.h"
-
-
-#if defined CONFIG_KERNEL_LINUX
 
 
 

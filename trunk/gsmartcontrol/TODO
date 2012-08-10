@@ -42,7 +42,7 @@ Update the .spec and gsmartcontrol-root script according to Fedora package:
 	https://bugzilla.redhat.com/show_bug.cgi?id=697247
 
 
-Add an option to display the device and/or the S/N in the main icon list
++Add an option to display the device and/or the S/N in the main icon list
 	so that the 12x RAID list view looks a bit less generic.
 
 
