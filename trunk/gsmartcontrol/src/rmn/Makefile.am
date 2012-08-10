@@ -7,7 +7,7 @@ noinst_HEADERS = resource_base.h resource_data_any.h resource_data_locking.h \
 rmn_test_SOURCES = rmn_test.cpp
 
 # Not working yet
-EXTRA_DIST = resource_data_multi.h.notworing
+# EXTRA_DIST = resource_data_multi.h.notworing
 
 # we don't list them in a separate variable because otherwise kdevelop won't see them.
 noinst_PROGRAMS =
