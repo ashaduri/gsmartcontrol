@@ -29,25 +29,6 @@ Bugs / patches:
 TODO:
 
 
-Update the .spec and gsmartcontrol-root script according to Fedora package:
-	https://admin.fedoraproject.org/pkgdb/applications/Gsmartcontrol
-	https://bugzilla.redhat.com/show_bug.cgi?id=697247
-
-Add support for launching with consolehelper (from usermode package).
-	Fedora uses this by default.
-	Investigate Fedora selinux situation.
-	usermode-gtk contains consolehelper-gtk, not sure about our package
-		requirement. consolehelper-gtk is not supposed to be launched by user,
-		but I think we can check it with "which".
-		http://fedoranews.org/contributors/matt_hansen/nautilus/
-		We have an experimental rpm.
-
-
-Updated smartctl attributes from r3515 to 3587.
-
-Add warnings for SSD lifetime attributes
-	http://sourceforge.net/apps/trac/smartmontools/wiki/FAQ#TheSSD_Life_LeftAttributeofmynewSandForcebasedSSDreportszero
-
 Investiage the new "-l ssd" and "-l devstat" options (since 5.42)
 
 
