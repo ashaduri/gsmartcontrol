@@ -61,8 +61,8 @@ Requires: smartmontools, pcre, gtkmm24 >= 2.6.0, libglademm24 >= 2.4.0
 BuildRequires: gcc-c++, pcre-devel, gtkmm24-devel >= 2.6.0, libglademm24-devel >= 2.4.0
 %endif
 
-# Fedora doesn't include gnomesu or anything similar except beesu (since 11), so force it.
-# usermode-gtk is for consolehelper-gtk (optional for beesu, needed for GUI auth).
+# Fedora with consolehelper.
+# usermode-gtk is for consolehelper-gtk.
 %if 0%{?fedora_version} >= 11
 Requires: beesu, usermode-gtk
 %endif
@@ -112,6 +112,7 @@ make
 
 
 %install
+
 # %%makeinstall
 make DESTDIR=%buildroot install-strip
 # Remove the icon cache file "make install" generates, to avoid package conflicts.
@@ -120,10 +121,12 @@ rm -f $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/icon-theme.cache
 %if 0%{?suse_version}
 %suse_update_desktop_file -n %{name}
 
+
 # There are some png file duplicates, hardlink them.
 %if 0%{?suse_version} >= 1030
 %fdupes
 %endif
+
 
 # We install icons, so this is needed.
 %if 0%{?suse_version} >= 1140
@@ -134,6 +137,40 @@ rm -f $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/icon-theme.cache
 %icon_theme_cache_postun
 %endif
 
+# endif suse
+%endif
+
+
+%if 0%{?fedora_version}
+# We still retain gsmartcontrol-root for consistency with other distributions.
+
+# Make the desktop file run gsmartcontrol instead of gsmartcontrol-root
+sed "s|gsmartcontrol-root|gsmartcontrol|g" %{_datadir}/applications/gsmartcontrol.desktop
+
+# The rest is taken from the official fedora spec:
+# http://pkgs.fedoraproject.org/cgit/gsmartcontrol.git/tree/
+
+# Set up for console-helper
+mkdir -p %{buildroot}%{_sbindir}
+mv %{buildroot}%{_bindir}/%{name} %{buildroot}%{_sbindir}/%{name}
+ln -s consolehelper %{buildroot}%{_bindir}/%{name}
+
+mkdir -p %{buildroot}%{_sysconfdir}/pam.d
+cat <<EOF >%{buildroot}%{_sysconfdir}/pam.d/%{name}
+#%%PAM-1.0
+auth		include		config-util
+account		include		config-util
+session		include		config-util
+EOF
+
+mkdir -p %{buildroot}%{_sysconfdir}/security/console.apps
+cat <<EOF >%{buildroot}%{_sysconfdir}/security/console.apps/%{name}
+USER=root
+PROGRAM=/usr/sbin/gsmartcontrol
+SESSION=true
+EOF
+
+# endif fedora
 %endif
 
 
@@ -165,5 +202,9 @@ rm -rf %buildroot
 %{_datadir}/icons/*
 %{_datadir}/pixmaps/*
 
+%if 0%{?fedora_version}
+%config(noreplace) %{_sysconfdir}/pam.d/%{name}
+%config(noreplace) %{_sysconfdir}/security/console.apps/%{name}
+%endif
 
 %changelog
