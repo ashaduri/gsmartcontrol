@@ -6,7 +6,7 @@ Maintainer: Alexander Shaduri <ashaduriREMOVETHIS@gmail.com>
 # technically, we don't need libglademm if gtkmm >= 2.12, but it won't get
 # into Depends if it's not needed, so let's leave it here.
 Build-Depends: debhelper (>= 5), autotools-dev,
- libpcre3-dev, libgtkmm-2.4-dev (>= 2.6.0), libglademm-2.4-dev
+ libpcre3-dev, libgtkmm-2.4-dev (>= 2.6.0)
 Standards-Version: 3.7.3
 
 Package: gsmartcontrol
