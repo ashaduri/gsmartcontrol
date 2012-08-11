@@ -1,4 +1,33 @@
 
+Version 0.8.7, released on 2012-08-11
+	Implemented support for Adaptec RAID 5805 controller and possibly other
+		Adaptec models as well (Linux).
+	Implemented support for Areca RAID controller detection under Linux
+		(untested).
+	Implemented support for 3ware 3w-sas-supported (twl) RAID controller
+		detection under Linux (untested).
+	Implemented support for systems with several different 3ware controllers
+		(twa/twe/twl).
+	Fixed invalid parsing of tw_cli output which caused non-detection of
+		drives and controllers with controller or port numbers greater than 9
+		if tw_cli was found (3ware linux, windows).
+	The duplicate drives are no longer shown for some Intel matrix controllers
+		under Windows; Intel RAID controllers are fully supported under
+		Windows now.
+	Added options to show device name and serial number under drive icons.
+	Updated SMART attribute definitions and added warnings for SSD lifetime
+		attributes.
+	gsmartcontrol-root has a new argument "--desktop=..." which replaces the
+		old positional argument; compatibility with the old invocation syntax
+		has been retained.
+	Completely documented the source using doxygen tags.
+	Added support for Fedora's consolehelper.
+	Made GSmartControl DPI-aware under Windows.
+	Fixed compilation issues with clang and gcc 4.7, as well as glib 2.31.x
+		and newer.
+	Fixed minor issues in NSIS installer.
+	Fixed other minor bugs and made minor improvements.
+
 Version 0.8.6, released on 2011-06-12
 	Support detecting drives behind 3ware controllers (Linux, Windows),
 		including tw_cli/cx/px mode in Windows. Having tw_cli is recommended

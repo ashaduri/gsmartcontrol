@@ -64,7 +64,7 @@ BuildRequires: gcc-c++, pcre-devel, gtkmm24-devel >= 2.6.0, libglademm24-devel >
 # Fedora with consolehelper.
 # usermode-gtk is for consolehelper-gtk.
 %if 0%{?fedora_version} >= 11
-Requires: beesu, usermode-gtk
+Requires: usermode-gtk
 %endif
 
 %endif
@@ -145,13 +145,17 @@ rm -f $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/icon-theme.cache
 # We still retain gsmartcontrol-root for consistency with other distributions.
 
 # Make the desktop file run gsmartcontrol instead of gsmartcontrol-root
-sed "s|gsmartcontrol-root|gsmartcontrol|g" %{_datadir}/applications/gsmartcontrol.desktop
+sed "s|gsmartcontrol-root|gsmartcontrol|g" %{buildroot}%{_datadir}/applications/gsmartcontrol.desktop > %{buildroot}%{_datadir}/applications/gsmartcontrol.desktop.new
+mv -f %{buildroot}%{_datadir}/applications/gsmartcontrol.desktop.new %{buildroot}%{_datadir}/applications/gsmartcontrol.desktop
 
 # The rest is taken from the official fedora spec:
 # http://pkgs.fedoraproject.org/cgit/gsmartcontrol.git/tree/
 
 # Set up for console-helper
 mkdir -p %{buildroot}%{_sbindir}
+# Add a copy as "gsmartcontrol-noroot", since gsmartcontrol will always
+# ask for root password.
+cp %{buildroot}%{_bindir}/%{name} %{buildroot}%{_bindir}/%{name}-noroot
 mv %{buildroot}%{_bindir}/%{name} %{buildroot}%{_sbindir}/%{name}
 ln -s consolehelper %{buildroot}%{_bindir}/%{name}
 
@@ -205,6 +209,7 @@ rm -rf %buildroot
 %if 0%{?fedora_version}
 %config(noreplace) %{_sysconfdir}/pam.d/%{name}
 %config(noreplace) %{_sysconfdir}/security/console.apps/%{name}
+%{_sbindir}/gsmartcontrol
 %endif
 
 %changelog
