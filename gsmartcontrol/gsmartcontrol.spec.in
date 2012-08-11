@@ -63,7 +63,7 @@ BuildRequires: gcc-c++, pcre-devel, gtkmm24-devel >= 2.6.0, libglademm24-devel >
 
 # Fedora with consolehelper.
 # usermode-gtk is for consolehelper-gtk.
-%if 0%{?fedora_version} >= 11
+%if 0%{?fedora_version}
 Requires: usermode-gtk
 %endif
 
