@@ -1,0 +1,21 @@
+Source: gsmartcontrol
+Section: utils
+Priority: extra
+Homepage: http://gsmartcontrol.berlios.de/
+Maintainer: Alexander Shaduri <ashaduriREMOVETHIS@gmail.com>
+# libglademm is also needed if libgtkmm-2.4 < 2.12, but don't write it
+# here - newer distributions don't contain it.
+Build-Depends: debhelper (>= 5), autotools-dev,
+ libpcre3-dev, libgtkmm-2.4-dev (>= 2.6.0)
+Standards-Version: 3.7.3
+
+Package: gsmartcontrol
+Architecture: any
+#Depends: ${shlibs:Depends}, ${misc:Depends}, smartmontools, menu
+Depends: ${shlibs:Depends}, smartmontools, menu
+Description: Hard disk drive health inspection tool
+ GSmartControl is a graphical user interface for smartctl (from smartmontools
+ package), which is a tool for querying and controlling SMART
+ (Self-Monitoring, Analysis, and Reporting Technology) data on modern hard
+ disk drives. It allows you to inspect the drive's SMART data to determine its
+ health, as well as run various tests on it.

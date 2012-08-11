@@ -1,0 +1,81 @@
+.TH GSmartControl "1" "" "gsmartcontrol " "User Commands"
+.SH NAME
+GSmartControl \- Hard disk drive health inspection tool
+.SH SYNOPSIS
+\fBgsmartcontrol\fP [OPTIONS]
+
+\fBgsmartcontrol\-root\fP [--desktop=\fI<desktop>\fP] [OPTIONS]
+.SH DESCRIPTION
+\fBGSmartControl\fP is a graphical user interface for smartctl (from
+smartmontools), which is a tool for querying and controlling SMART
+(Self-Monitoring, Analysis, and Reporting Technology) data on modern hard disk
+drives. It allows you to inspect the drive's SMART data to determine its
+health, as well as run various tests on it.
+.PP
+This manual page documents briefly the \fBgsmartcontrol\fP and
+\fBgsmartcontrol\-root\fP commands.
+.PP
+\fBgsmartcontrol\-root\fP command launches \fBgsmartcontrol\fP with
+administrative privileges. The \fIdesktop\fP argument specifies which desktop
+is currently running, for automatic selection of native su mechanism. Valid
+values for \fIdesktop\fP are \fBauto\fP, \fBkde\fP, \fBgnome\fP, \fBother\fP.
+
+.SH OPTIONS
+.SS "Help Options:"
+.TP
+\fB\-?\fP, \fB\-\-help\fP
+Show help options
+.TP
+\fB\-\-help\-all\fP
+Show all help options
+.TP
+\fB\-\-help\-gtk\fP
+Show GTK+ options
+.TP
+\fB\-\-help\-debug\fR
+Show logging options
+.SS "Application Options:"
+.TP
+\fB\-l\fP, \fB\-\-no\-locale\fP
+Don't use system locale
+.TP
+\fB\-V\fP, \fB\-\-version\fP
+Display version information
+.TP
+\fB\-\-no\-scan\fP
+Don't scan devices on startup
+.TP
+\fB\-\-no\-hide\-tabs\fP
+Don't hide non\-identity tabs when SMART is disabled. Useful for debugging.
+.TP
+\fB\-\-add\-virtual\fP
+Load smartctl data from file, creating a virtual drive. You
+can specify this option multiple times.
+.TP
+\fB\-\-add\-device\fP
+Add this device to device list. The format of the device is
+\fI<device>::<type>::<extra_args>\fP, where type and extra_args are optional.
+This option is useful with \fB\-\-no\-scan\fP to list certain drives only. You
+can specify this option multiple times. Example:\fR
+.nf
+\-\-add\-device /dev/sda \-\-add\-device /dev/twa0::3ware,2 \-\-add\-device '/dev/sdb::::-T permissive'
+.fi
+.TP
+\fB\-\-display\fP=\fIDISPLAY\fP
+X display to use
+.TP
+\fB\-v\fP, \fB\-\-verbose\fP
+Enable verbose logging; same as \fB\-\-verbosity\-level\fP 5
+.TP
+\fB\-q\fP, \fB\-\-quiet\fP
+Disable logging; same as \fB\-\-verbosity\-level\fP 0
+.TP
+\fB\-b\fP, \fB\-\-verbosity\-level\fP
+Set verbosity level [0\-5]
+.PP
+.SH COPYRIGHT
+Copyright \(co 2008 \- 2012  Alexander Shaduri <ashaduri \'at\' gmail.com>
+.PP
+.SH AUTHOR
+This manual page was originally written by Giuseppe Iuculano
+<giuseppe@iuculano.it> for the Debian project.
