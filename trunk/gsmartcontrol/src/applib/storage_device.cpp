@@ -201,8 +201,12 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	if (!SmartctlParser::parse_version(this->info_output_, version, version_full))  // is this smartctl data at all?
 		return "Cannot get smartctl version information.";
 
-	// detect type. note: we can't distinguish between sata and scsi (on linux, for -d ata switch).
-	if (app_pcre_match("/this device: CD\\/DVD/mi", info_output_)) {
+	// Detect type. note: we can't distinguish between sata and scsi (on linux, for -d ata switch).
+	// Sample output line 1 (encountered on a CDRW drive):
+	// SMART support is: Unavailable - Packet Interface Devices [this device: CD/DVD] don't support ATA SMART
+	// Sample output line 2 (encountered on a BDRW drive):
+	// Device type:          CD/DVD
+	if (app_pcre_match("/this device: CD\\/DVD/mi", info_output_) || app_pcre_match("/^Device type:\\s+CD\\/DVD/mi", info_output_)) {
 		this->set_detected_type(detected_type_cddvd);
 	}
 

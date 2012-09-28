@@ -108,7 +108,7 @@ SMART data to determine its health, as well as run various tests on it.
 #	numprocs=1
 #fi
 #make -j$numprocs
-make
+make %{?_smp_mflags}
 
 
 %install

@@ -408,52 +408,32 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 	}
 
 
-	if (app_pcre_match("/Model Family/mi", p.reported_name)) {
+	if (app_pcre_match("/^Model Family$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "model_family", "Model Family");
 		p.value_type = StorageProperty::value_type_string;
 		p.value_string = p.reported_value;
 
-	} else if (app_pcre_match("/Device Model/mi", p.reported_name)) {
+	} else if (app_pcre_match("/^Device Model$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "device_model", "Device Model");
 		p.value_type = StorageProperty::value_type_string;
 		p.value_string = p.reported_value;
 
-	} else if (app_pcre_match("/Serial Number/mi", p.reported_name)) {
+	} else if (app_pcre_match("/^Serial Number$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "serial_number", "Serial Number");
 		p.value_type = StorageProperty::value_type_string;
 		p.value_string = p.reported_value;
 
-	} else if (app_pcre_match("/Firmware Version/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "firmware_version", "Firmware Version");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
-
-	} else if (app_pcre_match("/Sector Sizes/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "sector_sizes", "Sector Sizes");
-		p.value_type = StorageProperty::value_type_string;  // prints 2 values (phys/logical, if they're different)
-		p.value_string = p.reported_value;
-
-	} else if (app_pcre_match("/Sector Size/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "sector_size", "Sector Size");
-		p.value_type = StorageProperty::value_type_string;  // prints a single value (if it's not 512)
-		p.value_string = p.reported_value;
-
-	} else if (app_pcre_match("/LU WWN Device Id/mi", p.reported_name)) {
+	} else if (app_pcre_match("/^LU WWN Device Id$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "wwn_id", "World Wide Name");
 		p.value_type = StorageProperty::value_type_string;
 		p.value_string = p.reported_value;
 
-	} else if (app_pcre_match("/ATA Standard is/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "ata_standard", "ATA Standard");
+	} else if (app_pcre_match("/^Firmware Version$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "firmware_version", "Firmware Version");
 		p.value_type = StorageProperty::value_type_string;
 		p.value_string = p.reported_value;
 
-	} else if (app_pcre_match("/Local Time is/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "scan_time", "Scanned on");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
-
-	} else if (app_pcre_match("/User Capacity/mi", p.reported_name)) {
+	} else if (app_pcre_match("/^User Capacity$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "capacity", "Capacity");
 		p.value_type = StorageProperty::value_type_integer;
 		uint64_t v = 0;
@@ -463,19 +443,47 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 			p.value_integer = v;
 		}
 
-	} else if (app_pcre_match("/ATA Version is/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "ata_version", "ATA Version");
-		p.value_type = StorageProperty::value_type_integer;
-		int64_t v = 0;
-		if (hz::string_is_numeric(p.reported_value, v, true))  // strict mode
-			p.value_integer = v;
+	} else if (app_pcre_match("/^Sector Sizes$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "sector_sizes", "Sector Sizes");
+		p.value_type = StorageProperty::value_type_string;  // prints 2 values (phys/logical, if they're different)
+		p.value_string = p.reported_value;
 
-	} else if (app_pcre_match("/Device is/mi", p.reported_name)) {
+	} else if (app_pcre_match("/^Sector Size$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "sector_size", "Sector Size");
+		p.value_type = StorageProperty::value_type_string;  // prints a single value (if it's not 512)
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/^Rotation Rate$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "rotation_rate", "Rotation Rate");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/^Device is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "in_smartctl_db", "In Smartctl Database");
 		p.value_type = StorageProperty::value_type_bool;
 		p.value_bool = (!app_pcre_match("/Not in /mi", p.reported_value));
 
-	} else if (app_pcre_match("/SMART support is/mi", p.reported_name)) {
+	} else if (app_pcre_match("/^ATA Version is$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "ata_version", "ATA Version");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/^ATA Standard is$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "ata_standard", "ATA Standard");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/^SATA Version is$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "sata_version", "SATA Version");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/^Local Time is$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "scan_time", "Scanned on");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/^SMART support is$/mi", p.reported_name)) {
 		// There are two different properties with this name - supported and enabled.
 		// Don't put complete messages here - they change across smartctl versions.
 
@@ -499,13 +507,12 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 			p.value_type = StorageProperty::value_type_bool;
 			p.value_bool = false;
 
-		// this should be last - when ambiguous state is detected, usually smartctl
+		// this should be the last - when ambiguous state is detected, usually smartctl
 		// retries with other methods and prints one of the above.
 		} else if (app_pcre_match("/Ambiguous/mi", p.reported_value)) {
 			p.set_name(p.reported_name, "smart_supported", "SMART Supported");
 			p.value_type = StorageProperty::value_type_bool;
 			p.value_bool = true;  // let's be optimistic - just hope that it doesn't hurt.
-
 		}
 
 	} else {

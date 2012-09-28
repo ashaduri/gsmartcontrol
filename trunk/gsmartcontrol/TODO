@@ -31,6 +31,10 @@ TODO:
 
 Investiage the new "-l ssd" and "-l devstat" options (since 5.42)
 
+Check also other options in 5.42 and 5.43.
+	"-g all" looks promising alongside -i (shows APM and other stuff as well).
+
+Add --identify option to context menu, for convenience.
 
 Add menu item - "update drive database" (not sure about linux, should
 	check if it's supported first; also need to run it in terminal).
