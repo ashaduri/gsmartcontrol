@@ -29,6 +29,10 @@ Bugs / patches:
 TODO:
 
 
+Add ability (through ctrl-C?) to copy individual rows from attributes page,
+	in tab-separated format (for easy pasting into libreoffice).
+
+
 Investiage the new "-l ssd" and "-l devstat" options (since 5.42)
 
 Check also other options in 5.42 and 5.43.
@@ -111,6 +115,9 @@ If a drive is not recognized, suggest using -d (sat, sat,12, ...)
 RAID:
 	http://sourceforge.net/apps/trac/smartmontools/wiki/Supported_RAID-Controllers
 
+	Areca Windows:
+		Detection not supported by smartctl --scan-open.
+
 	Areca FreeBSD: since 5.42.
 		Call as: smartctl -a -d areca,[1-24] /dev/arcmsr1
 
@@ -138,22 +145,6 @@ RAID:
 		Smartctl docs specify smaller limits, but the code says these are the ones.
 		Detection: unknown.
 		TODO: Analyze sent info.
-
-	CCISS (HP (Compaq) Smart Array Controller) Linux:
-		Call as: smartctl -a -d cciss,[0-127] /dev/cciss/c0d0
-		c0d0 is the controller (d0 seems to be a logical drive, doesn't matter?).
-		/dev/cciss/c0d0p1 is the first ordinary partition (used in mount, etc...).
-		The port limit had a brief regression in 5.39.x (limited to 15).
-		5.39 doesn't seem to work at all (prereleases work with P400 controller)?
-			Possibly a 64-bit-only issue?
-		To detect controller presence: cat /proc/devices, contains "cciss0"
-			for controller 0.
-		There is a cciss_vol_status utility but it doesn't report anything except "OK" status.
-		It may not return the "SMART Health Status: OK" line in smartctl -i for some reason?
-			(It returns it in -a though, and in some freebsd output I found).
-		If no /dev/cciss exists, you may need to run "cd /dev; ./MAKEDEV cciss".
-		Smartctl SVN has some /dev/sg* stuff, check it out. (?)
-			May need "-d sat+cciss,N" for SATA.
 
 	CCISS (HP (Compaq) Smart Array Controller) FreeBSD:
 		Seems to be the same as Linux (uses the same driver?).

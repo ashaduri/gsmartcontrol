@@ -801,6 +801,184 @@ inline std::string detect_drives_linux_areca(std::vector<StorageDeviceRefPtr>& d
 
 
 
+/** <pre>
+Detect drives behind HP RAID controller (cciss driver).
+(aka CCISS (HP (Compaq) Smart Array Controller).
+
+Note: hpsa/hpahcisr have a different method of detection.
+
+Call as: smartctl -a -d cciss,[0-127] /dev/cciss/c0d0
+	With the cciss drivers , for the path /dev/cciss/c0d0, c0 means controler 0 and d0 means LUN 1.
+	So smarctl provides the same values for c0d0 and c0d1. There are just two logical drives
+	on the same Smart Array controler.
+To detect controller presence: cat /proc/devices, contains "cciss0"
+	for controller 0.
+	/proc/scsi/scsi contains no entries for it.
+/dev/cciss/c0d0p1 is the first ordinary partition (used in mount, etc...).
+
+The port limit had a brief regression in 5.39.x (limited to 15).
+5.39 doesn't seem to work at all (prereleases work with P400 controller)?
+	Possibly a 64-bit-only issue?
+There is a cciss_vol_status utility but it doesn't report anything except "OK" status.
+It may not return the "SMART Health Status: OK" line in smartctl -i for some reason?
+	(It returns it in -a though, and in some freebsd output I found).
+If no /dev/cciss exists, you may need to run "cd /dev; ./MAKEDEV cciss".
+
+Detection:
+	Grep /proc/devices for "cciss([0-9]+)" where the number is the controller #.
+	Run "smartctl -i -d cciss,[0-127] /dev/cciss/cNd0" (where N is the controller #),
+		until "No such device or address" or "VALID ARGUMENTS ARE" is encountered in the output.
+	Note: We're not sure how to differentiate the outputs of free / non-existent ports,
+		so scan them until 15, just in case.
+</pre> */
+inline std::string detect_drives_linux_cciss(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
+{
+	std::vector<std::string> lines;
+	std::string error_msg = read_proc_devices_file(lines);
+	if (!error_msg.empty()) {
+		return error_msg;
+	}
+
+	std::vector<int> controllers;
+
+	// Check /proc/devices for ccissX (where X is the controller #).
+	for (std::size_t i = 0; i < lines.size(); ++i) {
+		std::string controller_no_str;
+		if (app_pcre_match("/^[ \\t]*[0-9]+[ \\t]+cciss([0-9]+)(?:[ \\t]*|$)/", hz::string_trim_copy(lines[i]), &controller_no_str)) {
+			debug_out_dump("app", DBG_FUNC_MSG << "Found cciss" << controller_no_str << " entry in devices file.\n");
+			int controller_no = 0;
+			hz::string_is_numeric(controller_no_str, controller_no);
+			controllers.push_back(controller_no);
+		}
+	}
+	if (controllers.empty()) {
+		return std::string();  // no controllers
+	}
+
+	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
+
+	for (std::size_t controller_index = 0; controller_index < controllers.size(); ++controller_index) {
+		int controller_no = controllers.at(controller_index);
+
+		std::string dev = std::string("/dev/cciss/c") + hz::number_to_string(controller_no) + "d0";
+
+		for (int port = 0; port <= 127; ++port) {
+			StorageDeviceRefPtr drive(new StorageDevice(dev, std::string("cciss,") + hz::number_to_string(port)));
+
+			std::string local_error_msg = drive->fetch_basic_data_and_parse(smartctl_ex);
+			std::string output = drive->get_info_output();
+
+			if (!local_error_msg.empty()) {
+				debug_out_info("app", "Smartctl returned with an error: " << local_error_msg << "\n");
+			}
+
+			if (app_pcre_match("/VALID ARGUMENTS ARE/mi", output)) {
+				// smartctl doesn't support this many ports, return.
+				break;
+			}
+			if (app_pcre_match("/No such device or address/mi", output) && port > 15) {
+				// we've reached the controller port limit
+				break;
+			}
+
+			if (local_error_msg.empty()) {
+				drives.push_back(drive);
+			}
+		}
+	}
+
+	return error_msg;
+}
+
+
+
+/** <pre>
+Detect drives behind HP RAID controller (hpsa / hpahcisr drivers).
+
+May need "-d sat+cciss,N" for SATA, but is usually auto-detected.
+
+smartctl -a -d cciss,0 /dev/sg2    (hpsa or hpahcisr drivers under Linux)
+("lsscsi -g" is helpful in determining which scsi generic device node corresponds to which device.)
+Use the nodes corresponding to the RAID controllers, not the nodes corresponding to logical drives.
+No entry in /proc/devices.
+/dev/sda also seems to work?
+
+Detection:
+	Check /proc/scsi for "Vendor: HP", and NOT "Model: LOGICAL VOLUME". Take its scsi host number,
+		match against /proc/scsi/sg/devices (first column). The matched line number
+		is the one to use in /dev/sgN.
+	Run smartctl -i -d cciss,[0-127] /dev/cciss/cNd0
+		until "No such device or address" or "VALID ARGUMENTS ARE" is encountered in output.
+</pre> */
+inline std::string detect_drives_linux_hpsa(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
+{
+	std::vector< std::pair<int, std::string> > vendors_models;
+	std::string  error_msg = read_proc_scsi_scsi_file(vendors_models);
+	if (!error_msg.empty()) {
+		return error_msg;
+	}
+
+	std::vector< std::vector<int> > sg_entries;
+	error_msg = read_proc_scsi_sg_devices_file(sg_entries);
+	if (!error_msg.empty()) {
+		return error_msg;
+	}
+
+	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
+
+	std::set<int> controller_hosts;
+
+	for (std::size_t i = 0; i < vendors_models.size(); ++i) {
+		if (!app_pcre_match("/Vendor: HP /i", vendors_models[i].second) || app_pcre_match("/LOGICAL VOLUME/i", vendors_models[i].second)) {
+			continue;  // not a supported controller, or a logical drive.
+		}
+		int host_num = vendors_models[i].first;
+		debug_out_dump("app", "Found HP controller in SCSI file, SCSI host " << host_num << ".\n");
+
+		// Skip additional adapters with the same host (not sure if this is needed, but it won't hurt).
+		if (controller_hosts.find(host_num) != controller_hosts.end()) {
+			debug_out_dump("app", "Skipping adapter with SCSI host " << host_num << ", host already found.\n");
+			continue;
+		}
+
+		controller_hosts.insert(host_num);
+
+		for (std::size_t sg_num = 0; sg_num < sg_entries.size(); ++sg_num) {
+			if (sg_entries[sg_num].size() < 3) {
+				// We need at least 3 columns in that file
+				continue;
+			}
+			if (sg_entries[sg_num][0] != host_num) {
+				// Different scsi host
+				continue;
+			}
+
+			std::string dev = std::string("/dev/sg") + hz::number_to_string(sg_num);
+
+			for (int port = 0; port <= 127; ++port) {
+				StorageDeviceRefPtr drive(new StorageDevice(dev, std::string("cciss,") + hz::number_to_string(port)));
+
+				std::string local_error_msg = drive->fetch_basic_data_and_parse(smartctl_ex);
+				std::string output = drive->get_info_output();
+
+				if (app_pcre_match("/No such device or address/mi", output) || app_pcre_match("/VALID ARGUMENTS ARE/mi", output)) {
+					// We reached the controller port limit, or smartctl-supported port limit.
+					break;
+				}
+				if (!local_error_msg.empty()) {
+					debug_out_info("app", "Smartctl returned with an error: " << local_error_msg << "\n");
+				} else {
+					drives.push_back(drive);
+				}
+			}
+		}
+	}
+
+	return error_msg;
+}
+
+
+
 }  // anon ns
 
 
@@ -833,6 +1011,16 @@ std::string detect_drives_linux(std::vector<StorageDeviceRefPtr>& drives, Execut
 	}
 
 	error_msg = detect_drives_linux_adaptec(drives, ex_factory);
+	if (!error_msg.empty()) {
+		error_msgs.push_back(error_msg);
+	}
+
+	error_msg = detect_drives_linux_cciss(drives, ex_factory);
+	if (!error_msg.empty()) {
+		error_msgs.push_back(error_msg);
+	}
+
+	error_msg = detect_drives_linux_hpsa(drives, ex_factory);
 	if (!error_msg.empty()) {
 		error_msgs.push_back(error_msg);
 	}
