@@ -38,9 +38,12 @@ HZ library internal implementation helpers.
 */
 
 
-/// \def HZ_USE_GLOBAL_MACROS
-/// Define HZ_USE_GLOBAL_MACROS=1 from a compiler option to enable
-/// auto-inclusion of global_macros.h.
+#ifdef DOXYGEN_ONLY
+	/// Define HZ_USE_GLOBAL_MACROS=1 from a compiler option to enable
+	/// auto-inclusion of global_macros.h.
+	#define HZ_USE_GLOBAL_MACROS
+#endif
+
 
 #if defined HZ_USE_GLOBAL_MACROS && HZ_USE_GLOBAL_MACROS
 	// define manually
@@ -127,7 +130,7 @@ HZ library internal implementation helpers.
 
 
 /// \def HAVE_GCC_ABI_DEMANGLE
-/// Defined to 0 or 1. If 1, compiler supports ::abi::__cxa_demangle.
+/// Defined to 0 or 1. If 1, compiler supports \::abi::__cxa_demangle.
 #ifndef HAVE_GCC_ABI_DEMANGLE
 	// This also works with intel/linux (__GNUC__ is defined by default in it).
 	#if defined __GNUC__
