@@ -244,7 +244,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 			StorageDeviceRefPtr drive = row[col_drive_ptr];
 
 			// it needs this space to be symmetric (why?);
-			std::string name;  // = "<big>" + drive->get_device_pretty() + " </big>\n";
+			std::string name;  // = "<big>" + drive->get_device_with_type() + " </big>\n";
 
 			// note: if this wraps, it becomes left-aligned in gtk <= 2.10.
 			name += (drive->get_model_name().empty() ? Glib::ustring("Unknown model") : Glib::Markup::escape_text(drive->get_model_name()));

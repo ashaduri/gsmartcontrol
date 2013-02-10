@@ -207,6 +207,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	// Sample output line 2 (encountered on a BDRW drive):
 	// Device type:          CD/DVD
 	if (app_pcre_match("/this device: CD\\/DVD/mi", info_output_) || app_pcre_match("/^Device type:\\s+CD\\/DVD/mi", info_output_)) {
+		debug_out_dump("app", "Drive " << get_device_with_type() << " seems to be a CD/DVD device.\n");
 		this->set_detected_type(detected_type_cddvd);
 	}
 
@@ -561,23 +562,14 @@ string StorageDevice::get_device_base() const
 
 
 
-string StorageDevice::get_device_pretty() const
-{
-	std::string ret;
-	if (this->get_is_virtual()) {
-		ret = "Virtual";
-		std::string vf = this->get_virtual_filename();
-		ret += (" (" + (vf.empty() ? "[empty]" : vf) + ")");
-	} else {
-		ret = this->get_device_with_type();
-	}
-	return ret;
-}
-
-
-
 string StorageDevice::get_device_with_type() const
 {
+	if (this->get_is_virtual()) {
+		std::string ret = "Virtual";
+		std::string vf = this->get_virtual_filename();
+		ret += (" (" + (vf.empty() ? "[empty]" : vf) + ")");
+		return ret;
+	}
 	std::string device = get_device();
 	if (!get_type_argument().empty()) {
 		device += " (" + get_type_argument() + ")";

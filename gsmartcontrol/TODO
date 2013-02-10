@@ -28,6 +28,193 @@ Bugs / patches:
 
 TODO:
 
+BUG: The per-drive parameters in Preferences become empty after dialog re-open if "Parameters" field is empty.
+
+Clarify the per-drive parameters section (what it does) in Preferences.
+
+Add a win32-only tooltip for smartctl binary location clarifying the smartctl-nc.exe and smartctl.exe difference.
+
+Increase "executing command" dialog timeout.
+	Perhaps make it somehow not steal the focus (some window hint?)
+
+Explain better Device name and Device type fields in the Add Device dialog.
+
+The Enter key doesn't invoke the default dialog button (OK).
+
+Print the scanned files and searched registry keys into libdebug dump during detection.
+
+Areca detection
+	Linux:
+		Somehow differentiate between the cards with expanders (-d areca,N/E) and without (-d areca,N).
+		The expander ones seem to have "ix" (case-insensitive) as their name suffixes.
+			areca,N - N is [1,24].
+			areca,N/E - N is [1,128], E is [1,8].
+				We should limit these using some config key (36 for N and 4 for E seems ok).
+				N/E syntax is since smartmontools 5.43.
+					For older versions we get: /dev/<something>: Option -d areca,N requires N to be a non-negative integer
+	Windows Detection:
+		Credit Richard Kagerer.
+
+
+
+
+Questions:
+	What is a non-interactive way to run CLI? "cli disk info"?
+		What about listing the controllers, or specifying the controller number?
+		Why are there duplicate slot numbers with ARC-1882ix?
+	Test on ARC-1231ML:
+		smartctl -a -d areca,13 /dev/arcmsr0 > smartctl_ml_d_areca_13.txt
+		smartctl -a -d areca,13/1 /dev/arcmsr0 > smartctl_ml_d_areca_13_1.txt
+		smartctl -a -d areca,1/1 /dev/arcmsr0 > smartctl_ml_d_areca_1_1.txt
+		smartctl -a -d areca,1/2 /dev/arcmsr0 > smartctl_ml_d_areca_1_2.txt
+	Test on ARC-1882ix:
+		smartctl -a -d areca,1 /dev/arcmsr0 > smartctl_ix_d_areca_1.txt
+		smartctl -a -d areca,14 /dev/arcmsr0 > smartctl_ix_d_areca_14.txt
+		smartctl -a -d areca,1/1 /dev/arcmsr0 > smartctl_ix_d_areca_1_1.txt
+		smartctl -a -d areca,24/1 /dev/arcmsr0 > smartctl_ix_d_areca_24_1.txt
+		smartctl -a -d areca,1/2 /dev/arcmsr0 > smartctl_ix_d_areca_1_2.txt
+		smartctl -a -d areca,1/3 /dev/arcmsr0 > smartctl_ix_d_areca_1_3.txt
+		smartctl -a -d areca,14/1 /dev/arcmsr0 > smartctl_ix_d_areca_14_1.txt
+		smartctl -a -d areca,14/2 /dev/arcmsr0 > smartctl_ix_d_areca_14_2.txt
+		smartctl -a -d areca,14/3 /dev/arcmsr0 > smartctl_ix_d_areca_14_3.txt
+
+
+-----------------------------------------------------------------------------------------------------
+I'm guessing controllers can be found by trying arcmsr0, arcmsr1, etc.  When you get to a number that doesn't exist you get output like:
+
+    C:\Program Files\smartmontools\bin>smartctl -d areca,1 -i -H -c arcmsr1
+    smartctl 6.0 2012-10-10 r3643 [x86_64-w64-mingw32-win7-sp1] (sf-6.0-1)
+    Copyright (C) 2002-12, Bruce Allen, Christian Franke, www.smartmontools.org
+
+    arcmsr1: No Areca controller found
+    =======> VALID ARGUMENTS ARE: ata, scsi, sat[,auto][,N][+TYPE], usbcypress[,X], usbjmicron[,x][,N], usbsunplus, areca,N[/E], auto, test <=======
+
+For disk probing I would try values of N = 1 to at least 24.  Note drives won't be on contiguous channels.
+E of 1 and 2 would probably be safe, maybe 3 if you really want.
+
+If there's no drive on the enclosure/slot you get:
+
+    C:\Program Files\smartmontools\bin>smartctl -d areca,13 -i -H -c arcmsr0
+    smartctl 6.0 2012-10-10 r3643 [x86_64-w64-mingw32-win7-sp1] (sf-6.0-1)
+    Copyright (C) 2002-12, Bruce Allen, Christian Franke, www.smartmontools.org
+
+    Read Device Identity failed: empty IDENTIFY data
+
+    A mandatory SMART command failed: exiting. To continue, add one or more '-T permissive' options.
+
+On my machine these come back instantaneously, so even higher values of N might be viable if you want to be exhaustive.
+
+
+CLI output from an ARC-1231ML:
+
+CLI> disk info
+  # Ch# ModelName                       Capacity  Usage
+===============================================================================
+  1  1  INTEL SSDSA2M160G2GC             160.0GB  System
+  2  2  INTEL SSDSA2M160G2GC             160.0GB  System
+  3  3  INTEL SSDSA2M160G2GC             160.0GB  System
+  4  4  INTEL SSDSA2M160G2GC             160.0GB  System
+  5  5  Hitachi HDS724040ALE640         4000.8GB  Storage
+  6  6  Hitachi HDS724040ALE640         4000.8GB  Storage
+  7  7  Hitachi HDS724040ALE640         4000.8GB  Storage
+  8  8  Hitachi HDS724040ALE640         4000.8GB  Storage
+  9  9  Hitachi HDS724040ALE640         4000.8GB  Storage
+10 10  Hitachi HDS724040ALE640         4000.8GB  Storage
+11 11  Hitachi HDS724040ALE640         4000.8GB  Backup
+12 12  Hitachi HDS724040ALE640         4000.8GB  Backup
+===============================================================================
+GuiErrMsg<0x00>: Success.
+
+
+And here it is from an ARC-1882ix:
+
+CLI> disk info
+  # Enc# Slot#   ModelName                        Capacity  Usage
+===============================================================================
+  1  01  Slot#1  N.A.                                0.0GB  N.A.
+  2  01  Slot#2  N.A.                                0.0GB  N.A.
+  3  01  Slot#3  N.A.                                0.0GB  N.A.
+  4  01  Slot#4  N.A.                                0.0GB  N.A.
+  5  01  Slot#5  N.A.                                0.0GB  N.A.
+  6  01  Slot#6  N.A.                                0.0GB  N.A.
+  7  01  Slot#7  N.A.                                0.0GB  N.A.
+  8  01  Slot#8  N.A.                                0.0GB  N.A.
+  9  02  SLOT 01 N.A.                                0.0GB  N.A.
+10  02  SLOT 02 N.A.                                0.0GB  N.A.
+11  02  SLOT 03 N.A.                                0.0GB  N.A.
+12  02  SLOT 04 N.A.                                0.0GB  N.A.
+13  02  SLOT 05 N.A.                                0.0GB  N.A.
+14  02  SLOT 06 N.A.                                0.0GB  N.A.
+15  02  SLOT 07 N.A.                                0.0GB  N.A.
+16  02  SLOT 08 N.A.                                0.0GB  N.A.
+17  02  SLOT 09 N.A.                                0.0GB  N.A.
+18  02  SLOT 10 N.A.                                0.0GB  N.A.
+19  02  SLOT 11 N.A.                                0.0GB  N.A.
+20  02  SLOT 12 N.A.                                0.0GB  N.A.
+21  02  SLOT 13 N.A.                                0.0GB  N.A.
+22  02  SLOT 14 ST910021AS                        100.0GB  Free
+23  02  SLOT 15 WDC WD3200BEVT-75A23T0            320.1GB  HotSpare[Global]
+24  02  SLOT 16 N.A.                                0.0GB  N.A.
+25  02  SLOT 17 Hitachi HDS724040ALE640          4000.8GB  Raid Set # 000
+26  02  SLOT 18 ST31500341AS                     1500.3GB  Raid Set # 000
+27  02  SLOT 19 ST3320620AS                       320.1GB  Raid Set # 000
+28  02  SLOT 20 ST31500341AS                     1500.3GB  Raid Set # 000
+29  02  SLOT 21 ST3500320AS                       500.1GB  Raid Set # 000
+30  02  SLOT 22 Hitachi HDS724040ALE640          4000.8GB  Raid Set # 000
+31  02  SLOT 23 Hitachi HDS724040ALE640          4000.8GB  Raid Set # 000
+32  02  SLOT 24 Hitachi HDS724040ALE640          4000.8GB  Raid Set # 000
+33  02  EXTP 01 N.A.                                0.0GB  N.A.
+34  02  EXTP 02 N.A.                                0.0GB  N.A.
+35  02  EXTP 03 N.A.                                0.0GB  N.A.
+36  02  EXTP 04 N.A.                                0.0GB  N.A.
+===============================================================================
+GuiErrMsg<0x00>: Success.
+
+
+
+When using -d areca,N format with N/E cards:
+Smartctl: Device Read Identity Failed: empty IDENTIFY data
+
+
+-----------------------------------------------------------------------------------------------------
+
+
+driver:
+These are present on pure Windows as well:
+HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\services\arc
+HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\services\arcsas
+We could look for (but they could be integrated into Windows, so it's probably a bad idea):
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\arcm_a64;ImagePath
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\arcs_a64;ImagePath
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\arcm_x86;ImagePath
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\arcs_x86;ImagePath
+
+
+when web interface is installed:
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\ArcHttpProxyServer;ImagePath
+HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\archttp;InstallLocation
+
+when cli is installed:
+HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\CLI;InstallLocation
+	contains "C:\Program Files (x86)\MRAID\CLI"
+	The exe is named cli.
+
+cli with no args:
+----------------------------
+Copyright (c) 2004-2012 Areca, Inc. All Rights Reserved.
+Areca CLI, Version: 1.10.0, Arclib: 330, Date: Aug 15 2012( Windows )
+
+None.
+----------------------------
+
+
+
+
+
+Credit Fabrice Bacchella for Linux CCISS detection.
+
+
+
 
 Add ability (through ctrl-C?) to copy individual rows from attributes page,
 	in tab-separated format (for easy pasting into libreoffice).

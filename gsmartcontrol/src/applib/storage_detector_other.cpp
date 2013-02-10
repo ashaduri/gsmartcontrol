@@ -14,12 +14,13 @@
 #if !defined CONFIG_KERNEL_LINUX && !defined CONFIG_KERNEL_FAMILY_WINDOWS
 
 
+#include <algorithm>  // std::sort
+
 #if defined CONFIG_KERNEL_OPENBSD || defined CONFIG_KERNEL_NETBSD
 	#include <util.h>  // getrawpartition()
 #endif
 
 #include "hz/debug.h"
-#include "hz/local_algo.h"  // hz::shell_sort()
 #include "hz/fs_path_utils.h"
 #include "hz/fs_path.h"
 #include "hz/fs_file.h"
@@ -33,7 +34,7 @@
 
 std::string detect_drives_other(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
-	debug_out_info("app", DBG_FUNC_MSG << "Detecting through /dev...\n");
+	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives through /dev...\n");
 
 	std::vector<std::string> devices;
 
@@ -249,19 +250,20 @@ std::string detect_drives_other(std::vector<StorageDeviceRefPtr>& drives, Execut
 			}
 
 			if (open_needed)
-				debug_out_dump("app", DBG_FUNC_MSG << "Device \"" << dev_file.str() << "\" opened successfully, adding to device list.\n");
+				debug_out_info("app", DBG_FUNC_MSG << "Device \"" << dev_file.str() << "\" opened successfully, adding to device list.\n");
 
 			devices.push_back(dev_file.str());
 		}
 
 	#else  // not *BSD
 		for (std::size_t i = 0; i < matched_devices.size(); ++i) {
+			debug_out_info("app", DBG_FUNC_MSG << "Device \"" << matched_devices[i] << "\" matched the whitelist, adding to device list.\n");
 			devices.push_back(matched_devices[i]);
 		}
 
 	#endif
 
-	hz::shell_sort(devices.begin(), devices.end());
+	std::sort(devices.begin(), devices.end());
 
 	for (std::size_t i = 0; i < devices.size(); ++i) {
 		drives.push_back(StorageDeviceRefPtr(new StorageDevice(devices.at(i))));
