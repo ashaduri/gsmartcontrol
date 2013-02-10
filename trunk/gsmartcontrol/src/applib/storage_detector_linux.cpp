@@ -123,10 +123,28 @@ inline std::string detect_drives_linux_udev_byid(std::vector<std::string>& devic
 
 
 
+/// Cache of file->contents, caches read files.
+std::map<std::string, std::string> s_read_file_cache;
+
+
+
+/// Clear the read file cache.
+inline void clear_read_file_cache()
+{
+	s_read_file_cache.clear();
+}
+
+
+
 /// Procfs files don't support SEEK_END or ftello() (I think). They can't
 /// be read through hz::File::get_contents, so use this function instead.
-inline bool read_proc_file(hz::File& file, std::vector<std::string>& lines)
+inline bool read_proc_file(hz::File& file, std::string& contents)
 {
+	if (s_read_file_cache.find(file.get_path()) != s_read_file_cache.end()) {
+		contents = s_read_file_cache[file.get_path()];
+		return true;
+	}
+
 	if (!file.open("rb"))  // closed automatically
 		return false;  // the error message is in File itself.
 
@@ -137,23 +155,31 @@ inline bool read_proc_file(hz::File& file, std::vector<std::string>& lines)
 	char line[256];
 	while (std::fgets(line, static_cast<int>(sizeof(line)), fp) != NULL) {
 		if (*line != '\0')
-			lines.push_back(line);
+			contents += line;  // line contains the terminating newline as well
 	}
+
+	s_read_file_cache[file.get_path()] = contents;
+
+	debug_begin();  // avoiding printing prefix on every line
+	debug_out_dump("app", DBG_FUNC_MSG << "File contents (\"" << file.get_path() << "\"):\n" << contents << "\n");
+	debug_end();
 
 	return true;
 }
 
 
 
-/// Read a file completely from /proc
-inline bool read_proc_complete_file(hz::File& file, std::string& contents)
+/// Same as read_proc_file(), but returns a vector of lines
+inline bool read_proc_file_lines(hz::File& file, std::vector<std::string>& lines)
 {
-	// The crude way
-	std::vector<std::string> lines;
-	bool status = read_proc_file(file, lines);
-	contents = hz::string_join(lines, '\n');
+	std::string contents;
+	bool status = read_proc_file(file, contents);
+	if (status) {
+		hz::string_split(contents, '\n', lines, true);
+	}
 	return status;
 }
+
 
 
 
@@ -167,7 +193,7 @@ inline std::string read_proc_partitions_file(std::vector<std::string>& lines)
 	}
 
 	hz::File file(path);
-	if (!read_proc_file(file, lines)) {  // this outputs to debug too
+	if (!read_proc_file_lines(file, lines)) {  // this outputs to debug too
 		std::string error_msg = file.get_error_utf8();  // save before calling other file functions
 		if (!file.exists()) {
 			debug_out_warn("app", DBG_FUNC_MSG << "Partitions file doesn't exist.\n");
@@ -192,7 +218,7 @@ inline std::string read_proc_devices_file(std::vector<std::string>& lines)
 	}
 
 	hz::File file(path);
-	if (!read_proc_file(file, lines)) {  // this outputs to debug too
+	if (!read_proc_file_lines(file, lines)) {  // this outputs to debug too
 		std::string error_msg = file.get_error_utf8();  // save before calling other file functions
 		if (!file.exists()) {
 			debug_out_warn("app", DBG_FUNC_MSG << "Devices file doesn't exist.\n");
@@ -221,7 +247,7 @@ inline std::string read_proc_scsi_scsi_file(std::vector< std::pair<int, std::str
 	hz::File file(path);
 	std::vector<std::string> lines;
 
-	if (!read_proc_file(file, lines)) {  // this outputs to debug too
+	if (!read_proc_file_lines(file, lines)) {  // this outputs to debug too
 		std::string error_msg = file.get_error_utf8();  // save before calling other file functions
 		if (!file.exists()) {
 			debug_out_warn("app", DBG_FUNC_MSG << "SCSI file doesn't exist.\n");
@@ -269,7 +295,7 @@ inline std::string read_proc_scsi_sg_devices_file(std::vector< std::vector<int> 
 	hz::File file(path);
 	std::vector<std::string> lines;
 
-	if (!read_proc_file(file, lines)) {  // this outputs to debug too
+	if (!read_proc_file_lines(file, lines)) {  // this outputs to debug too
 		std::string error_msg = file.get_error_utf8();  // save before calling other file functions
 		if (!file.exists()) {
 			debug_out_warn("app", DBG_FUNC_MSG << "Sg devices file doesn't exist.\n");
@@ -324,8 +350,10 @@ inline std::string smartctl_get_drives(const std::string& dev, const std::string
 
 		if (!error_msg.empty()) {
 			debug_out_info("app", "Smartctl returned with an error: " << error_msg << "\n");
+			debug_out_dump("app", "Skipping drive " << drive->get_device_with_type() << " due to smartctl error.\n");
 		} else {
 			drives.push_back(drive);
+			debug_out_info("app", "Added drive " << drive->get_device_with_type() << ".\n");
 		}
 	}
 
@@ -383,7 +411,7 @@ major minor  #blocks  name
 </pre> */
 inline std::string detect_drives_linux_proc_partitions(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
-	debug_out_info("app", DBG_FUNC_MSG << "Detecting through /proc/partitions...\n");
+	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives through partitions file (/proc/partitions by default; set \"system/linux_proc_partitions_path\" config key to override).\n");
 
 	std::vector<std::string> lines;
 	std::string error_msg = read_proc_partitions_file(lines);
@@ -392,7 +420,6 @@ inline std::string detect_drives_linux_proc_partitions(std::vector<StorageDevice
 	}
 
 	std::vector<std::string> blacklist;
-	// fixme: not sure about how partitions are visible with twa0.
 	blacklist.push_back("/d[a-z][0-9]+$/");  // sda1, hdb2 - partitions. twa0 and twe1 are drives, not partitions.
 	blacklist.push_back("/ram[0-9]+$/");  // ramdisks?
 	blacklist.push_back("/loop[0-9]*$/");  // not sure if loop devices go there, but anyway...
@@ -426,8 +453,9 @@ inline std::string detect_drives_linux_proc_partitions(std::vector<StorageDevice
 			continue;
 
 		std::string path = "/dev/" + dev;  // let's just hope the it's /dev.
-		if (std::find(devices.begin(), devices.end(), path) == devices.end())  // there may be duplicates
+		if (std::find(devices.begin(), devices.end(), path) == devices.end()) {  // there may be duplicates
 			devices.push_back(path);
+		}
 	}
 
 	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
@@ -439,8 +467,11 @@ inline std::string detect_drives_linux_proc_partitions(std::vector<StorageDevice
 		// 3ware controllers also export themselves as sd*. Smartctl detects that,
 		// so we can avoid adding them. Older smartctl (5.38) prints "AMCC", newer one
 		// prints "AMCC/3ware controller". It's better to search it this way.
-		if (!app_pcre_match("/try adding '-d 3ware,N'/im", drive->get_info_output())) {
+		if (app_pcre_match("/try adding '-d 3ware,N'/im", drive->get_info_output())) {
+			debug_out_dump("app", "Drive " << drive->get_device_with_type() << " seems to be a 3ware controller, ignoring.\n");
+		} else {
 			drives.push_back(drive);
+			debug_out_info("app", "Added drive " << drive->get_device_with_type() << ".\n");
 		}
 	}
 
@@ -478,6 +509,8 @@ how they will be ordered for tw_cli.
 </pre> */
 inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
+	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives behind 3ware controller(s)...\n");
+
 	std::vector<std::string> lines;
 	std::string error_msg = read_proc_devices_file(lines);
 	if (!error_msg.empty()) {
@@ -492,7 +525,7 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 	for (std::size_t i = 0; i < lines.size(); ++i) {
 		std::string dev;
 		if (app_pcre_match("/^[ \\t]*[0-9]+[ \\t]+(tw[ael])(?:[ \\t]*|$)/", hz::string_trim_copy(lines[i]), &dev)) {
-			debug_out_dump("app", DBG_FUNC_MSG << "Found " << dev << " entry in devices file.\n");
+			debug_out_dump("app", DBG_FUNC_MSG << "Found 3ware " << dev << " entry in devices file.\n");
 			if (dev == "twa") {
 				twa_found = true;
 			} else if (dev == "twe") {
@@ -506,11 +539,13 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 	}
 
 	if (!twa_found && !twe_found && !twl_found) {
+		debug_out_info("app", DBG_FUNC_MSG << "No 3ware-specific entries found in devices file.\n");
 		return std::string();  // no controllers
 	}
 
 	lines.clear();
 
+	debug_out_dump("app", DBG_FUNC_MSG << "Checking scsi file for 3ware controllers.\n");
 	std::vector< std::pair<int, std::string> > vendors_models;
 	error_msg = read_proc_scsi_scsi_file(vendors_models);
 	if (!error_msg.empty()) {
@@ -518,7 +553,7 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 	}
 
 
-	std::set<int> controller_hosts;  // scsi hosts found for tw*
+	std::set<int> controller_hosts;  // scsi hosts (controllers) found for tw*
 	std::map<std::string, int> device_numbers;  // device base (e.g. twa) -> number of times found
 
 	for (std::size_t i = 0; i < vendors_models.size(); ++i) {
@@ -567,8 +602,10 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 		error_msg = tw_cli_get_drives(dev, vendors_models[i].first, drives, ex_factory, false);
 		if (!error_msg.empty()) {  // no tw_cli
 			int max_ports = rconfig::get_data<int32_t>("system/linux_max_scan_ports");
-			max_ports = std::max(max_ports, 23);  // 128 smartctl calls are too much (it's too slow). Settle for 24.
+			debug_out_dump("app", "Starting brute-force port scan on 0-" << max_ports << " ports, device \"" << dev << "\". Change the maximum by setting \"system/linux_max_scan_ports\" config key.\n");
+			max_ports = std::max(0, std::min(max_ports, 128));  // Reasonable sanity check.
 			error_msg = smartctl_get_drives(dev, "3ware,%d", 0, max_ports, drives, ex_factory);
+			debug_out_dump("app", "Brute-force port scan finished.\n");
 		}
 
 		if (!error_msg.empty()) {
@@ -604,6 +641,8 @@ sure how to detect the failure), fall back to "-d scsi".
 </pre> */
 inline std::string detect_drives_linux_adaptec(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
+	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives behind Adaptec controller(s)...\n");
+
 	std::vector<std::string> lines;
 	std::string error_msg = read_proc_devices_file(lines);
 	if (!error_msg.empty()) {
@@ -612,7 +651,7 @@ inline std::string detect_drives_linux_adaptec(std::vector<StorageDeviceRefPtr>&
 
 	bool aac_found = false;
 
-	// Check /proc/devices for twa or twe
+	// Check /proc/devices for "aac"
 	for (std::size_t i = 0; i < lines.size(); ++i) {
 		if (app_pcre_match("/^[ \\t]*[0-9]+[ \\t]+aac(?:[ \\t]*|$)/", hz::string_trim_copy(lines[i]))) {
 			debug_out_dump("app", DBG_FUNC_MSG << "Found aac entry in devices file.\n");
@@ -620,11 +659,13 @@ inline std::string detect_drives_linux_adaptec(std::vector<StorageDeviceRefPtr>&
 		}
 	}
 	if (!aac_found) {
+		debug_out_info("app", DBG_FUNC_MSG << "No Adaptec-specific entries found in devices file.\n");
 		return std::string();  // no controllers
 	}
 
 	lines.clear();
 
+	debug_out_dump("app", DBG_FUNC_MSG << "Checking scsi file for Adaptec controllers.\n");
 	std::vector< std::pair<int, std::string> > vendors_models;
 	error_msg = read_proc_scsi_scsi_file(vendors_models);
 	if (!error_msg.empty()) {
@@ -683,8 +724,10 @@ inline std::string detect_drives_linux_adaptec(std::vector<StorageDeviceRefPtr>&
 
 			if (!local_error_msg.empty()) {
 				debug_out_info("app", "Smartctl returned with an error: " << local_error_msg << "\n");
+				debug_out_dump("app", "Skipping drive " << drive->get_device_with_type() << ".\n");
 			} else {
 				drives.push_back(drive);
+				debug_out_info("app", "Added drive " << drive->get_device_with_type() << ".\n");
 			}
 		}
 	}
@@ -721,6 +764,8 @@ Notification: If /sys/bus/scsi/devices/hostN/scsi_host/hostN/host_fw_version
 </tt> */
 inline std::string detect_drives_linux_areca(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
+	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives behind Areca controller(s)...\n");
+
 	std::vector< std::pair<int, std::string> > vendors_models;
 	std::string error_msg = read_proc_scsi_scsi_file(vendors_models);
 	if (!error_msg.empty()) {
@@ -745,6 +790,7 @@ inline std::string detect_drives_linux_areca(std::vector<StorageDeviceRefPtr>& d
 	}
 
 	if (controller_hosts.empty()) {
+		debug_out_info("app", DBG_FUNC_MSG << "No Areca-specific entries found in SCSI file.\n");
 		return error_msg;
 	}
 
@@ -775,11 +821,12 @@ inline std::string detect_drives_linux_areca(std::vector<StorageDeviceRefPtr>& d
 			std::string ports_path = hz::string_sprintf("/sys/bus/scsi/devices/host%d/scsi_host/host%d/host_fw_hd_channels", host_num, host_num);
 			hz::File ports_file(ports_path);
 			std::string ports_file_contents;
-			if (!read_proc_complete_file(ports_file, ports_file_contents)) {
-				debug_out_warn("app", DBG_FUNC_MSG << "Couldn't read number of ports on Areca controller: "
+			if (!read_proc_file(ports_file, ports_file_contents)) {
+				debug_out_warn("app", DBG_FUNC_MSG << "Couldn't read the number of ports on Areca controller (\"" << ports_path << "\"): "
 						<< ports_file.get_error_utf8() << ", trying manually.\n");
 			} else {
 				hz::string_is_numeric(hz::string_trim_copy(ports_file_contents), max_ports);
+				debug_out_dump("app", DBG_FUNC_MSG << "Detected " << max_ports << " ports, through \"" << ports_path << "\".\n");
 			}
 
 			if (max_ports < 1 || max_ports > 24) {
@@ -788,7 +835,9 @@ inline std::string detect_drives_linux_areca(std::vector<StorageDeviceRefPtr>& d
 
 			std::string dev = std::string("/dev/sg") + hz::number_to_string(sg_num);
 
+			debug_out_dump("app", "Starting brute-force port scan on 1-" << max_ports << " ports, device \"" << dev << "\".\n");
 			error_msg = smartctl_get_drives(dev, "areca,%d", 1, max_ports, drives, ex_factory);
+			debug_out_dump("app", "Brute-force port scan finished.\n");
 
 			if (!error_msg.empty()) {
 				debug_out_warn("app", DBG_FUNC_MSG << "Couldn't get the drives on ports of Areca controller: " << error_msg << "\n");
@@ -833,6 +882,8 @@ Detection:
 </pre> */
 inline std::string detect_drives_linux_cciss(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
+	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives behind HP RAID (CCISS) controller(s)...\n");
+
 	std::vector<std::string> lines;
 	std::string error_msg = read_proc_devices_file(lines);
 	if (!error_msg.empty()) {
@@ -852,6 +903,7 @@ inline std::string detect_drives_linux_cciss(std::vector<StorageDeviceRefPtr>& d
 		}
 	}
 	if (controllers.empty()) {
+		debug_out_info("app", DBG_FUNC_MSG << "No cciss-specific entries found in devices file.\n");
 		return std::string();  // no controllers
 	}
 
@@ -862,7 +914,10 @@ inline std::string detect_drives_linux_cciss(std::vector<StorageDeviceRefPtr>& d
 
 		std::string dev = std::string("/dev/cciss/c") + hz::number_to_string(controller_no) + "d0";
 
-		for (int port = 0; port <= 127; ++port) {
+		const int max_port = 127;
+		debug_out_dump("app", "Starting brute-force port scan on 1-" << max_port << " ports, device \"" << dev << "\".\n");
+
+		for (int port = 0; port <= max_port; ++port) {
 			StorageDeviceRefPtr drive(new StorageDevice(dev, std::string("cciss,") + hz::number_to_string(port)));
 
 			std::string local_error_msg = drive->fetch_basic_data_and_parse(smartctl_ex);
@@ -874,17 +929,24 @@ inline std::string detect_drives_linux_cciss(std::vector<StorageDeviceRefPtr>& d
 
 			if (app_pcre_match("/VALID ARGUMENTS ARE/mi", output)) {
 				// smartctl doesn't support this many ports, return.
+				debug_out_dump("app", "Reached smartctl port limit with port " << port << ", stopping port scan.\n");
 				break;
 			}
 			if (app_pcre_match("/No such device or address/mi", output) && port > 15) {
 				// we've reached the controller port limit
+				debug_out_dump("app", "Reached controller port limit with port " << port << ", stopping port scan.\n");
 				break;
 			}
 
 			if (local_error_msg.empty()) {
 				drives.push_back(drive);
+				debug_out_info("app", "Added drive " << drive->get_device_with_type() << ".\n");
+			} else {
+				debug_out_dump("app", "Skipping drive " << drive->get_device_with_type() << " due to smartctl error.\n");
 			}
 		}
+
+		debug_out_dump("app", "Brute-force port scan finished.\n");
 	}
 
 	return error_msg;
@@ -912,6 +974,8 @@ Detection:
 </pre> */
 inline std::string detect_drives_linux_hpsa(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
+	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives behind HP RAID (hpsa/hpahcisr) controller(s)...\n");
+
 	std::vector< std::pair<int, std::string> > vendors_models;
 	std::string  error_msg = read_proc_scsi_scsi_file(vendors_models);
 	if (!error_msg.empty()) {
@@ -955,7 +1019,10 @@ inline std::string detect_drives_linux_hpsa(std::vector<StorageDeviceRefPtr>& dr
 
 			std::string dev = std::string("/dev/sg") + hz::number_to_string(sg_num);
 
-			for (int port = 0; port <= 127; ++port) {
+			const int max_port = 127;
+			debug_out_dump("app", "Starting brute-force port scan on 0-" << max_port << " ports, device \"" << dev << "\".\n");
+
+			for (int port = 0; port <= max_port; ++port) {
 				StorageDeviceRefPtr drive(new StorageDevice(dev, std::string("cciss,") + hz::number_to_string(port)));
 
 				std::string local_error_msg = drive->fetch_basic_data_and_parse(smartctl_ex);
@@ -963,15 +1030,24 @@ inline std::string detect_drives_linux_hpsa(std::vector<StorageDeviceRefPtr>& dr
 
 				if (app_pcre_match("/No such device or address/mi", output) || app_pcre_match("/VALID ARGUMENTS ARE/mi", output)) {
 					// We reached the controller port limit, or smartctl-supported port limit.
+					debug_out_dump("app", "Reached controller or smartctl port limit with port " << port << ", stopping port scan.\n");
 					break;
 				}
 				if (!local_error_msg.empty()) {
 					debug_out_info("app", "Smartctl returned with an error: " << local_error_msg << "\n");
+					debug_out_dump("app", "Skipping drive " << drive->get_device_with_type() << " due to smartctl error.\n");
 				} else {
 					drives.push_back(drive);
+					debug_out_info("app", "Added drive " << drive->get_device_with_type() << ".\n");
 				}
 			}
+
+			debug_out_dump("app", "Brute-force port scan finished.\n");
 		}
+	}
+
+	if (controller_hosts.empty()) {
+		debug_out_info("app", DBG_FUNC_MSG << "No hpsa/hpahcisr-specific entries found in Sg devices file.\n");
 	}
 
 	return error_msg;
@@ -986,6 +1062,8 @@ inline std::string detect_drives_linux_hpsa(std::vector<StorageDeviceRefPtr>& dr
 
 std::string detect_drives_linux(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
+	clear_read_file_cache();
+
 	std::vector<std::string> error_msgs;
 	std::string error_msg;
 

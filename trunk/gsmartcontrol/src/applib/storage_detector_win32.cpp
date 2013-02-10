@@ -94,6 +94,8 @@ namespace {
 std::string get_scan_open_multiport_devices(std::vector<StorageDeviceRefPtr>& drives,
 		ExecutorFactoryRefPtr ex_factory, std::set<int>& equivalent_pds)
 {
+	debug_out_info("app", "Getting multi-port devices through smartctl --scan-open...\n");
+
 	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
 
 	std::string smartctl_binary = get_smartctl_binary();
@@ -139,8 +141,8 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDeviceRefPtr>& dr
 // /dev/sde,2 -d ata [ATA] (opened)
 
 	// we only pick the ones with ports
-	pcrecpp::RE port_re = app_pcre_re("/^(/dev/[a-z0-9]+),([0-9]+)[ \\t]+-d[ \\t]+([^ \\t\\n]+)/i");
-	pcrecpp::RE dev_re = app_pcre_re("/^/dev/sd([a-z])$/");
+	const pcrecpp::RE port_re = app_pcre_re("/^(/dev/[a-z0-9]+),([0-9]+)[ \\t]+-d[ \\t]+([^ \\t\\n]+)/i");
+	const pcrecpp::RE dev_re = app_pcre_re("/^/dev/sd([a-z])$/");
 
 	for (std::size_t i = 0; i < lines.size(); ++i) {
 		std::string dev, port_str, type;
@@ -193,27 +195,34 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 		}
 	}
 
+
+	debug_out_info("app", "Starting sequential scan of \\\\.\\PhysicalDriveN devices...\n");
+
 	// Scan PhysicalDrive entries
 	for (int drive_num = 0; ; ++drive_num) {
 
 		// If the drive was already encountered in --scan-open (with a port number), skip it.
 		if (used_pds.count(drive_num) > 0) {
+			debug_out_dump("app", "pd" << drive_num << " already encountered in --scan-open output (as sd*), skipping.\n");
 			continue;
 		}
 
-		std::string name = hz::string_sprintf("\\\\.\\PhysicalDrive%d", drive_num);
+		std::string phys_name = hz::string_sprintf("\\\\.\\PhysicalDrive%d", drive_num);
 
 		// If the drive is openable, then it's there. Yes, CreateFile() is open, not create.
 		// NOTE: Administrative privileges are required to open it.
 		// We don't use any long/unopenable files here, so use the ANSI version.
-		HANDLE h = CreateFileA(name.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
+		HANDLE h = CreateFileA(phys_name.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
 				NULL, OPEN_EXISTING, 0, NULL);
 
 		// The numbers seem to be consecutive, so break on first invalid.
-		if (h == INVALID_HANDLE_VALUE)
+		if (h == INVALID_HANDLE_VALUE) {
+			debug_out_dump("app", "Could not open \"" << phys_name << "\", stopping sequential scan.\n");
 			break;
-
+		}
 		CloseHandle(h);
+
+		debug_out_dump("app", "Successfully opened \"" << phys_name << "\".\n");
 
 		StorageDeviceRefPtr drive(new StorageDevice(hz::string_sprintf("pd%d", drive_num)));
 
@@ -230,24 +239,29 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 			// A serial may be empty if "-q noserial" was given to smartctl.
 			if (!drive->get_serial_number().empty()
 						&& serials.count(drive->get_model_name() + "_" + drive->get_serial_number()) > 0) {
-				debug_out_info("app", "Skipping duplicate drive: model: \"" << drive->get_model_name()
+				debug_out_info("app", "Skipping drive due to duplicate S/N: model: \"" << drive->get_model_name()
 						<< "\", S/N: \"" << drive->get_serial_number() << "\".\n");
 				continue;
 			}
 		}
 
+		debug_out_info("app", "Added drive " << drive->get_device_with_type() << ".\n");
 		drives.push_back(drive);
 	}
 
 
 	// If smartctl --scan-open returns no "sd*,port"-style devices,
 	// check if 3dm2 is installed and execute "tw_cli show" to get
-	// the controllers, then use the tw_cli variant of smartctl.
+	// the controllers, then use the "tw_cli/cN/pN"-style drives with smartctl. This may
+	// happen with older smartctl which doesn't support --scan-open, or with
+	// drivers that don't allow proper SMART commands.
 	if (!multiport_found) {
+		debug_out_info("app", "Checking for additional 3ware devices...\n");
 		std::string inst_path;
 		hz::win32_get_registry_value_string(HKEY_USERS, ".DEFAULT\\Software\\3ware\\3DM2", "InstallPath", inst_path);
 
 		if (!inst_path.empty()) {
+			debug_out_dump("app", "3ware 3DM2 found at\"" << inst_path << "\".\n");
 			std::vector<int> controllers;
 			error_msg = tw_cli_get_controllers(ex_factory, controllers);
 			// ignore the error message above, it's of no use.
@@ -255,6 +269,8 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 				// don't specify device, it's ignored in tw_cli mode
 				tw_cli_get_drives("", controllers.at(i), drives, ex_factory, true);
 			}
+		} else {
+			debug_out_info("app", "3ware 3DM2 not installed.\n");
 		}
 	}
 
