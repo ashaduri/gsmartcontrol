@@ -62,8 +62,8 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, const app_ui_res
 
 
 	Glib::ustring device_type_tooltip = "Smartctl -d option parameter";
-#if defined CONFIG_KERNEL_LINUX
-	device_type_tooltip = "Smartctl -d option parameter. For example, use 3ware,1 for a second drive behind a 3ware RAID controller.";
+#if defined CONFIG_KERNEL_LINUX || defined CONFIG_KERNEL_FAMILY_WINDOWS
+	device_type_tooltip = "Smartctl -d option parameter. For example, use areca,1 for the first drive behind Areca RAID controller.";
 #endif
 	if (Gtk::Label* device_type_label = lookup_widget<Gtk::Label*>("device_type_label")) {
 		app_gtkmm_set_widget_tooltip(*device_type_label, device_type_tooltip);
@@ -113,6 +113,7 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, const app_ui_res
 		(*(model->append()))[col_type] = "marvell";
 		(*(model->append()))[col_type] = "megaraid,N";
 		(*(model->append()))[col_type] = "areca,N";
+		(*(model->append()))[col_type] = "areca,N/E";
 #endif
 #if defined CONFIG_KERNEL_LINUX || defined CONFIG_KERNEL_FREEBSD || defined CONFIG_KERNEL_DRAGONFLY
 		(*(model->append()))[col_type] = "3ware,N";  // this option is not needed in windows

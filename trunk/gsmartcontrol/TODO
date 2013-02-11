@@ -28,20 +28,10 @@ Bugs / patches:
 
 TODO:
 
-BUG: The per-drive parameters in Preferences become empty after dialog re-open if "Parameters" field is empty.
-
-Clarify the per-drive parameters section (what it does) in Preferences.
-
-Add a win32-only tooltip for smartctl binary location clarifying the smartctl-nc.exe and smartctl.exe difference.
-
 Increase "executing command" dialog timeout.
 	Perhaps make it somehow not steal the focus (some window hint?)
 
-Explain better Device name and Device type fields in the Add Device dialog.
 
-The Enter key doesn't invoke the default dialog button (OK).
-
-Print the scanned files and searched registry keys into libdebug dump during detection.
 
 Areca detection
 	Linux:

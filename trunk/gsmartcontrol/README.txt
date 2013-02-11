@@ -131,7 +131,6 @@ Note: If using the official Windows package, the requirements are listed on
 GSmartControl's website.
 
 
-
 The following operating systems are supported:
 
 * Linux - All the popular configurations should work.
@@ -184,6 +183,18 @@ dependencies (see Software Requirements section). Then the usual
 will build and install it. Installation usually requires administrative
 privileges, but you don't need to install the program in order to run it
 directly from the build directory.
+
+
+
+Smartctl Options
+
+GSmartControl tries its best to guard the user from having to specify smartctl
+options. However, this is not always possible due to drive firmware bugs,
+unimplemented features, and so on. The smartctl manual page contains all the
+information you may need when dealing with smartctl.
+See http://smartmontools.sourceforge.net/man/smartctl.8.html
+
+Additional information is available at http://smartmontools.sourceforge.net
 
 
 

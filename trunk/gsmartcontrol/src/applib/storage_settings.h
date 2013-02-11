@@ -51,7 +51,7 @@ inline device_option_map_t app_unserialize_device_option_map(const std::string& 
 			opt = hz::string_trim_copy(enc.decode(opt));
 
 			// ignore potentially harmful chars
-			if (!dev.empty() && !opt.empty()
+			if (!dev.empty() && !opt.empty()  // this discards the entries with empty options
 					&& dev.find_first_of(";><|&") == std::string::npos
 					&& opt.find_first_of(";><|&") == std::string::npos) {
 				option_map[dev] = opt;
@@ -71,7 +71,7 @@ inline std::string app_serialize_device_option_map(const device_option_map_t& op
 	std::vector<std::string> pairs;
 
 	for (device_option_map_t::const_iterator iter = option_map.begin(); iter != option_map.end(); ++iter) {
-		if (!iter->first.empty())
+		if (!iter->first.empty() && !iter->second.empty())  // discard the ones with empty device name or options
 			pairs.push_back(enc.encode(iter->first) + ":" + enc.encode(iter->second));
 	}
 

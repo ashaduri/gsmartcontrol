@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <glade-interface>
-  <requires-version lib="gtk+" version="2.12"/>
+  <requires-version lib="gtk+" version="2.8"/>
   <widget class="GtkWindow" id="gsc_info_window">
     <property name="title" translatable="yes">Device Information - GSmartControl</property>
     <property name="window_position">GTK_WIN_POS_CENTER_ON_PARENT</property>
@@ -108,7 +108,6 @@
                     <property name="can_focus">True</property>
                     <property name="has_focus">True</property>
                     <property name="is_focus">True</property>
-                    <property name="tooltip_text">Drive identity and general health information</property>
                     <property name="tooltip" translatable="yes">Drive identity and general health information</property>
                     <property name="label" translatable="yes">_Identity</property>
                     <property name="use_markup">True</property>
@@ -190,7 +189,6 @@
                   <widget class="GtkLabel" id="attributes_tab_label">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="tooltip_text">SMART attributes</property>
                     <property name="tooltip" translatable="yes">SMART attributes</property>
                     <property name="label" translatable="yes">Attri_butes</property>
                     <property name="use_markup">True</property>
@@ -260,7 +258,6 @@
                   <widget class="GtkLabel" id="capabilities_tab_label">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="tooltip_text">Drive capabilities</property>
                     <property name="tooltip" translatable="yes">Drive capabilities</property>
                     <property name="label" translatable="yes">Ca_pabilities</property>
                     <property name="use_markup">True</property>
@@ -355,7 +352,6 @@
                                   <widget class="GtkTextView" id="error_log_textview">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
-                                    <property name="tooltip_text">Complete error log information</property>
                                     <property name="tooltip" translatable="yes">Complete error log information</property>
                                     <property name="editable">False</property>
                                     <property name="left_margin">5</property>
@@ -385,7 +381,6 @@
                   <widget class="GtkLabel" id="error_log_tab_label">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="tooltip_text">SMART error log contains (usually five) most recent non-trivial errors the hard drive has encountered</property>
                     <property name="tooltip" translatable="yes">SMART error log contains (usually five) most recent non-trivial errors the hard drive has encountered</property>
                     <property name="label" translatable="yes">_Error Log</property>
                     <property name="use_markup">True</property>
@@ -485,7 +480,6 @@
                                       <widget class="GtkTextView" id="selective_selftest_log_textview">
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
-                                        <property name="tooltip_text">Complete selective self-test log information</property>
                                         <property name="tooltip" translatable="yes">Complete selective self-test log information</property>
                                         <property name="editable">False</property>
                                         <property name="left_margin">5</property>
@@ -527,8 +521,6 @@
                   <widget class="GtkLabel" id="selftest_log_tab_label">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="tooltip_text">Self-test log contains information about (usually twenty) most recent manually performed SMART self-tests.
-Selective self-test log is also presented here.</property>
                     <property name="tooltip" translatable="yes">Self-test log contains information about (usually twenty) most recent manually performed SMART self-tests.
 Selective self-test log is also presented here.</property>
                     <property name="label" translatable="yes">_Self-test Logs</property>
@@ -570,162 +562,6 @@ Selective self-test log is also presented here.</property>
                             <property name="column_spacing">6</property>
                             <property name="row_spacing">6</property>
                             <child>
-                              <widget class="GtkHBox" id="test_execution_hbox">
-                                <property name="visible">True</property>
-                                <property name="spacing">6</property>
-                                <child>
-                                  <widget class="GtkHBox" id="hbox4">
-                                    <property name="visible">True</property>
-                                    <property name="spacing">6</property>
-                                    <child>
-                                      <widget class="GtkLabel" id="label2">
-                                        <property name="visible">True</property>
-                                        <property name="xalign">0</property>
-                                        <property name="label" translatable="yes">&lt;b&gt;Test type:&lt;/b&gt;</property>
-                                        <property name="use_markup">True</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkComboBox" id="test_type_combo">
-                                        <property name="visible">True</property>
-                                        <property name="tooltip_text">Choose a test type</property>
-                                        <property name="tooltip" translatable="yes">Choose a test type</property>
-                                        <property name="items" translatable="yes">These are dummy entries
-Immediate Offline
-Short
-Extended
-Conveyance</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="position">1</property>
-                                      </packing>
-                                    </child>
-                                  </widget>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <widget class="GtkHBox" id="hbox3">
-                                    <property name="visible">True</property>
-                                    <property name="spacing">6</property>
-                                    <child>
-                                      <widget class="GtkLabel" id="label5">
-                                        <property name="visible">True</property>
-                                        <property name="tooltip_text">Estimated test duration on idle drive</property>
-                                        <property name="tooltip" translatable="yes">Estimated test duration on idle drive</property>
-                                        <property name="label" translatable="yes">&lt;b&gt;Estimated duration:&lt;/b&gt;</property>
-                                        <property name="use_markup">True</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <widget class="GtkLabel" id="min_duration_label">
-                                        <property name="visible">True</property>
-                                        <property name="tooltip_text">Minimum test duration on idle drive</property>
-                                        <property name="tooltip" translatable="yes">Minimum test duration on idle drive</property>
-                                        <property name="label" translatable="yes">N/A</property>
-                                      </widget>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="position">1</property>
-                                      </packing>
-                                    </child>
-                                  </widget>
-                                  <packing>
-                                    <property name="padding">10</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                              </widget>
-                            </child>
-                            <child>
-                              <widget class="GtkButton" id="test_execute_button">
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                                <property name="tooltip_text">Perform selected test</property>
-                                <property name="tooltip" translatable="yes">Perform selected test</property>
-                                <property name="label" translatable="yes">gtk-execute</property>
-                                <property name="use_stock">True</property>
-                                <property name="response_id">0</property>
-                              </widget>
-                              <packing>
-                                <property name="left_attach">1</property>
-                                <property name="right_attach">2</property>
-                                <property name="x_options">GTK_FILL</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkScrolledWindow" id="scrolledwindow5">
-                                <property name="height_request">85</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                                <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                                <property name="shadow_type">GTK_SHADOW_IN</property>
-                                <child>
-                                  <widget class="GtkTextView" id="test_description_textview">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="tooltip_text">Test description</property>
-                                    <property name="tooltip" translatable="yes">Test description</property>
-                                    <property name="editable">False</property>
-                                    <property name="wrap_mode">GTK_WRAP_WORD</property>
-                                    <property name="left_margin">5</property>
-                                    <property name="right_margin">5</property>
-                                    <property name="cursor_visible">False</property>
-                                  </widget>
-                                </child>
-                              </widget>
-                              <packing>
-                                <property name="right_attach">2</property>
-                                <property name="top_attach">1</property>
-                                <property name="bottom_attach">2</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkButton" id="test_stop_button">
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                                <property name="tooltip_text">Abort the test</property>
-                                <property name="tooltip" translatable="yes">Abort the test</property>
-                                <property name="label" translatable="yes">gtk-stop</property>
-                                <property name="use_stock">True</property>
-                                <property name="response_id">0</property>
-                              </widget>
-                              <packing>
-                                <property name="left_attach">1</property>
-                                <property name="right_attach">2</property>
-                                <property name="top_attach">2</property>
-                                <property name="bottom_attach">3</property>
-                                <property name="x_options">GTK_FILL</property>
-                                <property name="y_padding">10</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkProgressBar" id="test_completion_progressbar">
-                                <property name="visible">True</property>
-                                <property name="tooltip_text">Test progress</property>
-                                <property name="tooltip" translatable="yes">Test progress</property>
-                                <property name="show_text">True</property>
-                                <property name="text" translatable="yes">Test completion: 90%; ETA: 12 minutes</property>
-                                <property name="ellipsize">PANGO_ELLIPSIZE_END</property>
-                              </widget>
-                              <packing>
-                                <property name="top_attach">2</property>
-                                <property name="bottom_attach">3</property>
-                                <property name="y_padding">10</property>
-                              </packing>
-                            </child>
-                            <child>
                               <widget class="GtkHBox" id="test_result_hbox">
                                 <property name="spacing">6</property>
                                 <child>
@@ -758,6 +594,155 @@ Conveyance</property>
                                 <property name="y_padding">20</property>
                               </packing>
                             </child>
+                            <child>
+                              <widget class="GtkProgressBar" id="test_completion_progressbar">
+                                <property name="visible">True</property>
+                                <property name="tooltip" translatable="yes">Test progress</property>
+                                <property name="show_text">True</property>
+                                <property name="text" translatable="yes">Test completion: 90%; ETA: 12 minutes</property>
+                                <property name="ellipsize">PANGO_ELLIPSIZE_END</property>
+                              </widget>
+                              <packing>
+                                <property name="top_attach">2</property>
+                                <property name="bottom_attach">3</property>
+                                <property name="y_padding">10</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkButton" id="test_stop_button">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="tooltip" translatable="yes">Abort the test</property>
+                                <property name="label" translatable="yes">gtk-stop</property>
+                                <property name="use_stock">True</property>
+                                <property name="response_id">0</property>
+                              </widget>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="right_attach">2</property>
+                                <property name="top_attach">2</property>
+                                <property name="bottom_attach">3</property>
+                                <property name="x_options">GTK_FILL</property>
+                                <property name="y_padding">10</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkScrolledWindow" id="scrolledwindow5">
+                                <property name="height_request">85</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+                                <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+                                <property name="shadow_type">GTK_SHADOW_IN</property>
+                                <child>
+                                  <widget class="GtkTextView" id="test_description_textview">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="tooltip" translatable="yes">Test description</property>
+                                    <property name="editable">False</property>
+                                    <property name="wrap_mode">GTK_WRAP_WORD</property>
+                                    <property name="left_margin">5</property>
+                                    <property name="right_margin">5</property>
+                                    <property name="cursor_visible">False</property>
+                                  </widget>
+                                </child>
+                              </widget>
+                              <packing>
+                                <property name="right_attach">2</property>
+                                <property name="top_attach">1</property>
+                                <property name="bottom_attach">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkButton" id="test_execute_button">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="tooltip" translatable="yes">Perform selected test</property>
+                                <property name="label" translatable="yes">gtk-execute</property>
+                                <property name="use_stock">True</property>
+                                <property name="response_id">0</property>
+                              </widget>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="right_attach">2</property>
+                                <property name="x_options">GTK_FILL</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkHBox" id="test_execution_hbox">
+                                <property name="visible">True</property>
+                                <property name="spacing">6</property>
+                                <child>
+                                  <widget class="GtkHBox" id="hbox4">
+                                    <property name="visible">True</property>
+                                    <property name="spacing">6</property>
+                                    <child>
+                                      <widget class="GtkLabel" id="label2">
+                                        <property name="visible">True</property>
+                                        <property name="xalign">0</property>
+                                        <property name="label" translatable="yes">&lt;b&gt;Test type:&lt;/b&gt;</property>
+                                        <property name="use_markup">True</property>
+                                      </widget>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <widget class="GtkComboBox" id="test_type_combo">
+                                        <property name="visible">True</property>
+                                        <property name="tooltip" translatable="yes">Choose a test type</property>
+                                        <property name="items" translatable="yes">These are dummy entries
+Immediate Offline
+Short
+Extended
+Conveyance</property>
+                                      </widget>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                  </widget>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <widget class="GtkHBox" id="hbox3">
+                                    <property name="visible">True</property>
+                                    <property name="spacing">6</property>
+                                    <child>
+                                      <widget class="GtkLabel" id="label5">
+                                        <property name="visible">True</property>
+                                        <property name="tooltip" translatable="yes">Estimated test duration on idle drive</property>
+                                        <property name="label" translatable="yes">&lt;b&gt;Estimated duration:&lt;/b&gt;</property>
+                                        <property name="use_markup">True</property>
+                                      </widget>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <widget class="GtkLabel" id="min_duration_label">
+                                        <property name="visible">True</property>
+                                        <property name="tooltip" translatable="yes">Minimum test duration on idle drive</property>
+                                        <property name="label" translatable="yes">N/A</property>
+                                      </widget>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                  </widget>
+                                  <packing>
+                                    <property name="padding">10</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </widget>
+                            </child>
                           </widget>
                           <packing>
                             <property name="position">1</property>
@@ -778,7 +763,6 @@ Conveyance</property>
                   <widget class="GtkLabel" id="test_tab_label">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="tooltip_text">Perform self-tests on the hard drive</property>
                     <property name="tooltip" translatable="yes">Perform self-tests on the hard drive</property>
                     <property name="label" translatable="yes">Perform _Tests</property>
                     <property name="use_markup">True</property>
@@ -807,13 +791,12 @@ Conveyance</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="tooltip_text">Re-read all the information</property>
                 <property name="tooltip" translatable="yes">Re-read all the information</property>
                 <property name="label" translatable="yes">gtk-refresh</property>
                 <property name="use_stock">True</property>
                 <property name="response_id">0</property>
-                <accelerator key="F5" signal="clicked"/>
                 <accelerator key="R" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                <accelerator key="F5" signal="clicked"/>
               </widget>
             </child>
             <child>
@@ -821,7 +804,6 @@ Conveyance</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="tooltip_text">View smartctl output</property>
                 <property name="tooltip" translatable="yes">View smartctl output</property>
                 <property name="label" translatable="yes">_View Output</property>
                 <property name="use_underline">True</property>
@@ -836,7 +818,6 @@ Conveyance</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="tooltip_text">Save the SMART information (smartctl output) to a text file</property>
                 <property name="tooltip" translatable="yes">Save the SMART information (smartctl output) to a text file</property>
                 <property name="label" translatable="yes">gtk-save-as</property>
                 <property name="use_stock">True</property>
@@ -860,7 +841,6 @@ Conveyance</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="tooltip_text">Close this window</property>
                 <property name="tooltip" translatable="yes">Close this window</property>
                 <property name="label" translatable="yes">gtk-close</property>
                 <property name="use_stock">True</property>

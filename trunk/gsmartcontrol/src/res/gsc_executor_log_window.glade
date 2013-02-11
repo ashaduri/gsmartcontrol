@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <glade-interface>
-  <requires-version lib="gtk+" version="2.12"/>
+  <requires-version lib="gtk+" version="2.8"/>
   <widget class="GtkWindow" id="gsc_executor_log_window">
     <property name="title" translatable="yes">Execution Log - GSmartControl</property>
     <property name="default_width">620</property>
@@ -31,7 +31,6 @@
                       <widget class="GtkTreeView" id="command_list_treeview">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="tooltip_text">Commands executed</property>
                         <property name="tooltip" translatable="yes">Commands executed</property>
                         <property name="reorderable">True</property>
                       </widget>
@@ -52,7 +51,6 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="tooltip_text">Clear command list</property>
                         <property name="tooltip" translatable="yes">Clear command list</property>
                         <property name="label" translatable="yes">gtk-clear</property>
                         <property name="use_stock">True</property>
@@ -100,9 +98,9 @@
                           <widget class="GtkEntry" id="command_entry">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="tooltip_text">Command with parameters</property>
                             <property name="tooltip" translatable="yes">Command with parameters</property>
                             <property name="editable">False</property>
+                            <property name="activates_default">True</property>
                             <property name="truncate_multiline">True</property>
                           </widget>
                           <packing>
@@ -137,7 +135,6 @@
                           <widget class="GtkTextView" id="output_textview">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="tooltip_text">Complete output of the command</property>
                             <property name="tooltip" translatable="yes">Complete output of the command</property>
                             <property name="editable">False</property>
                             <property name="left_margin">5</property>
@@ -169,7 +166,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="tooltip_text">Save currently shown output</property>
                 <property name="tooltip" translatable="yes">Save currently shown output</property>
                 <property name="label" translatable="yes">_Save Current</property>
                 <property name="use_underline">True</property>
@@ -181,7 +177,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="tooltip_text">Save complete log of command execution (useful when reporting bugs)</property>
                 <property name="tooltip" translatable="yes">Save complete log of command execution (useful when reporting bugs)</property>
                 <property name="label" translatable="yes">Save _All</property>
                 <property name="use_underline">True</property>
@@ -204,7 +199,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="tooltip_text">Close this window</property>
                 <property name="tooltip" translatable="yes">Close this window</property>
                 <property name="label" translatable="yes">gtk-close</property>
                 <property name="use_stock">True</property>

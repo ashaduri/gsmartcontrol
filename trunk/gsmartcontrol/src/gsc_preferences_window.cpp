@@ -177,9 +177,9 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 				Gtk::TreeModel::Row row = *iter;
 				std::string dev = row.get_value(col_device_real);
 				if (!dev.empty()) {
-					std::string par = row.get_value(col_type_real);
-					if (!par.empty()) {
-						dev += "::" + par;
+					std::string type = row.get_value(col_type_real);
+					if (!type.empty()) {
+						dev += "::" + type;
 					}
 					if (devmap.find(dev) == devmap.end()) {
 						devmap[dev] = row.get_value(col_parameters);
@@ -248,6 +248,17 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const app_ui
 	APP_UI_RES_AUTO_CONNECT(window_reset_all_button, clicked);
 
 
+	Glib::ustring smartctl_binary_tooltip = "A path to smartctl binary. If the path is not absolute, the binary will be looked for in user's PATH.";
+#if defined CONFIG_KERNEL_FAMILY_WINDOWS
+	smartctl_binary_tooltip += "\n" + "Note: smartctl.exe shows a console during execution, while smartctl-nc.exe (default) doesn't (nc means no-console).";
+#endif
+	if (Gtk::Label* smartctl_binary_label = lookup_widget<Gtk::Label*>("smartctl_binary_label")) {
+		app_gtkmm_set_widget_tooltip(*smartctl_binary_label, smartctl_binary_tooltip);
+	}
+	if (Gtk::Entry* smartctl_binary_entry = lookup_widget<Gtk::Entry*>("smartctl_binary_entry")) {
+		app_gtkmm_set_widget_tooltip(*smartctl_binary_entry, smartctl_binary_tooltip);
+	}
+
 	Gtk::Button* smartctl_binary_browse_button = 0;
 	APP_UI_RES_AUTO_CONNECT(smartctl_binary_browse_button, clicked);
 
@@ -262,11 +273,11 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const app_ui
 	Gtk::Entry* device_options_device_entry = 0;
 	APP_UI_RES_AUTO_CONNECT(device_options_device_entry, changed);
 
-	Glib::ustring device_options_tooltip = "Device name";
+	Glib::ustring device_options_tooltip = "A device name to match";
 #if defined CONFIG_KERNEL_FAMILY_WINDOWS
-	device_options_tooltip = "Device name (for example, use \"pd0\" for the first physical drive)";
+	device_options_tooltip = "A device name to match (for example, use \"pd0\" for the first physical drive)";
 #elif defined CONFIG_KERNEL_LINUX
-	device_options_tooltip = "Device name (for example, /dev/sda or /dev/twa0)";
+	device_options_tooltip = "A device name to match (for example, /dev/sda or /dev/twa0)";
 #endif
 	if (Gtk::Label* device_options_device_label = lookup_widget<Gtk::Label*>("device_options_device_label")) {
 		app_gtkmm_set_widget_tooltip(*device_options_device_label, device_options_tooltip);
@@ -278,18 +289,6 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const app_ui
 
 	Gtk::Entry* device_options_type_entry = 0;
 	APP_UI_RES_AUTO_CONNECT(device_options_type_entry, changed);
-
-	Glib::ustring device_type_tooltip = "Match only this type of device (as specified to -d smartctl parameter)";
-#if defined CONFIG_KERNEL_LINUX
-	device_type_tooltip = "Match only this type of device (as specified to -d smartctl parameter). Leave empty for all types. This can be used to specify a drive behind a RAID device, e.g. \"3ware,2\".";
-#endif
-	if (Gtk::Label* device_options_type_label = lookup_widget<Gtk::Label*>("device_options_type_label")) {
-		app_gtkmm_set_widget_tooltip(*device_options_type_label, device_type_tooltip);
-	}
-	if (device_options_type_entry) {
-		app_gtkmm_set_widget_tooltip(*device_options_type_entry, device_type_tooltip);
-	}
-
 
 	Gtk::Entry* device_options_parameter_entry = 0;
 	APP_UI_RES_AUTO_CONNECT(device_options_parameter_entry, changed);
@@ -496,7 +495,6 @@ void GscPreferencesWindow::export_config()
 	device_option_map_t devmap = device_options_treeview->get_device_map();
 	std::string devmap_str = app_serialize_device_option_map(devmap);
 	prefs_config_set("system/smartctl_device_options", devmap_str);
-
 }
 
 
@@ -518,6 +516,26 @@ void GscPreferencesWindow::on_window_cancel_button_clicked()
 
 void GscPreferencesWindow::on_window_ok_button_clicked()
 {
+	// Check if device map contains drives with empty device names or parameters.
+	device_option_map_t devmap = device_options_treeview->get_device_map();
+	bool contains_empty = false;
+	for (device_option_map_t::const_iterator iter = devmap.begin(); iter != devmap.end(); ++iter) {
+		if (iter->first.empty() || iter->second.empty()) {
+			contains_empty = true;
+		}
+	}
+
+	if (contains_empty) {
+		Gtk::MessageDialog dialog(*this,
+				"You have specified an empty Parameters field for one or more entries"
+				" in Per-Drive Smartctl Parameters section. Such entries will be discarded.\n"
+				"\nDo you want to continue?",
+				true, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO, true);
+		if (dialog.run() != Gtk::RESPONSE_YES) {
+			return;
+		}
+	}
+
 	export_config();
 	destroy(this);
 }
