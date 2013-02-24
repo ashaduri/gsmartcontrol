@@ -581,11 +581,13 @@ bool SmartctlParser::parse_section_data(const std::string& body)
 			status = parse_section_data_subsection_attributes(sub) || status;
 
 		} else if (app_pcre_match("/SMART Error Log Version/mi", sub)
-				|| app_pcre_match("/Warning: device does not support Error Logging/mi", sub)) {
+				|| app_pcre_match("/Warning: device does not support Error Logging/mi", sub)
+				|| app_pcre_match("/SMART Error Log not supported/mi", sub)) {
 			status = parse_section_data_subsection_error_log(sub) || status;
 
 		} else if (app_pcre_match("/SMART Self-test log/mi", sub)
-				|| app_pcre_match("/Warning: device does not support Self Test Logging/mi", sub)) {
+				|| app_pcre_match("/Warning: device does not support Self Test Logging/mi", sub)
+				|| app_pcre_match("/SMART Self-test Log not supported/mi", sub)) {
 			status = parse_section_data_subsection_selftest_log(sub) || status;
 
 		} else if (app_pcre_match("/SMART Selective self-test log data structure/mi", sub)
@@ -1305,7 +1307,7 @@ bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& 
 
 	// Error log support
 	{
-		pcrecpp::RE re = app_pcre_re("/^(Warning: device does not support Error Logging)$/mi");
+		pcrecpp::RE re = app_pcre_re("/^(Warning: device does not support Error Logging)|(SMART Error Log not supported)$/mi");
 
 		if (re.PartialMatch(sub)) {
 			StorageProperty p(pt);
@@ -1448,7 +1450,7 @@ bool SmartctlParser::parse_section_data_subsection_selftest_log(const std::strin
 
 	// Self-test log support
 	{
-		pcrecpp::RE re = app_pcre_re("/^(Warning: device does not support Self Test Logging)$/mi");
+		pcrecpp::RE re = app_pcre_re("/^(Warning: device does not support Self Test Logging)|(SMART Self-test Log not supported)$/mi");
 
 		if (re.PartialMatch(sub)) {
 			StorageProperty p(pt);
