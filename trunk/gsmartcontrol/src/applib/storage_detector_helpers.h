@@ -68,7 +68,7 @@ inline std::string execute_tw_cli(ExecutorFactoryRefPtr ex_factory, const std::s
 
 
 
-/// Get number of ports using tw_cli. Return -1 on error.
+/// Get the drives on a 3ware controller using tw_cli.
 /// Note that the drives are inserted in the order they are detected.
 inline std::string tw_cli_get_drives(const std::string& dev, int controller,
 		std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory, bool use_tw_cli_dev)
@@ -143,6 +143,53 @@ inline std::string tw_cli_get_controllers(ExecutorFactoryRefPtr ex_factory, std:
 	// Sort them. This affects only the further detection order, since the drives
 	// are sorted in the end anyway.
 	std::sort(controllers.begin(), controllers.end());
+
+	return std::string();
+}
+
+
+
+/// Get number of ports by sequentially running smartctl on each port, until
+/// one of the gives an error. \c type contains a printf-formatted string with %d.
+/// \return an error message on error.
+inline std::string smartctl_scan_drives_sequentially(const std::string& dev, const std::string& type,
+	  int from, int to, std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory, std::string& last_output)
+{
+	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
+
+	for (int i = from; i <= to; ++i) {
+		std::string type_arg = hz::string_sprintf(type.c_str(), i);
+		StorageDeviceRefPtr drive(new StorageDevice(dev, type_arg));
+
+		// This will generate an error if smartctl doesn't return 0, which is what happens
+		// with non-populated ports.
+		// Sometimes the output contains:
+		// "Read Device Identity failed: Input/output error"
+		// or
+		// "Read Device Identity failed: empty IDENTIFY data"
+		std::string error_msg = drive->fetch_basic_data_and_parse(smartctl_ex);
+		last_output = drive->get_info_output();
+
+		// If we've reached smartctl port limit (older versions may have smaller limits), abort.
+		if (app_pcre_match("/VALID ARGUMENTS ARE/mi", last_output)) {
+			break;
+		}
+
+		// If we couldn't open the device, it means there is no such controller at specified device
+		// and scanning the ports is useless.
+		if (app_pcre_match("/No .* controller found/mi", last_output)
+				|| app_pcre_match("/Smartctl open device: .* failed: No such device/mi", last_output) ) {
+			break;
+		}
+
+		if (!error_msg.empty()) {
+			debug_out_info("app", "Smartctl returned with an error: " << error_msg << "\n");
+			debug_out_dump("app", "Skipping drive " << drive->get_device_with_type() << " due to smartctl error.\n");
+		} else {
+			drives.push_back(drive);
+			debug_out_info("app", "Added drive " << drive->get_device_with_type() << ".\n");
+		}
+	}
 
 	return std::string();
 }

@@ -18,6 +18,7 @@
 #include <cstdio>  // std::fgets(), std::FILE
 #include <cerrno>  // ENXIO
 #include <set>
+#include <map>
 #include <vector>
 #include <utility>  // std::pair
 
@@ -328,40 +329,6 @@ inline std::string read_proc_scsi_sg_devices_file(std::vector< std::vector<int> 
 
 
 
-/// Get number of ports by sequentially running smartctl on each port, until
-/// one of the gives an error. Return -1 on error.
-inline std::string smartctl_get_drives(const std::string& dev, const std::string& type,
-	  int from, int to, std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
-{
-	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
-
-	for (int i = from; i <= to; ++i) {
-		std::string type_arg = hz::string_sprintf(type.c_str(), i);
-		StorageDeviceRefPtr drive(new StorageDevice(dev, type_arg));
-
-// 		std::string error_msg = execute_smartctl(dev, "-d " + type_arg, "-i", smartctl_ex, output);
-		std::string error_msg = drive->fetch_basic_data_and_parse(smartctl_ex);
-		std::string output = drive->get_info_output();
-
-		// if we've reached smartctl port limit (older versions may have smaller limits), abort.
-		if (app_pcre_match("/VALID ARGUMENTS ARE/mi", output)) {
-			break;
-		}
-
-		if (!error_msg.empty()) {
-			debug_out_info("app", "Smartctl returned with an error: " << error_msg << "\n");
-			debug_out_dump("app", "Skipping drive " << drive->get_device_with_type() << " due to smartctl error.\n");
-		} else {
-			drives.push_back(drive);
-			debug_out_info("app", "Added drive " << drive->get_device_with_type() << ".\n");
-		}
-	}
-
-	return std::string();
-}
-
-
-
 
 /**
 <pre>
@@ -601,10 +568,12 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 
 		error_msg = tw_cli_get_drives(dev, vendors_models[i].first, drives, ex_factory, false);
 		if (!error_msg.empty()) {  // no tw_cli
-			int max_ports = rconfig::get_data<int32_t>("system/linux_max_scan_ports");
-			debug_out_dump("app", "Starting brute-force port scan on 0-" << max_ports << " ports, device \"" << dev << "\". Change the maximum by setting \"system/linux_max_scan_ports\" config key.\n");
-			max_ports = std::max(0, std::min(max_ports, 128));  // Reasonable sanity check.
-			error_msg = smartctl_get_drives(dev, "3ware,%d", 0, max_ports, drives, ex_factory);
+			int max_ports = rconfig::get_data<int32_t>("system/linux_3ware_max_scan_port");
+			max_ports = std::max(0, std::min(max_ports, 127));  // Sanity check
+			debug_out_dump("app", "Starting brute-force port scan on 0-" << max_ports << " ports, device \"" << dev
+					<< "\". Change the maximum by setting \"system/linux_3ware_max_scan_port\" config key.\n");
+			std::string last_output;
+			error_msg = smartctl_scan_drives_sequentially(dev, "3ware,%d", 0, max_ports, drives, ex_factory, last_output);
 			debug_out_dump("app", "Brute-force port scan finished.\n");
 		}
 
@@ -741,9 +710,15 @@ inline std::string detect_drives_linux_adaptec(std::vector<StorageDeviceRefPtr>&
 
 
 
-/** </tt>
+/** <pre>
 Areca Linux (arcmsr driver):
-Call as: smartctl -i -d areca,[1-24] /dev/sg0
+Call as:
+	- smartctl -i -d areca,N /dev/sg0  (N is [1,24]).
+	- smartctl -i -d areca,N/E /dev/sg0  (N is [1,128], E is [1,8]).
+The models that have "ix" (case-insensitive) in their model names
+have the enclosures and require the N,E syntax.
+Note: Using N/E syntax with non-enclosure cards seems to work
+regardless of the value of E.
 
 Detection:
 	There don't seem to be any entries in /proc/devices.
@@ -755,13 +730,14 @@ Detect SCSI host (N in hostN below):
 	The line number in /proc/scsi/sg/devices is X in /dev/sgX.
 Check /sys/bus/scsi/devices/hostN/scsi_host/hostN/host_fw_hd_channels, set
 	its contents as the number of ports. If not present, use 24 (maximum).
-Probe each port for a valid drive: If the output contains "Device Read Identity Failed",
-	then there is no drive on that port (or Areca has an old firmware, nothing we can
-	do there).
+	No-enclosure models only, since we have no info yet for the enclosure ones.
+Probe each port for a valid drive: If the output contains "Device Read Identity Failed"
+	or "empty IDENTIFY data", then there is no drive on that port (or Areca has an
+	old firmware, nothing we can do there).
 Notification: If /sys/bus/scsi/devices/hostN/scsi_host/hostN/host_fw_version
-	is older than "V1.46 2009-01-06", notify the user (maybe its better to grep
-	the smartctl output for that on port 0?). NOT IMPLEMENTED YET.
-</tt> */
+	is older than "V1.46 2009-01-06", (1.51 for enclosure-having cards) notify the user
+	(maybe its better to grep the smartctl output for that on port 0?). NOT IMPLEMENTED YET.
+</pre> */
 inline std::string detect_drives_linux_areca(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives behind Areca controller(s)...\n");
@@ -772,10 +748,11 @@ inline std::string detect_drives_linux_areca(std::vector<StorageDeviceRefPtr>& d
 		return error_msg;
 	}
 
-	std::set<int> controller_hosts;
+	std::map<int, bool> controller_hosts;  // controller # -> has_enclosure
 
 	for (std::size_t i = 0; i < vendors_models.size(); ++i) {
-		if (!app_pcre_match("/Vendor: Areca /i", vendors_models[i].second)) {
+		std::string vendor_line = vendors_models[i].second;
+		if (!app_pcre_match("/Vendor: Areca /i", vendor_line)) {
 			continue;  // not a supported controller
 		}
 		int host_num = vendors_models[i].first;
@@ -786,7 +763,14 @@ inline std::string detect_drives_linux_areca(std::vector<StorageDeviceRefPtr>& d
 			debug_out_dump("app", "Skipping adapter with SCSI host " << host_num << ", host already found.\n");
 			continue;
 		}
-		controller_hosts.insert(host_num);
+
+		// Check if it contains the "ix" string in its model name. It may not be exactly
+		// a suffix (there may be "-VOL#00" or something like that appended as well).
+		bool has_enclosure = app_pcre_match("/Model:.+ix.+Rev:/i", vendor_line);
+		debug_out_dump("app", DBG_FUNC_MSG << "Areca controller (SCSI host " << host_num
+				<< ") seems to " << (has_enclosure ? "have enclosure(s)" : "have no enclosures") << ".\n");
+
+		controller_hosts[host_num] = has_enclosure;
 	}
 
 	if (controller_hosts.empty()) {
@@ -802,8 +786,9 @@ inline std::string detect_drives_linux_areca(std::vector<StorageDeviceRefPtr>& d
 
 	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
 
-	for (std::set<int>::iterator iter = controller_hosts.begin(); iter != controller_hosts.end(); ++iter) {
-		const int host_num = *iter;
+	for (std::map<int, bool>::iterator iter = controller_hosts.begin(); iter != controller_hosts.end(); ++iter) {
+		const int host_num = iter->first;
+		const bool has_enclosure = iter->second;
 
 		for (std::size_t sg_num = 0; sg_num < sg_entries.size(); ++sg_num) {
 			if (sg_entries[sg_num].size() < 5) {
@@ -816,28 +801,52 @@ inline std::string detect_drives_linux_areca(std::vector<StorageDeviceRefPtr>& d
 				continue;
 			}
 
-			int max_ports = 0;
+			if (has_enclosure) {
+				// TODO We have no information on what "/sys/bus/scsi/devices/host%d/scsi_host/host%d/host_fw_hd_channels"
+				// contains in case of enclosure-having cards.
 
-			std::string ports_path = hz::string_sprintf("/sys/bus/scsi/devices/host%d/scsi_host/host%d/host_fw_hd_channels", host_num, host_num);
-			hz::File ports_file(ports_path);
-			std::string ports_file_contents;
-			if (!read_proc_file(ports_file, ports_file_contents)) {
-				debug_out_warn("app", DBG_FUNC_MSG << "Couldn't read the number of ports on Areca controller (\"" << ports_path << "\"): "
-						<< ports_file.get_error_utf8() << ", trying manually.\n");
+				int max_enclosures = rconfig::get_data<int32_t>("system/linux_areca_enc_max_enclosure");
+				max_enclosures = std::max(1, std::min(8, max_enclosures));  // 1-8
+
+				int max_ports = rconfig::get_data<int32_t>("system/linux_areca_enc_max_scan_port");
+				max_ports = std::max(1, std::min(128, max_ports));  // 1-128 sanity check
+
+				std::string dev = std::string("/dev/sg") + hz::number_to_string(sg_num);
+
+				debug_out_dump("app", "Starting brute-force port/enclosure scan on 1-" << max_ports << " ports, 1-" << max_enclosures << " enclosures, device \"" << dev
+						<< "\". Change the maximums by setting \"system/linux_areca_enc_max_scan_port\" and \"system/linux_areca_enc_max_enclosure\" config keys.\n");
+				std::string last_output;
+				for (int enclosure_no = 1; enclosure_no < max_enclosures; ++enclosure_no) {
+					error_msg = smartctl_scan_drives_sequentially(dev, "areca,%d/" + hz::number_to_string(enclosure_no), 1, max_ports, drives, ex_factory, last_output);
+				}
+				debug_out_dump("app", "Brute-force port/enclosure scan finished.\n");
+
 			} else {
-				hz::string_is_numeric(hz::string_trim_copy(ports_file_contents), max_ports);
-				debug_out_dump("app", DBG_FUNC_MSG << "Detected " << max_ports << " ports, through \"" << ports_path << "\".\n");
+				int max_ports = 0;
+
+				// Read the number of ports.
+				std::string ports_path = hz::string_sprintf("/sys/bus/scsi/devices/host%d/scsi_host/host%d/host_fw_hd_channels", host_num, host_num);
+				hz::File ports_file(ports_path);
+				std::string ports_file_contents;
+				if (!read_proc_file(ports_file, ports_file_contents)) {
+					debug_out_warn("app", DBG_FUNC_MSG << "Couldn't read the number of ports on Areca controller (\"" << ports_path << "\"): "
+							<< ports_file.get_error_utf8() << ", trying manually.\n");
+				} else {
+					hz::string_is_numeric(hz::string_trim_copy(ports_file_contents), max_ports);
+					debug_out_dump("app", DBG_FUNC_MSG << "Detected " << max_ports << " ports, through \"" << ports_path << "\".\n");
+				}
+				if (max_ports == 0) {
+					max_ports = rconfig::get_data<int32_t>("system/linux_areca_noenc_max_scan_port");
+				}
+				max_ports = std::max(1, std::min(24, max_ports));  // 1-24 sanity check
+
+				std::string dev = std::string("/dev/sg") + hz::number_to_string(sg_num);
+				debug_out_dump("app", "Starting brute-force port scan on 1-" << max_ports << " ports, device \"" << dev
+						<< "\". Change the maximum by setting \"system/linux_areca_noenc_max_scan_port\" config key.\n");
+				std::string last_output;
+				error_msg = smartctl_scan_drives_sequentially(dev, "areca,%d", 1, max_ports, drives, ex_factory, last_output);
+				debug_out_dump("app", "Brute-force port scan finished.\n");
 			}
-
-			if (max_ports < 1 || max_ports > 24) {
-				max_ports = 24;  // default to 24 ports (smartctl maximum for Areca)
-			}
-
-			std::string dev = std::string("/dev/sg") + hz::number_to_string(sg_num);
-
-			debug_out_dump("app", "Starting brute-force port scan on 1-" << max_ports << " ports, device \"" << dev << "\".\n");
-			error_msg = smartctl_get_drives(dev, "areca,%d", 1, max_ports, drives, ex_factory);
-			debug_out_dump("app", "Brute-force port scan finished.\n");
 
 			if (!error_msg.empty()) {
 				debug_out_warn("app", DBG_FUNC_MSG << "Couldn't get the drives on ports of Areca controller: " << error_msg << "\n");

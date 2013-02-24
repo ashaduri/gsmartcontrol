@@ -31,7 +31,8 @@ class ExecutorFactory : public hz::intrusive_ptr_referenced {
 		/// Executor type for create_executor()
 		enum Type {
 			ExecutorSmartctl,
-			ExecutorTwCli
+			ExecutorTwCli,
+			ExecutorArecaCli
 		};
 
 
