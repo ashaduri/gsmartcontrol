@@ -37,12 +37,19 @@ inline void init_default_settings()
 #else
 	rconfig::set_default_data("system/smartctl_binary", "smartctl-nc.exe");  // use no-console version by default.
 	rconfig::set_default_data("system/tw_cli_binary", "tw_cli.exe");
+	rconfig::set_default_data("system/areca_cli_binary", "cli.exe");  // if relative, an installation path is prepended (if found).
 #endif
 	// search for "smartctl-nc.exe" in smartmontools installation first.
 	rconfig::set_default_data("system/win32_search_smartctl_in_smartmontools", true);
 	rconfig::set_default_data("system/win32_smartmontools_regpath", "SOFTWARE\\smartmontools");  // in HKLM
 	rconfig::set_default_data("system/win32_smartmontools_regkey", "Install_Dir");
 	rconfig::set_default_data("system/win32_smartmontools_smartctl_binary", "bin\\smartctl-nc.exe");  // relative to smt install path
+	rconfig::set_default_data("system/win32_areca_scan_controllers", int32_t(2));  // 0 - no, 1 - yes, 2 - auto (if areca tools are found)
+	rconfig::set_default_data("system/win32_areca_use_cli", int32_t(2));  // 0 - no, 1 - yes, 2 - auto (if it's found)
+	rconfig::set_default_data("system/win32_areca_max_controllers", int32_t(4));  // Maximum number of areca controllers (a safety measure). CLI supports 4.
+	rconfig::set_default_data("system/win32_areca_enc_max_scan_port", int32_t(36));  // 1-128 (areca with enclosures). The last RAID port to scan if no other method is available
+	rconfig::set_default_data("system/win32_areca_enc_max_enclosure", int32_t(3));  // 1-8 (areca with enclosures). The last RAID enclosure to scan if no other method is available
+	rconfig::set_default_data("system/win32_areca_neonc_max_scan_port", int32_t(24));  // 1-24 (areca without enclosures). The last RAID port to scan if no other method is available
 
 	rconfig::set_default_data("system/smartctl_options", "");  // default options on ALL commands
 	rconfig::set_default_data("system/smartctl_device_options", "");  // dev1:val1;dev2:val2;... format, each bin2ascii-encoded.
@@ -52,7 +59,10 @@ inline void init_default_settings()
 	rconfig::set_default_data("system/linux_proc_devices_path", "/proc/devices");  // file in linux /proc/devices format
 	rconfig::set_default_data("system/linux_proc_scsi_scsi_path", "/proc/scsi/scsi");  // file in linux /proc/scsi/scsi format
 	rconfig::set_default_data("system/linux_proc_scsi_sg_devices_path", "/proc/scsi/sg/devices");  // file in linux /proc/scsi/sg/devices format
-	rconfig::set_default_data("system/linux_max_scan_ports", int32_t(23));  // maximum number of RAID ports to scan if no other method is available
+	rconfig::set_default_data("system/linux_3ware_max_scan_port", int32_t(23));  // 0-127 (3ware). The last RAID port to scan if no other method is available
+	rconfig::set_default_data("system/linux_areca_enc_max_scan_port", int32_t(36));  // 1-128 (areca with enclosures). The last RAID port to scan if no other method is available
+	rconfig::set_default_data("system/linux_areca_enc_max_enclosure", int32_t(4));  // 1-8 (areca with enclosures). The last RAID enclosure to scan if no other method is available
+	rconfig::set_default_data("system/linux_areca_neonc_max_scan_port", int32_t(24));  // 1-24 (areca without enclosures). The last RAID port to scan if no other method is available
 	rconfig::set_default_data("system/solaris_dev_path", "/dev/rdsk");  // path to /dev/rdsk for solaris.
 	rconfig::set_default_data("system/unix_sdev_path", "/dev");  // path to /dev. used by other unices
 // 	rconfig::set_default_data("system/device_match_patterns", "");  // semicolon-separated PCRE patterns

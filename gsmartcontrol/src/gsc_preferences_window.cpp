@@ -250,7 +250,7 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const app_ui
 
 	Glib::ustring smartctl_binary_tooltip = "A path to smartctl binary. If the path is not absolute, the binary will be looked for in user's PATH.";
 #if defined CONFIG_KERNEL_FAMILY_WINDOWS
-	smartctl_binary_tooltip += "\n" + "Note: smartctl.exe shows a console during execution, while smartctl-nc.exe (default) doesn't (nc means no-console).";
+	smartctl_binary_tooltip += Glib::ustring("\n") + "Note: smartctl.exe shows a console during execution, while smartctl-nc.exe (default) doesn't (nc means no-console).";
 #endif
 	if (Gtk::Label* smartctl_binary_label = lookup_widget<Gtk::Label*>("smartctl_binary_label")) {
 		app_gtkmm_set_widget_tooltip(*smartctl_binary_label, smartctl_binary_tooltip);

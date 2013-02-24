@@ -12,7 +12,7 @@
 #include "hz/debug.h"
 #include "executor_factory.h"
 #include "smartctl_executor_gui.h"
-#include "tw_cli_executor.h"
+#include "cli_executors.h"
 
 
 
@@ -43,6 +43,15 @@ hz::intrusive_ptr<CmdexSync> ExecutorFactory::create_executor(ExecutorFactory::T
 				return ex;
 			}
 			return TwCliExecutorRefPtr(new TwCliExecutor());
+		}
+		case ExecutorArecaCli:
+		{
+			if (use_gui_) {
+				ArecaCliExecutorGuiRefPtr ex = ArecaCliExecutorGuiRefPtr(new ArecaCliExecutorGui());
+				ex->create_running_dialog(parent_);  // dialog parent
+				return ex;
+			}
+			return ArecaCliExecutorRefPtr(new ArecaCliExecutor());
 		}
 	}
 
