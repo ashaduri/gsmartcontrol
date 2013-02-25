@@ -31,7 +31,7 @@ bool CmdexSyncGui::execute()
 #if APP_GTKMM_CHECK_VERSION(2, 10, 0)
 	// these are available since gtkmm 2.10
 	#define CMDEX_DIALOG_MESSAGE_TYPE Gtk::MESSAGE_OTHER
-	// not present in Gdk:: in 2.10 (it's in 2.12), use we have to use GDK_
+	// not present in Gdk:: in 2.10 (it's in 2.12), we have to use GDK_
 	#define CMDEX_DIALOG_HINT_TYPE GDK_WINDOW_TYPE_HINT_NOTIFICATION
 #else
 	#define CMDEX_DIALOG_MESSAGE_TYPE Gtk::MESSAGE_INFO
@@ -97,9 +97,9 @@ void CmdexSyncGui::show_hide_dialog(bool show)
 
 void CmdexSyncGui::update_dialog_show_timer()
 {
-	double timeout = 1.;  // 1 sec for normal dialogs
+	double timeout = 2.;  // 2 sec for normal dialogs
 	if (running_dialog_abort_mode_)
-		timeout = 0.2;  // 0.2 sec for aborting... dialogs
+		timeout = 0.4;  // 0.4 sec for aborting... dialogs
 
 	if (!running_dialog_shown_ && running_dialog_timer_.elapsed() > timeout) {
 
