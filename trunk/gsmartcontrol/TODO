@@ -28,10 +28,6 @@ Bugs / patches:
 
 TODO:
 
-Increase "executing command" dialog timeout.
-	Perhaps make it somehow not steal the focus (some window hint?)
-	Test it by replacing smartctl with "sleep 2; smartctl"
-
 Test Areca windows detection by installing CLI, then replacing it with a dummy
 	program that prints something (with enclosures and without).
 

@@ -1,7 +1,7 @@
 /**************************************************************************
- Copyright:
-      (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
- License: See LICENSE_gsmartcontrol.txt
+Copyright:
+	(C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
+License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 /// \file
 /// \author Alexander Shaduri
@@ -26,32 +26,34 @@
 
 std::string StorageDevice::get_type_readable_name(StorageDevice::detected_type_t type)
 {
-    switch (type) {
-    case detected_type_unknown:
-        return "unknown";
-    case detected_type_invalid:
-        return "invalid";
-    case detected_type_cddvd:
-        return "cd/dvd";
-    }
-    return "[internal_error]";
+	switch (type) {
+	case detected_type_unknown:
+		return "unknown";
+	case detected_type_invalid:
+		return "invalid";
+	case detected_type_cddvd:
+		return "cd/dvd";
+	case detected_type_raid:
+		return "raid";
+	}
+	return "[internal_error]";
 }
 
 
 
 std::string StorageDevice::get_status_name(StorageDevice::status_t status, bool use_yesno)
 {
-    switch (status) {
-    case status_enabled:
-        return (use_yesno ? "Yes" : "Enabled");
-    case status_disabled:
-        return (use_yesno ? "No" : "Disabled");
-    case status_unsupported:
-        return "Unsupported";
-    case status_unknown:
-        return "Unknown";
-    };
-    return "[internal_error]";
+	switch (status) {
+	case status_enabled:
+		return (use_yesno ? "Yes" : "Enabled");
+	case status_disabled:
+		return (use_yesno ? "No" : "Disabled");
+	case status_unsupported:
+		return "Unsupported";
+	case status_unknown:
+		return "Unknown";
+	};
+	return "[internal_error]";
 }
 
 
@@ -91,62 +93,62 @@ StorageDevice::StorageDevice(const string& dev, const string& type_arg)
 
 StorageDevice::StorageDevice(const StorageDevice& other)
 {
-    *this = other;
+	*this = other;
 }
 
 
 
 StorageDevice& StorageDevice::operator=(const StorageDevice& other)
 {
-    info_output_ = other.info_output_;
-    full_output_ = other.full_output_;
+	info_output_ = other.info_output_;
+	full_output_ = other.full_output_;
 
-    device_ = other.device_;
+	device_ = other.device_;
 	type_arg_ = other.type_arg_;
 	extra_args_ = other.extra_args_;
 
-    // force_type_ = other.force_type_;
-    is_virtual_ = other.is_virtual_;
-    virtual_file_ = other.virtual_file_;
-    is_manually_added_ = other.is_manually_added_;
+	// force_type_ = other.force_type_;
+	is_virtual_ = other.is_virtual_;
+	virtual_file_ = other.virtual_file_;
+	is_manually_added_ = other.is_manually_added_;
 
-    fully_parsed_ = other.fully_parsed_;
-    test_is_active_ = other.test_is_active_;
+	fully_parsed_ = other.fully_parsed_;
+	test_is_active_ = other.test_is_active_;
 
-    detected_type_ = other.detected_type_;
-    smart_supported_ = other.smart_supported_;
-    smart_enabled_ = other.smart_enabled_;
-    aodc_status_ = other.aodc_status_;
-    model_name_ = other.model_name_;
-    family_name_ = other.family_name_;
-    size_ = other.size_;
-    health_property_ = other.health_property_;
+	detected_type_ = other.detected_type_;
+	smart_supported_ = other.smart_supported_;
+	smart_enabled_ = other.smart_enabled_;
+	aodc_status_ = other.aodc_status_;
+	model_name_ = other.model_name_;
+	family_name_ = other.family_name_;
+	size_ = other.size_;
+	health_property_ = other.health_property_;
 
-    properties_ = other.properties_;
+	properties_ = other.properties_;
 
-    return *this;
+	return *this;
 }
 
 
 
 void StorageDevice::clear_fetched(bool including_outputs) {
-    if (including_outputs) {
-        info_output_.clear();
-        full_output_.clear();
-    }
+	if (including_outputs) {
+		info_output_.clear();
+		full_output_.clear();
+	}
 
-    fully_parsed_ = false;
-    test_is_active_ = false;  // not sure
+	fully_parsed_ = false;
+	test_is_active_ = false;  // not sure
 
-    smart_supported_.reset();
-    smart_enabled_.reset();
-    model_name_.reset();
-    aodc_status_.reset();
-    family_name_.reset();
-    size_.reset();
-    health_property_.reset();
+	smart_supported_.reset();
+	smart_enabled_.reset();
+	model_name_.reset();
+	aodc_status_.reset();
+	family_name_.reset();
+	size_.reset();
+	health_property_.reset();
 
-    properties_.clear();
+	properties_.clear();
 }
 
 
@@ -209,31 +211,44 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	if (app_pcre_match("/this device: CD\\/DVD/mi", info_output_) || app_pcre_match("/^Device type:\\s+CD\\/DVD/mi", info_output_)) {
 		debug_out_dump("app", "Drive " << get_device_with_type() << " seems to be a CD/DVD device.\n");
 		this->set_detected_type(detected_type_cddvd);
+
+	// This was encountered on a csmi soft-raid under windows with pd0.
+	// The device reported that it had smart supported and enabled.
+	// Product:              Raid 5 Volume
+	} else if (app_pcre_match("/Product:[ \\t]*Raid/mi", info_output_)) {
+		debug_out_dump("app", "Drive " << get_device_with_type() << " seems to be a RAID volume/controller.\n");
+		this->set_detected_type(detected_type_raid);
 	}
 
-	// Note: We don't use SmartctlParser here, because this information
-	// may be in some other format. If this information is valid, only then it's
-	// passed to SmartctlParser.
-	// Compared to SmartctlParser, this one is much more loose.
-
-	// Don't put complete messages here - they change across smartctl versions.
-	if (app_pcre_match("/^SMART support is:[ \\t]*Unavailable/mi", info_output_)  // cdroms output this
-			|| app_pcre_match("/Device does not support SMART/mi", info_output_)  // usb flash drives, non-smart hds
-			|| app_pcre_match("/Device Read Identity Failed/mi", info_output_)) {  // solaris scsi, unsupported by smartctl (maybe others?)
+	// RAID volume may report that it has SMART, but it obviously doesn't.
+	if (get_detected_type() == detected_type_raid) {
 		smart_supported_ = false;
 		smart_enabled_ = false;
 
-	} else if (app_pcre_match("/^SMART support is:[ \\t]*Available/mi", info_output_)
-			|| app_pcre_match("/^SMART support is:[ \\t]*Ambiguous/mi", info_output_)) {
-		smart_supported_ = true;
+	} else {
+		// Note: We don't use SmartctlParser here, because this information
+		// may be in some other format. If this information is valid, only then it's
+		// passed to SmartctlParser.
+		// Compared to SmartctlParser, this one is much looser.
 
-		if (app_pcre_match("/^SMART support is:[ \\t]*Enabled/mi", info_output_)) {
-			smart_enabled_ = true;
-		} else if (app_pcre_match("/^SMART support is:[ \\t]*Disabled/mi", info_output_)) {
+		// Don't put complete messages here - they change across smartctl versions.
+		if (app_pcre_match("/^SMART support is:[ \\t]*Unavailable/mi", info_output_)  // cdroms output this
+				|| app_pcre_match("/Device does not support SMART/mi", info_output_)  // usb flash drives, non-smart hds
+				|| app_pcre_match("/Device Read Identity Failed/mi", info_output_)) {  // solaris scsi, unsupported by smartctl (maybe others?)
+			smart_supported_ = false;
 			smart_enabled_ = false;
+
+		} else if (app_pcre_match("/^SMART support is:[ \\t]*Available/mi", info_output_)
+				|| app_pcre_match("/^SMART support is:[ \\t]*Ambiguous/mi", info_output_)) {
+			smart_supported_ = true;
+
+			if (app_pcre_match("/^SMART support is:[ \\t]*Enabled/mi", info_output_)) {
+				smart_enabled_ = true;
+			} else if (app_pcre_match("/^SMART support is:[ \\t]*Disabled/mi", info_output_)) {
+				smart_enabled_ = false;
+			}
 		}
 	}
-
 
 	std::string model;
 	if (app_pcre_match("/^Device Model:[ \\t]*(.*)$/mi", info_output_, &model)) {  // HD's and cdroms
