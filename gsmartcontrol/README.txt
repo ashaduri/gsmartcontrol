@@ -149,7 +149,7 @@ Windows port uses pd0, pd1, etc... for physical drives 0, 1, etc... .
 Solaris 10 / x86 / sunstudio12 / sunfreeware. OpenSolaris should work but has
 not been tested yet.
 
-* Mac OS X - 3rd-party testing by Fink project.
+* Mac OS X - 3rd-party testing by the MacPorts and Fink projects.
 
 * DragonFlyBSD - Code written but no testing has been performed yet. Expected
 to work without any issues.

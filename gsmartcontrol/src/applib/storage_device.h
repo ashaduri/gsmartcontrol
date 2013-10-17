@@ -40,9 +40,10 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		/// These may be used to force smartctl to a special type, as well as
 		/// to display the correct icon
 		enum detected_type_t {
-			detected_type_unknown,  // unknown. will be autodetected by smartctl
-			detected_type_invalid,  // this is set by smartctl executor if it detects invalid type (but not if it's scsi).
-			detected_type_cddvd,  // unsupported by smartctl, only basic info is given.
+			detected_type_unknown,  // Unknown. Will be autodetected by smartctl.
+			detected_type_invalid,  // This is set by smartctl executor if it detects invalid type (but not if it's scsi).
+			detected_type_cddvd,  // CD/DVD/Blu-Ray. Unsupported by smartctl, only basic info is given.
+			detected_type_raid,  // RAID controller or volume. Unsupported by smartctl, only basic info is given.
 		};
 
 
