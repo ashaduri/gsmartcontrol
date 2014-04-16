@@ -7,7 +7,7 @@
 		type="win32" />
 
 	<!-- This is displayed in UAC dialogs -->
-	<description>GSmartControl - Hard disk drive health inspection tool</description>
+	<description>GSmartControl - Hard disk drive and SSD health inspection tool</description>
 
 	<!-- Privilege requirements -->
 	<ms_asmv2:trustInfo xmlns:ms_asmv2="urn:schemas-microsoft-com:asm.v2">

@@ -13,7 +13,7 @@
 !define PRODUCT_NAME "GSmartControl"
 !define PRODUCT_NAME_SMALL "gsmartcontrol"
 !define PRODUCT_PUBLISHER "Alexander Shaduri"
-!define PRODUCT_WEB_SITE "http://gsmartcontrol.berlios.de"
+!define PRODUCT_WEB_SITE "http://gsmartcontrol.sourceforge.net"
 
 ;!define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\AppMainExe.exe"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -169,7 +169,7 @@ SectionIn 1 RO
 
 	; Add Shortcuts (this inherits the exe's run permissions)
 	CreateShortCut "$SMPROGRAMS\GSmartControl.lnk" "$INSTDIR\gsmartcontrol.exe" "" \
-		"$INSTDIR\gsmartcontrol.ico" "" SW_SHOWNORMAL "" "GSmartControl - Hard disk drive health inspection tool"
+		"$INSTDIR\gsmartcontrol.ico" "" SW_SHOWNORMAL "" "GSmartControl - Hard disk drive and SSD health inspection tool"
 
 SectionEnd
 
@@ -301,7 +301,7 @@ FunctionEnd
 ; Section descriptions
 !ifndef NO_GTK  ; this page is shown only when using gtk
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-	!insertmacro MUI_DESCRIPTION_TEXT ${SecMain} "GSmartControl - hard disk drive health inspection tool"
+	!insertmacro MUI_DESCRIPTION_TEXT ${SecMain} "GSmartControl - hard disk drive and SSD health inspection tool"
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecGtkPrivate} "GTK+ libraries, needed by GSmartControl. \
 		This will install a private version of GTK+, usable only by GSmartControl."
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecGtkPublic} "GTK+ libraries, needed by GSmartControl. \

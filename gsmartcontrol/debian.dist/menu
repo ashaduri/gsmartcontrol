@@ -1,4 +1,4 @@
 ?package(gsmartcontrol):needs="X11" section="Applications/System/Hardware"\
   title="GSmartControl" command="/usr/bin/gsmartcontrol-root"\
-  longtitle="Hard Disk Health Inspection"\
+  longtitle="Hard Disk and SSD Health Inspection"\
   icon="/usr/share/pixmaps/gsmartcontrol.xpm"

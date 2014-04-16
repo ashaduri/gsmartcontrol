@@ -2,12 +2,12 @@ Name:		gsmartcontrol
 Version: 	@VERSION@
 Release:	1as
 License:	GPLv2, GPLv3
-Url:		http://gsmartcontrol.berlios.de
+Url:		http://gsmartcontrol.sourceforge.net
 Vendor:		Alexander Shaduri <ashaduri 'at' gmail.com>
 # Packager:	Alexander Shaduri <ashaduri 'at' gmail.com>
 Source:		gsmartcontrol-%{version}.tar.bz2
 BuildRoot:	%{_tmppath}/%{name}-%{version}-build
-Summary:	GSmartControl - Hard Disk Health Inspection Tool
+Summary:	GSmartControl - Hard Disk Drive and SSD Health Inspection Tool
 
 %if 0%{?mandriva_version}
 Group:		System/Kernel and hardware
@@ -88,8 +88,9 @@ BuildRequires: gcc-c++, gcc-cpp, pcre-devel, gtkmm2.4-devel >= 2.6.0, libglademm
 %description
 GSmartControl is a graphical user interface for smartctl, which is a tool for
 querying and controlling SMART (Self-Monitoring, Analysis, and Reporting
-Technology) data in hard disk drives. It allows you to inspect the drive's
-SMART data to determine its health, as well as run various tests on it.
+Technology) data in hard disk and solid-state drives. It allows you to inspect
+the drive's SMART data to determine its health, as well as run various tests
+on it.
 
 %prep
 
