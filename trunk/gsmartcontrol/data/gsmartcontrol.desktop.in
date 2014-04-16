@@ -8,9 +8,9 @@ Categories=System;Monitor;
 
 Name=GSmartControl
 # short description, usually shown in parentheses after Name
-GenericName=Hard Disk Health Inspection
+GenericName=Hard Disk and SSD Health Inspection
 # tooltip
-Comment=Monitor and control SMART data on hard disks
+Comment=Monitor and control SMART data on hard disk and solid-state drives
 
 # If it's a name only, it looks for "name.[png|xpm]" file in
 # $XDG_DATA_DIRS/icons and /usr/share/pixmaps.

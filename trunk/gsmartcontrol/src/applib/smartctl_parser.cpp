@@ -201,21 +201,20 @@ bool SmartctlParser::parse_full(const std::string& full)
 	while (section_start_pos != std::string::npos
 			&& (section_start_pos = s.find("===", section_start_pos)) != std::string::npos) {
 
-		tmp_pos = s.find("\n", section_start_pos);  // works with \r\n too.
+		tmp_pos = s.find("\n", section_start_pos);  // works with \r\n too. This may be npos if nothing follows the header.
 
 		// trim is needed to remove potential \r in the end
 		std::string section_header = hz::string_trim_copy(s.substr(section_start_pos,
 				(tmp_pos == std::string::npos ? tmp_pos : (tmp_pos - section_start_pos)) ));
 
-		if (tmp_pos != std::string::npos)
-			++tmp_pos;  // set to start of the next section
-
-		section_end_pos = s.find("===", tmp_pos);  // start of the next section
-		std::string section_body_str = hz::string_trim_copy(s.substr(tmp_pos,
-				(section_end_pos == std::string::npos ? section_end_pos : section_end_pos - tmp_pos)));
-
+		std::string section_body_str;
+		if (tmp_pos != std::string::npos) {
+			section_end_pos = s.find("===", tmp_pos);  // start of the next section
+			section_body_str = hz::string_trim_copy(s.substr(tmp_pos,
+					(section_end_pos == std::string::npos ? section_end_pos : section_end_pos - tmp_pos)));
+		}
 		status = parse_section(section_header, section_body_str) || status;
-		section_start_pos = section_end_pos;
+		section_start_pos = (tmp_pos == std::string::npos ? std::string::npos : section_end_pos);
 	}
 
 	if (!status) {

@@ -32,6 +32,10 @@ Test Areca windows detection by installing CLI, then replacing it with a dummy
 	program that prints something (with enclosures and without).
 
 Fix not being able to quit while executing commands.
+	https://www.google.com/search?client=opera&q=IA__gtk_main_quit:+assertion+%60main_loops+!=+NULL'+failed&sourceid=opera&ie=utf-8&oe=utf-8&channel=suggest
+	https://developer.gnome.org/gtk2/2.24/gtk2-General.html#gtk-main-quit
+	https://www.google.com/search?num=50&hl=en&safe=off&client=opera&hs=Dr5&channel=suggest&q=calling+gtk_main_quit+during+gtk_main_iteration+warning&oq=calling+gtk_main_quit+during+gtk_main_iteration+warning&gs_l=serp.12...7064.8155.0.12753.8.8.0.0.0.0.216.935.0j6j1.7.0.les%3B..0.0...1c.1.4.serp.GUiDL5IM2U8
+	https://developer.gnome.org/glib/2.34/glib-The-Main-Event-Loop.html#g-main-loop-quit
 
 
 Areca detection

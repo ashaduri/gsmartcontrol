@@ -1,19 +1,20 @@
 
 About GSmartControl
 
-GSmartControl - Hard disk drive health inspection tool.
+GSmartControl - Hard disk drive and SSD health inspection tool.
 
 GSmartControl is a graphical user interface for smartctl (from smartmontools
 package, see http://smartmontools.sourceforge.net), which is a tool for
 querying and controlling SMART (Self-Monitoring, Analysis, and Reporting
-Technology) data on modern hard disk drives. It allows you to inspect the
-drive's SMART data to determine its health, as well as run various tests on
-it.
+Technology) data on modern hard disk and solid-state drives. It allows you to
+inspect the drive's SMART data to determine its health, as well as run various
+tests on it.
 
 Note: GSmartControl supports ATA drives (both PATA and SATA), various USB to
-ATA bridges and drives behind 3ware RAID controllers.
+ATA bridges and drives behind some RAID controllers (selected models of
+3ware, Areca, Adaptec, Intel RAID controllers).
 
-http://gsmartcontrol.berlios.de
+http://gsmartcontrol.sourceforge.net
 
 
 
@@ -51,15 +52,15 @@ methods to predict certain kinds of failures with certain chance of success.
 Long answer: read below.
 
 Self-Monitoring, Analysis, and Reporting Technology, or SMART, is a
-monitoring system for hard drives to detect and report various indicators of
-reliability, in the hope of anticipating failures. It is implemented inside
-the drives SMART provides several ways of monitoring hard drive health. It
-may provide information about general health, various drive attributes (for
-example, number of unreadable sectors), error logs, and so on. It may also
-provide ways to instruct the drive to run various self-tests, which may report
-valuable information. It may even automatically scan the disk surface in when
-the drive is idle, and repair the defects, reallocating the data to more safe
-areas.
+monitoring system for hard drives and SSDs to detect and report various
+indicators of reliability, in the hope of anticipating failures. SMART is
+implemented inside the drives, providing several ways of monitoring the drive
+health. It may present information about general health, various drive
+attributes (for example, number of unreadable sectors), error logs, and so on.
+It may also provide ways to instruct the drive to run various self-tests,
+which may report valuable information. It may even automatically scan the disk
+surface in when the drive is idle, repairing the defects while reallocating
+the data to more safe areas.
 
 While having SMART sounds really good, there are some nuances to consider. One
 of the common pitfalls is that it may create a false sense of security. That
@@ -75,15 +76,15 @@ necessarily agree on precise attribute definitions and measurement units, the
 exact meaning of the attributes may vary greatly across different drive
 models.
 
-At present SMART is implemented individually by manufacturers, and while some
+At present SMART is implemented individually by manufacturers. While some
 aspects are standardized for compatibility, others are not. In fact, most
-manufacturers refer the users to their own health monitoring utilities, and
+manufacturers refer the users to their own health monitoring utilities and
 advice against taking SMART data seriously. Nevertheless, SMART may prove an
 effective measure against data loss.
 
 Yet another issue is that quite often the drives have bugs which prevent
 correct SMART usage. This is usually due to buggy firmware, or the
-manufacturer ignoring the standard. Luckily, smartmontools usually detects
+manufacturer ignoring the standards. Luckily, smartmontools usually detects
 these bugs and works around them.
 
 
@@ -297,7 +298,7 @@ For more information, see smartctl and smartd documentation.
 Known Issues
 
 Only ATA drives (both PATA and SATA), various USB to ATA bridges and drives
-behind 3ware RAID controllers are supported for now. The main reasons are:
+behind some RAID controllers are supported for now. The main reasons are:
 
 * We can't support drives which don't work with smartmontools. This affects
 drives which don't support SMART or don't export SMART data correctly (e.g.
@@ -307,7 +308,7 @@ some USB enclosures, RAIDs, etc...).
 Also, SCSI drives are rarely found in desktop systems and the servers rarely
 have X11 / Gtkmm running, so this is a low priority task.
 
-* I only have ATA drives, so testing would be almost impossible.
+* I only have ATA drives, so testing anything else is very difficult.
 
 Immediate Offline Tests are not supported. I haven't found a way to reliably
 monitor them yet. Besides, they run automatically anyway if Automatic Offline
