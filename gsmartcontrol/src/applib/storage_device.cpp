@@ -64,7 +64,7 @@ StorageDevice::StorageDevice(const string& dev_or_vfile, bool is_virtual)
 	// force_type_ = false;
 	is_virtual_ = is_virtual;
 	is_manually_added_ = false;
-	fully_parsed_ = false;
+	parse_status_ = parse_status_none;
 	test_is_active_ = false;
 
 	if (is_virtual) {
@@ -82,7 +82,7 @@ StorageDevice::StorageDevice(const string& dev, const string& type_arg)
 	// force_type_ = false;
 	is_virtual_ = false;
 	is_manually_added_ = false;
-	fully_parsed_ = false;
+	parse_status_ = parse_status_none;
 	test_is_active_ = false;
 
 	device_ = dev;
@@ -112,7 +112,7 @@ StorageDevice& StorageDevice::operator=(const StorageDevice& other)
 	virtual_file_ = other.virtual_file_;
 	is_manually_added_ = other.is_manually_added_;
 
-	fully_parsed_ = other.fully_parsed_;
+	parse_status_ = other.parse_status_;
 	test_is_active_ = other.test_is_active_;
 
 	detected_type_ = other.detected_type_;
@@ -137,7 +137,7 @@ void StorageDevice::clear_fetched(bool including_outputs) {
 		full_output_.clear();
 	}
 
-	fully_parsed_ = false;
+	parse_status_ = parse_status_none;
 	test_is_active_ = false;  // not sure
 
 	smart_supported_.reset();
@@ -288,6 +288,8 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 		}
 	}
 
+	set_parse_status(parse_status_info);
+
 	if (emit_signal)
 		signal_changed.emit(this);  // notify listeners
 
@@ -350,13 +352,15 @@ std::string StorageDevice::parse_data()
 		// but this one sets the StorageDevice class members, not properties.
 		this->parse_basic_data(false, false);  // don't emit signal, we're not complete yet.
 
+		// Call this after parse_basic_data(), since it sets parse status to "info".
+		this->set_parse_status(StorageDevice::parse_status_full);
+
 		// set the full properties
-		this->set_fully_parsed(true);
 		this->set_properties(ps.get_properties());  // copy to our drive, overwriting old data
 
 		signal_changed.emit(this);  // notify listeners
 
-		return "";
+		return std::string();
 	}
 
 	// Don't show any GUI warnings on parse failure - it may just be an unsupported
@@ -364,22 +368,20 @@ std::string StorageDevice::parse_data()
 	// parsed again in Info window, and we show the warnings there.
 	debug_out_warn("app", DBG_FUNC_MSG << "Cannot parse smartctl output.\n");
 
-	this->set_fully_parsed(false);
-
 	// proper parsing failed. try to at least extract info section
 	this->info_output_ = this->full_output_;  // complete output here. sometimes it's only the info section
 	if (!this->parse_basic_data(true).empty()) {  // will add some properties too. this will emit signal_changed.
 		return ps.get_error_msg();  // return full parser's error messages - they are more detailed.
 	}
 
-	return "";  // return ok if at least the info was ok.
+	return std::string();  // return ok if at least the info was ok.
 }
 
 
 
-bool StorageDevice::get_fully_parsed() const
+StorageDevice::parse_status_t StorageDevice::get_parse_status() const
 {
-	return fully_parsed_;
+	return parse_status_;
 }
 
 
@@ -825,7 +827,7 @@ std::string StorageDevice::execute_device_smartctl(const std::string& command_op
 			command_options, smartctl_ex, smartctl_output);
 
 	if (!error_msg.empty()) {
-		debug_out_warn("app", DBG_FUNC_MSG << "Error while executing smartctl binary.\n");
+		debug_out_warn("app", DBG_FUNC_MSG << "Smartctl binary did not execute cleanly.\n");
 
 		// Smartctl 5.39 cvs/svn version defaults to usb type on at least linux and windows.
 		// This means that the old SCSI identify command isn't executed by default,
@@ -844,9 +846,9 @@ std::string StorageDevice::execute_device_smartctl(const std::string& command_op
 
 
 
-void StorageDevice::set_fully_parsed(bool b)
+void StorageDevice::set_parse_status(parse_status_t value)
 {
-	fully_parsed_ = b;
+	parse_status_ = value;
 }
 
 

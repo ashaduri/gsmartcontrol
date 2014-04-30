@@ -67,6 +67,14 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		static bool order_less_than(const StorageDeviceRefPtr& a, const StorageDeviceRefPtr& b);
 
 
+		/// Statuses of various parse states
+		enum parse_status_t {
+			parse_status_full,  ///< Fully parsed
+			parse_status_info,  ///< Only info section available
+			parse_status_none,  ///< No data
+		};
+
+
 		/// Constructor
 		StorageDevice(const std::string& dev_or_vfile, bool is_virtual = false);
 
@@ -100,7 +108,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		std::string parse_data();
 
 		/// Get the "fully parsed" flag
-		bool get_fully_parsed() const;
+		parse_status_t get_parse_status() const;
 
 
 		/// Try to enable SMART.
@@ -239,7 +247,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 	protected:
 
 		/// Set the "fully parsed" flag
-		void set_fully_parsed(bool b);
+		void set_parse_status(parse_status_t value);
 
 		/// Set parsed properties
 		void set_properties(const SmartctlParser::prop_list_t& props);
@@ -258,7 +266,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		std::string virtual_file_;  ///< A file (smartctl data) the virtual device was loaded from
 		bool is_manually_added_;  ///< StorageDevice doesn't use it, but it's useful for its users.
 
-		bool fully_parsed_;  ///< "Fully parsed" flag
+		parse_status_t parse_status_;  ///< "Fully parsed" flag
 
 		/// Sort of a "lock". If true, the device is not allowed to perform any commands
 		/// except "-l selftest" and maybe "--capabilities" and "--info" (not sure).

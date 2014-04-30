@@ -111,7 +111,7 @@ std::string execute_smartctl(const std::string& device, const std::string& devic
 			+ " " + Glib::shell_quote(device));
 
 	if (!smartctl_ex->execute() || !smartctl_ex->get_error_msg().empty()) {
-		debug_out_warn("app", DBG_FUNC_MSG << "Error while executing smartctl binary.\n");
+		debug_out_warn("app", DBG_FUNC_MSG << "Smartctl binary did not execute cleanly.\n");
 
 		smartctl_output = hz::string_trim_copy(hz::string_any_to_unix_copy(smartctl_ex->get_stdout_str()));
 

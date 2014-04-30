@@ -3,8 +3,8 @@
   <requires-version lib="gtk+" version="2.8"/>
   <widget class="GtkWindow" id="gsc_main_window">
     <property name="title" translatable="yes">GSmartControl</property>
-    <property name="default_width">460</property>
-    <property name="default_height">350</property>
+    <property name="default_width">580</property>
+    <property name="default_height">400</property>
     <child>
       <widget class="GtkVBox" id="vbox1">
         <property name="visible">True</property>

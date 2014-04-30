@@ -354,7 +354,7 @@ class StorageProperty {
 		/// Constructor
 		StorageProperty()
 			: section(section_unknown), subsection(subsection_unknown),
-			value_type(value_type_unknown), warning(warning_none)
+			value_type(value_type_unknown), warning(warning_none), show_in_ui(true)
 		{
 // 			value_from_db = false;
 			value_integer = 0;  // this should nullify all union members
@@ -434,6 +434,8 @@ class StorageProperty {
 
 		warning_t warning;  ///< Warning severity for this property
 		std::string warning_reason;  // Warning reason (displayable)
+
+		bool show_in_ui;  ///< Whether to show this property in UI or not
 
 };
 

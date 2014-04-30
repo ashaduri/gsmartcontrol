@@ -139,8 +139,12 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 			if (error_type == "exit") {
 				int exit_code = 0;
 				e->get_code(exit_code);
-				// ignore everyone except these
-				if ( !((exit_code & exit_cant_parse) || (exit_code & exit_open_failed)) )
+				// Ignore everyone except this.
+				// Note that we don't treat exit_open_failed as failure because:
+				// * It may be returned from a DVD that returns product info but has no disk inside;
+				// * It may be returned from a usb flash drive with -d scsi;
+				// * exit_cant_parse is returned when opening unsupported usb drives without -d scsi.
+				if ( !(exit_code & exit_cant_parse) )
 					return;
 
 				// ignore giochannel errors - higher level errors will be triggered, and they more user-friendly.
