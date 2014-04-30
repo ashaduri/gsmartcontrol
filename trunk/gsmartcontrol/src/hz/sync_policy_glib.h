@@ -20,128 +20,243 @@ Glib-based policy.
 */
 
 
-/// Lock GStaticMutex
-#define hz_glib_static_mutex_lock(mutex) \
-	g_mutex_lock(g_static_mutex_get_mutex(mutex))
-
-/// Try locking GStaticMutex
-#define hz_glib_static_mutex_trylock(mutex) \
-	g_mutex_trylock(g_static_mutex_get_mutex(mutex))
-
-/// Unlock GStaticMutex
-#define hz_glib_static_mutex_unlock(mutex) \
-	g_mutex_unlock(g_static_mutex_get_mutex(mutex))
-
-
-
-
 namespace hz {
 
 
-/// C++ Wrapper for Glib mutex
-class MutexGlib : public hz::noncopyable {
-	public:
-		typedef GStaticMutex native_type;
-
-		static void native_lock(native_type& mutex)
-		{
-			hz_glib_static_mutex_lock(&mutex);
-		}
-
-		static bool native_trylock(native_type& mutex)
-		{
-			return hz_glib_static_mutex_trylock(&mutex);
-		}
-
-		static void native_unlock(native_type& mutex)
-		{
-			hz_glib_static_mutex_unlock(&mutex);
-		}
-
-		MutexGlib() { g_static_mutex_init(&mutex_); }
-		~MutexGlib() { g_static_mutex_free(&mutex_); }
-
-		void lock() { native_lock(mutex_); }
-		bool trylock() { return native_trylock(mutex_); }
-		void unlock() { native_unlock(mutex_); }
-
-	private:
-		GStaticMutex mutex_;  // use StaticMutex, I think it uses less heap memory
-};
+#if GLIB_CHECK_VERSION(2, 32, 0)
 
 
+	/// C++ Wrapper for Glib mutex
+	class MutexGlib : public hz::noncopyable {
+		public:
+			typedef GMutex native_type;
 
-/// C++ Wrapper for Glib recursive mutex
-class RecMutexGlib : public hz::noncopyable {
-	public:
-		typedef GStaticRecMutex native_type;
-
-		static void native_lock(native_type& mutex)
-		{
-			g_static_rec_mutex_lock(&mutex);
-		}
-
-		static bool native_trylock(native_type& mutex)
-		{
-			return g_static_rec_mutex_trylock(&mutex);
-		}
-
-		static void native_unlock(native_type& mutex)
-		{
-			g_static_rec_mutex_unlock(&mutex);
-		}
-
-		RecMutexGlib() { g_static_rec_mutex_init(&mutex_); }
-		~RecMutexGlib() { g_static_rec_mutex_free(&mutex_); }
-
-		void lock() { native_lock(mutex_); }
-		bool trylock() { return native_trylock(mutex_); }
-		void unlock() { native_unlock(mutex_); }
-
-	private:
-		GStaticRecMutex mutex_;
-};
-
-
-
-/// C++ Wrapper for Glib RW lock
-class RWMutexGlib : public hz::noncopyable {
-	public:
-		typedef GStaticRWLock native_type;
-
-		static void native_lock(native_type& mutex, bool for_write = false)
-		{
-			if (for_write) {
-				g_static_rw_lock_writer_lock(&mutex);
-			} else {
-				g_static_rw_lock_reader_lock(&mutex);
+			static void native_lock(native_type& mutex)
+			{
+				g_mutex_lock(&mutex);
 			}
-		}
 
-		static bool native_trylock(native_type& mutex, bool for_write = false)
-		{
-			return (for_write ? g_static_rw_lock_writer_trylock(&mutex) : g_static_rw_lock_reader_trylock(&mutex));
-		}
-
-		static void native_unlock(native_type& mutex, bool for_write = false)
-		{
-			if (for_write) {
-				g_static_rw_lock_writer_unlock(&mutex);
-			} else {
-				g_static_rw_lock_reader_unlock(&mutex);
+			static bool native_trylock(native_type& mutex)
+			{
+				return g_mutex_trylock(&mutex);
 			}
-		}
 
-		RWMutexGlib() { g_static_rw_lock_init(&mutex_); }
-		~RWMutexGlib() { g_static_rw_lock_free(&mutex_); }
+			static void native_unlock(native_type& mutex)
+			{
+				g_mutex_unlock(&mutex);
+			}
 
-		void lock(bool for_write = false) { native_lock(mutex_, for_write); }
-		bool trylock(bool for_write = false) { return native_trylock(mutex_, for_write); }
-		void unlock(bool for_write = false) { native_unlock(mutex_, for_write); }
+			MutexGlib() { g_mutex_init(&mutex_); }
+			~MutexGlib() { g_mutex_clear(&mutex_); }
 
-	private:
-		GStaticRWLock mutex_;
-};
+			void lock() { native_lock(mutex_); }
+			bool trylock() { return native_trylock(mutex_); }
+			void unlock() { native_unlock(mutex_); }
+
+		private:
+			GMutex mutex_;
+	};
+
+
+
+	/// C++ Wrapper for Glib recursive mutex
+	class RecMutexGlib : public hz::noncopyable {
+		public:
+			typedef GRecMutex native_type;
+
+			static void native_lock(native_type& mutex)
+			{
+				g_rec_mutex_lock(&mutex);
+			}
+
+			static bool native_trylock(native_type& mutex)
+			{
+				return g_rec_mutex_trylock(&mutex);
+			}
+
+			static void native_unlock(native_type& mutex)
+			{
+				g_rec_mutex_unlock(&mutex);
+			}
+
+			RecMutexGlib() { g_rec_mutex_init(&mutex_); }
+			~RecMutexGlib() { g_rec_mutex_clear(&mutex_); }
+
+			void lock() { native_lock(mutex_); }
+			bool trylock() { return native_trylock(mutex_); }
+			void unlock() { native_unlock(mutex_); }
+
+		private:
+			GRecMutex mutex_;
+	};
+
+
+
+	/// C++ Wrapper for Glib RW lock
+	class RWMutexGlib : public hz::noncopyable {
+		public:
+			typedef GRWLock native_type;
+
+			static void native_lock(native_type& mutex, bool for_write = false)
+			{
+				if (for_write) {
+					g_rw_lock_writer_lock(&mutex);
+				} else {
+					g_rw_lock_reader_lock(&mutex);
+				}
+			}
+
+			static bool native_trylock(native_type& mutex, bool for_write = false)
+			{
+				return (for_write ? g_rw_lock_writer_trylock(&mutex) : g_rw_lock_reader_trylock(&mutex));
+			}
+
+			static void native_unlock(native_type& mutex, bool for_write = false)
+			{
+				if (for_write) {
+					g_rw_lock_writer_unlock(&mutex);
+				} else {
+					g_rw_lock_reader_unlock(&mutex);
+				}
+			}
+
+			RWMutexGlib() { g_rw_lock_init(&mutex_); }
+			~RWMutexGlib() { g_rw_lock_clear(&mutex_); }
+
+			void lock(bool for_write = false) { native_lock(mutex_, for_write); }
+			bool trylock(bool for_write = false) { return native_trylock(mutex_, for_write); }
+			void unlock(bool for_write = false) { native_unlock(mutex_, for_write); }
+
+		private:
+			GRWLock mutex_;
+	};
+
+
+
+#else  // older glib
+
+
+	/// Lock GStaticMutex
+	#define hz_glib_static_mutex_lock(mutex) \
+		g_mutex_lock(g_static_mutex_get_mutex(mutex))
+
+	/// Try locking GStaticMutex
+	#define hz_glib_static_mutex_trylock(mutex) \
+		g_mutex_trylock(g_static_mutex_get_mutex(mutex))
+
+	/// Unlock GStaticMutex
+	#define hz_glib_static_mutex_unlock(mutex) \
+		g_mutex_unlock(g_static_mutex_get_mutex(mutex))
+
+
+
+	/// C++ Wrapper for Glib mutex
+	class MutexGlib : public hz::noncopyable {
+		public:
+			typedef GStaticMutex native_type;
+
+			static void native_lock(native_type& mutex)
+			{
+				hz_glib_static_mutex_lock(&mutex);
+			}
+
+			static bool native_trylock(native_type& mutex)
+			{
+				return hz_glib_static_mutex_trylock(&mutex);
+			}
+
+			static void native_unlock(native_type& mutex)
+			{
+				hz_glib_static_mutex_unlock(&mutex);
+			}
+
+			MutexGlib() { g_static_mutex_init(&mutex_); }
+			~MutexGlib() { g_static_mutex_free(&mutex_); }
+
+			void lock() { native_lock(mutex_); }
+			bool trylock() { return native_trylock(mutex_); }
+			void unlock() { native_unlock(mutex_); }
+
+		private:
+			GStaticMutex mutex_;  // use StaticMutex, I think it uses less heap memory
+	};
+
+
+
+	/// C++ Wrapper for Glib recursive mutex
+	class RecMutexGlib : public hz::noncopyable {
+		public:
+			typedef GStaticRecMutex native_type;
+
+			static void native_lock(native_type& mutex)
+			{
+				g_static_rec_mutex_lock(&mutex);
+			}
+
+			static bool native_trylock(native_type& mutex)
+			{
+				return g_static_rec_mutex_trylock(&mutex);
+			}
+
+			static void native_unlock(native_type& mutex)
+			{
+				g_static_rec_mutex_unlock(&mutex);
+			}
+
+			RecMutexGlib() { g_static_rec_mutex_init(&mutex_); }
+			~RecMutexGlib() { g_static_rec_mutex_free(&mutex_); }
+
+			void lock() { native_lock(mutex_); }
+			bool trylock() { return native_trylock(mutex_); }
+			void unlock() { native_unlock(mutex_); }
+
+		private:
+			GStaticRecMutex mutex_;
+	};
+
+
+
+	/// C++ Wrapper for Glib RW lock
+	class RWMutexGlib : public hz::noncopyable {
+		public:
+			typedef GStaticRWLock native_type;
+
+			static void native_lock(native_type& mutex, bool for_write = false)
+			{
+				if (for_write) {
+					g_static_rw_lock_writer_lock(&mutex);
+				} else {
+					g_static_rw_lock_reader_lock(&mutex);
+				}
+			}
+
+			static bool native_trylock(native_type& mutex, bool for_write = false)
+			{
+				return (for_write ? g_static_rw_lock_writer_trylock(&mutex) : g_static_rw_lock_reader_trylock(&mutex));
+			}
+
+			static void native_unlock(native_type& mutex, bool for_write = false)
+			{
+				if (for_write) {
+					g_static_rw_lock_writer_unlock(&mutex);
+				} else {
+					g_static_rw_lock_reader_unlock(&mutex);
+				}
+			}
+
+			RWMutexGlib() { g_static_rw_lock_init(&mutex_); }
+			~RWMutexGlib() { g_static_rw_lock_free(&mutex_); }
+
+			void lock(bool for_write = false) { native_lock(mutex_, for_write); }
+			bool trylock(bool for_write = false) { return native_trylock(mutex_, for_write); }
+			void unlock(bool for_write = false) { native_unlock(mutex_, for_write); }
+
+		private:
+			GStaticRWLock mutex_;
+	};
+
+
+#endif
 
 
 
@@ -198,7 +313,12 @@ struct SyncPolicyGlib : public SyncScopedLockProvider<SyncPolicyGlib> {
 	// Static methods
 
 	/// If glib threads are unavailable, this will abort.
+
+#if GLIB_CHECK_VERSION(2, 32, 0)
+	static bool init() { return true; }  // g_thread_init() does nothing and is deprecated since 2.32.
+#else
 	static bool init() { if (!g_thread_supported()) g_thread_init(NULL); return true; }
+#endif
 
 	static void lock(Mutex& m) { m.lock(); }
 	static bool trylock(Mutex& m) { return m.trylock(); }

@@ -412,8 +412,23 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 		p.value_type = StorageProperty::value_type_string;
 		p.value_string = p.reported_value;
 
-	} else if (app_pcre_match("/^Device Model$/mi", p.reported_name)) {
+	} else if (app_pcre_match("/^(?:Device Model|Device|Product)$/mi", p.reported_name)) {  // "Device" and "Product" are from scsi/usb
 		p.set_name(p.reported_name, "device_model", "Device Model");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/^Vendor$/mi", p.reported_name)) {  // From scsi/usb
+		p.set_name(p.reported_name, "vendor", "Vendor");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/^Revision$/mi", p.reported_name)) {  // From scsi/usb
+		p.set_name(p.reported_name, "revision", "Revision");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/^Device type$/mi", p.reported_name)) {  // From scsi/usb
+		p.set_name(p.reported_name, "device_type", "Device Type");
 		p.value_type = StorageProperty::value_type_string;
 		p.value_string = p.reported_value;
 
@@ -450,6 +465,11 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 	} else if (app_pcre_match("/^Sector Size$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "sector_size", "Sector Size");
 		p.value_type = StorageProperty::value_type_string;  // prints a single value (if it's not 512)
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/^Logical block size$/mi", p.reported_name)) {  // from scsi/usb
+		p.set_name(p.reported_name, "logical_block_size", "Logical Block Size");
+		p.value_type = StorageProperty::value_type_string;  // "512 bytes"
 		p.value_string = p.reported_value;
 
 	} else if (app_pcre_match("/^Rotation Rate$/mi", p.reported_name)) {
@@ -513,6 +533,9 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 			p.value_type = StorageProperty::value_type_bool;
 			p.value_bool = true;  // let's be optimistic - just hope that it doesn't hurt.
 		}
+
+	} else if (app_pcre_match("/^scsiMode/mi", p.reported_name)) {  // these are some debug warnings from smartctl on usb flash drives
+		p.show_in_ui = false;
 
 	} else {
 		debug_out_warn("app", DBG_FUNC_MSG << "Unknown property \"" << p.reported_name << "\"\n");

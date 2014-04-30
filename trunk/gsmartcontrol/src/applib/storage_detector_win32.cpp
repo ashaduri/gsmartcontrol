@@ -116,7 +116,7 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDeviceRefPtr>& dr
 			smartctl_def_options + "--scan-open");
 
 	if (!smartctl_ex->execute() || !smartctl_ex->get_error_msg().empty()) {
-		debug_out_warn("app", DBG_FUNC_MSG << "Error while executing smartctl binary.\n");
+		debug_out_warn("app", DBG_FUNC_MSG << "Smartctl binary did not execute cleanly.\n");
 		return smartctl_ex->get_error_msg();
 	}
 

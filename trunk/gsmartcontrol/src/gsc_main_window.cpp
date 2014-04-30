@@ -1189,8 +1189,8 @@ GscInfoWindow* GscMainWindow::show_device_info_window(StorageDeviceRefPtr drive)
 
 
 	// Virtual drives are parsed at load time.
-	// Parse non-virtual drives here.
-	if (!drive->get_is_virtual()) {
+	// Parse non-virtual, smart-supporting drives here.
+	if (!drive->get_is_virtual() && drive->get_smart_status() != StorageDevice::status_unsupported) {
 		SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
 		ex->create_running_dialog(this, "Running %s on " + drive->get_device_with_type() + "...");
 		std::string error_msg = drive->fetch_data_and_parse(ex);  // run it with GUI support
@@ -1205,7 +1205,7 @@ GscInfoWindow* GscMainWindow::show_device_info_window(StorageDeviceRefPtr drive)
 	// If the drive output wasn't fully parsed (happens with e.g. scsi and
 	// usb devices), only very basic info is available and there's no point
 	// in showing this window. - for both virtual and non-virtual.
-	if (!drive->get_fully_parsed()) {
+	if (drive->get_parse_status() == StorageDevice::parse_status_none) {
 		gsc_no_info_dialog_show("No additional information is available for this drive.",
 				"", this, false, drive->get_info_output(), "Smartctl Output", drive->get_save_filename());
 		return 0;

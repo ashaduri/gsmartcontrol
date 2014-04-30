@@ -408,6 +408,10 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		int row = 1;  // row 0 is always empty. this way it's much easier.
 
 		for (prop_iterator iter = id_props.begin(); iter != id_props.end(); ++iter) {
+			if (!iter->show_in_ui) {
+				continue;  // hide debug messages from smartctl
+			}
+
 			if (iter->generic_name == "overall_health")  // a little distance for this one
 				++row;
 
@@ -1302,7 +1306,12 @@ void GscInfoWindow::on_view_output_button_clicked()
 	GscTextWindow<SmartctlOutputInstance>* win = GscTextWindow<SmartctlOutputInstance>::create();
 	// make save visible and enable monospace font
 
-	win->set_text("Smartctl Output", this->drive->get_full_output(), true, true);
+	std::string output = this->drive->get_full_output();
+	if (output.empty()) {
+		output = this->drive->get_info_output();
+	}
+
+	win->set_text("Smartctl Output", output, true, true);
 
 	std::string filename = drive->get_save_filename();
 	if (!filename.empty())
