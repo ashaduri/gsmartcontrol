@@ -17,7 +17,7 @@
 
 
 /// Fill the property with all the information we can gather (description, etc...).
-bool storage_property_autoset_description(StorageProperty& p);
+bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::DiskType disk_type);
 
 
 /// Do some basic checks on the property and set warnings if needed.

@@ -66,14 +66,20 @@ namespace {
 
 
 
+SmartctlParser::SmartctlParser()
+		: disk_type_(StorageAttribute::DiskAny)
+{ }
+
 
 
 // Parse full "smartctl -a" output
-bool SmartctlParser::parse_full(const std::string& full)
+bool SmartctlParser::parse_full(const std::string& full, StorageAttribute::DiskType disk_type)
 {
 	this->clear();  // clear previous data
 
 	this->set_data_full(full);
+
+	disk_type_ = disk_type;
 
 
 	// -------------------- Fix the output so it doesn't interfere with proper parsing
@@ -1652,7 +1658,7 @@ bool SmartctlParser::parse_section_data_subsection_selective_selftest_log(const 
 // Yes, there's no place for this in the Parser, but whatever...
 void SmartctlParser::add_property(StorageProperty p)
 {
-	storage_property_autoset_description(p);
+	storage_property_autoset_description(p, disk_type_);
 	storage_property_autoset_warning(p);
 	storage_property_autoset_warning_descr(p);  // append warning to description
 

@@ -213,8 +213,9 @@ std::string SelfTest::update(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 	if (!error_msg.empty())  // checks for empty output too
 		return error_msg;
 
+	StorageAttribute::DiskType disk_type = drive_->get_is_hdd() ? StorageAttribute::DiskHDD : StorageAttribute::DiskSSD;
 	SmartctlParser ps;
-	if (!ps.parse_full(output)) {  // try to parse it
+	if (!ps.parse_full(output, disk_type)) {  // try to parse it
 		return ps.get_error_msg();
 	}
 

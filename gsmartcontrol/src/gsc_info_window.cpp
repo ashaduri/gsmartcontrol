@@ -1356,7 +1356,11 @@ void GscInfoWindow::on_save_info_button_clicked()
 
 			std::string file = dialog.get_filename();
 			hz::File f(file);
-			if (!f.put_contents(this->drive->get_full_output())) {  // this will send to debug_ too.
+			std::string data = this->drive->get_full_output();
+			if (data.empty()) {
+				data = this->drive->get_info_output();
+			}
+			if (!f.put_contents(data)) {  // this will send to debug_ too.
 				gui_show_error_dialog("Cannot save SMART data to file", f.get_error_utf8(), this);
 			}
 			break;

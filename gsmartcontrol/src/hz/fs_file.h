@@ -533,7 +533,7 @@ inline bool File::put_contents(const unsigned char* data, file_size_t data_size)
 	}
 
 	// write the remainder
-	if (!write_error && std::fwrite(data + data_size - left_to_write, static_cast<std::size_t>(left_to_write), 1, f) != 1)
+	if (!write_error && left_to_write > 0 && std::fwrite(data + data_size - left_to_write, static_cast<std::size_t>(left_to_write), 1, f) != 1)
 		write_error = true;
 
 	if (write_error) {

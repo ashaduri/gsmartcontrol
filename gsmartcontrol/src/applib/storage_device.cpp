@@ -269,6 +269,13 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 		serial_number_ = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(serial), ' ');
 	}
 
+	std::string rpm_str;
+	if (app_pcre_match("/^Rotation Rate:[ \\t]*(.*)$/mi", info_output_, &rpm_str)) {
+		int rpm = 0;
+		hz::string_is_numeric(rpm_str, rpm, false);
+		hdd_ = rpm > 0;
+	}
+
 
 	// Note: this property is present since 5.33.
 	std::string size;
@@ -282,8 +289,12 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	// Note that this may try to parse data the second time (it may already have
 	// been parsed by parse_data() which failed at it).
 	if (do_set_properties) {
+		StorageAttribute::DiskType disk_type = StorageAttribute::DiskAny;
+		if (hdd_.defined()) {
+			disk_type = hdd_.value() ? StorageAttribute::DiskHDD : StorageAttribute::DiskSSD;
+		}
 		SmartctlParser ps;
-		if (ps.parse_full(this->info_output_)) {  // try to parse it
+		if (ps.parse_full(this->info_output_, disk_type)) {  // try to parse it
 			this->set_properties(ps.get_properties());  // copy to our drive, overwriting old data
 		}
 	}
@@ -341,8 +352,12 @@ std::string StorageDevice::parse_data()
 {
 	this->clear_fetched(false);  // clear everything fetched before, except outputs
 
+	StorageAttribute::DiskType disk_type = StorageAttribute::DiskAny;
+	if (hdd_.defined()) {
+		disk_type = hdd_.value() ? StorageAttribute::DiskHDD : StorageAttribute::DiskSSD;
+	}
 	SmartctlParser ps;
-	if (ps.parse_full(this->full_output_)) {  // try to parse it (parse only, set the properties after basic parsing).
+	if (ps.parse_full(this->full_output_, disk_type)) {  // try to parse it (parse only, set the properties after basic parsing).
 
 		// refresh basic info too
 		this->info_output_ = ps.get_data_full();  // put data including version information
@@ -699,6 +714,13 @@ string StorageDevice::get_family_name() const
 string StorageDevice::get_serial_number() const
 {
 	return (serial_number_.defined() ? serial_number_.value() : "");
+}
+
+
+
+bool StorageDevice::get_is_hdd() const
+{
+	return hdd_.defined() ? hdd_.value() : false;
 }
 
 
