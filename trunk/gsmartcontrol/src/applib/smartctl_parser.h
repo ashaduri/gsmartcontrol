@@ -30,8 +30,12 @@ class SmartctlParser {
 		typedef std::vector<StorageProperty> prop_list_t;
 
 
+		/// Constructor
+		SmartctlParser();
+
+
 		/// Parse full "smartctl -a" output
-		bool parse_full(const std::string& s);
+		bool parse_full(const std::string& s, StorageAttribute::DiskType disk_type);
 
 
 		/// Supply any output of smartctl here, the smartctl version will be retrieved.
@@ -165,6 +169,7 @@ class SmartctlParser {
 
 		std::string error_msg_;  ///< This will be filled with some displayable message on error
 
+		StorageAttribute::DiskType disk_type_;  ///< Disk type (HDD, SSD)
 
 };
 

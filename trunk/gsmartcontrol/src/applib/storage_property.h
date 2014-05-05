@@ -52,6 +52,13 @@ std::ostream& operator<< (std::ostream& os, const StorageCapability& p);
 class StorageAttribute {
 	public:
 
+		/// Disk type the attribute may match
+		enum DiskType {
+			DiskAny,  ///< Any disk type
+			DiskHDD,  ///< HDD (rotational) only
+			DiskSSD  ///< SSD only
+		};
+
 		/// Attribute pre-failure / old-age type
 		enum attr_t {
 			attr_type_unknown,  ///< Unknown

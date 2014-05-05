@@ -4,8 +4,8 @@
   <widget class="GtkWindow" id="gsc_info_window">
     <property name="title" translatable="yes">Device Information - GSmartControl</property>
     <property name="window_position">GTK_WIN_POS_CENTER_ON_PARENT</property>
-    <property name="default_width">700</property>
-    <property name="default_height">500</property>
+    <property name="default_width">850</property>
+    <property name="default_height">600</property>
     <property name="destroy_with_parent">True</property>
     <child>
       <widget class="GtkVBox" id="vbox1">

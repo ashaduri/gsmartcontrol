@@ -197,6 +197,9 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		/// \return empty string if not found
 		std::string get_serial_number() const;
 
+		/// Check whether this drive is a rotational HDD.
+		bool get_is_hdd() const;
+
 
 		/// Set "info" output to parse
 		void set_info_output(const std::string& s);
@@ -281,6 +284,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		hz::OptionalValue<std::string> family_name_;  ///< Family name
 		hz::OptionalValue<std::string> serial_number_;  ///< Serial number
 		hz::OptionalValue<std::string> size_;  ///< Formatted size
+		hz::OptionalValue<bool> hdd_;  ///< Whether it's a rotational drive (HDD) or something else (SSD, flash, etc...)
 		mutable hz::OptionalValue<StorageProperty> health_property_;  ///< Cached health property.
 
 		SmartctlParser::prop_list_t properties_;  ///< Smart properties. Detected through full output.
