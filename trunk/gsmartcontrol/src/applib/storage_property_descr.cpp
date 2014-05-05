@@ -532,7 +532,7 @@ namespace {
 				add(209, StorageAttribute::DiskSSD, "Remaining_Lifetime_Perc", "Remaining Lifetime %", "ssd_life_left",
 						"Remaining drive life in % (usually by erase count).");
 				// Vibration During Write (custom). wikipedia says 211, but it's wrong. (description?)
-				add(210, "", "Vibration During Write", "",
+				add(210, StorageAttribute::DiskHDD, "", "Vibration During Write", "",
 						"Vibration encountered during write operations.");
 				// OCZ SSD (non-default)
 				add(210, StorageAttribute::DiskSSD, "SATA_CRC_Error_Count", "SATA CRC Error Count", "",
