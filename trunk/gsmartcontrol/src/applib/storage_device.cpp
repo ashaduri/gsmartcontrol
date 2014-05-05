@@ -299,7 +299,8 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 		}
 	}
 
-	set_parse_status(parse_status_info);
+	// A model field (and its aliases) is a good indication whether there was any data or not
+	set_parse_status(model_name_.defined() ? parse_status_info : parse_status_none);
 
 	if (emit_signal)
 		signal_changed.emit(this);  // notify listeners
