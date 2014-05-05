@@ -36,6 +36,60 @@ extern "C" {
 #endif
 
 
+
+#if GLIB_CHECK_VERSION(2, 32, 0)
+
+
+/// Glib-based TLS policy
+class TlsPolicyGlib {
+	public:
+
+		TlsPolicyGlib(tls_policy_glib_cleanup_func_t native_cleanup) : native_cleanup_(native_cleanup)
+		{
+			key_ = G_PRIVATE_INIT(native_cleanup_);
+		}
+
+#if defined HAVE_CXX_EXTERN_C_OVERLOAD && HAVE_CXX_EXTERN_C_OVERLOAD
+		TlsPolicyGlib(tls_policy_glib_cleanup_func_cpp_t native_cleanup) : native_cleanup_(native_cleanup)
+		{
+			key_ = G_PRIVATE_INIT(native_cleanup_);
+		}
+#endif
+
+		~TlsPolicyGlib()
+		{
+			// Nothing
+		}
+
+		void* get() const
+		{
+			return g_private_get(&key_);
+		}
+
+		void reset(void* p)
+		{
+			// this will call the cleanup function for the previous pointer
+			g_private_replace(&key_, static_cast<gpointer>(p));
+		}
+
+
+		static const bool cleanup_supported = true;
+
+	private:
+
+		mutable GPrivate key_;
+		tls_policy_glib_cleanup_func_t native_cleanup_;  ///< may be NULL
+
+		TlsPolicyGlib(const TlsPolicyGlib&);
+		TlsPolicyGlib& operator= (const TlsPolicyGlib& from);
+};
+
+
+
+#else  // old glib
+
+
+
 /// Glib-based TLS policy
 class TlsPolicyGlib {
 	public:
@@ -85,7 +139,7 @@ class TlsPolicyGlib {
 
 
 
-
+#endif
 
 
 
