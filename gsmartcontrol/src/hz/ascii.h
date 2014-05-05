@@ -76,7 +76,14 @@
 
 #include "type_properties.h"  // type_is_*, type_make_unsigned
 
-
+// Disable silly VS warnings
+#ifdef _MSC_VER
+	#pragma warning(push)
+	#pragma warning(disable: 4800)  // 'int' : forcing value to bool 'true' or 'false' (performance warning)
+	#pragma warning(disable: 4804)  // unsafe use of type 'bool' in operation
+	#pragma warning(disable: 4146)  // unary minus operator applied to unsigned type, result still unsigned
+	#pragma warning(disable: 6328)  // 'const char' passed as parameter '1' when 'unsigned char' is required in call to 'isspace'
+#endif
 
 // Locale-independent functions for ascii manipulation.
 
@@ -285,7 +292,7 @@ namespace internal {
 			// I'm not sure if a flag should be raised at all.
 			// If anyone knows how to do it portably and reliably, please tell me.
 
-			return val;
+			return float(val);
 #endif
 
 
@@ -373,7 +380,7 @@ T ascii_strtof(const char* nptr, char** endptr)
 	ASSERT(locdata);
 	const char* radix = locdata->decimal_point;
 	ASSERT(radix);
-	std::size_t radix_len = std::strlen(radix);
+	std::size_t radix_len = (radix ? std::strlen(radix) : 0U);
 	ASSERT(radix_len);
 
 	// Check if the locale resembles Classic.
@@ -525,6 +532,9 @@ T ascii_strton(const char* nptr, char** endptr, int base = 0)
 }  // ns
 
 
+#ifdef _MSC_VER
+	#pragma warning(pop)
+#endif
 
 
 #endif

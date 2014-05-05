@@ -1,8 +1,8 @@
 /**************************************************************************
- Copyright:
-      (C) 1999 - 2010  Beman Dawes
-      (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
- License: See LICENSE_boost_1_0.txt file
+Copyright:
+	(C) 1999 - 2010  Beman Dawes
+	(C) 2008 - 2013  Alexander Shaduri <ashaduri 'at' gmail.com>
+License: See BOOST_LICENSE_1_0.txt file
 ***************************************************************************/
 /// \file
 /// \author Dave Abrahams

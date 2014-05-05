@@ -19,6 +19,7 @@
 
 #ifdef _WIN32
 	#include <direct.h>  // _wgetcwd, _wchdir
+	#include <string.h>  // free
 #else
 	#include <unistd.h>  // getcwd, chdir
 #endif
@@ -132,15 +133,14 @@ inline std::string get_current_dir()
 	std::string dir;
 
 #ifdef _WIN32
-	std::size_t buf_size = MAX_PATH;
-	wchar_t* buf = new wchar_t[buf_size];  // not sure if it's really max, so increase it on demand
-
-	while (_wgetcwd(buf, static_cast<int>(buf_size)) == 0) {
-		delete[] buf;
-		buf = new wchar_t[buf_size *= 2];
+	wchar_t* buf = 0;
+	if (!(buf = _wgetcwd(NULL, 0))) {  // allocates buf with malloc()
+		return std::string();  // error
 	}
 
 	dir = hz::win32_utf16_to_utf8_string(buf);
+
+	free(buf);
 
 #else
 	std::size_t buf_size = 1024;
@@ -152,9 +152,9 @@ inline std::string get_current_dir()
 	}
 
 	dir = buf;
-#endif
 
 	delete[] buf;
+#endif
 
 	return dir;
 }

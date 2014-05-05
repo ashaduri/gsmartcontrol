@@ -25,7 +25,7 @@
 
 #include "type_properties.h"  // type_is_*
 #include "type_categories.h"  // type_check_category
-#include "static_assert.h"  // HZ_STATIC_ASSERT
+// #include "static_assert.h"  // HZ_STATIC_ASSERT
 #include "ascii.h"  // ascii_*
 
 
@@ -57,12 +57,22 @@ namespace hz {
 	bool string_is_numeric(const std::string& s, T& number, bool strict = true);
 
 
+	/// A convenience string_is_numeric wrapper.
+	/// Note that in strict mode, T() is returned for invalid values.
+	template<typename T> inline
+	T string_to_number(const std::string& s, bool strict, int base_or_boolalpha);
+
+	/// Short version with default base. (Needed because default base is different for bool and int).
+	template<typename T> inline
+	T string_to_number(const std::string& s, bool strict = true);
+
+
 	/// Convert numeric value to string. alpha_or_base_or_precision means:
 	/// for bool, 0 means 1/0, 1 means true/false;
 	/// for int family (including char), it's the base to format in (8, 10, 16 are definitely supported);
 	/// for float family, it controls the number of digits after comma.
 	template<typename T> inline
-	std::string number_to_string(T number, int alpha_or_base_or_precision);
+	std::string number_to_string(T number, int alpha_or_base_or_precision, bool fixed_prec = false);
 
 	/// Short version with default base / precision.
 	template<typename T> inline
@@ -79,6 +89,26 @@ namespace hz {
 
 
 namespace hz {
+
+
+
+template<typename T> inline
+T string_to_number(const std::string& s, bool strict, int base_or_boolalpha)
+{
+	T value = T();
+	hz::string_is_numeric(s, value, strict, base_or_boolalpha);
+	return value;
+}
+
+
+
+template<typename T> inline
+T string_to_number(const std::string& s, bool strict)
+{
+	T value = T();
+	hz::string_is_numeric(s, value, strict);
+	return value;
+}
 
 
 
@@ -290,9 +320,9 @@ namespace internal {
 
 // public function with 2 parameters
 template<typename T> inline
-std::string number_to_string(T number, int boolalpha_or_base_or_precision)
+std::string number_to_string(T number, int boolalpha_or_base_or_precision, bool fixed_prec)
 {
-	return internal::number_to_string_impl<T>::func(number, boolalpha_or_base_or_precision, true);
+	return internal::number_to_string_impl<T>::func(number, boolalpha_or_base_or_precision, fixed_prec);
 }
 
 

@@ -24,6 +24,7 @@
 	#include <glib.h>
 #else
 	#include <cstdlib>  // for stdlib.h, std::getenv
+	#include <cstring>  // std::malloc
 	#include <stdlib.h>  // setenv, unsetenv, putenv
 #endif
 
@@ -166,7 +167,10 @@ inline bool env_set_value(const std::string& name, const std::string& value, boo
 	if (!overwrite && env_get_value(name, oldvalue)) {
 		return true;
 	}
-	return putenv((name + "=" + value).c_str()) == 0;
+	std::string putenv_arg = name + "=" + value;
+	char* buf = (char*)std::malloc(putenv_arg.size() + 1);
+	std::memcpy(buf, putenv_arg.c_str(), putenv_arg.size() + 1);
+	return putenv(buf) == 0;  // returns 0 on success. Potentially leaks, but it is the way putenv() behaves.
 #endif
 
 }
@@ -192,12 +196,15 @@ inline bool env_unset_value(const std::string& name)
 	g_unsetenv(name.c_str());  // returns void. may not be thread-safe!
 	return true;
 
-#elif !(defined HAVE_SETENV && HAVE_SETENV)
+#elif defined HAVE_SETENV && HAVE_SETENV
 	// unsetenv returns -1 on error with errno EINVAL set (invalid char in name).
 	return unsetenv(name.c_str()) == 0;
 
 #else
-	return putenv((name + "=").c_str()) == 0;  // returns 0 on success
+	std::string putenv_arg = name + "=";
+	char* buf = (char*)std::malloc(putenv_arg.size() + 1);
+	std::memcpy(buf, putenv_arg.c_str(), putenv_arg.size() + 1);
+	return putenv(buf) == 0;  // returns 0 on success. Potentially leaks, but it is the way putenv() behaves.
 #endif
 
 }

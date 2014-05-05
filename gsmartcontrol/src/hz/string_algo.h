@@ -112,6 +112,45 @@ void string_split(const std::string& str, const std::string& delimiter,
 }
 
 
+/// Split a string into components by any of the characters (delimiters), appending the
+/// components (without delimiters) to container "append_here".
+/// If skip_empty is true, then empty components will be omitted.
+/// If "limit" is more than 0, only put a maximum of "limit" number of
+/// elements into vector, with the last one containing the rest of the string.
+template<class Container> inline
+void string_split_by_chars(const std::string& str, const std::string& delimiter_chars,
+		Container& append_here, bool skip_empty = false, typename Container::difference_type limit = 0)
+{
+	std::string::size_type curr = 0, last = 0;
+	std::string::size_type end = str.size();
+	typename Container::difference_type num = 0;  // number inserted
+
+	while (true) {
+		if (last >= end) {  // last is past the end
+			if (!skip_empty)  // no need to check num here
+				append_here.push_back(std::string());
+			break;
+		}
+
+		curr = str.find_first_of(delimiter_chars, last);
+
+		if (!skip_empty || (curr != last)) {
+			if (++num == limit) {
+				append_here.push_back(str.substr(last, std::string::npos));
+				break;
+			} else {
+				append_here.push_back(str.substr(last, (curr == std::string::npos ? curr : (curr - last))));
+			}
+		}
+
+		if (curr == std::string::npos)
+			break;
+
+		last = curr + 1;
+	}
+}
+
+
 
 
 // --------------------------------------------- Join
@@ -424,7 +463,7 @@ inline std::string::size_type string_replace(std::string& s,
 
 /// Replace from with to inside s, not modifying s, returning the changed string. char version.
 inline std::string string_replace_copy(const std::string& s,
-		char from, char to, 	int max_replacements = -1)
+		char from, char to, int max_replacements = -1)
 {
 	std::string ret(s);
 	string_replace(ret, from, to);
@@ -639,28 +678,90 @@ std::string string_replace_array_copy(const std::string& s,
 
 
 
-// --------------------------------------------- Utility
+// --------------------------------------------- Matching
 
 
-/// Auto-detect and convert mac/dos/unix newline formats in s (modifying s) to unix format.
-/// Returns number of newline replacements made.
-inline std::string::size_type string_any_to_unix(std::string& s)
+
+/// Check whether a string begins with another string
+inline bool string_begins_with(const std::string& str, const std::string& substr)
 {
-	std::string::size_type n = hz::string_replace(s, "\r\n", "\n");  // dos
-	n += hz::string_replace(s, '\r', '\n');  // mac
-	return n;
+	if (str.length() >= substr.length()) {
+		return (str.compare(0, substr.length(), substr) == 0);
+	}
+	return false;
 }
 
 
 
-/// Replace from_chars[0] with to_chars[0], from_chars[1] with to_chars[1], etc... in s,
-/// not modifying s, returning the changed string.
-/// from_chars.size() must be equal to to_chars.size().
-/// Note: This is a multi-pass algorithm (there are from_chars.size() iterations).
+/// Check whether a string begins with a character
+inline bool string_begins_with(const std::string& str, char ch)
+{
+	return !str.empty() && str[0] == ch;
+}
+
+
+
+/// Check whether a string ends with another string
+inline bool string_ends_with(const std::string& str, const std::string& substr)
+{
+	if (str.length() >= substr.length()) {
+		return (str.compare(str.length() - substr.length(), substr.length(), substr) == 0);
+	}
+	return false;
+}
+
+
+
+/// Check whether a string ends with a character
+inline bool string_ends_with(const std::string& str, char ch)
+{
+	return !str.empty() && str[str.size() - 1] == ch;
+}
+
+
+
+
+// --------------------------------------------- Utility
+
+
+/// Auto-detect and convert mac/dos/unix newline formats in s (modifying s) to unix format.
+/// Returns true if \c s was changed.
+inline bool string_any_to_unix(std::string& s)
+{
+	std::string::size_type n = hz::string_replace(s, "\r\n", "\n");  // dos
+	n += hz::string_replace(s, '\r', '\n');  // mac
+	return bool(n);
+}
+
+
+
+/// Auto-detect and convert mac/dos/unix newline formats in s to unix format.
+/// Returns the result string.
 inline std::string string_any_to_unix_copy(const std::string& s)
 {
 	std::string ret(s);
 	string_any_to_unix(ret);
+	return ret;
+}
+
+
+/// Auto-detect and convert mac/dos/unix newline formats in s (modifying s) to dos format.
+/// Returns true if \c s was changed.
+inline bool string_any_to_dos(std::string& s)
+{
+	bool changed = string_any_to_unix(s);
+	std::string::size_type n = hz::string_replace(s, "\n", "\r\n");  // dos
+	return bool(n) || changed;  // may not really work
+}
+
+
+
+/// Auto-detect and convert mac/dos/unix newline formats in s to dos format.
+/// Returns the result string.
+inline std::string string_any_to_dos_copy(const std::string& s)
+{
+	std::string ret(s);
+	string_any_to_dos(ret);
 	return ret;
 }
 
@@ -693,7 +794,7 @@ inline std::string::size_type string_to_upper(std::string& s)
 {
 	const std::string::size_type len = s.size();
 	for(std::string::size_type i = 0; i != len; ++i) {
-		s[i] = static_cast<char>(std::tolower(s[i]));
+		s[i] = static_cast<char>(std::toupper(s[i]));
 	}
 	return len;
 }

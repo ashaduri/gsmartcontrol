@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2013  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
 /// \file
@@ -616,12 +616,9 @@ inline bool File::get_size(file_size_t& put_here, bool use_read)
 	}
 
 	const std::size_t buf_size = 32*1024;  // 32K block devices will be happy
-	char buf[buf_size];
+	char buf[buf_size] = {0};
 
-	// read until the end
-	while (std::fread(buf, buf_size, 1, f) == 1) {
-		// nothing
-	}
+	(void)std::fread(buf, buf_size, 1, f);
 
 	if (std::ferror(f)) {
 		set_error(HZ__("Unable to read file \"/path1/\": /errno/."), errno, this->get_path());
@@ -770,7 +767,7 @@ inline bool File::copy(const std::string& to)
 		std::fclose(fsrc);
 		std::fclose(fdest);
 #ifdef _WIN32
-		_wunlink(FsPath(to).get_utf16());
+		(void)_wunlink(FsPath(to).get_utf16());
 #else
 		unlink(to.c_str());
 #endif
@@ -781,7 +778,7 @@ inline bool File::copy(const std::string& to)
 	if (std::fclose(fsrc) == -1) {
 		std::fclose(fdest);
 #ifdef _WIN32
-		_wunlink(FsPath(to).get_utf16());
+		(void)_wunlink(FsPath(to).get_utf16());
 #else
 		unlink(to.c_str());
 #endif
@@ -793,7 +790,7 @@ inline bool File::copy(const std::string& to)
 
 	if (std::fclose(fdest) == -1) {  // the OS may delay writing until this point (or even further).
 #ifdef _WIN32
-		_wunlink(FsPath(to).get_utf16());
+		(void)_wunlink(FsPath(to).get_utf16());
 #else
 		unlink(to.c_str());
 #endif
@@ -806,7 +803,7 @@ inline bool File::copy(const std::string& to)
 	// copy permissions. don't check for errors here - they are harmless.
 	if (stat_result == 0) {
 #ifdef _WIN32
-		_wchmod(FsPath(to).get_utf16(), st.st_mode & (_S_IREAD | _S_IWRITE));  // it won't accept anything else.
+		(void)_wchmod(FsPath(to).get_utf16(), st.st_mode & (_S_IREAD | _S_IWRITE));  // it won't accept anything else.
 #else
 		chmod(to.c_str(), st.st_mode & 07777);  // don't transfer unneeded stuff (like "is directory").
 #endif
