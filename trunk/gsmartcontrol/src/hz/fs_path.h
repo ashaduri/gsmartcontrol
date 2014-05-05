@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2013  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
 /// \file
@@ -24,7 +24,7 @@
 
 #ifdef _WIN32
 	#include <io.h>  // _waccess*(), _wstat(), _wunlink(), _wrmdir(), _wmkdir()
-	#include <utime.h>  // _wutime()
+	#include <sys/utime.h>  // _wutime()
 #else
 	#include <cstddef>  // std::size_t
 	#include <unistd.h>  // access(), stat(), unlink(), readlink()
@@ -166,7 +166,7 @@ class FsPath : public FsPathHolder, public FsErrorHolder {
 		/// mkdir() mode type.
 
 #ifdef _WIN32
-		typedef _mode_t mode_type;  // they have some kind of unhealthy love for leading underscores.
+		typedef int mode_type;
 #else
 		typedef mode_t mode_type;
 #endif
@@ -209,6 +209,9 @@ class FsPath : public FsPathHolder, public FsErrorHolder {
 		/// The current object is also modified.
 		inline FsPath& compress();
 
+		/// Make the path absolute (if it's not already) by prepending \c base_path.
+		inline FsPath& make_absolute(const std::string& base_path);
+
 
 		/// Get the path truncated by 1 level, e.g. /usr/local/ -> /usr.
 		inline std::string get_dirname() const;
@@ -223,8 +226,17 @@ class FsPath : public FsPathHolder, public FsErrorHolder {
 		/// Check if the path corresponds to root (drive / share in win32).
 		inline bool is_root() const;
 
-		/// Get an extension of the last component.
+		/// Get an extension of the last component, e.g. /local/archive.tar.gz -> gz
 		inline std::string get_extension() const;
+
+		/// Get a full extension of the last component, e.g. /local/archive.tar.gz -> tar.gz
+		inline std::string get_full_extension() const;
+
+		/// Get the last component without extension, e.g. /local/archive.tar.gz -> archive.tar
+		inline std::string get_noext_basename() const;
+
+		/// Get the last component without extension, e.g. /local/archive.tar.gz -> archive
+		inline std::string get_noext_min_basename() const;
 
 		/// Check if the path is absolute (only for native paths). returns 0 if it's not.
 		/// the returned value is a position past the root component (e.g. 3 for C:\\temp).
@@ -373,6 +385,16 @@ inline FsPath& FsPath::compress()
 
 
 
+FsPath& FsPath::make_absolute(const std::string& base_path)
+{
+	if (!is_absolute()) {
+		set_path(FsPath(base_path).append(get_path()).get_path());
+	}
+	return compress();
+}
+
+
+
 inline std::string FsPath::get_dirname() const
 {
 	return path_get_dirname(this->get_path());
@@ -409,6 +431,35 @@ inline std::string FsPath::get_extension() const
 	if (pos != std::string::npos)
 		return base.substr(pos + 1);
 	return std::string();
+}
+
+
+
+inline std::string FsPath::get_full_extension() const
+{
+	std::string base = get_basename();
+	std::string::size_type pos = base.find('.');
+	if (pos != std::string::npos)
+		return base.substr(pos + 1);
+	return std::string();
+}
+
+
+
+std::string FsPath::get_noext_basename() const
+{
+	std::string base = get_basename();
+	std::string::size_type pos = base.rfind('.');
+	return base.substr(0, pos);
+}
+
+
+
+std::string FsPath::get_noext_min_basename() const
+{
+	std::string base = get_basename();
+	std::string::size_type pos = base.find('.');
+	return base.substr(0, pos);
 }
 
 
@@ -544,9 +595,9 @@ inline bool FsPath::exists()
 	}
 
 #if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
-	if (_waccess_s(this->get_utf16(), 00) == -1)  // msvc uses integers instead (F_OK == 00 anyway).
+	if (_waccess_s(this->get_utf16(), 00) != 0)  // msvc uses integers instead (F_OK == 00 anyway).
 #elif defined _WIN32
-	if (_waccess(this->get_utf16(), 00) == -1)  // msvc uses integers instead (F_OK == 00 anyway).
+	if (_waccess(this->get_utf16(), 00) != 0)  // msvc uses integers instead (F_OK == 00 anyway).
 #else
 	if (access(this->c_str(), F_OK) == -1)
 #endif

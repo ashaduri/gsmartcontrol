@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2013  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
 /// \file
@@ -27,6 +27,9 @@
 #include "i18n.h"  // HZ__
 #include "string_algo.h"  // string_replace
 
+#ifdef _WIN32
+	#include "win32_tools.h"
+#endif
 
 
 namespace hz {

@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2013  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
 /// \file
@@ -345,6 +345,13 @@ HZ library internal implementation helpers.
 #endif
 
 
+#if !defined DISABLE_STRTOF && defined _MSC_VER
+	#define DISABLE_STRTOF 1
+#endif
+
+#if !defined DISABLE_STRTOLD && defined _MSC_VER
+	#define DISABLE_STRTOLD 1
+#endif
 
 
 

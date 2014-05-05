@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2008 - 2013  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
 /// \file
@@ -38,6 +38,7 @@
 	#elif defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
 		#include <cstring>  // for string.h
 		#include <string.h>  // strerror_s
+		#include "win32_tools.h"
 	#else
 		#include <cstring>  // std::strerror
 	#endif
@@ -108,11 +109,12 @@ inline std::string errno_string(int errno_value)
 		}
 
 	#elif defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
-		char msg_buf[128] = {0};  // MS docs don't say exactly, but it's somewhere in 80-100 range.
-		if (strerror_s(msg_buf, 128, errno_value) != 0) {  // always 0-terminated
+		wchar_t msg_buf[128] = {0};  // MS docs don't say exactly, but it's somewhere in 80-100 range.
+		if (_wcserror_s(msg_buf, 128, errno_value) != 0) {  // always 0-terminated
 			portable_snprintf(buf, buf_size, "Error while getting description for errno: %d.", errno_value);
 			msg = buf;
 		}
+		msg = hz::win32_utf16_to_utf8_string(msg_buf);
 
 	#else  // win32 and non-gnu/posix systems.
 		// win32 has thread-safe strerror().
