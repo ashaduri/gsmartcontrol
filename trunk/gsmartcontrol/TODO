@@ -33,6 +33,7 @@ Don't rely on smartctl return code (2), parse the output instead.
 
 Update to latest drivedb.
 
+Write and install appdata file - http://people.freedesktop.org/~hughsient/appdata/
 
 Test Areca windows detection by installing CLI, then replacing it with a dummy
 	program that prints something (with enclosures and without).
