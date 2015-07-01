@@ -238,7 +238,7 @@ inline std::string format_date(const std::string& format, std::time_t timet, boo
 {
 #if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
 	struct std::tm ltm;
-	if (localtime_s(&ltm, &timet) == 0)  // shut up msvc (it thinks std::localtime() is unsafe)
+	if (localtime_s(&ltm, &timet) != 0)  // shut up msvc (it thinks std::localtime() is unsafe)
 		return std::string();
 	const struct std::tm* ltmp = &ltm;
 
