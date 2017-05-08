@@ -601,6 +601,7 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 
 	debug_out_info("app", "Starting sequential scan of \\\\.\\PhysicalDriveN devices...\n");
 
+	int num_failed = 0;
 	for (int drive_num = 0; ; ++drive_num) {
 
 		// If the drive was already encountered in --scan-open (with a port number), skip it.
@@ -617,10 +618,17 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 		HANDLE h = CreateFileA(phys_name.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
 				NULL, OPEN_EXISTING, 0, NULL);
 
-		// The numbers seem to be consecutive, so break on first invalid.
+		// The numbers are usually consecutive, but sometimes there are holes when
+		// removable devices are removed. Try 3 extra drives just in case.
 		if (h == INVALID_HANDLE_VALUE) {
-			debug_out_dump("app", "Could not open \"" << phys_name << "\", stopping sequential scan.\n");
-			break;
+			++num_failed;
+			debug_out_dump("app", "Could not open \"" << phys_name << "\".\n");
+			if (num_failed >= 3) {
+				debug_out_dump("app", "Stopping sequential scan.\n");
+				break;
+			} else {
+				continue;
+			}
 		}
 		CloseHandle(h);
 

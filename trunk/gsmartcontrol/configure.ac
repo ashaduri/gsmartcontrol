@@ -176,7 +176,7 @@ AC_ARG_ENABLE(abort-if-no-gtkmm, AS_HELP_STRING([--disable-abort-if-no-gtkmm],
 AC_MSG_NOTICE([Abort if no gtkmm is found: $app_cv_abort_if_no_gtkmm])
 
 # iconview is available since 2.6.0. gthread is not enabled by default.
-pkg_modules="gtkmm-2.4 >= 2.24.0"  # gthread-2.0 >= 2.0
+pkg_modules="gtkmm-2.4 >= 2.6.0"  # gthread-2.0 >= 2.0
 
 # define ENABLE_GLIB and friends if it's found.
 gtkmm_found="no"
