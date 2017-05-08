@@ -28,8 +28,15 @@ Bugs / patches:
 
 TODO:
 
+Fix using multiple -d options (e.g. -d scsi) when there are -d options (e.g.
+-d sat) in Preferences. This affects the program only before restart.
+
+When scanning pd* files, scan n+1 drive ahead if n was not found (this helps with removed devices).
+
 Don't rely on smartctl return code (2), parse the output instead.
 	This will allow us to show the Info page.
+
+Don't sort drives like this: Pd0,pd1,pd10,pd11,pd2,pd3,pd4,pd5,pd6,pd8,pd9
 
 Update to latest drivedb.
 
@@ -43,6 +50,9 @@ Fix not being able to quit while executing commands.
 	https://developer.gnome.org/gtk2/2.24/gtk2-General.html#gtk-main-quit
 	https://www.google.com/search?num=50&hl=en&safe=off&client=opera&hs=Dr5&channel=suggest&q=calling+gtk_main_quit+during+gtk_main_iteration+warning&oq=calling+gtk_main_quit+during+gtk_main_iteration+warning&gs_l=serp.12...7064.8155.0.12753.8.8.0.0.0.0.216.935.0j6j1.7.0.les%3B..0.0...1c.1.4.serp.GUiDL5IM2U8
 	https://developer.gnome.org/glib/2.34/glib-The-Main-Event-Loop.html#g-main-loop-quit
+
+Port to GTK2 with disable-deprecated flags, then GTK3.
+	Drop support for old distros.
 
 
 In main window add multi-selection support and right-click menu with various
