@@ -263,6 +263,7 @@ std::string detect_drives_other(std::vector<StorageDeviceRefPtr>& drives, Execut
 
 	#endif
 
+	// TODO Sort using natural sort
 	std::sort(devices.begin(), devices.end());
 
 	for (std::size_t i = 0; i < devices.size(); ++i) {

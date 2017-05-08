@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2017 GSmartControl developers -->
+<component type="desktop">
+	<id>gsmartcontrol</id>
+	<metadata_license>CC0-1.0</metadata_license>
+	<project_license>GPL-2.0 and GPL-3.0</project_license>
+	<name>GSmartControl</name>
+	<summary>Hard Disk and SSD Health Inspection</summary>
+	<description>
+		<p>
+			GSmartControl is a graphical user interface for smartctl, which is a tool for
+			querying and controlling SMART (Self-Monitoring, Analysis, and Reporting
+			Technology) data in hard disk and solid-state drives. It allows you to inspect
+			the drive's SMART data to determine its health, as well as run various tests
+			on it.
+		</p>
+	</description>
+	<launchable type="desktop-id">gsmartcontrol.desktop</launchable>
+	<url type="homepage">http://gsmartcontrol.sourceforge.net</url>
+	<screenshots>
+		<screenshot type="default">
+			<caption>Main window</caption>
+			<image>http://gsmartcontrol.sourceforge.net/home/images/main_ok.png</image>
+		</screenshot>
+		<screenshot>
+			<caption>Drive identity information</caption>
+			<image>http://gsmartcontrol.sourceforge.net/home/images/info_identity.png</image>
+		</screenshot>
+		<screenshot>
+			<caption>Attribute list of a failing drive</caption>
+			<image>http://gsmartcontrol.sourceforge.net/home/images/info_failing.png</image>
+		</screenshot>
+	</screenshots>
+</component>

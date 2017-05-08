@@ -28,17 +28,10 @@ Bugs / patches:
 
 TODO:
 
-Fix using multiple -d options (e.g. -d scsi) when there are -d options (e.g.
--d sat) in Preferences. This affects the program only before restart.
-
 Don't rely on smartctl return code (2), parse the output instead.
 	This will allow us to show the Info page.
 
-Don't sort drives like this: Pd0,pd1,pd10,pd11,pd2,pd3,pd4,pd5,pd6,pd8,pd9
-
 Update to latest drivedb.
-
-Write and install appdata file - http://people.freedesktop.org/~hughsient/appdata/
 
 Test Areca windows detection by installing CLI, then replacing it with a dummy
 	program that prints something (with enclosures and without).
