@@ -567,7 +567,9 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 		case action_preferences:
 		{
 			GscPreferencesWindow* win = GscPreferencesWindow::create();  // destroyed on close
-			// win->set_transient_for(*this);  // for "destroy with parent", always-on-top
+			win->set_transient_for(*this);  // for "destroy with parent", always-on-top
+			win->set_main_window(this);
+			win->set_modal(true);
 			win->show();
 			break;
 		}
@@ -1222,6 +1224,16 @@ GscInfoWindow* GscMainWindow::show_device_info_window(StorageDeviceRefPtr drive)
 	win->show();
 
 	return win;
+}
+
+
+
+void GscMainWindow::show_prefs_updated_message()
+{
+	iconview->set_empty_view_message(GscMainWindowIconView::message_please_rescan);
+	iconview->clear_all();  // the message won't be shown without invalidating the region.
+	while (Gtk::Main::events_pending())  // give expose event the time it needs
+		Gtk::Main::iteration();
 }
 
 

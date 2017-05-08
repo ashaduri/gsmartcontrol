@@ -71,6 +71,9 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 		/// Show the info window for the drive
 		GscInfoWindow* show_device_info_window(StorageDeviceRefPtr drive);
 
+		/// Show "Preferences updated, please rescan" message
+		void show_prefs_updated_message();
+
 
 	protected:
 

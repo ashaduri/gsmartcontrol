@@ -26,6 +26,7 @@
 #include "rconfig/rconfig_mini.h"
 #include "applib/storage_settings.h"
 #include "applib/app_gtkmm_utils.h"
+#include "gsc_main_window.h"
 
 #include "gsc_preferences_window.h"
 
@@ -327,6 +328,13 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const app_ui
 
 
 
+void GscPreferencesWindow::set_main_window(GscMainWindow* window)
+{
+	main_window_ = window;
+}
+
+
+
 
 void GscPreferencesWindow::update_device_widgets(const std::string& device, const std::string& type, const std::string& params)
 {
@@ -537,6 +545,11 @@ void GscPreferencesWindow::on_window_ok_button_clicked()
 	}
 
 	export_config();
+
+	if (main_window_) {
+		main_window_->show_prefs_updated_message();
+	}
+
 	destroy(this);
 }
 

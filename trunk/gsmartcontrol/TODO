@@ -31,8 +31,6 @@ TODO:
 Fix using multiple -d options (e.g. -d scsi) when there are -d options (e.g.
 -d sat) in Preferences. This affects the program only before restart.
 
-When scanning pd* files, scan n+1 drive ahead if n was not found (this helps with removed devices).
-
 Don't rely on smartctl return code (2), parse the output instead.
 	This will allow us to show the Info page.
 
