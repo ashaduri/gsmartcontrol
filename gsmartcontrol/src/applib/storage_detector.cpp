@@ -86,7 +86,8 @@ std::string StorageDetector::detect(std::vector<StorageDeviceRefPtr>& drives, Ex
 // 		}
 	}
 
-	// Sort the drives, because their order is not quite defined
+	// Sort the drives, because their order is not quite defined.
+	// TODO Sort using natural sort
 	std::sort(drives.begin(), drives.end());
 
 	debug_out_info("app", DBG_FUNC_MSG << "Drive detection finished.\n");

@@ -204,6 +204,7 @@ rm -rf %buildroot
 %{_datadir}/gsmartcontrol
 # %%{_datadir}/gsmartcontrol/*
 %{_datadir}/applications/*.desktop
+%{_datadir}/metainfo/*.appdata.xml
 %{_datadir}/icons/*
 %{_datadir}/pixmaps/*
 

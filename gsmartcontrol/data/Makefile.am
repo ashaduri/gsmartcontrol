@@ -40,6 +40,10 @@ appdata_DATA = icon_cddvd.png icon_hdd.png
 desktopdir = $(datadir)/applications
 desktop_DATA = gsmartcontrol.desktop
 
+# Appdata files
+metainfodir = $(datadir)/metainfo
+metainfo_DATA = gsmartcontrol.appdata.xml
+
 
 # Application pixmap (fallback icon for desktop files).
 # Same as 48/gsmartcontrol.png.

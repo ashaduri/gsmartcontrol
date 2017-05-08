@@ -529,7 +529,7 @@ AC_SUBST(AUTODIRS)
 # -------------------------------------------------------------------------------------
 
 
-AC_CONFIG_FILES([ data/gsmartcontrol.desktop \
+AC_CONFIG_FILES([ data/gsmartcontrol.desktop data/gsmartcontrol.appdata.xml \
 	data/nsis/distribution.txt data/nsis/distribution-nogtk.txt data/nsis/gsmartcontrol.nsi \
 	debian.dist/changelog \
 	src/gsc_winres.rc src/gsmartcontrol.exe.manifest \
