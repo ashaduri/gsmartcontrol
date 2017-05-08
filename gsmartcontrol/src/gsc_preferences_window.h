@@ -20,6 +20,8 @@
 
 class GscPreferencesDeviceOptionsTreeView;  // defined in cpp file
 
+class GscMainWindow;  // declared in gsc_main_window.h
+
 
 
 /// The Preferences window.
@@ -37,6 +39,9 @@ class GscPreferencesWindow : public AppUIResWidget<GscPreferencesWindow, true> {
 		/// Virtual destructor
 		virtual ~GscPreferencesWindow()
 		{ }
+
+		/// Set main window so that we can manipulate it
+		void set_main_window(GscMainWindow* window);
 
 
 		/// Update the device widgets (per-device parameters), used by GscPreferencesDeviceOptionsTreeView.
@@ -96,6 +101,8 @@ class GscPreferencesWindow : public AppUIResWidget<GscPreferencesWindow, true> {
 
 
 	private:
+
+		GscMainWindow* main_window_;  ///< Main window that called us.
 
 		GscPreferencesDeviceOptionsTreeView* device_options_treeview;  ///< Device options tree view
 
