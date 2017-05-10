@@ -619,7 +619,8 @@ bool SmartctlParser::parse_section_data(const std::string& body)
 			status = parse_section_data_subsection_selftest_log(sub) || status;
 
 		} else if (app_pcre_match("/SMART Selective self-test log data structure/mi", sub)
-				|| app_pcre_match("/Device does not support Selective Self Tests/Logging/mi", sub)) {
+				|| app_pcre_match("/Device does not support Selective Self Tests\\/Logging/mi", sub)
+				|| app_pcre_match("/Selective Self-tests\\/Logging not supported/mi", sub)) {
 			status = parse_section_data_subsection_selective_selftest_log(sub) || status;
 
 		} else {
