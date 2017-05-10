@@ -105,7 +105,6 @@ win-dist-prepare: all
 	cp src/gsmartcontrol.exe src/gsmartcontrol.exe.manifest win-dist/
 
 	unix2dos win-dist/doc/*.txt
-	$(STRIP) win-dist/*.exe
 
 	cp -p "@WINDOWS_BINDIR@"/smartctl-nc.exe win-dist/
 	cp -p "@WINDOWS_BINDIR@"/smartctl.exe win-dist/

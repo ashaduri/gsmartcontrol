@@ -412,6 +412,9 @@ Section Uninstall
 
 	RMDir /r "$INSTDIR\doc"
 
+	; leftover from gtk
+	RMDir /r "$INSTDIR\share"
+
 	; clean up generated stuff
 	Delete "$INSTDIR\*stdout.txt"
 	Delete "$INSTDIR\*stderr.txt"
