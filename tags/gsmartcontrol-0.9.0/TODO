@@ -1,0 +1,250 @@
+
+
+GTKMM Notes:
+
+To transfer an ownership from your local code to a container, use
+Gtk::Button* pButton = Gtk::manage(new Gtk::Button("Test"));
+container->add(*pButton);
+(add() takes an object by reference).
+otherwise, you will need to delete() it.
+
+local scope destruction also works if using stack variables.
+{
+	Gtk::Button aButton;
+	// destroyed here
+}
+
+
+A treeview (also iconview, combobox) from glade comes
+with existing model, which should be unset.
+
+
+Bugs / patches:
+	Patch pangomm for Pango::strip_markup().
+
+
+
+--------------------------------------------------------
+
+TODO:
+
+Don't rely on smartctl return code (2), parse the output instead.
+	This will allow us to show the Info page.
+
+?Fix not being able to quit while executing commands.
+	Cannot reproduce.
+	https://www.google.com/search?client=opera&q=IA__gtk_main_quit:+assertion+%60main_loops+!=+NULL'+failed&sourceid=opera&ie=utf-8&oe=utf-8&channel=suggest
+	https://developer.gnome.org/gtk2/2.24/gtk2-General.html#gtk-main-quit
+	https://www.google.com/search?num=50&hl=en&safe=off&client=opera&hs=Dr5&channel=suggest&q=calling+gtk_main_quit+during+gtk_main_iteration+warning&oq=calling+gtk_main_quit+during+gtk_main_iteration+warning&gs_l=serp.12...7064.8155.0.12753.8.8.0.0.0.0.216.935.0j6j1.7.0.les%3B..0.0...1c.1.4.serp.GUiDL5IM2U8
+	https://developer.gnome.org/glib/2.34/glib-The-Main-Event-Loop.html#g-main-loop-quit
+
+Port to GTK2 with disable-deprecated flags, then GTK3.
+	Drop support for old distros.
+
+
+In main window add multi-selection support and right-click menu with various
+	tests, so that it's possible to run multiple tests in parallel from there.
+
+
+Areca detection
+	Linux:
+		Somehow differentiate between the cards with expanders (-d areca,N/E) and without (-d areca,N).
+		The expander ones seem to have "ix" (case-insensitive) as their name suffixes.
+			areca,N - N is [1,24].
+			areca,N/E - N is [1,128], E is [1,8].
+				We should limit these using some config key (36 for N and 4 for E seems ok).
+				N/E syntax is since smartmontools 5.43.
+					For older versions we get: /dev/<something>: Option -d areca,N requires N to be a non-negative integer
+	Windows Detection:
+		Credit Richard Kagerer.
+
+
+Credit Fabrice Bacchella for Linux CCISS detection.
+
+
+
+
+Add ability (through ctrl-C?) to copy individual rows from attributes page,
+	in tab-separated format (for easy pasting into libreoffice).
+
+
+Investiage the new "-l ssd" and "-l devstat" options (since 5.42)
+
+Check also other options in 5.42 and 5.43.
+	"-g all" looks promising alongside -i (shows APM and other stuff as well).
+
+Add --identify option to context menu, for convenience.
+
+Add menu item - "update drive database" (not sure about linux, should
+	check if it's supported first; also need to run it in terminal).
+
+
+Testing:
+	If ETA time has elapsed, but it's still only at 10% completion,
+		ETA 0 is displayed. Fix.
+	If smartctl -t ... returns an error, testing=true should not be set.
+		Can't reproduce it?
+	Detect running tests on launch (maybe ask the user too? some tests
+		may be stuck due to bad firmware, e.g. 3ware/windows).
+
+
+
+48-bit ATA command support:
+	'-l xerror' -> Extended Comprehensive Error log: An multi-sector and
+	LBA48 capable version of '-l error'. Output is similar, except more
+	entries can exists and the high bytes of the registers are also printed.
+	Some newer drives (Samsung) only write to this log.
+
+	'-l xselftest' -> Extended Self Test Log: An multi-sector and LBA48
+	capable version of '-l selftest'. Output will be similar, except more
+	entries can exists and the LBA values can be somewhat longer.
+
+	"smartctl -l this_wont_exist" gives the list of supported logs - this
+		is needed to detect xerror / xselftest support in smartctl.
+
+
+Rework drive properties UI:
+	use 48-bit or not or auto.
+	Enable/disable/dont_touch SMART on startup for this drive.
+	Enable/disable/dont_touch AODC on startup for this drive.
+	Add --init-smart-only option to only apply the SMART/AODC enabling status
+		from the drive properties.
+		Add also --no-init-smart to avoid doing that on GUI startup.
+
+Notifications:
+	Tied to (drive::subdrive, notif_key, exact_value(optional)).
+		If exact_value isn't specified when ignoring, notify on every value change.
+	Ignore options:
+		Per-drive: Ignore all notifications for this key, ignore only this value.
+	Don't generate multiple notifications for the same drive/key combo.
+	Clearing in preferences: Clear all ignored, clear ignored for this drive, clear individual.
+	Soft-warnings require "-a" by default, tricky for scsi (maybe try -a, then -i?).
+
+Monitor:
+	Needs root access, so not gonna happen until the dbus/udisks stuff
+		is finalized.
+	Same program, add --tray option to start in tray only.
+	Option to enable the tray icon.
+	Option to continue running in the tray on window close.
+	Use freedesktop notifications when notifications are generated
+		and we're running in tray only.
+		Don't generate the same notification at a single run time if it was
+			ignored (untouched) by the user; Change the tray icon and
+			show them in the main window instead.
+	Periodically re-run smartctl to refresh the notifications.
+	Periodically see if drives were added / removed (possibly use OS callbacks
+		instead of polling?)
+
+Win7 widget:
+	Can be done in html/js.
+	Shows temperature
+	Detects drives
+	Opens GSmartControl
+
+If a drive is not recognized, suggest using -d (sat, sat,12, ...)
+	Refer the user to
+	http://sourceforge.net/apps/trac/smartmontools/wiki/Supported_USB-Devices
+
+
+
+RAID:
+	http://sourceforge.net/apps/trac/smartmontools/wiki/Supported_RAID-Controllers
+
+	Areca Windows:
+		Detection not supported by smartctl --scan-open.
+
+	Areca FreeBSD: since 5.42.
+		Call as: smartctl -a -d areca,[1-24] /dev/arcmsr1
+
+	3ware FreeBSD:
+		Call as: smartctl -i -d 3ware,[0-127] /dev/twa0  (or twe0)
+		Detection: unknown.
+
+	LSI MegaRAID (SCSI/SAS), Linux:
+		Call as: smartctl -i -d megaraid,[0-?] /dev/sda
+			We should differentiate between ordinary sda and RAID one (not sure if sda is detected).
+		Detection: unknown.
+
+	HighPoint RocketRAID ((S)ATA) Linux:
+		Call as: smartctl -i -d hpt,[1-8]/[1-8] /dev/sda
+		Call as: smartctl -i -d hpt,[1-8]/[1-8]/[1-15] /dev/sda
+		Note: /dev/sda should be derived from this controller.
+			We should differentiate between ordinary sda and RAID one (not sure if sda is detected).
+		Smartctl docs specify smaller limits, but the code says these are the ones.
+		Detection: unknown.
+
+	HighPoint RocketRAID ((S)ATA) FreeBSD:
+		Call as: smartctl -i -d hpt,[1-8]/[1-8] /dev/hptrr
+		Call as: smartctl -i -d hpt,[1-8]/[1-8]/[1-15] /dev/hptrr
+		Note: /dev/hptrr should be derived from this controller.
+		Smartctl docs specify smaller limits, but the code says these are the ones.
+		Detection: unknown.
+		TODO: Analyze sent info.
+
+	CCISS (HP (Compaq) Smart Array Controller) FreeBSD:
+		Seems to be the same as Linux (uses the same driver?).
+		Detection: unknown.
+
+
+
+
+libdebug:
+	per-channel disabling.
+	per-channel formatting.
+	all flags should be per-channel.
+	bug: if -q is passed, Execution log doesn't contain libdebug log. (requires per-channel status control).
+	use format_time() instead of ctime() and friends, with ISO formatting.
+
+
+
+'-l sataphy' -> SATA Phy event counters: Non-SMART feature, useful to detect SATA cabling problems.
+
+
+SCT Temperatures
+	-l scttemp prints temperature and history.
+	-t scttempint,N[,p] (N - count, p - preserve across reset or not).
+		This configures temperature logging interval (1 min by default) and clears the history.
+	-l scterc[,...] to get/set the SCT Error Recovery Control time limit (5.40 and newer).
+
+
+Add detection for Interix (i586-pc-interix3), maybe with debian?
+
+
+
+
+----------- SMART stuff ----------
+
+
+Run one-time Immediate Offline test (-t offline).
+	Offline tests only update Attributes, and if errors are found they will
+	appear in SMART error log. Self-test logs are unaffected.
+	Abort (-X). Abort works with Offline only if there's
+	"Abort Offline collection upon new command" capability.
+	If the drive has "Suspend Offline collection upon new  command" capability,
+	immediate offline test may be tracked through --capabilities (not on mine!).
+	If it's "Abort Offline collection upon new command", then the test
+	will abort on --capabilities or --abort.
+
+
+Polling time
+The self-test routine recommended polling time shall be equal to the number of minutes that is the minimum
+recommended time before which the host should first poll for test completion status. Actual test time could
+be several times this value. Polling before this time could extend the self-test execution time or abort the test
+depending on the state of bit 2 of the off-line data capability bits.
+
+Autosave
+This command enables and disables the optional attribute autosave feature of the device. This command
+may either allow the device, after some vendor specified event, to save the device updated attribute values
+to non-volatile memory; or this command may cause the autosave feature to be disabled. The state of the
+attribute autosave feature (either enabled or disabled) shall be preserved by the device across power cycles.
+A value of zero written by the host into the device’s Sector Count register before issuing this command shall
+cause this feature to be disabled. Disabling this feature does not preclude the device from saving SMART
+data to non-volatile memory during some other normal operation such as during a power-on or power-off
+sequence or during an error recovery sequence.
+A value of F1h written by the host into the device’s Sector Count register before issuing this command shall
+cause this feature to be enabled. Any other meaning of this value or any other non-zero value written by the
+host into this register before issuing this command may differ from device to device. The meaning of any
+non-zero value written to this register at this time shall be preserved by the device across power cycles.
+
+
+
