@@ -31,8 +31,6 @@ TODO:
 Don't rely on smartctl return code (2), parse the output instead.
 	This will allow us to show the Info page.
 
-Update to latest drivedb.
-
 ?Fix not being able to quit while executing commands.
 	Cannot reproduce.
 	https://www.google.com/search?client=opera&q=IA__gtk_main_quit:+assertion+%60main_loops+!=+NULL'+failed&sourceid=opera&ie=utf-8&oe=utf-8&channel=suggest
