@@ -1,4 +1,23 @@
 
+Version 0.9.0, released on 2017-05-11
+	Implemented (untested) support for Linux-based Areca controllers with
+		enclosures.
+	Implemented (untested) support for Windows-based Areca controllers (thanks
+		to Richard Kagerer).
+	Implemented (untested) support for Linux-based HP controllers with cciss
+		and hpsa/hpahcisr drivers (thanks to Fabrice Bacchella).
+	Changes in Preferences no longer fail silently until rescan/restart.
+	Better drive detection under Windows after removable drives are detached.
+	Windows version is no longer marked as "dpi aware" since it's not
+		supported that well.
+	Drive attribute descriptions have been updated (including clarifications
+		for SSDs).
+	Added support for SSD-only and HDD-only vendor attributes.
+	Devices having only basic info can be displayed now in the info window.
+	Fixed BDRW drive detection (it was detected as a HDD).
+	Other minor improvements.
+	A number of issues have been fixed (including a crash).
+
 Version 0.8.7, released on 2012-08-11
 	Implemented support for Adaptec RAID 5805 controller and possibly other
 		Adaptec models as well (Linux).

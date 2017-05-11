@@ -52,7 +52,7 @@ GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, const app_ui_res_ref_t& 
 	set_license(LicenseTextResData().get_string());
 
 	// spammers go away
-	set_copyright("Copyright (C) 2008 - 2014  Alexander Shaduri " "<ashaduri" "" "@" "" "" "gmail.com>");
+	set_copyright("Copyright (C) 2008 - 2017  Alexander Shaduri " "<ashaduri" "" "@" "" "" "gmail.com>");
 
 
 	std::string authors_str = AuthorsTextResData().get_string();
