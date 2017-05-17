@@ -12,7 +12,7 @@
 #ifndef APP_GTKMM_FEATURES_H
 #define APP_GTKMM_FEATURES_H
 
-#include <gtkmmconfig.h>
+#include <gtkmm.h>
 
 
 /// \def APP_GTKMM_CHECK_VERSION(major, minor, micro)
@@ -25,14 +25,6 @@
 				) \
 			) \
 		)
-#endif
-
-
-
-/// \def APP_GTKMM_OLD_TOOLTIPS
-/// Defined to 1 if the new (since gtkmm 2.12) tooltips API is not available.
-#if !APP_GTKMM_CHECK_VERSION(2, 12, 0)
-	#define APP_GTKMM_OLD_TOOLTIPS 1
 #endif
 
 

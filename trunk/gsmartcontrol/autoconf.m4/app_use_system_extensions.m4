@@ -98,14 +98,13 @@ AC_DEFUN([APP_USE_SYSTEM_EXTENSIONS], [
 			# Other things to consider: _NO_OLDNAMES (disable "deprecated"
 			# non-underscored names like chdir (use _chdir), etc...).
 			# See _mingw.h for details.
-			app_cv_target_extension_cflags="-D__USE_MINGW_ANSI_STDIO=1 -DWINVER=0x0500"
-			app_cv_target_extension_cxxflags="-D__USE_MINGW_ANSI_STDIO=1 -DWINVER=0x0500"
+			app_cv_target_extension_cflags="-D__USE_MINGW_ANSI_STDIO=1 -DWINVER=0x0600"  # Since vista (for gtk3)
+			app_cv_target_extension_cxxflags="-D__USE_MINGW_ANSI_STDIO=1 -DWINVER=0x0600"
 			;;
 
 		mingw64)
-			# Same as ming32, but enable "from xp" mode, since there's no x86_64 2k.
-			app_cv_target_extension_cflags="-D__USE_MINGW_ANSI_STDIO=1 -DWINVER=0x0501"
-			app_cv_target_extension_cxxflags="-D__USE_MINGW_ANSI_STDIO=1 -DWINVER=0x0501"
+			app_cv_target_extension_cflags="-D__USE_MINGW_ANSI_STDIO=1 -DWINVER=0x0600"  # Since vista (for gtk3)
+			app_cv_target_extension_cxxflags="-D__USE_MINGW_ANSI_STDIO=1 -DWINVER=0x0600"
 			;;
 
 		interix)

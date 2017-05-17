@@ -55,11 +55,6 @@ Areca detection
 				We should limit these using some config key (36 for N and 4 for E seems ok).
 				N/E syntax is since smartmontools 5.43.
 					For older versions we get: /dev/<something>: Option -d areca,N requires N to be a non-negative integer
-	Windows Detection:
-		Credit Richard Kagerer.
-
-
-Credit Fabrice Bacchella for Linux CCISS detection.
 
 
 

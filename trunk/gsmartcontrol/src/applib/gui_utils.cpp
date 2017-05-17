@@ -9,13 +9,6 @@
 /// \weakgroup applib
 /// @{
 
-#include <gtkmm/messagedialog.h>
-#include <gtkmm/dialog.h>
-#include <gtkmm/label.h>
-#include <gtkmm/entry.h>
-#include <gtkmm/stock.h>
-#include <gtkmm/box.h>
-
 #include "app_pango_utils.h"  // app_pango_strip_markup()
 #include "gui_utils.h"
 
@@ -120,7 +113,7 @@ bool gui_show_text_entry_dialog(const std::string& title, const std::string& mes
 				+ (sec_message.empty() ? "\n" : "") + "</b></big>");
 		main_label.set_line_wrap(true);
 		main_label.set_selectable(true);
-		main_label.set_alignment(0.0, 0.0);
+		main_label.set_alignment(Gtk::ALIGN_START);
 
 		Gtk::Label sec_label;
 		if (sec_msg_markup) {
@@ -130,13 +123,13 @@ bool gui_show_text_entry_dialog(const std::string& title, const std::string& mes
 		}
 		sec_label.set_line_wrap(true);
 		sec_label.set_selectable(true);
-		sec_label.set_alignment(0.0, 0.0);
+		sec_label.set_alignment(Gtk::ALIGN_START);
 
 		Gtk::Entry input_entry;
 		input_entry.set_activates_default(true);
 
 
-		Gtk::VBox vbox;
+		Gtk::Box vbox;
 		vbox.set_spacing(12);
 		vbox.pack_start(main_label, false, false, 0);
 		vbox.pack_start(sec_label, true, true, 0);
@@ -153,7 +146,7 @@ bool gui_show_text_entry_dialog(const std::string& title, const std::string& mes
 		dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 
 		Gtk::Button ok_button(Gtk::Stock::OK);
-		ok_button.set_flags(ok_button.get_flags() | Gtk::CAN_DEFAULT);
+		ok_button.set_can_default(true);
 		ok_button.show_all();
 		dialog.add_action_widget(ok_button, Gtk::RESPONSE_OK);
 		ok_button.grab_default();  // make it the default widget

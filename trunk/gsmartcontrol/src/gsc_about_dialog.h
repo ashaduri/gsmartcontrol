@@ -12,8 +12,7 @@
 #ifndef GSC_ABOUT_DIALOG_H
 #define GSC_ABOUT_DIALOG_H
 
-#include <gtkmm/window.h>
-#include <gtkmm/aboutdialog.h>
+#include <gtkmm.h>
 
 #include "applib/app_ui_res_utils.h"
 
@@ -48,12 +47,6 @@ class GscAboutDialog : public AppUIResWidget<GscAboutDialog, false, Gtk::AboutDi
 	protected:
 
 		// -------------------- Callbacks
-
-		/// Callback - activate an URL
-		void on_activate_url(Gtk::AboutDialog& about_dialog, const Glib::ustring& link);
-
-		/// Callback - activate an email
-		void on_activate_email(Gtk::AboutDialog& about_dialog, const Glib::ustring& link);
 
 
 		/// Callback - dialog response

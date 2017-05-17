@@ -13,13 +13,9 @@
 #define GSC_MAIN_WINDOW_ICONVIEW_H
 
 #include <gtkmm.h>
-#include <gtkmm/icontheme.h>  // must include manually for older gtkmm (at least 2.6, but not 2.12)
 #include <vector>
 #include <cmath>  // std::floor
-
-#if APP_GTKMM_CHECK_VERSION(2, 8, 0)
-	#include <gtk/gtk.h>  // gtk_icon_view_set_cursor, GTK_ICON_VIEW
-#endif
+#include <cairomm/cairomm.h>
 
 #include "hz/string_algo.h"  // string_join
 #include "hz/debug.h"
@@ -55,7 +51,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 		GscMainWindowIconView(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
 				: Gtk::IconView(gtkcobj), num_icons(0), main_window(0), empty_view_message(message_none)
 		{
-			APP_GTKMM_CONNECT_VIRTUAL(expose_event);  // make sure the event handler is called
+			APP_GTKMM_CONNECT_VIRTUAL(draw);  // make sure the event handler is called
 
 			columns.add(col_name);  // we can use the col_name variable by value after this.
 			this->set_markup_column(col_name);
@@ -73,7 +69,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 			this->set_model(ref_list_model);
 
 			// we add it here because list model must be created already
-			gtkmm_set_iconview_tooltip_column(this, col_description, ref_list_model);
+			set_tooltip_column(col_description.index());
 
 
 			// icons
@@ -156,10 +152,10 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 		/// Overridden from Gtk::Widget
-		bool on_expose_event_before(GdkEventExpose* exp_event)
+		bool on_draw_before(Cairo::RefPtr<Cairo::Context> cr)
 		{
-			// this->on_expose_event(exp_event);  // parent's stuff
-
+// TODO Implement in cairo
+/*
 			if (empty_view_message != message_none && this->num_icons == 0) {  // no icons
 				Glib::RefPtr<Gdk::Drawable> win = Glib::wrap(exp_event->window, true);
 	// 			Cairo::RefPtr<Cairo::Context> cr = win->create_cairo_context();
@@ -187,7 +183,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 				win->draw_layout(gc, pos_x, pos_y, layout);
 			}
-
+*/
 			return false;  // without false the icons don't get drawn...
 		}
 
@@ -209,15 +205,13 @@ class GscMainWindowIconView : public Gtk::IconView {
 			if (scroll_to_it) {
 				Gtk::TreeModel::Path tpath(row);
 				// scroll_to_path() and set/get_cursor() are since gtkmm 2.8.
-#if APP_GTKMM_CHECK_VERSION(2, 8, 0)
+
 				this->scroll_to_path(tpath, true, 0.5, 0.5);
 				// select it (keyboard & selection)
 				Gtk::CellRenderer* cell = 0;
 				if (this->get_cursor(cell) && cell) {
-					// gtkmm's set_cursor() is undefined (but declared) in 2.8, so use gtk variant.
-					gtk_icon_view_set_cursor(GTK_ICON_VIEW(this->gobj()), tpath.gobj(), cell->gobj(), false);
+					this->set_cursor(tpath, *cell, false);
 				}
-#endif
 				this->select_path(tpath);  // highlight it
 			}
 
@@ -361,7 +355,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 			ref_list_model->clear();
 
 			// this is needed to update the label from "disabled" to "scanning"
-			if (this->is_realized()) {
+			if (this->get_realized()) {
 				Gdk::Rectangle rect = this->get_allocation();
 				Glib::RefPtr<Gdk::Window> win = this->get_window();
 				win->invalidate_rect(rect, true);  // force expose event
@@ -457,14 +451,11 @@ class GscMainWindowIconView : public Gtk::IconView {
 				if (tpath.gobj() && !tpath.empty()) {  // without gobj() check gtkmm 2.6 (but not 2.12) prints lots of errors
 					// move keyboard focus to the icon (just as left-click does)
 
-					// set/get_cursor() are since gtkmm 2.8.
-#if APP_GTKMM_CHECK_VERSION(2, 8, 0)
 					Gtk::CellRenderer* cell = 0;
 					if (this->get_cursor(cell) && cell) {
 						// gtkmm's set_cursor() is undefined (but declared) in 2.8, so use gtk variant.
 						gtk_icon_view_set_cursor(GTK_ICON_VIEW(this->gobj()), tpath.gobj(), cell->gobj(), false);
 					}
-#endif
 
 					// select the icon
 					this->select_path(tpath);

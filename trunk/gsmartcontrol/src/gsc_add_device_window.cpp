@@ -9,13 +9,8 @@
 /// \weakgroup gsc
 /// @{
 
-#include <gtkmm/button.h>
-#include <gtkmm/entry.h>
-#include <gtkmm/filechooserdialog.h>
-#include <gtkmm/stock.h>
-#include <gtkmm/comboboxentry.h>
-#include <gtkmm/treemodelcolumn.h>
-#include <gdk/gdkkeysyms.h>  // GDK_Escape
+#include <gtkmm.h>
+#include <gdk/gdk.h>  // GDK_KEY_Escape
 
 #include "hz/fs_path.h"
 #include "hz/string_sprintf.h"
@@ -68,8 +63,8 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, const app_ui_res
 	if (Gtk::Label* device_type_label = lookup_widget<Gtk::Label*>("device_type_label")) {
 		app_gtkmm_set_widget_tooltip(*device_type_label, device_type_tooltip);
 	}
-	if (Gtk::Entry* device_type_entry = lookup_widget<Gtk::Entry*>("device_type_entry")) {
-		app_gtkmm_set_widget_tooltip(*device_type_entry, device_type_tooltip);
+	if (Gtk::ComboBoxText* type_combo = lookup_widget<Gtk::ComboBoxText*>("device_type_combo")) {
+		app_gtkmm_set_widget_tooltip(*type_combo, device_type_tooltip);
 	}
 
 
@@ -77,7 +72,7 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, const app_ui_res
 
 	Glib::RefPtr<Gtk::AccelGroup> accel_group = this->get_accel_group();
 	if (window_cancel_button) {
-		window_cancel_button->add_accelerator("clicked", accel_group, GDK_Escape,
+		window_cancel_button->add_accelerator("clicked", accel_group, GDK_KEY_Escape,
 				Gdk::ModifierType(0), Gtk::AccelFlags(0));
 	}
 
@@ -91,35 +86,26 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, const app_ui_res
 
 
 	// Populate type combo with common types
-	Gtk::ComboBoxEntry* type_combo = lookup_widget<Gtk::ComboBoxEntry*>("device_type_combo");
+	Gtk::ComboBoxText* type_combo = lookup_widget<Gtk::ComboBoxText*>("device_type_combo");
 	if (type_combo) {
-		Gtk::TreeModelColumnRecord column_record; ///< Columns for type combo
-		Gtk::TreeModelColumn<Glib::ustring> col_type; ///< Model column
-
-		column_record.add(col_type);
-
-		Glib::RefPtr<Gtk::ListStore> model = Gtk::ListStore::create(column_record);
-		type_combo->set_model(model);
-		type_combo->set_text_column(col_type);
-
-		(*(model->append()))[col_type] = "sat,12";
-		(*(model->append()))[col_type] = "sat,16";
-		(*(model->append()))[col_type] = "usbcypress";
-		(*(model->append()))[col_type] = "usbjmicron";
-		(*(model->append()))[col_type] = "usbsunplus";
-		(*(model->append()))[col_type] = "ata";
-		(*(model->append()))[col_type] = "scsi";
+		type_combo->append("sat,12");
+		type_combo->append("sat,16");
+		type_combo->append("usbcypress");
+		type_combo->append("usbjmicron");
+		type_combo->append("usbsunplus");
+		type_combo->append("ata");
+		type_combo->append("scsi");
 #if defined CONFIG_KERNEL_LINUX
-		(*(model->append()))[col_type] = "marvell";
-		(*(model->append()))[col_type] = "megaraid,N";
-		(*(model->append()))[col_type] = "areca,N";
-		(*(model->append()))[col_type] = "areca,N/E";
+		type_combo->append("marvell");
+		type_combo->append("megaraid,N");
+		type_combo->append("areca,N");
+		type_combo->append("areca,N/E");
 #endif
 #if defined CONFIG_KERNEL_LINUX || defined CONFIG_KERNEL_FREEBSD || defined CONFIG_KERNEL_DRAGONFLY
-		(*(model->append()))[col_type] = "3ware,N";  // this option is not needed in windows
-		(*(model->append()))[col_type] = "cciss,N";
-		(*(model->append()))[col_type] = "hpt,L/M";
-		(*(model->append()))[col_type] = "hpt,L/M/N";
+		type_combo->append("3ware,N");  // this option is not needed in windows
+		type_combo->append("cciss,N");
+		type_combo->append("hpt,L/M");
+		type_combo->append("hpt,L/M/N");
 #endif
 	}
 
@@ -160,8 +146,8 @@ void GscAddDeviceWindow::on_window_ok_button_clicked()
 	if (Gtk::Entry* entry = lookup_widget<Gtk::Entry*>("device_name_entry")) {
 		dev = entry->get_text();
 	}
-	if (Gtk::Entry* entry = lookup_widget<Gtk::Entry*>("device_type_entry")) {
-		type = entry->get_text();
+	if (Gtk::ComboBoxText* type_combo = lookup_widget<Gtk::ComboBoxText*>("device_type_combo")) {
+		type = type_combo->get_entry_text();
 	}
 	if (Gtk::Entry* entry = lookup_widget<Gtk::Entry*>("smartctl_params_entry")) {
 		params = entry->get_text();

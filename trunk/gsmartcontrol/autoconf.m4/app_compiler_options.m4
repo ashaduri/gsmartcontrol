@@ -61,7 +61,7 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 			fi
 
 			app_cv_compiler_tmp_var="-Wall -Wcast-align -Wcast-qual -Wconversion \
--Wctor-dtor-privacy -Wfloat-equal -Wnon-virtual-dtor -Woverloaded-virtual \
+-Wfloat-equal -Wnon-virtual-dtor -Woverloaded-virtual \
 -Wpointer-arith -Wshadow -Wsign-compare -Wsign-promo -Wundef -Wwrite-strings";
 			if test "x$app_cv_compiler_common_options" = "xclang"; then
 				# these are really annoying

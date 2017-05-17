@@ -15,14 +15,9 @@
 #include <cstdio>  // std::printf
 #include <vector>
 #include <sstream>
-#include <gtkmm/main.h>
-#include <gtkmm/messagedialog.h>
-#include <gtk/gtk.h>  // gtk_window_set_default_icon_name, gtk_icon_theme_*
+#include <gtkmm.h>
 #include <glib.h>  // g_, G*
-#include <glibmm/refptr.h>
-#include <glibmm/miscutils.h>  // set_application_name
-#include <glibmm/thread.h>  // thread_init
-// #include <gtkmm.h>
+#include <glibmm.h>  // set_application_name
 // #include <iostream>
 
 #include "hz/hz_config.h"  // ENABLE_GLIB, VERSION, DEBUG_BUILD
@@ -458,19 +453,18 @@ bool app_init_and_loop(int& argc, char**& argv)
 #ifndef _WIN32  // win32 version has its icon compiled-in, so no need to set it there.
 	{
 		// we load it via icontheme to provide multi-size version.
-		GtkIconTheme* default_icon_theme = gtk_icon_theme_get_default();
 
 		// application-installed, /usr/share/icons/<theme_name>/apps/<size>
-		if (gtk_icon_theme_has_icon(default_icon_theme, "gsmartcontrol")) {
-			gtk_window_set_default_icon_name("gsmartcontrol");
+		if (Gtk::IconTheme::get_default()->has_icon("gsmartcontrol")) {
+			Gtk::Window::set_default_icon_name("gsmartcontrol");
 
 		// try the gnome icon, it's higher quality / resolution
-		} else if (gtk_icon_theme_has_icon(default_icon_theme, "gnome-dev-harddisk")) {
-			gtk_window_set_default_icon_name("gnome-dev-harddisk");
+		} else if (Gtk::IconTheme::get_default()->has_icon("gnome-dev-harddisk")) {
+			Gtk::Window::set_default_icon_name("gnome-dev-harddisk");
 
 		// gtk built-in, always available
 		} else {
-			gtk_window_set_default_icon_name("gtk-harddisk");
+			Gtk::Window::set_default_icon_name("gtk-harddisk");
 		}
 	}
 #endif

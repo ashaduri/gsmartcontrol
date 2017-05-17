@@ -11,7 +11,7 @@ noinst_HEADERS = app_gtkmm_features.h app_gtkmm_utils.h app_pango_utils.h \
 	selftest.h smartctl_executor.h smartctl_executor_gui.h smartctl_parser.h \
 	storage_detector.h storage_detector_helpers.h storage_detector_linux.h storage_detector_other.h \
 	storage_detector_win32.h storage_device.h storage_property.h storage_property_colors.h \
-	storage_property_descr.h storage_settings.h wrapping_label.h
+	storage_property_descr.h storage_settings.h
 
 # don't use absolute path for the current dir's .a, because the make
 # dependency resolver won't get it (needed for parallel builds)

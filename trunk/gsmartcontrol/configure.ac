@@ -1,12 +1,12 @@
 
-AC_INIT([GSmartControl],[0.9.0],[],[gsmartcontrol])
+AC_INIT([GSmartControl],[1.0.0],[],[gsmartcontrol])
 
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_HEADERS([config.h])
 
 AC_CANONICAL_TARGET
 
-AM_INIT_AUTOMAKE([foreign no-dist-gzip dist-bzip2 -Wall])
+AM_INIT_AUTOMAKE([foreign dist-bzip2 -Wall])
 
 
 # Clear *FLAGS, LIBS, LDFLAGS if requested through configure option.
@@ -175,8 +175,7 @@ AC_ARG_ENABLE(abort-if-no-gtkmm, AS_HELP_STRING([--disable-abort-if-no-gtkmm],
 
 AC_MSG_NOTICE([Abort if no gtkmm is found: $app_cv_abort_if_no_gtkmm])
 
-# iconview is available since 2.6.0. gthread is not enabled by default.
-pkg_modules="gtkmm-2.4 >= 2.6.0"  # gthread-2.0 >= 2.0
+pkg_modules="gtkmm-3.0 >= 3.4.0"
 
 # define ENABLE_GLIB and friends if it's found.
 gtkmm_found="no"
@@ -201,23 +200,10 @@ if test "x$gtkmm_found" = "xno"; then
 	fi
 fi
 
-# GTK flags must be prepended, or glib_config.h conflict between
-# gtk 2.x and 1.2 may occur.
-
 #CFLAGS="$GTKMM_CFLAGS $CFLAGS"
 CXXFLAGS="$GTKMM_CFLAGS $CXXFLAGS"
 LIBS="$GTKMM_LIBS $LIBS"
 
-
-# Detect libglade / gtkbuilder support
-
-APP_CHOOSE_GLD_READER([C++], [LIBGLADE_])
-
-if test "$app_cv_gld_reader" = "libglade"; then
-	CFLAGS="$CFLAGS $LIBGLADE_CFLAGS"
-	CXXFLAGS="$CXXFLAGS $LIBGLADE_CXXFLAGS"
-	LIBS="$LIBS $LIBGLADE_LIBS"
-fi
 
 
 # -------------------------------------------------------------------------------------
@@ -246,22 +232,6 @@ fi
 CFLAGS="$CFLAGS $PCRE_CFLAGS"
 CXXFLAGS="$CXXFLAGS $PCRE_CFLAGS"
 LIBS="$LIBS $PCRE_LIBS"
-
-
-# -------------------------------------------------------------------------------------
-
-# -------------------------------------------------------------------------------------
-
-
-# Test stuff here...
-# <nothing>
-
-#SDL_VERSION=1.2.0
-#AM_PATH_SDL($SDL_VERSION, :,
-#	AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!]) )
-#CFLAGS="$CFLAGS $SDL_CFLAGS"
-#CXXFLAGS="$CXXFLAGS $SDL_CFLAGS "
-#LIBS="$LIBS $SDL_LIBS"
 
 
 # -------------------------------------------------------------------------------------
@@ -346,25 +316,20 @@ AC_SUBST(WINDOWS_ARCH)
 # -------------------------------------------------------------------------------------
 
 
-RES_FILES="src/res/gsc_about_dialog.glade \
-	src/res/gsc_add_device_window.glade \
-	src/res/gsc_executor_log_window.glade \
-	src/res/gsc_help_window.glade \
-	src/res/gsc_info_window.glade \
-	src/res/gsc_main_window.glade \
-	src/res/gsc_preferences_window.glade \
-	src/res/gsc_text_window.glade \
+RES_FILES="src/res/gsc_about_dialog.ui \
+	src/res/gsc_add_device_window.ui \
+	src/res/gsc_executor_log_window.ui \
+	src/res/gsc_help_window.ui \
+	src/res/gsc_info_window.ui \
+	src/res/gsc_main_window.ui \
+	src/res/gsc_preferences_window.ui \
+	src/res/gsc_text_window.ui \
 	AUTHORS.txt  LICENSE_gsmartcontrol.txt README.txt"
 
 # Unfortunately, _SOURCES can't contain substitutions, so we use LIBADD.
 RES_LIBADD=""  # .o file to put into .a, libres_a_LIBADD, libres_a_DEPENDENCIES.
 RES_DIST=""  # only files in "res" directory, EXTRA_DIST
 RES_TARGETS=""  # entry for each file in makefile
-
-RES_GLD_EXT="glade"
-if test "$app_cv_gld_reader" = "gtkbuilder"; then
-	RES_GLD_EXT="ui"
-fi
 
 for RES_FILE in $RES_FILES;
 do  # on separate line for portability
@@ -381,28 +346,14 @@ do  # on separate line for portability
 		RES_FILE_CANON="\$(srcdir)/$RES_BASE"  # shorter path, better make behaviour
 	fi
 
-	# We use separate source files for gtkbuilder and libglademm, because
-	# make dist should be able to bundle both of them separately.
-
-	if test "$RES_BASE_EXT" = "glade"; then
-
-		RES_LIBADD="$RES_LIBADD $RES_BASE_NOEXT.$RES_GLD_EXT.$ac_objext"  # file.ui.o or file.glade.o
-
-		# Output both glade and ui rules. This way make dist will be able
-		# to build cpp files of both of them.
-
+	if test "$RES_BASE_EXT" = "ui"; then
+		RES_LIBADD="$RES_LIBADD $RES_BASE_NOEXT.ui.$ac_objext"  # file.ui.o or file.glade.o
 		RES_TARGETS="$RES_TARGETS
 $RES_BASE_NOEXT.ui.cpp: $RES_FILE_CANON
-	gtk-builder-convert \"$RES_FILE_CANON\" \"$RES_BASE_NOEXT\".tmp_ui
-	\"\$(top_srcdir)/file2csource.sh\" \"$RES_BASE_NOEXT\".tmp_ui \"$RES_BASE_NOEXT.ui.cpp\" \"$RES_BASE_NOEXT\"_ui
-"
-		RES_TARGETS="$RES_TARGETS
-$RES_BASE_NOEXT.glade.cpp: $RES_FILE_CANON
-	\"\$(top_srcdir)/file2csource.sh\" \"$RES_FILE_CANON\" \"$RES_BASE_NOEXT.glade.cpp\" \"$RES_BASE_NOEXT\"_ui
+	\"\$(top_srcdir)/file2csource.sh\" \"$RES_FILE_CANON\" \"$RES_BASE_NOEXT.ui.cpp\" \"$RES_BASE_NOEXT\"_ui
 "
 
 	else  # txt, etc...
-
 		SRC_FILE="$RES_BASE.cpp"
 		RES_LIBADD="$RES_LIBADD $RES_BASE.$ac_objext"  # file.txt.o
 
@@ -435,7 +386,7 @@ _AM_SUBST_NOTMAKE([RES_TARGETS])
 ADDITIONAL_FLAGS="-DPACKAGE_PKGDATA_DIR=\"\\\"\$(pkgdatadir)\\\"\" \
 -DPACKAGE_SYSCONF_DIR=\"\\\"\$(sysconfdir)\\\"\" \
 -DTOP_SRC_DIR=\"\\\"\$(top_srcdir)\\\"\" \
--DHZ_USE_GLOBAL_MACROS=1"
+-DHZ_USE_GLOBAL_MACROS=1 -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED"
 
 #CFLAGS="$CFLAGS $ADDITIONAL_FLAGS"
 CXXFLAGS="$CXXFLAGS $ADDITIONAL_FLAGS"

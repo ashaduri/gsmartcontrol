@@ -13,17 +13,11 @@
 #define GSC_MAIN_WINDOW_H
 
 #include <map>
-#include <gtkmm/window.h>
-#include <gtkmm/menu.h>
-#include <gtkmm/uimanager.h>
-#include <gtkmm/action.h>
-#include <gtkmm/toggleaction.h>
-#include <gtkmm/actiongroup.h>
+#include <gtkmm.h>
 
 #include "applib/app_ui_res_utils.h"
 #include "applib/storage_device.h"
 #include "applib/app_gtkmm_features.h"  // APP_GTKMM_CONNECT_VIRTUAL
-#include "applib/wrapping_label.h"
 
 
 
@@ -165,9 +159,9 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 		bool action_handling_enabled_;  ///< Whether action handling is enabled or not
 		std::map<action_t, Glib::RefPtr<Gtk::Action> > action_map;  ///< Used by on_action_activated().
 
-		WrappingLabel* name_label;  ///< A UI label
-		WrappingLabel* health_label;  ///< A UI label
-		WrappingLabel* family_label;  ///< A UI label
+		Gtk::Label* name_label;  ///< A UI label
+		Gtk::Label* health_label;  ///< A UI label
+		Gtk::Label* family_label;  ///< A UI label
 
 		bool scanning_;  ///< If the scanning is in process or not
 

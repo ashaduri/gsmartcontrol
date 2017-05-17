@@ -1,28 +1,32 @@
-<?xml version="1.0"?>
-<glade-interface>
-  <requires-version lib="gtk+" version="2.8"/>
-  <widget class="GtkWindow" id="gsc_text_window">
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.20.0 -->
+<interface>
+  <requires lib="gtk+" version="3.4"/>
+  <object class="GtkWindow" id="gsc_text_window">
+    <property name="can_focus">False</property>
     <property name="title" translatable="yes">GSmartControl</property>
     <property name="default_width">600</property>
     <property name="default_height">430</property>
     <property name="destroy_with_parent">True</property>
     <child>
-      <widget class="GtkVBox" id="vbox1">
+      <object class="GtkBox" id="vbox1">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="border_width">12</property>
+        <property name="orientation">vertical</property>
         <property name="spacing">12</property>
         <child>
-          <widget class="GtkVBox" id="vbox2">
+          <object class="GtkBox" id="vbox2">
             <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="orientation">vertical</property>
             <child>
-              <widget class="GtkScrolledWindow" id="scrolledwindow1">
+              <object class="GtkScrolledWindow" id="scrolledwindow1">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-                <property name="shadow_type">GTK_SHADOW_IN</property>
+                <property name="shadow_type">in</property>
                 <child>
-                  <widget class="GtkTextView" id="main_textview">
+                  <object class="GtkTextView" id="main_textview">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="has_focus">True</property>
@@ -31,68 +35,91 @@
                     <property name="left_margin">5</property>
                     <property name="right_margin">5</property>
                     <property name="cursor_visible">False</property>
-                  </widget>
+                  </object>
                 </child>
-              </widget>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
             </child>
-          </widget>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
         </child>
         <child>
-          <widget class="GtkHBox" id="hbox2">
+          <object class="GtkBox" id="hbox2">
             <property name="visible">True</property>
+            <property name="can_focus">False</property>
             <property name="spacing">6</property>
             <property name="homogeneous">True</property>
             <child>
-              <widget class="GtkButton" id="save_as_button">
+              <object class="GtkButton" id="save_as_button">
+                <property name="label">gtk-save-as</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="tooltip" translatable="yes">Saved displayed text as...</property>
-                <property name="label" translatable="yes">gtk-save-as</property>
+                <property name="tooltip_text" translatable="yes">Saved displayed text as...</property>
                 <property name="use_stock">True</property>
-                <property name="response_id">0</property>
                 <accelerator key="S" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-              </widget>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
             </child>
             <child>
-              <widget class="GtkLabel" id="label1">
+              <object class="GtkLabel" id="label1">
                 <property name="visible">True</property>
-              </widget>
+                <property name="can_focus">False</property>
+              </object>
               <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
                 <property name="position">1</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkLabel" id="label2">
+              <object class="GtkLabel" id="label2">
                 <property name="visible">True</property>
-              </widget>
+                <property name="can_focus">False</property>
+              </object>
               <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
                 <property name="position">2</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkButton" id="close_window_button">
+              <object class="GtkButton" id="close_window_button">
+                <property name="label">gtk-close</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="has_default">True</property>
                 <property name="receives_default">True</property>
-                <property name="tooltip" translatable="yes">Close this window</property>
-                <property name="label" translatable="yes">gtk-close</property>
+                <property name="tooltip_text" translatable="yes">Close this window</property>
                 <property name="use_stock">True</property>
-                <property name="response_id">0</property>
-              </widget>
+              </object>
               <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
                 <property name="position">3</property>
               </packing>
             </child>
-          </widget>
+          </object>
           <packing>
             <property name="expand">False</property>
+            <property name="fill">True</property>
             <property name="position">1</property>
           </packing>
         </child>
-      </widget>
+      </object>
     </child>
-  </widget>
-</glade-interface>
+  </object>
+</interface>

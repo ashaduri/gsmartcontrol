@@ -10,10 +10,9 @@
 /// @{
 
 #include <vector>
-#include <gtkmm/button.h>
-#include <gtkmm/textview.h>
-#include <gtkmm/treeview.h>
-#include <gdk/gdkkeysyms.h>  // GDK_Escape
+#include <gtkmm.h>
+#include <gdk/gdk.h>  // GDK_KEY_Escape
+#include "applib/app_gtkmm_features.h"
 
 #include "hz/string_algo.h"
 #include "applib/app_gtkmm_utils.h"  // app_gtkmm_create_tree_view_column
@@ -42,7 +41,7 @@ GscHelpWindow::GscHelpWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 
 	Glib::RefPtr<Gtk::AccelGroup> accel_group = this->get_accel_group();
 	if (window_close_button) {
-		window_close_button->add_accelerator("clicked", accel_group, GDK_Escape,
+		window_close_button->add_accelerator("clicked", accel_group, GDK_KEY_Escape,
 				Gdk::ModifierType(0), Gtk::AccelFlags(0));
 	}
 
