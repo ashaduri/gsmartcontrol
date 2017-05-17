@@ -93,6 +93,27 @@
                         <child>
                           <placeholder/>
                         </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -109,7 +130,7 @@
                     <property name="has_focus">True</property>
                     <property name="is_focus">True</property>
                     <property name="tooltip_text" translatable="yes">Drive identity and general health information</property>
-                    <property name="label" translatable="yes">_Identity</property>
+                    <property name="label" translatable="yes">_General</property>
                     <property name="use_markup">True</property>
                     <property name="use_underline">True</property>
                   </object>
@@ -903,8 +924,8 @@ Selective self-test log is also presented here.</property>
                 <property name="receives_default">True</property>
                 <property name="tooltip_text" translatable="yes">Re-read all the information</property>
                 <property name="use_stock">True</property>
-                <accelerator key="F5" signal="clicked"/>
                 <accelerator key="R" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                <accelerator key="F5" signal="clicked"/>
               </object>
               <packing>
                 <property name="expand">True</property>
