@@ -124,6 +124,15 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 
 
 
+void GscMainWindow::obj_destroy()
+{
+	// This is needed because for some reason, if any icon is selected,
+	// on_iconview_selection_changed() is called even after the window is deleted,
+	// causing crash on exit.
+	iconview->clear_all();
+}
+
+
 
 void GscMainWindow::populate_iconview(bool smartctl_valid)
 {
@@ -1285,7 +1294,6 @@ void GscMainWindow::show_load_virtual_file_chooser()
 			break;
 	}
 }
-
 
 
 
