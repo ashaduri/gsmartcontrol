@@ -10,7 +10,7 @@
 /// @{
 
 #include <iostream>
-#include <gtkmm/main.h>
+#include <gtkmm.h>
 
 // #include "smartctl_executor_gui.h"
 #include "smartctl_executor.h"

@@ -14,10 +14,7 @@
 
 #include <vector>
 #include <cstddef>  // std::size_t
-#include <gtkmm/window.h>
-#include <gtkmm/liststore.h>
-#include <gtkmm/treeselection.h>
-#include <gtkmm/treemodelcolumn.h>
+#include <gtkmm.h>
 
 #include "applib/app_ui_res_utils.h"
 #include "applib/cmdex_sync.h"

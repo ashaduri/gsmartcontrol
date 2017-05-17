@@ -9,10 +9,10 @@
 /// \weakgroup gsc
 /// @{
 
+#include <gtkmm.h>
+#include <gdk/gdk.h>  // GDK_KEY_Escape
 #include <vector>  // better use vector, it's needed by others too
 #include <algorithm>  // std::min, std::max
-#include <gtkmm.h>
-#include <gdk/gdkkeysyms.h>  // GDK_Escape
 
 #include "hz/down_cast.h"
 #include "hz/string_num.h"  // number_to_string
@@ -26,7 +26,6 @@
 #include "applib/storage_property_colors.h"
 #include "applib/gui_utils.h"  // gui_show_error_dialog
 #include "applib/smartctl_executor_gui.h"
-#include "applib/app_gtkmm_features.h"  // APP_GTKMM_CHECK_VERSION
 
 #include "gsc_text_window.h"
 #include "gsc_info_window.h"
@@ -56,7 +55,7 @@ namespace {
 
 
 	/// Set "top" labels - the generic text at the top of each tab page.
-	inline void app_set_top_labels(Gtk::VBox* vbox, const label_list_t& label_strings)
+	inline void app_set_top_labels(Gtk::Box* vbox, const label_list_t& label_strings)
 	{
 		if (!vbox)
 			return;
@@ -70,7 +69,7 @@ namespace {
 
 		if (label_strings.empty()) {
 			// add one label only
-			Gtk::Label* label = Gtk::manage(new Gtk::Label("No data available", Gtk::ALIGN_LEFT));
+			Gtk::Label* label = Gtk::manage(new Gtk::Label("No data available", Gtk::ALIGN_START));
 			label->set_padding(6, 0);
 			vbox->pack_start(*label, false, false);
 
@@ -78,11 +77,11 @@ namespace {
 			// add one label per element
 			for (label_list_t::const_iterator iter = label_strings.begin(); iter != label_strings.end(); ++iter) {
 				std::string label_text = Glib::Markup::escape_text(iter->label);
-				WrappingLabel* label = Gtk::manage(new WrappingLabel(label_text, Gtk::ALIGN_LEFT));
+				Gtk::Label* label = Gtk::manage(new Gtk::Label(label_text, Gtk::ALIGN_START));
 				label->set_padding(6, 0);
 				// label->set_ellipsize(Pango::ELLIPSIZE_END);
 				label->set_selectable(true);
-				label->set_flags(label->get_flags() & ~Gtk::CAN_FOCUS);
+				label->set_can_focus(false);
 
 				std::string fg;
 				if (app_property_get_label_highlight_color(iter->property->warning, fg))
@@ -176,9 +175,9 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 {
 
 	// Create missing widgets
-	Gtk::HBox* device_name_hbox = lookup_widget<Gtk::HBox*>("device_name_label_hbox");
+	Gtk::Box* device_name_hbox = lookup_widget<Gtk::Box*>("device_name_label_hbox");
 	if (device_name_hbox) {
-		device_name_label = Gtk::manage(new WrappingLabel("No data available", Gtk::ALIGN_LEFT));
+		device_name_label = Gtk::manage(new Gtk::Label("No data available", Gtk::ALIGN_START));
 		device_name_label->set_selectable(true);
 		device_name_label->show();
 		device_name_hbox->pack_start(*device_name_label, true, true);
@@ -213,7 +212,7 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 
 	// Accelerators
 	if (close_window_button) {
-		close_window_button->add_accelerator("clicked", this->get_accel_group(), GDK_Escape,
+		close_window_button->add_accelerator("clicked", this->get_accel_group(), GDK_KEY_Escape,
 				Gdk::ModifierType(0), Gtk::AccelFlags(0));
 	}
 
@@ -398,7 +397,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			id_props.push_back(*iter);
 
 
-		Gtk::Table* identity_table = lookup_widget<Gtk::Table*>("identity_table");
+		Gtk::Grid* identity_table = lookup_widget<Gtk::Grid*>("identity_table");
 		if (!identity_table)
 			break;
 
@@ -415,24 +414,21 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			if (iter->generic_name == "overall_health")  // a little distance for this one
 				++row;
 
-			// Note: Using WrappingLabel makes it invisible (huh?), so use plain Label instead.
-			// WrappingLabel* name = Gtk::manage(new WrappingLabel());
 			Gtk::Label* name = Gtk::manage(new Gtk::Label());
 			// name->set_ellipsize(Pango::ELLIPSIZE_END);
-			name->set_alignment(1., 0.5);  // right-align
+			name->set_alignment(Gtk::ALIGN_END);  // right-align
 			name->set_selectable(true);
-			name->set_flags(name->get_flags() & ~Gtk::CAN_FOCUS);
+			name->set_can_focus(false);
 			name->set_markup("<b>" + Glib::Markup::escape_text(iter->readable_name) + "</b>");
 
 			// If the above is Label, then this has to be Label too, else it will shrink
 			// and "name" will take most of the horizontal space. If "name" is set to shrink,
 			// then it stops being right-aligned.
-			// WrappingLabel* value = Gtk::manage(new WrappingLabel());
 			Gtk::Label* value = Gtk::manage(new Gtk::Label());
 			// value->set_ellipsize(Pango::ELLIPSIZE_END);
-			value->set_alignment(0., 0.5);  // left-align
+			value->set_alignment(Gtk::ALIGN_START);  // left-align
 			value->set_selectable(true);
-			value->set_flags(value->get_flags() & ~Gtk::CAN_FOCUS);
+			value->set_can_focus(false);
 			value->set_markup(Glib::Markup::escape_text(iter->format_value()));
 
 			std::string fg;
@@ -441,8 +437,9 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 				value->set_markup("<span color=\"" + fg + "\">"+ value->get_label() + "</span>");
 			}
 
-			identity_table->attach(*name, 0, 1, row, row+1);
-			identity_table->attach(*value, 1, 2, row, row+1, Gtk::EXPAND | Gtk::FILL);
+// 			identity_table->insert_row(row);
+			identity_table->attach(*name, 0, row, 1, 1);
+			identity_table->attach(*value, 1, row, 1, 1);
 
 			app_gtkmm_set_widget_tooltip(*name, iter->get_description(), true);
 			app_gtkmm_set_widget_tooltip(*value, // value->get_label() + "\n\n" +
@@ -454,7 +451,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			++row;
 		}
 
-		identity_table->resize(row+1, 2);  // add one more row for symmetry
+		identity_table->insert_row(row+1);  // add one more row for symmetry
 
 		identity_table->show_all();
 
@@ -502,7 +499,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
 		model_columns.add(col_tooltip);
-		gtkmm_set_treeview_tooltip_column(treeview, col_tooltip);
+		treeview->set_tooltip_column(col_tooltip.index());
 
 		Gtk::TreeModelColumn<const StorageProperty*> col_storage;
 		model_columns.add(col_storage);
@@ -515,7 +512,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		for (unsigned int i = 0; i < num_tree_cols; ++i) {
 			Gtk::TreeViewColumn* tcol = treeview->get_column(i);
-			tcol->set_cell_data_func(*(tcol->get_first_cell_renderer()),
+			tcol->set_cell_data_func(*(tcol->get_first_cell()),
 						sigc::bind(sigc::ptr_fun(app_attr_cell_renderer_func), col_storage));
 		}
 
@@ -640,7 +637,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
 		model_columns.add(col_tooltip);
-		gtkmm_set_treeview_tooltip_column(treeview, col_tooltip);
+		treeview->set_tooltip_column(col_tooltip.index());
 
 
 		Gtk::TreeModelColumn<const StorageProperty*> col_storage;
@@ -654,7 +651,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		for (unsigned int i = 0; i < num_tree_cols; ++i) {
 			Gtk::TreeViewColumn* tcol = treeview->get_column(i);
-			tcol->set_cell_data_func(*(tcol->get_first_cell_renderer()),
+			tcol->set_cell_data_func(*(tcol->get_first_cell()),
 						sigc::bind(sigc::ptr_fun(app_attr_cell_renderer_func), col_storage));
 		}
 
@@ -707,7 +704,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		}
 
 
-		Gtk::VBox* label_vbox = lookup_widget<Gtk::VBox*>("attributes_label_vbox");
+		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("attributes_label_vbox");
 		app_set_top_labels(label_vbox, label_strings);
 
 		// tab label
@@ -762,7 +759,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
 		model_columns.add(col_tooltip);
-		gtkmm_set_treeview_tooltip_column(treeview, col_tooltip);
+		treeview->set_tooltip_column(col_tooltip.index());
 
 		Gtk::TreeModelColumn<const StorageProperty*> col_storage;
 		model_columns.add(col_storage);
@@ -778,7 +775,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		for (unsigned int i = 0; i < num_tree_cols; ++i) {
 			Gtk::TreeViewColumn* tcol = treeview->get_column(i);
-			tcol->set_cell_data_func(*(tcol->get_first_cell_renderer()),
+			tcol->set_cell_data_func(*(tcol->get_first_cell()),
 						sigc::bind(sigc::ptr_fun(app_attr_cell_renderer_func), col_storage));
 		}
 
@@ -847,7 +844,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		}
 
-		Gtk::VBox* label_vbox = lookup_widget<Gtk::VBox*>("error_log_label_vbox");
+		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("error_log_label_vbox");
 		app_set_top_labels(label_vbox, label_strings);
 
 		// tab label
@@ -907,7 +904,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
 		model_columns.add(col_tooltip);
-		gtkmm_set_treeview_tooltip_column(treeview, col_tooltip);
+		treeview->set_tooltip_column(col_tooltip.index());
 
 		Gtk::TreeModelColumn<const StorageProperty*> col_storage;
 		model_columns.add(col_storage);
@@ -920,7 +917,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		for (unsigned int i = 0; i < num_tree_cols; ++i) {
 			Gtk::TreeViewColumn* tcol = treeview->get_column(i);
-			tcol->set_cell_data_func(*(tcol->get_first_cell_renderer()),
+			tcol->set_cell_data_func(*(tcol->get_first_cell()),
 						sigc::bind(sigc::ptr_fun(app_attr_cell_renderer_func), col_storage));
 		}
 
@@ -962,7 +959,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		}
 
 
-		Gtk::VBox* label_vbox = lookup_widget<Gtk::VBox*>("selftest_log_label_vbox");
+		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("selftest_log_label_vbox");
 		app_set_top_labels(label_vbox, label_strings);
 
 		// tab label
@@ -1113,14 +1110,14 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 	}
 
 	{
-		Gtk::Table* identity_table = lookup_widget<Gtk::Table*>("identity_table");
+		Gtk::Grid* identity_table = lookup_widget<Gtk::Grid*>("identity_table");
 		if (identity_table) {
 			// manually remove all children. without this visual corruption occurs.
 			std::vector<Gtk::Widget*> children = identity_table->get_children();
 			for (std::vector<Gtk::Widget*>::iterator iter = children.begin(); iter != children.end(); ++iter) {
 				identity_table->remove(*(*iter));
 			}
-			identity_table->resize(1, 2);  // row 0 is always empty, so it clears it. (0, 0) is prohibited.
+			// identity_table->remove_row(1);  // row 0 is always empty, so it clears it. (0, 0) is prohibited.
 		}
 
 		// tab label
@@ -1136,7 +1133,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 // 			if (model)
 // 				model->clear();
 			treeview->remove_all_columns();
-			app_gtkmm_treeview_unset_model(treeview);
+			treeview->unset_model();
 		}
 
 		// tab label
@@ -1144,7 +1141,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 	}
 
 	{
-		Gtk::VBox* label_vbox = lookup_widget<Gtk::VBox*>("attributes_label_vbox");
+		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("attributes_label_vbox");
 		app_set_top_labels(label_vbox, label_list_t());
 
 		Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>("attributes_treeview");
@@ -1153,7 +1150,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 // 			if (model)
 // 				model->clear();
 			treeview->remove_all_columns();
-			app_gtkmm_treeview_unset_model(treeview);
+			treeview->unset_model();
 		}
 
 		// tab label
@@ -1161,7 +1158,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 	}
 
 	{
-		Gtk::VBox* label_vbox = lookup_widget<Gtk::VBox*>("error_log_label_vbox");
+		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("error_log_label_vbox");
 		app_set_top_labels(label_vbox, label_list_t());
 
 		Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>("error_log_treeview");
@@ -1170,7 +1167,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 // 			if (model)
 // 				model->clear();
 			treeview->remove_all_columns();
-			app_gtkmm_treeview_unset_model(treeview);
+			treeview->unset_model();
 		}
 
 		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("error_log_textview");
@@ -1185,7 +1182,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 	}
 
 	{
-		Gtk::VBox* label_vbox = lookup_widget<Gtk::VBox*>("selftest_log_label_vbox");
+		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("selftest_log_label_vbox");
 		app_set_top_labels(label_vbox, label_list_t());
 
 		Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>("selftest_log_treeview");
@@ -1194,7 +1191,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 // 			if (model)
 // 				model->clear();
 			treeview->remove_all_columns();
-			app_gtkmm_treeview_unset_model(treeview);
+			treeview->unset_model();
 		}
 
 		// tab label
@@ -1214,7 +1211,6 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		if (test_type_combo) {
 			test_type_combo->set_sensitive(false);  // true if testing is possible and not active.
 			// test_type_combo->clear();  // clear cellrenderers
-			// app_gtkmm_combobox_unset_model(test_type_combo);
 			if (test_combo_model)
 				test_combo_model->clear();
 		}
@@ -1248,7 +1244,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 
-		Gtk::HBox* test_result_hbox = lookup_widget<Gtk::HBox*>("test_result_hbox");
+		Gtk::Box* test_result_hbox = lookup_widget<Gtk::Box*>("test_result_hbox");
 		if (test_result_hbox)
 			test_result_hbox->hide();  // hide by default. show when test is completed.
 
@@ -1333,9 +1329,7 @@ void GscInfoWindow::on_save_info_button_clicked()
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 	dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_ACCEPT);
 
-#if APP_GTKMM_CHECK_VERSION(2, 8, 0)
-	dialog.set_do_overwrite_confirmation(true);  // since gtkmm 2.8
-#endif
+	dialog.set_do_overwrite_confirmation(true);
 
 	if (!last_dir.empty())
 		dialog.set_current_folder(last_dir);
@@ -1583,7 +1577,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 	if (test_result_label)
 		test_result_label->set_markup(result_msg);
 
-	Gtk::HBox* test_result_hbox = self->lookup_widget<Gtk::HBox*>("test_result_hbox");
+	Gtk::Box* test_result_hbox = self->lookup_widget<Gtk::Box*>("test_result_hbox");
 	if (test_result_hbox)
 		test_result_hbox->show();
 
@@ -1612,7 +1606,7 @@ void GscInfoWindow::on_test_execute_button_clicked()
 		return;
 
 	// hide previous test results from GUI
-	Gtk::HBox* test_result_hbox = this->lookup_widget<Gtk::HBox*>("test_result_hbox");
+	Gtk::Box* test_result_hbox = this->lookup_widget<Gtk::Box*>("test_result_hbox");
 	if (test_result_hbox)
 		test_result_hbox->hide();
 
@@ -1720,9 +1714,7 @@ void GscInfoWindow::on_drive_changed(StorageDevice* pdrive)
 
 	// test_active is also checked in delete_event handler, because this call may not
 	// succeed - the window manager may refuse to do it.
-#if APP_GTKMM_CHECK_VERSION(2, 10, 0)
-	this->set_deletable(!test_active);  // since 2.10
-#endif
+	this->set_deletable(!test_active);
 }
 
 

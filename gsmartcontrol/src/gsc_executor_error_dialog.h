@@ -13,7 +13,7 @@
 #define GSC_EXECUTOR_ERROR_DIALOG_H
 
 #include <string>
-#include <gtkmm/window.h>
+#include <gtkmm.h>
 
 
 

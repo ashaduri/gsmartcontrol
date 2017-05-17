@@ -268,24 +268,20 @@ bool GscMainWindow::create_widgets()
 
 	actiongroup_main->add(Gtk::Action::create("device_menu", "_Device"));
 
-#if APP_GTKMM_CHECK_VERSION(2, 8, 0)  // Gtk::Stock::INFO is since gtkmm 2.8
 		action = Gtk::Action::create(APP_ACTION_NAME(action_view_details), Gtk::Stock::INFO, "_View details",
 				"View detailed information");
-#else
-		action = Gtk::Action::create(APP_ACTION_NAME(action_view_details), "_View details", "View detailed information");
-#endif
 		actiongroup_device->add((action_map[action_view_details] = action), Gtk::AccelKey("<control>V"),
 				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_view_details));
 
 		action = Gtk::ToggleAction::create(APP_ACTION_NAME(action_enable_smart), "Enable S_MART",
 				"Toggle SMART status. The status will be preserved at least until reboot (unless you toggle it again).");
-		action->connect_proxy(*lookup_widget<Gtk::CheckButton*>("status_smart_enabled_check"));
+		lookup_widget<Gtk::CheckButton*>("status_smart_enabled_check")->set_related_action(action);
 		actiongroup_device->add((action_map[action_enable_smart] = action), Gtk::AccelKey("<control>M"),
 				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_enable_smart));
 
 		action = Gtk::ToggleAction::create(APP_ACTION_NAME(action_enable_aodc), "Enable Auto O_ffline Data Collection",
 				"Toggle Automatic Offline Data Collection which will update \"offline\" SMART attributes every four hours");
-		action->connect_proxy(*lookup_widget<Gtk::CheckButton*>("status_aodc_enabled_check"));
+		lookup_widget<Gtk::CheckButton*>("status_aodc_enabled_check")->set_related_action(action);
 		actiongroup_device->add((action_map[action_enable_aodc] = action), Gtk::AccelKey("<control>F"),
 				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_enable_aodc));
 
@@ -381,11 +377,11 @@ bool GscMainWindow::create_widgets()
 	// add some more accelerators (in addition to existing ones)
 	Gtk::Widget* rescan_item = ui_manager->get_widget("/main_menubar/device_menu/" APP_ACTION_NAME(action_rescan_devices));
 	if (rescan_item)
-		rescan_item->add_accelerator("activate", get_accel_group(), GDK_F5, Gdk::ModifierType(0), Gtk::AccelFlags(0));
+		rescan_item->add_accelerator("activate", get_accel_group(), GDK_KEY_F5, Gdk::ModifierType(0), Gtk::AccelFlags(0));
 
 
 	// look after the created widgets
-	Gtk::VBox* menubar_vbox = lookup_widget<Gtk::VBox*>("menubar_vbox");
+	Gtk::Box* menubar_vbox = lookup_widget<Gtk::Box*>("menubar_vbox");
 	Gtk::Widget* menubar = ui_manager->get_widget("/main_menubar");
 	if (menubar_vbox && menubar)
 		menubar_vbox->pack_start(*menubar, Gtk::PACK_SHRINK);
@@ -410,25 +406,28 @@ bool GscMainWindow::create_widgets()
 	// ----------------------------------------- Labels
 
 	// create and add labels
-	Gtk::HBox* name_label_box = lookup_widget<Gtk::HBox*>("status_name_label_hbox");
+	Gtk::Box* name_label_box = lookup_widget<Gtk::Box*>("status_name_label_hbox");
 	if (name_label_box) {
-		name_label = Gtk::manage(new WrappingLabel("No drive selected", Gtk::ALIGN_LEFT));
+		name_label = Gtk::manage(new Gtk::Label("No drive selected", Gtk::ALIGN_START));
+		name_label->set_line_wrap(true);
 		name_label->set_selectable(true);
 		name_label->show();
 		name_label_box->pack_start(*name_label, true, true);
 	}
 
-	Gtk::HBox* health_label_box = lookup_widget<Gtk::HBox*>("status_health_label_hbox");
+	Gtk::Box* health_label_box = lookup_widget<Gtk::Box*>("status_health_label_hbox");
 	if (health_label_box) {
-		health_label = Gtk::manage(new WrappingLabel("No drive selected", Gtk::ALIGN_LEFT));
+		health_label = Gtk::manage(new Gtk::Label("No drive selected", Gtk::ALIGN_START));
+		health_label->set_line_wrap(true);
 		health_label->set_selectable(true);
 		health_label->show();
 		health_label_box->pack_start(*health_label, true, true);
 	}
 
-	Gtk::HBox* family_label_box = lookup_widget<Gtk::HBox*>("status_family_label_hbox");
+	Gtk::Box* family_label_box = lookup_widget<Gtk::Box*>("status_family_label_hbox");
 	if (family_label_box) {
-		family_label = Gtk::manage(new WrappingLabel("No drive selected", Gtk::ALIGN_LEFT));
+		family_label = Gtk::manage(new Gtk::Label("No drive selected", Gtk::ALIGN_START));
+		family_label->set_line_wrap(true);
 		family_label->set_selectable(true);
 		family_label->show();
 		family_label_box->pack_start(*family_label, true, true);
@@ -704,7 +703,7 @@ void GscMainWindow::on_action_enable_aodc_toggled(Gtk::ToggleAction* action)
 
 			Gtk::Button enable_button("_Enable", true);
 			enable_button.set_image(*Gtk::manage(new Gtk::Image(Gtk::Stock::YES, Gtk::ICON_SIZE_BUTTON)));
-			enable_button.set_flags(enable_button.get_flags() | Gtk::CAN_DEFAULT);
+			enable_button.set_can_default(true);
 			enable_button.show_all();
 			dialog.add_action_widget(enable_button, Gtk::RESPONSE_YES);
 			enable_button.grab_default();  // make it the default widget

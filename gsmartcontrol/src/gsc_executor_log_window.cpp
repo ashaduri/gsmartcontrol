@@ -11,15 +11,11 @@
 
 #include <sstream>
 #include <cstddef>  // std::size_t
-#include <gtkmm/button.h>
-#include <gtkmm/entry.h>
-#include <gtkmm/textview.h>
-#include <gtkmm/treeview.h>
-#include <gtkmm/filechooserdialog.h>
-#include <gtkmm/stock.h>
-#include <gdk/gdkkeysyms.h>  // GDK_Escape
+#include <gtkmm.h>
+#include <gdk/gdk.h>  // GDK_KEY_Escape
 
 #include "applib/app_gtkmm_utils.h"  // app_gtkmm_create_tree_view_column
+#include "applib/app_gtkmm_features.h"
 
 #include "gsc_executor_log_window.h"
 #include "gsc_init.h"  // app_get_debug_buffer_str()
@@ -53,7 +49,7 @@ GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, const app_ui
 
 	Glib::RefPtr<Gtk::AccelGroup> accel_group = this->get_accel_group();
 	if (window_close_button) {
-		window_close_button->add_accelerator("clicked", accel_group, GDK_Escape,
+		window_close_button->add_accelerator("clicked", accel_group, GDK_KEY_Escape,
 				Gdk::ModifierType(0), Gtk::AccelFlags(0));
 	}
 
@@ -98,7 +94,7 @@ GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, const app_ui
 
 	// The problem seems to have disappeared (new compiler/runtime?)
 // #ifdef _WIN32
-// 	Gtk::HBox* command_hbox = this->lookup_widget<Gtk::HBox*>("command_hbox");
+// 	Gtk::Box* command_hbox = this->lookup_widget<Gtk::Box*>("command_hbox");
 // 	if (command_hbox)
 // 		command_hbox->hide();
 // #endif
@@ -207,9 +203,7 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 	dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_ACCEPT);
 
-#if APP_GTKMM_CHECK_VERSION(2, 8, 0)
-	dialog.set_do_overwrite_confirmation(true);  // since gtkmm 2.8
-#endif
+	dialog.set_do_overwrite_confirmation(true);
 
 	if (!last_dir.empty())
 		dialog.set_current_folder(last_dir);
@@ -280,9 +274,7 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 	dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_ACCEPT);
 
-#if APP_GTKMM_CHECK_VERSION(2, 8, 0)
-	dialog.set_do_overwrite_confirmation(true);  // since gtkmm 2.8
-#endif
+	dialog.set_do_overwrite_confirmation(true);
 
 	if (!last_dir.empty())
 		dialog.set_current_folder(last_dir);

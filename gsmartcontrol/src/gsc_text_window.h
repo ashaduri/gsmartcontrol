@@ -12,16 +12,13 @@
 #ifndef GSC_TEXT_WINDOW_H
 #define GSC_TEXT_WINDOW_H
 
-#include <gtkmm/window.h>
-#include <gtkmm/button.h>
-#include <gtkmm/accelgroup.h>
-#include <gtkmm/textview.h>
-#include <gtkmm/filechooserdialog.h>
-#include <gdk/gdkkeysyms.h>  // GDK_Escape
+#include <gtkmm.h>
+#include <gdk/gdk.h>  // GDK_KEY_Escape
 
 #include "hz/debug.h"
 #include "hz/fs_file.h"
 
+#include "applib/app_gtkmm_features.h"
 #include "applib/app_ui_res_utils.h"
 #include "applib/app_gtkmm_utils.h"
 
@@ -65,7 +62,7 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 
 			Glib::RefPtr<Gtk::AccelGroup> accel_group = this->get_accel_group();
 			if (close_window_button) {
-				close_window_button->add_accelerator("clicked", accel_group, GDK_Escape,
+				close_window_button->add_accelerator("clicked", accel_group, GDK_KEY_Escape,
 						Gdk::ModifierType(0), Gtk::AccelFlags(0));
 			}
 
@@ -151,9 +148,7 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 			dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 			dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_ACCEPT);
 
-#if APP_GTKMM_CHECK_VERSION(2, 8, 0)
-			dialog.set_do_overwrite_confirmation(true);  // since gtkmm 2.8
-#endif
+			dialog.set_do_overwrite_confirmation(true);
 
 			if (!last_dir.empty())
 				dialog.set_current_folder(last_dir);

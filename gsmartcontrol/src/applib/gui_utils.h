@@ -14,7 +14,7 @@
 
 #include <string>
 
-#include <gtkmm/window.h>
+#include <gtkmm.h>
 
 
 // These functions won't return until the dialogs are closed.

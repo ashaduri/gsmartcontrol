@@ -12,14 +12,10 @@
 #ifndef GSC_INFO_WINDOW_H
 #define GSC_INFO_WINDOW_H
 
-#include <gtkmm/window.h>
-#include <gtkmm/treemodelcolumn.h>
-#include <gtkmm/liststore.h>
-#include <glibmm/ustring.h>
+#include <gtkmm.h>
 
 #include "applib/app_ui_res_utils.h"
 #include "applib/storage_device.h"
-#include "applib/wrapping_label.h"  // WrappingLabel
 #include "applib/selftest.h"
 
 
@@ -126,7 +122,7 @@ class GscInfoWindow : public AppUIResWidget<GscInfoWindow, true> {
 		Glib::ustring tab_selftest_log_name;  ///< Tab header name
 		Glib::ustring tab_test_name;  ///< Tab header name
 
-		WrappingLabel* device_name_label;  ///< Top label
+		Gtk::Label* device_name_label;  ///< Top label
 
 		StorageDeviceRefPtr drive;  ///< The drive we're showing
 

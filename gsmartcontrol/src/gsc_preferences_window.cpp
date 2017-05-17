@@ -10,16 +10,8 @@
 /// @{
 
 #include <map>
-#include <gtkmm/button.h>
-#include <gtkmm/entry.h>
-#include <gtkmm/checkbutton.h>
-#include <gtkmm/treeview.h>
-#include <gtkmm/liststore.h>
-#include <gtkmm/filechooserdialog.h>
-#include <gtkmm/stock.h>
-#include <gtkmm/accelgroup.h>
-#include <gtkmm/messagedialog.h>
-#include <gdk/gdkkeysyms.h>  // GDK_Escape
+#include <gtkmm.h>
+#include <gdk/gdk.h>  // GDK_KEY_Escape
 
 #include "hz/fs_path.h"
 #include "hz/string_sprintf.h"
@@ -299,7 +291,7 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const app_ui
 
 	Glib::RefPtr<Gtk::AccelGroup> accel_group = this->get_accel_group();
 	if (window_cancel_button) {
-		window_cancel_button->add_accelerator("clicked", accel_group, GDK_Escape,
+		window_cancel_button->add_accelerator("clicked", accel_group, GDK_KEY_Escape,
 				Gdk::ModifierType(0), Gtk::AccelFlags(0));
 	}
 

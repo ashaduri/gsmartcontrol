@@ -7,8 +7,8 @@
 #ifndef APP_CMDEX_H
 #define APP_CMDEX_H
 
-#include <string>
 #include <glib.h>
+#include <string>
 
 #include "hz/process_signal.h"  // hz::SIGNAL_*
 #include "hz/error_holder.h"

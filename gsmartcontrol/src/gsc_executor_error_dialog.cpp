@@ -9,8 +9,7 @@
 /// \weakgroup gsc
 /// @{
 
-#include <gtkmm/messagedialog.h>
-#include <gtkmm/stock.h>
+#include <gtkmm.h>
 
 #include "gsc_executor_log_window.h"
 #include "gsc_executor_error_dialog.h"
@@ -43,7 +42,7 @@ namespace {
 
 		Gtk::Button ok_button(Gtk::Stock::OK);
 		ok_button.show_all();
-		ok_button.set_flags(ok_button.get_flags() | Gtk::CAN_DEFAULT);
+		ok_button.set_can_default(true);
 		dialog.add_action_widget(ok_button, Gtk::RESPONSE_OK);
 
 

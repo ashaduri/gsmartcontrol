@@ -12,7 +12,7 @@
 #ifndef GSC_PREFERENCES_WINDOW_H
 #define GSC_PREFERENCES_WINDOW_H
 
-#include <gtkmm/window.h>
+#include <gtkmm.h>
 
 #include "applib/app_ui_res_utils.h"
 

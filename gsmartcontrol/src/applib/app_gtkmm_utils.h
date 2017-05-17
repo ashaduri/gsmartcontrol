@@ -37,27 +37,9 @@ Gtk::Widget* app_gtkmm_get_column_header(Gtk::TreeViewColumn& column);
 Gtk::Widget* app_gtkmm_labelize_column(Gtk::TreeViewColumn& column);
 
 
-/// Unset model on treeview, cross-gtkmm-version.
-void app_gtkmm_treeview_unset_model(Gtk::TreeView* treeview);
-
-
-/// Unset model on combobox (there's no straight way to do it in gtkmm, I think)
-void app_gtkmm_combobox_unset_model(Gtk::ComboBox* box);
-
-
 /// A wrapper around set_tooltip_*() for portability across different gtkmm versions.
 void app_gtkmm_set_widget_tooltip(Gtk::Widget& widget,
 		const Glib::ustring& tooltip_text, bool use_markup = false);
-
-
-/// A portable wrapper around TreeView::set_tooltip_column().
-void gtkmm_set_treeview_tooltip_column(Gtk::TreeView* treeview,
-		Gtk::TreeModelColumn<Glib::ustring>& col_tooltip);
-
-
-/// A portable wrapper around IconView::set_tooltip_column().
-void gtkmm_set_iconview_tooltip_column(Gtk::IconView* iconview,
-		Gtk::TreeModelColumn<Glib::ustring>& col_tooltip, Glib::RefPtr<Gtk::ListStore> model);
 
 
 

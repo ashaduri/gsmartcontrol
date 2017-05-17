@@ -11,11 +11,7 @@
 
 #include <iostream>
 
-#include <gtkmm/box.h>
-#include <gtkmm/button.h>
-#include <gtkmm/label.h>
-#include <gtkmm/window.h>
-#include <gtkmm/main.h>
+#include <gtkmm.h>
 
 #include "app_ui_res_utils.h"
 // #include "hz/instance_manager.h"
@@ -44,7 +40,7 @@ class AppUiResTestWindow : public AppUIResWidget<AppUiResTestWindow, false>
 		AppUiResTestWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
 				: AppUIResWidget<AppUiResTestWindow, false>(gtkcobj, ref_ui)
 		{
-			Gtk::Box* vbox = Gtk::manage(new Gtk::VBox(false, 5));
+			Gtk::Box* vbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL, 5));
 			add(*vbox);
 
 			Gtk::Button* button = Gtk::manage(new Gtk::Button("Clicky"));

@@ -12,8 +12,8 @@
 #ifndef SELFTEST_H
 #define SELFTEST_H
 
+#include <glibmm.h>
 #include <string>
-#include <glibmm/timer.h>
 
 #include "hz/cstdint.h"
 #include "hz/intrusive_ptr.h"

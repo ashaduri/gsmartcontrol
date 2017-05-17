@@ -9,12 +9,12 @@
 /// \weakgroup applib
 /// @{
 
-#include <gtkmm/main.h>  // Gtk::Main
+#include <gtkmm.h>  // Gtk::Main
+#include <gdkmm.h>
 
 #include "hz/fs_path.h"
 #include "hz/string_sprintf.h"
 
-#include "app_gtkmm_features.h"  // APP_GTKMM_CHECK_VERSION
 #include "cmdex_sync_gui.h"
 
 
@@ -28,15 +28,8 @@ bool CmdexSyncGui::execute()
 }
 
 
-#if APP_GTKMM_CHECK_VERSION(2, 10, 0)
-	// these are available since gtkmm 2.10
-	#define CMDEX_DIALOG_MESSAGE_TYPE Gtk::MESSAGE_OTHER
-	// not present in Gdk:: in 2.10 (it's in 2.12), we have to use GDK_
-	#define CMDEX_DIALOG_HINT_TYPE GDK_WINDOW_TYPE_HINT_NOTIFICATION
-#else
-	#define CMDEX_DIALOG_MESSAGE_TYPE Gtk::MESSAGE_INFO
-	#define CMDEX_DIALOG_HINT_TYPE GDK_WINDOW_TYPE_HINT_UTILITY
-#endif
+#define CMDEX_DIALOG_MESSAGE_TYPE Gtk::MESSAGE_OTHER
+#define CMDEX_DIALOG_HINT_TYPE Gdk::WINDOW_TYPE_HINT_NOTIFICATION
 
 
 
@@ -61,9 +54,7 @@ Gtk::MessageDialog* CmdexSyncGui::create_running_dialog(Gtk::Window* parent, con
 			&CmdexSyncGui::on_running_dialog_response));
 
 	running_dialog_->set_decorated(false);
-#if APP_GTKMM_CHECK_VERSION(2, 10, 0)
-	running_dialog_->set_deletable(false);  // since 2.10
-#endif
+	running_dialog_->set_deletable(false);
 	running_dialog_->set_skip_pager_hint(true);
 	running_dialog_->set_skip_taskbar_hint(true);
 	running_dialog_->set_type_hint(Gdk::WindowTypeHint(CMDEX_DIALOG_HINT_TYPE));
