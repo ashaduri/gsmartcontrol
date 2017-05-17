@@ -45,6 +45,9 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 		virtual ~GscMainWindow()
 		{ }
 
+		// Overridden from InstanceManager
+		virtual void obj_destroy();
+
 
 		/// Scan for devices and fill the iconview
 		void rescan_devices();
