@@ -404,15 +404,19 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		identity_table->hide();
 
 		StorageProperty::warning_t max_warning = StorageProperty::warning_none;
-		int row = 1;  // row 0 is always empty. this way it's much easier.
+		int row = 0;
 
 		for (prop_iterator iter = id_props.begin(); iter != id_props.end(); ++iter) {
 			if (!iter->show_in_ui) {
 				continue;  // hide debug messages from smartctl
 			}
 
-			if (iter->generic_name == "overall_health")  // a little distance for this one
+			if (iter->generic_name == "overall_health") {  // a little distance for this one
+				Gtk::Label* empty_label = Gtk::manage(new Gtk::Label());
+				empty_label->set_can_focus(false);
+				identity_table->attach(*empty_label, 0, row, 2, 1);
 				++row;
+			}
 
 			Gtk::Label* name = Gtk::manage(new Gtk::Label());
 			// name->set_ellipsize(Pango::ELLIPSIZE_END);
@@ -437,7 +441,6 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 				value->set_markup("<span color=\"" + fg + "\">"+ value->get_label() + "</span>");
 			}
 
-// 			identity_table->insert_row(row);
 			identity_table->attach(*name, 0, row, 1, 1);
 			identity_table->attach(*value, 1, row, 1, 1);
 
@@ -450,8 +453,6 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 			++row;
 		}
-
-		identity_table->insert_row(row+1);  // add one more row for symmetry
 
 		identity_table->show_all();
 
@@ -1117,7 +1118,6 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 			for (std::vector<Gtk::Widget*>::iterator iter = children.begin(); iter != children.end(); ++iter) {
 				identity_table->remove(*(*iter));
 			}
-			// identity_table->remove_row(1);  // row 0 is always empty, so it clears it. (0, 0) is prohibited.
 		}
 
 		// tab label
