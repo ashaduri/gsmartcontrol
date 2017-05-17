@@ -51,8 +51,6 @@ class GscMainWindowIconView : public Gtk::IconView {
 		GscMainWindowIconView(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
 				: Gtk::IconView(gtkcobj), num_icons(0), main_window(0), empty_view_message(message_none)
 		{
-			APP_GTKMM_CONNECT_VIRTUAL(draw);  // make sure the event handler is called
-
 			columns.add(col_name);  // we can use the col_name variable by value after this.
 			this->set_markup_column(col_name);
 
@@ -151,16 +149,10 @@ class GscMainWindowIconView : public Gtk::IconView {
 		}
 
 
-		/// Overridden from Gtk::Widget
-		bool on_draw_before(Cairo::RefPtr<Cairo::Context> cr)
+		// Overridden from Gtk::Widget
+		bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
 		{
-// TODO Implement in cairo
-/*
 			if (empty_view_message != message_none && this->num_icons == 0) {  // no icons
-				Glib::RefPtr<Gdk::Drawable> win = Glib::wrap(exp_event->window, true);
-	// 			Cairo::RefPtr<Cairo::Context> cr = win->create_cairo_context();
-				Glib::RefPtr<Gdk::GC> gc = Gdk::GC::create(win);
-
 				std::string msg;
 				switch(empty_view_message) {
 					case message_scan_disabled: msg = "Automatic scanning is disabled.\nPress Ctrl+R to scan manually."; break;
@@ -171,7 +163,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 					default: msg = "[error - invalid message]";
 				}
 
-				Glib::RefPtr<Pango::Layout> layout = create_pango_layout("");
+				Glib::RefPtr<Pango::Layout> layout = this->create_pango_layout("");
 				layout->set_alignment(Pango::ALIGN_CENTER);
 				layout->set_markup(msg);
 
@@ -180,11 +172,14 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 				int pos_x = (get_allocation().get_width() - layout_w) / 2;
 				int pos_y = (get_allocation().get_height() - layout_h) / 2;
+				cr->move_to(pos_x, pos_y);
 
-				win->draw_layout(gc, pos_x, pos_y, layout);
+				layout->show_in_cairo_context(cr);
+
+				return true;
 			}
-*/
-			return false;  // without false the icons don't get drawn...
+
+			return Gtk::IconView::on_draw(cr);
 		}
 
 
