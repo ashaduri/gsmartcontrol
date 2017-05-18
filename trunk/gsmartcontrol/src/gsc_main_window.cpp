@@ -393,9 +393,9 @@ bool GscMainWindow::create_widgets()
 	Gtk::Box* menubar_vbox = lookup_widget<Gtk::Box*>("menubar_vbox");
 	Gtk::Widget* menubar = ui_manager->get_widget("/main_menubar");
 	if (menubar_vbox && menubar) {
-		menubar_vbox->pack_start(*menubar, Gtk::PACK_SHRINK);
+		menubar_vbox->pack_start(*menubar, Gtk::PACK_EXPAND_WIDGET);
 		menubar->set_hexpand(true);
-		menubar->set_halign(Gtk::ALIGN_FILL);
+// 		menubar->set_halign(Gtk::ALIGN_START);
 	}
 
 
