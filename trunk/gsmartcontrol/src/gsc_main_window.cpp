@@ -392,8 +392,11 @@ bool GscMainWindow::create_widgets()
 	// look after the created widgets
 	Gtk::Box* menubar_vbox = lookup_widget<Gtk::Box*>("menubar_vbox");
 	Gtk::Widget* menubar = ui_manager->get_widget("/main_menubar");
-	if (menubar_vbox && menubar)
+	if (menubar_vbox && menubar) {
 		menubar_vbox->pack_start(*menubar, Gtk::PACK_SHRINK);
+		menubar->set_hexpand(true);
+		menubar->set_halign(Gtk::ALIGN_FILL);
+	}
 
 
 	// Set tooltips on menu items - gtk does that only on toolbar items.
