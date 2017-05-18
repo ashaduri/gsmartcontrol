@@ -71,7 +71,12 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 			// icons
-			Glib::RefPtr<Gtk::IconTheme> default_icon_theme = Gtk::IconTheme::get_default();
+			Glib::RefPtr<Gtk::IconTheme> default_icon_theme;
+			try {
+				default_icon_theme = Gtk::IconTheme::get_default();
+			} catch (...) {
+				// nothing
+			}
 
 			// Try Gnome icons icons first, they are usually more consistent with Gnome desktop
 			// (this should work only if gnome-settings-daemon is running, so no harm on other desktops).
@@ -94,7 +99,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 			}
 
 			// last resort. gtk has gtk-harddisk built-in. it may not be the right size, but what else can we do?
-			if (!hd_icon)
+			if (!hd_icon && default_icon_theme)
 				hd_icon = default_icon_theme->load_icon("gtk-harddisk", 48, Gtk::IconLookupFlags(0));
 
 
@@ -113,7 +118,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 				}
 			}
 
-			if (!cddvd_icon)
+			if (!cddvd_icon && default_icon_theme)
 				cddvd_icon = default_icon_theme->load_icon("gtk-cdrom", 48, Gtk::IconLookupFlags(0));
 
 

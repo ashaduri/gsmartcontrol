@@ -13,15 +13,7 @@
 #define APP_GTKMM_UTILS_H
 
 #include <string>
-#include <gtkmm/widget.h>
-#include <gtkmm/treeviewcolumn.h>
-#include <gtkmm/treemodelcolumn.h>
-#include <gtkmm/treeview.h>
-#include <gtkmm/combobox.h>
-#include <gtkmm/cellrenderertext.h>
-#include <gtkmm/iconview.h>
-#include <gtkmm/liststore.h>
-#include <gtkmm/icontheme.h>  // must include (even if gtkmm.h is included) for older gtkmm (at least 2.6, but not 2.12)
+#include <gtkmm.h>
 
 #include "hz/down_cast.h"
 
