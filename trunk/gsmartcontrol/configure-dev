@@ -30,12 +30,10 @@ case $type in
 	icc)
 		flags="CC=icc64 CXX=icpc64 --disable-user-flags --enable-tests" ;;
 	win32)
-		flags="CC=i386-pc-mingw32-gcc CXX=i386-pc-mingw32-g++ \
-			PKG_CONFIG_PATH=/cross/w32/target/lib/pkgconfig PKG_CONFIG_LIBDIR=\"\" \
-			PATH=\"/cross/w32/gcc-bin:/cross/w32/target/bin:$PATH\" \
-			--with-windows-gtk-name=gtk2-runtime-2.24.10-2012-10-10-ash --disable-user-flags \
-			--with-nsis=/root/.wine/drive_c/Programs_x86/NSIS/makensis.exe \
-			--enable-optimize-options --enable-tests --build=i686-linux --host=i386-pc-mingw32" ;;
+		flags="PATH=\"/usr/i686-w64-mingw32/bin:/usr/i686-w64-mingw32/sys-root/mingw/bin:$PATH\" \
+			--disable-user-flags \
+			--with-nsis=/usr/bin/makensis \
+			--enable-optimize-options --enable-tests --build=i686-linux --host=i686-w64-mingw32" ;;
 	win32-debug)
 		flags="CC=i386-pc-mingw32-gcc CXX=i386-pc-mingw32-g++ \
 			PKG_CONFIG_PATH=/cross/w32/target/lib/pkgconfig PKG_CONFIG_LIBDIR=\"\" \
@@ -53,14 +51,6 @@ case $type in
 			LDFLAGS=\"-R/opt/sun/target64/lib64 -L/opt/sun/target64/lib64\" \
 			PKG_CONFIG_PATH=\"/opt/sun/target64/lib64/pkgconfig:/usr/lib64/pkgconfig\" \
 			PKG_CONFIG_LIBDIR=\"\" --enable-tests" ;;
-	portland)
-		flags="CC=pgcc CXX=pgCC LDFLAGS=\"-s\" CFLAGS=\"-Minform=warn -Bstatic_pgi\" \
-			CXXFLAGS=\"-Minform=warn -Bstatic_pgi -noswitcherror -define_macro=HZ_NO_COMPILER_AUTOINCLUDE\" \
-			--enable-tests" ;;
-
-	open64)
-		flags="CC=/opt/open64/bin/opencc CXX=/opt/open64/bin/openCC CXXFLAGS=\"-Wall\" \
-			--enable-tests" ;;
 esac
 
 
