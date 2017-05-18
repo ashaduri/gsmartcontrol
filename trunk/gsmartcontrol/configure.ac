@@ -22,6 +22,7 @@ AC_PROG_CXX
 #AC_PROG_CXXCPP
 
 #AM_PROG_LIBTOOL
+AM_PROG_AR
 
 # C++ support in checks
 #AC_LANG([C])
