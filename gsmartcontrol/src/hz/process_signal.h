@@ -156,7 +156,7 @@ namespace internal {
 
 	// structure used to pass parameters to process_signal_find_by_pid.
 	struct process_signal_find_by_pid_arg {
-		process_signal_find_by_pid_arg(DWORD pid_) : pid(pid), hwnd(0)
+		process_signal_find_by_pid_arg(DWORD pid_) : pid(pid_), hwnd(0)
 		{ }
 		DWORD pid;  // pid we're looking from
 		HWND hwnd;  // hwnd used to return the result
