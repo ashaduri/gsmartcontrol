@@ -28,7 +28,7 @@ Group:		Hardware/Other
 # SUSE / OpenSUSE. SLES also defines the correct suse_version.
 %if 0%{?suse_version}
 
-Requires: smartmontools, pcre, gtkmm3 >= 3.4.0
+Requires: smartmontools
 BuildRequires: gcc-c++, libstdc++-devel, pcre-devel, gtkmm3-devel >= 3.4.0
 BuildRequires: update-desktop-files
 BuildRequires: fdupes
@@ -40,7 +40,7 @@ BuildRequires: fdupes
 %if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
 
 # I'm not sure about centos and rhel versions
-Requires: smartmontools, pcre, gtkmm30 >= 3.4.0
+Requires: smartmontools
 BuildRequires: gcc-c++, pcre-devel, gtkmm30-devel >= 3.4.0
 
 # Fedora with consolehelper.
