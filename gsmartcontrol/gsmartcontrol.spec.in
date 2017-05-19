@@ -146,6 +146,8 @@ rm -rf %buildroot
 %{_bindir}/*
 %else
 %attr(0755,root,root) %{_bindir}/*
+%endif
+
 # %%attr(0644,root,root) %%config(noreplace) %%{_sysconfdir}/*
 
 %doc %{_datadir}/doc/gsmartcontrol
