@@ -13,7 +13,7 @@ uninstall-extra-mans:
 
 # This command is needed if installing with make install (the cache
 # file is ignored for rpms).
-gtk_update_icon_cache = gtk-update-icon-cache -f -t $(datadir)/icons/hicolor
+gtk_update_icon_cache = gtk-update-icon-cache-3.0 -f -t $(datadir)/icons/hicolor
 
 install-data-hook: install-extra-mans update-icon-cache
 uninstall-hook: uninstall-extra-mans update-icon-cache

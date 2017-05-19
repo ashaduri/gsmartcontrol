@@ -1,4 +1,7 @@
 
+Version 1.0.0, released on xxxxxxx
+	Ported to GTK+ 3.
+
 Version 0.9.0, released on 2017-05-11
 	Implemented (untested) support for Linux-based Areca controllers with
 		enclosures.

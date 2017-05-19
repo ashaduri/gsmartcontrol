@@ -89,7 +89,7 @@ AC_DEFUN([APP_USE_SYSTEM_EXTENSIONS], [
 			# See sys/featuretest.h
 			;;
 
-		mingw32)
+		mingw*)
 			# This enables standards-compliant stdio behaviour (regarding printf and
 			# friends), as opposed to msvc-compatible one. This is usually enabled
 			# by default if one of the usual macros are encountered (_XOPEN_SOURCE,
@@ -98,13 +98,8 @@ AC_DEFUN([APP_USE_SYSTEM_EXTENSIONS], [
 			# Other things to consider: _NO_OLDNAMES (disable "deprecated"
 			# non-underscored names like chdir (use _chdir), etc...).
 			# See _mingw.h for details.
-			app_cv_target_extension_cflags="-D__USE_MINGW_ANSI_STDIO=1 -DWINVER=0x0600"  # Since vista (for gtk3)
-			app_cv_target_extension_cxxflags="-D__USE_MINGW_ANSI_STDIO=1 -DWINVER=0x0600"
-			;;
-
-		mingw64)
-			app_cv_target_extension_cflags="-D__USE_MINGW_ANSI_STDIO=1 -DWINVER=0x0600"  # Since vista (for gtk3)
-			app_cv_target_extension_cxxflags="-D__USE_MINGW_ANSI_STDIO=1 -DWINVER=0x0600"
+			app_cv_target_extension_cflags="-D__USE_MINGW_ANSI_STDIO=1 -DWINVER=0x0500"  # Since 2000
+			app_cv_target_extension_cxxflags="-D__USE_MINGW_ANSI_STDIO=1 -DWINVER=0x0500"
 			;;
 
 		interix)

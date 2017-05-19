@@ -38,9 +38,6 @@ Don't rely on smartctl return code (2), parse the output instead.
 	https://www.google.com/search?num=50&hl=en&safe=off&client=opera&hs=Dr5&channel=suggest&q=calling+gtk_main_quit+during+gtk_main_iteration+warning&oq=calling+gtk_main_quit+during+gtk_main_iteration+warning&gs_l=serp.12...7064.8155.0.12753.8.8.0.0.0.0.216.935.0j6j1.7.0.les%3B..0.0...1c.1.4.serp.GUiDL5IM2U8
 	https://developer.gnome.org/glib/2.34/glib-The-Main-Event-Loop.html#g-main-loop-quit
 
-Port to GTK2 with disable-deprecated flags, then GTK3.
-	Drop support for old distros.
-
 
 In main window add multi-selection support and right-click menu with various
 	tests, so that it's possible to run multiple tests in parallel from there.

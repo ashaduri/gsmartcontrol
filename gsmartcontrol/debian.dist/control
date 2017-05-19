@@ -3,10 +3,8 @@ Section: utils
 Priority: extra
 Homepage: http://gsmartcontrol.sourceforge.net/
 Maintainer: Alexander Shaduri <ashaduriREMOVETHIS@gmail.com>
-# libglademm is also needed if libgtkmm-2.4 < 2.12, but don't write it
-# here - newer distributions don't contain it.
 Build-Depends: debhelper (>= 5), autotools-dev,
- libpcre3-dev, libgtkmm-2.4-dev (>= 2.6.0)
+ libpcre3-dev, libgtkmm-3.0-dev (>= 3.4.0)
 Standards-Version: 3.7.3
 
 Package: gsmartcontrol
