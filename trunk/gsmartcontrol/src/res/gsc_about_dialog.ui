@@ -17,7 +17,7 @@
     <property name="authors">here be authors</property>
     <property name="documenters">here be documentors</property>
     <property name="translator_credits" translatable="yes">translator-credits</property>
-    <property name="logo_icon_name">gsmartcontrol</property>
+    <property name="logo_icon_name"/>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox1">
         <property name="visible">True</property>

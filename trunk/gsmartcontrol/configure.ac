@@ -248,17 +248,13 @@ AC_ARG_WITH([nsis], [AS_HELP_STRING([--with-nsis=<location>|auto],
 		["~/.wine/drive_c/Program Files/NSIS/Unicode/makensis.exe" for others)])],
 		[with_nsis=${withval}], [with_nsis=auto])
 
-AC_ARG_ENABLE([nsis-wine], [AS_HELP_STRING([--enable-nsis-wine=yes|no|auto],
-		[use wine to run makensis.exe when making NSIS packages (default: auto, which is no for windows, yes for others)])],
-		[with_nsis_wine=${enableval}], [with_nsis_wine=yes])
+AC_ARG_ENABLE([nsis-wine], [AS_HELP_STRING([--enable-nsis-wine=yes|no],
+		[use wine to run makensis.exe when making NSIS packages (default: no)])],
+		[with_nsis_wine=${enableval}], [with_nsis_wine=no])
 
-AC_ARG_WITH([windows-bindir], [AS_HELP_STRING([--with-windows-bindir],
-		[specify location of Windows dlls and executables when making Windows packages (default: /cross/w32/target/bin)])],
-		[with_windows_bindir=${withval}], [with_windows_bindir=auto])
-
-AC_ARG_WITH([windows-gtk-name], [AS_HELP_STRING([--with-windows-gtk-name],
-		[specify name of Windows GTK+ runtime (installer and unpacked directory) when making Windows packages. It will be looked in windows-bindir.])],
-		[with_windows_gtk_name=${withval}], [with_windows_gtk_name=])
+AC_ARG_WITH([windows-sysroot], [AS_HELP_STRING([--with-windows-sysroot],
+		[specify location of Windows system root directory when making Windows packages (default: /mingw32)])],
+		[with_windows_sysroot=${withval}], [with_windows_sysroot=auto])
 
 if test "x$with_nsis" = "xauto" || test "x$with_nsis" = "x"; then
 	# if building on windows, use native paths
@@ -269,30 +265,26 @@ if test "x$with_nsis" = "xauto" || test "x$with_nsis" = "x"; then
 	fi
 fi
 
-if test "x$with_nsis_wine" = "xauto"; then
-	# if not building on windows, use wine
-	if test "x$app_cv_build_os_kernel" = "xwindows32" || test "x$app_cv_build_os_kernel" = "xwindows64"; then
-		with_nsis_wine="no";
-	else
-		with_nsis_wine="yes";
-	fi
-fi
-
 NSIS_EXEC="$with_nsis";
-if test "x$with_nsis_wine" != "xno"; then
+if test "x$with_nsis_wine" = "xyes"; then
 	NSIS_EXEC="wine $with_nsis";
 fi
 
-if test "x$with_windows_bindir" = "xauto" || test "x$with_windows_bindir" = "x"; then
-	with_windows_bindir="/cross/w32/target/bin"
+if test "x$with_windows_sysroot" = "xauto" || test "x$with_windows_sysroot" = "x"; then
+	with_windows_sysroot="/mingw32"
 fi
-WINDOWS_BINDIR="$with_windows_bindir";
+WINDOWS_SYSROOT="$with_windows_sysroot";
 
-GTK_INSTALLER_NAME="$with_windows_gtk_name";
+WINDOWS_SUFFIX="";
+if test "x$app_cv_target_os_kernel" = "xwindows32"; then
+	WINDOWS_SUFFIX="win32"
+elif test "x$app_cv_target_os_kernel" = "xwindows64"; then
+	WINDOWS_SUFFIX="win64"
+fi
 
 AC_SUBST(NSIS_EXEC)
-AC_SUBST(WINDOWS_BINDIR)
-AC_SUBST(GTK_INSTALLER_NAME)
+AC_SUBST(WINDOWS_SYSROOT)
+AC_SUBST(WINDOWS_SUFFIX)
 
 
 # -------------------------------------------------------------------------------------
@@ -405,13 +397,13 @@ ADDITIONAL_INCLUDES="-I\$(top_builddir) -I\$(top_srcdir)/src -I\$(top_srcdir)/sr
 # Note: some gcc-frontend-based compilers may have to be added here
 # (e.g. gccfss (gcc frontend / sun backend), etc...).
 # We use -include only when using pch.
-if test "x$app_cv_compiler_gcc_pch" = "xyes"; then
-	if test "$ax_cv_cxx_compiler_vendor" = "gnu" || test "$ax_cv_cxx_compiler_vendor" = "clang" \
-			|| test "$ax_cv_cxx_compiler_vendor" = "intel" || test "$ax_cv_cxx_compiler_vendor" = "pathscale"; then
-		# This auto-includes this file when compiling any file. Benefits include pch support.
-		ADDITIONAL_INCLUDES="$ADDITIONAL_INCLUDES -include global_macros.h"
-	fi
-fi
+# if test "x$app_cv_compiler_gcc_pch" = "xyes"; then
+# 	if test "$ax_cv_cxx_compiler_vendor" = "gnu" || test "$ax_cv_cxx_compiler_vendor" = "clang" \
+# 			|| test "$ax_cv_cxx_compiler_vendor" = "intel" || test "$ax_cv_cxx_compiler_vendor" = "pathscale"; then
+# 		# This auto-includes this file when compiling any file. Benefits include pch support.
+# 		ADDITIONAL_INCLUDES="$ADDITIONAL_INCLUDES -include global_macros.h"
+# 	fi
+# fi
 
 # our flags must be before all the others
 #CFLAGS="$ADDITIONAL_INCLUDES $CFLAGS"
@@ -482,7 +474,7 @@ AC_SUBST(AUTODIRS)
 
 
 AC_CONFIG_FILES([ data/gsmartcontrol.desktop data/gsmartcontrol.appdata.xml \
-	data/nsis/distribution.txt data/nsis/distribution-nogtk.txt data/nsis/gsmartcontrol.nsi \
+	data/nsis/distribution.txt data/nsis/gsmartcontrol.nsi \
 	debian.dist/changelog \
 	src/gsc_winres.rc src/gsmartcontrol.exe.manifest \
 	gsmartcontrol.spec version compilation_flags ])

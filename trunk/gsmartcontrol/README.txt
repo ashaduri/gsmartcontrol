@@ -97,32 +97,22 @@ You need to have the following software installed:
 
 * smartmontools - see http://smartmontools.sourceforge.net .
 
-* GTK+, version 2.6 or higher - see http://www.gtk.org .
+* GTK+, version 3.4 or higher - see http://www.gtk.org .
 
-* Gtkmm, version 2.6 or higher - see http://www.gtkmm.org .
-
-* libglademm, version 2.4 or higher - see http://www.gtkmm.org .
-Note: libglademm is not needed when using GTK+ / Gtkmm 2.12 or newer.
-
-Note that having GTK+ 2.12 and Gtkmm 2.12 is HIGHLY recommended. While earlier
-versions may work, they may produce suboptimal results and buggy behavior.
+* Gtkmm, version 3.4 or higher - see http://www.gtkmm.org .
 
 Most of these packages are probably already provided by your distribution.
 Here are the packages you need to have to build GSmartControl on some Linux
 distributions:
 
 openSUSE, SLES, SLED:
-gcc-c++, pcre-devel, gtkmm2-devel, (possibly) libglademm-devel.
+gcc-c++, pcre-devel, gtkmm3-devel.
 
 Fedora, CentOS, RHEL:
-gcc-c++, pcre-devel, gtkmm24-devel, (possibly) libglademm24-devel.
-
-Mandriva:
-gcc-c++, gcc-cpp, libpcre-devel, gtkmm2.4-devel, (possibly)
-libglademm2.4-devel.
+gcc-c++, pcre-devel, gtkmm30-devel.
 
 Ubuntu, Debian GNU/Linux:
-g++, libpcre3-dev, libgtkmm-2.4-dev, (possibly) libglademm-2.4-dev.
+g++, libpcre3-dev, libgtkmm-3.0-dev.
 
 Note that usually you need to specify only these packages - the rest is
 installed automatically by the package manager's dependency resolver. Keep in
@@ -136,24 +126,22 @@ The following operating systems are supported:
 
 * Linux - All the popular configurations should work.
 
-* FreeBSD - Tested with DesktopBSD 1.6 (FreeBSD 6.3) / x86.
+* FreeBSD - Tested with DesktopBSD / x86.
 
-* NetBSD - Tested with NetBSD 4.0.1 / x86.
+* NetBSD - Tested with NetBSD / x86.
 
-* OpenBSD - Tested with OpenBSD 4.3 / x86-64 / gcc-3.3.5.
-
-* Windows (2000 SP4 or newer) - Tested with Windows 2000 SP4, Windows XP SP3,
-Windows Vista SP2 (32-bit and 64-bit), Windows 7 SP1 (32-bit and 64-bit). The
-Windows port uses pd0, pd1, etc... for physical drives 0, 1, etc... .
-
-* Solaris - Tested with Solaris 10 / x86 / gcc-3.4.3 / blastwave,
-Solaris 10 / x86 / sunstudio12 / sunfreeware. OpenSolaris should work but has
-not been tested yet.
-
-* Mac OS X - 3rd-party testing by the MacPorts and Fink projects.
+* OpenBSD - Tested with OpenBSD / x86-64.
 
 * DragonFlyBSD - Code written but no testing has been performed yet. Expected
 to work without any issues.
+
+* Windows Vista SP2 (32-bit and 64-bit), Windows 7 SP1, Windows Server 2008,
+Windows 8.1, Windows 10. The Windows port uses pd0, pd1, etc...
+for physical drives 0, 1, etc... .
+
+* Solaris.
+
+* Mac OS X - 3rd-party testing by the MacPorts and Fink projects.
 
 * QNX - Code written but no testing has been performed yet.
 
@@ -320,9 +308,6 @@ information in capabilities.
 Not all drives support disabling Automatic Offline Data Collection, even if
 they report otherwise. Unfortunately, there's no way to detect such drives.
 
-Running on GTK+ / Gtkmm versions earlier than 2.12 may cause visual artifacts,
-usability issues (especially with tooltips and icons), instability, etc...
-
 The texts probably contain a lot of grammatical errors, English being my third
 language and all.
 
@@ -349,7 +334,7 @@ to fix the bug.
 
 * Which version of GTK and Gtkmm you have installed. Finding this out is very
 distribution-specific. For example, on openSUSE it would be
-"rpm -q gtk2 gtkmm2". Some distributions have gtkmm24 instead. You may also
+"rpm -q gtk3 gtkmm3". Some distributions have gtkmm30 instead. You may also
 search them in your distribution's graphical package manager, if there is one.
 
 * Execution log from the program, if possible. To obtain it, run the program

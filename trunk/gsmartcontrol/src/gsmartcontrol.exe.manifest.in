@@ -18,14 +18,11 @@
 		</ms_asmv2:security>
 	</ms_asmv2:trustInfo>
 
-	<!-- GTK applications are dpi-aware -->
-	<!-- Disable for now, since there are lots of issues at 200% and above -->
-	<!--
+	<!-- GTK3 applications are dpi-aware -->
 	<asmv3:application>
 		<asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">
 			<dpiAware>true</dpiAware>
 		</asmv3:windowsSettings>
 	</asmv3:application>
-	-->
 
 </assembly>

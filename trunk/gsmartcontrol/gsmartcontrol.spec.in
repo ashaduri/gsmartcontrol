@@ -17,34 +17,18 @@ Group:		Hardware/Other
 
 
 # Dependencies for various distributions. The actual deps are:
-# smartmontools, pcre, (gtkmm2 >= 2.12 || (gtkmm2 >= 2.6.0 && libglademm >= 2.4.0))
+# smartmontools, pcre, gtkmm3 >= 3.4.0
 # (with the respective -devel packages of the libraries for build requirements).
 # For non-specified distributions we don't specify any dependencies to avoid errors.
-
-# For mandriva, these contain the su programs.
-# Suggests:	libgnomesu, gksu, kdebase-progs
 
 
 # SUSE / OpenSUSE. SLES also defines the correct suse_version.
 %if 0%{?suse_version}
 
-%if 0%{?%suse_version} >= 1030
-Requires: smartmontools, pcre, gtkmm2 >= 2.12.0
-BuildRequires: gcc-c++, libstdc++-devel, pcre-devel, gtkmm2-devel >= 2.12.0
-%else
-%if 0%{?%suse_version} == 1020
-Requires: smartmontools, pcre, gtkmm2 >= 2.6.0, libglademm >= 2.4.0
-BuildRequires: gcc-c++, libstdc++-devel, pcre-devel, gtkmm2-devel >= 2.6.0, libglademm-devel >= 2.4.0
-%else
-Requires: smartmontools, pcre, gtkmm24 >= 2.6.0, libglademm >= 2.4.0
-BuildRequires: gcc-c++, libstdc++-devel, pcre-devel, gtkmm24-devel >= 2.6.0, libglademm-devel >= 2.4.0
-%endif
-%endif
+Requires: smartmontools, pcre, gtkmm3 >= 3.4.0
+BuildRequires: gcc-c++, libstdc++-devel, pcre-devel, gtkmm3-devel >= 3.4.0
 BuildRequires: update-desktop-files
-
-%if 0%{?suse_version} >= 1030
 BuildRequires: fdupes
-%endif
 
 %endif
 
@@ -53,33 +37,13 @@ BuildRequires: fdupes
 %if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
 
 # I'm not sure about centos and rhel versions
-%if 0%{?fedora_version} >= 8 || 0%{?rhel_version} >= 600 || 0%{?centos_version} >= 600
-Requires: smartmontools, pcre, gtkmm24 >= 2.12.0
-BuildRequires: gcc-c++, pcre-devel, gtkmm24-devel >= 2.12.0
-%else
-Requires: smartmontools, pcre, gtkmm24 >= 2.6.0, libglademm24 >= 2.4.0
-BuildRequires: gcc-c++, pcre-devel, gtkmm24-devel >= 2.6.0, libglademm24-devel >= 2.4.0
-%endif
+Requires: smartmontools, pcre, gtkmm30 >= 3.4.0
+BuildRequires: gcc-c++, pcre-devel, gtkmm30-devel >= 3.4.0
 
 # Fedora with consolehelper.
 # usermode-gtk is for consolehelper-gtk.
 %if 0%{?fedora_version}
 Requires: usermode-gtk
-%endif
-
-%endif
-
-
-# Mandriva. Check the latest official spec file at
-# http://svn.mandriva.com/cgi-bin/viewvc.cgi/packages/cooker/gsmartcontrol/current/
-%if 0%{?mandriva_version}
-
-%if 0%{?mandriva_version} >= 2008
-Requires: smartmontools, libpcre0, gtkmm2.4 >= 2.12.0
-BuildRequires: gcc-c++, gcc-cpp, pcre-devel, gtkmm2.4-devel >= 2.12.0, desktop-file-utils
-%else
-Requires: smartmontools, libpcre0, gtkmm2.4 >= 2.6.0, libglademm2.4 >= 2.4.0
-BuildRequires: gcc-c++, gcc-cpp, pcre-devel, gtkmm2.4-devel >= 2.6.0, libglademm2.4-devel >= 2.4.0, desktop-file-utils
 %endif
 
 %endif
@@ -94,21 +58,10 @@ on it.
 
 %prep
 
-
 %setup -q
-%if 0%{?mandriva_version} <= 2006
 %configure
-%else
-%configure --enable-optimize-options=auto
-%endif
 
 %build
-# Set up for parallel builds
-#numprocs=`grep -E -c ^cpu[0-9]+ /proc/stat || :`
-#if [ "$numprocs" = "0" ]; then
-#	numprocs=1
-#fi
-#make -j$numprocs
 make %{?_smp_mflags}
 
 
@@ -119,15 +72,13 @@ make DESTDIR=%buildroot install-strip
 # Remove the icon cache file "make install" generates, to avoid package conflicts.
 rm -f $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/icon-theme.cache
 
+
 %if 0%{?suse_version}
+
 %suse_update_desktop_file -n %{name}
 
-
 # There are some png file duplicates, hardlink them.
-%if 0%{?suse_version} >= 1030
 %fdupes
-%endif
-
 
 # We install icons, so this is needed.
 %if 0%{?suse_version} >= 1140
@@ -176,15 +127,6 @@ SESSION=true
 EOF
 
 # endif fedora
-%endif
-
-
-%if 0%{?mandriva_version}
-desktop-file-install --vendor="" \
-	--remove-category="Application" \
-	--add-category="System" \
-	--add-category="X-MandrivaLinux-System-Configuration-Hardware;Settings;HardwareSettings" \
-	--dir $RPM_BUILD_ROOT%{_datadir}/applications $RPM_BUILD_ROOT%{_datadir}/applications/%{name}.desktop
 %endif
 
 

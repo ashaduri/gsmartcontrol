@@ -16,7 +16,7 @@
 # autoconf
 
 
-autoreconf --verbose --install -W all
+autoreconf --verbose --install -W all --force
 
 
 rm -f config.cache

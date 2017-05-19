@@ -8,6 +8,8 @@ config.guess
 config.sub
 aclocal.m4
 config.h.in
+compile
+ar-lib
 missing
 install-sh
 *.glade.cpp
