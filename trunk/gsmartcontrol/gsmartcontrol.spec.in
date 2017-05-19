@@ -2,10 +2,10 @@ Name:		gsmartcontrol
 Version: 	@VERSION@
 Release:	1as
 License:	GPL-2.0 AND GPL-3.0
-Url:		http://gsmartcontrol.sourceforge.net
+Url:		http://gsmartcontrol.sourceforge.net/
 Vendor:		Alexander Shaduri <ashaduri 'at' gmail.com>
 # Packager:	Alexander Shaduri <ashaduri 'at' gmail.com>
-Source:		gsmartcontrol-%{version}.tar.bz2
+Source:		http://sourceforge.net/projects/gsmartcontrol/files/%{version}/%{name}-%{version}.tar.bz2
 BuildRoot:	%{_tmppath}/%{name}-%{version}-build
 Summary:	GSmartControl - Hard Disk Drive and SSD Health Inspection Tool
 
@@ -14,6 +14,9 @@ Group:		System/Kernel and hardware
 %else
 Group:		Hardware/Other
 %endif
+
+# Empty debug packages cause errors in new RPM. Disable them.
+%global debug_package %{nil}
 
 
 # Dependencies for various distributions. The actual deps are:
@@ -60,6 +63,7 @@ on it.
 
 %setup -q
 %configure
+
 
 %build
 make %{?_smp_mflags}
@@ -137,6 +141,10 @@ rm -rf %buildroot
 %files
 %defattr(-,root,root)
 
+# In fedora /usr/bin/gsmartcontrol is linked to consolehelper, cannot set attrs on symlink.
+%if 0%{?fedora_version}
+%{_bindir}/*
+%else
 %attr(0755,root,root) %{_bindir}/*
 # %%attr(0644,root,root) %%config(noreplace) %%{_sysconfdir}/*
 
@@ -147,7 +155,6 @@ rm -rf %buildroot
 # %%{_datadir}/gsmartcontrol/*
 %{_datadir}/applications/*.desktop
 %{_datadir}/metainfo
-%{_datadir}/metainfo/*.appdata.xml
 %{_datadir}/icons/*
 %{_datadir}/pixmaps/*
 

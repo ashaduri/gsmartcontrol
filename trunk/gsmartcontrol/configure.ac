@@ -6,7 +6,7 @@ AC_CONFIG_HEADERS([config.h])
 
 AC_CANONICAL_TARGET
 
-AM_INIT_AUTOMAKE([foreign dist-bzip2 -Wall])
+AM_INIT_AUTOMAKE([foreign no-dist-gzip dist-bzip2 -Wall])
 
 
 # Clear *FLAGS, LIBS, LDFLAGS if requested through configure option.
