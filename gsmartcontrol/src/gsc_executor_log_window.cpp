@@ -158,13 +158,10 @@ void GscExecutorLogWindow::on_command_output_received(const CmdexSyncCommandInfo
 	row[col_entry] = entry;
 
 	// if visible, set the selection to it
-	if (this->is_visible()) {
-		Gtk::TreeView* treeview = this->lookup_widget<Gtk::TreeView*>("command_list_treeview");
-
-		if (treeview) {
-			selection->select(row);
-			treeview->scroll_to_row(list_store->get_path(row));
-		}
+	Gtk::TreeView* treeview = this->lookup_widget<Gtk::TreeView*>("command_list_treeview");
+	if (treeview) {
+		selection->select(row);
+		treeview->scroll_to_row(list_store->get_path(row));
 	}
 }
 
