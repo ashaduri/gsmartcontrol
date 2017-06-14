@@ -134,6 +134,7 @@ View drive details for more information.</property>
                           <object class="GtkBox" id="vbox3">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="orientation">vertical</property>
                             <property name="spacing">6</property>
                             <child>
                               <object class="GtkBox" id="status_family_hbox">
