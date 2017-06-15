@@ -76,6 +76,8 @@ win-dist-prepare-all: nsis-dist-prepare win-zip-dist-prepare
 GTK_BIN_FILES = gdk-pixbuf-query-loaders.exe \
 	gspawn-win32-helper-console.exe \
 	gspawn-win32-helper.exe \
+	gspawn-win64-helper-console.exe \
+	gspawn-win64-helper.exe \
 	gtk-query-immodules-3.0.exe \
 	gtk-update-icon-cache-3.0.exe \
 	libatk-1.*.dll \

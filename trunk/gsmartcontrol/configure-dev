@@ -46,7 +46,7 @@ case $type in
 	win64-cross)
 		flags="PATH=\"/usr/x86_64-w64-mingw32/bin:/usr/x86_64-w64-mingw32/sys-root/mingw/bin:$PATH\" \
 			--with-nsis=/usr/bin/makensis --with-windows-sysroot=/usr/x86_64-w64-mingw32/sys-root/mingw \
-			--enable-optimize-options --enable-tests --host=i686-w64-mingw32" ;;
+			--enable-optimize-options --enable-tests --host=x86_64-w64-mingw32" ;;
 	win64-cross-debug)
 		flags="PATH=\"/usr/x86_64-w64-mingw32/bin:/usr/x86_64-w64-mingw32/sys-root/mingw/bin:$PATH\" \
 			--enable-debug-options --enable-tests --host=x86_64-w64-mingw32" ;;

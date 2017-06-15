@@ -56,7 +56,7 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 	// iconview, gtkuimanager stuff (menus), custom labels
 	create_widgets();
 
-	set_default_size(600, 560);
+	set_default_size(600, 540);
 
 	// show the window first, scan later
 	show();
