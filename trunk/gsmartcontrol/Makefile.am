@@ -140,6 +140,7 @@ win-dist-prepare: all
 
 	for file in $(GTK_BIN_FILES); do for f in "@WINDOWS_SYSROOT@/bin/"$$file; do if test -f "$${f}"; then cp -p "$${f}" win-dist/; fi; done; done
 
+#	<prefix>/etc should contain gtk-3.0/settings.ini
 	$(MKDIR_P) win-dist/etc
 	$(MKDIR_P) win-dist/etc/fonts
 	cp -p "@WINDOWS_SYSROOT@"/etc/fonts/fonts.conf win-dist/etc/fonts
@@ -148,12 +149,14 @@ win-dist-prepare: all
 	$(MKDIR_P) win-dist/share
 	cp -p -r "@WINDOWS_SYSROOT@"/share/themes win-dist/share
 
+#	needed for file chooser
 	$(MKDIR_P) win-dist/share/glib-2.0
 	cp -p -r "@WINDOWS_SYSROOT@"/share/glib-2.0/schemas win-dist/share/glib-2.0
 
 # 	$(MKDIR_P) win-dist/share/icons
 # 	cp -p "@WINDOWS_SYSROOT@"/share/icons/hicolor win-dist/share/icons
 
+#	needed for window titlebar
 	$(MKDIR_P) win-dist/share/icons/Adwaita/16x16/actions
 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/16x16/actions/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/16x16/actions
 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/16x16/actions/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/16x16/actions

@@ -30,6 +30,7 @@
 #include "hz/locale_tools.h"  // locale_c*
 #include "hz/string_algo.h"  // string_join()
 #include "hz/win32_tools.h"  // win32_get_registry_value_string()
+#include "hz/env_tools.h"
 
 #include "gsc_main_window.h"
 #include "gsc_executor_log_window.h"
@@ -305,6 +306,10 @@ bool app_init_and_loop(int& argc, char**& argv)
 	// initialize GThread (for mutexes, etc... to work). Must be called before any other glib function.
 // 	Glib::thread_init();
 
+#ifdef _WIN32
+	// Disable client-side decorations (enable native windows decorations) under Windows.
+	hz::env_set_value("GTK_CSD", "0");
+#endif
 
 	// Glib needs the C locale set to system locale for command line args.
 	// We will reset it later if needed.
