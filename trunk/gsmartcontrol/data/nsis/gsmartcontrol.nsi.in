@@ -40,7 +40,7 @@ OutFile "${PRODUCT_NAME_SMALL}-${PRODUCT_VERSION}-@WINDOWS_SUFFIX@.exe"
 
 ; The Default Installation Directory:
 ; Try to install to the same directory as runtime.
-InstallDir "$PROGRAMFILES\${PRODUCT_NAME}"
+InstallDir "$PROGRAMFILES64\${PRODUCT_NAME}"
 ; If already installed, try here
 InstallDirRegKey HKLM "SOFTWARE\${PRODUCT_NAME}" "InstallationDirectory"
 
@@ -132,20 +132,17 @@ SectionIn 1 RO
 	; File "gsmartcontrol.conf"
 
 	SetOverwrite On
-	File gsmartcontrol.exe
+	File *.exe
+	File *.dll
 	File gsmartcontrol.exe.manifest
 	File gsmartcontrol.ico
 	File icon_*.png
-	; File *.dll
-	File smartctl-nc.exe
-	File smartctl.exe
-	File update-smart-drivedb.exe
+	File drivedb.h
 
 	; Include the "doc" directory completely.
 	File /r doc
 
 	; GTK and stuff
-	File *.dll
 	File /r etc
 	File /r share
 
@@ -227,26 +224,19 @@ Section Uninstall
 	DeleteRegKey HKLM "SOFTWARE\${PRODUCT_NAME}"
 	DeleteRegKey HKLM "${PRODUCT_UNINST_KEY}"
 
-	Delete "$INSTDIR\gsmartcontrol.exe"
+	Delete "$INSTDIR\*.exe"
+	Delete "$INSTDIR\*.dll"
 	Delete "$INSTDIR\gsmartcontrol.exe.manifest"
 	Delete "$INSTDIR\gsmartcontrol.ico"
 	Delete "$INSTDIR\icon_*.png"
-	; Delete "$INSTDIR\*.dll"
-	Delete "$INSTDIR\smartctl-nc.exe"
-	Delete "$INSTDIR\smartctl.exe"
-	Delete "$INSTDIR\update-smart-drivedb.exe"
 
 	; update-smart-drivedb may leave these
 	Delete "$INSTDIR\drivedb.h"
-	Delete "$INSTDIR\drivedb.h.new"
-	Delete "$INSTDIR\drivedb.h.old"
-	Delete "$INSTDIR\drivedb.h.error"
-	Delete "$INSTDIR\drivedb.h.lastcheck"
+	Delete "$INSTDIR\drivedb.h.*"
 
 	RMDir /r "$INSTDIR\doc"
 
 	; GTK and stuff
-	Delete "$INSTDIR\*.dll"
 	RMDir /r "$INSTDIR\etc"
 	RMDir /r "$INSTDIR\share"
 
