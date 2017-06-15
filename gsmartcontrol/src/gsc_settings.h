@@ -41,8 +41,9 @@ inline void init_default_settings()
 #endif
 	// search for "smartctl-nc.exe" in smartmontools installation first.
 	rconfig::set_default_data("system/win32_search_smartctl_in_smartmontools", true);
-	rconfig::set_default_data("system/win32_smartmontools_regpath", "SOFTWARE\\smartmontools");  // in HKLM
-	rconfig::set_default_data("system/win32_smartmontools_regkey", "Install_Dir");
+	rconfig::set_default_data("system/win32_smartmontools_regpath", "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\smartmontools");  // in HKLM
+	rconfig::set_default_data("system/win32_smartmontools_regpath_wow", "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\smartmontools");  // in HKLM
+	rconfig::set_default_data("system/win32_smartmontools_regkey", "InstallLocation");
 	rconfig::set_default_data("system/win32_smartmontools_smartctl_binary", "bin\\smartctl-nc.exe");  // relative to smt install path
 	rconfig::set_default_data("system/win32_areca_scan_controllers", int32_t(2));  // 0 - no, 1 - yes, 2 - auto (if areca tools are found)
 	rconfig::set_default_data("system/win32_areca_use_cli", int32_t(2));  // 0 - no, 1 - yes, 2 - auto (if it's found)

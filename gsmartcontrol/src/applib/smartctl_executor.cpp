@@ -34,16 +34,20 @@ std::string get_smartctl_binary()
 		if (!use_smt)
 			break;
 
-		std::string smt_regpath, smt_regkey, smt_smartctl;
+		std::string smt_regpath, smt_regpath_wow, smt_regkey, smt_smartctl;
 		rconfig::get_data("system/win32_smartmontools_regpath", smt_regpath);
+		rconfig::get_data("system/win32_smartmontools_regpath_wow", smt_regpath_wow);  // same as above, but with WOW6432Node
 		rconfig::get_data("system/win32_smartmontools_regkey", smt_regkey);
 		rconfig::get_data("system/win32_smartmontools_smartctl_binary", smt_smartctl);
 
-		if (smt_regpath.empty() || smt_regkey.empty() || smt_smartctl.empty())
+		if ((smt_regpath.empty() && smt_regpath_wow.empty()) || smt_regkey.empty() || smt_smartctl.empty())
 			break;
 
 		std::string smt_inst_dir;
 		hz::win32_get_registry_value_string(HKEY_LOCAL_MACHINE, smt_regpath, smt_regkey, smt_inst_dir);
+		if (smt_inst_dir.empty()) {
+			hz::win32_get_registry_value_string(HKEY_LOCAL_MACHINE, smt_regpath_wow, smt_regkey, smt_inst_dir);
+		}
 
 		if (smt_inst_dir.empty()) {
 			debug_out_info("app", DBG_FUNC_MSG << "Smartmontools installation not found in \"HKLM\\"
