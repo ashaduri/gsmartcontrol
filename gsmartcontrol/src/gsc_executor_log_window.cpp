@@ -16,6 +16,7 @@
 
 #include "applib/app_gtkmm_utils.h"  // app_gtkmm_create_tree_view_column
 #include "applib/app_gtkmm_features.h"
+#include "hz/scoped_ptr.h"
 
 #include "gsc_executor_log_window.h"
 #include "gsc_init.h"  // app_get_debug_buffer_str()
@@ -190,9 +191,21 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 	Gtk::TreeIter iter = selection->get_selected();
 	CmdexSyncCommandInfoRefPtr entry = (*iter)[col_entry];
 
-
 	static std::string last_dir;
+	int result = 0;
 
+#if GTK_CHECK_VERSION(3, 20, 0)
+	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
+			"Save Data As...", this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, NULL, NULL), g_object_unref);
+
+	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
+
+	if (!last_dir.empty())
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog.get()), last_dir.c_str());
+
+	result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
+
+#else
 	Gtk::FileChooserDialog dialog(*this, "Save Data As...",
 			Gtk::FILE_CHOOSER_ACTION_SAVE);
 
@@ -206,15 +219,22 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 		dialog.set_current_folder(last_dir);
 
 	// Show the dialog and wait for a user response
-	int result = dialog.run();  // the main cycle blocks here
+	result = dialog.run();  // the main cycle blocks here
+#endif
 
 	// Handle the response
 	switch (result) {
 		case Gtk::RESPONSE_ACCEPT:
 		{
-			last_dir = dialog.get_current_folder();  // safe for the future
+			std::string file;
+#if GTK_CHECK_VERSION(3, 20, 0)
+			file = app_ustring_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get())));
+			last_dir = hz::path_get_dirname(file);
+#else
+			file = dialog.get_filename();  // in fs encoding
+			last_dir = dialog.get_current_folder();  // save for the future
+#endif
 
-			std::string file = dialog.get_filename();
 			hz::File f(file);
 			if (!f.put_contents(entry->std_output)) {
 				gui_show_error_dialog("Cannot save data to file", f.get_error_utf8(), this);
@@ -263,7 +283,20 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 
 
 	static std::string last_dir;
+	int result = 0;
 
+#if GTK_CHECK_VERSION(3, 20, 0)
+	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
+			"Save Data As...", this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, NULL, NULL), g_object_unref);
+
+	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
+
+	if (!last_dir.empty())
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog.get()), last_dir.c_str());
+
+	result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
+
+#else
 	Gtk::FileChooserDialog dialog(*this, "Save Data As...",
 			Gtk::FILE_CHOOSER_ACTION_SAVE);
 
@@ -278,14 +311,21 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 
 	// Show the dialog and wait for a user response
 	int result = dialog.run();  // the main cycle blocks here
+#endif
 
 	// Handle the response
 	switch (result) {
 		case Gtk::RESPONSE_ACCEPT:
 		{
-			last_dir = dialog.get_current_folder();  // safe for the future
+			std::string file;
+#if GTK_CHECK_VERSION(3, 20, 0)
+			file = app_ustring_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get())));
+			last_dir = hz::path_get_dirname(file);
+#else
+			file = dialog.get_filename();  // in fs encoding
+			last_dir = dialog.get_current_folder();  // save for the future
+#endif
 
-			std::string file = dialog.get_filename();
 			hz::File f(file);
 			if (!f.put_contents(exss.str())) {
 				gui_show_error_dialog("Cannot save data to file", f.get_error_utf8(), this);

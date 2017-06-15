@@ -129,6 +129,18 @@ namespace {
 
 
 
+Glib::ustring app_ustring_from_gchar(gchar* str)
+{
+	if (!str) {
+		return Glib::ustring();
+	}
+	Glib::ustring ustr(str);
+	g_free(str);
+	return ustr;
+}
+
+
+
 Glib::ustring app_utf8_make_valid(const Glib::ustring& str)
 {
 	char* s = gsc_g_utf8_make_valid(str.c_str());
