@@ -14,6 +14,7 @@
 #include <vector>  // better use vector, it's needed by others too
 #include <algorithm>  // std::min, std::max
 
+#include "hz/scoped_ptr.h"
 #include "hz/down_cast.h"
 #include "hz/string_num.h"  // number_to_string
 #include "hz/string_sprintf.h"  // string_sprintf
@@ -1321,7 +1322,25 @@ void GscInfoWindow::on_view_output_button_clicked()
 void GscInfoWindow::on_save_info_button_clicked()
 {
 	static std::string last_dir;
+	int result = 0;
 
+	std::string filename = drive->get_save_filename();
+
+#if GTK_CHECK_VERSION(3, 20, 0)
+	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
+			"Save Data As...", this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, NULL, NULL), g_object_unref);
+
+	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
+
+	if (!last_dir.empty())
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog.get()), last_dir.c_str());
+
+	if (!filename.empty())
+		gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog.get()), filename.c_str());
+
+	result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
+
+#else
 	Gtk::FileChooserDialog dialog(*this, "Save Data As...",
 			Gtk::FILE_CHOOSER_ACTION_SAVE);
 
@@ -1334,21 +1353,26 @@ void GscInfoWindow::on_save_info_button_clicked()
 	if (!last_dir.empty())
 		dialog.set_current_folder(last_dir);
 
-	std::string filename = drive->get_save_filename();
 	if (!filename.empty())
 		dialog.set_current_name(filename);
 
-
 	// Show the dialog and wait for a user response
-	int result = dialog.run();  // the main cycle blocks here
+	result = dialog.run();  // the main cycle blocks here
+#endif
 
 	// Handle the response
 	switch (result) {
 		case Gtk::RESPONSE_ACCEPT:
 		{
-			last_dir = dialog.get_current_folder();  // safe for the future
+			std::string file;
+#if GTK_CHECK_VERSION(3, 20, 0)
+			file = app_ustring_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get())));
+			last_dir = hz::path_get_dirname(file);
+#else
+			file = dialog.get_filename();  // in fs encoding
+			last_dir = dialog.get_current_folder();  // save for the future
+#endif
 
-			std::string file = dialog.get_filename();
 			hz::File f(file);
 			std::string data = this->drive->get_full_output();
 			if (data.empty()) {

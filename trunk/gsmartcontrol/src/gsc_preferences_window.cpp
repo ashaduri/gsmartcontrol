@@ -15,6 +15,7 @@
 
 #include "hz/fs_path.h"
 #include "hz/string_sprintf.h"
+#include "hz/scoped_ptr.h"
 #include "rconfig/rconfig_mini.h"
 #include "applib/storage_settings.h"
 #include "applib/app_gtkmm_utils.h"
@@ -571,6 +572,20 @@ void GscPreferencesWindow::on_smartctl_binary_browse_button_clicked()
 	if (!entry)
 		return;
 
+	hz::FsPath path(entry->get_text());
+
+	int result = 0;
+
+#if GTK_CHECK_VERSION(3, 20, 0)
+	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
+			"Choose Smartctl Binary...", this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, NULL, NULL), g_object_unref);
+
+	if (path.is_absolute())
+		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog.get()), path.c_str());
+
+	result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
+
+#else
 	Gtk::FileChooserDialog dialog(*this, "Choose Smartctl Binary...",
 			Gtk::FILE_CHOOSER_ACTION_OPEN);
 
@@ -579,18 +594,24 @@ void GscPreferencesWindow::on_smartctl_binary_browse_button_clicked()
 	dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_ACCEPT);
 
 	// Note: This works on absolute paths only (otherwise it's gtk warning).
-	hz::FsPath p(entry->get_text());
-	if (p.is_absolute())
-		dialog.set_filename(p.str());  // change to its dir and select it if exists.
+	if (path.is_absolute())
+		dialog.set_filename(path.str());  // change to its dir and select it if exists.
 
 	// Show the dialog and wait for a user response
-	int result = dialog.run();  // the main cycle blocks here
+	result = dialog.run();  // the main cycle blocks here
+#endif
 
 	// Handle the response
 	switch (result) {
 		case Gtk::RESPONSE_ACCEPT:
 		{
-			entry->set_text(std::string(dialog.get_filename()));
+			Glib::ustring file;
+#if GTK_CHECK_VERSION(3, 20, 0)
+			file = app_ustring_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get())));
+#else
+			file = dialog.get_filename();  // in fs encoding
+#endif
+			entry->set_text(file);
 			break;
 		}
 

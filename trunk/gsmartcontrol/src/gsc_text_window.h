@@ -17,6 +17,7 @@
 
 #include "hz/debug.h"
 #include "hz/fs_file.h"
+#include "hz/scoped_ptr.h"
 
 #include "applib/app_gtkmm_features.h"
 #include "applib/app_ui_res_utils.h"
@@ -140,7 +141,23 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 		void on_save_as_button_clicked()
 		{
 			static std::string last_dir;
+			int result = 0;
 
+#if GTK_CHECK_VERSION(3, 20, 0)
+			hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
+					"Save Data As...", this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, NULL, NULL), g_object_unref);
+
+			gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
+
+			if (!last_dir.empty())
+				gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog.get()), last_dir.c_str());
+
+			if (!save_filename_.empty())
+				gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog.get()), save_filename_.c_str());
+
+			result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
+
+#else
 			Gtk::FileChooserDialog dialog(*this, "Save Data As...",
 					Gtk::FILE_CHOOSER_ACTION_SAVE);
 
@@ -157,15 +174,21 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 				dialog.set_current_name(save_filename_);
 
 			// Show the dialog and wait for a user response
-			int result = dialog.run();  // the main cycle blocks here
+			result = dialog.run();  // the main cycle blocks here
+#endif
 
 			// Handle the response
 			switch (result) {
 				case Gtk::RESPONSE_ACCEPT:
 				{
-					last_dir = dialog.get_current_folder();  // safe for the future
-
-					std::string file = dialog.get_filename();
+					std::string file;
+#if GTK_CHECK_VERSION(3, 20, 0)
+					file = app_ustring_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get())));
+					last_dir = hz::path_get_dirname(file);
+#else
+					file = dialog.get_filename();  // in fs encoding
+					last_dir = dialog.get_current_folder();  // save for the future
+#endif
 					hz::File f(file);
 					if (!f.put_contents(this->contents_)) {  // this will send to debug_ too.
 						gui_show_error_dialog("Cannot save data to file", f.get_error_utf8(), this);

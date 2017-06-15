@@ -156,37 +156,37 @@ win-dist-prepare: all
 # 	$(MKDIR_P) win-dist/share/icons
 # 	cp -p "@WINDOWS_SYSROOT@"/share/icons/hicolor win-dist/share/icons
 
-#	needed for window titlebar
-	$(MKDIR_P) win-dist/share/icons/Adwaita/16x16/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/16x16/actions/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/16x16/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/16x16/actions/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/16x16/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/16x16/actions/window-minimize-symbolic.symbolic.png win-dist/share/icons/Adwaita/16x16/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/16x16/actions/window-restore-symbolic.symbolic.png win-dist/share/icons/Adwaita/16x16/actions
-	$(MKDIR_P) win-dist/share/icons/Adwaita/24x24/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/24x24/actions/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/24x24/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/24x24/actions/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/24x24/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/24x24/actions/window-minimize-symbolic.symbolic.png win-dist/share/icons/Adwaita/24x24/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/24x24/actions/window-restore-symbolic.symbolic.png win-dist/share/icons/Adwaita/24x24/actions
-	$(MKDIR_P) win-dist/share/icons/Adwaita/32x32/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/32x32/actions/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/32x32/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/32x32/actions/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/32x32/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/32x32/actions/window-minimize-symbolic.symbolic.png win-dist/share/icons/Adwaita/32x32/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/32x32/actions/window-restore-symbolic.symbolic.png win-dist/share/icons/Adwaita/32x32/actions
-	$(MKDIR_P) win-dist/share/icons/Adwaita/48x48/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/48x48/actions/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/48x48/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/48x48/actions/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/48x48/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/48x48/actions/window-minimize-symbolic.symbolic.png win-dist/share/icons/Adwaita/48x48/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/48x48/actions/window-restore-symbolic.symbolic.png win-dist/share/icons/Adwaita/48x48/actions
-	$(MKDIR_P) win-dist/share/icons/Adwaita/64x64/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/64x64/actions/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/64x64/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/64x64/actions/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/64x64/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/64x64/actions/window-minimize-symbolic.symbolic.png win-dist/share/icons/Adwaita/64x64/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/64x64/actions/window-restore-symbolic.symbolic.png win-dist/share/icons/Adwaita/64x64/actions
-	$(MKDIR_P) win-dist/share/icons/Adwaita/96x96/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/96x96/actions/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/96x96/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/96x96/actions/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/96x96/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/96x96/actions/window-minimize-symbolic.symbolic.png win-dist/share/icons/Adwaita/96x96/actions
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/96x96/actions/window-restore-symbolic.symbolic.png win-dist/share/icons/Adwaita/96x96/actions
+#	needed for window titlebar (if using client-side decorations)
+# 	$(MKDIR_P) win-dist/share/icons/Adwaita/16x16/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/16x16/actions/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/16x16/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/16x16/actions/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/16x16/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/16x16/actions/window-minimize-symbolic.symbolic.png win-dist/share/icons/Adwaita/16x16/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/16x16/actions/window-restore-symbolic.symbolic.png win-dist/share/icons/Adwaita/16x16/actions
+# 	$(MKDIR_P) win-dist/share/icons/Adwaita/24x24/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/24x24/actions/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/24x24/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/24x24/actions/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/24x24/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/24x24/actions/window-minimize-symbolic.symbolic.png win-dist/share/icons/Adwaita/24x24/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/24x24/actions/window-restore-symbolic.symbolic.png win-dist/share/icons/Adwaita/24x24/actions
+# 	$(MKDIR_P) win-dist/share/icons/Adwaita/32x32/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/32x32/actions/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/32x32/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/32x32/actions/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/32x32/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/32x32/actions/window-minimize-symbolic.symbolic.png win-dist/share/icons/Adwaita/32x32/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/32x32/actions/window-restore-symbolic.symbolic.png win-dist/share/icons/Adwaita/32x32/actions
+# 	$(MKDIR_P) win-dist/share/icons/Adwaita/48x48/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/48x48/actions/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/48x48/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/48x48/actions/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/48x48/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/48x48/actions/window-minimize-symbolic.symbolic.png win-dist/share/icons/Adwaita/48x48/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/48x48/actions/window-restore-symbolic.symbolic.png win-dist/share/icons/Adwaita/48x48/actions
+# 	$(MKDIR_P) win-dist/share/icons/Adwaita/64x64/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/64x64/actions/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/64x64/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/64x64/actions/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/64x64/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/64x64/actions/window-minimize-symbolic.symbolic.png win-dist/share/icons/Adwaita/64x64/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/64x64/actions/window-restore-symbolic.symbolic.png win-dist/share/icons/Adwaita/64x64/actions
+# 	$(MKDIR_P) win-dist/share/icons/Adwaita/96x96/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/96x96/actions/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/96x96/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/96x96/actions/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/96x96/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/96x96/actions/window-minimize-symbolic.symbolic.png win-dist/share/icons/Adwaita/96x96/actions
+# 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/96x96/actions/window-restore-symbolic.symbolic.png win-dist/share/icons/Adwaita/96x96/actions
 
 #	other
 	cp -p "@WINDOWS_SYSROOT@"/bin/libgcc_s_*.dll win-dist/

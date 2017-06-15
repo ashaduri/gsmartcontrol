@@ -15,6 +15,7 @@
 #include "hz/string_algo.h"  // string_split
 #include "hz/fs_file.h"  // hz::File
 #include "hz/debug.h"
+#include "hz/scoped_ptr.h"
 #include "rconfig/rconfig_mini.h"
 #include "applib/storage_detector.h"
 #include "applib/smartctl_parser.h"
@@ -1265,7 +1266,19 @@ void GscMainWindow::show_add_device_chooser()
 void GscMainWindow::show_load_virtual_file_chooser()
 {
 	static std::string last_dir;
+	int result = 0;
 
+#if GTK_CHECK_VERSION(3, 20, 0)
+	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
+			"Load Data From...", this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, NULL, NULL), g_object_unref);
+
+	if (!last_dir.empty()) {
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog.get()), last_dir.c_str());
+	}
+
+	result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
+
+#else
 	Gtk::FileChooserDialog dialog(*this, "Load Data From...",
 			Gtk::FILE_CHOOSER_ACTION_OPEN);
 
@@ -1277,15 +1290,22 @@ void GscMainWindow::show_load_virtual_file_chooser()
 		dialog.set_current_folder(last_dir);
 
 	// Show the dialog and wait for a user response
-	int result = dialog.run();  // the main cycle blocks here
+	result = dialog.run();  // the main cycle blocks here
+#endif
 
 	// Handle the response
 	switch (result) {
 		case Gtk::RESPONSE_ACCEPT:
 		{
-			last_dir = dialog.get_current_folder();  // safe for the future
+			std::string file;
 
-			std::string file = dialog.get_filename();  // in fs encoding
+#if GTK_CHECK_VERSION(3, 20, 0)
+			file = app_ustring_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get())));
+			last_dir = hz::path_get_dirname(file);
+#else
+			file = dialog.get_filename();  // in fs encoding
+			last_dir = dialog.get_current_folder();  // save for the future
+#endif
 			this->add_virtual_drive(file);
 			break;
 		}
