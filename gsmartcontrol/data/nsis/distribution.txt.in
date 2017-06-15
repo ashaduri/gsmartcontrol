@@ -11,17 +11,13 @@ https://sourceforge.net/projects/gsmartcontrol/files/
 
 This distribution includes:
 
-* GSmartControl binary (gsmartcontrol.exe) and associated resources. The
-binary was compiled for 32-bit Windows, and should work on both 32-bit and
-64-bit Windows. The binary was statically compiled against Gtkmm
-(http://www.gtkmm.org/) and related libraries, and PCRE (http://www.pcre.org/).
+* GSmartControl binary (gsmartcontrol.exe) and associated resources.
+The binary was compiled against Gtkmm (http://www.gtkmm.org/), GTK+
+(http://gtk.org/) and related libraries, and PCRE (http://www.pcre.org/).
 
 * Smartctl binaries (from smartmontools 6.5, http://smartmontools.sf.net/)
 - smartctl-nc.exe (compiled without console output), smartctl.exe (compiled
 with console output), update-smart-drivedb.exe (drive database updater).
-
-* GTK+ for Windows Runtime package (@GTK_INSTALLER_NAME@)
-from http://gtk-win.sf.net, either in original or unpacked form.
 
 
 The combined distribution is multi-licensed under GNU GPL versions 2 and 3.
