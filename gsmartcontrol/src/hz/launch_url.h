@@ -51,11 +51,13 @@ inline std::string launch_url(GtkWindow* window, const std::string& link)
 	return "Error while executing a command: Internal error.";
 
 #else
+
 	hz::scoped_ptr<GError> error(0, g_error_free);
 #if GTK_CHECK_VERSION(3, 22, 0)
 	bool status = gtk_show_uri_on_window(window, link.c_str(), GDK_CURRENT_TIME, &error.get_ref());
 #else
-	bool status = gtk_show_uri(gtk_window_get_screen(window), link.c_str(), GDK_CURRENT_TIME, &error.get_ref());
+	GdkScreen* screen = (window ? gtk_window_get_screen(window) : 0);
+	bool status = gtk_show_uri(screen, link.c_str(), GDK_CURRENT_TIME, &error.get_ref());
 #endif
 
 	if (!status) {
