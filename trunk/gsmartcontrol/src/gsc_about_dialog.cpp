@@ -15,6 +15,7 @@
 
 #include "hz/debug.h"
 #include "hz/string_algo.h"  // hz::string_*
+#include "hz/launch_url.h"
 #include "applib/app_gtkmm_features.h"
 #include "applib/gui_utils.h"  // gui_show_error_dialog
 
@@ -28,15 +29,13 @@ GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, const app_ui_res_ref_t& 
 {
 	// Connect callbacks
 
+	// Note: The dialogs have ESC accelerator attached by default.
+
 	// APP_GTKMM_CONNECT_VIRTUAL(delete_event);  // make sure the event handler is called
 
 	APP_GTKMM_CONNECT_VIRTUAL(response);
 
-	// Note: The dialogs have ESC accelerator attached by default.
-
-	// Note: AboutDialog changed "name" property to "program-name" in gtk 2.12.
-	// We don't set either, but rely on Glib::set_application_name() during init, which
-	// works with both older and newer versions.
+	APP_GTKMM_CONNECT_VIRTUAL(activate_link);
 
 	set_version(VERSION);
 
@@ -44,6 +43,11 @@ GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, const app_ui_res_ref_t& 
 	set_website("http://gsmartcontrol.sourceforge.net/");
 
 	set_license(LicenseTextResData().get_string());
+
+	// This overrides set_license(), so don't do it.
+// #if APP_GTKMM_CHECK_VERSION(3, 12, 0)
+// 	set_license_type(Gtk::LICENSE_GPL_3_0_ONLY);
+// #endif
 
 	// spammers go away
 	set_copyright("Copyright (C) 2008 - 2017  Alexander Shaduri " "<ashaduri" "" "@" "" "" "gmail.com>");
@@ -82,6 +86,15 @@ void GscAboutDialog::on_response_before(int response_id)
 		debug_out_info("app", DBG_FUNC_MSG << "Closing the dialog.\n");
 		destroy(this);  // close the window and delete the object
 	}
+}
+
+
+
+bool GscAboutDialog::on_activate_link_before(const std::string& uri)
+{
+	// The default handler - gtk_show_uri_on_window() doesn't work with mailto: URIs in Windows.
+	// Our handler does.
+	return hz::launch_url(GTK_WINDOW(this->gobj()), uri).empty();
 }
 
 

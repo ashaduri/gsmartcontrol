@@ -53,6 +53,8 @@ class GscAboutDialog : public AppUIResWidget<GscAboutDialog, false, Gtk::AboutDi
 		void on_response_before(int response_id);
 
 
+		bool on_activate_link_before(const std::string& uri);
+
 		// ---------- override virtual methods
 
 		// we use .run(), so we don't need this
