@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# Configure a build directory according to developer flags
+
+type="$1";
+configure_script="$2";
+
+if [ "$type" == "" ]; then
+	echo "Usage: $0 <type> [<configure_script>]"
+	echo "where <type> is one of:"
+	echo "debug optimized icc clang win32 win32-debug win64-debug sun portland open64";
+	echo "<configure_script> is ../configure by default"
+	exit 1;
+fi
+
+if [ "$configure_script" == "" ]; then
+	configure_script="../configure";
+fi
+
+
+flags="";
+
+case $type in
+	gcc)
+		flags="--enable-optimize-options --enable-tests" ;;
+	gcc-debug)
+		flags="--enable-debug-options --enable-tests" ;;
+	clang-debug)
+		flags="CC=clang CXX=clang++ --enable-debug-options --enable-tests" ;;
+	icc-debug)
+		flags="CC=icc64 CXX=icpc64 --enable-debug-options  --enable-tests" ;;
+	sun)
+		flags="CC=suncc CXX=sunCC CFLAGS=\"-errwarn=%all -I/opt/sun/target64/include\" \
+			CXXFLAGS=\"-I/opt/sun/target64/include\" PATH=\"/opt/sun/sunstudio/bin:$PATH\" \
+			LDFLAGS=\"-R/opt/sun/target64/lib64 -L/opt/sun/target64/lib64\" \
+			PKG_CONFIG_PATH=\"/opt/sun/target64/lib64/pkgconfig:/usr/lib64/pkgconfig\" \
+			PKG_CONFIG_LIBDIR=\"\" --enable-tests" ;;
+
+	win32-cross)
+		flags="PATH=\"/usr/i686-w64-mingw32/bin:/usr/i686-w64-mingw32/sys-root/mingw/bin:$PATH\" \
+			--with-nsis=/usr/bin/makensis --with-windows-sysroot=/usr/i686-w64-mingw32/sys-root/mingw \
+			--enable-optimize-options --enable-tests --host=i686-w64-mingw32" ;;
+	win32-cross-debug)
+		flags="PATH=\"/usr/i686-w64-mingw32/bin:/usr/i686-w64-mingw32/sys-root/mingw/bin:$PATH\" \
+			--enable-debug-options --enable-tests --host=i686-w64-mingw32" ;;
+	win64-cross)
+		flags="PATH=\"/usr/x86_64-w64-mingw32/bin:/usr/x86_64-w64-mingw32/sys-root/mingw/bin:$PATH\" \
+			--with-nsis=/usr/bin/makensis --with-windows-sysroot=/usr/x86_64-w64-mingw32/sys-root/mingw \
+			--enable-optimize-options --enable-tests --host=x86_64-w64-mingw32" ;;
+	win64-cross-debug)
+		flags="PATH=\"/usr/x86_64-w64-mingw32/bin:/usr/x86_64-w64-mingw32/sys-root/mingw/bin:$PATH\" \
+			--enable-debug-options --enable-tests --host=x86_64-w64-mingw32" ;;
+
+	win32-msys)
+		flags="PATH=\"/mingw32/i686-w64-mingw32:/mingw32/bin:$PATH\" \
+			--with-nsis=/mingw32/bin/makensis.exe --with-windows-sysroot=/mingw32 \
+			--enable-optimize-options --enable-tests --host=i686-w64-mingw32" ;;
+	win32-msys-debug)
+		flags="PATH=\"/mingw32/i686-w64-mingw32:/mingw32/bin:$PATH\" \
+			--enable-debug-options --enable-tests --host=i686-w64-mingw32" ;;
+	win64-msys)
+		flags="PATH=\"/mingw64/x86_64-w64-mingw32:/mingw64/bin:$PATH\" \
+			--with-nsis=/mingw64/bin/makensis.exe --with-windows-sysroot=/mingw64 \
+			--enable-optimize-options --enable-tests --host=x86_64-w64-mingw32" ;;
+	win64-msys-debug)
+		flags="PATH=\"/mingw64/x86_64-w64-mingw32:/mingw64/bin:$PATH\" \
+			--enable-debug-options --enable-tests --host=x86_64-w64-mingw32" ;;
+esac
+
+
+echo "Running:"
+echo $configure_script $flags;
+
+$configure_script $flags
+
+
+exit $?
