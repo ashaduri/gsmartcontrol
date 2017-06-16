@@ -310,7 +310,7 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 		dialog.set_current_folder(last_dir);
 
 	// Show the dialog and wait for a user response
-	int result = dialog.run();  // the main cycle blocks here
+	result = dialog.run();  // the main cycle blocks here
 #endif
 
 	// Handle the response
