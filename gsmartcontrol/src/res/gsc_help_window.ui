@@ -5,8 +5,8 @@
   <object class="GtkWindow" id="gsc_help_window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Help - GSmartControl</property>
-    <property name="default_width">630</property>
-    <property name="default_height">460</property>
+    <property name="default_width">900</property>
+    <property name="default_height">650</property>
     <child>
       <object class="GtkBox" id="vbox1">
         <property name="visible">True</property>

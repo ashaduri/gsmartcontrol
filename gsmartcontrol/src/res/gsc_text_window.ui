@@ -5,8 +5,8 @@
   <object class="GtkWindow" id="gsc_text_window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">GSmartControl</property>
-    <property name="default_width">600</property>
-    <property name="default_height">430</property>
+    <property name="default_width">800</property>
+    <property name="default_height">600</property>
     <property name="destroy_with_parent">True</property>
     <child>
       <object class="GtkBox" id="vbox1">
