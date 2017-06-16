@@ -590,8 +590,11 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 		{
 			GscHelpWindow* win = GscHelpWindow::create();  // destroyed on close
 			// win->set_transient_for(*this);  // for "destroy with parent", always-on-top
-			win->set_topic("Begin");  // special mark, top of the text.
 			win->show();
+			while(g_main_context_pending(NULL)) {
+				g_main_context_iteration(NULL, false);
+			}
+			win->set_topic("Begin");  // special mark, top of the text.
 			break;
 		}
 
@@ -599,8 +602,11 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 		{
 			GscHelpWindow* win = GscHelpWindow::create();  // destroyed on close
 			// win->set_transient_for(*this);  // for "destroy with parent", always-on-top
-			win->set_topic("Permission Problems");
 			win->show();
+			while(g_main_context_pending(NULL)) {
+				g_main_context_iteration(NULL, false);
+			}
+			win->set_topic("Permission Problems");
 			break;
 		}
 
@@ -608,8 +614,11 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 		{
 			GscHelpWindow* win = GscHelpWindow::create();  // destroyed on close
 			// win->set_transient_for(*this);  // for "destroy with parent", always-on-top
-			win->set_topic("Enable SMART Permanently");
 			win->show();
+			while(g_main_context_pending(NULL)) {
+				g_main_context_iteration(NULL, false);
+			}
+			win->set_topic("Enable SMART Permanently");
 			break;
 		}
 
@@ -617,8 +626,11 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 		{
 			GscHelpWindow* win = GscHelpWindow::create();  // destroyed on close
 			// win->set_transient_for(*this);  // for "destroy with parent", always-on-top
-			win->set_topic("Reporting Bugs");
 			win->show();
+			while(g_main_context_pending(NULL)) {
+				g_main_context_iteration(NULL, false);
+			}
+			win->set_topic("Reporting Bugs");
 			break;
 		}
 
