@@ -1,6 +1,10 @@
 
-Version 1.0.0, released on xxxxxxx
+Version 1.0.0, released on 2017-06-16
 	Ported to GTK+ 3.
+	Tweaked the user interface a bit.
+	Dropped support for Windows XP, 2000 and 2003 (they are no longer
+		supported by GTK+).
+	Fixed detection of newer system-installed smartmontools under Windows.
 
 Version 0.9.0, released on 2017-05-11
 	Implemented (untested) support for Linux-based Areca controllers with
