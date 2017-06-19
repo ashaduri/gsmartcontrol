@@ -31,7 +31,7 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 
 	AC_ARG_ENABLE(common-options, AS_HELP_STRING([--enable-common-options=<compiler>|auto|none],
 			[enable useful compilation options (warnings, mostly). Accepted values are auto, none, gnu, clang, intel, sun. (Default: auto)]),
-		[app_cv_compiler_common_options=${enableval}], [app_cv_compiler_common_options=auto])
+		[app_cv_compiler_common_options=${enableval}], [app_cv_compiler_common_options=none])
 
 	# the default value is "yes" (if no value given after =), treat it as auto.
 	if test "x$app_cv_compiler_common_options" = "xyes" || test "x$app_cv_compiler_common_options" = "xauto"; then
@@ -54,7 +54,7 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 					|| test "x$app_cv_target_os_env" = "xcygwin"; then
 				# mingw gcc options:
 				# -mno-cygwin - generate non-cygwin executables in cygwin's mingw.
-				# -mms-bitfields - make structures compatible with msvc. recommended default for non-cygwin.
+				# -mms-bitfields - make structures compatible with msvc. recommended default for non-cygwin. Default for mingw.
 				app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -mms-bitfields"
 				app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -mms-bitfields"
 				app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -mms-bitfields"
@@ -183,10 +183,23 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 				app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -g0 -O3 -s -march=i686";
 				app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -g0 -O3 -s -march=i686";
 			else  # mingw64, cygwin (they have new gcc), others.
-				app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -g0 -O3 -s -mtune=generic";
-				app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -g0 -O3 -s -mtune=generic";
-				app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -g0 -O3 -s -mtune=generic";
+				app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -g0 -O3 -s";
+				app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -g0 -O3 -s";
+				app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -g0 -O3 -s";
 			fi
+			# -mtune=generic is only for x86*
+			case "$target" in
+				i686-*)
+					app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -mtune=generic";
+					app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -mtune=generic";
+					app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -mtune=generic";
+					;;
+				x86_64-*)
+					app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -mtune=generic";
+					app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -mtune=generic";
+					app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -mtune=generic";
+					;;
+			esac
 
 		# intel / gnu
 		elif test "x$app_cv_compiler_optimize_options" = "xintel" && test "x$app_cv_target_os_env" = "xgnu"; then
