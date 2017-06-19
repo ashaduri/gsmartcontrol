@@ -44,16 +44,14 @@ extern "C" {
 class TlsPolicyGlib {
 	public:
 
-		TlsPolicyGlib(tls_policy_glib_cleanup_func_t native_cleanup) : native_cleanup_(native_cleanup)
-		{
-			key_ = G_PRIVATE_INIT(native_cleanup_);
-		}
+		TlsPolicyGlib(tls_policy_glib_cleanup_func_t native_cleanup)
+				: key_((GPrivate)G_PRIVATE_INIT(native_cleanup))
+		{ }
 
 #if defined HAVE_CXX_EXTERN_C_OVERLOAD && HAVE_CXX_EXTERN_C_OVERLOAD
-		TlsPolicyGlib(tls_policy_glib_cleanup_func_cpp_t native_cleanup) : native_cleanup_(native_cleanup)
-		{
-			key_ = G_PRIVATE_INIT(native_cleanup_);
-		}
+		TlsPolicyGlib(tls_policy_glib_cleanup_func_cpp_t native_cleanup)
+				: key_((GPrivate)G_PRIVATE_INIT(native_cleanup))
+		{ }
 #endif
 
 		~TlsPolicyGlib()
@@ -78,7 +76,6 @@ class TlsPolicyGlib {
 	private:
 
 		mutable GPrivate key_;
-		tls_policy_glib_cleanup_func_t native_cleanup_;  ///< may be NULL
 
 		TlsPolicyGlib(const TlsPolicyGlib&);
 		TlsPolicyGlib& operator= (const TlsPolicyGlib& from);

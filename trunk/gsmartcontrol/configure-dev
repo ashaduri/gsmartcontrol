@@ -8,7 +8,8 @@ configure_script="$2";
 if [ "$type" == "" ]; then
 	echo "Usage: $0 <type> [<configure_script>]"
 	echo "where <type> is one of:"
-	echo "debug optimized icc clang win32 win32-debug win64-debug sun portland open64";
+	echo "none debug optimized gcc-debug clang-debug icc-debug sun win32-cross win32-cross-debug \
+		win64-cross win64-cross-debug win32-msys win32-msys-debug win64-msys win64-msys-debug";
 	echo "<configure_script> is ../configure by default"
 	exit 1;
 fi
@@ -21,16 +22,21 @@ fi
 flags="";
 
 case $type in
-	gcc)
-		flags="--enable-optimize-options --enable-tests" ;;
-	gcc-debug)
+	none)
+		flags="--enable-tests" ;;
+	debug)
 		flags="--enable-debug-options --enable-tests" ;;
+	optimized)
+		flags="--enable-optimize-options --enable-tests" ;;
+
+	gcc-debug)
+		flags="CC=gcc CXX=g++ --enable-common-options=gnu --enable-debug-options --enable-tests" ;;
 	clang-debug)
-		flags="CC=clang CXX=clang++ --enable-debug-options --enable-tests" ;;
+		flags="CC=clang CXX=clang++ --enable-common-options=clang --enable-debug-options --enable-tests" ;;
 	icc-debug)
-		flags="CC=icc64 CXX=icpc64 --enable-debug-options  --enable-tests" ;;
+		flags="CC=icc64 CXX=icpc64 --enable-common-options=intel --enable-debug-options --enable-tests" ;;
 	sun)
-		flags="CC=suncc CXX=sunCC CFLAGS=\"-errwarn=%all -I/opt/sun/target64/include\" \
+		flags="CC=suncc CXX=sunCC --enable-common-options=sun CFLAGS=\"-errwarn=%all -I/opt/sun/target64/include\" \
 			CXXFLAGS=\"-I/opt/sun/target64/include\" PATH=\"/opt/sun/sunstudio/bin:$PATH\" \
 			LDFLAGS=\"-R/opt/sun/target64/lib64 -L/opt/sun/target64/lib64\" \
 			PKG_CONFIG_PATH=\"/opt/sun/target64/lib64/pkgconfig:/usr/lib64/pkgconfig\" \

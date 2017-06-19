@@ -58,7 +58,7 @@ std::string StorageDevice::get_status_name(StorageDevice::status_t status, bool 
 
 
 
-StorageDevice::StorageDevice(const string& dev_or_vfile, bool is_virtual)
+StorageDevice::StorageDevice(const std::string& dev_or_vfile, bool is_virtual)
 {
 	detected_type_ = detected_type_unknown;
 	// force_type_ = false;
@@ -76,7 +76,7 @@ StorageDevice::StorageDevice(const string& dev_or_vfile, bool is_virtual)
 
 
 
-StorageDevice::StorageDevice(const string& dev, const string& type_arg)
+StorageDevice::StorageDevice(const std::string& dev, const std::string& type_arg)
 {
 	detected_type_ = detected_type_unknown;
 	// force_type_ = false;
@@ -575,14 +575,14 @@ StorageProperty StorageDevice::get_health_property() const
 
 
 
-string StorageDevice::get_device() const
+std::string StorageDevice::get_device() const
 {
 	return device_;
 }
 
 
 
-string StorageDevice::get_device_base() const
+std::string StorageDevice::get_device_base() const
 {
 	if (is_virtual_)
 		return "";
@@ -595,7 +595,7 @@ string StorageDevice::get_device_base() const
 
 
 
-string StorageDevice::get_device_with_type() const
+std::string StorageDevice::get_device_with_type() const
 {
 	if (this->get_is_virtual()) {
 		std::string ret = "Virtual";
@@ -626,7 +626,7 @@ StorageDevice::detected_type_t StorageDevice::get_detected_type() const
 
 
 
-void StorageDevice::set_type_argument(const string& arg)
+void StorageDevice::set_type_argument(const std::string& arg)
 {
 	type_arg_ = arg;
 }
@@ -640,7 +640,7 @@ std::string StorageDevice::get_type_argument() const
 
 
 
-void StorageDevice::set_extra_arguments(const string& args)
+void StorageDevice::set_extra_arguments(const std::string& args)
 {
 	extra_args_ = args;
 }
@@ -661,7 +661,7 @@ bool StorageDevice::get_is_virtual() const
 
 
 
-string StorageDevice::get_virtual_file() const
+std::string StorageDevice::get_virtual_file() const
 {
 	return (is_virtual_ ? virtual_file_ : std::string());
 }
@@ -682,7 +682,7 @@ const SmartctlParser::prop_list_t& StorageDevice::get_properties() const
 
 
 
-StorageProperty StorageDevice::lookup_property(const string& generic_name, StorageProperty::section_t section, StorageProperty::subsection_t subsection) const
+StorageProperty StorageDevice::lookup_property(const std::string& generic_name, StorageProperty::section_t section, StorageProperty::subsection_t subsection) const
 {
 	for (SmartctlParser::prop_list_t::const_iterator iter = properties_.begin(); iter != properties_.end(); ++iter) {
 		if (section != StorageProperty::section_unknown && iter->section != section)
@@ -698,21 +698,21 @@ StorageProperty StorageDevice::lookup_property(const string& generic_name, Stora
 
 
 
-string StorageDevice::get_model_name() const
+std::string StorageDevice::get_model_name() const
 {
 	return (model_name_.defined() ? model_name_.value() : "");
 }
 
 
 
-string StorageDevice::get_family_name() const
+std::string StorageDevice::get_family_name() const
 {
 	return (family_name_.defined() ? family_name_.value() : "");
 }
 
 
 
-string StorageDevice::get_serial_number() const
+std::string StorageDevice::get_serial_number() const
 {
 	return (serial_number_.defined() ? serial_number_.value() : "");
 }
@@ -726,28 +726,28 @@ bool StorageDevice::get_is_hdd() const
 
 
 
-void StorageDevice::set_info_output(const string& s)
+void StorageDevice::set_info_output(const std::string& s)
 {
 	info_output_ = s;
 }
 
 
 
-string StorageDevice::get_info_output() const
+std::string StorageDevice::get_info_output() const
 {
 	return info_output_;
 }
 
 
 
-void StorageDevice::set_full_output(const string& s)
+void StorageDevice::set_full_output(const std::string& s)
 {
 	full_output_ = s;
 }
 
 
 
-string StorageDevice::get_full_output() const
+std::string StorageDevice::get_full_output() const
 {
 	return full_output_;
 }
