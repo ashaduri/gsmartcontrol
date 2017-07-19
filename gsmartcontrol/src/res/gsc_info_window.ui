@@ -673,8 +673,8 @@ Selective self-test log is also presented here.</property>
                                   <object class="GtkImage" id="test_result_image">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="stock">gtk-dialog-info</property>
-                                    <property name="icon_size">5</property>
+                                    <property name="icon_name">dialog-information</property>
+                                    <property name="icon_size">3</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -924,8 +924,8 @@ Selective self-test log is also presented here.</property>
                 <property name="receives_default">True</property>
                 <property name="tooltip_text" translatable="yes">Re-read all the information</property>
                 <property name="use_stock">True</property>
-                <accelerator key="R" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                 <accelerator key="F5" signal="clicked"/>
+                <accelerator key="R" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
               </object>
               <packing>
                 <property name="expand">True</property>
