@@ -217,36 +217,14 @@ class Cmdex : public hz::ErrorHolder<hz::SyncPolicyNone> {
 		static void on_child_watch_handler(GPid arg_pid, int waitpid_status, gpointer data);
 
 		/// Channel I/O handler
-		static gboolean on_channel_io(GIOChannel* source,
-				GIOCondition cond, Cmdex* self, channel_t type);
+		static gboolean on_channel_io(GIOChannel* channel, GIOCondition cond, Cmdex* self, Cmdex::channel_t type);
 
 
 	private:
 
 
 		/// Clean up the member variables and shut down the channels if needed.
-		void cleanup_members()
-		{
-			kill_signal_sent_ = 0;
-			child_watch_handler_called_ = false;
-			pid_ = 0;
-			waitpid_status_ = 0;
-			event_source_id_stdout_ = 0;
-			event_source_id_stderr_ = 0;
-			fd_stdout_ = 0;
-			fd_stderr_ = 0;
-
-			if (channel_stdout_) {
-				g_io_channel_shutdown(channel_stdout_, false, NULL);
-				g_io_channel_unref(channel_stdout_);
-				channel_stdout_ = 0;
-			}
-			if (channel_stderr_) {
-				g_io_channel_shutdown(channel_stderr_, false, NULL);
-				g_io_channel_unref(channel_stderr_);
-				channel_stderr_ = 0;
-			}
-		}
+		void cleanup_members();
 
 
 

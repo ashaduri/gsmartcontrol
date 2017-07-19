@@ -92,8 +92,10 @@ extern "C" {
 
 bool Cmdex::execute()
 {
-	if (this->running_ || this->stopped_cleanup_needed())
+	DBG_FUNCTION_ENTER_MSG;
+	if (this->running_ || this->stopped_cleanup_needed()) {
 		return false;
+	}
 
 	cleanup_members();
 	clear_errors();
@@ -225,9 +227,11 @@ bool Cmdex::execute()
 
 	this->event_source_id_stdout_ = g_io_add_watch_full(channel_stdout_, io_priority, cond,
 			&cmdex_on_channel_io_stdout, this, NULL);
+// 	g_io_channel_unref(channel_stdout_);  // g_io_add_watch_full() holds its own reference
 
 	this->event_source_id_stderr_ = g_io_add_watch_full(channel_stderr_, io_priority, cond,
 			&cmdex_on_channel_io_stderr, this, NULL);
+// 	g_io_channel_unref(channel_stderr_);  // g_io_add_watch_full() holds its own reference
 
 
 	// If using SPAWN_DO_NOT_REAP_CHILD, this is needed to avoid zombies.
@@ -238,6 +242,7 @@ bool Cmdex::execute()
 
 	this->running_ = true;  // the process is running now.
 
+	DBG_FUNCTION_EXIT_MSG;
 	return true;
 }
 
@@ -247,6 +252,7 @@ bool Cmdex::execute()
 // send SIGTERM(15) (terminate)
 bool Cmdex::try_stop(hz::signal_t sig)
 {
+	DBG_FUNCTION_ENTER_MSG;
 	if (!this->running_ || this->pid_ <= 0)
 		return false;
 
@@ -262,6 +268,7 @@ bool Cmdex::try_stop(hz::signal_t sig)
 	// Possible: EPERM (no permissions), ESRCH (no such process, or zombie)
 	push_error(Error<int>("errno", ErrorLevel::error, errno), false);
 
+	DBG_FUNCTION_EXIT_MSG;
 	return false;
 }
 
@@ -269,6 +276,7 @@ bool Cmdex::try_stop(hz::signal_t sig)
 
 bool Cmdex::try_kill()
 {
+	DBG_TRACE_POINT_AUTO;
 	return try_stop(hz::SIGNAL_SIGKILL);
 }
 
@@ -276,6 +284,7 @@ bool Cmdex::try_kill()
 
 void Cmdex::set_stop_timeouts(int term_timeout_msec, int kill_timeout_msec)
 {
+	DBG_FUNCTION_ENTER_MSG;
 	DBG_ASSERT(term_timeout_msec == 0 || kill_timeout_msec == 0 || kill_timeout_msec > term_timeout_msec);
 
 	if (!this->running_)  // process not running
@@ -288,6 +297,8 @@ void Cmdex::set_stop_timeouts(int term_timeout_msec, int kill_timeout_msec)
 
 	if (kill_timeout_msec != 0)
 		event_source_id_kill = g_timeout_add(kill_timeout_msec, &cmdex_on_kill_timeout, this);
+
+	DBG_FUNCTION_EXIT_MSG;
 }
 
 
@@ -295,6 +306,7 @@ void Cmdex::set_stop_timeouts(int term_timeout_msec, int kill_timeout_msec)
 
 void Cmdex::unset_stop_timeouts()
 {
+	DBG_FUNCTION_ENTER_MSG;
 	if (event_source_id_term) {
 		GSource* source_term = g_main_context_find_source_by_id(NULL, event_source_id_term);
 		if (source_term)
@@ -308,6 +320,7 @@ void Cmdex::unset_stop_timeouts()
 			g_source_destroy(source_kill);
 		event_source_id_kill = 0;
 	}
+	DBG_FUNCTION_EXIT_MSG;
 }
 
 
@@ -315,8 +328,7 @@ void Cmdex::unset_stop_timeouts()
 // executed in main thread, manually by the caller.
 void Cmdex::stopped_cleanup()
 {
-// 	DBG_FUNCTION_ENTER_MSG;
-
+	DBG_FUNCTION_ENTER_MSG;
 	if (this->running_ || !this->stopped_cleanup_needed())  // huh?
 		return;
 
@@ -353,6 +365,7 @@ void Cmdex::stopped_cleanup()
 	cleanup_members();
 
 	this->running_ = false;
+	DBG_FUNCTION_EXIT_MSG;
 }
 
 
@@ -362,7 +375,7 @@ void Cmdex::stopped_cleanup()
 // Called when child exits
 void Cmdex::on_child_watch_handler(GPid arg_pid, int waitpid_status, gpointer data)
 {
-// 	DBG_FUNCTION_ENTER_MSG;
+	DBG_FUNCTION_ENTER_MSG;
 	Cmdex* self = static_cast<Cmdex*>(data);
 
 	g_timer_stop(self->timer_);  // stop the timer
@@ -370,6 +383,25 @@ void Cmdex::on_child_watch_handler(GPid arg_pid, int waitpid_status, gpointer da
 	self->waitpid_status_ = waitpid_status;
 	self->child_watch_handler_called_ = true;
 	self->running_ = false;  // process is not running anymore
+
+	// These are needed because Windows doesn't read the remaining data otherwise.
+	g_io_channel_flush(self->channel_stdout_, NULL);
+	on_channel_io(self->channel_stdout_, GIOCondition(0), self, channel_type_stdout);
+
+	g_io_channel_flush(self->channel_stderr_, NULL);
+	on_channel_io(self->channel_stderr_, GIOCondition(0), self, channel_type_stderr);
+
+	if (self->channel_stdout_) {
+		g_io_channel_shutdown(self->channel_stdout_, false, NULL);
+		g_io_channel_unref(self->channel_stdout_);
+		self->channel_stdout_ = 0;
+	}
+
+	if (self->channel_stderr_) {
+		g_io_channel_shutdown(self->channel_stderr_, false, NULL);
+		g_io_channel_unref(self->channel_stderr_);
+		self->channel_stderr_ = 0;
+	}
 
 	// Remove fd IO callbacks. They may actually be removed already (note sure about this).
 	// This will force calling the iochannel callback (they may not be called
@@ -394,16 +426,17 @@ void Cmdex::on_child_watch_handler(GPid arg_pid, int waitpid_status, gpointer da
 	if (self->exited_callback_)
 		self->exited_callback_(self->exited_callback_data_);
 
-// 	DBG_FUNCTION_EXIT_MSG;
+	DBG_FUNCTION_EXIT_MSG;
 }
 
 
 
 
 
-gboolean Cmdex::on_channel_io(GIOChannel* source,
+gboolean Cmdex::on_channel_io(GIOChannel* channel,
 		GIOCondition cond, Cmdex* self, channel_t type)
 {
+	DBG_FUNCTION_ENTER_MSG;
 // 	debug_out_dump("app", "Cmdex::on_channel_io("
 // 			<< (type == channel_type_stdout ? "STDOUT" : "STDERR") << ") " << int(cond) << "\n");
 
@@ -420,13 +453,10 @@ gboolean Cmdex::on_channel_io(GIOChannel* source,
 	const gsize count = 1;
 	gchar buf[count] = {0};
 
-	GIOChannel* channel = 0;
 	std::string* output_str = 0;
 	if (type == channel_type_stdout) {
-		channel = self->channel_stdout_;
 		output_str = &self->str_stdout_;
 	} else if (type == channel_type_stderr) {
-		channel = self->channel_stderr_;
 		output_str = &self->str_stderr_;
 	}
 
@@ -451,10 +481,24 @@ gboolean Cmdex::on_channel_io(GIOChannel* source,
 		}
 	} while (g_io_channel_get_buffer_condition(channel) & G_IO_IN);
 
-// 	DBG_FUNCTION_EXIT_MSG;
+	DBG_FUNCTION_EXIT_MSG;
 
 	// false if the source should be removed, true otherwise.
 	return continue_events;
+}
+
+
+
+void Cmdex::cleanup_members()
+{
+	kill_signal_sent_ = 0;
+	child_watch_handler_called_ = false;
+	pid_ = 0;
+	waitpid_status_ = 0;
+	event_source_id_stdout_ = 0;
+	event_source_id_stderr_ = 0;
+	fd_stdout_ = 0;
+	fd_stderr_ = 0;
 }
 
 
