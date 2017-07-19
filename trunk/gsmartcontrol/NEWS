@@ -1,3 +1,7 @@
+Version 1.0.2, released on 0000
+	Fixed incomplete capturing of smartctl output under Windows.
+	Added missing icons under Windows.
+
 Version 1.0.1, released on 2017-06-19
 	Fixed compilation under macOS.
 	Fixed compilation under Fedora Rawhide.
