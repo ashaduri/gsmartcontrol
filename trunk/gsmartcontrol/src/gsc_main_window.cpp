@@ -874,10 +874,11 @@ void GscMainWindow::set_drive_menu_status(StorageDeviceRefPtr drive)
 			}
 			if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_remove_virtual_device))))
 				action->set_visible(drive && is_virtual);
-			if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_enable_smart))))
+			if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_enable_smart)))) {
 				action->set_sensitive(smart_status != StorageDevice::status_unsupported);
+			}
 			if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_enable_aodc))))
-				action->set_sensitive(smart_status != StorageDevice::status_unsupported);
+				action->set_sensitive(aodc_status != StorageDevice::status_unsupported);
 		}
 
 
