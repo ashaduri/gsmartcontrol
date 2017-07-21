@@ -1,4 +1,4 @@
-Version 1.0.2, released on 0000
+Version 1.0.2, released on 2017-07-21
 	Fixed incomplete capturing of smartctl output under Windows.
 	Added missing icons under Windows.
 	Fixed being able to turn on AODC even if unsupported.
