@@ -16,19 +16,19 @@
 		</p>
 	</description>
 	<launchable type="desktop-id">gsmartcontrol.desktop</launchable>
-	<url type="homepage">http://gsmartcontrol.sourceforge.net</url>
+	<url type="homepage">https://gsmartcontrol.sourceforge.io</url>
 	<screenshots>
 		<screenshot type="default">
 			<caption>Main window</caption>
-			<image>http://gsmartcontrol.sourceforge.net/home/images/main_ok.png</image>
+			<image>https://gsmartcontrol.sourceforge.io/home/images/main_ok.png</image>
 		</screenshot>
 		<screenshot>
 			<caption>Drive identity information</caption>
-			<image>http://gsmartcontrol.sourceforge.net/home/images/info_identity.png</image>
+			<image>https://gsmartcontrol.sourceforge.io/home/images/info_identity.png</image>
 		</screenshot>
 		<screenshot>
 			<caption>Attribute list of a failing drive</caption>
-			<image>http://gsmartcontrol.sourceforge.net/home/images/info_failing.png</image>
+			<image>https://gsmartcontrol.sourceforge.io/home/images/info_failing.png</image>
 		</screenshot>
 	</screenshots>
 </component>
