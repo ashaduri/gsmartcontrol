@@ -40,7 +40,7 @@ GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, const app_ui_res_ref_t& 
 	set_version(VERSION);
 
 	// set these properties here (after setting hooks) to make the links work.
-	set_website("http://gsmartcontrol.sourceforge.net/");
+	set_website("https://gsmartcontrol.sourceforge.io/");
 
 	set_license(LicenseTextResData().get_string());
 
