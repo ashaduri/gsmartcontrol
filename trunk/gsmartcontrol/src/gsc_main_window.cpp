@@ -964,16 +964,19 @@ void GscMainWindow::update_status_widgets()
 		return;
 	}
 
-	std::string device = (drive->get_is_virtual() ? ("Virtual: " + drive->get_virtual_filename()) : drive->get_device_with_type());
-	std::string size = drive->get_device_size_str();
-	std::string model = (drive->get_model_name().empty() ? std::string("Unknown model") : drive->get_model_name());
-	std::string family = (drive->get_family_name().empty() ? "Unknown" : drive->get_family_name());
-	std::string family_fallback = (drive->get_family_name().empty() ? model : drive->get_family_name());
+	std::string device = Glib::Markup::escape_text(drive->get_is_virtual() ? ("Virtual: " + drive->get_virtual_filename()) : drive->get_device_with_type());
+	std::string size = Glib::Markup::escape_text(drive->get_device_size_str());
+	std::string model = Glib::Markup::escape_text(drive->get_model_name().empty() ? std::string("Unknown model") : drive->get_model_name());
+	std::string family = Glib::Markup::escape_text(drive->get_family_name().empty() ? "Unknown" : drive->get_family_name());
+	std::string family_fallback = Glib::Markup::escape_text(drive->get_family_name().empty() ? model : drive->get_family_name());
+	std::string drive_letters_str = Glib::Markup::escape_text(drive->format_drive_letters());
 
-
-	std::string info_str = device + (size.empty() ? "" : (", " + size)) + (model.empty() ? "" : (", " + model));
+	std::string info_str = device
+			+ (drive_letters_str.empty() ? "" : (" (<b>" + drive_letters_str + "</b>)"))
+			+ (size.empty() ? "" : (", " + size))
+			+ (model.empty() ? "" : (", " + model));
 	if (name_label) {
-		name_label->set_text(info_str);
+		name_label->set_markup(info_str);
 		app_gtkmm_set_widget_tooltip(*name_label, info_str, false);  // in case it doesn't fit
 	}
 

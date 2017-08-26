@@ -30,13 +30,6 @@ TODO:
 
 Implement PolKit support.
 
-Format large numbers with thousands separators (from locale)
-	includes LBAs and seek error rates.
-
-For each drive show its logical drives (C, D, ...) or mount points.
-	Probably use a tooltip for this, since that's a lot of info.
-	Maybe show this in Info window as well.
-
 
 
 Don't rely on smartctl return code (2), parse the output instead.

@@ -263,6 +263,9 @@ class GscMainWindowIconView : public Gtk::IconView {
 			} else {
 				tooltip_strs.push_back("Device: <b>" + Glib::Markup::escape_text(drive->get_device_with_type()) + "</b>");
 			}
+			if (!drive->format_drive_letters().empty()) {
+				tooltip_strs.push_back("Drive letters: <b>" + Glib::Markup::escape_text(drive->format_drive_letters()) + "</b>");
+			}
 			if (!drive->get_serial_number().empty()) {
 				tooltip_strs.push_back("Serial number: <b>" + Glib::Markup::escape_text(drive->get_serial_number()) + "</b>");
 			}

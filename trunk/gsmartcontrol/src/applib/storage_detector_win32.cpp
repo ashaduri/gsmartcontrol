@@ -17,6 +17,9 @@
 #include <windows.h>  // CreateFileA(), CloseHandle(), etc...
 #include <glibmm.h>
 #include <set>
+#include <bitset>
+#include <map>
+#include <vector>
 
 #include "hz/win32_tools.h"
 #include "hz/string_sprintf.h"
@@ -88,12 +91,65 @@ smartctl --scan-open output for win32 with 3ware RAID:
 namespace {
 
 
+/// Check which physical drives each drive letter (C, D, ...) spans across.
+std::map<char, std::set<int> > win32_get_drive_letter_map()
+{
+	std::map<char, std::set<int> > drive_letter_map;
+
+	std::bitset<32> drives(GetLogicalDrives());
+
+	// Check which drives are fixed
+	std::vector<char> good_drives;
+	for (char c = 'A'; c <= 'Z'; ++c) {
+		if (drives[c - 'A']) {  // drive is present
+			debug_out_dump("app", "Windows drive found: " << c << ".\n");
+			if (GetDriveType((c + string(":\\")).c_str()) == DRIVE_FIXED) {
+				debug_out_dump("app", "Windows drive " << c << " is fixed.\n");
+				good_drives.push_back(c);
+			}
+		}
+	}
+
+	// Try to open each drive, check its disk extents
+	for (std::size_t i = 0; i < good_drives.size(); ++i) {
+		char drive = good_drives[i];
+		string drive_str = string("\\\\.\\") + drive + ":";
+		HANDLE h = CreateFileA(
+				drive_str.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+				OPEN_EXISTING, FILE_FLAG_NO_BUFFERING | FILE_FLAG_RANDOM_ACCESS, NULL);
+		if (h == INVALID_HANDLE_VALUE) {
+			debug_out_warn("app", "Windows drive " << drive << " cannot be opened.\n");
+			continue;
+		}
+		DWORD bytesReturned = 0;
+		VOLUME_DISK_EXTENTS vde;
+		if (!DeviceIoControl(
+				h, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS,
+				NULL, 0, &vde, sizeof(vde), &bytesReturned, NULL)) {
+			debug_out_warn("app", "Windows drive " << drive << " is not mapped to any physical drives.\n");
+			continue;
+		}
+
+		std::set<int> drive_numbers;
+		for (int i = 0; i < vde.NumberOfDiskExtents; ++i) {
+			drive_numbers.insert(vde.Extents[i].DiskNumber);
+			debug_out_dump("app", "Windows drive " << drive << " corresponds to physical drive " << vde.Extents[i].DiskNumber << ".\n");
+		}
+		drive_letter_map[drive] = drive_numbers;
+	}
+
+	return drive_letter_map;
+}
+
+
 
 /// Run "smartctl --scan-open" and pick the devices which have
 /// a port parameter. We don't pick the others because the may
 /// conflict with pd* devices, and we like pd* better than sd*.
 std::string get_scan_open_multiport_devices(std::vector<StorageDeviceRefPtr>& drives,
-		ExecutorFactoryRefPtr ex_factory, std::set<int>& equivalent_pds)
+		ExecutorFactoryRefPtr ex_factory,
+		const std::map<char, std::set<int> >& drive_letter_map,
+		std::set<int>& equivalent_pds)
 {
 	debug_out_info("app", "Getting multi-port devices through smartctl --scan-open...\n");
 
@@ -148,14 +204,26 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDeviceRefPtr>& dr
 	for (std::size_t i = 0; i < lines.size(); ++i) {
 		std::string dev, port_str, type;
 		if (port_re.PartialMatch(hz::string_trim_copy(lines.at(i)), &dev, &port_str, &type)) {
-			std::string letter;
-			if (dev_re.PartialMatch(dev, &letter)) {
+			std::string sd_letter;
+			int drive_num = -1;
+			if (dev_re.PartialMatch(dev, &sd_letter)) {
 				// don't use pd* devices equivalent to these sd* devices.
-				equivalent_pds.insert(letter.at(0) - 'a');
+				drive_num = sd_letter.at(0) - 'a';
+				equivalent_pds.insert(drive_num);
 			}
 
 			std::string full_dev = dev + "," + port_str;
-			drives.push_back(StorageDeviceRefPtr(new StorageDevice(full_dev, type)));
+			StorageDeviceRefPtr drive(new StorageDevice(full_dev, type));
+
+			std::vector<char> drive_letters;
+			for (std::map<char, std::set<int> >::const_iterator iter = drive_letter_map.begin(); iter != drive_letter_map.end(); ++iter) {
+				if (iter->second.count(drive_num) > 0) {
+					drive_letters.push_back(iter->first);
+				}
+			}
+			drive->set_drive_letters(drive_letters);
+
+			drives.push_back(drive);
 		}
 	}
 
@@ -562,12 +630,18 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 	std::vector<std::string> error_msgs;
 	std::string error_msg;
 
+	// Construct drive letter map
+	debug_out_info("app", "Checking which drive corresponds to which \\\\.\\PhysicalDriveN device...\n");
+	std::map<char, std::set<int> > drive_letter_map = win32_get_drive_letter_map();
+
+
 	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
 
 	// Fetch multiport devices using --scan-open.
+	// Note that this may return duplicates (e.g. /dev/sda and /dev/csmi0,0)
 
 	std::set<int> used_pds;
-	error_msg = get_scan_open_multiport_devices(drives, ex_factory, used_pds);
+	error_msg = get_scan_open_multiport_devices(drives, ex_factory, drive_letter_map, used_pds);
 	if (!error_msg.empty()) {
 		error_msgs.push_back(error_msg);
 	}
@@ -576,7 +650,7 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 	bool areca_open_found = false;  // whether areca devices were found at --scan-open time.
 
 	// Find out their serial numbers and whether there are Arecas there.
-	std::set<std::string> serials;
+	std::map<std::string, StorageDeviceRefPtr> serials;
 	for (std::size_t i = 0; i < drives.size(); ++i) {
 		std::string local_error = drives.at(i)->fetch_basic_data_and_parse(smartctl_ex);
 		if (!local_error.empty()) {
@@ -585,7 +659,8 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 		}
 		if (!drives.at(i)->get_serial_number().empty()) {
 			// add model as well, who knows, there may be duplicates across vendors
-			serials.insert(drives.at(i)->get_model_name() + "_" + drives.at(i)->get_serial_number());
+			std::string drive_serial_id = drives.at(i)->get_model_name() + "_" + drives.at(i)->get_serial_number();
+			serials[drive_serial_id] = drives.at(i);
 		}
 
 		// See if there are any areca devices. This is not implemented yet by smartctl (as of 6.0),
@@ -597,7 +672,7 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 	}
 
 
-	// Scan PhysicalDrive entries
+	// Scan PhysicalDriveN entries
 
 	debug_out_info("app", "Starting sequential scan of \\\\.\\PhysicalDriveN devices...\n");
 
@@ -636,6 +711,15 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 
 		StorageDeviceRefPtr drive(new StorageDevice(hz::string_sprintf("pd%d", drive_num)));
 
+		std::vector<char> letters;
+		for (std::map<char, std::set<int> >::iterator iter = drive_letter_map.begin(); iter != drive_letter_map.end(); ++iter) {
+			if (iter->second.count(drive_num) > 0) {
+				letters.push_back(iter->first);
+			}
+		}
+		drive->set_drive_letters(letters);
+		debug_out_dump("app", "Drive letters for: " << drive->get_device() << ": " << drive->format_drive_letters() << ".\n");
+
 		// Sometimes, a single physical drive may be accessible from both "/.//PhysicalDriveN"
 		// and "/.//Scsi2" (e.g. pd0 and csmi2,1). Prefer the port-having ones (which is from --scan-open),
 		// they contain more information.
@@ -646,11 +730,14 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 				debug_out_info("app", "Smartctl returned with an error: " << local_error << "\n");
 				// Don't exit, just report it.
 			}
+
+			std::string drive_serial_id = drive->get_model_name() + "_" + drive->get_serial_number();
 			// A serial may be empty if "-q noserial" was given to smartctl.
-			if (!drive->get_serial_number().empty()
-						&& serials.count(drive->get_model_name() + "_" + drive->get_serial_number()) > 0) {
+			if (!drive->get_serial_number().empty() && serials.count(drive_serial_id) > 0) {
 				debug_out_info("app", "Skipping drive due to duplicate S/N: model: \"" << drive->get_model_name()
 						<< "\", S/N: \"" << drive->get_serial_number() << "\".\n");
+				// Copy the drive letters over to previously detected one (since we can't detect drive letters there).
+				serials[drive_serial_id]->set_drive_letters(drive->get_drive_letters());
 				continue;
 			}
 		}
