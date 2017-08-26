@@ -128,9 +128,6 @@ APP_CXX_EXTERN_C_OVERLOAD
 # This may be needed for pch support
 AC_CHECK_HEADERS([stdc++.h])
 
-# pcrecpp needs this (break on first function found)
-AC_CHECK_FUNCS([strtoll _strtoi64], [break])
-
 # Non-C99 systems don't have strtof and strtold. some have strtodf for strtof,
 # but let's ignore it. Note: They may be supported by system libc,
 # but not enabled by default (e.g. by glibc feature macros). In that case,
@@ -212,27 +209,27 @@ LIBS="$GTKMM_LIBS $LIBS"
 # -------------------------------------------------------------------------------------
 
 
-PCRE_CFLAGS="";
-PCRE_LIBS="";
+PCRECPP_CFLAGS="";
+PCRECPP_LIBS="";
 
 # try pkg-config first
-PKG_CHECK_MODULES(PCRE, [libpcre], [pcre_found=yes], [pcre_found=no])
+PKG_CHECK_MODULES(PCRECPP, [libpcrecpp], [pcrecpp_found=yes], [pcrecpp_found=no])
 
 # if not found, try pcre-config (solaris had it but not pkg-config).
-if test "x$pcre_found" = "xno"; then
+if test "x$pcrecpp_found" = "xno"; then
 	AC_PATH_PROG(pcre_config_binary, [pcre-config])
 	if test "x$pcre_config_binary" != "x"; then
 		PCRE_CFLAGS="`pcre-config --cflags`"
-		PCRE_LIBS="`pcre-config --libs`"
+		PCRE_LIBS="`pcre-config --libs-cpp`"
 	else
-		# AC_MSG_ERROR([Could not find pcre through pkg-config and pcre-config. Make sure the pcre libraries are installed])
-		AC_MSG_ERROR([$PCRE_PKG_ERRORS])
+		# AC_MSG_ERROR([Could not find pcrecpp through pkg-config and pcre-config. Make sure the pcre and pcrecpp libraries are installed])
+		AC_MSG_ERROR([$PCRECPP_PKG_ERRORS])
 	fi
 fi
 
-CFLAGS="$CFLAGS $PCRE_CFLAGS"
-CXXFLAGS="$CXXFLAGS $PCRE_CFLAGS"
-LIBS="$LIBS $PCRE_LIBS"
+CFLAGS="$CFLAGS $PCRECPP_CFLAGS"
+CXXFLAGS="$CXXFLAGS $PCRECPP_CFLAGS"
+LIBS="$LIBS $PCRECPP_LIBS"
 
 
 # -------------------------------------------------------------------------------------
@@ -389,8 +386,7 @@ CXXFLAGS="$CXXFLAGS $ADDITIONAL_FLAGS"
 # Add global configuration file. Note: It must be searched in top_builddir
 # first (that's why -I is the first flag), for precompiled headers to work.
 
-# Add pcrecpp too, because its files use #<file> on each other.
-ADDITIONAL_INCLUDES="-I\$(top_builddir) -I\$(top_srcdir)/src -I\$(top_srcdir)/src/pcrecpp"
+ADDITIONAL_INCLUDES="-I\$(top_builddir) -I\$(top_srcdir)/src"
 
 # -include works with gcc, intel, pathscale and sunstudio since 12u1, but doesn't work
 # with pgi and older sunstudio (the one in solaris10, for example).
@@ -486,7 +482,7 @@ AC_CONFIG_FILES([data/gsmartcontrol-root], [chmod +x data/gsmartcontrol-root])
 # these are all the makefiles to generate
 
 AC_CONFIG_FILES([Makefile src/Makefile src/applib/Makefile src/res/Makefile src/hz/Makefile \
-	src/libdebug/Makefile src/pcrecpp/Makefile src/rconfig/Makefile src/rmn/Makefile \
+	src/libdebug/Makefile src/rconfig/Makefile src/rmn/Makefile \
 	data/Makefile data/16/Makefile data/22/Makefile data/24/Makefile data/32/Makefile \
 	data/48/Makefile data/64/Makefile data/128/Makefile data/256/Makefile data/nsis/Makefile \
 	debian.dist/Makefile])

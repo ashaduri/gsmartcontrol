@@ -1,7 +1,7 @@
 AM_CPPFLAGS = $(all_includes)
 METASOURCES = AUTO
 
-SUBDIRS = libdebug hz rmn rconfig pcrecpp applib res
+SUBDIRS = libdebug hz rmn rconfig applib res
 
 
 if TARGET_OS_KERNEL_FAMILY_WINDOWS
@@ -27,7 +27,7 @@ noinst_DATA = gsc_winres.rc.in gsmartcontrol.exe.manifest.in
 bin_PROGRAMS = gsmartcontrol
 
 gsmartcontrol_LDADD = $(top_builddir)/src/applib/libapplib.a \
-	$(top_builddir)/src/pcrecpp/libpcrecpp.a $(top_builddir)/src/libdebug/libdebug.a \
+	$(top_builddir)/src/libdebug/libdebug.a \
 	$(top_builddir)/src/res/libres.a $(WINRES_OBJ)
 
 noinst_HEADERS = global_macros.h gsc_about_dialog.h gsc_add_device_window.h gsc_executor_error_dialog.h \

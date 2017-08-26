@@ -35,11 +35,6 @@ Additionally, it may be included through compiler's "-include" option
 
 // this is either defined to 1 (by autoconf), or undefined
 #ifdef HAVE_LONG_LONG_INT
-	// pcrecpp uses this
-	#ifndef HAVE_LONG_LONG
-		#define HAVE_LONG_LONG
-	#endif
-
 	#define DISABLE_LL_INT 0
 
 #else  // there is no long long int
@@ -51,11 +46,6 @@ Additionally, it may be included through compiler's "-include" option
 
 // this is either defined to 1 (by autoconf), or undefined
 #ifdef HAVE_UNSIGNED_LONG_LONG_INT
-	// pcrecpp uses this
-	#ifndef HAVE_UNSIGNED_LONG_LONG
-		#define HAVE_UNSIGNED_LONG_LONG
-	#endif
-
 	#define DISABLE_ULL_INT 0
 
 #else  // there is no long long int

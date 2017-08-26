@@ -26,16 +26,16 @@ smartctl_executor_test_LDADD = libapplib.a \
 
 smartctl_parser_test_SOURCES = smartctl_parser_test.cpp
 smartctl_parser_test_LDADD = libapplib.a \
-	$(top_builddir)/src/pcrecpp/libpcrecpp.a $(top_builddir)/src/libdebug/libdebug.a
+	$(top_builddir)/src/libdebug/libdebug.a
 
 storage_detector_test_SOURCES = storage_detector_test.cpp
 storage_detector_test_LDADD = libapplib.a \
-	$(top_builddir)/src/pcrecpp/libpcrecpp.a $(top_builddir)/src/libdebug/libdebug.a
+	$(top_builddir)/src/libdebug/libdebug.a
 
 spawn_test_SOURCES = spawn_test.cpp
 
 # Build them first
-SUBDIRS=../libdebug ../pcrecpp
+SUBDIRS=../libdebug
 
 
 # we don't list them in a separate variable because otherwise kdevelop won't see them.

@@ -23,10 +23,6 @@ examples are covered under the Unlicense. See LICENSE_unlicense.txt for
 details.
 
 
-Portions of this software are copyright Google Inc. See LICENSE_pcrecpp.txt
-for details.
-
-
 This product includes the HZ library (or portions of it). See LICENSE_hz.txt
 for details.
 
