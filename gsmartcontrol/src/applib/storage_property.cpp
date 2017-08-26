@@ -11,11 +11,15 @@
 
 #include <map>
 #include <ostream>  // not iosfwd - it doesn't work
+#include <sstream>
+#include <iomanip>
+#include <locale>
 
 #include "hz/string_num.h"  // number_to_string
 #include "hz/stream_cast.h"  // stream_cast<>
 #include "hz/format_unit.h"  // format_time_length
 #include "hz/string_algo.h"  // string_join
+#include "hz/string_num.h"  // number_to_string
 
 #include "storage_property.h"
 
@@ -34,6 +38,20 @@ std::ostream& operator<< (std::ostream& os, const StorageCapability& p)
 
 
 
+std::string StorageAttribute::format_raw_value() const
+{
+	// If it's fully a number, format it with commas
+	if (hz::number_to_string(raw_value_int) == raw_value) {
+		std::stringstream ss;
+		ss.imbue(std::locale(""));
+		ss << std::fixed << raw_value_int;
+		return ss.str();
+	}
+	return raw_value;
+}
+
+
+
 std::ostream& operator<< (std::ostream& os, const StorageAttribute& p)
 {
 //	os << p.name << ": "
@@ -42,7 +60,7 @@ std::ostream& operator<< (std::ostream& os, const StorageAttribute& p)
 	} else {
 		os << "-";
 	}
-	os << " (" << p.raw_value_int << ")";
+	os << " (" << p.format_raw_value() << ")";
 	return os;
 }
 
@@ -81,12 +99,32 @@ std::string StorageErrorBlock::get_readable_error_types(const std::vector<std::s
 
 
 
+std::string StorageErrorBlock::format_lifetime_hours() const
+{
+	std::stringstream ss;
+	ss.imbue(std::locale(""));
+	ss << std::fixed << lifetime_hours;
+	return ss.str();
+}
+
+
+
 std::ostream& operator<< (std::ostream& os, const StorageErrorBlock& b)
 {
 	os << "Error number " << b.error_num << ": "
 		<< hz::string_join(b.reported_types, ", ")
 		<< " [" << StorageErrorBlock::get_readable_error_types(b.reported_types) << "]";
 	return os;
+}
+
+
+
+std::string StorageSelftestEntry::format_lifetime_hours() const
+{
+	std::stringstream ss;
+	ss.imbue(std::locale(""));
+	ss << std::fixed << lifetime_hours;
+	return ss.str();
 }
 
 

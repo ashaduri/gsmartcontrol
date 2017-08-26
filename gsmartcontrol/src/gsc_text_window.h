@@ -18,6 +18,7 @@
 #include "hz/debug.h"
 #include "hz/fs_file.h"
 #include "hz/scoped_ptr.h"
+#include "rconfig/rconfig_mini.h"
 
 #include "applib/app_gtkmm_features.h"
 #include "applib/app_ui_res_utils.h"
@@ -141,6 +142,9 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 		void on_save_as_button_clicked()
 		{
 			static std::string last_dir;
+			if (last_dir.empty()) {
+				rconfig::get_data("gui/drive_data_open_save_dir", last_dir);
+			}
 			int result = 0;
 
 #if GTK_CHECK_VERSION(3, 20, 0)
@@ -189,6 +193,8 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 					file = dialog.get_filename();  // in fs encoding
 					last_dir = dialog.get_current_folder();  // save for the future
 #endif
+					rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
+
 					hz::File f(file);
 					if (!f.put_contents(this->contents_)) {  // this will send to debug_ too.
 						gui_show_error_dialog("Cannot save data to file", f.get_error_utf8(), this);

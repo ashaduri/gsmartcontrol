@@ -1291,6 +1291,9 @@ void GscMainWindow::show_add_device_chooser()
 void GscMainWindow::show_load_virtual_file_chooser()
 {
 	static std::string last_dir;
+	if (last_dir.empty()) {
+		rconfig::get_data("gui/drive_data_open_save_dir", last_dir);
+	}
 	int result = 0;
 
 #if GTK_CHECK_VERSION(3, 20, 0)
@@ -1331,6 +1334,7 @@ void GscMainWindow::show_load_virtual_file_chooser()
 			file = dialog.get_filename();  // in fs encoding
 			last_dir = dialog.get_current_folder();  // save for the future
 #endif
+			rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
 			this->add_virtual_drive(file);
 			break;
 		}
