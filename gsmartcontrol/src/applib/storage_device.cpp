@@ -654,6 +654,31 @@ std::string StorageDevice::get_extra_arguments() const
 
 
 
+void StorageDevice::set_drive_letters(const std::vector< char >& letters)
+{
+	drive_letters_ = letters;
+}
+
+
+
+const std::vector< char >& StorageDevice::get_drive_letters() const
+{
+	return drive_letters_;
+}
+
+
+
+string StorageDevice::format_drive_letters() const
+{
+	std::vector<std::string> drive_letters_decorated;
+	for (std::size_t i = 0; i < drive_letters_.size(); ++i) {
+		drive_letters_decorated.push_back(std::string() + (char)std::toupper(drive_letters_[i]) + ":");
+	}
+	return hz::string_join(drive_letters_decorated, ", ");
+}
+
+
+
 bool StorageDevice::get_is_virtual() const
 {
 	return is_virtual_;

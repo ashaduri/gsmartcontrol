@@ -165,6 +165,16 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		std::string get_extra_arguments() const;
 
 
+		/// Set windows drive letters for this drive
+		void set_drive_letters(const std::vector<char>& letters);
+
+		/// Get windows drive letters for this drive
+		const std::vector<char>& get_drive_letters() const;
+
+		/// Get comma-separated win32 drive letters (if present)
+		std::string format_drive_letters() const;
+
+
 		/// Get "virtual" status
 		bool get_is_virtual() const;
 
@@ -261,9 +271,11 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		std::string info_output_;  ///< "smartctl --info" output
 		std::string full_output_;  ///< "smartctl --all" output
 
-		std::string device_;  ///< e.g. /dev/sda. empty if virtual.
+		std::string device_;  ///< e.g. /dev/sda or pd0. empty if virtual.
 		std::string type_arg_;  ///< Device type (for -d smartctl parameter), as specified when adding the device.
 		std::string extra_args_;  ///< Extra parameters for smartctl, as specified when adding the device.
+
+		std::vector<char> drive_letters_;  ///< Windows drive letters (if detected)
 
 		bool is_virtual_;  ///< If true, then this is not a real device - merely a loaded description of it.
 		std::string virtual_file_;  ///< A file (smartctl data) the virtual device was loaded from

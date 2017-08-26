@@ -371,14 +371,17 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 
 	{
-		std::string device = drive->get_device_with_type();
-		std::string model = (drive->get_model_name().empty() ? "Unknown model" : drive->get_model_name());
+		std::string device = Glib::Markup::escape_text(drive->get_device_with_type());
+		std::string model = Glib::Markup::escape_text(drive->get_model_name().empty() ? "Unknown model" : drive->get_model_name());
+		std::string drive_letters = Glib::Markup::escape_text(drive->format_drive_letters());
 
 		this->set_title("Device Information - " + device + ": " + model + " - GSmartControl");
 
 		// Gtk::Label* device_name_label = lookup_widget<Gtk::Label*>("device_name_label");
 		if (device_name_label) {
-			device_name_label->set_markup("<b>Device: </b>" + device + "  <b>Model: </b>" + model);
+			device_name_label->set_markup(
+					"<b>Device: </b>" + device + (drive_letters.empty() ? "" : (" (<b>" + drive_letters + "</b>)"))
+					+ "  <b>Model: </b>" + model);
 		}
 	}
 
