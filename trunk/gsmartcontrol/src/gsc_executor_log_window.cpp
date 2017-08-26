@@ -17,6 +17,7 @@
 #include "applib/app_gtkmm_utils.h"  // app_gtkmm_create_tree_view_column
 #include "applib/app_gtkmm_features.h"
 #include "hz/scoped_ptr.h"
+#include "rconfig/rconfig_mini.h"
 
 #include "gsc_executor_log_window.h"
 #include "gsc_init.h"  // app_get_debug_buffer_str()
@@ -192,6 +193,9 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 	CmdexSyncCommandInfoRefPtr entry = (*iter)[col_entry];
 
 	static std::string last_dir;
+	if (last_dir.empty()) {
+		rconfig::get_data("gui/drive_data_open_save_dir", last_dir);
+	}
 	int result = 0;
 
 #if GTK_CHECK_VERSION(3, 20, 0)
@@ -234,6 +238,7 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 			file = dialog.get_filename();  // in fs encoding
 			last_dir = dialog.get_current_folder();  // save for the future
 #endif
+			rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
 
 			hz::File f(file);
 			if (!f.put_contents(entry->std_output)) {
@@ -283,6 +288,9 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 
 
 	static std::string last_dir;
+	if (last_dir.empty()) {
+		rconfig::get_data("gui/drive_data_open_save_dir", last_dir);
+	}
 	int result = 0;
 
 #if GTK_CHECK_VERSION(3, 20, 0)
@@ -325,6 +333,7 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 			file = dialog.get_filename();  // in fs encoding
 			last_dir = dialog.get_current_folder();  // save for the future
 #endif
+			rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
 
 			hz::File f(file);
 			if (!f.put_contents(exss.str())) {

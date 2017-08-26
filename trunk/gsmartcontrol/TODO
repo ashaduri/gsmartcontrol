@@ -30,8 +30,6 @@ TODO:
 
 Implement PolKit support.
 
-Remember window size / position (at least the main window size/pos and info size)
-
 Format large numbers with thousands separators (from locale)
 	includes LBAs and seek error rates.
 

@@ -715,7 +715,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			row[col_value] = (iter->value_attribute.value.defined() ? hz::number_to_string(iter->value_attribute.value.value()) : "-");
 			row[col_worst] = (iter->value_attribute.worst.defined() ? hz::number_to_string(iter->value_attribute.worst.value()) : "-");
 			row[col_threshold] = (iter->value_attribute.threshold.defined() ? hz::number_to_string(iter->value_attribute.threshold.value()) : "-");
-			row[col_raw] = iter->value_attribute.raw_value;
+			row[col_raw] = iter->value_attribute.format_raw_value();
 			row[col_type] = attr_type;
 			row[col_updated] = StorageAttribute::get_update_type_name(iter->value_attribute.update_type);
 			row[col_failed] = fail_time;
@@ -762,7 +762,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		if (cr_name)
 			cr_name->property_weight() = Pango::WEIGHT_BOLD ;
 
-		Gtk::TreeModelColumn<uint32_t> col_hours;
+		Gtk::TreeModelColumn<std::string> col_hours;
 		model_columns.add(col_hours);
 		num_tree_cols = app_gtkmm_create_tree_view_column(col_hours, *treeview,
 				"Lifetime hours", "During which hour of the drive's (powered on) lifetime did the error happen.", true);
@@ -853,7 +853,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 				Gtk::TreeRow row = *(list_store->append());
 				row[col_num] = iter->value_error_block.error_num;
-				row[col_hours] = iter->value_error_block.lifetime_hours;
+				row[col_hours] = iter->value_error_block.format_lifetime_hours();
 				row[col_state] = iter->value_error_block.device_state;
 				row[col_type] = StorageErrorBlock::get_readable_error_types(iter->value_error_block.reported_types);
 				row[col_details] = (type_details.empty() ? "-" : type_details);  // e.g. OBS has no details
@@ -917,7 +917,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		num_tree_cols = app_gtkmm_create_tree_view_column(col_percent, *treeview,
 				"% Completed", "Percentage of the test completed. Instantly-aborted tests have 10%, while unsupported ones _may_ have 100%.", true);
 
-		Gtk::TreeModelColumn<uint32_t> col_hours;
+		Gtk::TreeModelColumn<std::string> col_hours;
 		model_columns.add(col_hours);
 		num_tree_cols = app_gtkmm_create_tree_view_column(col_hours, *treeview,
 				"Lifetime hours", "During which hour of the drive's (powered on) lifetime did the test complete (or abort)", true);
@@ -972,7 +972,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			row[col_type] = iter->value_selftest_entry.type;
 			row[col_status] = iter->value_selftest_entry.get_status_str();
 			row[col_percent] = hz::number_to_string(100 - iter->value_selftest_entry.remaining_percent) + "%";
-			row[col_hours] = iter->value_selftest_entry.lifetime_hours;
+			row[col_hours] = iter->value_selftest_entry.format_lifetime_hours();
 			row[col_lba] = iter->value_selftest_entry.lba_of_first_error;
 			// There are no descriptions in self-test log entries, so don't display
 			// "No description available" for all of them.
@@ -1345,6 +1345,9 @@ void GscInfoWindow::on_view_output_button_clicked()
 void GscInfoWindow::on_save_info_button_clicked()
 {
 	static std::string last_dir;
+	if (last_dir.empty()) {
+		rconfig::get_data("gui/drive_data_open_save_dir", last_dir);
+	}
 	int result = 0;
 
 	std::string filename = drive->get_save_filename();
@@ -1395,6 +1398,7 @@ void GscInfoWindow::on_save_info_button_clicked()
 			file = dialog.get_filename();  // in fs encoding
 			last_dir = dialog.get_current_folder();  // save for the future
 #endif
+			rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
 
 			hz::File f(file);
 			std::string data = this->drive->get_full_output();

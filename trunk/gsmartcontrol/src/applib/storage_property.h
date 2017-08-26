@@ -124,6 +124,10 @@ class StorageAttribute {
 		{ }
 
 
+		/// Format raw value with commas (if it's a number)
+		std::string format_raw_value() const;
+
+
 		int32_t id;  ///< Attribute ID (most vendors agree on this)
 		std::string flag;  ///< Some have it in 0xXXXX format, others in "PO--C-" format (some WD drives?).
 		hz::OptionalValue<uint8_t> value;  ///< Normalized value. May be unset ("---").
@@ -154,6 +158,9 @@ class StorageErrorBlock {
 
 		/// Get readable error types from reported types
 		static std::string get_readable_error_types(const std::vector<std::string>& types);
+
+		/// Format lifetime hours with comma
+		std::string format_lifetime_hours() const;
 
 		uint32_t error_num;  ///< Error number
 		uint32_t lifetime_hours;  ///< When the error occurred (in lifetime hours)
@@ -249,13 +256,17 @@ class StorageSelftestEntry {
 		}
 
 
+		/// Format lifetime hours with comma
+		std::string format_lifetime_hours() const;
+
+
 		uint32_t test_num;  ///< Test number. always starts from 1. larger means older or newer, depending on model. 0 for capability.
 		std::string type;  ///< Extended offline, Short offline, Conveyance offline, etc... . capability: unused.
 		std::string status_str;  ///< Self-test routine in progress, Completed without error, etc... (as reported by log or capability)
 		status_t status;  ///< same as status_str, but from enum
 		int8_t remaining_percent;  ///< Remaining %. 0% for completed, 90% for started. -1 if n/a.
 		uint32_t lifetime_hours;  ///< When the test happened (in lifetime hours). capability: unused.
-		std::string lba_of_first_error;  ///< LBA of the first error. "-" or value (format?). capability: unused.
+		std::string lba_of_first_error;  ///< LBA of the first error. "-" or value (format? usually hex). capability: unused.
 };
 
 
