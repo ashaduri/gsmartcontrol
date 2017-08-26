@@ -22,7 +22,6 @@ dist_doc_DATA = AUTHORS.txt ChangeLog NEWS README.txt \
 	LICENSE_gpl3.txt \
 	LICENSE_gsmartcontrol.txt \
 	LICENSE_hz.txt \
-	LICENSE_pcrecpp.txt \
 	LICENSE_unlicense.txt \
 	LICENSE_zlib.txt
 
@@ -51,7 +50,7 @@ src-rpm: dist
 
 # NSIS installer support.
 # Requires installed NSIS, smartctl-nc.exe, smartctl.exe, update-smart-drivedb.exe.
-# Gtkmm dlls and pcre dlls are required if linking against them.
+# Gtkmm and pcre dlls are required if linking against them.
 # dos2unix on build machine.
 # Execute only with win32 build present.
 
@@ -222,6 +221,7 @@ win-dist-prepare: all
 #	other
 	cp -p "@WINDOWS_SYSROOT@"/bin/libgcc_s_*.dll win-dist/
 	cp -p "@WINDOWS_SYSROOT@"/bin/libpcre-1.dll win-dist/
+	cp -p "@WINDOWS_SYSROOT@"/bin/libpcrecpp-0.dll win-dist/
 
 
 nsis-dist-prepare: win-dist-prepare

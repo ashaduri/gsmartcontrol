@@ -12,18 +12,11 @@
 #ifndef APP_PCRECPP_H
 #define APP_PCRECPP_H
 
-// A wrapper header for bundled pcrecpp
+// A wrapper header for pcrecpp
 
-// disable all that declspec noise
-#ifndef PCRE_STATIC
-	#define PCRE_STATIC
-#endif
-
-
-#include "pcrecpp/pcrecpp_internal.h"
-#include "pcrecpp/pcrecpp.h"
-
+#include <pcrecpp.h>
 #include <string>
+
 #include "hz/debug.h"
 
 
