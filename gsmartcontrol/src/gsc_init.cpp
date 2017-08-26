@@ -512,7 +512,6 @@ bool app_init_and_loop(int& argc, char**& argv)
 	m.run();
 	debug_out_info("app", "Main loop exited.\n");
 
-
 	// close the main window and delete its object
 	GscMainWindow::destroy();
 

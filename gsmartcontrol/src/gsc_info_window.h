@@ -37,6 +37,9 @@ class GscInfoWindow : public AppUIResWidget<GscInfoWindow, true> {
 		virtual ~GscInfoWindow()
 		{ }
 
+		// Overridden from InstanceManager
+		virtual void obj_destroy();
+
 
 		/// Set the drive to show
 		void set_drive(StorageDeviceRefPtr d);
