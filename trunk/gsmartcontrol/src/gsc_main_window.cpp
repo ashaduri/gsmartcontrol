@@ -56,8 +56,28 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 	// iconview, gtkuimanager stuff (menus), custom labels
 	create_widgets();
 
+	// Size
+	{
+		int def_size_w = 0, def_size_h = 0;
+		rconfig::get_data("gui/main_window/default_size_w", def_size_w);
+		rconfig::get_data("gui/main_window/default_size_h", def_size_h);
+		if (def_size_w > 0 && def_size_h > 0) {
+			set_default_size(def_size_w, def_size_h);
+		}
+	}
+
 	// show the window first, scan later
 	show();
+
+	// Position (after the window has been shown)
+	{
+		int pos_x = 0, pos_y = 0;
+		rconfig::get_data("gui/main_window/default_pos_x", pos_x);
+		rconfig::get_data("gui/main_window/default_pos_y", pos_y);
+		if (pos_x > 0 && pos_y > 0) {  // to avoid situations where positions are not supported
+			this->move(pos_x, pos_y);
+		}
+	}
 
 	while (Gtk::Main::events_pending())  // allow the window to show
 		Gtk::Main::iteration();
@@ -502,13 +522,7 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 
 	switch (action_type) {
 		case action_quit:
-			// if at least one drive is having a test performed, disallow.
-			if (this->testing_active()) {
-				if (!ask_about_quit_on_test(*this)) {
-					break;
-				}
-			}
-			app_quit();  // ends the main loop
+			quit_requested();
 			break;
 
 		case action_view_details:
@@ -1333,8 +1347,7 @@ void GscMainWindow::show_load_virtual_file_chooser()
 
 
 
-// by default, delete_event calls hide().
-bool GscMainWindow::on_delete_event_before(GdkEventAny* e)
+bool GscMainWindow::quit_requested()
 {
 	// if at least one drive is having a test performed, disallow.
 	if (this->testing_active()) {
@@ -1342,8 +1355,31 @@ bool GscMainWindow::on_delete_event_before(GdkEventAny* e)
 			return true;  // handled
 		}
 	}
+
+	// window size / pos
+	{
+		int window_w = 0, window_h = 0;
+		get_size(window_w, window_h);
+		rconfig::set_data("gui/main_window/default_size_w", window_w);
+		rconfig::set_data("gui/main_window/default_size_h", window_h);
+
+		int pos_x = 0, pos_y = 0;
+		get_position(pos_x, pos_y);
+		rconfig::set_data("gui/main_window/default_pos_x", pos_x);
+		rconfig::set_data("gui/main_window/default_pos_y", pos_y);
+	}
+
 	app_quit();  // ends the main loop
+
 	return true;  // event handled, don't call default virtual handler
+}
+
+
+
+// by default, delete_event calls hide().
+bool GscMainWindow::on_delete_event_before(GdkEventAny* e)
+{
+	return quit_requested();
 }
 
 

@@ -174,6 +174,15 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 		: AppUIResWidget<GscInfoWindow, true>(gtkcobj, ref_ui),
 		device_name_label(0), test_force_bar_update(true)
 {
+	// Size
+	{
+		int def_size_w = 0, def_size_h = 0;
+		rconfig::get_data("gui/info_window/default_size_w", def_size_w);
+		rconfig::get_data("gui/info_window/default_size_h", def_size_h);
+		if (def_size_w > 0 && def_size_h > 0) {
+			set_default_size(def_size_w, def_size_h);
+		}
+	}
 
 	// Create missing widgets
 	Gtk::Box* device_name_hbox = lookup_widget<Gtk::Box*>("device_name_label_hbox");
@@ -266,6 +275,20 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 // 		book->remove_page(book->get_n_pages() - 1);
 
 	// show();  // don't show here, removing tabs later is ugly.
+}
+
+
+
+void GscInfoWindow::obj_destroy()
+{
+	// Main window size. We don't store position to avoid overlaps
+	{
+		int window_w = 0, window_h = 0;
+		get_size(window_w, window_h);
+		rconfig::set_data("gui/info_window/default_size_w", window_w);
+		rconfig::set_data("gui/info_window/default_size_h", window_h);
+	}
+
 }
 
 
@@ -1399,11 +1422,7 @@ void GscInfoWindow::on_save_info_button_clicked()
 
 void GscInfoWindow::on_close_window_button_clicked()
 {
-	if (drive && drive->get_test_is_active()) {  // disallow close if test is active.
-		gui_show_warn_dialog("Please wait until all tests are finished.", this);
-		return;
-	}
-	destroy(this);
+	on_delete_event_before(0);
 }
 
 

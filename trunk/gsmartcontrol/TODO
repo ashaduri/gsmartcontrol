@@ -28,6 +28,7 @@ Bugs / patches:
 
 TODO:
 
+Implement PolKit support.
 
 Remember window size / position (at least the main window size/pos and info size)
 

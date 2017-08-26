@@ -123,6 +123,10 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 		void show_load_virtual_file_chooser();
 
 
+		/// Called when quit has been requested (by delete event or Quit action)
+		bool quit_requested();
+
+
 		// -------------------- callbacks
 
 		// ---------- overriden virtual methods
