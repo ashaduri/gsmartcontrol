@@ -24,7 +24,7 @@ noinst_DATA = gsc_winres.rc.in gsmartcontrol.exe.manifest.in
 # endif
 
 
-bin_PROGRAMS = gsmartcontrol
+sbin_PROGRAMS = gsmartcontrol
 
 gsmartcontrol_LDADD = $(top_builddir)/src/applib/libapplib.a \
 	$(top_builddir)/src/libdebug/libdebug.a \

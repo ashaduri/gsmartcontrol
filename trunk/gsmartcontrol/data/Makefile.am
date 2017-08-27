@@ -44,6 +44,10 @@ desktop_DATA = gsmartcontrol.desktop
 metainfodir = $(datadir)/metainfo
 metainfo_DATA = gsmartcontrol.appdata.xml
 
+# PolKit files
+polkitdir = $(datadir)/polkit-1/actions
+polkit_DATA = org.gsmartcontrol.policy
+
 
 # Application pixmap (fallback icon for desktop files).
 # Same as 48/gsmartcontrol.png.

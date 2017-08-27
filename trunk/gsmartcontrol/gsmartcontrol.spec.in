@@ -8,27 +8,19 @@ Vendor:		Alexander Shaduri <ashaduri 'at' gmail.com>
 Source:		http://sourceforge.net/projects/gsmartcontrol/files/%{version}/%{name}-%{version}.tar.bz2
 BuildRoot:	%{_tmppath}/%{name}-%{version}-build
 Summary:	GSmartControl - Hard Disk Drive and SSD Health Inspection Tool
-
-%if 0%{?mandriva_version}
-Group:		System/Kernel and hardware
-%else
 Group:		Hardware/Other
-%endif
 
 # Empty debug packages cause errors in new RPM. Disable them.
 %global debug_package %{nil}
 
 
-# Dependencies for various distributions. The actual deps are:
-# smartmontools, pcre, gtkmm3 >= 3.4.0
-# (with the respective -devel packages of the libraries for build requirements).
 # For non-specified distributions we don't specify any dependencies to avoid errors.
 
 
 # SUSE / OpenSUSE. SLES also defines the correct suse_version.
 %if 0%{?suse_version}
 
-Requires: smartmontools
+Requires: smartmontools, polkit, bash
 BuildRequires: gcc-c++, libstdc++-devel, pcre-devel, gtkmm3-devel >= 3.4.0
 BuildRequires: update-desktop-files
 BuildRequires: fdupes
@@ -39,15 +31,8 @@ BuildRequires: fdupes
 # Fedora, CentOS, RHEL
 %if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
 
-# I'm not sure about centos and rhel versions
-Requires: smartmontools
+Requires: smartmontools, polkit, bash
 BuildRequires: gcc-c++, pcre-devel, gtkmm30-devel >= 3.4.0
-
-# Fedora with consolehelper.
-# usermode-gtk is for consolehelper-gtk.
-%if 0%{?fedora_version}
-Requires: usermode-gtk
-%endif
 
 %endif
 
@@ -97,43 +82,6 @@ rm -f $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/icon-theme.cache
 %endif
 
 
-%if 0%{?fedora_version}
-# We still retain gsmartcontrol-root for consistency with other distributions.
-
-# Make the desktop file run gsmartcontrol instead of gsmartcontrol-root
-sed "s|gsmartcontrol-root|gsmartcontrol|g" %{buildroot}%{_datadir}/applications/gsmartcontrol.desktop > %{buildroot}%{_datadir}/applications/gsmartcontrol.desktop.new
-mv -f %{buildroot}%{_datadir}/applications/gsmartcontrol.desktop.new %{buildroot}%{_datadir}/applications/gsmartcontrol.desktop
-
-# The rest is taken from the official fedora spec:
-# http://pkgs.fedoraproject.org/cgit/gsmartcontrol.git/tree/
-
-# Set up for console-helper
-mkdir -p %{buildroot}%{_sbindir}
-# Add a copy as "gsmartcontrol-noroot", since gsmartcontrol will always
-# ask for root password.
-cp %{buildroot}%{_bindir}/%{name} %{buildroot}%{_bindir}/%{name}-noroot
-mv %{buildroot}%{_bindir}/%{name} %{buildroot}%{_sbindir}/%{name}
-ln -s consolehelper %{buildroot}%{_bindir}/%{name}
-
-mkdir -p %{buildroot}%{_sysconfdir}/pam.d
-cat <<EOF >%{buildroot}%{_sysconfdir}/pam.d/%{name}
-#%%PAM-1.0
-auth		include		config-util
-account		include		config-util
-session		include		config-util
-EOF
-
-mkdir -p %{buildroot}%{_sysconfdir}/security/console.apps
-cat <<EOF >%{buildroot}%{_sysconfdir}/security/console.apps/%{name}
-USER=root
-PROGRAM=/usr/sbin/gsmartcontrol
-SESSION=true
-EOF
-
-# endif fedora
-%endif
-
-
 %clean
 rm -rf %buildroot
 
@@ -141,12 +89,8 @@ rm -rf %buildroot
 %files
 %defattr(-,root,root)
 
-# In fedora /usr/bin/gsmartcontrol is linked to consolehelper, cannot set attrs on symlink.
-%if 0%{?fedora_version}
-%{_bindir}/*
-%else
-%attr(0755,root,root) %{_bindir}/*
-%endif
+%attr(0755,root,root) %{_bindir}/gsmartcontrol-root
+%attr(0755,root,root) %{_sbindir}/gsmartcontrol
 
 # %%attr(0644,root,root) %%config(noreplace) %%{_sysconfdir}/*
 
@@ -157,13 +101,8 @@ rm -rf %buildroot
 # %%{_datadir}/gsmartcontrol/*
 %{_datadir}/applications/*.desktop
 %{_datadir}/metainfo
+%{_datadir}/polkit-1/actions
 %{_datadir}/icons/*
 %{_datadir}/pixmaps/*
-
-%if 0%{?fedora_version}
-%config(noreplace) %{_sysconfdir}/pam.d/%{name}
-%config(noreplace) %{_sysconfdir}/security/console.apps/%{name}
-%{_sbindir}/gsmartcontrol
-%endif
 
 %changelog
