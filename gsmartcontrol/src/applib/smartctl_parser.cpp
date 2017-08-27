@@ -545,7 +545,34 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 			p.value_bool = true;  // let's be optimistic - just hope that it doesn't hurt.
 		}
 
-	} else if (app_pcre_match("/^scsiMode/mi", p.reported_name)) {  // these are some debug warnings from smartctl on usb flash drives
+	// "-g all" stuff
+	} else if (app_pcre_match("/^AAM feature is$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "aam_feature", "AAM Feature");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/^APM level is$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "apm_level", "APM Level");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/^Rd look-ahead is$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "read_lookahead", "Read Look-Ahead");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/^Write cache is$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "write_cache", "Write Cache");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/^ATA Security is$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "ata_security", "ATA Security");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	// These are some debug warnings from smartctl on usb flash drives
+	} else if (app_pcre_match("/^scsiMode/mi", p.reported_name)) {
 		p.show_in_ui = false;
 
 	} else {
