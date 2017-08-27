@@ -43,10 +43,6 @@ Don't rely on smartctl return code (2), parse the output instead.
 	https://developer.gnome.org/glib/2.34/glib-The-Main-Event-Loop.html#g-main-loop-quit
 
 
-In main window add multi-selection support and right-click menu with various
-	tests, so that it's possible to run multiple tests in parallel from there.
-
-
 Areca detection
 	Linux:
 		Somehow differentiate between the cards with expanders (-d areca,N/E) and without (-d areca,N).
