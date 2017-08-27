@@ -162,8 +162,7 @@ std::string StorageDevice::fetch_basic_data_and_parse(hz::intrusive_ptr<CmdexSyn
 
 	// We don't use "--all" - it may cause really screwed up the output (tests, etc...).
 	// This looks just like "--info" only on non-smart devices.
-	// --info --health --capabilities
-	std::string error_msg = execute_device_smartctl("-i -H -c", smartctl_ex, this->info_output_, true);  // set type to invalid if needed
+	std::string error_msg = execute_device_smartctl("--info --health --capabilities", smartctl_ex, this->info_output_, true);  // set type to invalid if needed
 
 	// Smartctl 5.39 cvs/svn version defaults to usb type on at least linux and windows.
 	// This means that the old SCSI identify command isn't executed by default,
@@ -324,11 +323,11 @@ std::string StorageDevice::fetch_data_and_parse(hz::intrusive_ptr<CmdexSync> sma
 	// an addition to default -a output won't affect us.
 	if (this->get_type_argument() == "scsi") {  // not sure about correctness... FIXME probably fails with RAID/scsi
 		// This doesn't do much yet, but just in case...
-		// SCSI equivalent of -a:
-		error_msg = execute_device_smartctl("-H -i -A -l error -l selftest", smartctl_ex, output);
+		// SCSI equivalent of -a --get=all:
+		error_msg = execute_device_smartctl("--health --info --get=all --attributes --log=error --log=selftest", smartctl_ex, output);
 	} else {
-		// ATA equivalent of -a:
-		error_msg = execute_device_smartctl("-H -i -c -A -l error -l selftest -l selective",
+		// ATA equivalent of -a --get=all:
+		error_msg = execute_device_smartctl("--health --info --get=all --capabilities --attributes --log=error --log=selftest --log=selective",
 				smartctl_ex, output, true);  // set type to invalid if needed
 	}
 	// See notes above (in fetch_basic_data_and_parse()).
@@ -423,8 +422,7 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 */
 
 	std::string output;
-	// --smart=on --saveauto=on, --smart=off
-	std::string error_msg = execute_device_smartctl((b ? "-s on -S on" : "-s off"), smartctl_ex, output);
+	std::string error_msg = execute_device_smartctl((b ? "--smart=on --saveauto=on" : "--smart=off"), smartctl_ex, output);
 	if (!error_msg.empty())
 		return error_msg;
 
@@ -458,8 +456,7 @@ SMART Automatic Offline Testing Disabled.
 A mandatory SMART command failed: exiting. To continue, add one or more '-T permissive' options.
 */
 	std::string output;
-	// --offlineauto=on, --offlineauto=off
-	std::string error_msg = execute_device_smartctl((b ? "-o on" : "-o off"), smartctl_ex, output);
+	std::string error_msg = execute_device_smartctl((b ? "--offlineauto=on" : "--offlineauto=off"), smartctl_ex, output);
 	if (!error_msg.empty())
 		return error_msg;
 

@@ -152,34 +152,35 @@ void StorageProperty::dump(std::ostream& os, int internal_offset) const
 	// if (!readable_value.empty())
 	// 	os << readable_value;
 
-	if (value_type == StorageProperty::value_type_unknown) {
-		os << "[empty]";
-
-	} else if (value_type == StorageProperty::value_type_string) {
-		os << "\"" << value_string << "\"";
-
-	} else if (value_type == StorageProperty::value_type_integer) {
-		os << value_integer << " [" << reported_value << "]";
-
-	} else if (value_type == StorageProperty::value_type_bool) {
-		os << value_bool << " [" << reported_value << "]";
-
-	} else if (value_type == StorageProperty::value_type_time_length) {
-		os << value_time_length << " [" << reported_value << "]";
-
-	} else if (value_type == StorageProperty::value_type_capability) {
-		os << value_capability;
-
-	} else if (value_type == StorageProperty::value_type_attribute) {
-		os << value_attribute;
-
-	} else if (value_type == StorageProperty::value_type_error_block) {
-		os << value_error_block;
-
-	} else if (value_type == StorageProperty::value_type_selftest_entry) {
-		os << value_selftest_entry;
+	switch(value_type) {
+		case StorageProperty::value_type_unknown:
+			os << "[empty]";
+			break;
+		case StorageProperty::value_type_string:
+			os << "\"" << value_string << "\"";
+			break;
+		case StorageProperty::value_type_integer:
+			os << value_integer << " [" << reported_value << "]";
+			break;
+		case StorageProperty::value_type_bool:
+			os << value_bool << " [" << reported_value << "]";
+			break;
+		case StorageProperty::value_type_time_length:
+			os << value_time_length << " [" << reported_value << "]";
+			break;
+		case StorageProperty::value_type_capability:
+			os << value_capability;
+			break;
+		case StorageProperty::value_type_attribute:
+			os << value_attribute;
+			break;
+		case StorageProperty::value_type_error_block:
+			os << value_error_block;
+			break;
+		case StorageProperty::value_type_selftest_entry:
+			os << value_selftest_entry;
+			break;
 	}
-
 }
 
 
@@ -189,32 +190,25 @@ std::string StorageProperty::format_value(bool add_reported_too) const
 	if (!readable_value.empty())
 		return readable_value;
 
-	if (value_type == StorageProperty::value_type_unknown) {
-		return "[unknown]";
-
-	} else if (value_type == StorageProperty::value_type_string) {
-		return value_string;
-
-	} else if (value_type == StorageProperty::value_type_integer) {
-		return hz::number_to_string(value_integer) + (add_reported_too ? (" [" + reported_value + "]") : "");
-
-	} else if (value_type == StorageProperty::value_type_bool) {
-		return std::string(value_bool ? "Yes" : "No") + (add_reported_too ? (" [" + reported_value + "]") : "");
-
-	} else if (value_type == StorageProperty::value_type_time_length) {
-		return hz::format_time_length(value_time_length) + (add_reported_too ? (" [" + reported_value + "]") : "");
-
-	} else if (value_type == StorageProperty::value_type_capability) {
-		return hz::stream_cast<std::string>(value_capability);
-
-	} else if (value_type == StorageProperty::value_type_attribute) {
-		return hz::stream_cast<std::string>(value_attribute);
-
-	} else if (value_type == StorageProperty::value_type_error_block) {
-		return hz::stream_cast<std::string>(value_error_block);
-
-	} else if (value_type == StorageProperty::value_type_error_block) {
-		return hz::stream_cast<std::string>(value_selftest_entry);
+	switch(value_type) {
+		case StorageProperty::value_type_unknown:
+			return "[unknown]";
+		case StorageProperty::value_type_string:
+			return value_string;
+		case StorageProperty::value_type_integer:
+			return hz::number_to_string(value_integer) + (add_reported_too ? (" [" + reported_value + "]") : "");
+		case StorageProperty::value_type_bool:
+			return std::string(value_bool ? "Yes" : "No") + (add_reported_too ? (" [" + reported_value + "]") : "");
+		case StorageProperty::value_type_time_length:
+			return hz::format_time_length(value_time_length) + (add_reported_too ? (" [" + reported_value + "]") : "");
+		case StorageProperty::value_type_capability:
+			return hz::stream_cast<std::string>(value_capability);
+		case StorageProperty::value_type_attribute:
+			return hz::stream_cast<std::string>(value_attribute);
+		case StorageProperty::value_type_error_block:
+			return hz::stream_cast<std::string>(value_error_block);
+		case StorageProperty::value_type_selftest_entry:
+			return hz::stream_cast<std::string>(value_selftest_entry);
 	}
 
 	return "[error]";
