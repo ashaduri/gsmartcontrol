@@ -483,6 +483,11 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 		p.value_type = StorageProperty::value_type_string;
 		p.value_string = p.reported_value;
 
+	} else if (app_pcre_match("/^Form Factor$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "form_factor", "Form Factor");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
 	} else if (app_pcre_match("/^Device is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "in_smartctl_db", "In Smartctl Database");
 		p.value_type = StorageProperty::value_type_bool;
