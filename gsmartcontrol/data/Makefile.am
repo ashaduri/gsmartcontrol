@@ -57,7 +57,7 @@ pixmaps_DATA = 48/gsmartcontrol.png gsmartcontrol.xpm
 
 
 # Put everything inside the distribution
-EXTRA_DIST = $(appdata_DATA) gsmartcontrol.ico gsmartcontrol.xpm
+EXTRA_DIST = $(appdata_DATA) $(polkit_DATA) gsmartcontrol.ico gsmartcontrol.xpm
 
 
 bin_SCRIPTS = gsmartcontrol-root
