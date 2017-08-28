@@ -100,8 +100,8 @@ rm -rf %buildroot
 %{_datadir}/gsmartcontrol
 # %%{_datadir}/gsmartcontrol/*
 %{_datadir}/applications/*.desktop
-%{_datadir}/metainfo
-%{_datadir}/polkit-1/actions
+%{_datadir}/metainfo/gsmartcontrol.appdata.xml
+%{_datadir}/polkit-1/actions/org.gsmartcontrol.policy
 %{_datadir}/icons/*
 %{_datadir}/pixmaps/*
 
