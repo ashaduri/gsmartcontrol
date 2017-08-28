@@ -1,6 +1,10 @@
+
+# This spec file is for openSUSE Build Service.
+# Supported distributions: openSUSE, Fedora, CentOS, RHEL.
+
 Name:		gsmartcontrol
 Version: 	@VERSION@
-Release:	1as
+Release:	0
 License:	GPL-2.0 AND GPL-3.0
 Url:		https://gsmartcontrol.sourceforge.io/
 Vendor:		Alexander Shaduri <ashaduri 'at' gmail.com>
@@ -100,7 +104,10 @@ rm -rf %buildroot
 %{_datadir}/gsmartcontrol
 # %%{_datadir}/gsmartcontrol/*
 %{_datadir}/applications/*.desktop
+%{_datadir}/metainfo
 %{_datadir}/metainfo/gsmartcontrol.appdata.xml
+%{_datadir}/polkit-1
+%{_datadir}/polkit-1/actions
 %{_datadir}/polkit-1/actions/org.gsmartcontrol.policy
 %{_datadir}/icons/*
 %{_datadir}/pixmaps/*
