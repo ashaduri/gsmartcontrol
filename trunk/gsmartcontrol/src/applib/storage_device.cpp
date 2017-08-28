@@ -665,7 +665,7 @@ const std::vector< char >& StorageDevice::get_drive_letters() const
 
 
 
-string StorageDevice::format_drive_letters() const
+std::string StorageDevice::format_drive_letters() const
 {
 	std::vector<std::string> drive_letters_decorated;
 	for (std::size_t i = 0; i < drive_letters_.size(); ++i) {
