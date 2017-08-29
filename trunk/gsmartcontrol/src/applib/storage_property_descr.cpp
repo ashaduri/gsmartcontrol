@@ -1295,6 +1295,7 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 		|| auto_set(p, "smart_supported", "Whether the device supports SMART. If not, then only very limited information will be available.")
 		|| auto_set(p, "smart_enabled", "Whether the device has SMART enabled. If not, most of the reported values will be incorrect.")
 		|| auto_set(p, "aam_feature", "Automatic Acoustic Management (AAM) feature")
+		|| auto_set(p, "apm_feature", "Automatic Power Management (APM) feature")
 		|| auto_set(p, "apm_level", "Advanced Power Management (APM) level");
 
 		// set just its name as a tooltip

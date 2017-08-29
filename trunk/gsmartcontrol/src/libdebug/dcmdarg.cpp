@@ -38,7 +38,11 @@ namespace debug_internal {
 		/// Constructor
 		DebugCmdArgs() :
 			// defaults
+#ifdef _WIN32
+			verbose(TRUE),
+#else
 			verbose(FALSE),
+#endif
 			quiet(FALSE),
 #ifdef DEBUG_BUILD
 			verbosity_level(5),  // all

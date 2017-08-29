@@ -70,16 +70,14 @@ Testing:
 		Maybe get rid of Type and Updated columns and print only decoded flags?
 
 	use -l xerror,error -l xselftest,selftest by default (the output is similar).
-		Maybe increase default number of entries.
+		Maybe increase default number of entries (50?).
+		Change this text: "Note: Usually only the last five errors are stored."
 
 	Add a tab for -l devstat  - it shows interesting statistics.
 		Some of this stuff is better than attributes, maybe show them before attributes.
 		Also needs the warnings and descriptions.
 
 	Add ability to load --xall output.
-
-
-Enable -v by default on Windows.
 
 
 Document RAID support.
@@ -128,6 +126,12 @@ Add a button (with dropdown) to Info window, to run
 	-l directory  (very advanced)
 	-l scttemp  (rarely supported and difficult to parse)
 	Just show the output in a text window.
+	Maybe add -l selective here (and remove it from GUI).
+	"Put this all in Error Log", raname to Logs.
+	Make it a dropdown combo and "Retrieve" button, showing the output where selective is now.
+
+Merge "Self-test Logs" and "Perform Tests".
+
 
 
 
