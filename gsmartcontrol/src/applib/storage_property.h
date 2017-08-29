@@ -341,7 +341,11 @@ class StorageProperty {
 			subsection_attributes,  ///< Attributes (-A, --attributes). These need decoding.
 			subsection_error_log,  ///< Error Log (--log=error)
 			subsection_selftest_log,  ///< Self-test log (--log=selftest)
-			subsection_selective_selftest_log  ///< Selective self-test log and settings
+			subsection_selective_selftest_log,  ///< Selective self-test log (--log=selective)
+			subsection_temperature_log,  ///< SCT temperature (current and history) (--log=scttemp)
+			subsection_erc_log,  ///< SCT Error Recovery Control settings (--log=scterc)
+			subsection_phy_log,  ///< Phy log (--log=sataphy)
+			subsection_directory_log,  ///< Directory log (--log=directory)
 		};
 
 		/// Get displayable subsection type name
@@ -355,6 +359,10 @@ class StorageProperty {
 				case subsection_error_log: return "error_log";
 				case subsection_selftest_log: return "selftest_log";
 				case subsection_selective_selftest_log: return "selective_selftest_log";
+				case subsection_temperature_log: return "temperature_log";
+				case subsection_erc_log: return "erc_log";
+				case subsection_phy_log: return "phy_log";
+				case subsection_directory_log: return "directory_log";
 			}
 			return "[error]";
 		}

@@ -119,11 +119,18 @@ class GscInfoWindow : public AppUIResWidget<GscInfoWindow, true> {
 
 		// tab headers, to perform their coloration
 		Glib::ustring tab_identity_name;  ///< Tab header name
-		Glib::ustring tab_capabilities_name;  ///< Tab header name
 		Glib::ustring tab_attributes_name;  ///< Tab header name
-		Glib::ustring tab_error_log_name;  ///< Tab header name
-		Glib::ustring tab_selftest_log_name;  ///< Tab header name
+		Glib::ustring tab_statistics_name;  ///< Tab header name
+		Glib::ustring tab_capabilities_name;  ///< Tab header name
+		Glib::ustring tab_logs_name;  ///< Tab header name
 		Glib::ustring tab_test_name;  ///< Tab header name
+
+		Glib::ustring subtab_error_log_name;  ///< Tab header name
+		Glib::ustring subtab_selective_selftest_log_name;  ///< Tab header name
+		Glib::ustring subtab_temperature_name;  ///< Tab header name
+		Glib::ustring subtab_erc_name;  ///< Tab header name
+		Glib::ustring subtab_phy_name;  ///< Tab header name
+		Glib::ustring subtab_directory_name;  ///< Tab header name
 
 		Gtk::Label* device_name_label;  ///< Top label
 
