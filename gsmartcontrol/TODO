@@ -42,6 +42,8 @@ Add ability (through ctrl-C?) to copy individual rows from attributes page,
 
 
 Require smartctl 5.43 (for --get=all)
+	Update specs / dsc.
+	Detect on startup.
 
 
 Add menu item - "update drive database" (not sure about linux, should
@@ -56,25 +58,16 @@ Testing:
 
 
 
-48-bit ATA command support:
+Add ability to load --xall output:
 	--xall for ATA:
 		--health --info --get=all --capabilities --attributes --format=brief -l xerror,error -l xselftest,selftest
               -l selective -l directory -l scttemp -l scterc -l devstat -l sataphy
 	--xall for SCSI:
 		--health --info --attributes -l error -l selftest -l background -l sasphy
 
-	use --format=brief, which affects --attributes by decoding flags.
-		Show flag descriptions in tooltips, for each attribute.
-		There are no TYPE or UPDATED columns in this mode, decode it from flags.
-			Updated offline: -, Always: O.
-			Pre-failure: P, old age: -.
-		Maybe get rid of Type and Updated columns and print only decoded flags?
-
 	Add a tab for -l devstat  - it shows interesting statistics.
 		Some of this stuff is better than attributes, maybe show them before attributes.
 		Also needs the warnings and descriptions.
-
-	Add ability to load --xall output.
 
 
 Document RAID support.
@@ -122,8 +115,8 @@ Add a button (with dropdown) to Info window, to run
 	-l sataphy   (advanced)
 	-l directory  (very advanced)
 	-l scttemp  (rarely supported and difficult to parse)
-	Just show the output in a text window.
 	Maybe add -l selective here (and remove it from GUI).
+	Just show the output in a text window.
 	"Put this all in Error Log", raname to Logs.
 	Make it a dropdown combo and "Retrieve" button, showing the output where selective is now.
 
