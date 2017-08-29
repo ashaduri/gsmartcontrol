@@ -43,7 +43,7 @@ class SmartctlParser {
 
 
 		/// Check that the version of smartctl output can be parsed with this parser.
-		static bool check_version(const std::string& version_str, const std::string& version_full_str);
+		static bool check_parsed_version(const std::string& version_str, const std::string& version_full_str);
 
 
 		/// Convert e.g. "1,000,204,886,016 bytes" to 1.00 TiB [931.51 GB, 1000204886016 bytes]

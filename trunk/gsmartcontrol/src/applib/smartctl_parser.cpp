@@ -190,7 +190,7 @@ bool SmartctlParser::parse_full(const std::string& full, StorageAttribute::DiskT
 		}
 	}
 
-	if (!check_version(version, version_full)) {
+	if (!check_parsed_version(version, version_full)) {
 		set_error_msg("Incompatible smartctl version.");
 		debug_out_warn("app", DBG_FUNC_MSG << "Incompatible smartctl version. Returning.\n");
 		return false;
@@ -238,7 +238,9 @@ bool SmartctlParser::parse_full(const std::string& full, StorageAttribute::DiskT
 // returns false on failure. Non-unix newlines in s are ok.
 bool SmartctlParser::parse_version(const std::string& s, std::string& version, std::string& version_full)
 {
-	// e.g. "smartctl version 5.37" or "smartctl 5.39"
+	// e.g.
+	// "smartctl version 5.37"
+	// "smartctl 5.39"
 	// "smartctl 5.39 2009-06-03 20:10" (cvs versions)
 	// "smartctl 5.39 2009-08-08 r2873" (svn versions)
 	if (!app_pcre_match("/^smartctl (?:version )?(([0-9][^ \\t\\n\\r]+)(?: [0-9 r:-]+)?)/mi", s, &version_full, &version)) {
@@ -254,18 +256,18 @@ bool SmartctlParser::parse_version(const std::string& s, std::string& version, s
 
 
 // check that the version of smartctl output can be parsed with this parser.
-bool SmartctlParser::check_version(const std::string& version_str, const std::string& version_full_str)
+bool SmartctlParser::check_parsed_version(const std::string& version_str, const std::string& version_full_str)
 {
 	// tested with 5.1-xx versions (1 - 18), and 5.[20 - 38].
 	// note: 5.1-11 (maybe others too) with scsi disk gives non-parsable output (why?).
 
 	// 5.0-24, 5.0-36, 5.0-49 tested with data only, from smartmontool site.
 	// can't fully test 5.0-xx, they don't support sata and I have only sata.
-	double minimum_version = 5.0;
+	const double minimum_req_version = 5.0;
 
 	double version = 0;
 	if (hz::string_is_numeric<double>(version_str, version, false)) {
-		if (version >= minimum_version)
+		if (version >= minimum_req_version)
 			return true;
 	}
 

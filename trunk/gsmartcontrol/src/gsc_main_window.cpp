@@ -129,6 +129,18 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 			break;
 		}
 
+		{
+			// We require this version at runtime to support --get=all.
+			const double minimum_req_version = 5.43;
+			double version_double = 0;
+			if (hz::string_is_numeric<double>(version, version_double, false)) {
+				if (version_double < minimum_req_version) {
+					error_msg = "Smartctl version " + version + " found, " + hz::number_to_string(minimum_req_version) + " required.";
+					break;
+				}
+			}
+		}
+
 	} while (false);
 
 	bool smartctl_valid = error_msg.empty();

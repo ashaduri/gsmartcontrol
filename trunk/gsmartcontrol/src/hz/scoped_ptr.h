@@ -125,7 +125,14 @@ class scoped_ptr {  // non-copyable
 					cleaner->cleanup(ptr);
 				delete cleaner;
 			} else {
+#ifdef __GNUC__
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wdelete-incomplete"
+#endif
 				delete ptr;
+#ifdef __GNUC__
+	#pragma GCC diagnostic pop
+#endif
 			}
     	}
 
