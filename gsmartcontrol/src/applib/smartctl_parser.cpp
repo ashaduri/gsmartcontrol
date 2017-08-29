@@ -551,6 +551,11 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 		p.value_type = StorageProperty::value_type_string;
 		p.value_string = p.reported_value;
 
+	} else if (app_pcre_match("/^APM feature is$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "apm_feature", "APM Feature");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
 	} else if (app_pcre_match("/^APM level is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "apm_level", "APM Level");
 		p.value_type = StorageProperty::value_type_string;
