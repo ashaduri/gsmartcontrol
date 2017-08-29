@@ -184,9 +184,17 @@ T ascii_strtoi(const char* nptr, char** endptr, int base)
 	// overflow.
 
 	if (std::numeric_limits<T>::is_signed) {
+#ifdef __GNUC__
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wint-in-bool-context"
+	#pragma GCC diagnostic ignored "-Woverflow"
+#endif
 		cutoff = static_cast<unsigned_type>( neg ?
 				( static_cast<unsigned_type>(-(std::numeric_limits<T>::min() + std::numeric_limits<T>::max()))
 				+ std::numeric_limits<T>::max() ) : std::numeric_limits<T>::max() );
+#ifdef __GNUC__
+	#pragma GCC diagnostic pop
+#endif
 		cutlim = static_cast<signed_type>(cutoff % base);
 		cutoff = static_cast<unsigned_type>(cutoff / base);
 	} else {
