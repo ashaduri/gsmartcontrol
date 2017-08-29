@@ -339,8 +339,8 @@ class StorageProperty {
 			subsection_health,  ///< Overall-health (-H, --health)
 			subsection_capabilities,  ///< General SMART Values, aka Capabilities (-c, --capabilities)
 			subsection_attributes,  ///< Attributes (-A, --attributes). These need decoding.
-			subsection_error_log,  ///< Error Log (-l error)
-			subsection_selftest_log,  ///< Self-test log (-l selftest)
+			subsection_error_log,  ///< Error Log (--log=error)
+			subsection_selftest_log,  ///< Self-test log (--log=selftest)
 			subsection_selective_selftest_log  ///< Selective self-test log and settings
 		};
 

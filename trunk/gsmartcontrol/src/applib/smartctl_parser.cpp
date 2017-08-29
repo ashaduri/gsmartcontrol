@@ -645,12 +645,14 @@ bool SmartctlParser::parse_section_data(const std::string& body)
 		} else if (app_pcre_match("/SMART Attributes Data Structure/mi", sub)) {
 			status = parse_section_data_subsection_attributes(sub) || status;
 
-		} else if (app_pcre_match("/SMART Error Log Version/mi", sub)
+		} else if (app_pcre_match("/SMART Error Log Version/mi", sub)  // -l error
+				|| app_pcre_match("/SMART Extended Comprehensive Error Log Version/mi", sub)  // -l xerror
 				|| app_pcre_match("/Warning: device does not support Error Logging/mi", sub)
 				|| app_pcre_match("/SMART Error Log not supported/mi", sub)) {
 			status = parse_section_data_subsection_error_log(sub) || status;
 
-		} else if (app_pcre_match("/SMART Self-test log/mi", sub)
+		} else if (app_pcre_match("/SMART Self-test log/mi", sub)  // -l selftest
+				|| app_pcre_match("/SMART Extended Self-test Log Version/mi", sub)  // -l error xselftest
 				|| app_pcre_match("/Warning: device does not support Self Test Logging/mi", sub)
 				|| app_pcre_match("/SMART Self-test Log not supported/mi", sub)) {
 			status = parse_section_data_subsection_selftest_log(sub) || status;
@@ -1350,7 +1352,9 @@ bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& 
 
 	// Error log version
 	{
-		pcrecpp::RE re = app_pcre_re("/^(SMART Error Log Version):[ \\t]*(.*)$/mi");
+		// SMART Error Log Version: 1
+		// SMART Extended Comprehensive Error Log Version: 1 (1 sectors)
+		pcrecpp::RE re = app_pcre_re("/^(SMART (Extended Comprehensive )?Error Log Version): ([0-9]+).*?$/mi");
 
 		std::string name, value;
 		if (re.PartialMatch(sub, &name, &value)) {
@@ -1384,7 +1388,7 @@ bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& 
 		}
 	}
 
-	// Error log enty count
+	// Error log entry count
 	{
 		// note: these represent the same information
 		pcrecpp::RE re1 = app_pcre_re("/^ATA Error Count:[ \\t]*([0-9]+)/mi");
@@ -1413,14 +1417,17 @@ bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& 
 	// individual errors
 	{
 		// split by blocks
-		pcrecpp::RE re_block = app_pcre_re("/^((Error[ \\t]*([0-9]+))[ \\t]*occurred at disk power-on lifetime:[ \\t]*([0-9]+) hours.*(?:\\n(?:  |\\n  ).*)*)/mi");
+		// "Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)"
+		// "Error 25 occurred at disk power-on lifetime: 14799 hours"
+		pcrecpp::RE re_block = app_pcre_re("/^((Error[ \\t]*([0-9]+))[ \\t]*(?:\\[[0-9]+\\][ \\t])?occurred at disk power-on lifetime:[ \\t]*([0-9]+) hours(?:[^\\n]*)?.*(?:\\n(?:  |\\n  ).*)*)/mi");
 
 		// "  When the command that caused the error occurred, the device was active or idle."
 		// Note: For "in an unknown state" - remove first two words.
 		pcrecpp::RE re_state = app_pcre_re("/occurred, the device was[ \\t]*(?: in)?(?: an?)?[ \\t]+([^.\\n]*)\\.?/mi");
 		// "  84 51 2c 71 cd 3f e6  Error: ICRC, ABRT 44 sectors at LBA = 0x063fcd71 = 104844657"
 		// "  40 51 00 f5 41 61 e0  Error: UNC at LBA = 0x006141f5 = 6373877"
-		pcrecpp::RE re_type = app_pcre_re("/[ \\t]+Error:[ \\t]*([ ,a-z]+)[ \\t]+((?:[0-9]+|at )[ \\t]*.*)$/mi");
+		// "  02 -- 51 00 00 00 00 00 00 00 00 00 00  Error: TK0NF"
+		pcrecpp::RE re_type = app_pcre_re("/[ \\t]+Error:[ \\t]*([ ,a-z0-9]+)(?:[ \\t]+((?:[0-9]+|at )[ \\t]*.*))?$/mi");
 
 		std::string block, name, value_num, value_time;
 		pcrecpp::StringPiece input(sub);  // position tracker
@@ -1504,7 +1511,7 @@ bool SmartctlParser::parse_section_data_subsection_selftest_log(const std::strin
 	// The whole subsection
 	{
 		StorageProperty p(pt);
-		p.set_name("SMART Self-test log", "selftest_log");
+		p.set_name("SMART Self-Test Log", "selftest_log");
 		p.reported_value = sub;
 		p.value_type = StorageProperty::value_type_string;
 		p.value_string = p.reported_value;
@@ -1529,13 +1536,15 @@ bool SmartctlParser::parse_section_data_subsection_selftest_log(const std::strin
 
 	// Self-test log version
 	{
-		// newer smartctl (since smartctl 5.1-16)
+		// SMART Self-test log structure revision number 1
+		// SMART Extended Self-test Log Version: 1 (1 sectors)
 		pcrecpp::RE re1 = app_pcre_re("/(SMART Self-test log structure[^\\n0-9]*)([^ \\n]+)[ \\t]*$/mi");
-		// older smartctl
+		pcrecpp::RE re1_ex = app_pcre_re("/(SMART Extended Self-test Log Version: ([0-9]+).*$/mi");
+		// older smartctl (pre 5.1-16)
 		pcrecpp::RE re2 = app_pcre_re("/(SMART Self-test log, version number[^\\n0-9]*)([^ \\n]+)[ \\t]*$/mi");
 
 		std::string name, value;
-		if (re1.PartialMatch(sub, &name, &value) || re2.PartialMatch(sub, &name, &value)) {
+		if (re1.PartialMatch(sub, &name, &value) || re1_ex.PartialMatch(sub, &name, &value) || re2.PartialMatch(sub, &name, &value)) {
 			hz::string_trim(value);
 
 			StorageProperty p(pt);
