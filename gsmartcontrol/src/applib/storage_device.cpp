@@ -324,10 +324,10 @@ std::string StorageDevice::fetch_data_and_parse(hz::intrusive_ptr<CmdexSync> sma
 	if (this->get_type_argument() == "scsi") {  // not sure about correctness... FIXME probably fails with RAID/scsi
 		// This doesn't do much yet, but just in case...
 		// SCSI equivalent of -a --get=all:
-		error_msg = execute_device_smartctl("--health --info --get=all --attributes --log=error --log=selftest", smartctl_ex, output);
+		error_msg = execute_device_smartctl("--health --info --get=all --attributes --log=xerror,50,error --log=xselftest,50,selftest", smartctl_ex, output);
 	} else {
 		// ATA equivalent of -a --get=all:
-		error_msg = execute_device_smartctl("--health --info --get=all --capabilities --attributes --log=error --log=selftest --log=selective",
+		error_msg = execute_device_smartctl("--health --info --get=all --capabilities --attributes --log=xerror,50,error --log=xselftest,50,selftest --log=selective",
 				smartctl_ex, output, true);  // set type to invalid if needed
 	}
 	// See notes above (in fetch_basic_data_and_parse()).

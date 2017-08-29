@@ -849,7 +849,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			} else if (iter->value_type != StorageProperty::value_type_error_block) {
 				label_strings.push_back(PropertyLabel(iter->readable_name + ": " + iter->format_value(), &(*iter)));
 				if (iter->generic_name == "error_count")
-					label_strings.back().label += " (Note: Usually only the last five errors are stored.)";
+					label_strings.back().label += " (Note: The number of entries may be limited to the newest ones)";
 
 			} else {
 				std::string type_details = iter->value_error_block.type_more_info;

@@ -197,6 +197,7 @@
                       <object class="GtkBox" id="attributes_label_vbox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="orientation">vertical</property>
                         <property name="spacing">3</property>
                         <child>
                           <placeholder/>
@@ -380,6 +381,7 @@
                       <object class="GtkBox" id="error_log_label_vbox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="orientation">vertical</property>
                         <property name="spacing">3</property>
                         <child>
                           <placeholder/>
@@ -938,8 +940,8 @@ Selective self-test log is also presented here.</property>
                 <property name="receives_default">True</property>
                 <property name="tooltip_text" translatable="yes">Re-read all the information</property>
                 <property name="use_stock">True</property>
-                <accelerator key="R" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                 <accelerator key="F5" signal="clicked"/>
+                <accelerator key="R" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
               </object>
               <packing>
                 <property name="expand">True</property>

@@ -23,6 +23,7 @@ TODO:
 
 Don't rely on smartctl return code (2), parse the output instead.
 	This will allow us to show the Info page.
+	Need usage cases.
 
 
 Areca detection
@@ -68,10 +69,6 @@ Testing:
 			Updated offline: -, Always: O.
 			Pre-failure: P, old age: -.
 		Maybe get rid of Type and Updated columns and print only decoded flags?
-
-	use -l xerror,error -l xselftest,selftest by default (the output is similar).
-		Maybe increase default number of entries (50?).
-		Change this text: "Note: Usually only the last five errors are stored."
 
 	Add a tab for -l devstat  - it shows interesting statistics.
 		Some of this stuff is better than attributes, maybe show them before attributes.
