@@ -1352,8 +1352,8 @@ bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& 
 
 	// Error log version
 	{
-		// SMART Error Log Version: 1
-		// SMART Extended Comprehensive Error Log Version: 1 (1 sectors)
+		// "SMART Error Log Version: 1"
+		// "SMART Extended Comprehensive Error Log Version: 1 (1 sectors)"
 		pcrecpp::RE re = app_pcre_re("/^(SMART (Extended Comprehensive )?Error Log Version): ([0-9]+).*?$/mi");
 
 		std::string name, value;

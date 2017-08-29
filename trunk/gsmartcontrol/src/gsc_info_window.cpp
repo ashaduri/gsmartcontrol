@@ -645,18 +645,19 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		num_tree_cols = app_gtkmm_create_tree_view_column(col_type, *treeview,
 				"Type", "Alarm condition is reached when if normalized value becomes less than or equal to threshold. Type indicates whether it's a signal of drive's pre-failure time or just an old age.", false, true);
 
-		Gtk::TreeModelColumn<Glib::ustring> col_updated;
-		model_columns.add(col_updated);
-		num_tree_cols = app_gtkmm_create_tree_view_column(col_updated, *treeview,
-				"Updated", "The attribute is usually updated continuously, or during Offline Data Collection only. This column indicates that.", true);
+		// Doesn't carry that much info. Advanced users can look at the flags.
+// 		Gtk::TreeModelColumn<Glib::ustring> col_updated;
+// 		model_columns.add(col_updated);
+// 		num_tree_cols = app_gtkmm_create_tree_view_column(col_updated, *treeview,
+// 				"Updated", "The attribute is usually updated continuously, or during Offline Data Collection only. This column indicates that.", true);
 
 		Gtk::TreeModelColumn<std::string> col_flag_value;
 		model_columns.add(col_flag_value);
 		num_tree_cols = app_gtkmm_create_tree_view_column(col_flag_value, *treeview,
 				"Flag", "Flag value\n\n"
 				"If given in POSRCK+ format, the presence of each letter indicates that the flag is on.\n"
-				"P: pre-failure warning\n"
-				"O: updated continuously\n"
+				"P: pre-failure attribute (if the attribute failed, the drive is failing)\n"
+				"O: updated continuously (as opposed to updated on offline data collection)\n"
 				"S: speed / performance attribute\n"
 				"R: error rate\n"
 				"C: event count\n"
@@ -720,7 +721,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			row[col_threshold] = (iter->value_attribute.threshold.defined() ? hz::number_to_string(iter->value_attribute.threshold.value()) : "-");
 			row[col_raw] = iter->value_attribute.format_raw_value();
 			row[col_type] = attr_type;
-			row[col_updated] = StorageAttribute::get_update_type_name(iter->value_attribute.update_type);
+// 			row[col_updated] = StorageAttribute::get_update_type_name(iter->value_attribute.update_type);
 			row[col_failed] = fail_time;
 			row[col_tooltip] = iter->get_description();
 			row[col_storage] = &(*iter);
