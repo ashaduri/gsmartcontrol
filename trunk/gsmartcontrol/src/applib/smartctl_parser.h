@@ -57,7 +57,8 @@ class SmartctlParser {
 		bool parse_section(const std::string& header, const std::string& body);
 
 
-		/// Parse the info section (without "===" header)
+		/// Parse the info section (without "===" header).
+		/// This includes --info and --get=all.
 		bool parse_section_info(const std::string& body);
 
 		/// Parse a component (one line) of the info section
@@ -71,9 +72,14 @@ class SmartctlParser {
 		bool parse_section_data_subsection_health(const std::string& sub);
 		bool parse_section_data_subsection_capabilities(const std::string& sub);
 		bool parse_section_data_subsection_attributes(const std::string& sub);
+		bool parse_section_data_subsection_directory_log(const std::string& sub);
 		bool parse_section_data_subsection_error_log(const std::string& sub);
 		bool parse_section_data_subsection_selftest_log(const std::string& sub);
 		bool parse_section_data_subsection_selective_selftest_log(const std::string& sub);
+		bool parse_section_data_subsection_scttemp_log(const std::string& sub);
+		bool parse_section_data_subsection_scterc_log(const std::string& sub);
+		bool parse_section_data_subsection_devstat(const std::string& sub);
+		bool parse_section_data_subsection_sataphy(const std::string& sub);
 
 		/// Check the capabilities for internal properties we can use.
 		bool parse_section_data_internal_capabilities(StorageProperty& cap);

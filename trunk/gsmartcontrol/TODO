@@ -64,8 +64,6 @@ Add a button (with dropdown) to Info window, to run
 	"Put this all in Error Log", raname to Logs.
 	Make it a dropdown combo and "Retrieve" button, showing the output where selective is now.
 
-Merge "Self-test Logs" and "Perform Tests".
-
 
 Document RAID support.
 
