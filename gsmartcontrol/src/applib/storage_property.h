@@ -339,6 +339,7 @@ class StorageProperty {
 			subsection_health,  ///< Overall-health (-H, --health)
 			subsection_capabilities,  ///< General SMART Values, aka Capabilities (-c, --capabilities)
 			subsection_attributes,  ///< Attributes (-A, --attributes). These need decoding.
+			subsection_devstat,  ///< Device statistics (--log=devstat). These need decoding.
 			subsection_error_log,  ///< Error Log (--log=error)
 			subsection_selftest_log,  ///< Self-test log (--log=selftest)
 			subsection_selective_selftest_log,  ///< Selective self-test log (--log=selective)
@@ -356,6 +357,7 @@ class StorageProperty {
 				case subsection_health: return "health";
 				case subsection_capabilities: return "capabilities";
 				case subsection_attributes: return "attributes";
+				case subsection_devstat: return "devstat";
 				case subsection_error_log: return "error_log";
 				case subsection_selftest_log: return "selftest_log";
 				case subsection_selective_selftest_log: return "selective_selftest_log";

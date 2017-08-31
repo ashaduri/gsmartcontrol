@@ -281,38 +281,38 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 	tab_label = lookup_widget<Gtk::Label*>("identity_tab_label");
 	tab_identity_name = (tab_label ? tab_label->get_label() : "");
 
-	tab_label = lookup_widget<Gtk::Label*>("statistics_tab_label");
-	tab_statistics_name = (tab_label ? tab_label->get_label() : "");
-
 	tab_label = lookup_widget<Gtk::Label*>("attributes_tab_label");
 	tab_attributes_name = (tab_label ? tab_label->get_label() : "");
 
-	tab_label = lookup_widget<Gtk::Label*>("capabilities_tab_label");
-	tab_capabilities_name = (tab_label ? tab_label->get_label() : "");
-
-	tab_label = lookup_widget<Gtk::Label*>("logs_tab_label");
-	tab_logs_name = (tab_label ? tab_label->get_label() : "");
+	tab_label = lookup_widget<Gtk::Label*>("statistics_tab_label");
+	tab_statistics_name = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("test_tab_label");
 	tab_test_name = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("error_log_tab_label");
-	subtab_error_log_name = (tab_label ? tab_label->get_label() : "");
-
-	tab_label = lookup_widget<Gtk::Label*>("selective_selftest_log_tab_label");
-	subtab_selective_selftest_log_name = (tab_label ? tab_label->get_label() : "");
+	tab_error_log_name = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("temperature_tab_label");
-	subtab_temperature_name = (tab_label ? tab_label->get_label() : "");
+	tab_temperature_name = (tab_label ? tab_label->get_label() : "");
+
+	tab_label = lookup_widget<Gtk::Label*>("advanced_tab_label");
+	tab_advanced_name = (tab_label ? tab_label->get_label() : "");
+
+	tab_label = lookup_widget<Gtk::Label*>("capabilities_tab_label");
+	tab_capabilities_name = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("erc_tab_label");
-	subtab_erc_name = (tab_label ? tab_label->get_label() : "");
+	tab_erc_name = (tab_label ? tab_label->get_label() : "");
+
+	tab_label = lookup_widget<Gtk::Label*>("selective_selftest_tab_label");
+	tab_selective_selftest_name = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("phy_tab_label");
-	subtab_phy_name = (tab_label ? tab_label->get_label() : "");
+	tab_phy_name = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("directory_tab_label");
-	subtab_directory_name = (tab_label ? tab_label->get_label() : "");
+	tab_directory_name = (tab_label ? tab_label->get_label() : "");
 
 
 	// remove "Perform Test" tab for now...
@@ -398,19 +398,22 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		bool smart_enabled = (drive->get_smart_status() == StorageDevice::status_enabled);
 		Gtk::Widget* note_page_box = 0;
 
-		if ((note_page_box = lookup_widget("capabilities_tab_vbox")) != 0) {
-			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
-		}
 		if ((note_page_box = lookup_widget("attributes_tab_vbox")) != 0) {
 			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
 		}
 		if ((note_page_box = lookup_widget("statistics_tab_vbox")) != 0) {
 			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
 		}
-		if ((note_page_box = lookup_widget("logs_tab_vbox")) != 0) {
+		if ((note_page_box = lookup_widget("test_tab_vbox")) != 0) {
 			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
 		}
-		if ((note_page_box = lookup_widget("test_tab_vbox")) != 0) {
+		if ((note_page_box = lookup_widget("error_log_tab_vbox")) != 0) {
+			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
+		}
+		if ((note_page_box = lookup_widget("temperature_tab_vbox")) != 0) {
+			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
+		}
+		if ((note_page_box = lookup_widget("advanced_tab_vbox")) != 0) {
 			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
 		}
 	}
@@ -699,373 +702,6 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 
 
-	// ------------------------------------------- Capabilities
-
-
-	do {
-
-		Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>("capabilities_treeview");
-		if (!treeview)
-			break;
-
-		Gtk::TreeModelColumnRecord model_columns;
-		unsigned int num_tree_cols = 0;
-
-		// N, Name, Flag, Capabilities, [tooltips]
-
-		Gtk::TreeModelColumn<int> col_index;
-		model_columns.add(col_index);  // we can use the column variable by value after this.
-		num_tree_cols = app_gtkmm_create_tree_view_column(col_index, *treeview, "#", "Entry #", true);
-
-		Gtk::TreeModelColumn<Glib::ustring> col_name;
-		model_columns.add(col_name);
-		num_tree_cols = app_gtkmm_create_tree_view_column(col_name, *treeview, "Name", "Name", true);
-		treeview->set_search_column(col_name.index());
-		Gtk::CellRendererText* cr_name = hz::down_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
-		if (cr_name)
-			cr_name->property_weight() = Pango::WEIGHT_BOLD ;
-
-		Gtk::TreeModelColumn<std::string> col_flag_value;
-		model_columns.add(col_flag_value);
-		num_tree_cols = app_gtkmm_create_tree_view_column(col_flag_value, *treeview, "Flag", "Flag value", false);
-
-		Gtk::TreeModelColumn<Glib::ustring> col_str_values;
-		model_columns.add(col_str_values);
-		num_tree_cols = app_gtkmm_create_tree_view_column(col_str_values, *treeview, "Capabilities", "Capabilities", false);
-
-		Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
-		model_columns.add(col_tooltip);
-		treeview->set_tooltip_column(col_tooltip.index());
-
-		Gtk::TreeModelColumn<const StorageProperty*> col_storage;
-		model_columns.add(col_storage);
-
-
-		// create a TreeModel (ListStore)
-		Glib::RefPtr<Gtk::ListStore> list_store = Gtk::ListStore::create(model_columns);
-		list_store->set_sort_column(col_index, Gtk::SORT_ASCENDING);  // default sort
-		treeview->set_model(list_store);
-
-		for (unsigned int i = 0; i < num_tree_cols; ++i) {
-			Gtk::TreeViewColumn* tcol = treeview->get_column(i);
-			tcol->set_cell_data_func(*(tcol->get_first_cell()),
-						sigc::bind(sigc::ptr_fun(app_attr_cell_renderer_func), col_storage));
-		}
-
-
-		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
-		int index = 1;
-
-		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
-			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_capabilities)
-				continue;
-
-			Glib::ustring name = iter->readable_name;
-			std::string flag_value;
-			Glib::ustring str_value;
-
-			if (iter->value_type == StorageProperty::value_type_capability) {
-				flag_value = hz::number_to_string(iter->value_capability.flag_value, 16);  // 0xXX
-				str_value = hz::string_join(iter->value_capability.strvalues, "\n");
-			} else {
-				// no flag value here
-				str_value = iter->format_value();
-			}
-
-			Gtk::TreeRow row = *(list_store->append());
-			row[col_index] = index;
-			row[col_name] = name;
-			row[col_flag_value] = (flag_value.empty() ? "-" : flag_value);
-			row[col_str_values] = str_value;
-			row[col_tooltip] = iter->get_description();
-			row[col_storage] = &(*iter);
-
-			if (int(iter->warning) > int(max_tab_warning))
-				max_tab_warning = iter->warning;
-
-			++index;
-		}
-
-		// tab label
-		app_highlight_tab_label(lookup_widget("capabilities_tab_label"), max_tab_warning, tab_capabilities_name);
-
-	} while (false);
-
-
-
-	// ------------------------------------------- Error Log (Logs tab)
-
-
-	StorageProperty::warning_t max_logs_tab_warning = StorageProperty::warning_none;
-
-
-	do {
-		Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>("error_log_treeview");
-		if (!treeview)
-			break;
-
-		Gtk::TreeModelColumnRecord model_columns;
-		unsigned int num_tree_cols = 0;
-
-		// Error Number, Lifetime Hours, State, Type, Details, [tooltips]
-
-		Gtk::TreeModelColumn<uint32_t> col_num;
-		model_columns.add(col_num);  // we can use the column variable by value after this.
-		num_tree_cols = app_gtkmm_create_tree_view_column(col_num, *treeview,
-				"Error #", "Error # in the error log (greater means newer)", true);
-		Gtk::CellRendererText* cr_name = hz::down_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
-		if (cr_name)
-			cr_name->property_weight() = Pango::WEIGHT_BOLD ;
-
-		Gtk::TreeModelColumn<std::string> col_hours;
-		model_columns.add(col_hours);
-		num_tree_cols = app_gtkmm_create_tree_view_column(col_hours, *treeview,
-				"Lifetime hours", "During which hour of the drive's (powered on) lifetime did the error happen.", true);
-
-		Gtk::TreeModelColumn<std::string> col_state;
-		model_columns.add(col_state);
-		num_tree_cols = app_gtkmm_create_tree_view_column(col_state, *treeview,
-				"State", "Power state of the drive when the error occurred", false);
-
-		Gtk::TreeModelColumn<Glib::ustring> col_type;
-		model_columns.add(col_type);
-		num_tree_cols = app_gtkmm_create_tree_view_column(col_type, *treeview,
-				"Type", "Type of error", true);
-
-		Gtk::TreeModelColumn<std::string> col_details;
-		model_columns.add(col_details);
-		num_tree_cols = app_gtkmm_create_tree_view_column(col_details, *treeview,
-				"Details", "Additional details (e.g. LBA where the error occurred, etc...)", true);
-
-		Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
-		model_columns.add(col_tooltip);
-		treeview->set_tooltip_column(col_tooltip.index());
-
-		Gtk::TreeModelColumn<const StorageProperty*> col_storage;
-		model_columns.add(col_storage);
-
-		Gtk::TreeModelColumn<Glib::ustring> col_mark_name;
-		model_columns.add(col_mark_name);
-
-
-		// create a TreeModel (ListStore)
-		Glib::RefPtr<Gtk::ListStore> list_store = Gtk::ListStore::create(model_columns);
-		list_store->set_sort_column(col_num, Gtk::SORT_DESCENDING);  // default sort
-		treeview->set_model(list_store);
-
-		for (unsigned int i = 0; i < num_tree_cols; ++i) {
-			Gtk::TreeViewColumn* tcol = treeview->get_column(i);
-			tcol->set_cell_data_func(*(tcol->get_first_cell()),
-						sigc::bind(sigc::ptr_fun(app_attr_cell_renderer_func), col_storage));
-		}
-
-
-		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
-		label_list_t label_strings;  // outside-of-tree properties
-
-		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
-			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_error_log)
-				continue;
-
-			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-			if (iter->generic_name == "error_log") {
-				Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("error_log_textview");
-				if (textview) {
-					// Add complete error log to textview window.
-					Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-					if (buffer) {
-						buffer->set_text("\nComplete error log:\n\n" + iter->value_string);
-
-						// set marks so we can scroll to them
-
-						if (!error_log_row_selected_conn.connected()) {  // avoid double-connect
-							error_log_row_selected_conn = treeview->get_selection()->signal_changed().connect(
-								sigc::bind(sigc::bind(sigc::ptr_fun(on_error_log_treeview_row_selected), col_mark_name), this));
-						}
-
-						Gtk::TextIter titer = buffer->begin();
-						Gtk::TextIter match_start, match_end;
-						while (titer.forward_search("\nError ", Gtk::TEXT_SEARCH_TEXT_ONLY, match_start, match_end)) {
-							match_start.forward_char();  // place after newline
-							match_end.forward_word_end();  // include error number
-							titer = match_end;  // continue searching from here
-
-							Glib::ustring mark_name = match_start.get_slice(match_end);  // e.g. "Error 3"
-							buffer->create_mark(mark_name, titer);
-						}
-					}
-				}
-
-
-			// add non-tree properties to label above
-			} else if (iter->value_type != StorageProperty::value_type_error_block) {
-				label_strings.push_back(PropertyLabel(iter->readable_name + ": " + iter->format_value(), &(*iter)));
-				if (iter->generic_name == "error_count")
-					label_strings.back().label += " (Note: The number of entries may be limited to the newest ones)";
-
-			} else {
-				std::string type_details = iter->value_error_block.type_more_info;
-
-				Gtk::TreeRow row = *(list_store->append());
-				row[col_num] = iter->value_error_block.error_num;
-				row[col_hours] = iter->value_error_block.format_lifetime_hours();
-				row[col_state] = iter->value_error_block.device_state;
-				row[col_type] = StorageErrorBlock::get_readable_error_types(iter->value_error_block.reported_types);
-				row[col_details] = (type_details.empty() ? "-" : type_details);  // e.g. OBS has no details
-				// There are no descriptions in self-test log entries, so don't display
-				// "No description available" for all of them.
-// 				row[col_tooltip] = iter->get_description();
-				row[col_storage] = &(*iter);
-				row[col_mark_name] = "Error " + hz::number_to_string(iter->value_error_block.error_num);
-			}
-
-			if (int(iter->warning) > int(max_tab_warning))
-				max_tab_warning = iter->warning;
-
-			if (int(max_tab_warning) > int(max_logs_tab_warning))
-				max_logs_tab_warning = max_tab_warning;
-		}
-
-		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("error_log_label_vbox");
-		app_set_top_labels(label_vbox, label_strings);
-
-		// inner tab label
-		app_highlight_tab_label(lookup_widget("error_log_tab_label"), max_tab_warning, subtab_error_log_name);
-
-	} while (false);
-
-
-
-
-	// ------------------------------------------- Selective self-test log (Logs tab)
-
-
-	do {
-
-		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("selective_selftest_log_textview");
-		if (!textview)
-			break;
-
-		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
-			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_selective_selftest_log)
-				continue;
-
-			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-			if (iter->generic_name == "selective_selftest_log") {
-				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-				buffer->set_text("\nComplete selective self-test log:\n\n" + iter->value_string);
-			}
-		}
-
-	} while (false);
-
-
-
-
-	// ------------------------------------------- Temperature log (Logs tab)
-
-
-	do {
-
-		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("temperature_log_textview");
-		if (!textview)
-			break;
-
-		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
-			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_temperature_log)
-				continue;
-
-			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-			if (iter->generic_name == "temperature_log") {
-				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-				buffer->set_text("\nComplete SCT temperature log:\n\n" + iter->value_string);
-			}
-		}
-
-	} while (false);
-
-
-
-
-	// ------------------------------------------- ERC log (Logs tab)
-
-
-	do {
-
-		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("erc_log_textview");
-		if (!textview)
-			break;
-
-		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
-			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_erc_log)
-				continue;
-
-			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-			if (iter->generic_name == "erc_log") {
-				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-				buffer->set_text("\nComplete SCT Error Recovery Control settings:\n\n" + iter->value_string);
-			}
-		}
-
-	} while (false);
-
-
-
-
-	// ------------------------------------------- Phy log (Logs tab)
-
-
-	do {
-
-		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("phy_log_textview");
-		if (!textview)
-			break;
-
-		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
-			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_phy_log)
-				continue;
-
-			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-			if (iter->generic_name == "phy_log") {
-				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-				buffer->set_text("\nComplete phy log:\n\n" + iter->value_string);
-			}
-		}
-
-	} while (false);
-
-
-
-
-	// ------------------------------------------- Directory log (Logs tab)
-
-
-	do {
-
-		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("directory_log_textview");
-		if (!textview)
-			break;
-
-		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
-			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_directory_log)
-				continue;
-
-			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-			if (iter->generic_name == "directory_log") {
-				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-				buffer->set_text("\nComplete directory log:\n\n" + iter->value_string);
-			}
-		}
-
-	} while (false);
-
-
-
-	// tab label
-	app_highlight_tab_label(lookup_widget("logs_tab_label"), max_logs_tab_warning, tab_logs_name);
-
-
-
 	// ------------------------------------------- Tests
 
 
@@ -1116,7 +752,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::type_short);
 			row[test_combo_col_description] =
 				"Short self-test consists of a collection of test routines that have the highest chance"
-				" of detecting drive problems. Its result is reported in the Self-test Log."
+				" of detecting drive problems. Its result is reported in the Self-Test Log."
 				" Note that this test is in no way comprehensive. Its main purpose is to detect totally damaged"
 				" drives without running the full surface scan."
 				"\nNote: On some drives this actually runs several consequent tests, which may"
@@ -1130,7 +766,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::type_long);
 			row[test_combo_col_description] =
 				"Extended self-test examines complete disk surface and performs various test routines"
-				" built into the drive. Its result is reported in the Self-test Log.";
+				" built into the drive. Its result is reported in the Self-Test Log.";
 			row[test_combo_col_self_test] = test_long;
 		}
 
@@ -1274,6 +910,409 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 	} while (false);
 
 
+
+	// ------------------------------------------- Error Log
+
+
+	do {
+		Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>("error_log_treeview");
+		if (!treeview)
+			break;
+
+		Gtk::TreeModelColumnRecord model_columns;
+		unsigned int num_tree_cols = 0;
+
+		// Error Number, Lifetime Hours, State, Type, Details, [tooltips]
+
+		Gtk::TreeModelColumn<uint32_t> col_num;
+		model_columns.add(col_num);  // we can use the column variable by value after this.
+		num_tree_cols = app_gtkmm_create_tree_view_column(col_num, *treeview,
+				"Error #", "Error # in the error log (greater means newer)", true);
+		Gtk::CellRendererText* cr_name = hz::down_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
+		if (cr_name)
+			cr_name->property_weight() = Pango::WEIGHT_BOLD ;
+
+		Gtk::TreeModelColumn<std::string> col_hours;
+		model_columns.add(col_hours);
+		num_tree_cols = app_gtkmm_create_tree_view_column(col_hours, *treeview,
+				"Lifetime hours", "During which hour of the drive's (powered on) lifetime did the error happen.", true);
+
+		Gtk::TreeModelColumn<std::string> col_state;
+		model_columns.add(col_state);
+		num_tree_cols = app_gtkmm_create_tree_view_column(col_state, *treeview,
+				"State", "Power state of the drive when the error occurred", false);
+
+		Gtk::TreeModelColumn<Glib::ustring> col_type;
+		model_columns.add(col_type);
+		num_tree_cols = app_gtkmm_create_tree_view_column(col_type, *treeview,
+				"Type", "Type of error", true);
+
+		Gtk::TreeModelColumn<std::string> col_details;
+		model_columns.add(col_details);
+		num_tree_cols = app_gtkmm_create_tree_view_column(col_details, *treeview,
+				"Details", "Additional details (e.g. LBA where the error occurred, etc...)", true);
+
+		Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
+		model_columns.add(col_tooltip);
+		treeview->set_tooltip_column(col_tooltip.index());
+
+		Gtk::TreeModelColumn<const StorageProperty*> col_storage;
+		model_columns.add(col_storage);
+
+		Gtk::TreeModelColumn<Glib::ustring> col_mark_name;
+		model_columns.add(col_mark_name);
+
+
+		// create a TreeModel (ListStore)
+		Glib::RefPtr<Gtk::ListStore> list_store = Gtk::ListStore::create(model_columns);
+		list_store->set_sort_column(col_num, Gtk::SORT_DESCENDING);  // default sort
+		treeview->set_model(list_store);
+
+		for (unsigned int i = 0; i < num_tree_cols; ++i) {
+			Gtk::TreeViewColumn* tcol = treeview->get_column(i);
+			tcol->set_cell_data_func(*(tcol->get_first_cell()),
+						sigc::bind(sigc::ptr_fun(app_attr_cell_renderer_func), col_storage));
+		}
+
+
+		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+		label_list_t label_strings;  // outside-of-tree properties
+
+		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
+			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_error_log)
+				continue;
+
+			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
+			if (iter->generic_name == "error_log") {
+				Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("error_log_textview");
+				if (textview) {
+					// Add complete error log to textview window.
+					Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+					if (buffer) {
+						buffer->set_text("\nComplete error log:\n\n" + iter->value_string);
+
+						// set marks so we can scroll to them
+
+						if (!error_log_row_selected_conn.connected()) {  // avoid double-connect
+							error_log_row_selected_conn = treeview->get_selection()->signal_changed().connect(
+								sigc::bind(sigc::bind(sigc::ptr_fun(on_error_log_treeview_row_selected), col_mark_name), this));
+						}
+
+						Gtk::TextIter titer = buffer->begin();
+						Gtk::TextIter match_start, match_end;
+						while (titer.forward_search("\nError ", Gtk::TEXT_SEARCH_TEXT_ONLY, match_start, match_end)) {
+							match_start.forward_char();  // place after newline
+							match_end.forward_word_end();  // include error number
+							titer = match_end;  // continue searching from here
+
+							Glib::ustring mark_name = match_start.get_slice(match_end);  // e.g. "Error 3"
+							buffer->create_mark(mark_name, titer);
+						}
+					}
+				}
+
+
+			// add non-tree properties to label above
+			} else if (iter->value_type != StorageProperty::value_type_error_block) {
+				label_strings.push_back(PropertyLabel(iter->readable_name + ": " + iter->format_value(), &(*iter)));
+				if (iter->generic_name == "error_count")
+					label_strings.back().label += " (Note: The number of entries may be limited to the newest ones)";
+
+			} else {
+				std::string type_details = iter->value_error_block.type_more_info;
+
+				Gtk::TreeRow row = *(list_store->append());
+				row[col_num] = iter->value_error_block.error_num;
+				row[col_hours] = iter->value_error_block.format_lifetime_hours();
+				row[col_state] = iter->value_error_block.device_state;
+				row[col_type] = StorageErrorBlock::get_readable_error_types(iter->value_error_block.reported_types);
+				row[col_details] = (type_details.empty() ? "-" : type_details);  // e.g. OBS has no details
+				// There are no descriptions in self-test log entries, so don't display
+				// "No description available" for all of them.
+// 				row[col_tooltip] = iter->get_description();
+				row[col_storage] = &(*iter);
+				row[col_mark_name] = "Error " + hz::number_to_string(iter->value_error_block.error_num);
+			}
+
+			if (int(iter->warning) > int(max_tab_warning))
+				max_tab_warning = iter->warning;
+		}
+
+		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("error_log_label_vbox");
+		app_set_top_labels(label_vbox, label_strings);
+
+		// inner tab label
+		app_highlight_tab_label(lookup_widget("error_log_tab_label"), max_tab_warning, tab_error_log_name);
+
+	} while (false);
+
+
+
+
+	// ------------------------------------------- Temperature log
+
+
+	do {
+
+		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("temperature_log_textview");
+		if (!textview)
+			break;
+
+		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+
+		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
+			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_temperature_log)
+				continue;
+
+			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
+			if (iter->generic_name == "scttemp_log") {
+				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+				buffer->set_text("\nComplete SCT temperature log:\n\n" + iter->value_string);
+			}
+		}
+
+		// tab label
+		app_highlight_tab_label(lookup_widget("temperature_tab_label"), max_tab_warning, tab_temperature_name);
+
+	} while (false);
+
+
+
+
+	// ------------------------------------------- Advanced tab - Capabilities
+
+
+	StorageProperty::warning_t max_advanced_tab_warning = StorageProperty::warning_none;
+
+
+	do {
+
+		Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>("capabilities_treeview");
+		if (!treeview)
+			break;
+
+		Gtk::TreeModelColumnRecord model_columns;
+		unsigned int num_tree_cols = 0;
+
+		// N, Name, Flag, Capabilities, [tooltips]
+
+		Gtk::TreeModelColumn<int> col_index;
+		model_columns.add(col_index);  // we can use the column variable by value after this.
+		num_tree_cols = app_gtkmm_create_tree_view_column(col_index, *treeview, "#", "Entry #", true);
+
+		Gtk::TreeModelColumn<Glib::ustring> col_name;
+		model_columns.add(col_name);
+		num_tree_cols = app_gtkmm_create_tree_view_column(col_name, *treeview, "Name", "Name", true);
+		treeview->set_search_column(col_name.index());
+		Gtk::CellRendererText* cr_name = hz::down_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
+		if (cr_name)
+			cr_name->property_weight() = Pango::WEIGHT_BOLD ;
+
+		Gtk::TreeModelColumn<std::string> col_flag_value;
+		model_columns.add(col_flag_value);
+		num_tree_cols = app_gtkmm_create_tree_view_column(col_flag_value, *treeview, "Flag", "Flag value", false);
+
+		Gtk::TreeModelColumn<Glib::ustring> col_str_values;
+		model_columns.add(col_str_values);
+		num_tree_cols = app_gtkmm_create_tree_view_column(col_str_values, *treeview, "Capabilities", "Capabilities", false);
+
+		Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
+		model_columns.add(col_tooltip);
+		treeview->set_tooltip_column(col_tooltip.index());
+
+		Gtk::TreeModelColumn<const StorageProperty*> col_storage;
+		model_columns.add(col_storage);
+
+
+		// create a TreeModel (ListStore)
+		Glib::RefPtr<Gtk::ListStore> list_store = Gtk::ListStore::create(model_columns);
+		list_store->set_sort_column(col_index, Gtk::SORT_ASCENDING);  // default sort
+		treeview->set_model(list_store);
+
+		for (unsigned int i = 0; i < num_tree_cols; ++i) {
+			Gtk::TreeViewColumn* tcol = treeview->get_column(i);
+			tcol->set_cell_data_func(*(tcol->get_first_cell()),
+						sigc::bind(sigc::ptr_fun(app_attr_cell_renderer_func), col_storage));
+		}
+
+
+		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+		int index = 1;
+
+		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
+			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_capabilities)
+				continue;
+
+			Glib::ustring name = iter->readable_name;
+			std::string flag_value;
+			Glib::ustring str_value;
+
+			if (iter->value_type == StorageProperty::value_type_capability) {
+				flag_value = hz::number_to_string(iter->value_capability.flag_value, 16);  // 0xXX
+				str_value = hz::string_join(iter->value_capability.strvalues, "\n");
+			} else {
+				// no flag value here
+				str_value = iter->format_value();
+			}
+
+			Gtk::TreeRow row = *(list_store->append());
+			row[col_index] = index;
+			row[col_name] = name;
+			row[col_flag_value] = (flag_value.empty() ? "-" : flag_value);
+			row[col_str_values] = str_value;
+			row[col_tooltip] = iter->get_description();
+			row[col_storage] = &(*iter);
+
+			if (int(iter->warning) > int(max_tab_warning))
+				max_tab_warning = iter->warning;
+
+			++index;
+		}
+
+		if (int(max_tab_warning) > int(max_advanced_tab_warning))
+			max_advanced_tab_warning = max_tab_warning;
+
+		// tab label
+		app_highlight_tab_label(lookup_widget("capabilities_tab_label"), max_tab_warning, tab_capabilities_name);
+
+	} while (false);
+
+
+
+
+	// ------------------------------------------- Advanced tab - ERC log
+
+
+	do {
+
+		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("erc_log_textview");
+		if (!textview)
+			break;
+
+		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+
+		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
+			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_erc_log)
+				continue;
+
+			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
+			if (iter->generic_name == "scterc_log") {
+				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+				buffer->set_text("\nComplete SCT Error Recovery Control settings:\n\n" + iter->value_string);
+			}
+		}
+
+		if (int(max_tab_warning) > int(max_advanced_tab_warning))
+			max_advanced_tab_warning = max_tab_warning;
+
+		// tab label
+		app_highlight_tab_label(lookup_widget("erc_tab_label"), max_tab_warning, tab_erc_name);
+
+	} while (false);
+
+
+
+
+	// ------------------------------------------- Advanced tab - Selective self-test log
+
+
+	do {
+
+		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("selective_selftest_log_textview");
+		if (!textview)
+			break;
+
+		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+
+		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
+			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_selective_selftest_log)
+				continue;
+
+			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
+			if (iter->generic_name == "selective_selftest_log") {
+				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+				buffer->set_text("\nComplete selective self-test log:\n\n" + iter->value_string);
+			}
+		}
+
+		if (int(max_tab_warning) > int(max_advanced_tab_warning))
+			max_advanced_tab_warning = max_tab_warning;
+
+		// tab label
+		app_highlight_tab_label(lookup_widget("selective_selftest_tab_label"), max_tab_warning, tab_selective_selftest_name);
+
+	} while (false);
+
+
+
+
+	// ------------------------------------------- Advanced tab - Phy log
+
+
+	do {
+
+		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("phy_log_textview");
+		if (!textview)
+			break;
+
+		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+
+		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
+			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_phy_log)
+				continue;
+
+			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
+			if (iter->generic_name == "sataphy_log") {
+				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+				buffer->set_text("\nComplete phy log:\n\n" + iter->value_string);
+			}
+		}
+
+		if (int(max_tab_warning) > int(max_advanced_tab_warning))
+			max_advanced_tab_warning = max_tab_warning;
+
+		// tab label
+		app_highlight_tab_label(lookup_widget("phy_tab_label"), max_tab_warning, tab_phy_name);
+
+	} while (false);
+
+
+
+
+	// ------------------------------------------- Advanced tab - Directory log
+
+
+	do {
+
+		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("directory_log_textview");
+		if (!textview)
+			break;
+
+		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+
+		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
+			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_directory_log)
+				continue;
+
+			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
+			if (iter->generic_name == "directory_log") {
+				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+				buffer->set_text("\nComplete directory log:\n\n" + iter->value_string);
+			}
+		}
+
+		if (int(max_tab_warning) > int(max_advanced_tab_warning))
+			max_advanced_tab_warning = max_tab_warning;
+
+		// tab label
+		app_highlight_tab_label(lookup_widget("directory_tab_label"), max_tab_warning, tab_directory_name);
+
+	} while (false);
+
+
+	// Advanced tab label
+	app_highlight_tab_label(lookup_widget("advanced_tab_label"), max_advanced_tab_warning, tab_advanced_name);
+
 }
 
 
@@ -1325,56 +1364,12 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 	}
 
 	{
-		Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>("capabilities_treeview");
-		if (treeview) {
-			// It's better to clear the model rather than unset it. If we unset it, we'll have
-			// to deattach the callbacks too. But if we clear it, we have to remember column vars.
-// 			Glib::RefPtr<Gtk::ListStore> model = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(treeview->get_model());
-// 			if (model)
-// 				model->clear();
-			treeview->remove_all_columns();
-			treeview->unset_model();
-		}
+// 		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("statistics_label_vbox");
+
+		// TODO
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("capabilities_tab_label"), StorageProperty::warning_none, tab_capabilities_name);
-	}
-
-	{
-		{
-			Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("error_log_label_vbox");
-			app_set_top_labels(label_vbox, label_list_t());
-
-			Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>("error_log_treeview");
-			if (treeview) {
-	// 			Glib::RefPtr<Gtk::ListStore> model = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(treeview->get_model());
-	// 			if (model)
-	// 				model->clear();
-				treeview->remove_all_columns();
-				treeview->unset_model();
-			}
-
-			Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("error_log_textview");
-			if (textview) {
-				// we re-create the buffer to get rid of all the Marks
-				textview->set_buffer(Gtk::TextBuffer::create());
-				textview->get_buffer()->set_text("\nNo data available");
-			}
-
-			// inner tab label
-			app_highlight_tab_label(lookup_widget("error_log_tab_label"), StorageProperty::warning_none, subtab_error_log_name);
-		}
-
-		{
-			Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("selective_selftest_log_textview");
-			if (textview) {
-				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-				buffer->set_text("\nNo data available");
-			}
-		}
-
-		// Logs tab label
-		app_highlight_tab_label(lookup_widget("logs_tab_label"), StorageProperty::warning_none, tab_logs_name);
+		app_highlight_tab_label(lookup_widget("statistics_tab_label"), StorageProperty::warning_none, tab_statistics_name);
 	}
 
 	{
@@ -1431,13 +1426,109 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 			Gtk::Box* test_result_hbox = lookup_widget<Gtk::Box*>("test_result_hbox");
 			if (test_result_hbox)
 				test_result_hbox->hide();  // hide by default. show when test is completed.
-
-
-			// tab label
-			app_highlight_tab_label(lookup_widget("test_tab_label"), StorageProperty::warning_none, tab_test_name);
 		}
+
+		// tab label
+		app_highlight_tab_label(lookup_widget("test_tab_label"), StorageProperty::warning_none, tab_test_name);
 	}
 
+	{
+		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("error_log_label_vbox");
+		app_set_top_labels(label_vbox, label_list_t());
+
+		Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>("error_log_treeview");
+		if (treeview) {
+// 			Glib::RefPtr<Gtk::ListStore> model = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(treeview->get_model());
+// 			if (model)
+// 				model->clear();
+			treeview->remove_all_columns();
+			treeview->unset_model();
+		}
+
+		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("error_log_textview");
+		if (textview) {
+			// we re-create the buffer to get rid of all the Marks
+			textview->set_buffer(Gtk::TextBuffer::create());
+			textview->get_buffer()->set_text("\nNo data available");
+		}
+
+		// tab label
+		app_highlight_tab_label(lookup_widget("error_log_tab_label"), StorageProperty::warning_none, tab_error_log_name);
+	}
+
+	{
+		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("temperature_log_textview");
+		if (textview) {
+			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+			buffer->set_text("\nNo data available");
+		}
+
+		// tab label
+		app_highlight_tab_label(lookup_widget("temperature_tab_label"), StorageProperty::warning_none, tab_temperature_name);
+	}
+
+	// tab label
+	app_highlight_tab_label(lookup_widget("advanced_tab_label"), StorageProperty::warning_none, tab_advanced_name);
+
+	{
+		Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>("capabilities_treeview");
+		if (treeview) {
+			// It's better to clear the model rather than unset it. If we unset it, we'll have
+			// to deattach the callbacks too. But if we clear it, we have to remember column vars.
+// 			Glib::RefPtr<Gtk::ListStore> model = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(treeview->get_model());
+// 			if (model)
+// 				model->clear();
+			treeview->remove_all_columns();
+			treeview->unset_model();
+		}
+
+		// tab label
+		app_highlight_tab_label(lookup_widget("capabilities_tab_label"), StorageProperty::warning_none, tab_capabilities_name);
+	}
+
+	{
+		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("erc_log_textview");
+		if (textview) {
+			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+			buffer->set_text("\nNo data available");
+		}
+
+		// tab label
+		app_highlight_tab_label(lookup_widget("erc_tab_label"), StorageProperty::warning_none, tab_erc_name);
+	}
+
+	{
+		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("selective_selftest_log_textview");
+		if (textview) {
+			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+			buffer->set_text("\nNo data available");
+		}
+
+		// tab label
+		app_highlight_tab_label(lookup_widget("selective_selftest_tab_label"), StorageProperty::warning_none, tab_selective_selftest_name);
+	}
+
+	{
+		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("phy_log_textview");
+		if (textview) {
+			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+			buffer->set_text("\nNo data available");
+		}
+
+		// tab label
+		app_highlight_tab_label(lookup_widget("phy_tab_label"), StorageProperty::warning_none, tab_phy_name);
+	}
+
+	{
+		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("directory_log_textview");
+		if (textview) {
+			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+			buffer->set_text("\nNo data available");
+		}
+
+		// tab label
+		app_highlight_tab_label(lookup_widget("directory_tab_label"), StorageProperty::warning_none, tab_directory_name);
+	}
 }
 
 
@@ -1458,7 +1549,7 @@ void GscInfoWindow::show_tests()
 {
 	Gtk::Notebook* book = lookup_widget<Gtk::Notebook*>("main_notebook");
 	if (book)
-		book->set_current_page(book->get_n_pages() - 1);  // the Tests tab is the last one for now.
+		book->set_current_page(3);  // the Tests tab
 }
 
 
@@ -1748,7 +1839,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 	}
 
 	if (severity != StorageSelftestEntry::severity_none) {
-		result_msg += "\nCheck the Self-test Log for more information.";
+		result_msg += "\nCheck the Self-Test Log for more information.";
 	}
 
 

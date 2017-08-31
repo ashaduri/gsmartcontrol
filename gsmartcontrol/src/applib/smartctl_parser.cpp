@@ -72,7 +72,7 @@ SmartctlParser::SmartctlParser()
 
 
 
-// Parse full "smartctl -a" output
+// Parse full "smartctl -x" output
 bool SmartctlParser::parse_full(const std::string& full, StorageAttribute::DiskType disk_type)
 {
 	this->clear();  // clear previous data
@@ -205,7 +205,7 @@ bool SmartctlParser::parse_full(const std::string& full, StorageAttribute::DiskT
 	// sections are started by
 	// === START OF <NAME> SECTION ===
 	while (section_start_pos != std::string::npos
-			&& (section_start_pos = s.find("===", section_start_pos)) != std::string::npos) {
+			&& (section_start_pos = s.find("=== START", section_start_pos)) != std::string::npos) {
 
 		tmp_pos = s.find("\n", section_start_pos);  // works with \r\n too. This may be npos if nothing follows the header.
 
@@ -215,7 +215,7 @@ bool SmartctlParser::parse_full(const std::string& full, StorageAttribute::DiskT
 
 		std::string section_body_str;
 		if (tmp_pos != std::string::npos) {
-			section_end_pos = s.find("===", tmp_pos);  // start of the next section
+			section_end_pos = s.find("=== START", tmp_pos);  // start of the next section
 			section_body_str = hz::string_trim_copy(s.substr(tmp_pos,
 					(section_end_pos == std::string::npos ? section_end_pos : section_end_pos - tmp_pos)));
 		}
@@ -366,7 +366,6 @@ bool SmartctlParser::parse_section(const std::string& header, const std::string&
 // ------------------------------------------------ INFO SECTION
 
 
-// Parse the info section (without "===" header)
 bool SmartctlParser::parse_section_info(const std::string& body)
 {
 	this->set_data_section_info(body);
@@ -553,6 +552,11 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 		p.value_type = StorageProperty::value_type_string;
 		p.value_string = p.reported_value;
 
+	} else if (app_pcre_match("/^AAM level is$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "aam_level", "AAM Level");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
 	} else if (app_pcre_match("/^APM feature is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "apm_feature", "APM Feature");
 		p.value_type = StorageProperty::value_type_string;
@@ -570,6 +574,16 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 
 	} else if (app_pcre_match("/^Write cache is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "write_cache", "Write Cache");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/^Wt Cache Reorder$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "write_cache_reorder", "Write Cache Reorder");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/^Power mode (?:was|is)$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "power_mode", "Power Mode");
 		p.value_type = StorageProperty::value_type_string;
 		p.value_string = p.reported_value;
 
@@ -608,8 +622,9 @@ bool SmartctlParser::parse_section_data(const std::string& body)
 // 	std::string s = hz::string_any_to_unix_copy(body);
 
 	std::vector<std::string> split_subsections;
-	// subsections are separated by double newlines, except the "error log" subsection,
-	// which contains double-newline-separated blocks.
+	// subsections are separated by double newlines, except:
+	// - "error log" subsection, which contains double-newline-separated blocks.
+	// - "scttemp" subsection, which has 3 blocks.
 	hz::string_split(body, "\n\n", split_subsections, true);
 
 	bool status = false;  // at least one subsection was parsed
@@ -617,14 +632,21 @@ bool SmartctlParser::parse_section_data(const std::string& body)
 
 	std::vector<std::string> subsections;
 
-	// merge "error log" parts. each part begins with a double-space or "Error nn".
+	// merge "single " parts. For error log, each part begins with a double-space or "Error nn".
+	// For scttemp, parts begin with
+	// "SCT Temperature History Version" or
+	// "Index    " or
+	// "Read SCT Temperature History failed".
 	for (unsigned int i = 0; i < split_subsections.size(); ++i) {
 		std::string sub = hz::string_trim_copy(split_subsections[i], "\t\n\r");  // don't trim space
-		if (app_pcre_re("^  ").PartialMatch(sub) || app_pcre_re("^Error [0-9]+").PartialMatch(sub)) {
+		if (app_pcre_re("^  ").PartialMatch(sub) || app_pcre_re("^Error [0-9]+").PartialMatch(sub)
+				|| app_pcre_re("^SCT Temperature History Version").PartialMatch(sub)
+				|| app_pcre_re("^Index[ \t]+").PartialMatch(sub)
+				|| app_pcre_re("^Read SCT Temperature History failed").PartialMatch(sub) ) {
 			if (!subsections.empty()) {
 				subsections.back() += "\n\n" + sub;  // append to previous part
 			} else {
-				debug_out_warn("app", DBG_FUNC_MSG << "Error Log's Error block found without any data subsections present.\n");
+				debug_out_warn("app", DBG_FUNC_MSG << "Error Log's Error block, or SCT Temperature History, or SCT Index found without any data subsections present.\n");
 			}
 		} else {  // not an Error block, process as usual
 			subsections.push_back(sub);
@@ -638,31 +660,75 @@ bool SmartctlParser::parse_section_data(const std::string& body)
 		if (sub.empty())
 			continue;
 
-		if (app_pcre_match("/SMART overall-health self-assessment/mi", sub)) {
+		if (app_pcre_match("/^SMART overall-health self-assessment/mi", sub)) {
 			status = parse_section_data_subsection_health(sub) || status;
 
-		} else if (app_pcre_match("/General SMART Values/mi", sub)) {
+		} else if (app_pcre_match("/^General SMART Values/mi", sub)) {
 			status = parse_section_data_subsection_capabilities(sub) || status;
 
-		} else if (app_pcre_match("/SMART Attributes Data Structure/mi", sub)) {
+		} else if (app_pcre_match("/^SMART Attributes Data Structure/mi", sub)) {
 			status = parse_section_data_subsection_attributes(sub) || status;
 
-		} else if (app_pcre_match("/SMART Error Log Version/mi", sub)  // -l error
-				|| app_pcre_match("/SMART Extended Comprehensive Error Log Version/mi", sub)  // -l xerror
-				|| app_pcre_match("/Warning: device does not support Error Logging/mi", sub)
-				|| app_pcre_match("/SMART Error Log not supported/mi", sub)) {
+		} else if (app_pcre_match("/^General Purpose Log Directory Version/mi", sub)  // -l directory
+				|| app_pcre_match("/^General Purpose Log Directory not supported/mi", sub)
+				|| app_pcre_match("/^Read GP Log Directory failed/mi", sub) ) {
+			status = parse_section_data_subsection_directory_log(sub) || status;
+
+		} else if (app_pcre_match("/^SMART Error Log Version/mi", sub)  // -l error
+				|| app_pcre_match("/^SMART Extended Comprehensive Error Log Version/mi", sub)  // -l xerror
+				|| app_pcre_match("/^Warning: device does not support Error Logging/mi", sub)  // -l error
+				|| app_pcre_match("/^SMART Error Log not supported/mi", sub)  // -l error
+				|| app_pcre_match("/^Read SMART Error Log failed/mi", sub) ) {  // -l error
 			status = parse_section_data_subsection_error_log(sub) || status;
 
-		} else if (app_pcre_match("/SMART Self-test log/mi", sub)  // -l selftest
-				|| app_pcre_match("/SMART Extended Self-test Log Version/mi", sub)  // -l error xselftest
-				|| app_pcre_match("/Warning: device does not support Self Test Logging/mi", sub)
-				|| app_pcre_match("/SMART Self-test Log not supported/mi", sub)) {
+		} else if (app_pcre_match("/^SMART Extended Comprehensive Error Log \\(GP Log 0x03\\) not supported/mi", sub)  // -l xerror
+				|| app_pcre_match("/^Read SMART Extended Comprehensive Error Log failed/mi", sub) ) {  // -l xerror
+			// These are printed with "-l xerror,error" if falling back to "error". They're in their own sections, ignore them.
+			// We don't support showing these messages.
+			status = false;
+
+		} else if (app_pcre_match("/^SMART Self-test log/mi", sub)  // -l selftest
+				|| app_pcre_match("/^SMART Extended Self-test Log Version/mi", sub)  // -l xselftest
+				|| app_pcre_match("/^Warning: device does not support Self Test Logging/mi", sub)  // -l selftest
+				|| app_pcre_match("/^Read SMART Self-test Log failed/mi", sub)  // -l selftest
+				|| app_pcre_match("/^SMART Self-test Log not supported/mi", sub)) {  // -l selftest
 			status = parse_section_data_subsection_selftest_log(sub) || status;
 
-		} else if (app_pcre_match("/SMART Selective self-test log data structure/mi", sub)
-				|| app_pcre_match("/Device does not support Selective Self Tests\\/Logging/mi", sub)
-				|| app_pcre_match("/Selective Self-tests\\/Logging not supported/mi", sub)) {
+		} else if (app_pcre_match("/^SMART Extended Self-test Log \\(GP Log 0x07\\) not supported/mi", sub)  // -l xselftest
+				|| app_pcre_match("/^SMART Extended Self-test Log size [0-9-]+ not supported/mi", sub)  // -l xselftest
+				|| app_pcre_match("/^Read SMART Extended Self-test Log failed/mi", sub) ) {  // -l xselftest
+			// These are printed with "-l xselftest,selftest" if falling back to "selftest". They're in their own sections, ignore them.
+			// We don't support showing these messages.
+			status = false;
+
+		} else if (app_pcre_match("/^SMART Selective self-test log data structure/mi", sub)
+				|| app_pcre_match("/^Device does not support Selective Self Tests\\/Logging/mi", sub)
+				|| app_pcre_match("/^Selective Self-tests\\/Logging not supported/mi", sub)
+				|| app_pcre_match("/^Read SMART Selective Self-test Log failed/mi", sub) ) {
 			status = parse_section_data_subsection_selective_selftest_log(sub) || status;
+
+		} else if (app_pcre_match("/^SCT Status Version/mi", sub)
+				// "SCT Commands not supported"
+				// "SCT Commands not supported if ATA Security is LOCKED"
+				|| app_pcre_match("/SCT Commands not supported/mi", sub)
+				|| app_pcre_match("/SCT Data Table command not supported/mi", sub) ) {
+			status = parse_section_data_subsection_scttemp_log(sub) || status;
+
+		} else if (app_pcre_match("/^SCT Error Recovery Control/mi", sub)
+				// Can be the same "SCT Commands not supported" as scttemp.
+				|| app_pcre_match("/^SCT Error Recovery Control command not supported/mi", sub)
+				|| app_pcre_match("/^SCT \\(Get\\) Error Recovery Control command failed/mi", sub) ) {
+			status = parse_section_data_subsection_scterc_log(sub) || status;
+
+		} else if (app_pcre_match("/^Device Statistics/mi", sub)  // -l devstat
+				|| app_pcre_match("/^Device Statistics \\(GP\\/SMART Log 0x04\\) not supported/mi", sub) ) {
+			status = parse_section_data_subsection_devstat(sub) || status;
+
+		} else if (app_pcre_match("/^SATA Phy Event Counters/mi", sub)  // -l sataphy
+				|| app_pcre_match("/^SATA Phy Event Counters \\(GP Log 0x11\\) not supported/mi", sub)
+				|| app_pcre_match("/^SATA Phy Event Counters with [0-9-]+ sectors not supported/mi", sub)
+				|| app_pcre_match("/^Read SATA Phy Event Counters failed/mi", sub) ) {
+			status = parse_section_data_subsection_sataphy(sub) || status;
 
 		} else {
 			debug_out_warn("app", DBG_FUNC_MSG << "Unknown Data subsection encountered.\n");
@@ -1336,8 +1402,58 @@ bool SmartctlParser::parse_section_data_subsection_attributes(const std::string&
 
 
 
+bool SmartctlParser::parse_section_data_subsection_directory_log(const std::string& sub)
+{
+	StorageProperty pt;  // template for easy copying
+	pt.section = StorageProperty::section_data;
+	pt.subsection = StorageProperty::subsection_directory_log;
 
-// -------------------- Error Log
+	// Directory log contains:
+/*
+General Purpose Log Directory Version 1
+SMART           Log Directory Version 1 [multi-sector log support]
+Address    Access  R/W   Size  Description
+0x00       GPL,SL  R/O      1  Log Directory
+0x01           SL  R/O      1  Summary SMART error log
+0x02           SL  R/O      5  Comprehensive SMART error log
+0x03       GPL     R/O      6  Ext. Comprehensive SMART error log
+0x04       GPL,SL  R/O      8  Device Statistics log
+0x06           SL  R/O      1  SMART self-test log
+0x07       GPL     R/O      1  Extended self-test log
+0x09           SL  R/W      1  Selective self-test log
+0x0a       GPL     R/W      8  Device Statistics Notification
+*/
+	bool data_found = false;  // true if something was found.
+
+	// the whole subsection
+	{
+		StorageProperty p(pt);
+		p.set_name("General Purpose Log Directory", "directory_log");
+		p.reported_value = sub;
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+		add_property(p);
+		data_found = true;
+	}
+
+	// supported / unsupported
+	{
+		StorageProperty p(pt);
+		p.set_name("General Purpose Log Directory supported", "directory_log_supported");
+
+		// p.reported_value;  // nothing
+		p.value_type = StorageProperty::value_type_bool;
+		p.value_bool = !app_pcre_match("/General Purpose Log Directory not supported/mi", sub);
+
+		add_property(p);
+		data_found = true;
+	}
+
+	return data_found;
+}
+
+
 
 bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& sub)
 {
@@ -1567,8 +1683,6 @@ bool SmartctlParser::parse_section_data_subsection_selftest_log(const std::strin
 	int64_t test_count = 0;  // type is of p.value_integer
 
 
-	// TODO: Support SCSI (it has different output format).
-
 	// individual entries
 	{
 		// split by columns.
@@ -1664,10 +1778,18 @@ bool SmartctlParser::parse_section_data_subsection_selective_selftest_log(const 
 	pt.subsection = StorageProperty::subsection_selective_selftest_log;
 
 	// Selective self-test log contains:
-	// * 5 (maybe less/more?) test entries, each with
-	// 		span / min_lba / max_lba / current_test_status.
-	// * flags
-	// * notes
+/*
+SMART Selective self-test log data structure revision number 1
+ SPAN  MIN_LBA  MAX_LBA  CURRENT_TEST_STATUS
+    1        0        0  Not_testing
+    2        0        0  Not_testing
+    3        0        0  Not_testing
+    4        0        0  Not_testing
+    5        0        0  Not_testing
+Selective self-test flags (0x0):
+  After scanning selected spans, do NOT read-scan remainder of disk.
+If Selective self-test is pending on power-up, resume after 0 minute delay.
+*/
 
 	bool data_found = false;  // true if something was found.
 
@@ -1683,7 +1805,6 @@ bool SmartctlParser::parse_section_data_subsection_selective_selftest_log(const 
 		data_found = true;
 	}
 
-
 	// supported / unsupported
 	{
 		StorageProperty p(pt);
@@ -1692,6 +1813,217 @@ bool SmartctlParser::parse_section_data_subsection_selective_selftest_log(const 
 		// p.reported_value;  // nothing
 		p.value_type = StorageProperty::value_type_bool;
 		p.value_bool = !app_pcre_match("/Device does not support Selective Self Tests\\/Logging/mi", sub);
+
+		add_property(p);
+		data_found = true;
+	}
+
+	return data_found;
+}
+
+
+
+bool SmartctlParser::parse_section_data_subsection_scttemp_log(const std::string& sub)
+{
+	StorageProperty pt;  // template for easy copying
+	pt.section = StorageProperty::section_data;
+	pt.subsection = StorageProperty::subsection_temperature_log;
+
+	// scttemp log contains:
+/*
+SCT Status Version:                  3
+SCT Version (vendor specific):       258 (0x0102)
+SCT Support Level:                   1
+Device State:                        Active (0)
+Current Temperature:                    39 Celsius
+Power Cycle Min/Max Temperature:     25/39 Celsius
+Lifetime    Min/Max Temperature:     17/50 Celsius
+Under/Over Temperature Limit Count:   0/0
+Vendor specific:
+01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+SCT Temperature History Version:     2
+Temperature Sampling Period:         1 minute
+Temperature Logging Interval:        1 minute
+Min/Max recommended Temperature:      0/60 Celsius
+Min/Max Temperature Limit:           -41/85 Celsius
+Temperature History Size (Index):    478 (361)
+
+Index    Estimated Time   Temperature Celsius
+ 362    2017-08-29 08:43    38  *******************
+ ...    ..(119 skipped).    ..  *******************
+   4    2017-08-29 10:43    38  *******************
+   5    2017-08-29 10:44    39  ********************
+ ...    ..( 91 skipped).    ..  ********************
+  97    2017-08-29 12:16    39  ********************
+  98    2017-08-29 12:17     ?  -
+  99    2017-08-29 12:18    25  ******
+*/
+	bool data_found = false;  // true if something was found.
+
+	// the whole subsection
+	{
+		StorageProperty p(pt);
+		p.set_name("SCT temperature log", "scttemp_log");
+		p.reported_value = sub;
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+		add_property(p);
+		data_found = true;
+	}
+
+	// supported / unsupported
+	{
+		StorageProperty p(pt);
+		p.set_name("SCT commands supported", "sct_supported");
+
+		// p.reported_value;  // nothing
+		p.value_type = StorageProperty::value_type_bool;
+		p.value_bool = !app_pcre_match("/(SCT Commands not supported)|(SCT Data Table command not supported)/mi", sub);
+
+		add_property(p);
+		data_found = true;
+	}
+
+	return data_found;
+}
+
+
+
+bool SmartctlParser::parse_section_data_subsection_scterc_log(const std::string& sub)
+{
+	StorageProperty pt;  // template for easy copying
+	pt.section = StorageProperty::section_data;
+	pt.subsection = StorageProperty::subsection_erc_log;
+
+	// scterc log contains:
+/*
+SCT Error Recovery Control:
+           Read:     70 (7.0 seconds)
+          Write:     70 (7.0 seconds)
+*/
+	bool data_found = false;  // true if something was found.
+
+	// the whole subsection
+	{
+		StorageProperty p(pt);
+		p.set_name("SCT ERC log", "scterc_log");
+		p.reported_value = sub;
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+		add_property(p);
+		data_found = true;
+	}
+
+	// supported / unsupported
+	{
+		StorageProperty p(pt);
+		p.set_name("SCT ERC supported", "sct_erc_supported");
+
+		// p.reported_value;  // nothing
+		p.value_type = StorageProperty::value_type_bool;
+		p.value_bool = !app_pcre_match("/SCT Error Recovery Control command not supported/mi", sub);
+
+		add_property(p);
+		data_found = true;
+	}
+
+	return data_found;
+}
+
+
+
+bool SmartctlParser::parse_section_data_subsection_devstat(const std::string& sub)
+{
+	StorageProperty pt;  // template for easy copying
+	pt.section = StorageProperty::section_data;
+	pt.subsection = StorageProperty::subsection_erc_log;
+
+	// devstat log contains:
+/*
+Device Statistics (GP Log 0x04)
+Page  Offset Size        Value Flags Description
+0x01  =====  =               =  ===  == General Statistics (rev 1) ==
+0x01  0x008  4             569  -D-  Lifetime Power-On Resets
+0x01  0x010  4            6360  -D-  Power-on Hours
+0x01  0x018  6     17887792526  -D-  Logical Sectors Written
+0x01  0x020  6        51609191  -D-  Number of Write Commands
+0x01  0x028  6     17634698564  -D-  Logical Sectors Read
+0x01  0x030  6       179799274  -D-  Number of Read Commands
+0x01  0x038  6      1421163520  -D-  Date and Time TimeStamp
+0x01  0x048  2             202  ND-  Workload Utilization
+0x03  =====  =               =  ===  == Rotating Media Statistics (rev 1) ==
+0x03  0x008  4            6356  -D-  Spindle Motor Power-on Hours
+0x03  0x010  4            6356  -D-  Head Flying Hours
+*/
+	bool data_found = false;  // true if something was found.
+
+	// the whole subsection
+	{
+		StorageProperty p(pt);
+		p.set_name("Device statistics", "devstat_log");
+		p.reported_value = sub;
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+		add_property(p);
+	}
+
+	// supported / unsupported
+	{
+		StorageProperty p(pt);
+		p.set_name("Device statistics supported", "devstat_supported");
+
+		// p.reported_value;  // nothing
+		p.value_type = StorageProperty::value_type_bool;
+		p.value_bool = !app_pcre_match("/Device Statistics \\(GP\\/SMART Log 0x04\\) not supported/mi", sub);
+
+		add_property(p);
+		data_found = true;
+	}
+
+	// TODO
+
+	return data_found;}
+
+
+
+bool SmartctlParser::parse_section_data_subsection_sataphy(const std::string& sub)
+{
+	StorageProperty pt;  // template for easy copying
+	pt.section = StorageProperty::section_data;
+	pt.subsection = StorageProperty::subsection_phy_log;
+
+	// sataphy log contains:
+/*
+
+*/
+	bool data_found = false;  // true if something was found.
+
+	// the whole subsection
+	{
+		StorageProperty p(pt);
+		p.set_name("SATA Phy log", "sataphy_log");
+		p.reported_value = sub;
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+		add_property(p);
+		data_found = true;
+	}
+
+	// supported / unsupported
+	{
+		StorageProperty p(pt);
+		p.set_name("SATA Phy log supported", "sataphy_supported");
+
+		// p.reported_value;  // nothing
+		p.value_type = StorageProperty::value_type_bool;
+		p.value_bool = !app_pcre_match("/SATA Phy Event Counters \\(GP Log 0x11\\) not supported/mi", sub)
+				&& !app_pcre_match("/SATA Phy Event Counters with [0-9-]+ sectors not supported/mi", sub);
 
 		add_property(p);
 		data_found = true;
