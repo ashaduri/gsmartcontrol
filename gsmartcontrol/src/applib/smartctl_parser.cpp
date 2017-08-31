@@ -1526,6 +1526,7 @@ bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& 
 	// parsable by this parser. Can't really improve that.
 	// Also, type (e.g. UNC) is not always present (depends on the drive I guess).
 
+	// Sample "-l xerror" output:
 /*
 SMART Extended Comprehensive Error Log Version: 1 (1 sectors)
 Device Error Count: 1

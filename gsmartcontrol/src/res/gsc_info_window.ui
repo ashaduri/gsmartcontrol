@@ -664,7 +664,6 @@ Self-test log contains information about the most recent manually performed SMAR
                                       <object class="GtkTreeView" id="error_log_treeview">
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
-                                        <property name="margin_bottom">19</property>
                                         <property name="enable_grid_lines">both</property>
                                         <child internal-child="selection">
                                           <object class="GtkTreeSelection"/>
@@ -690,6 +689,7 @@ Self-test log contains information about the most recent manually performed SMAR
                                         <property name="editable">False</property>
                                         <property name="left_margin">5</property>
                                         <property name="right_margin">5</property>
+                                        <property name="monospace">True</property>
                                       </object>
                                     </child>
                                   </object>
