@@ -748,6 +748,18 @@ bool SmartctlParser::parse_section_data(const std::string& body)
 
 bool SmartctlParser::parse_section_data_subsection_health(const std::string& sub)
 {
+	// Health section data (--info and --get=all):
+/*
+Model Family:     Hitachi/HGST Travelstar 5K750
+Device Model:     Hitachi HTS547550A9E384
+Firmware Version: JE3OA40J
+User Capacity:    500,107,862,016 bytes [500 GB]
+Sector Sizes:     512 bytes logical, 4096 bytes physical
+Rotation Rate:    5400 rpm
+Form Factor:      2.5 inches
+Device is:        In smartctl database [for details use: -P show]
+*/
+
 	StorageProperty pt;  // template for easy copying
 	pt.section = StorageProperty::section_data;
 	pt.subsection = StorageProperty::subsection_health;
@@ -780,6 +792,41 @@ bool SmartctlParser::parse_section_data_subsection_health(const std::string& sub
 
 bool SmartctlParser::parse_section_data_subsection_capabilities(const std::string& sub_initial)
 {
+	// Capabilities section data:
+/*
+General SMART Values:
+Offline data collection status:  (0x82)	Offline data collection activity
+					was completed without error.
+					Auto Offline Data Collection: Enabled.
+Self-test execution status:      (   0)	The previous self-test routine completed
+					without error or no self-test has ever
+					been run.
+Total time to complete Offline
+data collection: 		(   45) seconds.
+Offline data collection
+capabilities: 			 (0x5b) SMART execute Offline immediate.
+					Auto Offline data collection on/off support.
+					Suspend Offline collection upon new
+					command.
+					Offline surface scan supported.
+					Self-test supported.
+					No Conveyance Self-test supported.
+					Selective Self-test supported.
+SMART capabilities:            (0x0003)	Saves SMART data before entering
+					power-saving mode.
+					Supports SMART auto save timer.
+Error logging capability:        (0x01)	Error logging supported.
+					General Purpose Logging supported.
+Short self-test routine
+recommended polling time: 	 (   2) minutes.
+Extended self-test routine
+recommended polling time: 	 ( 152) minutes.
+SCT capabilities: 	       (0x003d)	SCT Status supported.
+					SCT Error Recovery Control supported.
+					SCT Feature Control supported.
+					SCT Data Table supported.
+*/
+
 	StorageProperty pt;  // template for easy copying
 	pt.section = StorageProperty::section_data;
 	pt.subsection = StorageProperty::subsection_capabilities;
@@ -1203,24 +1250,37 @@ bool SmartctlParser::parse_section_data_subsection_attributes(const std::string&
 
 	// Format notes:
 	// * Before 5.1-14, no UPDATED column was present in "old" format.
+
 	// * Most, but not all attribute names are with underscores. However, I encountered one
 	// named "Head flying hours" and there are slashes sometimes as well.
-	// So, parse until we encounter the next column.
-	// * "Old Brief" format: One WD drive had non-integer flags, something like "PO--C-", with several
-	// lines of their descriptions after the attributes block (each line started with spaces and |)
-	// (seems to be a CVS version from 2006). We don't support this (it's difficult to separate
-	// the name with spaces from the flag).
+	// So, parse until we encounter the next column. Supported in Old format only.
+
 	// * SSD drives may show "---" in value/worst/threshold fields.
 
 	// "old" format (used in -a):
-	// "ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE"
-	// "  1 Raw_Read_Error_Rate     0x000f   115   099   006    Pre-fail  Always       -       90981479"
-	// " 12 Power_Cycle_Count       0x0000   ---   ---   ---    Old_age   Offline      -       167"
+/*
+SMART Attributes Data Structure revision number: 4
+Vendor Specific SMART Attributes with Thresholds:
+ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
+  5 Reallocated_Sector_Ct   0x0032   100   100   ---    Old_age   Always       -       0
+  9 Power_On_Hours          0x0032   253   100   ---    Old_age   Always       -       1720
+*/
 
 	// "brief" format (used in -x):
-	// "ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE"
-	// "  1 Raw_Read_Error_Rate     POSR--   118   099   006    -    174772734"
-
+/*
+SMART Attributes Data Structure revision number: 16
+Vendor Specific SMART Attributes with Thresholds:
+ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
+  1 Raw_Read_Error_Rate     PO-R--   100   100   062    -    0
+  2 Throughput_Performance  P-S---   197   197   040    -    160
+194 Temperature_Celsius     -O----   222   222   000    -    27 (Min/Max 12/48)
+                            ||||||_ K auto-keep
+                            |||||__ C event count
+                            ||||___ R error rate
+                            |||____ S speed/performance
+                            ||_____ O updated online
+                            |______ P prefailure warning
+*/
 	enum {
 		FormatStyleOld,
 		FormatStyleNoUpdated,  // old format without UPDATED column
@@ -1466,6 +1526,41 @@ bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& 
 	// parsable by this parser. Can't really improve that.
 	// Also, type (e.g. UNC) is not always present (depends on the drive I guess).
 
+/*
+SMART Extended Comprehensive Error Log Version: 1 (1 sectors)
+Device Error Count: 1
+	CR     = Command Register
+	FEATR  = Features Register
+	COUNT  = Count (was: Sector Count) Register
+	LBA_48 = Upper bytes of LBA High/Mid/Low Registers ]  ATA-8
+	LH     = LBA High (was: Cylinder High) Register    ]   LBA
+	LM     = LBA Mid (was: Cylinder Low) Register      ] Register
+	LL     = LBA Low (was: Sector Number) Register     ]
+	DV     = Device (was: Device/Head) Register
+	DC     = Device Control Register
+	ER     = Error register
+	ST     = Status register
+Powered_Up_Time is measured from power on, and printed as
+DDd+hh:mm:SS.sss where DD=days, hh=hours, mm=minutes,
+SS=sec, and sss=millisec. It "wraps" after 49.710 days.
+
+Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
+  When the command that caused the error occurred, the device was active or idle.
+
+  After command completion occurred, registers were:
+  ER -- ST COUNT  LBA_48  LH LM LL DV DC
+  -- -- -- == -- == == == -- -- -- -- --
+  02 -- 51 00 00 00 00 00 00 00 00 00 00  Error: TK0NF
+
+  Commands leading to the command that caused the error were:
+  CR FEATR COUNT  LBA_48  LH LM LL DV DC  Powered_Up_Time  Command/Feature_Name
+  -- == -- == -- == == == -- -- -- -- --  ---------------  --------------------
+  10 00 00 00 01 00 00 00 00 03 34 e0 ff     00:00:17.305  RECALIBRATE [OBS-4]
+  10 00 00 00 01 00 00 00 00 03 34 e0 08     00:00:17.138  RECALIBRATE [OBS-4]
+  91 40 00 01 3f 00 00 01 00 03 34 af 08     00:00:17.138  INITIALIZE DEVICE PARAMETERS [OBS-6]
+  c4 00 40 00 00 00 00 3f 00 00 00 e0 04     00:00:16.934  READ MULTIPLE
+  c4 00 40 00 01 00 00 3f 00 00 00 e0 00     00:00:07.959  READ MULTIPLE
+*/
 	bool data_found = false;
 
 	// Error log version
@@ -1509,7 +1604,7 @@ bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& 
 	// Error log entry count
 	{
 		// note: these represent the same information
-		pcrecpp::RE re1 = app_pcre_re("/^ATA Error Count:[ \\t]*([0-9]+)/mi");
+		pcrecpp::RE re1 = app_pcre_re("/^(?:ATA|Device) Error Count:[ \\t]*([0-9]+)/mi");
 		pcrecpp::RE re2 = app_pcre_re("/^No Errors Logged$/mi");
 
 		std::string value;
@@ -1623,6 +1718,13 @@ bool SmartctlParser::parse_section_data_subsection_selftest_log(const std::strin
 	// remaining % (this will be 00% for completed, and may be > 0 for interrupted).
 	// lifetime (hours) - int.
 	// LBA_of_first_error - "-" or int ?
+/*
+SMART Extended Self-test Log Version: 1 (1 sectors)
+Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA_of_first_error
+# 1  Extended offline    Completed without error       00%     43116         -
+# 2  Extended offline    Completed without error       00%     29867         -
+# 3  Extended offline    Completed without error       00%     19477         -
+*/
 
 	bool data_found = false;  // true if something was found.
 
@@ -1999,7 +2101,17 @@ bool SmartctlParser::parse_section_data_subsection_sataphy(const std::string& su
 
 	// sataphy log contains:
 /*
-
+SATA Phy Event Counters (GP Log 0x11)
+ID      Size     Value  Description
+0x0001  2            0  Command failed due to ICRC error
+0x0002  2            0  R_ERR response for data FIS
+0x0003  2            0  R_ERR response for device-to-host data FIS
+0x0004  2            0  R_ERR response for host-to-device data FIS
+0x0005  2            0  R_ERR response for non-data FIS
+0x0006  2            0  R_ERR response for device-to-host non-data FIS
+0x0007  2            0  R_ERR response for host-to-device non-data FIS
+0x0008  2            0  Device-to-host non-data FIS retries
+0x0009  2            1  Transition from drive PhyRdy to drive PhyNRdy
 */
 	bool data_found = false;  // true if something was found.
 

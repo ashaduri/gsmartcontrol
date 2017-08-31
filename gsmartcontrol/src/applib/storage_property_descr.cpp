@@ -1346,7 +1346,8 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_selective_selftest_log) {
 		// nothing here
 	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_temperature_log) {
-		// nothing here
+		// TODO Current temperature
+
 	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_erc_log) {
 		// nothing here
 	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_phy_log) {
