@@ -37,12 +37,13 @@
 /// A label for StorageProperty
 struct PropertyLabel {
 	/// Constructor
-	PropertyLabel(const std::string& label_, const StorageProperty* prop) :
-		label(label_), property(prop)
+	PropertyLabel(const std::string& label_, const StorageProperty* prop, bool markup_ = false) :
+		label(label_), property(prop), markup(markup_)
 	{ }
 
 	std::string label;  ///< Label text
 	const StorageProperty* property;  ///< Storage property
+	bool markup;  ///< Whether the label text uses markup
 };
 
 
@@ -80,9 +81,11 @@ namespace {
 
 			// add one label per element
 			for (label_list_t::const_iterator iter = label_strings.begin(); iter != label_strings.end(); ++iter) {
-				std::string label_text = Glib::Markup::escape_text(iter->label);
-				Gtk::Label* label = Gtk::manage(new Gtk::Label(label_text, Gtk::ALIGN_START));
+				std::string label_text = (iter->markup ? Glib::ustring(iter->label) : Glib::Markup::escape_text(iter->label));
+				Gtk::Label* label = Gtk::manage(new Gtk::Label());
+				label->set_markup(label_text);
 				label->set_padding(6, 0);
+				label->set_alignment(Gtk::ALIGN_START);
 				// label->set_ellipsize(Pango::ELLIPSIZE_END);
 				label->set_selectable(true);
 				label->set_can_focus(false);
@@ -1187,10 +1190,42 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			break;
 
 		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+		label_list_t label_strings;  // outside-of-tree properties
+		std::string temperature;
+		bool temp_found = false;
+		StorageProperty temp_property;
 
 		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
+			// Find temperature
+			if (!temp_found) {
+				if (iter->generic_name == "sct_temperature_celsius") {
+					temperature = hz::number_to_string(iter->value_integer);
+					temp_property = *iter;
+					temp_found = true;
+				} else if (iter->generic_name == "stat_temperature_celsius") {
+					temperature = hz::number_to_string(iter->value_statistic.value_int);
+					temp_property = *iter;
+					temp_found = true;
+				} else if (iter->generic_name == "attr_temperature_celsius") {
+					temperature = hz::number_to_string(iter->value_attribute.raw_value_int);
+					temp_property = *iter;
+					temp_found = true;
+				} else if (iter->generic_name == "attr_temperature_celsius_x10") {
+					temperature = hz::number_to_string(iter->value_attribute.raw_value_int / 10);
+					temp_property = *iter;
+					temp_found = true;
+				}
+			}
+
 			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_temperature_log)
 				continue;
+
+			if (iter->generic_name == "sct_unsupported" && iter->value_bool) {  // only show if unsupported
+				label_strings.push_back(PropertyLabel("SCT commands unsupported.", &(*iter)));
+				if (int(iter->warning) > int(max_tab_warning))
+					max_tab_warning = iter->warning;
+				continue;
+			}
 
 			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
 			if (iter->generic_name == "scttemp_log") {
@@ -1198,6 +1233,20 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 				buffer->set_text("\nComplete SCT temperature log:\n\n" + iter->value_string);
 			}
 		}
+
+		if (temperature.empty()) {
+			temperature = "Unknown";
+		} else {
+			temperature += " C";
+		}
+		temp_property.set_description("Current drive temperature in Celsius.");  // overrides attribute description
+		label_strings.push_back(PropertyLabel("Current temperature: <b>" + temperature + "</b>", &temp_property, true));
+		if (int(temp_property.warning) > int(max_tab_warning))
+			max_tab_warning = temp_property.warning;
+
+
+		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("temperature_log_label_vbox");
+		app_set_top_labels(label_vbox, label_strings);
 
 		// tab label
 		app_highlight_tab_label(lookup_widget("temperature_log_tab_label"), max_tab_warning, tab_temperature_name);

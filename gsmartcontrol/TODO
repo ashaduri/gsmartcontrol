@@ -44,9 +44,6 @@ Testing:
 
 Devstat warnings (identify by offset/page).
 
-Show temperature in Temperature Log, separately (even if SCT is unsupported. use devstat / attributes).
-	Warning as well.
-
 Per-line selftest error highlighting.
 	Tab highlighting according to error severity.
 
