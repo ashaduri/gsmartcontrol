@@ -757,8 +757,8 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		num_tree_cols = app_gtkmm_create_tree_view_column(col_flags, *treeview,
 				"Flags", "Flags\n\n"
 				"N: value is normalized\n"
-				"D: supports DSN\n"
-				"C: monitored condition met\n"
+				"D: supports Device Statistics Notification (DSN)\n"
+				"C: monitored condition met\n"  // Related to DSN? From the specification, it looks like something user-controllable.
 				"+: undocumented bits present", false);
 
 		Gtk::TreeModelColumn<std::string> col_page_offset;
@@ -1143,7 +1143,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			// add non-tree properties to label above
 			} else if (iter->value_type != StorageProperty::value_type_error_block) {
 				label_strings.push_back(PropertyLabel(iter->readable_name + ": " + iter->format_value(), &(*iter)));
-				if (iter->generic_name == "error_count")
+				if (iter->generic_name == "error_log_error_count")
 					label_strings.back().label += " (Note: The number of entries may be limited to the newest ones)";
 
 			} else {

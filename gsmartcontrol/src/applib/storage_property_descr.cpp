@@ -22,6 +22,15 @@
 namespace {
 
 
+	static std::string s_unc_text = "When a drive encounters a surface error, it marks that sector as &quot;unstable&quot; (also known as &quot;pending reallocation&quot;). "
+			"If the sector is successfully read from or written to at some later point, it is unmarked. If the sector continues to be inaccessible, "
+			"the drive reallocates (remaps) it to a specially reserved area as soon as it has a chance (usually during write request or successful read), "
+			"transferring the data so that no changes are reported to the operating system. This is why you generally don't see &quot;bad blocks&quot; "
+			"on modern drives - if you do, it means that either they have not been remapped yet, or the drive is out of reserved area."
+			"\n\nNote: SSDs reallocate blocks as part of their normal operation, so low reallocation counts are not critical for them.";
+
+
+
 	/// Attribute description for attribute database
 	struct AttributeDescription {
 		/// Constructor
@@ -69,13 +78,6 @@ namespace {
 				// Intel Solid-State Drive Toolbox User Guide
 				// as well as various other sources.
 
-				std::string unc_text = "When a drive encounters a surface error, it marks that sector as &quot;unstable&quot; (also known as &quot;pending reallocation&quot;). "
-						"If the sector is successfully read from or written to at some later point, it is unmarked. If the sector continues to be inaccessible, "
-						"the drive reallocates (remaps) it to a specially reserved area as soon as it has a chance (usually during write request or successful read), "
-						"transferring the data so that no changes are reported to the operating system. This is why you generally don't see &quot;bad blocks&quot; "
-						"on modern drives - if you do, it means that either they have not been remapped yet, or the drive is out of reserved area."
-						"\n\nNote: SSDs reallocate blocks as part of their normal operation, so low reallocation counts are not critical for them.";
-
 				// Raw read error rate (smartctl)
 				add(1, "Raw_Read_Error_Rate", "Raw Read Error Rate", "",
 						"Indicates the rate of read errors that occurred while reading the data. A non-zero Raw value may indicate a problem with either the disk surface or read/write heads. "
@@ -90,14 +92,14 @@ namespace {
 				add(4, "Start_Stop_Count", "Start / Stop Count", "",
 						"Number of start/stop cycles of a spindle (Raw value). That is, number of drive spin-ups.");
 				// Reallocated Sector Count (smartctl)
-				add(5, StorageAttribute::DiskHDD, "Reallocated_Sector_Ct", "Reallocated Sector Count", "reallocated_sector_count",
+				add(5, StorageAttribute::DiskHDD, "Reallocated_Sector_Ct", "Reallocated Sector Count", "attr_reallocated_sector_count",
 						"Number of reallocated sectors (Raw value). Non-zero Raw value indicates a disk surface failure."
-						"\n\n" + unc_text);
+						"\n\n" + s_unc_text);
 				// SSD: Reallocated Sector Count (smartctl)
-				add(5, StorageAttribute::DiskSSD, "Reallocated_Sector_Ct", "Reallocated Sector Count", "reallocated_sector_count",
+				add(5, StorageAttribute::DiskSSD, "Reallocated_Sector_Ct", "Reallocated Sector Count", "attr_reallocated_sector_count",
 						"Number of reallocated sectors (Raw value). High Raw value indicates an old age for an SSD.");
 				// SandForce SSD: Retired_Block_Count (smartctl)
-				add(5, StorageAttribute::DiskSSD, "Retired_Block_Count", "Retired Block Rate", "ssd_life_left",
+				add(5, StorageAttribute::DiskSSD, "Retired_Block_Count", "Retired Block Rate", "attr_ssd_life_left",
 						"Indicates estimated remaining life of the drive. Normalized value is (100-100*RBC/MRB) where RBC is the number of retired blocks and MRB is the minimum required blocks.");
 				// Crucial/Micron SSD: Reallocate_NAND_Blk_Cnt (smartctl)
 				add(5, StorageAttribute::DiskSSD, "Reallocate_NAND_Blk_Cnt", "Reallocated NAND Block Count", "",
@@ -129,7 +131,7 @@ namespace {
 				add(9, StorageAttribute::DiskSSD, "Proprietary_9", "Internal Attribute", "",
 						"This attribute has been reserved by vendor as internal.");
 				// Spin-up Retry Count (smartctl)
-				add(10, StorageAttribute::DiskHDD, "Spin_Retry_Count", "Spin-Up Retry Count", "spin_up_retry_count",
+				add(10, StorageAttribute::DiskHDD, "Spin_Retry_Count", "Spin-Up Retry Count", "attr_spin_up_retry_count",
 						"Number of retries of spin start attempts (Raw value). An increase of this attribute value is a sign of problems in the hard disk mechanical subsystem.");
 				// Calibration Retry Count (smartctl)
 				add(11, StorageAttribute::DiskHDD, "Calibration_Retry_Count", "Calibration Retry Count", "",
@@ -138,7 +140,7 @@ namespace {
 				add(12, "Power_Cycle_Count", "Power Cycle Count", "",
 						"Number of complete power start / stop cycles of a drive.");
 				// Soft Read Error Rate (smartctl) (same as 201 ?) (description sounds lame, fix?)
-				add(13, "Read_Soft_Error_Rate", "Soft Read Error Rate", "soft_read_error_rate",
+				add(13, "Read_Soft_Error_Rate", "Soft Read Error Rate", "attr_soft_read_error_rate",
 						"Uncorrected read errors reported to the operating system (Raw value). If the value is non-zero, you should back up your data.");
 				// Sandforce SSD: Soft_Read_Error_Rate (smartctl)
 				add(13, StorageAttribute::DiskSSD, "Soft_Read_Error_Rate");
@@ -260,7 +262,7 @@ namespace {
 				add(169, StorageAttribute::DiskSSD, "Total_Bad_Blocks", "Total Bad Blocks", "",
 						"Number of bad blocks. SSDs reallocate blocks as part of their normal operation, so low bad block counts are not critical for them.");
 				// Innodisk SSDs: (smartctl) (description?)
-				add(169, StorageAttribute::DiskSSD, "Remaining_Lifetime_Perc", "Remaining Lifetime %", "ssd_life_left",
+				add(169, StorageAttribute::DiskSSD, "Remaining_Lifetime_Perc", "Remaining Lifetime %", "attr_ssd_life_left",
 						"Remaining drive life in % (usually by erase count).");
 				// Intel SSD, STEC CF: Reserved Block Count (smartctl)
 				add(170, StorageAttribute::DiskSSD, "Reserve_Block_Count", "Reserved Block Count", "",
@@ -320,10 +322,10 @@ namespace {
 				add(173, StorageAttribute::DiskSSD, "Avg_Write/Erase_Count", "Average Write / Erase Count", "",
 						"");
 				// Intel SSD, Sandforce SSD, Crucial / Marvell SSD: Unexpected Power Loss (smartctl)
-				add(174, StorageAttribute::DiskSSD, "Unexpect_Power_Loss_Ct", "Unexpected Power Loss", "",
+				add(174, StorageAttribute::DiskSSD, "Unexpect_Power_Loss_Ct", "Unexpected Power Loss Count", "",
 						"Number of unexpected power loss events.");
 				// OCZ SSD (smartctl)
-				add(174, StorageAttribute::DiskSSD, "Pwr_Cycle_Ct_Unplanned", "Unexpected Power Loss", "",
+				add(174, StorageAttribute::DiskSSD, "Pwr_Cycle_Ct_Unplanned", "Unexpected Power Loss Count", "",
 						"Number of unexpected power loss events.");
 				// Apple SSD (smartctl)
 				add(174, StorageAttribute::DiskSSD, "Host_Reads_MiB", "Host Read (MiB)", "",
@@ -449,7 +451,7 @@ namespace {
 				add(190, "Temperature_Exceed_Cnt", "Temperature Exceed Count", "",
 						"");
 				// OCZ SSD (smartctl)
-				add(190, "Temperature_Celsius", "Temperature (Celsius)", "temperature_celsius",
+				add(190, "Temperature_Celsius", "Temperature (Celsius)", "attr_temperature_celsius",
 						"Drive temperature. The Raw value shows built-in heat sensor registrations (in Celsius).");
 				// Intel SSD
 				add(190, "Temperature_Case", "Case Temperature (Celsius)", "",
@@ -475,19 +477,19 @@ namespace {
 				add(193, StorageAttribute::DiskHDD, "Load_Cycle_Count", "Load / Unload Cycle", "",
 						"Number of load / unload cycles into Landing Zone position.");
 				// Temperature Celsius (smartctl) (same as 231). This is the most common one. Some Samsungs: 10xTemp.
-				add(194, "Temperature_Celsius", "Temperature (Celsius)", "temperature_celsius",
+				add(194, "Temperature_Celsius", "Temperature (Celsius)", "attr_temperature_celsius",
 						"Drive temperature. The Raw value shows built-in heat sensor registrations (in Celsius). Increases in average drive temperature often signal spindle motor problems (unless the increases are caused by environmental factors).");
 				// Samsung SSD: Temperature Celsius (smartctl) (not sure about the value)
-				add(194, StorageAttribute::DiskSSD, "Airflow_Temperature", "Airflow Temperature (Celsius)", "temperature_celsius",
+				add(194, StorageAttribute::DiskSSD, "Airflow_Temperature", "Airflow Temperature (Celsius)", "attr_temperature_celsius",
 						"Drive temperature (Celsius)");
 				// Temperature Celsius x 10 (smartctl)
-				add(194, "Temperature_Celsius_x10", "Temperature (Celsius) x 10", "temperature_celsius_x10",
+				add(194, "Temperature_Celsius_x10", "Temperature (Celsius) x 10", "attr_temperature_celsius_x10",
 						"Drive temperature. The Raw value shows built-in heat sensor registrations (in Celsius * 10). Increases in average drive temperature often signal spindle motor problems (unless the increases are caused by environmental factors).");
 				// Smart Storage Systems SSD (smartctl)
 				add(194, StorageAttribute::DiskSSD, "Proprietary_194", "Internal Attribute", "",
 						"This attribute has been reserved by vendor as internal.");
 				// Intel SSD (smartctl)
-				add(194, "Temperature_Internal", "Internal Temperature (Celsius)", "temperature_celsius",
+				add(194, "Temperature_Internal", "Internal Temperature (Celsius)", "attr_temperature_celsius",
 						"Drive case temperature. The Raw value shows built-in heat sensor registrations (in Celsius)..");
 				// Hardware ECC Recovered (smartctl)
 				add(195, "Hardware_ECC_Recovered", "Hardware ECC Recovered", "",
@@ -510,9 +512,9 @@ namespace {
 				add(195, StorageAttribute::DiskSSD, "Cumulativ_Corrected_ECC", "Cumulative Corrected ECC Error Count", "",
 						"");
 				// Reallocation Event Count (smartctl)
-				add(196, StorageAttribute::DiskAny, "Reallocated_Event_Count", "Reallocation Event Count", "reallocation_event_count",
+				add(196, StorageAttribute::DiskAny, "Reallocated_Event_Count", "Reallocation Event Count", "attr_reallocation_event_count",
 						"Number of reallocation (remap) operations. Raw value <i>should</i> show the total number of attempts (both successful and unsuccessful) to reallocate sectors. An increase in Raw value indicates a disk surface failure."
-						"\n\n" + unc_text);
+						"\n\n" + s_unc_text);
 				// Indilinx Barefoot SSD: Erase_Failure_Blk_Ct (smartctl) (description?)
 				add(196, StorageAttribute::DiskSSD, "Erase_Failure_Blk_Ct", "Erase Failure Block Count", "",
 						"Number of flash erase failures.");
@@ -520,30 +522,30 @@ namespace {
 				add(196, StorageAttribute::DiskSSD, "Total_Erase_Failures", "Total Erase Failures", "",
 						"");
 				// Current Pending Sector Count (smartctl)
-				add(197, "Current_Pending_Sector", "Current Pending Sector Count", "current_pending_sector_count",
+				add(197, "Current_Pending_Sector", "Current Pending Sector Count", "attr_current_pending_sector_count",
 						"Number of &quot;unstable&quot; (waiting to be remapped) sectors (Raw value). If the unstable sector is subsequently read from or written to successfully, this value is decreased and the sector is not remapped. An increase in Raw value indicates a disk surface failure."
-						"\n\n" + unc_text);
+						"\n\n" + s_unc_text);
 				// Indilinx Barefoot SSD: Read_Failure_Blk_Ct (smartctl) (description?)
 				add(197, StorageAttribute::DiskSSD, "Read_Failure_Blk_Ct", "Read Failure Block Count", "",
 						"Number of blocks that failed to be read.");
 				// Samsung: Total_Pending_Sectors (smartctl). From smartctl man page:
 				// unlike Current_Pending_Sector, this won't decrease on reallocation.
-				add(197, "Total_Pending_Sectors", "Total Pending Sectors", "total_pending_sectors",
+				add(197, "Total_Pending_Sectors", "Total Pending Sectors", "attr_total_pending_sectors",
 						"Number of &quot;unstable&quot; (waiting to be remapped) sectors and already remapped sectors (Raw value). An increase in Raw value indicates a disk surface failure."
-						"\n\n" + unc_text);
+						"\n\n" + s_unc_text);
 				// OCZ SSD (smartctl)
 				add(197, StorageAttribute::DiskSSD, "Total_Unc_Read_Failures", "Total Uncorrectable Read Failures", "",
 						"");
 				// Offline Uncorrectable (smartctl)
-				add(198, "Offline_Uncorrectable", "Offline Uncorrectable", "offline_uncorrectable",
+				add(198, "Offline_Uncorrectable", "Offline Uncorrectable", "attr_offline_uncorrectable",
 						"Number of sectors which couldn't be corrected during Offline Data Collection (Raw value). An increase in Raw value indicates a disk surface failure. "
 						"The value may be decreased automatically when the errors are corrected (e.g., when an unreadable sector is reallocated and the next Offline test is run to see the change)."
-						"\n\n" + unc_text);
+						"\n\n" + s_unc_text);
 				// Samsung: Offline Uncorrectable (smartctl). From smartctl man page:
 				// unlike Current_Pending_Sector, this won't decrease on reallocation.
-				add(198, "Total_Offl_Uncorrectabl", "Total Offline Uncorrectable", "total_offline_uncorrectable",
+				add(198, "Total_Offl_Uncorrectabl", "Total Offline Uncorrectable", "attr_total_attr_offline_uncorrectable",
 						"Number of sectors which couldn't be corrected during Offline Data Collection (Raw value), currently and in the past. An increase in Raw value indicates a disk surface failure."
-						"\n\n" + unc_text);
+						"\n\n" + s_unc_text);
 				// Sandforce SSD: Uncorrectable_Sector_Ct (smartctl) (same description?)
 				add(198, StorageAttribute::DiskSSD, "Uncorrectable_Sector_Ct");
 				// Indilinx Barefoot SSD: Read_Sectors_Tot_Ct (smartctl) (description?)
@@ -584,7 +586,7 @@ namespace {
 				add(200, StorageAttribute::DiskSSD, "Read_Commands_Tot_Ct", "Total Read Commands Issued", "",
 						"Total count of read commands issued.");
 				// Soft Read Error Rate (smartctl) (description?)
-				add(201, StorageAttribute::DiskHDD, "Soft_Read_Error_Rate", "Soft Read Error Rate", "soft_read_error_rate",
+				add(201, StorageAttribute::DiskHDD, "Soft_Read_Error_Rate", "Soft Read Error Rate", "attr_soft_read_error_rate",
 						"Uncorrected read errors reported to the operating system (Raw value). If the value is non-zero, you should back up your data.");
 				// Sandforce SSD: Unc_Soft_Read_Err_Rate (smartctl)
 				add(201, StorageAttribute::DiskSSD, "Unc_Soft_Read_Err_Rate");
@@ -610,7 +612,7 @@ namespace {
 				add(202, StorageAttribute::DiskSSD, "Error_Bits_Flash_Tot_Ct", "Total Count of Error Bits", "",
 						"");
 				// Crucial / Marvell SSD: Percent_Lifetime_Used (smartctl) (description?)
-				add(202, StorageAttribute::DiskSSD, "Percent_Lifetime_Used", "Rated Life Used (%)", "ssd_life_used",
+				add(202, StorageAttribute::DiskSSD, "Percent_Lifetime_Used", "Rated Life Used (%)", "attr_ssd_life_used",
 						"Used drive life in %.");
 				// Samsung SSD: (smartctl) (description?)
 				add(202, StorageAttribute::DiskSSD, "Exception_Mode_Status", "Exception Mode Status", "",
@@ -619,7 +621,7 @@ namespace {
 				add(202, StorageAttribute::DiskSSD, "Total_Read_Bits_Corr_Ct", "Total Read Bits Corrected", "",
 						"");
 				// Micron SSD (smartctl) (description?)
-				add(202, StorageAttribute::DiskSSD, "Percent_Lifetime_Remain", "Remaining Lifetime (%)", "ssd_life_left",
+				add(202, StorageAttribute::DiskSSD, "Percent_Lifetime_Remain", "Remaining Lifetime (%)", "attr_ssd_life_left",
 						"Remaining drive life in %.");
 				// Run Out Cancel (smartctl). (description?)
 				add(203, "Run_Out_Cancel", "Run Out Cancel", "",
@@ -680,7 +682,7 @@ namespace {
 				add(209, StorageAttribute::DiskHDD, "Offline_Seek_Performnce", "Offline Seek Performance", "",
 						"Seek performance during Offline Data Collection operations.");
 				// Indilinx Barefoot SSD, OCZ SSD: Remaining_Lifetime_Perc (smartctl) (description?)
-				add(209, StorageAttribute::DiskSSD, "Remaining_Lifetime_Perc", "Remaining Lifetime (%)", "ssd_life_left",
+				add(209, StorageAttribute::DiskSSD, "Remaining_Lifetime_Perc", "Remaining Lifetime (%)", "attr_ssd_life_left",
 						"Remaining drive life in % (usually by erase count).");
 				// Vibration During Write (custom). wikipedia says 211, but it's wrong. (description?)
 				add(210, StorageAttribute::DiskHDD, "", "Vibration During Write", "",
@@ -829,10 +831,10 @@ namespace {
 				add(230, StorageAttribute::DiskSSD, "Perc_Write/Erase_Count", "Write / Erase Count (%)", "",
 						"");
 				// Temperature (Some drives) (smartctl)
-				add(231, "Temperature_Celsius", "Temperature", "temperature_celsius",
+				add(231, "Temperature_Celsius", "Temperature", "attr_temperature_celsius",
 						"Drive temperature. The Raw value shows built-in heat sensor registrations (in Celsius). Increases in average drive temperature often signal spindle motor problems (unless the increases are caused by environmental factors).");
 				// Sandforce SSD: SSD_Life_Left
-				add(231, StorageAttribute::DiskSSD, "SSD_Life_Left", "SSD Life Left", "ssd_life_left",
+				add(231, StorageAttribute::DiskSSD, "SSD_Life_Left", "SSD Life Left", "attr_ssd_life_left",
 						"A measure of drive's estimated life left. A Normalized value of 100 indicates a new drive. "
 						"10 means there are reserved blocks left but Program / Erase cycles have been used. "
 						"0 means insufficient reserved blocks, drive may be in read-only mode to allow recovery of the data.");
@@ -852,17 +854,17 @@ namespace {
 				add(232, StorageAttribute::DiskSSD, "Flash_Writes_GiB", "Flash Written (GiB)", "",
 						"");
 				// Innodisk SSD (description?) (smartctl)
-				add(232, StorageAttribute::DiskSSD, "Spares_Remaining_Perc", "Spare Blocks Remaining (%)", "ssd_life_left",
+				add(232, StorageAttribute::DiskSSD, "Spares_Remaining_Perc", "Spare Blocks Remaining (%)", "attr_ssd_life_left",
 						"Percentage of spare blocks remaining. Spare blocks are used when bad blocks develop.");
 				// Innodisk SSD (description?) (smartctl)
-				add(232, StorageAttribute::DiskSSD, "Perc_Avail_Resrvd_Space", "Available Reserved Space (%)", "ssd_life_left",
+				add(232, StorageAttribute::DiskSSD, "Perc_Avail_Resrvd_Space", "Available Reserved Space (%)", "attr_ssd_life_left",
 						"Percentage of spare blocks remaining. Spare blocks are used when bad blocks develop.");
 				// Intel SSD: Media_Wearout_Indicator (smartctl) (description?)
-				add(233, StorageAttribute::DiskSSD, "Media_Wearout_Indicator", "Media Wear Out Indicator", "ssd_life_left",
+				add(233, StorageAttribute::DiskSSD, "Media_Wearout_Indicator", "Media Wear Out Indicator", "attr_ssd_life_left",
 						"Number of cycles the NAND media has experienced. The Normalized value decreases linearly from 100 to 1 as the average erase cycle "
 						"count increases from 0 to the maximum rated cycles.");
 				// OCZ SSD
-				add(233, StorageAttribute::DiskSSD, "Remaining_Lifetime_Perc", "Remaining Lifetime %", "ssd_life_left",
+				add(233, StorageAttribute::DiskSSD, "Remaining_Lifetime_Perc", "Remaining Lifetime %", "attr_ssd_life_left",
 						"Remaining drive life in % (usually by erase count).");
 				// Sandforce SSD: SandForce_Internal (smartctl) (description?)
 				add(233, StorageAttribute::DiskSSD, "SandForce_Internal", "Internal Attribute", "",
@@ -1124,6 +1126,234 @@ namespace {
 
 
 
+
+	/// Attribute description for attribute database
+	struct StatisticDescription {
+		/// Constructor
+		StatisticDescription()
+		{ }
+
+		/// Constructor
+		StatisticDescription(const std::string& smartctl_name_,
+				const std::string& readable_name_, const std::string& generic_name_, const std::string& description_)
+				: smartctl_name(smartctl_name_), readable_name(readable_name_),
+				generic_name(generic_name_), description(description_)
+		{ }
+
+		std::string smartctl_name;  ///< e.g. Highest Temperature
+		std::string readable_name;  ///< e.g. Highest Temperature (C)
+		std::string generic_name;  ///< Generic name to be set on the property.
+		std::string description;  ///< Attribute description, can be "".
+	};
+
+
+
+	/// Devstat entry description database
+	class StatisticsDatabase {
+		public:
+
+			/// Constructor
+			StatisticsDatabase()
+			{
+				// See http://www.t13.org/Documents/UploadedDocuments/docs2013/d2161r5-ATAATAPI_Command_Set_-_3.pdf
+
+				// General Statistics
+
+				add("Lifetime Power-On Resets", "", "",
+						"The number of times the device has processed a power-on reset.");
+
+				add("Power-on Hours", "", "",
+						"The amount of time that the device has been operational since it was manufactured.");
+
+				add("Logical Sectors Written", "", "",
+						"The number of logical sectors received from the host. "
+						"This statistic is incremented by one for each logical sector that was received from the host without an error.");
+
+				add("Number of Write Commands", "", "",
+						"The number of write commands that returned command completion without an error. "
+						"This statistic is incremented by one for each write command that returns command completion without an error.");
+
+				add("Logical Sectors Read", "", "",
+						"The number of logical sectors sent to the host. "
+						"This statistic is incremented by one for each logical sector that was sent to the host without an error.");
+
+				add("Number of Read Commands", "", "",
+						"The number of read commands that returned command completion without an error. "
+						"This statistic is incremented by one for each read command that returns command completion without an error.");
+
+				add("Date and Time TimeStamp", "", "",
+						"a) the TimeStamp set by the most recent SET DATE & TIME EXT command plus the number of "
+						"milliseconds that have elapsed since that SET DATE & TIME EXT command was processed;\n"
+						"or\n"
+						"b) a copy of the Power-on Hours statistic (see A.5.4.4) with the hours unit of measure changed to milliseconds as described");
+
+				add("Pending Error Count", "", "",  // TODO Description (not in spec?)
+						"");
+
+				add("Workload Utilization", "", "",  // TODO Description (not in spec?)
+						"");
+
+				add("Utilization Usage Rate", "", "",  // TODO Description (not in spec?)
+						"");
+
+				// Free-Fall Statistics
+
+				add("Number of Free-Fall Events Detected", "", "",
+						"The number of free-fall events detected by the device.");
+
+				add("Overlimit Shock Events", "", "",
+						"The number of shock events detected by the device "
+						"with the magnitude higher than the maximum rating of the device.");
+
+				// Rotating Media Statistics
+
+				add("Spindle Motor Power-on Hours", "", "",
+						"The amount of time that the spindle motor has been powered on since the device was manufactured. ");
+
+				add("Head Flying Hours", "", "",
+						"The number of hours that the device heads have been flying over the surface of the media since the device was manufactured. ");
+
+				add("Head Load Events", "", "",
+						"The number of head load events. A head load event is defined as:\n"
+						"a) when the heads are loaded from the ramp to the media for a ramp load device;\n"
+						"or\n"
+						"b) when the heads take off from the landing zone for a contact start stop device.");
+
+				add("Number of Reallocated Logical Sectors", "", "",
+						"The number of logical sectors that have been reallocated after device manufacture."
+						"\n\n" + s_unc_text);
+
+				add("Read Recovery Attempts", "", "",
+						"The number of logical sectors that require three or more attempts to read the data from the media for each read command. "
+						"This statistic is incremented by one for each logical sector that encounters a read recovery attempt. "
+						"These events may be caused by external environmental conditions (e.g., operating in a moving vehicle).");
+
+				add("Number of Mechanical Start Failures", "", "",
+						"The number of mechanical start failures after device manufacture. "
+						"A mechanical start failure is a failure that prevents the device from achieving a normal operating condition");
+
+				add("Number of Realloc. Candidate Logical Sectors", "Number of Reallocation Candidate Logical Sectors", "",
+						"The number of logical sectors that are candidates for reallocation. "
+						"A reallocation candidate sector is a logical sector that the device has determined may need to be reallocated."
+						"\n\n" + s_unc_text);
+
+				add("Number of High Priority Unload Events", "", "",
+						"The number of emergency head unload events.");
+
+				// General Errors Statistics
+
+				add("Number of Reported Uncorrectable Errors", "", "",
+						"The number of errors that are reported as an Uncorrectable Error. "
+						"Uncorrectable errors that occur during background activity shall not be counted. "
+						"Uncorrectable errors reported by reads to flagged uncorrectable logical blocks should not be counted"
+						"\n\n" + s_unc_text);
+
+				add("Resets Between Cmd Acceptance and Completion", "", "",
+						"The number of software reset or hardware reset events that occur while one or more commands have "
+						"been accepted by the device but have not reached command completion.");
+
+				// Temperature Statistics
+
+				add("Current Temperature", "Current Temperature (C)", "",
+						"Drive temperature (Celsius)");
+
+				add("Average Short Term Temperature", "Average Short Term Temperature (C)", "",
+						"A value based on the most recent 144 temperature samples in a 24 hour period.");
+
+				add("Average Long Term Temperature", "Average Long Term Temperature (C)", "",
+						"A value based on the most recent 42 Average Short Term Temperature values (1,008 recorded hours).");
+
+				add("Highest Temperature", "Highest Temperature (C)", "",
+						"The highest temperature measured after the device is manufactured.");
+
+				add("Lowest Temperature", "Lowest Temperature (C)", "",
+						"The lowest temperature measured after the device is manufactured.");
+
+				add("Highest Average Short Term Temperature", "Highest Average Short Term Temperature (C)", "",
+						"The highest device Average Short Term Temperature after the device is manufactured.");
+
+				add("Lowest Average Short Term Temperature", "Lowest Average Short Term Temperature (C)", "",
+						"The lowest device Average Short Term Temperature after the device is manufactured.");
+
+				add("Highest Average Long Term Temperature", "Highest Average Long Term Temperature (C)", "",
+						"თhe highest device Average Long Term Temperature after the device is manufactured.");
+
+				add("Lowest Average Long Term Temperature", "Lowest Average Long Term Temperature (C)", "",
+						"The lowest device Average Long Term Temperature after the device is manufactured.");
+
+				add("Time in Over-Temperature", "Time in Over-Temperature (Minutes)", "",
+						"The number of minutes that the device has been operational while the device temperature specification has been exceeded.");
+
+				add("Specified Maximum Operating Temperature", "Specified Maximum Operating Temperature (C)", "",
+						"The maximum operating temperature device is designed to operate.");
+
+				add("Time in Under-Temperature", "Time in Under-Temperature (C)", "",
+						"The number of minutes that the device has been operational while the temperature is lower than the device minimum temperature specification.");
+
+				add("Specified Minimum Operating Temperature", "Specified Minimum Operating Temperature (C)", "",
+						"The minimum operating temperature device is designed to operate.");
+
+				// Transport Statistics
+
+				add("Number of Hardware Resets", "", "",
+						"The number of hardware resets received by the device.");
+
+				add("Number of ASR Events", "", "",
+						"The number of ASR (Asynchronous Signal Recovery) events.");
+
+				add("Number of Interface CRC Errors", "", "",
+						"the number of Interface CRC (checksum) errors reported in the ERROR field since the device was manufactured.");
+
+				// Solid State Device Statistics
+
+				add("Percentage Used Endurance Indicator", "", "",
+						"A vendor specific estimate of the percentage of device life used based on the actual device usage "
+						"and the manufacturer's prediction of device life. A value of 100 indicates that the estimated endurance "
+						"of the device has been consumed, but may not indicate a device failure (e.g., minimum "
+						"power-off data retention capability reached for devices using NAND flash technology).");
+
+			}
+
+
+			/// Add an attribute description to the attribute database
+			void add(const std::string& smartctl_name, const std::string& readable_name,
+					const std::string& generic_name, const std::string& description)
+			{
+				add(StatisticDescription(smartctl_name, readable_name, generic_name, description));
+			}
+
+
+			/// Add an devstat entry description to the devstat database
+			void add(const StatisticDescription& descr)
+			{
+				devstat_db[descr.smartctl_name] = descr;
+			}
+
+
+			/// Find the description by smartctl name or id, merging them if they're partial.
+			StatisticDescription find(std::string smartctl_name) const
+			{
+				// search by ID first
+				std::map<std::string, StatisticDescription>::const_iterator iter = devstat_db.find(smartctl_name);
+				if (iter == devstat_db.end()) {
+					return StatisticDescription();  // not found
+				}
+				return iter->second;
+			}
+
+
+		private:
+
+			std::map<std::string, StatisticDescription> devstat_db;  ///< smartctl_name => devstat entry description
+
+	};
+
+
+	/// Program-wide devstat description database
+	static const StatisticsDatabase s_devstat_db;
+
+
+
 	/// Check if a property matches a name (generic or reported)
 	inline bool name_match(StorageProperty& p, const std::string& name)
 	{
@@ -1271,6 +1501,37 @@ namespace {
 		p.generic_name = attr.generic_name;
 	}
 
+
+
+	/// Find a property's statistic in the statistics database and fill the property
+	/// with all the readable information we can gather.
+	inline bool auto_set_statistic(StorageProperty& p)
+	{
+		StatisticDescription sd = s_devstat_db.find(p.reported_name);
+
+		std::string readable_name = (sd.readable_name.empty() ? sd.smartctl_name : sd.readable_name);
+
+		bool found = !sd.description.empty();
+		if (!found) {
+			sd.description = "No description is available for this attribute.";
+
+		} else {
+			std::string descr =  std::string("<b>") + readable_name + "</b>\n";
+			descr += sd.description;
+
+			sd.description = descr;
+		}
+
+		if (!readable_name.empty()) {
+			p.readable_name = readable_name;
+		}
+		p.set_description(sd.description);
+		p.generic_name = sd.generic_name;
+
+		return found;
+	}
+
+
 }
 
 
@@ -1338,12 +1599,12 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 				break;
 
 			case StorageProperty::subsection_devstat:
-				// TODO
+				found = auto_set_statistic(p);
 				break;
 
 			case StorageProperty::subsection_error_log:
 				found = auto_set(p, "error_log_version", p.readable_name.c_str());
-				found = auto_set(p, "error_count", "Number of errors in error log. Note: Some manufacturers may list completely harmless errors in this log "
+				found = auto_set(p, "error_log_error_count", "Number of errors in error log. Note: Some manufacturers may list completely harmless errors in this log "
 					"(e.g., command invalid, not implemented, etc...).");
 // 				|| auto_set(p, "error_log_unsupported", "This device does not support error logging.");  // the property text already says that
 				break;
@@ -1424,62 +1685,62 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 				// Set notices for known pre-fail attributes
 
 				// Reallocated Sector Count
-				if (attr_match(p, "reallocated_sector_count") && p.value_attribute.raw_value_int > 0) {
+				if (attr_match(p, "attr_reallocated_sector_count") && p.value_attribute.raw_value_int > 0) {
 					w = StorageProperty::warning_notice;
 					reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 				// Spin-up Retry Count
-				} else if (attr_match(p, "spin_up_retry_count") && p.value_attribute.raw_value_int > 0) {
+				} else if (attr_match(p, "attr_spin_up_retry_count") && p.value_attribute.raw_value_int > 0) {
 					w = StorageProperty::warning_notice;
 					reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. Your drive may have problems spinning up, which could lead to a complete mechanical failure. Please back up.";
 
 				// Soft Read Error Rate
-				} else if (attr_match(p, "soft_read_error_rate") && p.value_attribute.raw_value_int > 0) {
+				} else if (attr_match(p, "attr_soft_read_error_rate") && p.value_attribute.raw_value_int > 0) {
 					w = StorageProperty::warning_notice;
 					reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 				// Temperature (for some it may be 10xTemp, so limit the upper bound.)
-				} else if (attr_match(p, "temperature_celsius")
+				} else if (attr_match(p, "attr_temperature_celsius")
 						&& p.value_attribute.raw_value_int > 50 && p.value_attribute.raw_value_int <= 120) {  // 50C
 					w = StorageProperty::warning_notice;
 					reason = "The temperature of the drive is higher than 50 degrees Celsius. This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 
 				// Temperature (for some it may be 10xTemp, so limit the upper bound.)
-				} else if (attr_match(p, "temperature_celsius_x10") && p.value_attribute.raw_value_int > 500) {  // 50C
+				} else if (attr_match(p, "attr_temperature_celsius_x10") && p.value_attribute.raw_value_int > 500) {  // 50C
 					w = StorageProperty::warning_notice;
 					reason = "The temperature of the drive is higher than 50 degrees Celsius. This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 
 				// Reallocation Event Count
-				} else if (attr_match(p, "reallocation_event_count") && p.value_attribute.raw_value_int > 0) {
+				} else if (attr_match(p, "attr_reallocation_event_count") && p.value_attribute.raw_value_int > 0) {
 					w = StorageProperty::warning_notice;
 					reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 				// Current Pending Sector Count
-				} else if ((attr_match(p, "current_pending_sector_count") || attr_match(p, "total_pending_sectors"))
+				} else if ((attr_match(p, "attr_current_pending_sector_count") || attr_match(p, "attr_total_pending_sectors"))
 							&& p.value_attribute.raw_value_int > 0) {
 					w = StorageProperty::warning_notice;
 					reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 				// Uncorrectable Sector Count
-				} else if ((attr_match(p, "offline_uncorrectable") || attr_match(p, "total_offline_uncorrectable"))
+				} else if ((attr_match(p, "attr_offline_uncorrectable") || attr_match(p, "attr_total_attr_offline_uncorrectable"))
 							&& p.value_attribute.raw_value_int > 0) {
 					w = StorageProperty::warning_notice;
 					reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 				// SSD Life Left (%)
-				} else if ((attr_match(p, "ssd_life_left"))
+				} else if ((attr_match(p, "attr_ssd_life_left"))
 							&& p.value_attribute.value.value() < 50) {
 					w = StorageProperty::warning_notice;
 					reason = "The drive has less than half of its life left.";
 
 				// SSD Life Used (%)
-				} else if ((attr_match(p, "ssd_life_used"))
+				} else if ((attr_match(p, "attr_ssd_life_used"))
 							&& p.value_attribute.value.value() >= 50) {
 					w = StorageProperty::warning_notice;
 					reason = "The drive has less than half of its life left.";
 				}
 
-				// Now override this with SMART warnings / errors
+				// Now override this with reported SMART attribute failure warnings / errors
 
 				if (p.value_type == StorageProperty::value_type_attribute) {
 					if (p.value_attribute.when_failed == StorageAttribute::fail_time_now) {  // NOW
@@ -1513,7 +1774,7 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 				// error-entry related descriptions are added here, don't forget to enable
 				// the tooltips.
 
-				if (name_match(p, "error_count") && p.value_integer > 0) {
+				if (name_match(p, "error_log_error_count") && p.value_integer > 0) {
 					w = StorageProperty::warning_warn;
 					reason = "The drive is reporting internal errors. Usually this means uncorrectable data loss and similar severe errors. "
 							"Check the actual errors for details.";
@@ -1522,6 +1783,9 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 					w = StorageProperty::warning_notice;
 					reason = "The drive does not support error logging. This means that SMART error history is unavailable.";
 				}
+
+				// TODO Rate individual error log entries.
+
 				break;
 
 			case StorageProperty::subsection_selftest_log:
@@ -1548,6 +1812,7 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 					reason = "The drive does not support SCT Temperature logging. Check the Attributes tab for current temperature.";
 				}
 				// TODO Current temperature
+				// sct_temperature_celsius
 
 				break;
 

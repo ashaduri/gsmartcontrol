@@ -1613,7 +1613,7 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 			hz::string_trim(value);
 
 			StorageProperty p(pt);
-			p.set_name("ATA Error Count", "error_count");
+			p.set_name("ATA Error Count", "error_log_error_count");
 			p.reported_value = value;
 			p.value_type = StorageProperty::value_type_integer;
 

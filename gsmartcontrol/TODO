@@ -26,7 +26,7 @@ Don't rely on smartctl return code (2), parse the output instead.
 	Need usage cases.
 
 
-Add ability (through ctrl-C?) to copy individual rows from attributes and statistics pages,
+Add ability (through ctrl-C?) to copy selected rows from attributes and statistics pages,
 	in tab-separated format (for easy pasting into libreoffice).
 
 
@@ -42,22 +42,14 @@ Testing:
 
 
 
-Add ability to load --xall output:
-	--xall for ATA:
-		--health --info --get=all --capabilities --attributes --format=brief -l xerror,error -l xselftest,selftest
-              -l selective -l directory -l scttemp -l scterc -l devstat -l sataphy
-	--xall for SCSI:
-		--health --info --attributes -l error -l selftest -l background -l sasphy
+Devstat warnings (identify by offset/page).
 
-	Add a tab for -l devstat  - it shows interesting statistics.
-		Some of this stuff is better than attributes, maybe show them before attributes.
-		Also needs the warnings and descriptions.
+Show temperature in Temperature Log, separately (even if SCT is unsupported. use devstat / attributes).
+	Warning as well.
 
 Per-line selftest error highlighting.
 	Tab highlighting according to error severity.
 
-
-Show temperature in Temperature Log, separately (even if SCT is unsupported. use devstat / attributes).
 
 
 
