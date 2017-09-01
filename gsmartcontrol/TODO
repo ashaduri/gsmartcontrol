@@ -26,9 +26,8 @@ Don't rely on smartctl return code (2), parse the output instead.
 	Need usage cases.
 
 
-Add ability (through ctrl-C?) to copy individual rows from attributes page,
+Add ability (through ctrl-C?) to copy individual rows from attributes and statistics pages,
 	in tab-separated format (for easy pasting into libreoffice).
-	Same for Devstat page.
 
 
 Add menu item - "update drive database"
@@ -54,15 +53,12 @@ Add ability to load --xall output:
 		Some of this stuff is better than attributes, maybe show them before attributes.
 		Also needs the warnings and descriptions.
 
+Per-line selftest error highlighting.
+	Tab highlighting according to error severity.
 
-Add a button (with dropdown) to Info window, to run
-	-l sataphy   (advanced)
-	-l directory  (very advanced)
-	-l scttemp  (rarely supported and difficult to parse)
-	Maybe add -l selective here (and remove it from GUI).
-	Just show the output in a text window.
-	"Put this all in Error Log", raname to Logs.
-	Make it a dropdown combo and "Retrieve" button, showing the output where selective is now.
+
+Show temperature in Temperature Log, separately (even if SCT is unsupported. use devstat / attributes).
+
 
 
 Document RAID support.

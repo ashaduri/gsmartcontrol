@@ -66,6 +66,14 @@ std::ostream& operator<< (std::ostream& os, const StorageAttribute& p)
 
 
 
+std::ostream& operator<<(std::ostream& os, const StorageStatistic& p)
+{
+	os << p.value;
+	return os;
+}
+
+
+
 std::string StorageErrorBlock::get_readable_error_types(const std::vector<std::string>& types)
 {
 	std::map<std::string, std::string> m;
@@ -174,6 +182,9 @@ void StorageProperty::dump(std::ostream& os, int internal_offset) const
 		case StorageProperty::value_type_attribute:
 			os << value_attribute;
 			break;
+		case StorageProperty::value_type_statistic:
+			os << value_statistic;
+			break;
 		case StorageProperty::value_type_error_block:
 			os << value_error_block;
 			break;
@@ -205,6 +216,8 @@ std::string StorageProperty::format_value(bool add_reported_too) const
 			return hz::stream_cast<std::string>(value_capability);
 		case StorageProperty::value_type_attribute:
 			return hz::stream_cast<std::string>(value_attribute);
+		case StorageProperty::value_type_statistic:
+			return hz::stream_cast<std::string>(value_statistic);
 		case StorageProperty::value_type_error_block:
 			return hz::stream_cast<std::string>(value_error_block);
 		case StorageProperty::value_type_selftest_entry:
