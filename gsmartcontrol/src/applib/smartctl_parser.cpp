@@ -2126,6 +2126,8 @@ Page  Offset Size        Value Flags Description
 		st.flags = st.is_header ? std::string() : hz::string_trim_copy(flags);
 		st.value = st.is_header ? std::string() : hz::string_trim_copy(value);
 		hz::string_is_numeric(st.value, st.value_int, false);
+		hz::string_is_numeric(page, st.page, false, 16);
+		hz::string_is_numeric(offset, st.offset, false, 16);
 
 		if (st.is_header) {
 			description = hz::string_trim_copy(hz::string_trim_copy(description, "="));

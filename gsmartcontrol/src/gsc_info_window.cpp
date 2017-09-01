@@ -325,7 +325,7 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 	tab_label = lookup_widget<Gtk::Label*>("error_log_tab_label");
 	tab_error_log_name = (tab_label ? tab_label->get_label() : "");
 
-	tab_label = lookup_widget<Gtk::Label*>("temperature_tab_label");
+	tab_label = lookup_widget<Gtk::Label*>("temperature_log_tab_label");
 	tab_temperature_name = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("advanced_tab_label");
@@ -442,7 +442,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		if ((note_page_box = lookup_widget("error_log_tab_vbox")) != 0) {
 			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
 		}
-		if ((note_page_box = lookup_widget("temperature_tab_vbox")) != 0) {
+		if ((note_page_box = lookup_widget("temperature_log_tab_vbox")) != 0) {
 			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
 		}
 		if ((note_page_box = lookup_widget("advanced_tab_vbox")) != 0) {
@@ -758,7 +758,13 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 				"Flags", "Flags\n\n"
 				"N: value is normalized\n"
 				"D: supports DSN\n"
-				"C: monitored condition met", false);
+				"C: monitored condition met\n"
+				"+: undocumented bits present", false);
+
+		Gtk::TreeModelColumn<std::string> col_page_offset;
+		model_columns.add(col_page_offset);
+		num_tree_cols = app_gtkmm_create_tree_view_column(col_page_offset, *treeview,
+				"Page, Offset", "Page and offset of the entry", false);
 
 		Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
 		model_columns.add(col_tooltip);
@@ -803,6 +809,8 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			row[col_description] = (iter->value_statistic.is_header ? iter->readable_name : ("    " + iter->readable_name));
 			row[col_value] = iter->value_statistic.value;
 			row[col_flags] = iter->value_statistic.flags;  // it's a string, not int.
+			row[col_page_offset] = (iter->value_statistic.is_header ? std::string()
+					: hz::string_sprintf("0x%02x, 0x%03x", int(iter->value_statistic.page), int(iter->value_statistic.offset)));
 			row[col_tooltip] = iter->get_description();
 			row[col_storage] = &(*iter);
 
@@ -1192,7 +1200,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("temperature_tab_label"), max_tab_warning, tab_temperature_name);
+		app_highlight_tab_label(lookup_widget("temperature_log_tab_label"), max_tab_warning, tab_temperature_name);
 
 	} while (false);
 
@@ -1484,9 +1492,14 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 	}
 
 	{
-// 		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("statistics_label_vbox");
+		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("statistics_label_vbox");
+		app_set_top_labels(label_vbox, label_list_t());
 
-		// TODO
+		Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>("statistics_treeview");
+		if (treeview) {
+			treeview->remove_all_columns();
+			treeview->unset_model();
+		}
 
 		// tab label
 		app_highlight_tab_label(lookup_widget("statistics_tab_label"), StorageProperty::warning_none, tab_statistics_name);
@@ -1584,7 +1597,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("temperature_tab_label"), StorageProperty::warning_none, tab_temperature_name);
+		app_highlight_tab_label(lookup_widget("temperature_log_tab_label"), StorageProperty::warning_none, tab_temperature_name);
 	}
 
 	// tab label
