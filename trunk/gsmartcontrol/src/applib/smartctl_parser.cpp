@@ -1990,6 +1990,21 @@ Index    Estimated Time   Temperature Celsius
 		data_found = true;
 	}
 
+	// Find current temperature
+	{
+		std::string name, value;
+		if (app_pcre_match("/^(Current Temperature):[ \\t]+(.*) Celsius$/mi", sub, &name, &value)) {
+			StorageProperty p;
+			p.section = StorageProperty::section_data;
+			p.subsection = StorageProperty::subsection_temperature_log;
+			p.set_name("Current Temperature", "sct_temperature_celsius");
+			p.value_type = StorageProperty::value_type_integer;
+			p.reported_value = value;
+			hz::string_is_numeric(value, p.value_integer);
+			add_property(p);
+		}
+	}
+
 	return data_found;
 }
 

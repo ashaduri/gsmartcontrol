@@ -490,7 +490,7 @@ namespace {
 						"This attribute has been reserved by vendor as internal.");
 				// Intel SSD (smartctl)
 				add(194, "Temperature_Internal", "Internal Temperature (Celsius)", "attr_temperature_celsius",
-						"Drive case temperature. The Raw value shows built-in heat sensor registrations (in Celsius)..");
+						"Drive case temperature. The Raw value shows built-in heat sensor registrations (in Celsius).");
 				// Hardware ECC Recovered (smartctl)
 				add(195, "Hardware_ECC_Recovered", "Hardware ECC Recovered", "",
 						"Number of ECC on the fly errors (Raw value). Users are advised to ignore this attribute.");
@@ -1620,7 +1620,7 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 				break;
 
 			case StorageProperty::subsection_temperature_log:
-				// nothing here
+				found = auto_set(p, "sct_unsupported", "SCT support is needed for SCT temperature logging.");
 				break;
 
 			case StorageProperty::subsection_erc_log:
@@ -1807,13 +1807,16 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 				break;
 
 			case StorageProperty::subsection_temperature_log:
-				if (name_match(p, "sct_unsupported")) {  // TODO show this somewhere
+				// Don't highlight SCT Unsupported as warning, it's harmless.
+// 				if (name_match(p, "sct_unsupported") && p.value_bool) {
+// 					w = StorageProperty::warning_notice;
+// 					reason = "The drive does not support SCT Temperature logging.";
+// 				}
+				// Current temperature
+				if (name_match(p, "sct_temperature_celsius") && p.value_integer > 50) {  // 50C
 					w = StorageProperty::warning_notice;
-					reason = "The drive does not support SCT Temperature logging. Check the Attributes tab for current temperature.";
+					reason = "The temperature of the drive is higher than 50 degrees Celsius. This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 				}
-				// TODO Current temperature
-				// sct_temperature_celsius
-
 				break;
 
 			case StorageProperty::subsection_erc_log:

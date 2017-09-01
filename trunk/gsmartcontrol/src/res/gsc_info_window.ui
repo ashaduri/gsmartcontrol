@@ -172,7 +172,6 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">True</property>
-                        <property name="padding">4</property>
                         <property name="position">0</property>
                       </packing>
                     </child>
@@ -240,7 +239,6 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">True</property>
-                        <property name="padding">4</property>
                         <property name="position">0</property>
                       </packing>
                     </child>
@@ -659,7 +657,6 @@ Self-test log contains information about the most recent manually performed SMAR
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="padding">4</property>
                             <property name="position">0</property>
                           </packing>
                         </child>
@@ -763,7 +760,24 @@ Self-test log contains information about the most recent manually performed SMAR
                   <object class="GtkBox" id="temperature_log_tab_vbox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="border_width">6</property>
                     <property name="orientation">vertical</property>
+                    <property name="spacing">6</property>
+                    <child>
+                      <object class="GtkBox" id="temperature_log_label_vbox">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
                     <child>
                       <object class="GtkScrolledWindow" id="scrolledwindow6">
                         <property name="visible">True</property>
@@ -783,7 +797,7 @@ Self-test log contains information about the most recent manually performed SMAR
                       <packing>
                         <property name="expand">True</property>
                         <property name="fill">True</property>
-                        <property name="position">0</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                   </object>
