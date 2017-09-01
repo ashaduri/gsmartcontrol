@@ -185,9 +185,12 @@
                           <object class="GtkTreeView" id="attributes_treeview">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <property name="rubber_banding">True</property>
                             <property name="enable_grid_lines">both</property>
                             <child internal-child="selection">
-                              <object class="GtkTreeSelection"/>
+                              <object class="GtkTreeSelection">
+                                <property name="mode">multiple</property>
+                              </object>
                             </child>
                           </object>
                         </child>
@@ -251,9 +254,12 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="headers_clickable">False</property>
+                            <property name="rubber_banding">True</property>
                             <property name="enable_grid_lines">both</property>
                             <child internal-child="selection">
-                              <object class="GtkTreeSelection"/>
+                              <object class="GtkTreeSelection">
+                                <property name="mode">multiple</property>
+                              </object>
                             </child>
                           </object>
                         </child>
@@ -571,9 +577,12 @@
                                       <object class="GtkTreeView" id="selftest_log_treeview">
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
+                                        <property name="rubber_banding">True</property>
                                         <property name="enable_grid_lines">both</property>
                                         <child internal-child="selection">
-                                          <object class="GtkTreeSelection"/>
+                                          <object class="GtkTreeSelection">
+                                            <property name="mode">multiple</property>
+                                          </object>
                                         </child>
                                       </object>
                                     </child>
@@ -616,7 +625,7 @@
                     <property name="can_focus">True</property>
                     <property name="tooltip_text" translatable="yes">Perform self-tests on the hard drive.
 Self-test log contains information about the most recent manually performed SMART self-tests.</property>
-                    <property name="label" translatable="yes">_Tests</property>
+                    <property name="label" translatable="yes">Self-Tests</property>
                     <property name="use_markup">True</property>
                     <property name="use_underline">True</property>
                   </object>
@@ -751,7 +760,7 @@ Self-test log contains information about the most recent manually performed SMAR
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox" id="temperature_tab_vbox">
+                  <object class="GtkBox" id="temperature_log_tab_vbox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="orientation">vertical</property>
@@ -764,7 +773,6 @@ Self-test log contains information about the most recent manually performed SMAR
                           <object class="GtkTextView" id="temperature_log_textview">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="tooltip_text" translatable="yes">Complete selective self-test log information</property>
                             <property name="editable">False</property>
                             <property name="left_margin">5</property>
                             <property name="right_margin">5</property>
@@ -781,13 +789,12 @@ Self-test log contains information about the most recent manually performed SMAR
                   </object>
                   <packing>
                     <property name="position">5</property>
-                    <property name="tab_expand">True</property>
                   </packing>
                 </child>
                 <child type="tab">
-                  <object class="GtkLabel" id="temperature_tab_label">
+                  <object class="GtkLabel" id="temperature_log_tab_label">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
+                    <property name="can_focus">False</property>
                     <property name="tooltip_text" translatable="yes">Current temperature and history</property>
                     <property name="label" translatable="yes">Temperature Log</property>
                   </object>
@@ -842,7 +849,6 @@ Self-test log contains information about the most recent manually performed SMAR
                               <object class="GtkTextView" id="erc_log_textview">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="tooltip_text" translatable="yes">Complete selective self-test log information</property>
                                 <property name="editable">False</property>
                                 <property name="left_margin">5</property>
                                 <property name="right_margin">5</property>
@@ -858,7 +864,7 @@ Self-test log contains information about the most recent manually performed SMAR
                           <object class="GtkLabel" id="erc_tab_label">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">ERC</property>
+                            <property name="label" translatable="yes">Error Recovery</property>
                           </object>
                           <packing>
                             <property name="position">1</property>
@@ -874,7 +880,6 @@ Self-test log contains information about the most recent manually performed SMAR
                               <object class="GtkTextView" id="selective_selftest_log_textview">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="tooltip_text" translatable="yes">Complete selective self-test log information</property>
                                 <property name="editable">False</property>
                                 <property name="left_margin">5</property>
                                 <property name="right_margin">5</property>
@@ -906,7 +911,6 @@ Self-test log contains information about the most recent manually performed SMAR
                               <object class="GtkTextView" id="phy_log_textview">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="tooltip_text" translatable="yes">Complete selective self-test log information</property>
                                 <property name="editable">False</property>
                                 <property name="left_margin">5</property>
                                 <property name="right_margin">5</property>
@@ -938,7 +942,6 @@ Self-test log contains information about the most recent manually performed SMAR
                               <object class="GtkTextView" id="directory_log_textview">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="tooltip_text" translatable="yes">Complete selective self-test log information</property>
                                 <property name="editable">False</property>
                                 <property name="left_margin">5</property>
                                 <property name="right_margin">5</property>

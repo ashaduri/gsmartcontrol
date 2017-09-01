@@ -153,13 +153,15 @@ class StorageStatistic {
 	public:
 
 		/// Constructor
-		StorageStatistic() : is_header(false), value_int(0)
+		StorageStatistic() : is_header(false), value_int(0), page(0), offset(0)
 		{ }
 
 		bool is_header;  ///< If the line is a header
 		std::string flags;  ///< Flags in "NDC" / "---" format
 		std::string value;  ///< Value as a string, as presented by smartctl (formatted).
 		int64_t value_int;  ///< Same as value, but parsed as int64.
+		int64_t page;  ///< Page
+		int64_t offset;  ///< Offset in page
 };
 
 
