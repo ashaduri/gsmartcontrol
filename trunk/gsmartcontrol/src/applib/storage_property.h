@@ -129,7 +129,7 @@ class StorageAttribute {
 
 
 		int32_t id;  ///< Attribute ID (most vendors agree on this)
-		std::string flag;  ///< Some have it in 0xXXXX format, others in "PO--C-" format (some WD drives?).
+		std::string flag;  ///< "Old" format is "0xXXXX", "brief" format is "PO--C-".
 		hz::OptionalValue<uint8_t> value;  ///< Normalized value. May be unset ("---").
 		hz::OptionalValue<uint8_t> worst;  ///< Worst ever value. May be unset ("---").
 		hz::OptionalValue<uint8_t> threshold;  ///< Threshold for normalized value. May be unset ("---").
@@ -144,6 +144,27 @@ class StorageAttribute {
 
 /// Output operator for debug purposes
 std::ostream& operator<< (std::ostream& os, const StorageAttribute& p);
+
+
+
+
+/// Holds one line of "devstat" subsection
+class StorageStatistic {
+	public:
+
+		/// Constructor
+		StorageStatistic() : is_header(false), value_int(0)
+		{ }
+
+		bool is_header;  ///< If the line is a header
+		std::string flags;  ///< Flags in "NDC" / "---" format
+		std::string value;  ///< Value as a string, as presented by smartctl (formatted).
+		int64_t value_int;  ///< Same as value, but parsed as int64.
+};
+
+
+/// Output operator for debug purposes
+std::ostream& operator<< (std::ostream& os, const StorageStatistic& p);
 
 
 
@@ -290,6 +311,7 @@ class StorageProperty {
 
 			value_type_capability,  ///< For "capabilities" subsection (non-time-interval blocks only)
 			value_type_attribute,  ///< For "attributes" subsection
+			value_type_statistic,  ///< For "devstat" subsection
 			value_type_error_block,  // For "error_log" subsection
 			value_type_selftest_entry  // For "selftest_log" subsection
 		};
@@ -305,6 +327,7 @@ class StorageProperty {
 				case value_type_time_length: return "time_length";
 				case value_type_capability: return "capability";
 				case value_type_attribute: return "attribute";
+				case value_type_statistic: return "statistic";
 				case value_type_error_block: return "error_block";
 				case value_type_selftest_entry: return "selftest_entry";
 			}
@@ -457,6 +480,7 @@ class StorageProperty {
 
 		StorageCapability value_capability;  ///< Value (if it's a capability)
 		StorageAttribute value_attribute;  ///< Value (if it's an attribute)
+		StorageStatistic value_statistic;  ///< Value (if it's a statistic from devstat)
 		StorageErrorBlock value_error_block;  ///< Value (if it's a error block)
 		StorageSelftestEntry value_selftest_entry;  ///< Value (if it's a self-test entry)
 

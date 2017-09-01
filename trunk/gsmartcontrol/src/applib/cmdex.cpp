@@ -375,7 +375,7 @@ void Cmdex::stopped_cleanup()
 // Called when child exits
 void Cmdex::on_child_watch_handler(GPid arg_pid, int waitpid_status, gpointer data)
 {
-	DBG_FUNCTION_ENTER_MSG;
+// 	DBG_FUNCTION_ENTER_MSG;
 	Cmdex* self = static_cast<Cmdex*>(data);
 
 	g_timer_stop(self->timer_);  // stop the timer
@@ -426,7 +426,7 @@ void Cmdex::on_child_watch_handler(GPid arg_pid, int waitpid_status, gpointer da
 	if (self->exited_callback_)
 		self->exited_callback_(self->exited_callback_data_);
 
-	DBG_FUNCTION_EXIT_MSG;
+// 	DBG_FUNCTION_EXIT_MSG;
 }
 
 
@@ -436,7 +436,7 @@ void Cmdex::on_child_watch_handler(GPid arg_pid, int waitpid_status, gpointer da
 gboolean Cmdex::on_channel_io(GIOChannel* channel,
 		GIOCondition cond, Cmdex* self, channel_t type)
 {
-	DBG_FUNCTION_ENTER_MSG;
+// 	DBG_FUNCTION_ENTER_MSG;
 // 	debug_out_dump("app", "Cmdex::on_channel_io("
 // 			<< (type == channel_type_stdout ? "STDOUT" : "STDERR") << ") " << int(cond) << "\n");
 
@@ -481,7 +481,7 @@ gboolean Cmdex::on_channel_io(GIOChannel* channel,
 		}
 	} while (g_io_channel_get_buffer_condition(channel) & G_IO_IN);
 
-	DBG_FUNCTION_EXIT_MSG;
+// 	DBG_FUNCTION_EXIT_MSG;
 
 	// false if the source should be removed, true otherwise.
 	return continue_events;

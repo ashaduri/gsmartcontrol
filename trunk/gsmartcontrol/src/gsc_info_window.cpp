@@ -68,13 +68,16 @@ namespace {
 			delete wv[i];  // since it's without parent anymore, it won't be auto-deleted.
 		}
 
+		vbox->set_visible(!label_strings.empty());
+
 		if (label_strings.empty()) {
 			// add one label only
-			Gtk::Label* label = Gtk::manage(new Gtk::Label("No data available", Gtk::ALIGN_START));
-			label->set_padding(6, 0);
-			vbox->pack_start(*label, false, false);
+// 			Gtk::Label* label = Gtk::manage(new Gtk::Label("No data available", Gtk::ALIGN_START));
+// 			label->set_padding(6, 0);
+// 			vbox->pack_start(*label, false, false);
 
 		} else {
+
 			// add one label per element
 			for (label_list_t::const_iterator iter = label_strings.begin(); iter != label_strings.end(); ++iter) {
 				std::string label_text = Glib::Markup::escape_text(iter->label);
@@ -120,6 +123,35 @@ namespace {
 				// may set the color for all subsequent cells.
 				crt->property_cell_background().reset_value();
 				crt->property_foreground().reset_value();
+			}
+		}
+	}
+
+
+
+	/// Cell renderer functions for attribute cells
+	inline void app_statistic_cell_renderer_func(Gtk::CellRenderer* cr, const Gtk::TreeModel::iterator& iter,
+			Gtk::TreeModelColumn<const StorageProperty*> storage_column)
+	{
+		const StorageProperty* p = (*iter)[storage_column];
+		Gtk::CellRendererText* crt = hz::down_cast<Gtk::CellRendererText*>(cr);
+		if (crt) {
+			std::string fg, bg;
+			if (app_property_get_row_highlight_colors(p->warning, fg, bg)) {
+				// Note: property_cell_background makes horizontal tree lines disappear around it,
+				// but property_background doesn't play nice with sorted column color.
+				crt->property_cell_background() = bg;
+				crt->property_foreground() = fg;
+			} else {
+				// this is needed because cellrenderer is shared in column, so the previous call
+				// may set the color for all subsequent cells.
+				crt->property_cell_background().reset_value();
+				crt->property_foreground().reset_value();
+			}
+			if (p->value_statistic.is_header) {
+				crt->property_weight() = Pango::WEIGHT_BOLD;
+			} else {
+				crt->property_weight().reset_value();
 			}
 		}
 	}
@@ -567,7 +599,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		treeview->set_search_column(col_name.index());
 		Gtk::CellRendererText* cr_name = hz::down_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
 		if (cr_name)
-			cr_name->property_weight() = Pango::WEIGHT_BOLD ;
+			cr_name->property_weight() = Pango::WEIGHT_BOLD;
 
 		Gtk::TreeModelColumn<Glib::ustring> col_failed;
 		model_columns.add(col_failed);
@@ -641,7 +673,6 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 
 		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
-		int index = 1;
 		label_list_t label_strings;  // outside-of-tree properties
 
 		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
@@ -682,8 +713,6 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 			if (int(iter->warning) > int(max_tab_warning))
 				max_tab_warning = iter->warning;
-
-			++index;
 		}
 
 
@@ -698,6 +727,97 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 
 	// ------------------------------------------- Statistics
+
+
+	do {
+
+		Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>("statistics_treeview");
+		if (!treeview)
+			break;
+
+		Gtk::TreeModelColumnRecord model_columns;
+		unsigned int num_tree_cols = 0;
+
+		Gtk::TreeModelColumn<Glib::ustring> col_description;
+		model_columns.add(col_description);
+		num_tree_cols = app_gtkmm_create_tree_view_column(col_description, *treeview,
+				"Description", "Entry description", true);
+		treeview->set_search_column(col_description.index());
+// 		Gtk::CellRendererText* cr_name = hz::down_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
+// 		if (cr_name)
+// 			cr_name->property_weight() = Pango::WEIGHT_BOLD ;
+
+		Gtk::TreeModelColumn<std::string> col_value;
+		model_columns.add(col_value);
+		num_tree_cols = app_gtkmm_create_tree_view_column(col_value, *treeview,
+				"Value", "Value (can be normalized if 'N' flag is present)", false);
+
+		Gtk::TreeModelColumn<std::string> col_flags;
+		model_columns.add(col_flags);
+		num_tree_cols = app_gtkmm_create_tree_view_column(col_flags, *treeview,
+				"Flags", "Flags\n\n"
+				"N: value is normalized\n"
+				"D: supports DSN\n"
+				"C: monitored condition met", false);
+
+		Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
+		model_columns.add(col_tooltip);
+		treeview->set_tooltip_column(col_tooltip.index());
+
+
+		Gtk::TreeModelColumn<const StorageProperty*> col_storage;
+		model_columns.add(col_storage);
+
+
+		// create a TreeModel (ListStore)
+		Glib::RefPtr<Gtk::ListStore> list_store = Gtk::ListStore::create(model_columns);
+		treeview->set_model(list_store);
+		// No sorting (we don't want to screw up the headers).
+
+		for (unsigned int i = 0; i < num_tree_cols; ++i) {
+			Gtk::TreeViewColumn* tcol = treeview->get_column(i);
+			tcol->set_cell_data_func(*(tcol->get_first_cell()),
+						sigc::bind(sigc::ptr_fun(app_statistic_cell_renderer_func), col_storage));
+		}
+
+
+
+		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+		label_list_t label_strings;  // outside-of-tree properties
+
+		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
+			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_devstat)
+				continue;
+
+			// add non-entry-type properties to label above
+			if (iter->value_type != StorageProperty::value_type_statistic) {
+				label_strings.push_back(PropertyLabel(iter->readable_name + ": " + iter->format_value(), &(*iter)));
+
+				if (int(iter->warning) > int(max_tab_warning))
+					max_tab_warning = iter->warning;
+				continue;
+			}
+
+			Gtk::TreeRow row = *(list_store->append());
+
+			row[col_description] = (iter->value_statistic.is_header ? iter->readable_name : ("    " + iter->readable_name));
+			row[col_value] = iter->value_statistic.value;
+			row[col_flags] = iter->value_statistic.flags;  // it's a string, not int.
+			row[col_tooltip] = iter->get_description();
+			row[col_storage] = &(*iter);
+
+			if (int(iter->warning) > int(max_tab_warning))
+				max_tab_warning = iter->warning;
+		}
+
+
+		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("statistics_label_vbox");
+		app_set_top_labels(label_vbox, label_strings);
+
+		// tab label
+		app_highlight_tab_label(lookup_widget("statistics_tab_label"), max_tab_warning, tab_statistics_name);
+
+	} while (false);
 
 
 

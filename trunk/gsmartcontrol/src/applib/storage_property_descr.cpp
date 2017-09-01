@@ -1306,56 +1306,75 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 			found = true;
 		}
 
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_health) {
-		found = auto_set(p, "overall_health", "Overall health self-assessment test result. Note: If the drive passes this test, it doesn't mean it's OK. "
-				"However, if the drive doesn't pass it, then it's either already dead, or it's predicting its own failure within the next 24 hours. In this case do a backup immediately!");
+	} else if (p.section == StorageProperty::section_data) {
 
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_capabilities) {
-		found = auto_set(p, "offline_status_group", "Offline Data Collection (a.k.a. Offline test) is usually automatically performed when the device is idle or every fixed amount of time. "
-				"This should show if Automatic Offline Data Collection is enabled.")
-		|| auto_set(p, "iodc_total_time_length", "Offline Data Collection (a.k.a. Offline test) is usually automatically performed when the device is idle or every fixed amount of time. "
-				"This value shows the estimated time required to perform this operation in idle conditions. A value of 0 means unsupported.")
-		|| auto_set(p, "short_total_time_length", "This value shows the estimated time required to perform a short self-test in idle conditions. A value of 0 means unsupported.")
-		|| auto_set(p, "long_total_time_length", "This value shows the estimated time required to perform a long self-test in idle conditions. A value of 0 means unsupported.")
-		|| auto_set(p, "conveyance_total_time_length", "This value shows the estimated time required to perform a conveyance self-test in idle conditions. A value of 0 means unsupported.")
-		|| auto_set(p, "last_selftest_cap_group", "Status of the last self-test run.")
-		|| auto_set(p, "offline_cap_group", "Drive properties related to Offline Data Collection and self-tests.")
-		|| auto_set(p, "smart_cap_group", "Drive properties related to SMART handling.")
-		|| auto_set(p, "error_log_cap_group", "Drive properties related to error logging.")
-		|| auto_set(p, "sct_cap_group", "Drive properties related to temperature information.");
+		switch (p.subsection) {
+			case StorageProperty::subsection_health:
+				found = auto_set(p, "overall_health", "Overall health self-assessment test result. Note: If the drive passes this test, it doesn't mean it's OK. "
+						"However, if the drive doesn't pass it, then it's either already dead, or it's predicting its own failure within the next 24 hours. In this case do a backup immediately!");
+				break;
 
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_attributes) {
-		found = auto_set(p, "data_structure_version", p.readable_name.c_str());
-		if (!found) {
-			auto_set_attr(p, disk_type);
-			found = true;  // true, because auto_set_attr() may set "Unknown attribute", which is still "found".
+			case StorageProperty::subsection_capabilities:
+				found = auto_set(p, "offline_status_group", "Offline Data Collection (a.k.a. Offline test) is usually automatically performed when the device is idle or every fixed amount of time. "
+						"This should show if Automatic Offline Data Collection is enabled.")
+				|| auto_set(p, "iodc_total_time_length", "Offline Data Collection (a.k.a. Offline test) is usually automatically performed when the device is idle or every fixed amount of time. "
+						"This value shows the estimated time required to perform this operation in idle conditions. A value of 0 means unsupported.")
+				|| auto_set(p, "short_total_time_length", "This value shows the estimated time required to perform a short self-test in idle conditions. A value of 0 means unsupported.")
+				|| auto_set(p, "long_total_time_length", "This value shows the estimated time required to perform a long self-test in idle conditions. A value of 0 means unsupported.")
+				|| auto_set(p, "conveyance_total_time_length", "This value shows the estimated time required to perform a conveyance self-test in idle conditions. A value of 0 means unsupported.")
+				|| auto_set(p, "last_selftest_cap_group", "Status of the last self-test run.")
+				|| auto_set(p, "offline_cap_group", "Drive properties related to Offline Data Collection and self-tests.")
+				|| auto_set(p, "smart_cap_group", "Drive properties related to SMART handling.")
+				|| auto_set(p, "error_log_cap_group", "Drive properties related to error logging.")
+				|| auto_set(p, "sct_cap_group", "Drive properties related to temperature information.");
+				break;
+
+			case StorageProperty::subsection_attributes:
+				found = auto_set(p, "data_structure_version", p.readable_name.c_str());
+				if (!found) {
+					auto_set_attr(p, disk_type);
+					found = true;  // true, because auto_set_attr() may set "Unknown attribute", which is still "found".
+				}
+				break;
+
+			case StorageProperty::subsection_devstat:
+				// TODO
+				break;
+
+			case StorageProperty::subsection_error_log:
+				found = auto_set(p, "error_log_version", p.readable_name.c_str());
+				found = auto_set(p, "error_count", "Number of errors in error log. Note: Some manufacturers may list completely harmless errors in this log "
+					"(e.g., command invalid, not implemented, etc...).");
+// 				|| auto_set(p, "error_log_unsupported", "This device does not support error logging.");  // the property text already says that
+				break;
+
+			case StorageProperty::subsection_selftest_log:
+				found = auto_set(p, "selftest_log_version", p.readable_name.c_str());
+				found = auto_set(p, "selftest_num_entries", "Number of tests in selftest log. Note: This log usually contains only the last 20 or so manual tests. ");
+		// 		|| auto_set(p, "selftest_log_unsupported", "This device does not support self-test logging.");  // the property text already says that
+				break;
+
+			case StorageProperty::subsection_selective_selftest_log:
+				// nothing here
+				break;
+
+			case StorageProperty::subsection_temperature_log:
+				// nothing here
+				break;
+
+			case StorageProperty::subsection_erc_log:
+				// nothing here
+				break;
+
+			case StorageProperty::subsection_phy_log:
+				// nothing here
+				break;
+
+			case StorageProperty::subsection_directory_log:
+				// nothing here
+				break;
 		}
-
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_error_log) {
-		found = auto_set(p, "error_log_version", p.readable_name.c_str());
-		found = auto_set(p, "error_count", "Number of errors in error log. Note: Some manufacturers may list completely harmless errors in this log "
-			"(e.g., command invalid, not implemented, etc...).");
-// 		|| auto_set(p, "error_log_unsupported", "This device does not support error logging.");  // the property text already says that
-
-
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_selftest_log) {
-		found = auto_set(p, "selftest_log_version", p.readable_name.c_str());
-		found = auto_set(p, "selftest_num_entries", "Number of tests in selftest log. Note: This log usually contains only the last 20 or so manual tests. ");
-// 		|| auto_set(p, "selftest_log_unsupported", "This device does not support self-test logging.");  // the property text already says that
-
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_selective_selftest_log) {
-		// nothing here
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_temperature_log) {
-		// TODO Current temperature
-
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_erc_log) {
-		// nothing here
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_phy_log) {
-		// nothing here
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_directory_log) {
-		// nothing here
 	}
-
 
 	return found;
 }
@@ -1386,143 +1405,164 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 					"Additionally, some drives do not log useful data with SMART disabled, so it's advisable to keep it always enabled.";
 		}
 
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_health) {
-		if (name_match(p, "overall_health") && p.value_string != "PASSED") {
-			w = StorageProperty::warning_alert;
-			reason = "The drive is reporting that it will FAIL very soon. Please back up as soon as possible!";
-		}
+	} else if (p.section == StorageProperty::section_data) {
 
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_capabilities) {
-		// nothing
-
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_attributes) {
-
-		// Set notices for known pre-fail attributes
-
-		// Reallocated Sector Count
-		if (attr_match(p, "reallocated_sector_count") && p.value_attribute.raw_value_int > 0) {
-			w = StorageProperty::warning_notice;
-			reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
-
-		// Spin-up Retry Count
-		} else if (attr_match(p, "spin_up_retry_count") && p.value_attribute.raw_value_int > 0) {
-			w = StorageProperty::warning_notice;
-			reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. Your drive may have problems spinning up, which could lead to a complete mechanical failure. Please back up.";
-
-		// Soft Read Error Rate
-		} else if (attr_match(p, "soft_read_error_rate") && p.value_attribute.raw_value_int > 0) {
-			w = StorageProperty::warning_notice;
-			reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
-
-		// Temperature (for some it may be 10xTemp, so limit the upper bound.)
-		} else if (attr_match(p, "temperature_celsius")
-				&& p.value_attribute.raw_value_int > 50 && p.value_attribute.raw_value_int <= 120) {  // 50C
-			w = StorageProperty::warning_notice;
-			reason = "The temperature of the drive is higher than 50 degrees Celsius. This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
-
-		// Temperature (for some it may be 10xTemp, so limit the upper bound.)
-		} else if (attr_match(p, "temperature_celsius_x10") && p.value_attribute.raw_value_int > 500) {  // 50C
-			w = StorageProperty::warning_notice;
-			reason = "The temperature of the drive is higher than 50 degrees Celsius. This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
-
-		// Reallocation Event Count
-		} else if (attr_match(p, "reallocation_event_count") && p.value_attribute.raw_value_int > 0) {
-			w = StorageProperty::warning_notice;
-			reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
-
-		// Current Pending Sector Count
-		} else if ((attr_match(p, "current_pending_sector_count") || attr_match(p, "total_pending_sectors"))
-					&& p.value_attribute.raw_value_int > 0) {
-			w = StorageProperty::warning_notice;
-			reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
-
-		// Uncorrectable Sector Count
-		} else if ((attr_match(p, "offline_uncorrectable") || attr_match(p, "total_offline_uncorrectable"))
-					&& p.value_attribute.raw_value_int > 0) {
-			w = StorageProperty::warning_notice;
-			reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
-
-		// SSD Life Left (%)
-		} else if ((attr_match(p, "ssd_life_left"))
-					&& p.value_attribute.value.value() < 50) {
-			w = StorageProperty::warning_notice;
-			reason = "The drive has less than half of its life left.";
-
-		// SSD Life Used (%)
-		} else if ((attr_match(p, "ssd_life_used"))
-					&& p.value_attribute.value.value() >= 50) {
-			w = StorageProperty::warning_notice;
-			reason = "The drive has less than half of its life left.";
-		}
-
-
-		// Now override this with SMART warnings / errors
-
-		if (p.value_type == StorageProperty::value_type_attribute) {
-			if (p.value_attribute.when_failed == StorageAttribute::fail_time_now) {  // NOW
-
-				if (p.value_attribute.attr_type == StorageAttribute::attr_type_oldage) {  // old-age
-					w = StorageProperty::warning_warn;
-					reason = "The drive has a failing old-age attribute. Usually this indicates a wear-out. You should consider replacing the drive.";
-				} else {  // pre-fail
+		switch(p.subsection) {
+			case StorageProperty::subsection_health:
+				if (name_match(p, "overall_health") && p.value_string != "PASSED") {
 					w = StorageProperty::warning_alert;
-					reason = "The drive has a failing pre-fail attribute. Usually this indicates a that the drive will FAIL soon. Please back up immediately!";
+					reason = "The drive is reporting that it will FAIL very soon. Please back up as soon as possible!";
+				}
+				break;
+
+			case StorageProperty::subsection_capabilities:
+				// nothing
+				break;
+
+			case StorageProperty::subsection_attributes:
+
+				// Set notices for known pre-fail attributes
+
+				// Reallocated Sector Count
+				if (attr_match(p, "reallocated_sector_count") && p.value_attribute.raw_value_int > 0) {
+					w = StorageProperty::warning_notice;
+					reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
+
+				// Spin-up Retry Count
+				} else if (attr_match(p, "spin_up_retry_count") && p.value_attribute.raw_value_int > 0) {
+					w = StorageProperty::warning_notice;
+					reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. Your drive may have problems spinning up, which could lead to a complete mechanical failure. Please back up.";
+
+				// Soft Read Error Rate
+				} else if (attr_match(p, "soft_read_error_rate") && p.value_attribute.raw_value_int > 0) {
+					w = StorageProperty::warning_notice;
+					reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
+
+				// Temperature (for some it may be 10xTemp, so limit the upper bound.)
+				} else if (attr_match(p, "temperature_celsius")
+						&& p.value_attribute.raw_value_int > 50 && p.value_attribute.raw_value_int <= 120) {  // 50C
+					w = StorageProperty::warning_notice;
+					reason = "The temperature of the drive is higher than 50 degrees Celsius. This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
+
+				// Temperature (for some it may be 10xTemp, so limit the upper bound.)
+				} else if (attr_match(p, "temperature_celsius_x10") && p.value_attribute.raw_value_int > 500) {  // 50C
+					w = StorageProperty::warning_notice;
+					reason = "The temperature of the drive is higher than 50 degrees Celsius. This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
+
+				// Reallocation Event Count
+				} else if (attr_match(p, "reallocation_event_count") && p.value_attribute.raw_value_int > 0) {
+					w = StorageProperty::warning_notice;
+					reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
+
+				// Current Pending Sector Count
+				} else if ((attr_match(p, "current_pending_sector_count") || attr_match(p, "total_pending_sectors"))
+							&& p.value_attribute.raw_value_int > 0) {
+					w = StorageProperty::warning_notice;
+					reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
+
+				// Uncorrectable Sector Count
+				} else if ((attr_match(p, "offline_uncorrectable") || attr_match(p, "total_offline_uncorrectable"))
+							&& p.value_attribute.raw_value_int > 0) {
+					w = StorageProperty::warning_notice;
+					reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
+
+				// SSD Life Left (%)
+				} else if ((attr_match(p, "ssd_life_left"))
+							&& p.value_attribute.value.value() < 50) {
+					w = StorageProperty::warning_notice;
+					reason = "The drive has less than half of its life left.";
+
+				// SSD Life Used (%)
+				} else if ((attr_match(p, "ssd_life_used"))
+							&& p.value_attribute.value.value() >= 50) {
+					w = StorageProperty::warning_notice;
+					reason = "The drive has less than half of its life left.";
 				}
 
-			} else if (p.value_attribute.when_failed == StorageAttribute::fail_time_past) {  // PAST
+				// Now override this with SMART warnings / errors
 
-				if (p.value_attribute.attr_type == StorageAttribute::attr_type_oldage) {  // old-age
-					// nothing. we don't warn about e.g. temperature increase in the past
-				} else {  // pre-fail
-					w = StorageProperty::warning_warn;  // there was a problem, it got corrected (hopefully)
-					reason = "The drive had a failing pre-fail attribute, but it has been restored to a normal value. This may be a serious problem, you should consider replacing the drive.";
+				if (p.value_type == StorageProperty::value_type_attribute) {
+					if (p.value_attribute.when_failed == StorageAttribute::fail_time_now) {  // NOW
+
+						if (p.value_attribute.attr_type == StorageAttribute::attr_type_oldage) {  // old-age
+							w = StorageProperty::warning_warn;
+							reason = "The drive has a failing old-age attribute. Usually this indicates a wear-out. You should consider replacing the drive.";
+						} else {  // pre-fail
+							w = StorageProperty::warning_alert;
+							reason = "The drive has a failing pre-fail attribute. Usually this indicates a that the drive will FAIL soon. Please back up immediately!";
+						}
+
+					} else if (p.value_attribute.when_failed == StorageAttribute::fail_time_past) {  // PAST
+
+						if (p.value_attribute.attr_type == StorageAttribute::attr_type_oldage) {  // old-age
+							// nothing. we don't warn about e.g. temperature increase in the past
+						} else {  // pre-fail
+							w = StorageProperty::warning_warn;  // there was a problem, it got corrected (hopefully)
+							reason = "The drive had a failing pre-fail attribute, but it has been restored to a normal value. This may be a serious problem, you should consider replacing the drive.";
+						}
+					}
 				}
-			}
+				break;
+
+			case StorageProperty::subsection_devstat:
+				// TODO
+				break;
+
+			case StorageProperty::subsection_error_log:
+				// Note: The error list table doesn't display any descriptions, so if any
+				// error-entry related descriptions are added here, don't forget to enable
+				// the tooltips.
+
+				if (name_match(p, "error_count") && p.value_integer > 0) {
+					w = StorageProperty::warning_warn;
+					reason = "The drive is reporting internal errors. Usually this means uncorrectable data loss and similar severe errors. "
+							"Check the actual errors for details.";
+
+				} else if (name_match(p, "error_log_unsupported")) {
+					w = StorageProperty::warning_notice;
+					reason = "The drive does not support error logging. This means that SMART error history is unavailable.";
+				}
+				break;
+
+			case StorageProperty::subsection_selftest_log:
+				// Note: The error list table doesn't display any descriptions, so if any
+				// error-entry related descriptions are added here, don't forget to enable
+				// the tooltips.
+
+				// Don't include selftest warnings - they may be old or something.
+				// Self-tests are carried manually anyway, so the user is expected to check their status anyway.
+
+				if (name_match(p, "selftest_log_unsupported")) {
+					w = StorageProperty::warning_notice;
+					reason = "The drive does not support self-test logging. This means that SMART test results won't be logged.";
+				}
+				break;
+
+			case StorageProperty::subsection_selective_selftest_log:
+				// nothing here
+				break;
+
+			case StorageProperty::subsection_temperature_log:
+				if (name_match(p, "sct_unsupported")) {  // TODO show this somewhere
+					w = StorageProperty::warning_notice;
+					reason = "The drive does not support SCT Temperature logging. Check the Attributes tab for current temperature.";
+				}
+				// TODO Current temperature
+
+				break;
+
+			case StorageProperty::subsection_erc_log:
+				// nothing here
+				break;
+
+			case StorageProperty::subsection_phy_log:
+				// nothing here
+				break;
+
+			case StorageProperty::subsection_directory_log:
+				// nothing here
+				break;
 		}
-
-
-
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_error_log) {
-
-		// Note: The error list table doesn't display any descriptions, so if any
-		// error-entry related descriptions are added here, don't forget to enable
-		// the tooltips.
-
-		if (name_match(p, "error_count") && p.value_integer > 0) {
-			w = StorageProperty::warning_warn;
-			reason = "The drive is reporting internal errors. Usually this means uncorrectable data loss and similar severe errors. "
-					"Check the actual errors for details.";
-
-		} else if (name_match(p, "error_log_unsupported")) {
-			w = StorageProperty::warning_notice;
-			reason = "The drive does not support error logging. This means that SMART error history is unavailable.";
-		}
-
-
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_selftest_log) {
-
-		// Note: The error list table doesn't display any descriptions, so if any
-		// error-entry related descriptions are added here, don't forget to enable
-		// the tooltips.
-
-		// Don't include selftest warnings - they may be old or something.
-		// Self-tests are carried manually anyway, so the user is expected to check their status anyway.
-
-		if (name_match(p, "selftest_log_unsupported")) {
-			w = StorageProperty::warning_notice;
-			reason = "The drive does not support self-test logging. This means that SMART test results won't be logged.";
-		}
-
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_selective_selftest_log) {
-		// nothing here
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_temperature_log) {
-		// nothing here
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_erc_log) {
-		// nothing here
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_phy_log) {
-		// nothing here
-	} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_directory_log) {
-		// nothing here
 	}
 
 

@@ -1980,11 +1980,11 @@ Index    Estimated Time   Temperature Celsius
 	// supported / unsupported
 	{
 		StorageProperty p(pt);
-		p.set_name("SCT commands supported", "sct_supported");
+		p.set_name("SCT commands unsupported", "sct_unsupported");
 
 		// p.reported_value;  // nothing
 		p.value_type = StorageProperty::value_type_bool;
-		p.value_bool = !app_pcre_match("/(SCT Commands not supported)|(SCT Data Table command not supported)/mi", sub);
+		p.value_bool = app_pcre_match("/(SCT Commands not supported)|(SCT Data Table command not supported)/mi", sub);
 
 		add_property(p);
 		data_found = true;
@@ -2043,7 +2043,7 @@ bool SmartctlParser::parse_section_data_subsection_devstat(const std::string& su
 {
 	StorageProperty pt;  // template for easy copying
 	pt.section = StorageProperty::section_data;
-	pt.subsection = StorageProperty::subsection_erc_log;
+	pt.subsection = StorageProperty::subsection_devstat;
 
 	// devstat log contains:
 /*
@@ -2062,18 +2062,6 @@ Page  Offset Size        Value Flags Description
 0x03  0x008  4            6356  -D-  Spindle Motor Power-on Hours
 0x03  0x010  4            6356  -D-  Head Flying Hours
 */
-	bool data_found = false;  // true if something was found.
-
-	// the whole subsection
-	{
-		StorageProperty p(pt);
-		p.set_name("Device statistics", "devstat_log");
-		p.reported_value = sub;
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
-
-		add_property(p);
-	}
 
 	// supported / unsupported
 	{
@@ -2085,12 +2073,79 @@ Page  Offset Size        Value Flags Description
 		p.value_bool = !app_pcre_match("/Device Statistics \\(GP\\/SMART Log 0x04\\) not supported/mi", sub);
 
 		add_property(p);
-		data_found = true;
 	}
 
-	// TODO
+	bool entries_found = false;  // at least one entry was found
 
-	return data_found;}
+	// split to lines
+	std::vector<std::string> lines;
+	hz::string_split(sub, '\n', lines, true);
+
+	std::string space_re = "[ \\t]+";
+
+	std::string flag_re = "([A-Z=-]{3,})";
+	// Page Offset Size Value Flags Description
+	std::string line_re = "[ \\t]*([0-9a-z]+)" + space_re + "([0-9a-z=]+)" + space_re + "([0-9=]+)" + space_re + "([0-9=-]+)" + space_re + flag_re + space_re + "(.+)";
+
+	pcrecpp::RE re_stat_line = app_pcre_re("/" + line_re + "/mi");
+	pcrecpp::RE re_flag_descr = app_pcre_re("/^[\\t ]+\\|/mi");
+
+
+	for(unsigned int i = 0; i < lines.size(); ++i) {
+		std::string line = lines[i];
+
+		// skip the non-informative lines
+		if (line.empty()
+				|| app_pcre_match("/Device Statistics \\(GP Log 0x04\\)/mi", line)
+				|| app_pcre_match("/Page[ \\t]+Offset[ \\t]+Size/mi", line)) {
+			continue;
+		}
+
+		if (re_flag_descr.PartialMatch(line)) {  // "    |||_ C monitored condition met", etc...
+			continue;  // skip flag description lines
+		}
+
+		std::string page, offset, size, value, flags, description;
+
+		bool matched = true;
+		if (!re_stat_line.FullMatch(line, &page, &offset, &size, &value, &flags, &description)) {
+			matched = false;
+			debug_out_warn("app", DBG_FUNC_MSG << "Cannot parse devstat line.\n");
+		}
+
+		if (!matched) {
+			debug_out_dump("app", "------------ Begin unparsable devstat line dump ------------\n");
+			debug_out_dump("app", line << "\n");
+			debug_out_dump("app", "------------- End unparsable devstat line dump -------------\n");
+			continue;  // continue to the next line
+		}
+
+
+		StorageStatistic st;
+		st.is_header = (hz::string_trim_copy(value) == "=");
+		st.flags = st.is_header ? std::string() : hz::string_trim_copy(flags);
+		st.value = st.is_header ? std::string() : hz::string_trim_copy(value);
+		hz::string_is_numeric(st.value, st.value_int, false);
+
+		if (st.is_header) {
+			description = hz::string_trim_copy(hz::string_trim_copy(description, "="));
+		}
+
+		StorageProperty p(pt);
+		p.set_name(hz::string_trim_copy(description));
+		p.reported_value = line;  // use the whole line here
+		p.value_type = StorageProperty::value_type_statistic;
+		p.value_statistic = st;
+
+		add_property(p);
+		entries_found = true;
+	}
+
+	if (!entries_found)
+		set_error_msg("No entries found in Statistics section.");
+
+	return entries_found;
+}
 
 
 

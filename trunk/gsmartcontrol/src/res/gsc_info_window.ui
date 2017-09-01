@@ -86,6 +86,7 @@
                           <object class="GtkViewport">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="border_width">6</property>
                             <child>
                               <object class="GtkGrid" id="identity_table">
                                 <property name="visible">True</property>
@@ -148,7 +149,6 @@
                     <property name="use_underline">True</property>
                   </object>
                   <packing>
-                    <property name="tab_expand">True</property>
                     <property name="tab_fill">False</property>
                   </packing>
                 </child>
@@ -156,7 +156,9 @@
                   <object class="GtkBox" id="attributes_tab_vbox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="border_width">6</property>
                     <property name="orientation">vertical</property>
+                    <property name="spacing">6</property>
                     <child>
                       <object class="GtkBox" id="attributes_label_vbox">
                         <property name="visible">True</property>
@@ -212,7 +214,6 @@
                   </object>
                   <packing>
                     <property name="position">1</property>
-                    <property name="tab_expand">True</property>
                     <property name="tab_fill">False</property>
                   </packing>
                 </child>
@@ -220,36 +221,47 @@
                   <object class="GtkBox" id="statistics_tab_vbox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="border_width">6</property>
                     <property name="orientation">vertical</property>
+                    <property name="spacing">6</property>
                     <child>
-                      <object class="GtkBox" id="vbox3">
+                      <object class="GtkBox" id="statistics_label_vbox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="orientation">vertical</property>
+                        <property name="spacing">3</property>
                         <child>
-                          <object class="GtkPaned" id="vpaned2">
+                          <placeholder/>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="padding">4</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkScrolledWindow" id="scrolledwindow10">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="shadow_type">in</property>
+                        <child>
+                          <object class="GtkTreeView" id="statistics_treeview">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="orientation">vertical</property>
-                            <property name="position_set">True</property>
-                            <child>
-                              <placeholder/>
-                            </child>
-                            <child>
-                              <placeholder/>
+                            <property name="headers_clickable">False</property>
+                            <property name="enable_grid_lines">both</property>
+                            <child internal-child="selection">
+                              <object class="GtkTreeSelection"/>
                             </child>
                           </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
                         </child>
                       </object>
                       <packing>
                         <property name="expand">True</property>
                         <property name="fill">True</property>
-                        <property name="position">2</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                   </object>
@@ -268,7 +280,6 @@
                   </object>
                   <packing>
                     <property name="position">2</property>
-                    <property name="tab_expand">True</property>
                     <property name="tab_fill">False</property>
                   </packing>
                 </child>
@@ -276,7 +287,7 @@
                   <object class="GtkBox" id="test_tab_vbox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="border_width">11</property>
+                    <property name="border_width">12</property>
                     <property name="orientation">vertical</property>
                     <property name="spacing">6</property>
                     <child>
@@ -296,7 +307,7 @@
                           </object>
                           <packing>
                             <property name="expand">False</property>
-                            <property name="fill">True</property>
+                            <property name="fill">False</property>
                             <property name="position">0</property>
                           </packing>
                         </child>
@@ -515,7 +526,6 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">True</property>
-                        <property name="padding">6</property>
                         <property name="position">0</property>
                       </packing>
                     </child>
@@ -523,6 +533,7 @@
                       <object class="GtkFrame">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="margin_top">6</property>
                         <property name="label_xalign">0</property>
                         <property name="shadow_type">none</property>
                         <child>
@@ -611,7 +622,6 @@ Self-test log contains information about the most recent manually performed SMAR
                   </object>
                   <packing>
                     <property name="position">3</property>
-                    <property name="tab_expand">True</property>
                     <property name="tab_fill">False</property>
                   </packing>
                 </child>
@@ -619,12 +629,14 @@ Self-test log contains information about the most recent manually performed SMAR
                   <object class="GtkBox" id="error_log_tab_vbox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="border_width">6</property>
                     <property name="orientation">vertical</property>
                     <child>
                       <object class="GtkBox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="orientation">vertical</property>
+                        <property name="spacing">6</property>
                         <child>
                           <object class="GtkBox" id="error_log_label_vbox">
                             <property name="visible">True</property>
@@ -735,7 +747,6 @@ Self-test log contains information about the most recent manually performed SMAR
                   </object>
                   <packing>
                     <property name="position">4</property>
-                    <property name="tab_expand">True</property>
                     <property name="tab_fill">False</property>
                   </packing>
                 </child>
@@ -776,7 +787,7 @@ Self-test log contains information about the most recent manually performed SMAR
                 <child type="tab">
                   <object class="GtkLabel" id="temperature_tab_label">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can_focus">True</property>
                     <property name="tooltip_text" translatable="yes">Current temperature and history</property>
                     <property name="label" translatable="yes">Temperature Log</property>
                   </object>
@@ -795,7 +806,6 @@ Self-test log contains information about the most recent manually performed SMAR
                       <object class="GtkNotebook" id="advanced_notebook">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="show_border">False</property>
                         <child>
                           <object class="GtkScrolledWindow" id="capabilities_scrolledwindow">
                             <property name="visible">True</property>
@@ -975,7 +985,6 @@ Self-test log contains information about the most recent manually performed SMAR
                   </object>
                   <packing>
                     <property name="position">6</property>
-                    <property name="tab_expand">True</property>
                     <property name="tab_fill">False</property>
                   </packing>
                 </child>
