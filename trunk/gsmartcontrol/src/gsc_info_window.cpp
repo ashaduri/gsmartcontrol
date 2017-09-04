@@ -313,7 +313,7 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 	// Save their original texts so that we can apply markup to them.
 	Gtk::Label* tab_label = 0;
 
-	tab_label = lookup_widget<Gtk::Label*>("identity_tab_label");
+	tab_label = lookup_widget<Gtk::Label*>("general_tab_label");
 	tab_identity_name = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("attributes_tab_label");
@@ -348,12 +348,6 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 
 	tab_label = lookup_widget<Gtk::Label*>("directory_tab_label");
 	tab_directory_name = (tab_label ? tab_label->get_label() : "");
-
-
-	// remove "Perform Test" tab for now...
-// 	Gtk::Notebook* book = lookup_widget<Gtk::Notebook*>("main_notebook");
-// 	if (book)
-// 		book->remove_page(book->get_n_pages() - 1);
 
 	// show();  // don't show here, removing tabs later is ugly.
 }
@@ -450,6 +444,9 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		}
 		if ((note_page_box = lookup_widget("advanced_tab_vbox")) != 0) {
 			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
+		}
+		if (Gtk::Notebook* notebook = lookup_widget<Gtk::Notebook*>("main_notebook")) {
+			notebook->set_show_tabs(smart_enabled);
 		}
 	}
 
@@ -568,7 +565,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		identity_table->show_all();
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("identity_tab_label"), max_tab_warning, tab_identity_name);
+		app_highlight_tab_label(lookup_widget("general_tab_label"), max_tab_warning, tab_identity_name);
 
 	} while (false);
 
@@ -1523,7 +1520,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("identity_tab_label"), StorageProperty::warning_none, tab_identity_name);
+		app_highlight_tab_label(lookup_widget("general_tab_label"), StorageProperty::warning_none, tab_identity_name);
 	}
 
 	{
