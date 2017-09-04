@@ -140,22 +140,25 @@ bool SmartctlParser::parse_full(const std::string& full, StorageAttribute::DiskT
 
 
 	// If the device doesn't support many things, the warnings aren't separated (for sections).
-	// Fix that.
+	// Fix that. This affects old smartctl only (at least 6.5 fixed the warnings).
 	{
 		pcrecpp::RE re1 = app_pcre_re("/^(Warning: device does not support Error Logging)$/mi");
 		pcrecpp::RE re2 = app_pcre_re("/^(Warning: device does not support Self Test Logging)$/mi");
 		pcrecpp::RE re3 = app_pcre_re("/^(Device does not support Selective Self Tests\\/Logging)$/mi");
+		pcrecpp::RE re4 = app_pcre_re("/^(Warning: device does not support SCT Commands)$/mi");
 		std::string match;
 
 		if (app_pcre_match(re1, s, &match))
-			app_pcre_replace(re1, "\n" + match, s);  // add an extra newline
+			app_pcre_replace(re1, "\n" + match + "\n", s);  // add extra newlines
 
 		if (app_pcre_match(re2, s, &match))
-			app_pcre_replace(re2, "\n" + match, s);  // add an extra newline
+			app_pcre_replace(re2, "\n" + match + "\n", s);  // add extra newlines
 
 		if (app_pcre_match(re3, s, &match))
-			app_pcre_replace(re3, "\n" + match, s);  // add an extra newline
+			app_pcre_replace(re3, "\n" + match + "\n", s);  // add extra newlines
 
+		if (app_pcre_match(re4, s, &match))
+			app_pcre_replace(re4, "\n" + match + "\n", s);  // add extra newlines
 	}
 
 
@@ -439,6 +442,11 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 		p.value_type = StorageProperty::value_type_string;
 		p.value_string = p.reported_value;
 
+	} else if (app_pcre_match("/^Compliance$/mi", p.reported_name)) {  // From scsi/usb
+		p.set_name(p.reported_name, "device_type", "Compliance");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
 	} else if (app_pcre_match("/^Serial Number$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "serial_number", "Serial Number");
 		p.value_type = StorageProperty::value_type_string;
@@ -711,7 +719,8 @@ bool SmartctlParser::parse_section_data(const std::string& body)
 				// "SCT Commands not supported"
 				// "SCT Commands not supported if ATA Security is LOCKED"
 				|| app_pcre_match("/SCT Commands not supported/mi", sub)
-				|| app_pcre_match("/SCT Data Table command not supported/mi", sub) ) {
+				|| app_pcre_match("/SCT Data Table command not supported/mi", sub)
+				|| app_pcre_match("/Warning: device does not support SCT Commands/mi", sub) ) {  // old smartctl
 			status = parse_section_data_subsection_scttemp_log(sub) || status;
 
 		} else if (app_pcre_match("/^SCT Error Recovery Control/mi", sub)
@@ -2079,6 +2088,7 @@ Page  Offset Size        Value Flags Description
 */
 
 	// supported / unsupported
+	bool supported = true;
 	{
 		StorageProperty p(pt);
 		p.set_name("Device statistics supported", "devstat_supported");
@@ -2086,8 +2096,13 @@ Page  Offset Size        Value Flags Description
 		// p.reported_value;  // nothing
 		p.value_type = StorageProperty::value_type_bool;
 		p.value_bool = !app_pcre_match("/Device Statistics \\(GP\\/SMART Log 0x04\\) not supported/mi", sub);
+		supported = p.value_bool;
 
 		add_property(p);
+	}
+
+	if (!supported) {
+		return false;
 	}
 
 	bool entries_found = false;  // at least one entry was found

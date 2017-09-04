@@ -18,7 +18,7 @@
 #include <iostream>
 #include <cstdlib>
 
-#include "hz/debug.h"
+#include "libdebug/libdebug.h"
 #include "hz/fs_file.h"
 #include "storage_property.h"
 #include "smartctl_parser.h"
@@ -32,6 +32,8 @@ int main(int argc, char** argv)
 		std::cout << "Usage: " << argv[0] << " <file_to_parse>\n";
 		return EXIT_FAILURE;
 	}
+
+	debug_register_domain("app");
 
 	std::string file_str = argv[1];
 	hz::File file(file_str);
