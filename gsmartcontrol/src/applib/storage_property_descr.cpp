@@ -1155,7 +1155,7 @@ namespace {
 			/// Constructor
 			StatisticsDatabase()
 			{
-				// See http://www.t13.org/Documents/UploadedDocuments/docs2013/d2161r5-ATAATAPI_Command_Set_-_3.pdf
+				// See http://www.t13.org/documents/UploadedDocuments/docs2016/di529r14-ATAATAPI_Command_Set_-_4.pdf
 
 				// General Statistics
 
@@ -1182,19 +1182,21 @@ namespace {
 						"This statistic is incremented by one for each read command that returns command completion without an error.");
 
 				add("Date and Time TimeStamp", "", "",
-						"a) the TimeStamp set by the most recent SET DATE & TIME EXT command plus the number of "
-						"milliseconds that have elapsed since that SET DATE & TIME EXT command was processed;\n"
+						"a) the TimeStamp set by the most recent SET DATE &amp; TIME EXT command plus the number of "
+						"milliseconds that have elapsed since that SET DATE &amp; TIME EXT command was processed;\n"
 						"or\n"
 						"b) a copy of the Power-on Hours statistic (see A.5.4.4) with the hours unit of measure changed to milliseconds as described");
 
-				add("Pending Error Count", "", "",  // TODO Description (not in spec?)
-						"");
+				add("Pending Error Count", "", "",
+						"The number of logical sectors listed in the Pending Errors log.");
 
-				add("Workload Utilization", "", "",  // TODO Description (not in spec?)
-						"");
+				add("Workload Utilization", "", "",
+						"An estimate of device utilization as a percentage of the manufacturer's designs for various wear factors "
+						"(e.g., wear of the medium, head load events), if any. The reported value can be greater than 100%.");
 
-				add("Utilization Usage Rate", "", "",  // TODO Description (not in spec?)
-						"");
+				add("Utilization Usage Rate", "", "",
+						"An estimate of the rate at which device wear factors (e.g., damage to the recording medium) "
+						"are being used during a specified interval of time. This statistic is expressed as a percentage of the manufacturer's designs.");
 
 				// Free-Fall Statistics
 
@@ -1220,7 +1222,9 @@ namespace {
 						"b) when the heads take off from the landing zone for a contact start stop device.");
 
 				add("Number of Reallocated Logical Sectors", "", "",
-						"The number of logical sectors that have been reallocated after device manufacture."
+						"The number of logical sectors that have been reallocated after device manufacture.\n\n"
+						"If the value is normalized, this is the whole number percentage of the available logical sector reallocation "
+						"resources that have been used (i.e., 0..100)."
 						"\n\n" + s_unc_text);
 
 				add("Read Recovery Attempts", "", "",
@@ -1276,7 +1280,7 @@ namespace {
 						"The lowest device Average Short Term Temperature after the device is manufactured.");
 
 				add("Highest Average Long Term Temperature", "Highest Average Long Term Temperature (C)", "",
-						"თhe highest device Average Long Term Temperature after the device is manufactured.");
+						"The highest device Average Long Term Temperature after the device is manufactured.");
 
 				add("Lowest Average Long Term Temperature", "Lowest Average Long Term Temperature (C)", "",
 						"The lowest device Average Long Term Temperature after the device is manufactured.");
@@ -1519,6 +1523,10 @@ namespace {
 			std::string descr =  std::string("<b>") + readable_name + "</b>\n";
 			descr += sd.description;
 
+			if (p.value_statistic.is_normalized()) {
+				descr += "\n\nNote: The value is normalized.";
+			}
+
 			sd.description = descr;
 		}
 
@@ -1682,7 +1690,8 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 
 			case StorageProperty::subsection_attributes:
 
-				// Set notices for known pre-fail attributes
+				// Set notices for known pre-fail attributes. These are notices only, since the warnings
+				// and alerts are shown only in case of attribute failure.
 
 				// Reallocated Sector Count
 				if (attr_match(p, "attr_reallocated_sector_count") && p.value_attribute.raw_value_int > 0) {
@@ -1731,13 +1740,13 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 				} else if ((attr_match(p, "attr_ssd_life_left"))
 							&& p.value_attribute.value.value() < 50) {
 					w = StorageProperty::warning_notice;
-					reason = "The drive has less than half of its life left.";
+					reason = "The drive has less than half of its estimated life left.";
 
 				// SSD Life Used (%)
 				} else if ((attr_match(p, "attr_ssd_life_used"))
-							&& p.value_attribute.value.value() >= 50) {
+							&& p.value_attribute.raw_value_int >= 50) {
 					w = StorageProperty::warning_notice;
-					reason = "The drive has less than half of its life left.";
+					reason = "The drive has less than half of its estimated life left.";
 				}
 
 				// Now override this with reported SMART attribute failure warnings / errors
@@ -1766,7 +1775,74 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 				break;
 
 			case StorageProperty::subsection_devstat:
-				// TODO
+
+				if (name_match(p, "Pending Error Count") && p.value_statistic.value_int > 0) {
+					w = StorageProperty::warning_notice;
+					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
+
+				// "Workload Utilization" is either normalized, or encodes several values, so we can't use it.
+/*
+				} else if (name_match(p, "Workload Utilization") && p.value_statistic.value_int >= 50) {
+					w = StorageProperty::warning_notice;
+					reason = "The drive has less than half of its estimated life left.";
+
+				} else if (name_match(p, "Workload Utilization") && p.value_statistic.value_int >= 100) {
+					w = StorageProperty::warning_warn;
+					reason = "The drive is past its estimated lifespan.";
+*/
+
+				} else if (name_match(p, "Utilization Usage Rate") && p.value_statistic.value_int >= 50) {
+					w = StorageProperty::warning_notice;
+					reason = "The drive has less than half of its estimated life left.";
+
+				} else if (name_match(p, "Utilization Usage Rate") && p.value_statistic.value_int >= 100) {
+					w = StorageProperty::warning_warn;
+					reason = "The drive is past its estimated lifespan.";
+
+				} else if (name_match(p, "Number of Reallocated Logical Sectors") && !p.value_statistic.is_normalized() && p.value_statistic.value_int > 0) {
+					w = StorageProperty::warning_notice;
+					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
+
+				} else if (name_match(p, "Number of Reallocated Logical Sectors") && p.value_statistic.is_normalized() && p.value_statistic.value_int <= 0) {
+					w = StorageProperty::warning_warn;
+					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
+
+				} else if (name_match(p, "Number of Mechanical Start Failures") && p.value_statistic.value_int > 0) {
+					w = StorageProperty::warning_notice;
+					reason = "The drive is reporting mechanical errors.";
+
+				} else if (name_match(p, "Number of Realloc. Candidate Logical Sectors") && p.value_statistic.value_int > 0) {
+					w = StorageProperty::warning_notice;
+					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
+
+				} else if (name_match(p, "Number of Reported Uncorrectable Errors") && p.value_statistic.value_int > 0) {
+					w = StorageProperty::warning_notice;
+					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
+
+				} else if (name_match(p, "Current Temperature") && p.value_statistic.value_int > 50) {
+					w = StorageProperty::warning_notice;
+					reason = "The temperature of the drive is higher than 50 degrees Celsius. "
+							"This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
+
+				} else if (name_match(p, "Time in Over-Temperature") && p.value_statistic.value_int > 0) {
+					w = StorageProperty::warning_notice;
+					reason = "The temperature of the drive is or was over the manufacturer-specified maximum. "
+							"This may have shortened its lifespan and caused damage. Please install a cooling solution.";
+
+				} else if (name_match(p, "Time in Under-Temperature") && p.value_statistic.value_int > 0) {
+					w = StorageProperty::warning_notice;
+					reason = "The temperature of the drive is or was under the manufacturer-specified minimum. "
+							"This may have shortened its lifespan and caused damage. Please operate the drive within manufacturer-specified temperature range.";
+
+				} else if (name_match(p, "Percentage Used Endurance Indicator") && p.value_statistic.value_int >= 50) {
+					w = StorageProperty::warning_notice;
+					reason = "The drive has less than half of its estimated life left.";
+
+				} else if (name_match(p, "Percentage Used Endurance Indicator") && p.value_statistic.value_int >= 100) {
+					w = StorageProperty::warning_warn;
+					reason = "The drive is past its estimated lifespan.";
+				}
+
 				break;
 
 			case StorageProperty::subsection_error_log:
