@@ -247,6 +247,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 			if (rconfig::get_data<bool>("gui/icons_show_device_name")) {
 				if (!drive->get_is_virtual()) {
 					name += "\n" + Glib::Markup::escape_text(drive->get_device_with_type());
+					name += " (" + Glib::Markup::escape_text(drive->format_drive_letters()) + ")";
 				} else if (!drive->get_virtual_filename().empty()) {
 					name += "\n" + Glib::Markup::escape_text(drive->get_virtual_filename());
 				}
@@ -254,12 +255,22 @@ class GscMainWindowIconView : public Gtk::IconView {
 			if (rconfig::get_data<bool>("gui/icons_show_serial_number") && !drive->get_serial_number().empty()) {
 				name += "\n" + Glib::Markup::escape_text(drive->get_serial_number());
 			}
+			StorageProperty scan_time_prop;
+			if (drive->get_is_virtual()) {
+				scan_time_prop = drive->lookup_property("scan_time");
+				if (!scan_time_prop.value_string.empty()) {
+					name += "\n" + Glib::Markup::escape_text(scan_time_prop.value_string);
+				}
+			}
 
 			std::vector<std::string> tooltip_strs;
 
 			if (drive->get_is_virtual()) {
 				std::string vfile = drive->get_virtual_filename();
 				tooltip_strs.push_back("Loaded from: " + (vfile.empty() ? "[empty]" : Glib::Markup::escape_text(vfile)));
+				if (!scan_time_prop.value_string.empty()) {
+					tooltip_strs.push_back("Scanned on: " + Glib::Markup::escape_text(scan_time_prop.value_string));
+				}
 			} else {
 				tooltip_strs.push_back("Device: <b>" + Glib::Markup::escape_text(drive->get_device_with_type()) + "</b>");
 			}
