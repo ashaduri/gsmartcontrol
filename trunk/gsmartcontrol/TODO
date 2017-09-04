@@ -42,8 +42,6 @@ Testing:
 
 
 
-Devstat warnings.
-
 Per-line selftest error highlighting.
 	Tab highlighting according to error severity.
 

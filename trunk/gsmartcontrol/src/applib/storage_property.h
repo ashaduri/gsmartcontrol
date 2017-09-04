@@ -156,6 +156,12 @@ class StorageStatistic {
 		StorageStatistic() : is_header(false), value_int(0), page(0), offset(0)
 		{ }
 
+		/// Whether the normalization flag is present
+		bool is_normalized() const
+		{
+			return flags.find('N') != flags.npos;
+		}
+
 		bool is_header;  ///< If the line is a header
 		std::string flags;  ///< Flags in "NDC" / "---" format
 		std::string value;  ///< Value as a string, as presented by smartctl (formatted).
@@ -452,7 +458,6 @@ class StorageProperty {
 			this->generic_name = (gen_name.empty() ? this->reported_name : gen_name);
 			this->readable_name = (read_name.empty() ? this->reported_name : read_name);
 		}
-
 
 
 		std::string reported_name;  ///< Property name as reported by smartctl.
