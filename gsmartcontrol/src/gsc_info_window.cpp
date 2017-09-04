@@ -643,7 +643,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		Gtk::TreeModelColumn<std::string> col_flag_value;
 		model_columns.add(col_flag_value);
 		num_tree_cols = app_gtkmm_create_tree_view_column(col_flag_value, *treeview,
-				"Flag", "Flag value\n\n"
+				"Flags", "Flags\n\n"
 				"If given in POSRCK+ format, the presence of each letter indicates that the flag is on.\n"
 				"P: pre-failure attribute (if the attribute failed, the drive is failing)\n"
 				"O: updated continuously (as opposed to updated on offline data collection)\n"
@@ -1191,30 +1191,33 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
 		label_list_t label_strings;  // outside-of-tree properties
+
 		std::string temperature;
-		bool temp_found = false;
 		StorageProperty temp_property;
+		enum { temp_attr2 = 1, temp_attr1, temp_stat, temp_sct };  // less important to more important
+		int temp_prop_source = 0;
 
 		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
 			// Find temperature
-			if (!temp_found) {
-				if (iter->generic_name == "sct_temperature_celsius") {
-					temperature = hz::number_to_string(iter->value_integer);
-					temp_property = *iter;
-					temp_found = true;
-				} else if (iter->generic_name == "stat_temperature_celsius") {
-					temperature = hz::number_to_string(iter->value_statistic.value_int);
-					temp_property = *iter;
-					temp_found = true;
-				} else if (iter->generic_name == "attr_temperature_celsius") {
-					temperature = hz::number_to_string(iter->value_attribute.raw_value_int);
-					temp_property = *iter;
-					temp_found = true;
-				} else if (iter->generic_name == "attr_temperature_celsius_x10") {
-					temperature = hz::number_to_string(iter->value_attribute.raw_value_int / 10);
-					temp_property = *iter;
-					temp_found = true;
-				}
+			if (temp_prop_source < temp_sct && iter->generic_name == "sct_temperature_celsius") {
+				temperature = hz::number_to_string(iter->value_integer);
+				temp_property = *iter;
+				temp_prop_source = temp_sct;
+			}
+			if (temp_prop_source < temp_stat && iter->generic_name == "stat_temperature_celsius") {
+				temperature = hz::number_to_string(iter->value_statistic.value_int);
+				temp_property = *iter;
+				temp_prop_source = temp_stat;
+			}
+			if (temp_prop_source < temp_attr1 && iter->generic_name == "attr_temperature_celsius") {
+				temperature = hz::number_to_string(iter->value_attribute.raw_value_int);
+				temp_property = *iter;
+				temp_prop_source = temp_attr1;
+			}
+			if (temp_prop_source < temp_attr2 && iter->generic_name == "attr_temperature_celsius_x10") {
+				temperature = hz::number_to_string(iter->value_attribute.raw_value_int / 10);
+				temp_property = *iter;
+				temp_prop_source = temp_attr2;
 			}
 
 			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_temperature_log)
@@ -1287,7 +1290,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		Gtk::TreeModelColumn<std::string> col_flag_value;
 		model_columns.add(col_flag_value);
-		num_tree_cols = app_gtkmm_create_tree_view_column(col_flag_value, *treeview, "Flag", "Flag value", false);
+		num_tree_cols = app_gtkmm_create_tree_view_column(col_flag_value, *treeview, "Flags", "Flags", false);
 
 		Gtk::TreeModelColumn<Glib::ustring> col_str_values;
 		model_columns.add(col_str_values);

@@ -42,15 +42,22 @@ Testing:
 
 
 
-Devstat warnings (identify by offset/page).
+Devstat warnings.
 
 Per-line selftest error highlighting.
 	Tab highlighting according to error severity.
+
+Increase tab sizes in Windows.
+
+Check why temperature is not SCT by default.
+
+add .txt to saved output files.
 
 
 
 
 Document RAID support.
+	Check it first (in code).
 
 ??RAID:
 	http://sourceforge.net/apps/trac/smartmontools/wiki/Supported_RAID-Controllers
