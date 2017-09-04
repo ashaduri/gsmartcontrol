@@ -303,6 +303,9 @@
                   <object class="GtkLabel" id="label3">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="margin_top">3</property>
+                    <property name="margin_bottom">3</property>
+                    <property name="hexpand">True</property>
                     <property name="label" translatable="yes">_General</property>
                     <property name="use_underline">True</property>
                   </object>
@@ -672,8 +675,12 @@
                   <object class="GtkLabel" id="label4">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="margin_left">6</property>
+                    <property name="margin_right">6</property>
+                    <property name="hexpand">True</property>
                     <property name="label" translatable="yes">_Drives</property>
                     <property name="use_underline">True</property>
+                    <property name="width_chars">10</property>
                   </object>
                   <packing>
                     <property name="position">1</property>
