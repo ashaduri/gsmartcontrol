@@ -576,12 +576,27 @@ void GscPreferencesWindow::on_smartctl_binary_browse_button_clicked()
 
 	int result = 0;
 
+#ifdef _WIN32
+	Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
+	specific_filter->set_name("Executable Files");
+	specific_filter->add_pattern("*.exe");
+
+	Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
+	all_filter->set_name("All Files");
+	all_filter->add_pattern("*");
+#endif
+
 #if GTK_CHECK_VERSION(3, 20, 0)
 	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
 			"Choose Smartctl Binary...", this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, NULL, NULL), g_object_unref);
 
 	if (path.is_absolute())
 		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog.get()), path.c_str());
+
+#ifdef _WIN32
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), specific_filter->gobj());
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), all_filter->gobj());
+#endif
 
 	result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
 
@@ -592,6 +607,11 @@ void GscPreferencesWindow::on_smartctl_binary_browse_button_clicked()
 	// Add response buttons the the dialog
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 	dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_ACCEPT);
+
+#ifdef _WIN32
+	dialog.add_filter(specific_filter);
+	dialog.add_filter(all_filter);
+#endif
 
 	// Note: This works on absolute paths only (otherwise it's gtk warning).
 	if (path.is_absolute())

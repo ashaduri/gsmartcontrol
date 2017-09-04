@@ -198,14 +198,27 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 	}
 	int result = 0;
 
+	Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
+	specific_filter->set_name("Text Files");
+	specific_filter->add_pattern("*.txt");
+
+	Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
+	all_filter->set_name("All Files");
+	all_filter->add_pattern("*");
+
 #if GTK_CHECK_VERSION(3, 20, 0)
 	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
 			"Save Data As...", this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, NULL, NULL), g_object_unref);
 
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
 
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), specific_filter->gobj());
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), all_filter->gobj());
+
 	if (!last_dir.empty())
 		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog.get()), last_dir.c_str());
+
+	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog.get()), ".txt");
 
 	result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
 
@@ -219,8 +232,13 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 
 	dialog.set_do_overwrite_confirmation(true);
 
+	dialog.add_filter(specific_filter);
+	dialog.add_filter(all_filter);
+
 	if (!last_dir.empty())
 		dialog.set_current_folder(last_dir);
+
+	dialog.set_current_name(".txt");
 
 	// Show the dialog and wait for a user response
 	result = dialog.run();  // the main cycle blocks here
@@ -239,6 +257,10 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 			last_dir = dialog.get_current_folder();  // save for the future
 #endif
 			rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
+
+			if (file.rfind(".txt") != (file.size() - std::strlen(".txt"))) {
+				file += ".txt";
+			}
 
 			hz::File f(file);
 			if (!f.put_contents(entry->std_output)) {
@@ -293,14 +315,27 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 	}
 	int result = 0;
 
+	Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
+	specific_filter->set_name("Text Files");
+	specific_filter->add_pattern("*.txt");
+
+	Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
+	all_filter->set_name("All Files");
+	all_filter->add_pattern("*");
+
 #if GTK_CHECK_VERSION(3, 20, 0)
 	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
 			"Save Data As...", this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, NULL, NULL), g_object_unref);
 
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
 
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), specific_filter->gobj());
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), all_filter->gobj());
+
 	if (!last_dir.empty())
 		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog.get()), last_dir.c_str());
+
+	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog.get()), ".txt");
 
 	result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
 
@@ -314,8 +349,13 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 
 	dialog.set_do_overwrite_confirmation(true);
 
+	dialog.add_filter(specific_filter);
+	dialog.add_filter(all_filter);
+
 	if (!last_dir.empty())
 		dialog.set_current_folder(last_dir);
+
+	dialog.set_current_name(".txt");
 
 	// Show the dialog and wait for a user response
 	result = dialog.run();  // the main cycle blocks here
@@ -334,6 +374,10 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 			last_dir = dialog.get_current_folder();  // save for the future
 #endif
 			rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
+
+			if (file.rfind(".txt") != (file.size() - std::strlen(".txt"))) {
+				file += ".txt";
+			}
 
 			hz::File f(file);
 			if (!f.put_contents(exss.str())) {
