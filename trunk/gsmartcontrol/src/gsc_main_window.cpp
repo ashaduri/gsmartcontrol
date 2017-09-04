@@ -1311,9 +1311,20 @@ void GscMainWindow::show_load_virtual_file_chooser()
 	}
 	int result = 0;
 
+	Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
+	specific_filter->set_name("Text Files");
+	specific_filter->add_pattern("*.txt");
+
+	Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
+	all_filter->set_name("All Files");
+	all_filter->add_pattern("*");
+
 #if GTK_CHECK_VERSION(3, 20, 0)
 	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
 			"Load Data From...", this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, NULL, NULL), g_object_unref);
+
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), specific_filter->gobj());
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), all_filter->gobj());
 
 	if (!last_dir.empty()) {
 		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog.get()), last_dir.c_str());
@@ -1328,6 +1339,9 @@ void GscMainWindow::show_load_virtual_file_chooser()
 	// Add response buttons the the dialog
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 	dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_ACCEPT);
+
+	dialog.add_filter(specific_filter);
+	dialog.add_filter(all_filter);
 
 	if (!last_dir.empty())
 		dialog.set_current_folder(last_dir);
