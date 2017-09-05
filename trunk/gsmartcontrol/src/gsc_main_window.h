@@ -53,6 +53,10 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 		void rescan_devices();
 
 
+		/// Execute update-smart-drivedb
+		void run_update_drivedb();
+
+
 		/// Manually add device file to icon list
 		bool add_device(const std::string& file, const std::string& type_arg, const std::string& extra_args);
 
@@ -90,6 +94,7 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 			action_rescan_devices,
 
 			action_executor_log,
+			action_update_drivedb,
 			action_preferences,
 
 			action_general_help,
