@@ -76,22 +76,23 @@ std::ostream& operator<<(std::ostream& os, const StorageStatistic& p)
 
 std::string StorageErrorBlock::get_readable_error_types(const std::vector<std::string>& types)
 {
-	std::map<std::string, std::string> m;
-
-	m["ABRT"] = "Command aborted";
-	m["AMNF"] = "Address mark not found";
-	m["CCTO"] = "Command completion timed out";
-	m["EOM"] = "End of media";
-	m["ICRC"] = "Interface CRC error";
-	m["IDNF"] = "Identity not found";
-	m["ILI"] = "(Packet command-set specific)";
-	m["MC"] = "Media changed";
-	m["MCR"] = "Media change request";
-	m["NM"] = "No media";
-	m["obs"] = "Obsolete";
-	m["TK0NF"] = "Track 0 not found";
-	m["UNC"] = "Uncorrectable error in data";
-	m["WP"] = "Media is write protected";
+	static std::map<std::string, std::string> m;
+	if (m.empty()) {
+		m["ABRT"] = "Command aborted";
+		m["AMNF"] = "Address mark not found";
+		m["CCTO"] = "Command completion timed out";
+		m["EOM"] = "End of media";
+		m["ICRC"] = "Interface CRC error";
+		m["IDNF"] = "Identity not found";
+		m["ILI"] = "(Packet command-set specific)";
+		m["MC"] = "Media changed";
+		m["MCR"] = "Media change request";
+		m["NM"] = "No media";
+		m["obs"] = "Obsolete";
+		m["TK0NF"] = "Track 0 not found";
+		m["UNC"] = "Uncorrectable error in data";
+		m["WP"] = "Media is write protected";
+	}
 
 	std::vector<std::string> sv;
 	for (std::vector<std::string>::const_iterator iter = types.begin(); iter != types.end(); ++iter) {
@@ -103,6 +104,34 @@ std::string StorageErrorBlock::get_readable_error_types(const std::vector<std::s
 	}
 
 	return hz::string_join(sv, ", ");
+}
+
+
+
+int StorageErrorBlock::get_warning_level_for_error_type(std::string& type)
+{
+	static std::map<std::string, StorageProperty::warning_t> m;
+	if (m.empty()) {
+		m["ABRT"] = StorageProperty::warning_none;
+		m["AMNF"] = StorageProperty::warning_alert;
+		m["CCTO"] = StorageProperty::warning_warn;
+		m["EOM"] = StorageProperty::warning_warn;
+		m["ICRC"] = StorageProperty::warning_warn;
+		m["IDNF"] = StorageProperty::warning_alert;
+		m["ILI"] = StorageProperty::warning_notice;
+		m["MC"] = StorageProperty::warning_none;
+		m["MCR"] = StorageProperty::warning_none;
+		m["NM"] = StorageProperty::warning_none;
+		m["obs"] = StorageProperty::warning_none;
+		m["TK0NF"] = StorageProperty::warning_alert;
+		m["UNC"] = StorageProperty::warning_alert;
+		m["WP"] = StorageProperty::warning_none;
+	}
+
+	if (m.find(type) != m.end()) {
+		return int(m[type]);
+	}
+	return StorageProperty::warning_none;  // unknown error
 }
 
 

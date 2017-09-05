@@ -1615,6 +1615,13 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 				found = auto_set(p, "error_log_error_count", "Number of errors in error log. Note: Some manufacturers may list completely harmless errors in this log "
 					"(e.g., command invalid, not implemented, etc...).");
 // 				|| auto_set(p, "error_log_unsupported", "This device does not support error logging.");  // the property text already says that
+				if (p.value_type == StorageProperty::value_type_error_block) {
+					for (size_t i = 0; i < p.value_error_block.reported_types.size(); ++i) {
+						p.set_description(StorageErrorBlock::get_readable_error_types(p.value_error_block.reported_types));
+						found = true;
+					}
+				}
+
 				break;
 
 			case StorageProperty::subsection_selftest_log:
@@ -1851,7 +1858,7 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 				// the tooltips.
 
 				if (name_match(p, "error_log_error_count") && p.value_integer > 0) {
-					w = StorageProperty::warning_warn;
+					w = StorageProperty::warning_notice;
 					reason = "The drive is reporting internal errors. Usually this means uncorrectable data loss and similar severe errors. "
 							"Check the actual errors for details.";
 
@@ -1860,7 +1867,20 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 					reason = "The drive does not support error logging. This means that SMART error history is unavailable.";
 				}
 
-				// TODO Rate individual error log entries.
+				// Rate individual error log entries.
+				if (!p.value_error_block.reported_types.empty()) {
+					StorageProperty::warning_t error_block_warning = StorageProperty::warning_none;
+					for (size_t i = 0; i < p.value_error_block.reported_types.size(); ++i) {
+						int individual_warning = StorageErrorBlock::get_warning_level_for_error_type(p.value_error_block.reported_types[i]);
+						if (individual_warning > int(error_block_warning)) {
+							error_block_warning = StorageProperty::warning_t(individual_warning);
+						}
+					}
+					if (int(error_block_warning) > int(StorageProperty::warning_none)) {
+						w = error_block_warning;
+						reason = "The drive is reporting internal errors. Your data may be at risk depending on error severity.";
+					}
+				}
 
 				break;
 

@@ -32,6 +32,8 @@ Add ability (through ctrl-C?) to copy selected rows from attributes and statisti
 
 Add menu item - "update drive database"
 	Run it in terminal in Linux for verbosity.
+		xterm -hold -e 'update-smart-drivedb'
+		require xterm in rpm/deb deps.
 
 
 Testing:
@@ -40,10 +42,8 @@ Testing:
 	Detect running tests on launch (maybe ask the user too? some tests
 		may be stuck due to bad firmware, e.g. 3ware/windows).
 
+Parse "==> WARNING"
 
-
-Per-line selftest error highlighting.
-	Tab highlighting according to error severity.
 
 Parse all test data.
 

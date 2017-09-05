@@ -188,6 +188,9 @@ class StorageErrorBlock {
 		/// Get readable error types from reported types
 		static std::string get_readable_error_types(const std::vector<std::string>& types);
 
+		/// Get warning level (warning_t) for an error type
+		static int get_warning_level_for_error_type(std::string& type);
+
 		/// Format lifetime hours with comma
 		std::string format_lifetime_hours() const;
 
