@@ -108,32 +108,8 @@ namespace {
 
 
 
-	/// Cell renderer functions for attribute cells
-	inline void app_attr_cell_renderer_func(Gtk::CellRenderer* cr, const Gtk::TreeModel::iterator& iter,
-			Gtk::TreeModelColumn<const StorageProperty*> storage_column)
-	{
-		const StorageProperty* p = (*iter)[storage_column];
-		Gtk::CellRendererText* crt = hz::down_cast<Gtk::CellRendererText*>(cr);
-		if (crt) {
-			std::string fg, bg;
-			if (app_property_get_row_highlight_colors(p->warning, fg, bg)) {
-				// Note: property_cell_background makes horizontal tree lines disappear around it,
-				// but property_background doesn't play nice with sorted column color.
-				crt->property_cell_background() = bg;
-				crt->property_foreground() = fg;
-			} else {
-				// this is needed because cellrenderer is shared in column, so the previous call
-				// may set the color for all subsequent cells.
-				crt->property_cell_background().reset_value();
-				crt->property_foreground().reset_value();
-			}
-		}
-	}
-
-
-
-	/// Cell renderer functions for attribute cells
-	inline void app_statistic_cell_renderer_func(Gtk::CellRenderer* cr, const Gtk::TreeModel::iterator& iter,
+	/// Cell renderer functions for list cells
+	inline void app_list_cell_renderer_func(Gtk::CellRenderer* cr, const Gtk::TreeModel::iterator& iter,
 			Gtk::TreeModelColumn<const StorageProperty*> storage_column)
 	{
 		const StorageProperty* p = (*iter)[storage_column];
@@ -667,7 +643,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		for (unsigned int i = 0; i < num_tree_cols; ++i) {
 			Gtk::TreeViewColumn* tcol = treeview->get_column(i);
 			tcol->set_cell_data_func(*(tcol->get_first_cell()),
-						sigc::bind(sigc::ptr_fun(app_attr_cell_renderer_func), col_storage));
+						sigc::bind(sigc::ptr_fun(app_list_cell_renderer_func), col_storage));
 		}
 
 
@@ -783,7 +759,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		for (unsigned int i = 0; i < num_tree_cols; ++i) {
 			Gtk::TreeViewColumn* tcol = treeview->get_column(i);
 			tcol->set_cell_data_func(*(tcol->get_first_cell()),
-						sigc::bind(sigc::ptr_fun(app_statistic_cell_renderer_func), col_storage));
+						sigc::bind(sigc::ptr_fun(app_list_cell_renderer_func), col_storage));
 		}
 
 
@@ -988,7 +964,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		for (unsigned int i = 0; i < num_tree_cols; ++i) {
 			Gtk::TreeViewColumn* tcol = treeview->get_column(i);
 			tcol->set_cell_data_func(*(tcol->get_first_cell()),
-						sigc::bind(sigc::ptr_fun(app_attr_cell_renderer_func), col_storage));
+						sigc::bind(sigc::ptr_fun(app_list_cell_renderer_func), col_storage));
 		}
 
 
@@ -1099,7 +1075,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		for (unsigned int i = 0; i < num_tree_cols; ++i) {
 			Gtk::TreeViewColumn* tcol = treeview->get_column(i);
 			tcol->set_cell_data_func(*(tcol->get_first_cell()),
-						sigc::bind(sigc::ptr_fun(app_attr_cell_renderer_func), col_storage));
+						sigc::bind(sigc::ptr_fun(app_list_cell_renderer_func), col_storage));
 		}
 
 
@@ -1157,7 +1133,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 				row[col_details] = (type_details.empty() ? "-" : type_details);  // e.g. OBS has no details
 				// There are no descriptions in self-test log entries, so don't display
 				// "No description available" for all of them.
-// 				row[col_tooltip] = iter->get_description();
+				row[col_tooltip] = iter->get_description();
 				row[col_storage] = &(*iter);
 				row[col_mark_name] = "Error " + hz::number_to_string(iter->value_error_block.error_num);
 			}
@@ -1309,7 +1285,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		for (unsigned int i = 0; i < num_tree_cols; ++i) {
 			Gtk::TreeViewColumn* tcol = treeview->get_column(i);
 			tcol->set_cell_data_func(*(tcol->get_first_cell()),
-						sigc::bind(sigc::ptr_fun(app_attr_cell_renderer_func), col_storage));
+						sigc::bind(sigc::ptr_fun(app_list_cell_renderer_func), col_storage));
 		}
 
 
