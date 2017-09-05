@@ -40,57 +40,16 @@ Testing:
 Parse all test data.
 
 
+Support RAID for these controllers:
+	https://www.smartmontools.org/wiki/Supported_RAID-Controllers
 
-Document RAID support.
-	Check it first (in code).
+	Adaptec (Windows, Linux using "-d aacraid")
+	HighPoint RocketRAID (Linux, FreeBSD (analyze sent info))
+	LSI MegaRAID (Linux, FreeBSD)
+	3ware (FreeBSD)
+	Areca (FreeBSD)
+	HP CCISS (FreeBSD)
 
-??RAID:
-	http://sourceforge.net/apps/trac/smartmontools/wiki/Supported_RAID-Controllers
-
-	Areca Windows:
-		Detection not supported by smartctl --scan-open.
-
-	Areca FreeBSD: since 5.42.
-		Call as: smartctl -a -d areca,[1-24] /dev/arcmsr1
-
-	Areca detection
-	Linux:
-		Somehow differentiate between the cards with expanders (-d areca,N/E) and without (-d areca,N).
-		The expander ones seem to have "ix" (case-insensitive) as their name suffixes.
-			areca,N - N is [1,24].
-			areca,N/E - N is [1,128], E is [1,8].
-				We should limit these using some config key (36 for N and 4 for E seems ok).
-				N/E syntax is since smartmontools 5.43.
-					For older versions we get: /dev/<something>: Option -d areca,N requires N to be a non-negative integer
-
-	3ware FreeBSD:
-		Call as: smartctl -i -d 3ware,[0-127] /dev/twa0  (or twe0)
-		Detection: unknown.
-
-	LSI MegaRAID (SCSI/SAS), Linux:
-		Call as: smartctl -i -d megaraid,[0-?] /dev/sda
-			We should differentiate between ordinary sda and RAID one (not sure if sda is detected).
-		Detection: unknown.
-
-	HighPoint RocketRAID ((S)ATA) Linux:
-		Call as: smartctl -i -d hpt,[1-8]/[1-8] /dev/sda
-		Call as: smartctl -i -d hpt,[1-8]/[1-8]/[1-15] /dev/sda
-		Note: /dev/sda should be derived from this controller.
-			We should differentiate between ordinary sda and RAID one (not sure if sda is detected).
-		Smartctl docs specify smaller limits, but the code says these are the ones.
-		Detection: unknown.
-
-	HighPoint RocketRAID ((S)ATA) FreeBSD:
-		Call as: smartctl -i -d hpt,[1-8]/[1-8] /dev/hptrr
-		Call as: smartctl -i -d hpt,[1-8]/[1-8]/[1-15] /dev/hptrr
-		Note: /dev/hptrr should be derived from this controller.
-		Smartctl docs specify smaller limits, but the code says these are the ones.
-		Detection: unknown.
-		TODO: Analyze sent info.
-
-	CCISS (HP (Compaq) Smart Array Controller) FreeBSD:
-		Seems to be the same as Linux (uses the same driver?).
-		Detection: unknown.
 
 
 

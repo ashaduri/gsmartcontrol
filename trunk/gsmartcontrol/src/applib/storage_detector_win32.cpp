@@ -58,6 +58,12 @@ Newer (added after 5.39.1) smartctl supports --scan-open, which will give us:
 	and remove pd0 from PhysicalDrive-detected list.
 Running smartctl on sda gives almost the same result as on sda,0.
 
+smartctl --scan-open output for win32 with 3ware RAID:
+------------------------------------------------------------------
+/dev/sda,0 -d ata (opened)
+/dev/sda,1 -d ata (opened)
+------------------------------------------------------------------
+
 
 Intel Matrix RAID (since smartmontools SVN version on 2011-02-04):
 Call as: "/dev/csmi[0-9],N" where N is the port behind the logical
@@ -78,12 +84,6 @@ The drives may be duplicated as pdX (with X and N being unrelated).
 	We filter out pdX devices using serial numbers (unless "-q noserial"
 	is given to smartctl), and prefer csmi to pd (since csmi provides more features).
 
-
-smartctl --scan-open output for win32 with 3ware RAID:
-------------------------------------------------------------------
-/dev/sda,0 -d ata (opened)
-/dev/sda,1 -d ata (opened)
-------------------------------------------------------------------
 </pre>
 */
 
