@@ -10,11 +10,22 @@ Technology) data on modern hard disk and solid-state drives. It allows you to
 inspect the drive's SMART data to determine its health, as well as run various
 tests on it.
 
-Note: GSmartControl supports ATA drives (both PATA and SATA), various USB to
-ATA bridges and drives behind some RAID controllers (selected models of
-3ware, Areca, Adaptec, Intel RAID controllers).
+GSmartControl supports ATA drives (both PATA and SATA), various USB to
+ATA bridges and drives behind some RAID controllers:
+* Adaptec (Linux, some models only)
+* Areca (Linux, Windows)
+* HP CCISS (Linux)
+* HP hpsa / hpahcisr (Linux)
+* Intel Matrix Storage (CSMI) (Linux, Windows, FreeBSD)
+* LSI 3ware (Linux, Windows)
+* LSI MegaRAID (Windows)
 
-http://gsmartcontrol.sourceforge.net
+Note: Smartmontools supports even more RAID Controllers. The drives
+behind such controllers can be manually added to GSmartControl using
+"Add Device..." functionality or --add-device command-line option.
+See https://www.smartmontools.org/wiki/Supported_RAID-Controllers .
+
+https://gsmartcontrol.sourceforge.io/
 
 
 
@@ -32,8 +43,8 @@ impact on performance;
 
 * performs SMART self-tests;
 
-* displays drive identity information, capabilities, attributes, and
-self-test/error logs;
+* displays drive identity information, capabilities, attributes,
+self-test/error logs, device statistics, etc...;
 
 * can read in smartctl output from a saved file, interpreting it as a
 read-only virtual device;
@@ -91,6 +102,8 @@ these bugs and works around them.
 
 Software Requirements
 
+Note: If using the official Windows package, no additional software is required.
+
 You need to have the following software installed:
 
 * pcre - http://www.pcre.org .
@@ -118,9 +131,6 @@ Note that usually you need to specify only these packages - the rest is
 installed automatically by the package manager's dependency resolver. Keep in
 mind that you also need smartmontools to run the program.
 
-Note: If using the official Windows package, the requirements are listed on
-GSmartControl's website.
-
 
 The following operating systems are supported:
 
@@ -139,9 +149,9 @@ to work without any issues.
 Windows 8.1, Windows 10. The Windows port uses pd0, pd1, etc...
 for physical drives 0, 1, etc... .
 
-* Solaris.
+* Mac OS X.
 
-* Mac OS X - 3rd-party testing by the MacPorts and Fink projects.
+* Solaris.
 
 * QNX - Code written but no testing has been performed yet.
 
@@ -341,9 +351,9 @@ search them in your distribution's graphical package manager, if there is one.
 with -v option, e.g. (type the following in a terminal emulator or Run
 dialog):
 
-gsmartcontrol-root auto -v
+gsmartcontrol-root -v
 
-Note: On Windows, run gsmartcontrol.exe with "-v" switch as Administrator.
+Note: On Windows, -v switch is on by default.
 
 Perform the steps needed to reproduce the bug, then go to
 "Options -> View Execution Log", and click "Save All".
