@@ -1326,6 +1326,8 @@ void GscMainWindow::show_load_virtual_file_chooser()
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), specific_filter->gobj());
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), all_filter->gobj());
 
+	gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog.get()), true);
+
 	if (!last_dir.empty()) {
 		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog.get()), last_dir.c_str());
 	}
@@ -1343,6 +1345,8 @@ void GscMainWindow::show_load_virtual_file_chooser()
 	dialog.add_filter(specific_filter);
 	dialog.add_filter(all_filter);
 
+	dialog.set_select_multiple(true);
+
 	if (!last_dir.empty())
 		dialog.set_current_folder(last_dir);
 
@@ -1354,17 +1358,27 @@ void GscMainWindow::show_load_virtual_file_chooser()
 	switch (result) {
 		case Gtk::RESPONSE_ACCEPT:
 		{
-			std::string file;
+			std::vector<std::string> files;
 
 #if GTK_CHECK_VERSION(3, 20, 0)
-			file = app_ustring_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get())));
-			last_dir = hz::path_get_dirname(file);
+			hz::scoped_ptr<GSList> file_slist(gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog.get())), g_slist_free);
+			GSList* iterator = file_slist.get();
+			while(iterator) {
+				files.push_back(app_ustring_from_gchar((gchar*)iterator->data));
+				iterator = g_slist_next(iterator);
+			}
 #else
-			file = dialog.get_filename();  // in fs encoding
-			last_dir = dialog.get_current_folder();  // save for the future
+			files = dialog.get_filenames();  // in fs encoding
 #endif
+			if (!files.empty()) {
+				last_dir = hz::path_get_dirname(files.front());
+			}
 			rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
-			this->add_virtual_drive(file);
+			for (size_t i = 0; i < files.size(); ++i) {
+				if (hz::File(files[i]).is_file()) {  // file chooser returns selected directories as well, ignore them.
+					this->add_virtual_drive(files[i]);
+				}
+			}
 			break;
 		}
 
