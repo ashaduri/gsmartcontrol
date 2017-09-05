@@ -161,6 +161,52 @@ bool SmartctlParser::parse_full(const std::string& full, StorageAttribute::DiskT
 			app_pcre_replace(re4, "\n" + match + "\n", s);  // add extra newlines
 	}
 
+	// Some errors get in the way of subsection detection and have little value, remove them.
+	{
+		// "ATA_READ_LOG_EXT (addr=0x00:0x00, page=0, n=1) failed: 48-bit ATA commands not implemented"
+		// or "ATA_READ_LOG_EXT (addr=0x11:0x00, page=0, n=1) failed: scsi error aborted command"
+		// in front of "Read GP Log Directory failed" and "Read SATA Phy Event Counters failed".
+		pcrecpp::RE re1 = app_pcre_re("/^(ATA_READ_LOG_EXT \\([^)]+\\) failed: .*)$/mi");
+		// "SMART WRITE LOG does not return COUNT and LBA_LOW register"
+		// in front of "SCT (Get) Error Recovery Control command failed" (scterc section)
+		pcrecpp::RE re2= app_pcre_re("/^((?:Error )?SMART WRITE LOG does not return COUNT and LBA_LOW register)$/mi");
+		// "Read SCT Status failed: scsi error aborted command"
+		// in front of "Read SCT Temperature History failed" and "SCT (Get) Error Recovery Control command failed"
+		pcrecpp::RE re3= app_pcre_re("/^(Read SCT Status failed: .*)$/mi");
+		// "Unknown SCT Status format version 0, should be 2 or 3."
+		pcrecpp::RE re4= app_pcre_re("/^(Unknown SCT Status format version .*)$/mi");
+		// "Read SCT Data Table failed: scsi error aborted command"
+		pcrecpp::RE re5= app_pcre_re("/^(Read SCT Data Table failed: .*)$/mi");
+		// "Write SCT Data Table failed: Undefined error: 0"
+		// in front of "Read SCT Temperature History failed"
+		pcrecpp::RE re6= app_pcre_re("/^(Write SCT Data Table failed: .*)$/mi");
+		// "Unexpected SCT status 0x0000 (action_code=0, function_code=0)"
+		// in front of "Read SCT Temperature History failed"
+		pcrecpp::RE re7= app_pcre_re("/^(Unexpected SCT status .*\\))$/mi");
+		std::string match;
+
+		if (app_pcre_match(re1, s, &match))
+			app_pcre_replace(re1, "", s);  // add extra newlines
+
+		if (app_pcre_match(re2, s, &match))
+			app_pcre_replace(re2, "", s);  // add extra newlines
+
+		if (app_pcre_match(re3, s, &match))
+			app_pcre_replace(re3, "", s);  // add extra newlines
+
+		if (app_pcre_match(re4, s, &match))
+			app_pcre_replace(re4, "", s);  // add extra newlines
+
+		if (app_pcre_match(re5, s, &match))
+			app_pcre_replace(re5, "", s);  // add extra newlines
+
+		if (app_pcre_match(re6, s, &match))
+			app_pcre_replace(re6, "", s);  // add extra newlines
+
+		if (app_pcre_match(re7, s, &match))
+			app_pcre_replace(re7, "", s);  // add extra newlines
+	}
+
 
 	// ------------------- Parsing
 
@@ -429,6 +475,29 @@ http://knowledge.seagate.com/articles/en_US/FAQ/213891en
 		if (app_pcre_match("/mandatory SMART command failed/mi", line)) {
 			continue;
 		}
+		// --get=all may cause these, ignore.
+				// "Unexpected SCT status 0x0010 (action_code=4, function_code=2)"
+		if (app_pcre_match("/^Unexpected SCT status/mi", line)
+				// "Write SCT (Get) XXX Error Recovery Control Command failed: scsi error aborted command"
+				|| app_pcre_match("/^Write SCT \\(Get\\) XXX Error Recovery Control Command failed/mi", line)
+				// "Write SCT (Get) Feature Control Command failed: scsi error aborted command"
+				|| app_pcre_match("/^Write SCT \\(Get\\) Feature Control Command failed/mi", line)
+				// "Read SCT Status failed: scsi error aborted command"
+				|| app_pcre_match("/^Read SCT Status failed/mi", line)
+				// "Read SMART Data failed: Input/output error"  (just ignore this, the rest of the data seems fine)
+				|| app_pcre_match("/^Read SMART Data failed/mi", line)
+				// "Unknown SCT Status format version 0, should be 2 or 3."
+				|| app_pcre_match("/^Unknown SCT Status format version/mi", line)
+				// "Read SMART Thresholds failed: scsi error aborted command"
+				|| app_pcre_match("/^Read SMART Thresholds failed/mi", line)
+				// "                  Enabled status cached by OS, trying SMART RETURN STATUS cmd."
+				|| app_pcre_match("/Enabled status cached by OS, trying SMART RETURN STATUS cmd/mi", line)
+				|| app_pcre_match("/^>> Terminate command early due to bad response to IEC mode page/mi", line)  // on a flash drive
+				// "scsiModePageOffset: response length too short, resp_len=4 offset=4 bd_len=0"
+				|| app_pcre_match("/^scsiModePageOffset: .+/mi", line)  // on a flash drive
+		   ) {
+			continue;
+		}
 
 		if (re.FullMatch(line, &name, &value)) {
 			hz::string_trim(name);
@@ -503,6 +572,11 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 
 	} else if (app_pcre_match("/^LU WWN Device Id$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "wwn_id", "World Wide Name");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
+	} else if (app_pcre_match("/^Add. Product Id$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "add_product_id", "Additional Product ID");
 		p.value_type = StorageProperty::value_type_string;
 		p.value_string = p.reported_value;
 
@@ -639,6 +713,11 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 		p.value_type = StorageProperty::value_type_string;
 		p.value_string = p.reported_value;
 
+	} else if (app_pcre_match("/^DSN feature is$/mi", p.reported_name)) {
+		p.set_name(p.reported_name, "dsn_feature", "DSN Feature");
+		p.value_type = StorageProperty::value_type_string;
+		p.value_string = p.reported_value;
+
 	} else if (app_pcre_match("/^Power mode (?:was|is)$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "power_mode", "Power Mode");
 		p.value_type = StorageProperty::value_type_string;
@@ -728,7 +807,11 @@ bool SmartctlParser::parse_section_data(const std::string& body)
 
 		} else if (app_pcre_match("/^General Purpose Log Directory Version/mi", sub)  // -l directory
 				|| app_pcre_match("/^General Purpose Log Directory not supported/mi", sub)
-				|| app_pcre_match("/^Read GP Log Directory failed/mi", sub) ) {
+				|| app_pcre_match("/^General Purpose Logging \\(GPL\\) feature set supported/mi", sub)
+				|| app_pcre_match("/^Read GP Log Directory failed/mi", sub)
+				|| app_pcre_match("/^Log Directories not read due to '-F nologdir' option/mi", sub)
+				|| app_pcre_match("/^Read SMART Log Directory failed/mi", sub)
+				|| app_pcre_match("/^SMART Log Directory Version/mi", sub) ) {  // old smartctl
 			status = parse_section_data_subsection_directory_log(sub) || status;
 
 		} else if (app_pcre_match("/^SMART Error Log Version/mi", sub)  // -l error
@@ -739,6 +822,7 @@ bool SmartctlParser::parse_section_data(const std::string& body)
 			status = parse_section_data_subsection_error_log(sub) || status;
 
 		} else if (app_pcre_match("/^SMART Extended Comprehensive Error Log \\(GP Log 0x03\\) not supported/mi", sub)  // -l xerror
+				|| app_pcre_match("/^SMART Extended Comprehensive Error Log size (.*) not supported/mi", sub)
 				|| app_pcre_match("/^Read SMART Extended Comprehensive Error Log failed/mi", sub) ) {  // -l xerror
 			// These are printed with "-l xerror,error" if falling back to "error". They're in their own sections, ignore them.
 			// We don't support showing these messages.
@@ -767,20 +851,29 @@ bool SmartctlParser::parse_section_data(const std::string& body)
 		} else if (app_pcre_match("/^SCT Status Version/mi", sub)
 				// "SCT Commands not supported"
 				// "SCT Commands not supported if ATA Security is LOCKED"
-				|| app_pcre_match("/SCT Commands not supported/mi", sub)
-				|| app_pcre_match("/SCT Data Table command not supported/mi", sub)
-				|| app_pcre_match("/Warning: device does not support SCT Commands/mi", sub) ) {  // old smartctl
+				// "Error unknown SCT Temperature History Format Version (3), should be 2."
+				|| app_pcre_match("/^SCT Commands not supported/mi", sub)
+				|| app_pcre_match("/^SCT Data Table command not supported/mi", sub)
+				|| app_pcre_match("/^Error unknown SCT Temperature History Format Version/mi", sub)
+				|| app_pcre_match("/^Warning: device does not support SCT Commands/mi", sub) ) {  // old smartctl
 			status = parse_section_data_subsection_scttemp_log(sub) || status;
 
 		} else if (app_pcre_match("/^SCT Error Recovery Control/mi", sub)
 				// Can be the same "SCT Commands not supported" as scttemp.
 				|| app_pcre_match("/^SCT Error Recovery Control command not supported/mi", sub)
-				|| app_pcre_match("/^SCT \\(Get\\) Error Recovery Control command failed/mi", sub) ) {
+				|| app_pcre_match("/^SCT \\(Get\\) Error Recovery Control command failed/mi", sub)
+				|| app_pcre_match("/^Warning: device does not support SCT \\(Get\\) Error Recovery Control/mi", sub) ) {  // old smartctl
 			status = parse_section_data_subsection_scterc_log(sub) || status;
 
-		} else if (app_pcre_match("/^Device Statistics/mi", sub)  // -l devstat
-				|| app_pcre_match("/^Device Statistics \\(GP\\/SMART Log 0x04\\) not supported/mi", sub) ) {
+		} else if (app_pcre_match("/^Device Statistics \\([^)]+\\)$/mi", sub)  // -l devstat
+				|| app_pcre_match("/^Device Statistics \\([^)]+\\) not supported/mi", sub)
+				|| app_pcre_match("/^Read Device Statistics page (?:.+) failed/mi", sub) ) {
 			status = parse_section_data_subsection_devstat(sub) || status;
+
+		// "Device Statistics (GP Log 0x04) supported pages"
+		} else if (app_pcre_match("/^Device Statistics \\([^)]+\\) supported pages/mi", sub) ) {  // not sure where it came from
+			// We don't support this section.
+			status = false;
 
 		} else if (app_pcre_match("/^SATA Phy Event Counters/mi", sub)  // -l sataphy
 				|| app_pcre_match("/^SATA Phy Event Counters \\(GP Log 0x11\\) not supported/mi", sub)
@@ -2134,7 +2227,31 @@ Page  Offset Size        Value Flags Description
 0x03  =====  =               =  ===  == Rotating Media Statistics (rev 1) ==
 0x03  0x008  4            6356  -D-  Spindle Motor Power-on Hours
 0x03  0x010  4            6356  -D-  Head Flying Hours
+                                |||_ C monitored condition met
+                                ||__ D supports DSN
+                                |___ N normalized value
 */
+
+	// Old (6.3) format:
+/*
+Page Offset Size         Value  Description
+  1  =====  =                =  == General Statistics (rev 2) ==
+  1  0x008  4                2  Lifetime Power-On Resets
+  1  0x018  6       1480289770  Logical Sectors Written
+  1  0x020  6         28939977  Number of Write Commands
+  1  0x028  6          3331436  Logical Sectors Read
+  1  0x030  6           122181  Number of Read Commands
+  1  0x038  6      12715200000  Date and Time TimeStamp
+  7  =====  =                =  == Solid State Device Statistics (rev 1) ==
+  7  0x008  1                1~ Percentage Used Endurance Indicator
+                              |_ ~ normalized value
+*/
+
+	enum {
+		FormatStyleNoFlags,  // 6.3 and older
+		FormatStyleCurrent,  // 6.5
+	};
+
 
 	// supported / unsupported
 	bool supported = true;
@@ -2164,20 +2281,41 @@ Page  Offset Size        Value Flags Description
 
 	std::string flag_re = "([A-Z=-]{3,})";
 	// Page Offset Size Value Flags Description
-	std::string line_re = "[ \\t]*([0-9a-z]+)" + space_re + "([0-9a-z=]+)" + space_re + "([0-9=]+)" + space_re + "([0-9=-]+)" + space_re + flag_re + space_re + "(.+)";
-
-	pcrecpp::RE re_stat_line = app_pcre_re("/" + line_re + "/mi");
+	pcrecpp::RE line_re = app_pcre_re("/[ \\t]*([0-9a-z]+)" + space_re + "([0-9a-z=]+)" + space_re + "([0-9=]+)"
+			+ space_re + "([0-9=-]+)" + space_re + flag_re + space_re + "(.+)/mi");
+	// Page Offset Size Value Description
+	pcrecpp::RE line_re_noflags = app_pcre_re("/[ \\t]*([0-9a-z]+)" + space_re + "([0-9a-z=]+)" + space_re + "([0-9=]+)"
+			+ space_re + "([0-9=~-]+)" + space_re + "(.+)/mi");
+	// flag description lines
 	pcrecpp::RE re_flag_descr = app_pcre_re("/^[\\t ]+\\|/mi");
 
+
+	int devstat_format_style = FormatStyleCurrent;
 
 	for(unsigned int i = 0; i < lines.size(); ++i) {
 		const std::string& line = lines[i];
 
 		// skip the non-informative lines
+		// "Device Statistics (GP Log 0x04)"
+		// "Device Statistics (SMART Log 0x04)"
+		// "ATA_SMART_READ_LOG failed: Undefined error: 0"
+		// "Read Device Statistics page 0x00 failed"
+		// "Read Device Statistics pages 0x00-0x07 failed"
 		if (line.empty()
-				|| app_pcre_match("/Device Statistics \\(GP Log 0x04\\)/mi", line)
-				|| app_pcre_match("/Page[ \\t]+Offset[ \\t]+Size/mi", line)) {
+				|| app_pcre_match("/^Device Statistics \\((?:GP|SMART) Log 0x04\\)/mi", line)
+				|| app_pcre_match("/^ATA_SMART_READ_LOG failed:/mi", line)
+				|| app_pcre_match("/^Read Device Statistics page (?:.+) failed/mi", line)
+				|| app_pcre_match("/^Read Device Statistics pages (?:.+) failed/mi", line) ) {
 			continue;
+		}
+
+		// Table header
+		if (app_pcre_match("/^Page[\\t ]+Offset[\\t ]+Size/mi", line)) {
+			// detect format type
+			if (!app_pcre_match("/[\\t ]+Flags[\\t ]+/mi", line)) {
+				devstat_format_style = FormatStyleNoFlags;
+			}
+			continue;  // we don't need this line
 		}
 
 		if (re_flag_descr.PartialMatch(line)) {  // "    |||_ C monitored condition met", etc...
@@ -2186,13 +2324,24 @@ Page  Offset Size        Value Flags Description
 
 		std::string page, offset, size, value, flags, description;
 
-		bool matched = true;
-		if (!re_stat_line.FullMatch(line, &page, &offset, &size, &value, &flags, &description)) {
-			matched = false;
-			debug_out_warn("app", DBG_FUNC_MSG << "Cannot parse devstat line.\n");
+		bool matched = false;
+		if (devstat_format_style == FormatStyleCurrent) {
+			if (line_re.FullMatch(line, &page, &offset, &size, &value, &flags, &description)) {
+				matched = true;
+			}
+		} else if (devstat_format_style == FormatStyleNoFlags) {
+			if (line_re_noflags.FullMatch(line, &page, &offset, &size, &value, &description)) {
+				matched = true;
+				flags = "---";  // to keep consistent with the Current format
+				if (!value.empty() && value.back() == '~') {  // normalized
+					flags = "N--";
+					value.resize(value.size() - 1);
+				}
+			}
 		}
 
 		if (!matched) {
+			debug_out_warn("app", DBG_FUNC_MSG << "Cannot parse devstat line.\n");
 			debug_out_dump("app", "------------ Begin unparsable devstat line dump ------------\n");
 			debug_out_dump("app", line << "\n");
 			debug_out_dump("app", "------------- End unparsable devstat line dump -------------\n");

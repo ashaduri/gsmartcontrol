@@ -1567,6 +1567,7 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 		|| auto_set(p, "aam_feature", "Automatic Acoustic Management (AAM) level")
 		|| auto_set(p, "apm_feature", "Automatic Power Management (APM) feature")
 		|| auto_set(p, "apm_level", "Advanced Power Management (APM) level")
+		|| auto_set(p, "dsn_feature", "Device Statistics Notification (DSN) feature")
 		|| auto_set(p, "power_mode", "Power mode at the time of query");
 
 		// set just its name as a tooltip
