@@ -262,6 +262,7 @@ bool GscMainWindow::create_widgets()
 
 	"	<menu action='options_menu'>"
 	"		<menuitem action='" APP_ACTION_NAME(action_executor_log) "' />"
+	"		<menuitem action='" APP_ACTION_NAME(action_update_drivedb) "' />"
 	"		<menuitem action='" APP_ACTION_NAME(action_preferences) "' />"
 	"	</menu>"
 
@@ -368,6 +369,10 @@ bool GscMainWindow::create_widgets()
 		action = Gtk::Action::create(APP_ACTION_NAME(action_executor_log), "View Execution Log");
 		actiongroup_main->add((action_map[action_executor_log] = action),
 				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_executor_log));
+
+		action = Gtk::Action::create(APP_ACTION_NAME(action_update_drivedb), "Update Drive Database");
+		actiongroup_main->add((action_map[action_update_drivedb] = action),
+				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_update_drivedb));
 
 		action = Gtk::Action::create(APP_ACTION_NAME(action_preferences), Gtk::Stock::PREFERENCES);
 		actiongroup_main->add((action_map[action_preferences] = action), Gtk::AccelKey("<alt>P"),
@@ -599,6 +604,12 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 			GscExecutorLogWindow* win = GscExecutorLogWindow::create();  // probably already created
 			// win->set_transient_for(*this);  // don't do this - it will make it always-on-top of this.
 			win->show_last();  // show the window and select last entry
+			break;
+		}
+
+		case action_update_drivedb:
+		{
+			run_update_drivedb();
 			break;
 		}
 
@@ -1121,6 +1132,35 @@ void GscMainWindow::rescan_devices()
 		iconview->set_empty_view_message(GscMainWindowIconView::message_no_drives_found);
 
 	this->scanning_ = false;
+}
+
+
+
+void GscMainWindow::run_update_drivedb()
+{
+	std::string smartctl_binary = get_smartctl_binary();
+
+	if (smartctl_binary.empty()) {
+		gui_show_error_dialog("Error Updating Drive Database", "Smartctl binary is not specified in configuration.", this);
+		return;
+	}
+
+	std::string update_binary;
+	hz::FsPath path(smartctl_binary);
+	if (path.is_absolute()) {
+		update_binary = path.get_dirname() + "/";
+	}
+	update_binary += "update-smart-drivedb";
+	update_binary = Glib::shell_quote(update_binary);
+
+#ifndef _WIN32
+	update_binary = "xterm -hold -e " + update_binary;
+#endif
+
+	hz::scoped_ptr<GError> spawn_error(0, g_error_free);
+	if (!g_spawn_command_line_async(update_binary.c_str(), &spawn_error.get_ref())) {
+		gui_show_error_dialog("Error Updating Drive Database", spawn_error->message, this);
+	}
 }
 
 

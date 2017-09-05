@@ -30,19 +30,11 @@ Add ability (through ctrl-C?) to copy selected rows from attributes and statisti
 	in tab-separated format (for easy pasting into libreoffice).
 
 
-Add menu item - "update drive database"
-	Run it in terminal in Linux for verbosity.
-		xterm -hold -e 'update-smart-drivedb'
-		require xterm in rpm/deb deps.
-
-
 Testing:
 	If ETA time has elapsed, but it's still only at 10% completion,
 		ETA 0 is displayed. Fix.
 	Detect running tests on launch (maybe ask the user too? some tests
 		may be stuck due to bad firmware, e.g. 3ware/windows).
-
-Parse "==> WARNING"
 
 
 Parse all test data.
