@@ -379,26 +379,75 @@ bool SmartctlParser::parse_section_info(const std::string& body)
 	// e.g. Device Model:     ST3500630AS
 	pcrecpp::RE re = app_pcre_re("/^([^\\n]+): [ \\t]*(.*)$/miU");  // ungreedy
 
-	std::string name, value;
-	pcrecpp::StringPiece input(body);  // position tracker
+	std::vector<std::string> lines;
+	hz::string_split(body, '\n', lines, false);
+	std::string name, value, warning_msg;
+// 	pcrecpp::StringPiece input(body);  // position tracker
+	bool expecting_warning_lines = false;
 
-	while (re.FindAndConsume(&input, &name, &value)) {
-		hz::string_trim(name);
-		hz::string_trim(value);
+// 	while (re.FindAndConsume(&input, &name, &value)) {
+	for (size_t line_index = 0; line_index < lines.size(); ++line_index) {
+		std::string line = hz::string_trim_copy(lines[line_index]);
+
+		if (expecting_warning_lines) {
+			if (!line.empty()) {
+				warning_msg += "\n" + line;
+			} else {
+				expecting_warning_lines = false;
+				StorageProperty p;
+				p.section = section;
+				p.set_name("Warning", "info_warning", "Warning");
+				p.reported_value = warning_msg;
+				p.value_type = StorageProperty::value_type_string;
+				p.value_string = p.reported_value;
+				add_property(p);
+				warning_msg.clear();
+			}
+			continue;
+		}
+
+		if (line.empty()) {
+			continue;  // empty lines are part of Info section
+		}
+
+		// Sometimes, we get this in the middle of Info section (separated by double newlines):
+/*
+==> WARNING: A firmware update for this drive may be available,
+see the following Seagate web pages:
+http://knowledge.seagate.com/articles/en_US/FAQ/207931en
+http://knowledge.seagate.com/articles/en_US/FAQ/213891en
+*/
+		if (app_pcre_match("/^==> WARNING: /mi", line)) {
+			app_pcre_replace("^==> WARNING: ", "", line);
+			warning_msg = hz::string_trim_copy(line);
+			expecting_warning_lines = true;
+			continue;
+		}
 
 		// This is not an ordinary name / value pair, so filter it out (we don't need it anyway).
 		// Usually this happens when smart is unsupported or disabled.
-		if (app_pcre_match("/mandatory SMART command failed/mi", name))
+		if (app_pcre_match("/mandatory SMART command failed/mi", line)) {
 			continue;
+		}
 
-		StorageProperty p;
-		p.section = section;
-		p.set_name(name);
-		p.reported_value = value;
+		if (re.FullMatch(line, &name, &value)) {
+			hz::string_trim(name);
+			hz::string_trim(value);
 
-		parse_section_info_property(p);  // set type and the typed value. may change generic_name too.
+			StorageProperty p;
+			p.section = section;
+			p.set_name(name);
+			p.reported_value = value;
 
-		add_property(p);
+			parse_section_info_property(p);  // set type and the typed value. may change generic_name too.
+
+			add_property(p);
+		} else {
+			debug_out_warn("app", DBG_FUNC_MSG << "Unknown Info line encountered.\n");
+			debug_out_dump("app", "---------------- Begin unknown Info line ----------------\n");
+			debug_out_dump("app", line << "\n");
+			debug_out_dump("app", "----------------- End unknown Info line -----------------\n");
+		}
 	}
 
 	return true;
@@ -1321,8 +1370,8 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 	pcrecpp::RE re_flag_descr = app_pcre_re("/^[\\t ]+\\|/mi");
 
 
-	for(unsigned int i = 0; i < lines.size(); ++i) {
-		std::string line = lines[i];
+	for(std::size_t i = 0; i < lines.size(); ++i) {
+		const std::string& line = lines[i];
 
 		// skip the non-informative lines
 		if (line.empty() || app_pcre_match("/SMART Attributes with Thresholds/mi", line))
@@ -2122,7 +2171,7 @@ Page  Offset Size        Value Flags Description
 
 
 	for(unsigned int i = 0; i < lines.size(); ++i) {
-		std::string line = lines[i];
+		const std::string& line = lines[i];
 
 		// skip the non-informative lines
 		if (line.empty()

@@ -1679,6 +1679,10 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 			w = StorageProperty::warning_notice;
 			reason = "SMART is disabled. You shoud enable it to read any SMART information from this drive. "
 					"Additionally, some drives do not log useful data with SMART disabled, so it's advisable to keep it always enabled.";
+
+		} else if (name_match(p, "info_warning")) {
+			w = StorageProperty::warning_notice;
+			reason = "Your drive may be affected by the warning, please see the details.";
 		}
 
 	} else if (p.section == StorageProperty::section_data) {
