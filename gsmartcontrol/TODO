@@ -26,18 +26,12 @@ Don't rely on smartctl return code (2), parse the output instead.
 	Need usage cases.
 
 
-Add ability (through ctrl-C?) to copy selected rows from attributes and statistics pages,
-	in tab-separated format (for easy pasting into libreoffice).
-
-
 Testing:
 	If ETA time has elapsed, but it's still only at 10% completion,
 		ETA 0 is displayed. Fix.
 	Detect running tests on launch (maybe ask the user too? some tests
 		may be stuck due to bad firmware, e.g. 3ware/windows).
-
-
-Parse all test data.
+	If smartctl outputs gibberish while testing, the GUI hangs.
 
 
 Support RAID for these controllers:

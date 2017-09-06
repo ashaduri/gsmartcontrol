@@ -237,6 +237,29 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 				Gdk::ModifierType(0), Gtk::AccelFlags(0));
 	}
 
+	// Context menu in treeviews
+	{
+		std::vector<std::string> treeview_names;
+		treeview_names.push_back("attributes_treeview");
+		treeview_names.push_back("statistics_treeview");
+		treeview_names.push_back("selftest_log_treeview");
+
+		for (std::size_t i = 0; i < treeview_names.size(); ++i) {
+			std::string treeview_name = treeview_names[i];
+			Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>(treeview_name);
+			treeview->signal_button_press_event().connect(
+					sigc::bind(sigc::bind(sigc::mem_fun(*this, &GscInfoWindow::on_treeview_button_press_event), treeview), &treeview_menus[treeview_name]), false);  // before
+
+			Gtk::MenuItem* item = Gtk::manage(new Gtk::MenuItem("Copy Selected Data", true));
+			item->signal_activate().connect(
+					sigc::bind(sigc::mem_fun(*this, &GscInfoWindow::on_treeview_menu_copy_clicked), treeview) );
+			treeview_menus[treeview_name].append(*item);
+
+			treeview_menus[treeview_name].show_all();  // Show all menu items when the menu pops up
+		}
+	}
+
+
 	// ---------------
 
 
@@ -645,7 +668,6 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			tcol->set_cell_data_func(*(tcol->get_first_cell()),
 						sigc::bind(sigc::ptr_fun(app_list_cell_renderer_func), col_storage));
 		}
-
 
 
 		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
@@ -1197,7 +1219,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 				continue;
 
 			if (iter->generic_name == "sct_unsupported" && iter->value_bool) {  // only show if unsupported
-				label_strings.push_back(PropertyLabel("SCT commands unsupported.", &(*iter)));
+				label_strings.push_back(PropertyLabel("SCT temperature commands not supported.", &(*iter)));
 				if (int(iter->warning) > int(max_tab_warning))
 					max_tab_warning = iter->warning;
 				continue;
@@ -2190,6 +2212,64 @@ void GscInfoWindow::on_drive_changed(StorageDevice* pdrive)
 	// test_active is also checked in delete_event handler, because this call may not
 	// succeed - the window manager may refuse to do it.
 	this->set_deletable(!test_active);
+}
+
+
+
+bool GscInfoWindow::on_treeview_button_press_event(GdkEventButton* button_event, Gtk::Menu* menu, Gtk::TreeView* treeview)
+{
+	if (button_event->type == GDK_BUTTON_PRESS && button_event->button == 3) {
+		bool selection_empty = treeview->get_selection()->get_selected_rows().empty();
+		std::vector<Widget*> children = menu->get_children();
+		for (std::size_t i = 0; i < children.size(); ++i) {
+			children[i]->set_sensitive(!selection_empty);
+		}
+		menu->popup(button_event->button, button_event->time);
+		return true;
+	}
+	return false;
+}
+
+
+
+void GscInfoWindow::on_treeview_menu_copy_clicked(Gtk::TreeView* treeview)
+{
+	std::string text;
+
+	guint num_cols = treeview->get_n_columns();
+	std::vector<std::string> col_texts;
+	for (guint i = 0; i < num_cols; ++i) {
+		Gtk::TreeViewColumn* tcol = treeview->get_column(i);
+		col_texts.push_back("\"" + hz::string_replace_copy(tcol->get_title(), "\"", "\"\"") + "\"");
+	}
+	text += hz::string_join(col_texts, ',') + "\n";
+
+	std::vector<Gtk::TreeModel::Path> selection = treeview->get_selection()->get_selected_rows();
+	Glib::RefPtr<Gtk::ListStore> list_store = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(treeview->get_model());
+	for (std::size_t i = 0; i < selection.size(); ++i) {
+		std::vector<std::string> cell_texts;
+		Gtk::TreeModel::Path path = selection[i];
+		Gtk::TreeRow row = *(list_store->get_iter(path));
+
+		for (guint j = 0; j < num_cols; ++j) {  // gather data only from tree columns, not model columns (like tooltips and helper data)
+			GType type = list_store->get_column_type(j);
+			if (type == G_TYPE_INT) {
+				int32_t value = 0;
+				row.get_value(j, value);
+				cell_texts.push_back(hz::number_to_string(value));
+			} else if (type == G_TYPE_STRING) {
+				std::string value;
+				row.get_value(j, value);
+				cell_texts.push_back("\"" + hz::string_replace_copy(value, "\"", "\"\"") + "\"");
+			}
+		}
+		text += hz::string_join(cell_texts, ',') + "\n";
+	}
+
+	Glib::RefPtr<Gtk::Clipboard> clipboard = Gtk::Clipboard::get();
+	if (clipboard) {
+		clipboard->set_text(text);
+	}
 }
 
 

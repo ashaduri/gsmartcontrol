@@ -13,6 +13,7 @@
 #define GSC_INFO_WINDOW_H
 
 #include <gtkmm.h>
+#include <map>
 
 #include "applib/app_ui_res_utils.h"
 #include "applib/storage_device.h"
@@ -100,8 +101,14 @@ class GscInfoWindow : public AppUIResWidget<GscInfoWindow, true> {
 		void on_test_stop_button_clicked();
 
 
-		// Callback attached to StorageDevice change signal.
+		/// Callback attached to StorageDevice change signal.
 		void on_drive_changed(StorageDevice* pdrive);
+
+		/// Callback
+		bool on_treeview_button_press_event(GdkEventButton* button_event, Gtk::Menu* menu, Gtk::TreeView* treeview);
+
+		/// Callback
+		void on_treeview_menu_copy_clicked(Gtk::TreeView* treeview);
 
 
 	private:
@@ -116,6 +123,8 @@ class GscInfoWindow : public AppUIResWidget<GscInfoWindow, true> {
 
 
 		// --------- Data members
+
+		std::map<std::string, Gtk::Menu> treeview_menus;  ///< Context menus
 
 		// tab headers, to perform their coloration
 		Glib::ustring tab_identity_name;  ///< Tab header name

@@ -1224,7 +1224,7 @@ namespace {
 				add("Number of Reallocated Logical Sectors", "", "",
 						"The number of logical sectors that have been reallocated after device manufacture.\n\n"
 						"If the value is normalized, this is the whole number percentage of the available logical sector reallocation "
-						"resources that have been used (i.e., 0..100)."
+						"resources that have been used (i.e., 0-100)."
 						"\n\n" + s_unc_text);
 
 				add("Read Recovery Attempts", "", "",
