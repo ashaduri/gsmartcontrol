@@ -1,3 +1,23 @@
+Version 1.1.0, released on 2017-09-07
+	New Statistics, Temperature Log, Error Recovery, Physical and Directory
+		tabs.
+	General tab shows non-SMART device settings as well.
+	Attributes tab shows entries in "brief" format.
+	Error Log tab shows Extended error log by default (if supported).
+	Self-Test Log tab now shows Extended self-test log by default (if
+		supported).
+	GSmartControl now uses "-x" equivalent for retrieving data (as upposed to
+		"-a"); loading "-x" outputs as virtual drives is also supported.
+	Implemented ability to copy rows in CSV format from Attribute, Statistics
+		and Self-Test Log tables.
+	Implemented "Update Drive Database" functionality.
+	Windows: Drive letters are shown for each drive.
+	Scan time is shown under virtual drive icons.
+	Polkit is supported with gsmartcontrol-root script now.
+	Pcrecpp is no longer bundled, use system-installed one instead.
+	Smartmontools version 5.43 is required at runtime.
+	Other minor improvements and fixes.
+
 Version 1.0.2, released on 2017-07-21
 	Fixed incomplete capturing of smartctl output under Windows.
 	Added missing icons under Windows.

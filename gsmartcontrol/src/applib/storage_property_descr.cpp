@@ -1627,7 +1627,7 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 
 			case StorageProperty::subsection_selftest_log:
 				found = auto_set(p, "selftest_log_version", p.readable_name.c_str());
-				found = auto_set(p, "selftest_num_entries", "Number of tests in selftest log. Note: This log usually contains only the last 20 or so manual tests. ");
+				found = auto_set(p, "selftest_num_entries", "Number of tests in selftest log. Note: The number of entries may be limited to the newest manual tests.");
 		// 		|| auto_set(p, "selftest_log_unsupported", "This device does not support self-test logging.");  // the property text already says that
 				break;
 
