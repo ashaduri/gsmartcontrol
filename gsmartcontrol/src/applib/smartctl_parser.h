@@ -34,7 +34,7 @@ class SmartctlParser {
 		SmartctlParser();
 
 
-		/// Parse full "smartctl -a" output
+		/// Parse full "smartctl -x" output
 		bool parse_full(const std::string& s, StorageAttribute::DiskType disk_type);
 
 
@@ -138,21 +138,21 @@ class SmartctlParser {
 		void add_property(StorageProperty p);
 
 
-		/// Set "full" data ("smartctl -a" output)
+		/// Set "full" data ("smartctl -x" output)
 		void set_data_full(const std::string& s)
 		{
 			data_full_ = s;
 		}
 
 
-		/// Set "info" section data ("smartctl -i" output, or the first part of "smartctl -a" output)
+		/// Set "info" section data ("smartctl -i" output, or the first part of "smartctl -x" output)
 		void set_data_section_info(const std::string& s)
 		{
 			data_section_info_ = s;
 		}
 
 
-		/// Parse "data" section data (the second part of "smartctl -a" output).
+		/// Parse "data" section data (the second part of "smartctl -x" output).
 		void set_data_section_data(const std::string& s)
 		{
 			data_section_data_ = s;
