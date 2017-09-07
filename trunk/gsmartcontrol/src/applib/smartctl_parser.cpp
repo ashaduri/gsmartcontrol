@@ -2333,7 +2333,7 @@ Page Offset Size         Value  Description
 			if (line_re_noflags.FullMatch(line, &page, &offset, &size, &value, &description)) {
 				matched = true;
 				flags = "---";  // to keep consistent with the Current format
-				if (!value.empty() && value.back() == '~') {  // normalized
+				if (!value.empty() && value[value.size() - 1] == '~') {  // normalized
 					flags = "N--";
 					value.resize(value.size() - 1);
 				}

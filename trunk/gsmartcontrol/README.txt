@@ -4,7 +4,7 @@ About GSmartControl
 GSmartControl - Hard disk drive and SSD health inspection tool.
 
 GSmartControl is a graphical user interface for smartctl (from smartmontools
-package, see http://smartmontools.sourceforge.net), which is a tool for
+package, see https://www.smartmontools.org/), which is a tool for
 querying and controlling SMART (Self-Monitoring, Analysis, and Reporting
 Technology) data on modern hard disk and solid-state drives. It allows you to
 inspect the drive's SMART data to determine its health, as well as run various
@@ -108,7 +108,7 @@ You need to have the following software installed:
 
 * pcre - http://www.pcre.org .
 
-* smartmontools - see http://smartmontools.sourceforge.net .
+* smartmontools - see https://www.smartmontools.org/ .
 
 * GTK+, version 3.4 or higher - see http://www.gtk.org .
 
@@ -191,9 +191,9 @@ GSmartControl tries its best to guard the user from having to specify smartctl
 options. However, this is not always possible due to drive firmware bugs,
 unimplemented features, and so on. The smartctl manual page contains all the
 information you may need when dealing with smartctl.
-See http://smartmontools.sourceforge.net/man/smartctl.8.html
+See https://www.smartmontools.org/browser/trunk/smartmontools/smartctl.8.in
 
-Additional information is available at http://smartmontools.sourceforge.net
+Additional information is available at https://www.smartmontools.org/
 
 
 
@@ -202,9 +202,7 @@ Command Line Options
 GSmartControl inherits options from GTK+ and other libraries, so be sure to
 run it with --help option to get a full list of accepted parameters.
 Note: The Windows version may not have a text output at all, so --help and
-similar arguments won't have any effect. However, --verbose will still
-increase the verbosity of a log saved via "Options -> View Execution Log ->
-Save All".
+similar arguments won't have any effect.
 
 The most important parameters are:
 
@@ -329,18 +327,18 @@ If it is a SMART or drive-related problem, please try to test it with smartctl
 first. Chances are, the problem you're experiencing is not tied to
 GSmartControl, but is a drive firmware or smartctl problem. For example, to
 see a complete information about your /dev/sda drive, type the following in a
-terminal emulator (e.g., xterm, konsole or gnome-terminal):
+terminal emulator (as root, using sudo or su):
 
-smartctl -a /dev/sda
+smartctl -x /dev/sda
 
 Note: If using Windows, the device name should be /dev/pd1 for the second
-physical drive, etc... .
+physical drive, etc... . Run cmd as administrator first.
 
 If you still think it's a GSmartControl issue, please collect the following
 information about your system. Without it, it may be very hard or impossible
 to fix the bug.
 
-* Which operating system you use (for example, openSUSE Linux 11.4).
+* Which operating system you use (for example, openSUSE Leap 42.3).
 
 * Which version of GTK and Gtkmm you have installed. Finding this out is very
 distribution-specific. For example, on openSUSE it would be

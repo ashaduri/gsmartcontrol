@@ -247,15 +247,17 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 		for (std::size_t i = 0; i < treeview_names.size(); ++i) {
 			std::string treeview_name = treeview_names[i];
 			Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>(treeview_name);
+			treeview_menus[treeview_name] = new Gtk::Menu();  // deleted in window destructor
+
 			treeview->signal_button_press_event().connect(
-					sigc::bind(sigc::bind(sigc::mem_fun(*this, &GscInfoWindow::on_treeview_button_press_event), treeview), &treeview_menus[treeview_name]), false);  // before
+					sigc::bind(sigc::bind(sigc::mem_fun(*this, &GscInfoWindow::on_treeview_button_press_event), treeview), treeview_menus[treeview_name]), false);  // before
 
 			Gtk::MenuItem* item = Gtk::manage(new Gtk::MenuItem("Copy Selected Data", true));
 			item->signal_activate().connect(
 					sigc::bind(sigc::mem_fun(*this, &GscInfoWindow::on_treeview_menu_copy_clicked), treeview) );
-			treeview_menus[treeview_name].append(*item);
+			treeview_menus[treeview_name]->append(*item);
 
-			treeview_menus[treeview_name].show_all();  // Show all menu items when the menu pops up
+			treeview_menus[treeview_name]->show_all();  // Show all menu items when the menu pops up
 		}
 	}
 
@@ -349,6 +351,15 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 	tab_directory_name = (tab_label ? tab_label->get_label() : "");
 
 	// show();  // don't show here, removing tabs later is ugly.
+}
+
+
+
+GscInfoWindow::~GscInfoWindow()
+{
+	for (std::map<std::string, Gtk::Menu*>::iterator iter = treeview_menus.begin(); iter != treeview_menus.end(); ++iter) {
+		delete iter->second;
+	}
 }
 
 

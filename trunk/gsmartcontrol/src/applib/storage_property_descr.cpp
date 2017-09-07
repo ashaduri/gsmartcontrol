@@ -73,7 +73,6 @@ namespace {
 				// http://en.wikipedia.org/wiki/S.M.A.R.T.
 				// http://kb.acronis.com/taxonomy/term/1644
 				// http://www.ariolic.com/activesmart/smart-attributes/
-				// http://sourceforge.net/apps/trac/smartmontools/wiki/TocDoc
 				// http://www.ocztechnologyforum.com/staff/ryderocz/misc/Sandforce.jpg
 				// Intel Solid-State Drive Toolbox User Guide
 				// as well as various other sources.

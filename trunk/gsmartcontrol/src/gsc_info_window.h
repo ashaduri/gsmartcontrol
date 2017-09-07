@@ -35,8 +35,7 @@ class GscInfoWindow : public AppUIResWidget<GscInfoWindow, true> {
 		GscInfoWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui);
 
 		/// Virtual destructor
-		virtual ~GscInfoWindow()
-		{ }
+		virtual ~GscInfoWindow();
 
 		// Overridden from InstanceManager
 		virtual void obj_destroy();
@@ -124,7 +123,7 @@ class GscInfoWindow : public AppUIResWidget<GscInfoWindow, true> {
 
 		// --------- Data members
 
-		std::map<std::string, Gtk::Menu> treeview_menus;  ///< Context menus
+		std::map<std::string, Gtk::Menu*> treeview_menus;  ///< Context menus
 
 		// tab headers, to perform their coloration
 		Glib::ustring tab_identity_name;  ///< Tab header name
