@@ -18,7 +18,11 @@
 #include <gtkmm.h>
 #include <glib.h>  // g_, G*
 #include <glibmm.h>  // set_application_name
-// #include <iostream>
+
+#ifdef _WIN32
+	#include <windows.h>
+	#include <versionhelpers.h>
+#endif
 
 #include "hz/hz_config.h"  // ENABLE_GLIB, VERSION, DEBUG_BUILD
 
@@ -451,6 +455,18 @@ bool app_init_and_loop(int& argc, char**& argv)
 	#endif
 #endif
 
+#ifdef _WIN32
+	// Windows "Classic" theme is broken under GTK+3's "win32" theme.
+	// Make sure we fall back to Adwaita (which works, but looks non-native)
+	// for platforms which support "Classic" theme - Windows Server and Windows Vista / 7.
+	// Windows 8 / 10 don't support "Classic" so native look is preferred.
+	if (IsWindowsServer() || !IsWindows8OrGreater()) {
+		GtkSettings* gtk_settings = gtk_settings_get_default();
+		if (gtk_settings) {
+			g_object_set(gtk_settings, "gtk-theme-name", "Adwaita", NULL);
+		}
+	}
+#endif
 
 	// set default icon for all windows.
 	// set_default_icon_name is available since 2.12 in gtkmm, but since 2.6 in gtk.

@@ -66,6 +66,20 @@ std::ostream& operator<< (std::ostream& os, const StorageAttribute& p)
 
 
 
+std::string StorageStatistic::format_value() const
+{
+	// If it's fully a number, format it with commas
+	if (hz::number_to_string(value_int) == value) {
+		std::stringstream ss;
+		ss.imbue(std::locale(""));
+		ss << std::fixed << value_int;
+		return ss.str();
+	}
+	return value;
+}
+
+
+
 std::ostream& operator<<(std::ostream& os, const StorageStatistic& p)
 {
 	os << p.value;
