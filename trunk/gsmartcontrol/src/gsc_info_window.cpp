@@ -816,7 +816,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			Gtk::TreeRow row = *(list_store->append());
 
 			row[col_description] = (iter->value_statistic.is_header ? iter->readable_name : ("    " + iter->readable_name));
-			row[col_value] = iter->value_statistic.value;
+			row[col_value] = iter->value_statistic.format_value();
 			row[col_flags] = iter->value_statistic.flags;  // it's a string, not int.
 			row[col_page_offset] = (iter->value_statistic.is_header ? std::string()
 					: hz::string_sprintf("0x%02x, 0x%03x", int(iter->value_statistic.page), int(iter->value_statistic.offset)));

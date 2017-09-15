@@ -162,6 +162,9 @@ class StorageStatistic {
 			return flags.find('N') != flags.npos;
 		}
 
+		/// Format value with commas (if it's a number)
+		std::string format_value() const;
+
 		bool is_header;  ///< If the line is a header
 		std::string flags;  ///< Flags in "NDC" / "---" format
 		std::string value;  ///< Value as a string, as presented by smartctl (formatted).
