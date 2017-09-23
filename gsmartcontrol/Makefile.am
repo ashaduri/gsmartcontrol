@@ -141,11 +141,13 @@ win-dist-prepare: all
 
 	for file in $(GTK_BIN_FILES); do for f in "@WINDOWS_SYSROOT@/bin/"$$file; do if test -f "$${f}"; then cp -p "$${f}" win-dist/; fi; done; done
 
-#	<prefix>/etc should contain gtk-3.0/settings.ini
+#	<prefix>/etc/gtk-3.0/ should contain settings.ini with a win32 theme.
 	$(MKDIR_P) win-dist/etc
 	$(MKDIR_P) win-dist/etc/fonts
-	cp -p "@WINDOWS_SYSROOT@"/etc/fonts/fonts.conf win-dist/etc/fonts
-	cp -p -r "@WINDOWS_SYSROOT@"/etc/gtk-3.0 win-dist/etc
+	$(MKDIR_P) win-dist/etc/gtk-3.0
+	cp -p "@WINDOWS_SYSROOT@"/etc/fonts/fonts.conf win-dist/etc/fonts/
+#	cp -p "@WINDOWS_SYSROOT@"/etc/gtk-3.0/im-multipress.conf win-dist/etc/gtk-3.0/
+	cp -p "@WINDOWS_SYSROOT@"/etc/gtk-3.0/settings.ini win-dist/etc/gtk-3.0/
 
 	$(MKDIR_P) win-dist/share
 	cp -p -r "@WINDOWS_SYSROOT@"/share/themes win-dist/share
