@@ -852,16 +852,20 @@ bool SmartctlParser::parse_section_data(const std::string& body)
 				// "SCT Commands not supported"
 				// "SCT Commands not supported if ATA Security is LOCKED"
 				// "Error unknown SCT Temperature History Format Version (3), should be 2."
+				// "Another SCT command is executing, abort Read Data Table"
 				|| app_pcre_match("/^SCT Commands not supported/mi", sub)
 				|| app_pcre_match("/^SCT Data Table command not supported/mi", sub)
 				|| app_pcre_match("/^Error unknown SCT Temperature History Format Version/mi", sub)
+				|| app_pcre_match("/^Another SCT command is executing, abort Read Data Table/mi", sub)
 				|| app_pcre_match("/^Warning: device does not support SCT Commands/mi", sub) ) {  // old smartctl
 			status = parse_section_data_subsection_scttemp_log(sub) || status;
 
 		} else if (app_pcre_match("/^SCT Error Recovery Control/mi", sub)
 				// Can be the same "SCT Commands not supported" as scttemp.
+				// "Another SCT command is executing, abort Error Recovery Control"
 				|| app_pcre_match("/^SCT Error Recovery Control command not supported/mi", sub)
 				|| app_pcre_match("/^SCT \\(Get\\) Error Recovery Control command failed/mi", sub)
+				|| app_pcre_match("/^Another SCT command is executing, abort Error Recovery Control/mi", sub)
 				|| app_pcre_match("/^Warning: device does not support SCT \\(Get\\) Error Recovery Control/mi", sub) ) {  // old smartctl
 			status = parse_section_data_subsection_scterc_log(sub) || status;
 

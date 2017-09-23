@@ -460,18 +460,24 @@ bool app_init_and_loop(int& argc, char**& argv)
 	// Make sure we fall back to Adwaita (which works, but looks non-native)
 	// for platforms which support "Classic" theme - Windows Server and Windows Vista / 7.
 	// Windows 8 / 10 don't support "Classic" so native look is preferred.
-	if (IsWindowsServer() || !IsWindows8OrGreater()) {
-		GtkSettings* gtk_settings = gtk_settings_get_default();
+	{
+		Glib::RefPtr<Gtk::Settings> gtk_settings = Gtk::Settings::get_default();
 		if (gtk_settings) {
-			g_object_set(gtk_settings, "gtk-theme-name", "Adwaita", NULL);
+			Glib::ustring theme_name = gtk_settings->property_gtk_theme_name().get_value();
+			debug_out_dump("app", "Current GTK theme: " << theme_name << "\n");
+			if (IsWindowsServer() || !IsWindows8OrGreater()) {
+				if (theme_name == "win32" || theme_name == "Windows") {
+					debug_out_dump("app", "Windows with Classic theme support detected, switching to Adwaita theme.\n");
+					gtk_settings->property_gtk_theme_name().set_value("Adwaita");
+				}
+			}
 		}
 	}
 #endif
 
-	// set default icon for all windows.
-	// set_default_icon_name is available since 2.12 in gtkmm, but since 2.6 in gtk.
-
-#ifndef _WIN32  // win32 version has its icon compiled-in, so no need to set it there.
+	// Set default icon for all windows.
+	// Win32 version has its icon compiled-in, so no need to set it there.
+#ifndef _WIN32
 	{
 		// we load it via icontheme to provide multi-size version.
 
