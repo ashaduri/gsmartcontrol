@@ -466,7 +466,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 			Glib::ustring theme_name = gtk_settings->property_gtk_theme_name().get_value();
 			debug_out_dump("app", "Current GTK theme: " << theme_name << "\n");
 			if (IsWindowsServer() || !IsWindows8OrGreater()) {
-				if (theme_name == "win32" || theme_name == "Windows") {
+				if (theme_name == "win32") {
 					debug_out_dump("app", "Windows with Classic theme support detected, switching to Adwaita theme.\n");
 					gtk_settings->property_gtk_theme_name().set_value("Adwaita");
 				}
