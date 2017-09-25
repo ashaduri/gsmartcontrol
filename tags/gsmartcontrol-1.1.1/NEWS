@@ -1,0 +1,213 @@
+Version 1.1.0, released on 2017-09-07
+	New Statistics, Temperature Log, Error Recovery, Physical and Directory
+		tabs.
+	General tab shows non-SMART device settings as well.
+	Attributes tab shows entries in "brief" format.
+	Error Log tab shows Extended error log by default (if supported).
+	Self-Test Log tab now shows Extended self-test log by default (if
+		supported).
+	GSmartControl now uses "-x" equivalent for retrieving data (as upposed to
+		"-a"); loading "-x" outputs as virtual drives is also supported.
+	Implemented ability to copy rows in CSV format from Attribute, Statistics
+		and Self-Test Log tables.
+	Implemented "Update Drive Database" functionality.
+	Windows: Drive letters are shown for each drive.
+	Scan time is shown under virtual drive icons.
+	Polkit is supported with gsmartcontrol-root script now.
+	Pcrecpp is no longer bundled, use system-installed one instead.
+	Smartmontools version 5.43 is required at runtime.
+	Other minor improvements and fixes.
+
+Version 1.0.2, released on 2017-07-21
+	Fixed incomplete capturing of smartctl output under Windows.
+	Added missing icons under Windows.
+	Fixed being able to turn on AODC even if unsupported.
+
+Version 1.0.1, released on 2017-06-19
+	Fixed compilation under macOS.
+	Fixed compilation under Fedora Rawhide.
+	Don't use -mtune=generic for all targets.
+
+Version 1.0.0, released on 2017-06-16
+	Ported to GTK+ 3.
+	Tweaked the user interface a bit.
+	Dropped support for Windows XP, 2000 and 2003 (they are no longer
+		supported by GTK+).
+	Fixed detection of newer system-installed smartmontools under Windows.
+
+Version 0.9.0, released on 2017-05-11
+	Implemented (untested) support for Linux-based Areca controllers with
+		enclosures.
+	Implemented (untested) support for Windows-based Areca controllers (thanks
+		to Richard Kagerer).
+	Implemented (untested) support for Linux-based HP controllers with cciss
+		and hpsa/hpahcisr drivers (thanks to Fabrice Bacchella).
+	Changes in Preferences no longer fail silently until rescan/restart.
+	Better drive detection under Windows after removable drives are detached.
+	Windows version is no longer marked as "dpi aware" since it's not
+		supported that well.
+	Drive attribute descriptions have been updated (including clarifications
+		for SSDs).
+	Added support for SSD-only and HDD-only vendor attributes.
+	Devices having only basic info can be displayed now in the info window.
+	Fixed BDRW drive detection (it was detected as a HDD).
+	Other minor improvements.
+	A number of issues have been fixed (including a crash).
+
+Version 0.8.7, released on 2012-08-11
+	Implemented support for Adaptec RAID 5805 controller and possibly other
+		Adaptec models as well (Linux).
+	Implemented support for Areca RAID controller detection under Linux
+		(untested).
+	Implemented support for 3ware 3w-sas-supported (twl) RAID controller
+		detection under Linux (untested).
+	Implemented support for systems with several different 3ware controllers
+		(twa/twe/twl).
+	Fixed invalid parsing of tw_cli output which caused non-detection of
+		drives and controllers with controller or port numbers greater than 9
+		if tw_cli was found (3ware linux, windows).
+	The duplicate drives are no longer shown for some Intel matrix controllers
+		under Windows; Intel RAID controllers are fully supported under
+		Windows now.
+	Added options to show device name and serial number under drive icons.
+	Updated SMART attribute definitions and added warnings for SSD lifetime
+		attributes.
+	gsmartcontrol-root has a new argument "--desktop=..." which replaces the
+		old positional argument; compatibility with the old invocation syntax
+		has been retained.
+	Completely documented the source using doxygen tags.
+	Added support for Fedora's consolehelper.
+	Made GSmartControl DPI-aware under Windows.
+	Fixed compilation issues with clang and gcc 4.7, as well as glib 2.31.x
+		and newer.
+	Fixed minor issues in NSIS installer.
+	Fixed other minor bugs and made minor improvements.
+
+Version 0.8.6, released on 2011-06-12
+	Support detecting drives behind 3ware controllers (Linux, Windows),
+		including tw_cli/cx/px mode in Windows. Having tw_cli is recommended
+		but not required.
+	Added support for specifying -d option and extra parameters via command
+		line, "Add Device" and "Preferences" dialogs. This change effectively
+		adds full support for multiple drives behind a single device name.
+	Beesu and su-to-root are supported by gsmartcontrol-root script now.
+	Completely revamped the attribute database and its handling, should be a
+		lot more usable and forward-compatible now; SSD attributes are also
+		included.
+	In-program help has been expanded considerably.
+	General improvements to user interface have been implemented (better GNOME
+		HIG compliance, better tooltips, dialogs, etc...).
+	Added ability to show smartctl output for devices whose info could not be
+		parsed fully.
+	Attributes in "brief" format are supported now.
+	The parser has been updated to reflect the recent changes in smartctl.
+	Quit and rescan operations are no longer denied without confirmation when
+		tests are running.
+	The Windows NSIS installer has been vastly improved.
+	Better support for Windows Vista and 7.
+	Changed copyright notices for files with Whatever License to use Unlicense.
+	Added other minor features and fixed quite a few bugs.
+
+Version 0.8.5, released on 2009-09-05
+	GSmartControl now uses XDG config directory for per-user configuration on
+		UNIX and CSIDL_PROFILE directory on Windows. Existing configuration is
+		migrated automatically.
+	The names are shown correctly for unsupported devices even with the latest
+		smartctl snapshots now.
+	Smartctl SVN revision is shown (if available).
+	The progress bars update properly when parallel tests are run.
+	Windows: GSmartControl should be able to operate on any valid filesystem
+		path (not just locale-representable ones).
+	Windows: GSmartControl is now officially compilable on x86_64 via mingw64.
+	Fixed compilation under very old gtkmm/libglademm, and with gcc 4.4.
+	Fixed parsing of multiple error types in SMART error log.
+	Added minor features and fixed miscellaneous bugs.
+
+Version 0.8.4, released on 2009-03-23
+	Linux Software RAID devices are blacklisted now. (backported from Debian).
+	Attributes tab is before the capabilities tab now.
+	A man page has been generously contributed by Giuseppe Iuculano
+		<giuseppe@iuculano.it>.
+	Smartctl version now includes the CVS snapshot date (if available).
+	Windows: Look for "smartctl-nc.exe" instead of "smartctl.exe" by default.
+	Windows: Use smartmontools-supplied smartctl-nc.exe by default (if found).
+	Other minor changes (mainly Debian backports).
+
+Version 0.8.3, released on 2008-12-27
+	A random "Smartctl returned an empty output" error on Windows was fixed.
+		Thanks to Zurab Khetsuriani for testing.
+	Fixed a parser issue which prevented running self-tests in Windows.
+	The supplied icon (hopefully) shows correctly in Windows 2000 now.
+	This release adds an official support for Windows 2000 SP4.
+	Added scripts to allow GSmartControl to read smartctl data from
+		cron-generated files. This allows users to read somewhat recent
+		smartctl information without having to run GSmartControl as root.
+		Generously contributed by Alex Butcher <alex dot butcher 'at'
+		assursys.co.uk>.
+	Configure script correctly aborts instead of printing a warning if gtkmm
+		or libglademm (if needed) is not found.
+	Configure script now accepts --enable-windows-console,
+		--disable-abort-if-no-gtkmm, --disable-abort-if-no-glade-reader,
+		as well as Windows-supporting "auto" for --enable-nsis-wine and
+		--with-nsis.
+	Configure's --with-win32-env has been renamed to --with-windows-dlls.
+	The "About" dialog shows version information now.
+	Minor bugs were fixed.
+
+Version 0.8.2, released on 2008-12-10
+	Fixed gsmartcontrol_root.sh script to support distributions with no
+		/usr/sbin in their users' paths (thanks to Erwan Velu).
+	Added desktop auto-detection to gsmartcontrol_root.sh script. This allows
+		us to use only one desktop file (thanks to Erwan Velu).
+	Added Debian package directory (named "debian.dist" for now to avoid
+		control file conflicts with Build Service).
+	Renamed gsmartcontrol_root.sh to gsmartcontrol-root, to make Debian happy.
+	Added make targets for Windows packages (zip and NSIS).
+	Fixed Windows-related issues (Vista is fully supported now).
+	Fixed minor bugs:
+		Smartctl parser is win32-locale-aware now.
+		No more unnecessary parsing.
+		No segfault on exit under Windows and Solaris.
+		A friendlier message is displayed if smartctl was not found.
+		No highlighted labels when switching tabs in Information window.
+
+Version 0.8.1, released on 2008-11-11
+	Disabled Linux "by-id" drive detection - it's unreliable on some broken
+		systems.
+	Added some more attribute descriptions.
+	Our names for attributes override smartctls' now.
+	Added a proper "Add Device" dialog for Windows.
+	Added an icon and resource file for Windows.
+	Fixed minor bugs.
+
+Version 0.8.0rc4, released on 2008-10-20
+	FreeBSD support (tested with DesktopBSD 1.6 (FreeBSD 6.3) / x86).
+	NetBSD support (tested with NetBSD 4.0.1 / x86).
+	OpenBSD support (tested with OpenBSD 4.3 / x86-64 / gcc-3.3.5).
+	Solaris/gcc support (tested with Solaris 10 / x86 / gcc-3.4.3 / blastwave).
+	Solaris/sunstudio support (tested with Solaris 10 / x86 / sunstudio12 /
+		sunfreeware).
+	Code to support Windows, Mac OS X, QNX.
+	Support of older pcre versions (at least 4.5, maybe older too).
+	Added gsmartcontrol_root.sh script to easily run gsmartcontrol as root.
+	Improved .desktop files.
+	License for tests and examples is legally more correct now.
+	Minor bugfixes.
+
+Version 0.8.0rc3, released on 2008-10-08
+	Added support for udevless Linux distributions by providing a fallback
+		/proc/partitions-based drive detection method. The new method adds
+		support for Linux 2.4 and older systems. Thanks to Paul Marwick for
+		reporting and testing.
+	Fixed invalid error messages with directory-related operations.
+	Fixed invalid verbosity levels of console output of debug messages in
+		non-debug builds.
+	Improved rpm spec file - now supports building on OpenSUSE build
+		service with various distributions as targets.
+
+Version 0.8.0rc2, released on 2008-10-05
+	Fixed compilation under gcc 4.3. Thanks to Peter Linnell for reporting.
+	Removed test data (there's a lot of it and it's unnecessary).
+
+Version 0.8.0rc1, released on 2008-10-01
+	Initial public release.
