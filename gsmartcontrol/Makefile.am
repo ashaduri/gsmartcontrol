@@ -6,7 +6,7 @@ SUBDIRS = data debian.dist src
 
 
 # These files are actually needed for compilation.
-noinst_DATA = AUTHORS.txt LICENSE_gsmartcontrol.txt README.txt
+noinst_DATA = AUTHORS.txt LICENSE_gsmartcontrol.txt
 
 
 # For the files to be bundled with the distribution, specify them in

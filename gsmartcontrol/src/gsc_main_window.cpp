@@ -16,6 +16,7 @@
 #include "hz/fs_file.h"  // hz::File
 #include "hz/debug.h"
 #include "hz/scoped_ptr.h"
+#include "hz/launch_url.h"
 #include "rconfig/rconfig_mini.h"
 #include "applib/storage_detector.h"
 #include "applib/smartctl_parser.h"
@@ -29,7 +30,6 @@
 #include "gsc_init.h"  // app_quit()
 #include "gsc_about_dialog.h"
 #include "gsc_info_window.h"
-#include "gsc_help_window.h"
 #include "gsc_preferences_window.h"
 #include "gsc_executor_log_window.h"
 #include "gsc_executor_error_dialog.h"  // gsc_executor_error_dialog_show
@@ -267,10 +267,8 @@ bool GscMainWindow::create_widgets()
 	"	</menu>"
 
 	"	<menu action='help_menu'>"
-	"		<menuitem action='" APP_ACTION_NAME(action_general_help) "' />"
-	"		<menuitem action='" APP_ACTION_NAME(action_permission_problems) "' />"
-	"		<menuitem action='" APP_ACTION_NAME(action_how_to_enable_smart) "' />"
-	"		<menuitem action='" APP_ACTION_NAME(action_report_bug) "' />"
+	"		<menuitem action='" APP_ACTION_NAME(action_online_documentation) "' />"
+	"		<menuitem action='" APP_ACTION_NAME(action_support) "' />"
 	"		<menuitem action='" APP_ACTION_NAME(action_about) "' />"
 	"	</menu>"
 
@@ -380,21 +378,13 @@ bool GscMainWindow::create_widgets()
 
 	actiongroup_main->add(Gtk::Action::create("help_menu", "_Help"));
 
-		action = Gtk::Action::create(APP_ACTION_NAME(action_general_help), Gtk::Stock::HELP, "A_ll Help Topics");
-		actiongroup_main->add((action_map[action_general_help] = action), Gtk::AccelKey("F1"),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_general_help));
+		action = Gtk::Action::create(APP_ACTION_NAME(action_online_documentation), Gtk::Stock::HELP);
+		actiongroup_main->add((action_map[action_online_documentation] = action), Gtk::AccelKey("F1"),
+				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_online_documentation));
 
-		action = Gtk::Action::create(APP_ACTION_NAME(action_permission_problems), "Resolving _Permission Problems");
-		actiongroup_main->add((action_map[action_permission_problems] = action),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_permission_problems));
-
-		action = Gtk::Action::create(APP_ACTION_NAME(action_how_to_enable_smart), "How to _Enable SMART Permanently");
-		actiongroup_main->add((action_map[action_how_to_enable_smart] = action),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_how_to_enable_smart));
-
-		action = Gtk::Action::create(APP_ACTION_NAME(action_report_bug), "_Reporting Bugs");
-		actiongroup_main->add((action_map[action_report_bug] = action),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_report_bug));
+		action = Gtk::Action::create(APP_ACTION_NAME(action_support), "Support");
+		actiongroup_main->add((action_map[action_support] = action),
+				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_support));
 
 		action = Gtk::Action::create(APP_ACTION_NAME(action_about), Gtk::Stock::ABOUT);
 		actiongroup_main->add((action_map[action_about] = action),
@@ -623,51 +613,15 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 			break;
 		}
 
-		case action_general_help:
+		case action_online_documentation:
 		{
-			GscHelpWindow* win = GscHelpWindow::create();  // destroyed on close
-			// win->set_transient_for(*this);  // for "destroy with parent", always-on-top
-			win->show();
-			while(g_main_context_pending(NULL)) {
-				g_main_context_iteration(NULL, false);
-			}
-			win->set_topic("Begin");  // special mark, top of the text.
+			hz::launch_url(gobj(), "https://gsmartcontrol.sourceforge.io/documentation.html");
 			break;
 		}
 
-		case action_permission_problems:
+		case action_support:
 		{
-			GscHelpWindow* win = GscHelpWindow::create();  // destroyed on close
-			// win->set_transient_for(*this);  // for "destroy with parent", always-on-top
-			win->show();
-			while(g_main_context_pending(NULL)) {
-				g_main_context_iteration(NULL, false);
-			}
-			win->set_topic("Permission Problems");
-			break;
-		}
-
-		case action_how_to_enable_smart:
-		{
-			GscHelpWindow* win = GscHelpWindow::create();  // destroyed on close
-			// win->set_transient_for(*this);  // for "destroy with parent", always-on-top
-			win->show();
-			while(g_main_context_pending(NULL)) {
-				g_main_context_iteration(NULL, false);
-			}
-			win->set_topic("Enable SMART Permanently");
-			break;
-		}
-
-		case action_report_bug:
-		{
-			GscHelpWindow* win = GscHelpWindow::create();  // destroyed on close
-			// win->set_transient_for(*this);  // for "destroy with parent", always-on-top
-			win->show();
-			while(g_main_context_pending(NULL)) {
-				g_main_context_iteration(NULL, false);
-			}
-			win->set_topic("Reporting Bugs");
+			hz::launch_url(gobj(), "https://gsmartcontrol.sourceforge.io/support.html");
 			break;
 		}
 
