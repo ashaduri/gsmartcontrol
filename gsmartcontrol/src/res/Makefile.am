@@ -22,7 +22,7 @@ EXTRA_libres_a_SOURCES = gsc_about_dialog.ui.cpp \
 	gsc_main_window.ui.cpp \
 	gsc_preferences_window.ui.cpp \
 	gsc_text_window.ui.cpp \
-	AUTHORS.txt.cpp LICENSE_gsmartcontrol.txt.cpp README.txt.cpp
+	AUTHORS.txt.cpp LICENSE_gsmartcontrol.txt.cpp
 
 # list all intermediate files here (.tmp_ui files are cleaned automatically by make, but it won't hurt)
 mostlyclean-local:
