@@ -31,9 +31,9 @@ gsmartcontrol_LDADD = $(top_builddir)/src/applib/libapplib.a \
 	$(top_builddir)/src/res/libres.a $(WINRES_OBJ)
 
 noinst_HEADERS = global_macros.h gsc_about_dialog.h gsc_add_device_window.h gsc_executor_error_dialog.h \
-	gsc_executor_log_window.h gsc_help_window.h gsc_info_window.h gsc_init.h gsc_main_window.h \
+	gsc_executor_log_window.h gsc_info_window.h gsc_init.h gsc_main_window.h \
 	gsc_main_window_iconview.h gsc_preferences_window.h gsc_settings.h gsc_text_window.h
 gsmartcontrol_SOURCES = $(WIN_MAIN_SRC) gsc_about_dialog.cpp gsc_add_device_window.cpp \
-	gsc_executor_error_dialog.cpp gsc_executor_log_window.cpp gsc_help_window.cpp gsc_info_window.cpp \
+	gsc_executor_error_dialog.cpp gsc_executor_log_window.cpp gsc_info_window.cpp \
 	gsc_init.cpp gsc_main.cpp gsc_main_window.cpp gsc_preferences_window.cpp
 

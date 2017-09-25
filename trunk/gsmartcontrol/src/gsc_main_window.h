@@ -97,10 +97,8 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 			action_update_drivedb,
 			action_preferences,
 
-			action_general_help,
-			action_permission_problems,
-			action_how_to_enable_smart,
-			action_report_bug,
+			action_online_documentation,
+			action_support,
 			action_about
 		};
 

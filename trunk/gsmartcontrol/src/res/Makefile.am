@@ -18,7 +18,6 @@ libres_a_SOURCES =
 EXTRA_libres_a_SOURCES = gsc_about_dialog.ui.cpp \
 	gsc_add_device_window.ui.cpp \
 	gsc_executor_log_window.ui.cpp \
-	gsc_help_window.ui.cpp \
 	gsc_info_window.ui.cpp \
 	gsc_main_window.ui.cpp \
 	gsc_preferences_window.ui.cpp \

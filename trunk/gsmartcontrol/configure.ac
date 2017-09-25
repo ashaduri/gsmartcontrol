@@ -309,12 +309,11 @@ AC_SUBST(WINDOWS_ARCH)
 RES_FILES="src/res/gsc_about_dialog.ui \
 	src/res/gsc_add_device_window.ui \
 	src/res/gsc_executor_log_window.ui \
-	src/res/gsc_help_window.ui \
 	src/res/gsc_info_window.ui \
 	src/res/gsc_main_window.ui \
 	src/res/gsc_preferences_window.ui \
 	src/res/gsc_text_window.ui \
-	AUTHORS.txt  LICENSE_gsmartcontrol.txt README.txt"
+	AUTHORS.txt  LICENSE_gsmartcontrol.txt"
 
 # Unfortunately, _SOURCES can't contain substitutions, so we use LIBADD.
 RES_LIBADD=""  # .o file to put into .a, libres_a_LIBADD, libres_a_DEPENDENCIES.
