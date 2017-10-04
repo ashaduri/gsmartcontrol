@@ -336,7 +336,7 @@ do  # on separate line for portability
 	fi
 
 	if test "$RES_BASE_EXT" = "ui"; then
-		RES_LIBADD="$RES_LIBADD $RES_BASE_NOEXT.ui.$ac_objext"  # file.ui.o or file.glade.o
+		RES_LIBADD="$RES_LIBADD $RES_BASE_NOEXT.ui.$ac_objext"  # file.ui.o
 		RES_TARGETS="$RES_TARGETS
 $RES_BASE_NOEXT.ui.cpp: $RES_FILE_CANON
 	\"\$(top_srcdir)/file2csource.sh\" \"$RES_FILE_CANON\" \"$RES_BASE_NOEXT.ui.cpp\" \"$RES_BASE_NOEXT\"_ui

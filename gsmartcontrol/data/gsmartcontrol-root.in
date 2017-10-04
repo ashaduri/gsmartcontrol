@@ -71,7 +71,7 @@ fi
 
 
 # They're basically the same, only the order is different.
-# pkexec is for PolKit
+# pkexec is for PolKit.
 # sux requires xterm to ask for the password.
 # xdg-su is basically like this script, except worse :)
 # su-to-root is a debian/ubuntu official method (although gksu is available).
@@ -102,7 +102,7 @@ if [ "$GSMARTCONTROL_SU" = "" ]; then
 
 	if [ "$found_su" = "" ]; then
 		xmessage "Error launching ${prog_name}: No suitable su mechanism found.
-Try installing kdesu, gnomesu, gksu, beesu or sux first.";
+Try installing PolKit, kdesu, gnomesu, gksu, beesu or sux first.";
 		exit 1;
 	fi
 fi
@@ -138,7 +138,7 @@ if [ "$GSMARTCONTROL_SU" != "" ]; then
 	full_cmd="$GSMARTCONTROL_SU '$EXEC_BIN $final_args_quoted'";
 
 elif [ "$found_su" = "pkexec" ]; then
-	full_cmd="pkexec --disable-internal-agent $EXEC_BIN $final_args_quoted";
+	full_cmd="pkexec --disable-internal-agent $EXEC_BIN $final_args_quoted --gdk-scale='$GDK_SCALE' --gdk-dpi-scale='$GDK_DPI_SCALE'";
 
 elif [ "$found_su" = "sux" ]; then
 	full_cmd="xterm -e sux -c '$EXEC_BIN $final_args_quoted'";

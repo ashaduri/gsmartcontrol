@@ -27,11 +27,11 @@
 class GscInfoWindow : public AppUIResWidget<GscInfoWindow, true> {
 	public:
 
-		// name of glade/ui file without a .glade/.ui extension and quotes
+		// name of ui file without a .ui extension and quotes
 		APP_UI_RES_DATA_INIT(gsc_info_window);
 
 
-		/// Constructor, gtkbuilder/glade needs this.
+		/// Constructor, GtkBuilder needs this.
 		GscInfoWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui);
 
 		/// Virtual destructor

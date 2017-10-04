@@ -1,9 +1,9 @@
 
 # Disable implicit suffix rules for these extensions.
-# The problem is that make sees the .glade.cpp or .ui.cpp files
-# with their .glade prerequisites, and decides to rebuild the
-# (already existing) .glade files by using .glade.cpp files.
-# Implicit rules are to blame, so disable them for .glade.
+# The problem is that make sees the .ui.cpp files
+# with their .ui prerequisites, and decides to rebuild the
+# (already existing) .ui files by using .ui.cpp files.
+# Implicit rules are to blame, so disable them for .ui.
 SUFFIXES = .ui .txt
 
 AM_CPPFLAGS =

@@ -26,7 +26,7 @@ class AppUiResTestWindow : public AppUIResWidget<AppUiResTestWindow, false>
 {
 	public:
 
-		// name of glade/ui file without a .glade/.ui extension and quotes
+		// name of ui file without a .ui extension and quotes
 		APP_UI_RES_DATA_INIT(app_ui_res_test_window);
 
 

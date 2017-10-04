@@ -1,3 +1,12 @@
+Version 1.1.2, released on
+
+Version 1.1.1, released on 2017-09-25
+	Windows: Use Adwaita GTK+ theme for systems which support Classic Windows
+		theme, since the default win32 GTK+ theme is broken in it; this
+		includes Windows 7 and Windows Server.
+	Statistics entry values are formatted with commas for readability.
+	Moved help information to website.
+
 Version 1.1.0, released on 2017-09-07
 	New Statistics, Temperature Log, Error Recovery, Physical and Directory
 		tabs.

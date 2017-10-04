@@ -24,7 +24,7 @@
 class GscAboutDialog : public AppUIResWidget<GscAboutDialog, false, Gtk::AboutDialog> {
 	public:
 
-		// name of glade/ui file without a .glade/.ui extension and quotes
+		// name of ui file without a .ui extension and quotes
 		APP_UI_RES_DATA_INIT(gsc_about_dialog);
 
 		// we need the license file to show it.
@@ -35,7 +35,7 @@ class GscAboutDialog : public AppUIResWidget<GscAboutDialog, false, Gtk::AboutDi
 		HZ_RES_DATA_INIT_NAMED(AUTHORS_txt, "AUTHORS.txt", AuthorsTextResData);
 
 
-		/// Constructor, gtkbuilder/glade needs this.
+		/// Constructor, GtkBuilder needs this.
 		GscAboutDialog(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui);
 
 		/// Virtual destructor

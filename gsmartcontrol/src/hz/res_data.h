@@ -34,7 +34,7 @@ Configuration macros: HZ_ENABLE_COMPILED_RES_DATA (0 | 1).
 // Compiled-in buffers:
 
 /// Declare that we have a binary chunk res_name.
-/// (You may use this e.g. with glade xml contents, putting it into your window class).
+/// (You may use this e.g. with GtkBuilder xml contents, putting it into your window class).
 #define HZ_RES_DATA_COMPILED_INIT_NAMED(res_name, dummy, class_name) \
 	struct class_name { \
 		class_name() \
