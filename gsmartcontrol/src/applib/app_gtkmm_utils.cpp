@@ -63,24 +63,6 @@ void app_gtkmm_set_widget_tooltip(Gtk::Widget& widget,
 
 
 
-bool app_gtkmm_icon_theme_has_icon(Glib::RefPtr<Gtk::IconTheme> theme,
-		const Glib::ustring& icon_name, int size)
-{
-	if (!theme || !theme->has_icon(icon_name))  // check if it exists first, or exception may be thrown.
-		return false;
-
-	std::vector<int> sizes = theme->get_icon_sizes(icon_name);
-
-	for (std::vector<int>::const_iterator iter = sizes.begin(); iter != sizes.end(); ++iter) {
-		if (*iter == size || *iter == -1)  // -1 means scalable
-			return true;
-	}
-
-	return false;
-}
-
-
-
 namespace {
 
 	/// This has been copied from _g_utf8_make_valid() (glib-2.20.4).

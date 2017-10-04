@@ -68,11 +68,6 @@ int app_gtkmm_create_tree_view_column(Gtk::TreeModelColumn<T>& mcol, Gtk::TreeVi
 
 
 
-/// Check whether the icon theme has the specified icon of size \c size.
-bool app_gtkmm_icon_theme_has_icon(Glib::RefPtr<Gtk::IconTheme> theme,
-		const Glib::ustring& icon_name, int size);
-
-
 /// Get Glib::ustring from gchar*, freeing gchar*.
 Glib::ustring app_ustring_from_gchar(gchar* str);
 
