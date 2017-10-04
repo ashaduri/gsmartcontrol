@@ -34,11 +34,11 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 
 		friend class GscMainWindowIconView;  // It needs our privates
 
-		// name of glade/ui file without a .glade/.ui extension and quotes
+		// name of ui file without a .ui extension and quotes
 		APP_UI_RES_DATA_INIT(gsc_main_window);
 
 
-		/// Constructor, gtkbuilder/glade needs this.
+		/// Constructor, GtkBuilder needs this.
 		GscMainWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui);
 
 		/// Virtual destructor

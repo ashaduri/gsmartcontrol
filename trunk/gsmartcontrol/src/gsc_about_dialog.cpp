@@ -23,7 +23,7 @@
 
 
 
-// glade/gtkbuilder needs this constructor
+// GtkBuilder needs this constructor
 GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
 		: AppUIResWidget<GscAboutDialog, false, Gtk::AboutDialog>(gtkcobj, ref_ui)
 {

@@ -35,8 +35,7 @@
 /// \def APP_UI_RES_DATA_INIT(res_name)
 /// Use these in window class definitions to declare ui resources.
 /// E.g. APP_UI_RES_DATA_INIT(main_window) will search for
-/// main_window.glade or main_window.ui (depending on whether
-/// you're using libglade or gtkbuilder) in data file search paths.
+/// main_window.ui in data file search paths.
 /// Or, if you're using compiled-in buffers, it will make them available.
 #define APP_UI_RES_DATA_INIT(res_name) \
 	HZ_RES_DATA_INIT_NAMED(res_name##_ui, #res_name ".ui", UIResDataBase); \
@@ -91,10 +90,10 @@ inline bool app_ui_res_create_from(app_ui_res_ref_t& ref,
 
 
 
-// These allow easy attaching of glade widget signals to member functions
+// These allow easy attaching of gtkbuilder widget signals to member functions
 
 /// Connect member function (callback) to signal \c signal_name on widget
-/// \c ui_element, where \c ui_element is the widget's glade/gtkbuilder name.
+/// \c ui_element, where \c ui_element is the widget's gtkbuilder name.
 #define APP_UI_RES_CONNECT(ui_element, signal_name, callback) \
 	if (true) { \
 		if (!ui_element) \
@@ -107,7 +106,7 @@ inline bool app_ui_res_create_from(app_ui_res_ref_t& ref,
 
 /// Connect member function (callback) with a name of \c on_<widget_name>_<signal_name>
 /// to signal \c signal_name on widget \c ui_element, where \c ui_element is the
-/// widget's glade/gtkbuilder name.
+/// widget's gtkbuilder name.
 #define APP_UI_RES_AUTO_CONNECT(ui_element, signal_name) \
 	APP_UI_RES_CONNECT(ui_element, signal_name, on_ ## ui_element ## _ ## signal_name)
 
@@ -115,7 +114,7 @@ inline bool app_ui_res_create_from(app_ui_res_ref_t& ref,
 
 
 
-/// Inherit this when using Glade-enabled windows (or any other glade-enabled objects).
+/// Inherit this when using GtkBuilder-enabled windows (or any other GtkBuilder-enabled objects).
 /// \c Child is the child class that inherits all the functionality of having instance lifetime
 /// management and other benefits.
 /// If \c MultiInstance is false, create() will return the same instance each time.
@@ -137,7 +136,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 
 			std::string error;
 			app_ui_res_ref_t ui = Gtk::Builder::create();
-			const typename Child::UIResData data;  // this holds the glade data
+			const typename Child::UIResData data;  // this holds the GtkBuilder data
 
 			// this does the actual object construction
 			bool success = app_ui_res_create_from(ui, data.buf, data.size, error);
@@ -226,13 +225,13 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 
 	protected:
 
-		typedef Child self_type;  ///< This is needed by APP_GLADE_ macros
-		typedef WidgetType widget_type;  ///< This is needed by APP_GLADE_ macros
+		typedef Child self_type;  ///< This is needed by APP_UI_ macros
+		typedef WidgetType widget_type;  ///< This is needed by APP_UI_ macros
 
 
 		// protected constructor / destructor, use create() / destroy() instead of new / delete.
 
-		/// Glade needs this constructor in a child.
+		/// GtkBuilder needs this constructor in a child.
 		/// BaseObjectType is a C type, defined in specific Gtk:: widget class.
 		AppUIResWidget(typename WidgetType::BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
 				: WidgetType(gtkcobj), ref_ui_(ref_ui)
@@ -240,7 +239,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 			// manually connecting signals:
 			// this->signal_delete_event().connect(sigc::mem_fun(*this, &MainWindow::on_main_window_delete));
 
-			// signals of glade-created objects:
+			// signals of GtkBuilder-created objects:
 			// Gtk::ToolButton* rescan_devices_toolbutton = 0;
 			// APP_UI_RES_AUTO_CONNECT(rescan_devices_toolbutton, clicked);
 

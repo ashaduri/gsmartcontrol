@@ -38,14 +38,14 @@ template<class InstanceSwitch>
 class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, InstanceSwitch::multi_instance> {
 	public:
 
-		// name of glade/ui file without a .glade/.ui extension and quotes
+		// name of ui file without a .ui extension and quotes
 		APP_UI_RES_DATA_INIT(gsc_text_window);
 
-		/// Self type, needed for glade, not inherited from parent because of templates
+		/// Self type, needed for GtkBuilder, not inherited from parent because of templates
 		typedef GscTextWindow<InstanceSwitch> self_type;
 
 
-		/// Constructor, gtkbuilder/glade needs this.
+		/// Constructor, GtkBuilder needs this.
 		GscTextWindow(typename Gtk::Window::BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
 				: AppUIResWidget<GscTextWindow<InstanceSwitch>, InstanceSwitch::multi_instance>(gtkcobj, ref_ui)
 		{

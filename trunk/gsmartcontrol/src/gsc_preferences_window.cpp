@@ -33,7 +33,7 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		typedef GscPreferencesDeviceOptionsTreeView self_type;  ///< Self type, needed for CONNECT_VIRTUAL
 
 
-		/// Constructor, gtkbuilder/glade needs this.
+		/// Constructor, GtkBuilder needs this.
 		GscPreferencesDeviceOptionsTreeView(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
 				: Gtk::TreeView(gtkcobj), preferences_window(0)
 		{

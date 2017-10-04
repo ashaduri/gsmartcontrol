@@ -136,9 +136,9 @@
                 <property name="is_focus">True</property>
                 <property name="events">GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="margin">10</property>
-                <property name="item_width">130</property>
+                <property name="item_width">250</property>
                 <property name="spacing">3</property>
-                <property name="row_spacing">8</property>
+                <property name="row_spacing">20</property>
                 <property name="column_spacing">5</property>
               </object>
             </child>

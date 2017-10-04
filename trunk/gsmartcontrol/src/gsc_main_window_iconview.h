@@ -29,7 +29,7 @@
 
 
 /// The icon view of the main window (shows a drive list).
-/// Note: The IconView must have a fixed icon width set (e.g. in glade file).
+/// Note: The IconView must have a fixed icon width set (e.g. in .ui file).
 /// Otherwise, it doesn't re-compute it when clearing and adding new icons.
 class GscMainWindowIconView : public Gtk::IconView {
 	public:
@@ -47,7 +47,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 		};
 
 
-		/// Constructor, gtkbuilder/glade needs this.
+		/// Constructor, GtkBuilder needs this.
 		GscMainWindowIconView(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
 				: Gtk::IconView(gtkcobj), num_icons(0), main_window(0), empty_view_message(message_none)
 		{
@@ -57,7 +57,15 @@ class GscMainWindowIconView : public Gtk::IconView {
 			columns.add(col_description);
 
 			columns.add(col_pixbuf);
+
+#if GTK_CHECK_VERSION(3, 10, 0)
+			// For high quality rendering with GDK_SCALE=2
+			this->pack_start(cell_renderer_pixbuf, false);
+			this->set_cell_data_func(cell_renderer_pixbuf,
+					sigc::mem_fun(this, &GscMainWindowIconView::on_cell_data_render));
+#else
 			this->set_pixbuf_column(col_pixbuf);
+#endif
 
 			columns.add(col_drive_ptr);
 
@@ -78,18 +86,14 @@ class GscMainWindowIconView : public Gtk::IconView {
 				// nothing
 			}
 
-			// Try Gnome icons icons first, they are usually more consistent with Gnome desktop
-			// (this should work only if gnome-settings-daemon is running, so no harm on other desktops).
-			// The problem with stock gtk icons is that they are not available in 48x48 size, so
-			// confirm all sizes manually.
-
-			if (app_gtkmm_icon_theme_has_icon(default_icon_theme, "gnome-dev-harddisk", 48))
-				hd_icon = default_icon_theme->load_icon("gnome-dev-harddisk", 48, Gtk::IconLookupFlags(0));
-
-			if (!hd_icon && app_gtkmm_icon_theme_has_icon(default_icon_theme, "gtk-harddisk", 48))
-				hd_icon = default_icon_theme->load_icon("gtk-harddisk", 48, Gtk::IconLookupFlags(0));
-
-			if (!hd_icon) {  // still no luck, use bundled ones.
+			// Try XDG version first
+			hd_icon = default_icon_theme->load_icon("drive-harddisk", 64, get_scale_factor(), Gtk::IconLookupFlags(0));
+			if (!hd_icon) {
+				// Before gtk 3.10 it was called gtk-harddisk.
+				hd_icon = default_icon_theme->load_icon("gtk-harddisk", 64, get_scale_factor(), Gtk::IconLookupFlags(0));
+			}
+			if (!hd_icon) {
+				// Still no luck, use bundled ones.
 				std::string icon_file = hz::data_file_find("icon_hdd.png");
 				if (!icon_file.empty()) {
 					try {
@@ -98,18 +102,14 @@ class GscMainWindowIconView : public Gtk::IconView {
 				}
 			}
 
-			// last resort. gtk has gtk-harddisk built-in. it may not be the right size, but what else can we do?
-			if (!hd_icon && default_icon_theme)
-				hd_icon = default_icon_theme->load_icon("gtk-harddisk", 48, Gtk::IconLookupFlags(0));
-
-
-			if (app_gtkmm_icon_theme_has_icon(default_icon_theme, "gnome-dev-cdrom", 48))
-				cddvd_icon = default_icon_theme->load_icon("gnome-dev-cdrom", 48, Gtk::IconLookupFlags(0));
-
-			if (!cddvd_icon && app_gtkmm_icon_theme_has_icon(default_icon_theme, "gtk-cdrom", 48))
-				cddvd_icon = default_icon_theme->load_icon("gtk-cdrom", 48, Gtk::IconLookupFlags(0));
-
-			if (!cddvd_icon) {  // still no luck, use bundled ones.
+			// Try XDG version first
+			cddvd_icon = default_icon_theme->load_icon("media-optical", 64, get_scale_factor(), Gtk::IconLookupFlags(0));
+			if (!cddvd_icon) {
+				// Before gtk 3.10 it was called gtk-cdrom.
+				cddvd_icon = default_icon_theme->load_icon("gtk-cdrom", 64, get_scale_factor(), Gtk::IconLookupFlags(0));
+			}
+			if (!cddvd_icon) {
+				// Still no luck, use bundled ones.
 				std::string icon_file = hz::data_file_find("icon_cddvd.png");
 				if (!icon_file.empty()) {
 					try {
@@ -117,10 +117,6 @@ class GscMainWindowIconView : public Gtk::IconView {
 					} catch (...) { }  // ignore exceptions
 				}
 			}
-
-			if (!cddvd_icon && default_icon_theme)
-				cddvd_icon = default_icon_theme->load_icon("gtk-cdrom", 48, Gtk::IconLookupFlags(0));
-
 
 			this->signal_item_activated().connect(sigc::mem_fun(*this,
 					&self_type::on_iconview_item_activated) );
@@ -189,6 +185,35 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 
+#if GTK_CHECK_VERSION(3, 10, 0)
+		/// Cell data renderer (needed for high quality icons in GDK_SCALE=2).
+		/// We have to use Cairo surfaces, because pixbufs are scaled by GtkIconView.
+		void on_cell_data_render(const Gtk::TreeModel::const_iterator& iter)
+		{
+			Gtk::TreeRow row = *iter;
+			Glib::RefPtr<Gdk::Pixbuf> pixbuf = row[col_pixbuf];
+
+			// Gtkmm property_surface() doesn't work, so use plain C.
+			// https://bugzilla.gnome.org/show_bug.cgi?id=788513
+			// Also, Gtkmm doesn't have gdk_cairo_surface_create_from_pixbuf() wrapper.
+			// https://bugzilla.gnome.org/show_bug.cgi?id=788533
+
+// 			Cairo::Format format = Cairo::FORMAT_ARGB32;
+// 			if (pixbuf->get_n_channels() == 3) {
+// 				format = Cairo::FORMAT_RGB24;
+// 			}
+// 			Cairo::RefPtr<Cairo::Surface> surface = get_window()->create_similar_image_surface(
+// 					format, pixbuf->get_width(), pixbuf->get_height(), get_scale_factor());
+// 			cell_renderer_pixbuf.property_surface().set_value(surface);
+
+			// gdk_cairo_surface_create_from_pixbuf() (and create_similar_image_surface()) from gtk 3.10.
+			cairo_surface_t* surface = gdk_cairo_surface_create_from_pixbuf(pixbuf->gobj(), get_scale_factor(), get_window()->gobj());
+			g_object_set(G_OBJECT(cell_renderer_pixbuf.gobj()), "surface", surface, NULL);
+			cairo_surface_destroy(surface);
+		}
+#endif
+
+
 		/// Add a drive entry to the icon view
 		void add_entry(StorageDeviceRefPtr drive, bool scroll_to_it = false)
 		{
@@ -241,13 +266,19 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 			// it needs this space to be symmetric (why?);
 			std::string name;  // = "<big>" + drive->get_device_with_type() + " </big>\n";
+			Glib::ustring drive_letters = Glib::Markup::escape_text(drive->format_drive_letters());
+			if (drive_letters.empty()) {
+				drive_letters = "not mounted";
+			}
 
 			// note: if this wraps, it becomes left-aligned in gtk <= 2.10.
 			name += (drive->get_model_name().empty() ? Glib::ustring("Unknown model") : Glib::Markup::escape_text(drive->get_model_name()));
 			if (rconfig::get_data<bool>("gui/icons_show_device_name")) {
 				if (!drive->get_is_virtual()) {
 					name += "\n" + Glib::Markup::escape_text(drive->get_device_with_type());
-					name += " (" + Glib::Markup::escape_text(drive->format_drive_letters()) + ")";
+				#ifdef _WIN32
+					name += " (" + drive_letters + ")";
+				#endif
 				} else if (!drive->get_virtual_filename().empty()) {
 					name += "\n" + Glib::Markup::escape_text(drive->get_virtual_filename());
 				}
@@ -274,9 +305,11 @@ class GscMainWindowIconView : public Gtk::IconView {
 			} else {
 				tooltip_strs.push_back("Device: <b>" + Glib::Markup::escape_text(drive->get_device_with_type()) + "</b>");
 			}
-			if (!drive->format_drive_letters().empty()) {
-				tooltip_strs.push_back("Drive letters: <b>" + Glib::Markup::escape_text(drive->format_drive_letters()) + "</b>");
-			}
+
+		#ifdef _WIN32
+			tooltip_strs.push_back("Drive letters: <b>" + drive_letters + "</b>");
+		#endif
+
 			if (!drive->get_serial_number().empty()) {
 				tooltip_strs.push_back("Serial number: <b>" + Glib::Markup::escape_text(drive->get_serial_number()) + "</b>");
 			}
@@ -302,22 +335,24 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 			StorageProperty health_prop = drive->get_health_property();
 			if (health_prop.warning != StorageProperty::warning_none && health_prop.generic_name == "overall_health") {
-				icon = icon->copy();  // work on a copy
-				if (icon->get_colorspace() == Gdk::COLORSPACE_RGB && icon->get_bits_per_sample() == 8) {
-					int n_channels = icon->get_n_channels();
-					int icon_width = icon->get_width();
-					int icon_height = icon->get_height();
-					int rowstride = icon->get_rowstride();
-					guint8* pixels = icon->get_pixels();
+				if (icon) {
+					icon = icon->copy();  // work on a copy
+					if (icon->get_colorspace() == Gdk::COLORSPACE_RGB && icon->get_bits_per_sample() == 8) {
+						int n_channels = icon->get_n_channels();
+						int icon_width = icon->get_width();
+						int icon_height = icon->get_height();
+						int rowstride = icon->get_rowstride();
+						guint8* pixels = icon->get_pixels();
 
-					guint8* p = 0;
-					for (int y = 0; y < icon_height; ++y) {
-						for (int x = 0; x < icon_width; ++x) {
-							p = pixels + y * rowstride + x * n_channels;
-							uint8_t avg = static_cast<uint8_t>(std::floor((p[0] * 0.30) + (p[1] * 0.59) + (p[2] * 0.11) + 0.001 + 0.5));
-							p[0] = avg;  // R
-							p[1] = 0;  // G
-							p[2] = 0;  // B
+						guint8* p = 0;
+						for (int y = 0; y < icon_height; ++y) {
+							for (int x = 0; x < icon_width; ++x) {
+								p = pixels + y * rowstride + x * n_channels;
+								uint8_t avg = static_cast<uint8_t>(std::floor((p[0] * 0.30) + (p[1] * 0.59) + (p[2] * 0.11) + 0.001 + 0.5));
+								p[0] = avg;  // R
+								p[1] = 0;  // G
+								p[2] = 0;  // B
+							}
 						}
 					}
 				}
@@ -507,6 +542,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 	private:
 
 		Gtk::TreeModel::ColumnRecord columns;  ///< Model columns
+		Gtk::CellRendererPixbuf cell_renderer_pixbuf;  ///< Cell renderer for icons.
 
 		Gtk::TreeModelColumn<std::string> col_name;  ///< Model column
 		Gtk::TreeModelColumn<Glib::ustring> col_description;  ///< Model column
