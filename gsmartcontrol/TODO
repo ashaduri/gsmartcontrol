@@ -20,8 +20,6 @@ local scope destruction also works if using stack variables.
 
 TODO:
 
-Include hi-res icon_cddvd.png and icon_hdd.png.
-
 
 Don't rely on smartctl return code (2), parse the output instead.
 	This will allow us to show the Info page.
