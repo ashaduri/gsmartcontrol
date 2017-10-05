@@ -87,10 +87,15 @@ class GscMainWindowIconView : public Gtk::IconView {
 			}
 
 			// Try XDG version first
-			hd_icon = default_icon_theme->load_icon("drive-harddisk", 64, get_scale_factor(), Gtk::IconLookupFlags(0));
+			try {
+				hd_icon = default_icon_theme->load_icon("drive-harddisk", 64, get_scale_factor(), Gtk::IconLookupFlags(0));
+			} catch (...) { }  // ignore exceptions
+
 			if (!hd_icon) {
 				// Before gtk 3.10 it was called gtk-harddisk.
-				hd_icon = default_icon_theme->load_icon("gtk-harddisk", 64, get_scale_factor(), Gtk::IconLookupFlags(0));
+				try {
+					hd_icon = default_icon_theme->load_icon("gtk-harddisk", 64, get_scale_factor(), Gtk::IconLookupFlags(0));
+				} catch (...) { }  // ignore exceptions
 			}
 			if (!hd_icon) {
 				// Still no luck, use bundled ones.
@@ -103,10 +108,15 @@ class GscMainWindowIconView : public Gtk::IconView {
 			}
 
 			// Try XDG version first
-			cddvd_icon = default_icon_theme->load_icon("media-optical", 64, get_scale_factor(), Gtk::IconLookupFlags(0));
+			try {
+				cddvd_icon = default_icon_theme->load_icon("media-optical", 64, get_scale_factor(), Gtk::IconLookupFlags(0));
+			} catch (...) { }  // ignore exceptions
+
 			if (!cddvd_icon) {
 				// Before gtk 3.10 it was called gtk-cdrom.
-				cddvd_icon = default_icon_theme->load_icon("gtk-cdrom", 64, get_scale_factor(), Gtk::IconLookupFlags(0));
+				try {
+					cddvd_icon = default_icon_theme->load_icon("gtk-cdrom", 64, get_scale_factor(), Gtk::IconLookupFlags(0));
+				} catch (...) { }  // ignore exceptions
 			}
 			if (!cddvd_icon) {
 				// Still no luck, use bundled ones.
