@@ -86,15 +86,19 @@ class GscMainWindowIconView : public Gtk::IconView {
 				// nothing
 			}
 
+			// Adwaita's drive-harddisk icons are really small at 48, so 64 is better.
+			// Plus, it scales well to 128 and 256 (if using GDK_SCALE).
+			const int icon_size = 64;
+
 			// Try XDG version first
 			try {
-				hd_icon = default_icon_theme->load_icon("drive-harddisk", 64, get_scale_factor(), Gtk::IconLookupFlags(0));
+				hd_icon = default_icon_theme->load_icon("drive-harddisk", icon_size, get_scale_factor(), Gtk::IconLookupFlags(0));
 			} catch (...) { }  // ignore exceptions
 
 			if (!hd_icon) {
 				// Before gtk 3.10 it was called gtk-harddisk.
 				try {
-					hd_icon = default_icon_theme->load_icon("gtk-harddisk", 64, get_scale_factor(), Gtk::IconLookupFlags(0));
+					hd_icon = default_icon_theme->load_icon("gtk-harddisk", icon_size, get_scale_factor(), Gtk::IconLookupFlags(0));
 				} catch (...) { }  // ignore exceptions
 			}
 			if (!hd_icon) {
@@ -109,13 +113,13 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 			// Try XDG version first
 			try {
-				cddvd_icon = default_icon_theme->load_icon("media-optical", 64, get_scale_factor(), Gtk::IconLookupFlags(0));
+				cddvd_icon = default_icon_theme->load_icon("media-optical", icon_size, get_scale_factor(), Gtk::IconLookupFlags(0));
 			} catch (...) { }  // ignore exceptions
 
 			if (!cddvd_icon) {
 				// Before gtk 3.10 it was called gtk-cdrom.
 				try {
-					cddvd_icon = default_icon_theme->load_icon("gtk-cdrom", 64, get_scale_factor(), Gtk::IconLookupFlags(0));
+					cddvd_icon = default_icon_theme->load_icon("gtk-cdrom", icon_size, get_scale_factor(), Gtk::IconLookupFlags(0));
 				} catch (...) { }  // ignore exceptions
 			}
 			if (!cddvd_icon) {
