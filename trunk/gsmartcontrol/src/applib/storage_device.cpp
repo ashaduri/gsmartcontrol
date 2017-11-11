@@ -651,25 +651,28 @@ std::string StorageDevice::get_extra_arguments() const
 
 
 
-void StorageDevice::set_drive_letters(const std::vector< char >& letters)
+void StorageDevice::set_drive_letters(const std::map<char, std::string>& letters)
 {
 	drive_letters_ = letters;
 }
 
 
 
-const std::vector< char >& StorageDevice::get_drive_letters() const
+const std::map<char, std::string>& StorageDevice::get_drive_letters() const
 {
 	return drive_letters_;
 }
 
 
 
-std::string StorageDevice::format_drive_letters() const
+std::string StorageDevice::format_drive_letters(bool with_volnames) const
 {
 	std::vector<std::string> drive_letters_decorated;
-	for (std::size_t i = 0; i < drive_letters_.size(); ++i) {
-		drive_letters_decorated.push_back(std::string() + (char)std::toupper(drive_letters_[i]) + ":");
+	for (std::map<char, std::string>::const_iterator iter = drive_letters_.cbegin(); iter != drive_letters_.cend(); ++iter) {
+		drive_letters_decorated.push_back(std::string() + (char)std::toupper(iter->first) + ":");
+		if (with_volnames && !iter->second.empty()) {
+			drive_letters_decorated.back() += std::string(" (") + iter->second + ")";
+		}
 	}
 	return hz::string_join(drive_letters_decorated, ", ");
 }

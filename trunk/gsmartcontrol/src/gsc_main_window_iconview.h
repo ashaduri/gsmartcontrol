@@ -282,9 +282,13 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 			// it needs this space to be symmetric (why?);
 			std::string name;  // = "<big>" + drive->get_device_with_type() + " </big>\n";
-			Glib::ustring drive_letters = Glib::Markup::escape_text(drive->format_drive_letters());
+			Glib::ustring drive_letters = Glib::Markup::escape_text(drive->format_drive_letters(false));
 			if (drive_letters.empty()) {
 				drive_letters = "not mounted";
+			}
+			Glib::ustring drive_letters_with_volname = Glib::Markup::escape_text(drive->format_drive_letters(true));
+			if (drive_letters_with_volname.empty()) {
+				drive_letters_with_volname = "not mounted";
 			}
 
 			// note: if this wraps, it becomes left-aligned in gtk <= 2.10.
@@ -323,7 +327,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 			}
 
 		#ifdef _WIN32
-			tooltip_strs.push_back("Drive letters: <b>" + drive_letters + "</b>");
+			tooltip_strs.push_back("Drive letters: <b>" + drive_letters_with_volname + "</b>");
 		#endif
 
 			if (!drive->get_serial_number().empty()) {
