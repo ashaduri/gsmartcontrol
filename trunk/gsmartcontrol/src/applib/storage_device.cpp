@@ -668,7 +668,7 @@ const std::map<char, std::string>& StorageDevice::get_drive_letters() const
 std::string StorageDevice::format_drive_letters(bool with_volnames) const
 {
 	std::vector<std::string> drive_letters_decorated;
-	for (std::map<char, std::string>::const_iterator iter = drive_letters_.cbegin(); iter != drive_letters_.cend(); ++iter) {
+	for (std::map<char, std::string>::const_iterator iter = drive_letters_.begin(); iter != drive_letters_.end(); ++iter) {
 		drive_letters_decorated.push_back(std::string() + (char)std::toupper(iter->first) + ":");
 		if (with_volnames && !iter->second.empty()) {
 			drive_letters_decorated.back() += std::string(" (") + iter->second + ")";
