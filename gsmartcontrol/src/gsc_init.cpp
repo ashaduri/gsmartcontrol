@@ -15,6 +15,7 @@
 #include <cstdio>  // std::printf
 #include <vector>
 #include <sstream>
+#include <limits>
 #include <gtkmm.h>
 #include <glib.h>  // g_, G*
 #include <glibmm.h>  // set_application_name
@@ -211,8 +212,8 @@ namespace {
 			arg_hide_tabs(TRUE),
 			arg_add_virtual(NULL),
 			arg_add_device(NULL),
-			arg_gdk_scale(-1),
-			arg_gdk_dpi_scale(-1)
+			arg_gdk_scale(std::numeric_limits<double>::quiet_NaN()),
+			arg_gdk_dpi_scale(std::numeric_limits<double>::quiet_NaN())
 		{ }
 
 		// Note: Use GLib types here:
@@ -222,8 +223,8 @@ namespace {
 		gboolean arg_hide_tabs;  ///< if true, hide additional info tabs when smart is disabled. false may help debugging.
 		gchar** arg_add_virtual;  ///< load smartctl data from these files as virtual drives
 		gchar** arg_add_device;  ///< add these device files manually
-		gint arg_gdk_scale;  ///< The value of GDK_SCALE environment variable
-		gint arg_gdk_dpi_scale;  ///< The value of GDK_DPI_SCALE environment variable
+		double arg_gdk_scale;  ///< The value of GDK_SCALE environment variable
+		double arg_gdk_dpi_scale;  ///< The value of GDK_DPI_SCALE environment variable
 	};
 
 
@@ -249,9 +250,9 @@ namespace {
 					" Example: --add-device /dev/sda --add-device /dev/twa0::3ware,2 --add-device '/dev/sdb::::-T permissive'", NULL },
 #ifndef _WIN32
 			// X11-specific
-			{ "gdk-scale", 'l', 0, G_OPTION_ARG_INT, &(args.arg_gdk_scale),
+			{ "gdk-scale", 'l', 0, G_OPTION_ARG_DOUBLE, &(args.arg_gdk_scale),
 					"The value of GDK_SCALE environment variable (useful when executing with pkexec)", NULL },
-			{ "gdk-dpi-scale", 'l', 0, G_OPTION_ARG_INT, &(args.arg_gdk_dpi_scale),
+			{ "gdk-dpi-scale", 'l', 0, G_OPTION_ARG_DOUBLE, &(args.arg_gdk_dpi_scale),
 					"The value of GDK_DPI_SCALE environment variable (useful when executing with pkexec)", NULL },
 #endif
 			{ NULL }
@@ -404,10 +405,10 @@ bool app_init_and_loop(int& argc, char**& argv)
 	debug_out_dump("app", "LibDebug options:\n" << debug_get_cmd_args_dump());
 
 #ifndef _WIN32
-	if (args.arg_gdk_scale > 0) {
+	if (args.arg_gdk_scale == args.arg_gdk_scale) {  // not NaN
 		hz::env_set_value("GDK_SCALE", hz::number_to_string(args.arg_gdk_scale));
 	}
-	if (args.arg_gdk_dpi_scale > 0) {
+	if (args.arg_gdk_dpi_scale == args.arg_gdk_dpi_scale) {  // not NaN
 		hz::env_set_value("GDK_DPI_SCALE", hz::number_to_string(args.arg_gdk_dpi_scale));
 	}
 #endif
