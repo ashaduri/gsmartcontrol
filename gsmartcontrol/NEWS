@@ -1,4 +1,7 @@
-Version 1.1.2, released on
+Version 1.1.2, released on 2017-11-11
+	Fixed blurriness of icons in main window with GDK_SCALE=2.
+	Tweaked main window interface.
+	Windows: Show volume labels beside drive letters in icon tooltips.
 
 Version 1.1.1, released on 2017-09-25
 	Windows: Use Adwaita GTK+ theme for systems which support Classic Windows
