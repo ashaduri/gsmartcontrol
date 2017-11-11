@@ -88,13 +88,20 @@ The drives may be duplicated as pdX (with X and N being unrelated).
 */
 
 
+
+struct DriveLetterInfo {
+	std::set<int> physical_drives;  ///< N in pdN
+	std::string volume_name;  ///< Volume name
+};
+
+
 namespace {
 
 
 /// Check which physical drives each drive letter (C, D, ...) spans across.
-std::map<char, std::set<int> > win32_get_drive_letter_map()
+std::map<char, DriveLetterInfo> win32_get_drive_letter_map()
 {
-	std::map<char, std::set<int> > drive_letter_map;
+	std::map<char, DriveLetterInfo> drive_letter_map;
 
 	std::bitset<32> drives(GetLogicalDrives());
 
@@ -130,12 +137,27 @@ std::map<char, std::set<int> > win32_get_drive_letter_map()
 			continue;
 		}
 
-		std::set<int> drive_numbers;
+		std::set<int> physical_drives;
 		for (int i = 0; i < vde.NumberOfDiskExtents; ++i) {
-			drive_numbers.insert(vde.Extents[i].DiskNumber);
+			physical_drives.insert(vde.Extents[i].DiskNumber);
 			debug_out_dump("app", "Windows drive " << drive << " corresponds to physical drive " << vde.Extents[i].DiskNumber << ".\n");
 		}
-		drive_letter_map[drive] = drive_numbers;
+
+		std::string volume_name;
+		wchar_t volume_name_w[MAX_PATH+1] = {0};
+		DWORD dummy = 0;
+		hz::scoped_array<wchar_t> drive_name(hz::win32_utf8_to_utf16((drive + std::string(":\\")).c_str()));
+		if (drive_name && GetVolumeInformationW(drive_name.get(),
+				volume_name_w, MAX_PATH+1,
+				NULL, &dummy, &dummy, NULL, 0)) {
+			volume_name = hz::win32_utf16_to_utf8_string(volume_name_w);
+		}
+
+		DriveLetterInfo dli;
+		dli.physical_drives = physical_drives;
+		dli.volume_name = volume_name;
+
+		drive_letter_map[drive] = dli;
 	}
 
 	return drive_letter_map;
@@ -148,7 +170,7 @@ std::map<char, std::set<int> > win32_get_drive_letter_map()
 /// conflict with pd* devices, and we like pd* better than sd*.
 std::string get_scan_open_multiport_devices(std::vector<StorageDeviceRefPtr>& drives,
 		ExecutorFactoryRefPtr ex_factory,
-		const std::map<char, std::set<int> >& drive_letter_map,
+		const std::map<char, DriveLetterInfo>& drive_letter_map,
 		std::set<int>& equivalent_pds)
 {
 	debug_out_info("app", "Getting multi-port devices through smartctl --scan-open...\n");
@@ -215,13 +237,13 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDeviceRefPtr>& dr
 			std::string full_dev = dev + "," + port_str;
 			StorageDeviceRefPtr drive(new StorageDevice(full_dev, type));
 
-			std::vector<char> drive_letters;
-			for (std::map<char, std::set<int> >::const_iterator iter = drive_letter_map.begin(); iter != drive_letter_map.end(); ++iter) {
-				if (iter->second.count(drive_num) > 0) {
-					drive_letters.push_back(iter->first);
+			std::map<char, std::string> letters_volnames;
+			for (std::map<char, DriveLetterInfo>::const_iterator iter = drive_letter_map.begin(); iter != drive_letter_map.end(); ++iter) {
+				if (iter->second.physical_drives.count(drive_num) > 0) {
+					letters_volnames[iter->first] = iter->second.volume_name;
 				}
 			}
-			drive->set_drive_letters(drive_letters);
+			drive->set_drive_letters(letters_volnames);
 
 			drives.push_back(drive);
 		}
@@ -632,7 +654,7 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 
 	// Construct drive letter map
 	debug_out_info("app", "Checking which drive corresponds to which \\\\.\\PhysicalDriveN device...\n");
-	std::map<char, std::set<int> > drive_letter_map = win32_get_drive_letter_map();
+	std::map<char, DriveLetterInfo> drive_letter_map = win32_get_drive_letter_map();
 
 
 	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
@@ -711,14 +733,14 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 
 		StorageDeviceRefPtr drive(new StorageDevice(hz::string_sprintf("pd%d", drive_num)));
 
-		std::vector<char> letters;
-		for (std::map<char, std::set<int> >::iterator iter = drive_letter_map.begin(); iter != drive_letter_map.end(); ++iter) {
-			if (iter->second.count(drive_num) > 0) {
-				letters.push_back(iter->first);
+		std::map<char, std::string> letters_volnames;
+		for (std::map<char, DriveLetterInfo>::const_iterator iter = drive_letter_map.begin(); iter != drive_letter_map.end(); ++iter) {
+			if (iter->second.physical_drives.count(drive_num) > 0) {
+				letters_volnames[iter->first] = iter->second.volume_name;
 			}
 		}
-		drive->set_drive_letters(letters);
-		debug_out_dump("app", "Drive letters for: " << drive->get_device() << ": " << drive->format_drive_letters() << ".\n");
+		drive->set_drive_letters(letters_volnames);
+		debug_out_dump("app", "Drive letters for: " << drive->get_device() << ": " << drive->format_drive_letters(true) << ".\n");
 
 		// Sometimes, a single physical drive may be accessible from both "/.//PhysicalDriveN"
 		// and "/.//Scsi2" (e.g. pd0 and csmi2,1). Prefer the port-having ones (which is from --scan-open),

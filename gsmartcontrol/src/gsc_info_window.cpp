@@ -464,7 +464,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 	{
 		std::string device = Glib::Markup::escape_text(drive->get_device_with_type());
 		std::string model = Glib::Markup::escape_text(drive->get_model_name().empty() ? "Unknown model" : drive->get_model_name());
-		std::string drive_letters = Glib::Markup::escape_text(drive->format_drive_letters());
+		std::string drive_letters = Glib::Markup::escape_text(drive->format_drive_letters(false));
 
 		this->set_title("Device Information - " + device + ": " + model + " - GSmartControl");
 

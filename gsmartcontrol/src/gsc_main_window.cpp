@@ -946,7 +946,7 @@ void GscMainWindow::update_status_widgets()
 	std::string model = Glib::Markup::escape_text(drive->get_model_name().empty() ? std::string("Unknown model") : drive->get_model_name());
 	std::string family = Glib::Markup::escape_text(drive->get_family_name().empty() ? "Unknown" : drive->get_family_name());
 	std::string family_fallback = Glib::Markup::escape_text(drive->get_family_name().empty() ? model : drive->get_family_name());
-	std::string drive_letters_str = Glib::Markup::escape_text(drive->format_drive_letters());
+	std::string drive_letters_str = Glib::Markup::escape_text(drive->format_drive_letters(false));
 
 	std::string info_str = device
 			+ (drive_letters_str.empty() ? "" : (" (<b>" + drive_letters_str + "</b>)"))
