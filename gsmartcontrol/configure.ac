@@ -64,6 +64,10 @@ APP_DETECT_OS_KERNEL([build], [CONFIG_HOST_KERNEL_])
 # which is important for some compatibility flags (e.g. __func__ visibility, etc...).
 APP_COMPILER_OPTIONS([])
 
+# Enable C++11 support. This is implied by gtkmm3, but CentOS7 fails to add it
+# to gtkmm flags, so we have to enable it manually.
+AX_CXX_COMPILE_STDCXX([11])
+
 # Thread support for known configurations.
 # Sun compiler (at least on linux) has some runtime issues with stringstream
 # unless we use the thread flags. Also, Linux-based gdb fails to debug
@@ -449,6 +453,8 @@ AC_SUBST(LDFLAGS)
 # print them out for debug purposes
 
 AC_MSG_NOTICE([
+CXX:
+$CXX
 CXXFLAGS:
 $CXXFLAGS
 LDFLAGS:
