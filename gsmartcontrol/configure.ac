@@ -65,8 +65,8 @@ APP_DETECT_OS_KERNEL([build], [CONFIG_HOST_KERNEL_])
 APP_COMPILER_OPTIONS([])
 
 # Enable C++11 support. This is implied by gtkmm3, but CentOS7 fails to add it
-# to gtkmm flags, so we have to enable it manually.
-AX_CXX_COMPILE_STDCXX([11])
+# to gtkmm flags, so we have to enable it manually. Make it optional for Debian 7 (gcc 4.7).
+AX_CXX_COMPILE_STDCXX([11], [], [optional])
 
 # Thread support for known configurations.
 # Sun compiler (at least on linux) has some runtime issues with stringstream
