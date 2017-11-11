@@ -20,6 +20,8 @@ local scope destruction also works if using stack variables.
 
 TODO:
 
+-l defects support? (smartctl 6.6)
+
 
 Don't rely on smartctl return code (2), parse the output instead.
 	This will allow us to show the Info page.
