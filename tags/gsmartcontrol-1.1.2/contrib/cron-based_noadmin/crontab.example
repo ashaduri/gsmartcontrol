@@ -1,0 +1,2 @@
+*/10 * * * * root /usr/local/bin/cron-smart.sh /dev/sda
+*/10 * * * * root /usr/local/bin/cron-smart.sh /dev/sdb
