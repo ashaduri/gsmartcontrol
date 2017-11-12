@@ -1,6 +1,11 @@
+Version 1.1.3, released on 2017-11-12
+	Fixed gsmartcontrol-root not launching if GDK_* variables are not set.
+
 Version 1.1.2, released on 2017-11-11
-	Fixed blurriness of icons in main window with GDK_SCALE=2.
-	Tweaked main window interface.
+	Fixed gsmartcontrol-root not passing GDK_SCALE and GDK_DPI_SCALE variables
+	to gsmartcontrol when using PolKit.
+	Fixed blurriness of icons in the main window with GDK_SCALE=2.
+	Tweaked the main window interface.
 	Windows: Show volume labels beside drive letters in icon tooltips.
 
 Version 1.1.1, released on 2017-09-25
