@@ -9,10 +9,17 @@
 /// \weakgroup gsc
 /// @{
 
+// TODO Remove this in gtkmm4.
+#include <bits/stdc++.h>  // to avoid throw() macro errors.
+#define throw(a)  // glibmm uses dynamic exception specifications, remove them.
+#include <glibmm.h>  // NOT NEEDED
+#undef throw
+
 #include <gtkmm.h>
 #include <vector>
 
 #include "hz/string_algo.h"  // string_split
+#include "hz/string_num.h"
 #include "hz/fs_file.h"  // hz::File
 #include "hz/debug.h"
 #include "hz/scoped_ptr.h"

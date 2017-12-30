@@ -9,6 +9,12 @@
 /// \weakgroup gsc
 /// @{
 
+// TODO Remove this in gtkmm4.
+#include <bits/stdc++.h>  // to avoid throw() macro errors.
+#define throw(a)  // glibmm uses dynamic exception specifications, remove them.
+#include <glibmm.h>  // NOT NEEDED
+#undef throw
+
 #include <string>
 // #include <locale.h>  // _configthreadlocale (win32)
 #include <stdexcept>  // std::runtime_error
@@ -18,7 +24,6 @@
 #include <limits>
 #include <gtkmm.h>
 #include <glib.h>  // g_, G*
-#include <glibmm.h>  // set_application_name
 
 #ifdef _WIN32
 	#include <windows.h>

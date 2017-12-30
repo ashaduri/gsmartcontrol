@@ -66,17 +66,16 @@ int main()
 
 	// loose typing:
 
-	int int_var2 = 0;
-	rconfig::convert_data("app/int_var2", int_var2);  // this will do the type conversion
-	std::cerr << "app/int_var2: " << int_var2 << "\n";  // this will get out 11, not 10 (default)
+// 	int int_var2 = 0;
+// 	rconfig::convert_data("app/int_var2", int_var2);  // this will do the type conversion
+// 	std::cerr << "app/int_var2: " << int_var2 << "\n";  // this will get out 11, not 10 (default)
+
+// 	std::cerr << "app/some_string1: " << rconfig::convert_data<std::string>("app/some_string1") << "\n";
 
 
-	std::cerr << "app/some_string1: " << rconfig::convert_data<std::string>("app/some_string1") << "\n";
-
-
-	std::string huh;
-	rconfig::convert_data("app/huh", huh);  // float -> string conversion, should work.
-	std::cerr << "app/huh: " << huh << "\n";
+// 	std::string huh;
+// 	rconfig::convert_data("app/huh", huh);  // float -> string conversion, should work.
+// 	std::cerr << "app/huh: " << huh << "\n";
 
 
 	std::cerr << "\"app/empty\" exists: " << std::boolalpha << rconfig::data_is_empty("app/empty") << "\n";

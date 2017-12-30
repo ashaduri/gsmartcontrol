@@ -31,8 +31,8 @@
 
 #include <string>
 #include <iosfwd>  // std::ostream
+#include <any>
 
-#include "hz/any_type.h"
 
 #include "resource_data_types.h"
 #include "resource_exception.h"
@@ -56,7 +56,11 @@ struct ResourceDataAnyDumper {
 	/// Dump resource data into \c os
 	void dump(std::ostream& os) const
 	{
-		os << obj->data_.to_stream();
+		const std::type_info& type = obj->data_.type();
+		if (type == typeid(char)) {
+			os << std::any_cast<char>(std::any_cast<char>(obj->data_));
+		}
+		// TODO other types.
 	}
 
 	T* obj;  ///< ResourceDataAny object
@@ -98,14 +102,14 @@ class ResourceDataAny {
 		/// Check whether data is empty
 		bool data_is_empty() const
 		{
-			return data_.empty();
+			return !data_.has_value();
 		}
 
 
 		/// Clear the data, making it empty
 		void clear_data()
 		{
-			data_.clear();
+			data_.reset();
 		}
 
 
@@ -131,7 +135,7 @@ class ResourceDataAny {
 		template<typename T>
 		inline bool data_is_type() const
 		{
-			return data_.template is_type<T>();
+			return data_.type() == typeid(T);
 		}
 
 
@@ -140,7 +144,11 @@ class ResourceDataAny {
 		template<typename T>
 		inline bool get_data(T& put_it_here) const
 		{
-			return data_.get(put_it_here);  // returns false if empty or invalid type
+			if (const T* value = std::any_cast<T>(&data_)) {
+				put_it_here = *value;
+				return true;
+			}
+			return false;
 		}
 
 
@@ -150,47 +158,14 @@ class ResourceDataAny {
 		template<typename T>
 		T get_data() const
 		{
-			if (data_.empty())
+			if (!data_.has_value())
 				throw empty_data_retrieval();
 
 			try {
-				// template is needed for gcc 3.3
-				return data_.template get<T>();  // won't work if empty or invalid type
+				return std::any_cast<T>(data_);
 			}
-			catch (hz::bad_any_cast& e) {  // convert any_type exception to rmn exception.
+			catch (std::bad_any_cast& e) {  // convert std::any exception to rmn exception.
 				throw type_mismatch(data_.type(), typeid(T));
-			}
-		}
-
-
-
-		/// Similar to get_data(), but with looser conversion - can convert between
-		/// C++ built-in types and std::string. Uses hz::any_convert<>.
-		/// \return false if casting failed, or empty or invalid type.
-		template<typename T>
-		inline bool convert_data(T& put_it_here) const
-		{
-			return data_.convert(put_it_here);
-		}
-
-
-		/// Similar to get_data(), but with looser conversion - can convert between
-		/// C++ built-in types and std::string. Uses hz::any_convert<>.
-		/// \throw rmn::empty_data_retrieval Data is empty
-		/// \throw rmn::type_mismatch Type mismatch
-		template<typename T>
-		T convert_data() const
-		{
-			if (data_.empty())
-				throw empty_data_retrieval();
-
-			try {
-				// Note: This throws only if RTTI is enabled.
-				// template is needed for gcc 3.3
-				return data_.template convert<T>();  // won't work if empty or invalid type
-			}
-			catch (hz::bad_any_cast& e) {
-				throw type_convert_error(data_.type(), typeid(T));
 			}
 		}
 
@@ -210,7 +185,7 @@ class ResourceDataAny {
 
 	private:
 
-		hz::any_type data_;  ///< The data
+		std::any data_;  ///< The data
 
 };
 

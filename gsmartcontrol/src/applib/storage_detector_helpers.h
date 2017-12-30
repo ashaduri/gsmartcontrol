@@ -14,12 +14,18 @@
 
 #include <string>
 #include <vector>
-#include <glibmm.h>
+
+// TODO Remove this in gtkmm4.
+#include <bits/stdc++.h>  // to avoid throw() macro errors.
+#define throw(a)  // glibmm uses dynamic exception specifications, remove them.
+#include <glibmm.h>  // Glib::shell_quote()
+#undef throw
 
 #include "executor_factory.h"
 #include "storage_device.h"
 #include "rconfig/rconfig_mini.h"
 #include "app_pcrecpp.h"
+#include "hz/string_num.h"
 
 
 

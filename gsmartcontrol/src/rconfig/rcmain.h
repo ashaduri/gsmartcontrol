@@ -447,39 +447,6 @@ T get_data(const std::string& path)
 
 
 
-/// Similar to get_data(), but with looser conversion - can convert between
-/// C++ built-in types and std::string. Uses hz::any_convert<>.
-/// \return false if casting failed, or empty or invalid type.
-template<typename T> inline
-bool convert_data(const std::string& path, T& put_it_here)  // returns false if cast failed
-{
-	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
-
-	node_ptr node = get_node(path);
-	if (!node)
-		return false;  // no such node
-	return node->convert_data(put_it_here);
-}
-
-
-/// Similar to get_data(), but with looser conversion - can convert between
-/// C++ built-in types and std::string. Uses hz::any_convert<>.
-/// \throw rmn::no_such_node No such node
-/// \throw rmn::empty_data_retrieval Data is empty
-/// \throw rmn::type_mismatch Type mismatch
-template<typename T> inline
-T convert_data(const std::string& path)
-{
-	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
-
-	node_ptr node = get_node(path);
-	if (!node)
-		throw rmn::no_such_node(path);
-	return node->convert_data<T>();
-}
-
-
-
 
 
 
