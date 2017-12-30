@@ -9,6 +9,12 @@
 /// \weakgroup applib
 /// @{
 
+// TODO Remove this in gtkmm4.
+#include <bits/stdc++.h>  // to avoid throw() macro errors.
+#define throw(a)  // glibmm uses dynamic exception specifications, remove them.
+#include <glibmm.h>  // NOT NEEDED
+#undef throw
+
 #include <sys/types.h>
 #include <cerrno>  // errno (not std::errno, it may be a macro)
 
@@ -23,7 +29,6 @@
 #include "hz/debug.h"
 #include "hz/string_num.h"  // hz::number_to_string()
 #include "hz/env_tools.h"  // hz::ScopedEnv
-#include "hz/scoped_ptr.h"
 
 #include "cmdex.h"
 
@@ -105,16 +110,14 @@ bool Cmdex::execute()
 
 
 	// Make command vector
-
-	hz::scoped_ptr<gchar*> argvp(0, g_strfreev);  // args vector
-
+	std::vector<std::string> argvp;
+	try {
+		argvp = Glib::shell_parse_argv(cmd);
+	}
+	catch(Glib::ShellError& e)
 	{
-		int argcp = 0;  // number of args
-		hz::scoped_ptr<GError> shell_error(0, g_error_free);
-		if (!g_shell_parse_argv(cmd.c_str(), &argcp, &argvp.get_ref(), &shell_error.get_ref())) {
-			push_error(Error<void>("gshell", ErrorLevel::error, shell_error->message), false);
-			return false;
-		}
+		push_error(Error<void>("gshell", ErrorLevel::error, e.what()), false);
+		return false;
 	}
 
 
@@ -132,56 +135,22 @@ bool Cmdex::execute()
 
 
 	debug_out_info("app", DBG_FUNC_MSG << "Executing \"" << cmd << "\".\n");
-/*
-	if (argvp) {
-		debug_out_dump("app", DBG_FUNC_MSG << "Dumping argvp:\n");
-		gchar** elem = argvp.get();
-		while (*elem) {
-			debug_out_dump("app", *elem << "\n");
-			++elem;
-		}
-	}
-*/
 
 	// Execute the command
 
-	hz::scoped_ptr<gchar> curr_dir(g_get_current_dir(), g_free);
-	hz::scoped_ptr<GError> spawn_error(0, g_error_free);
-
-/*
-#if defined APP_CMDEX_USE_SYNC && APP_CMDEX_USE_SYNC
-
-	hz::scoped_ptr<gchar*> stdout_str(0, g_free);
-	hz::scoped_ptr<gchar*> stderr_str(0, g_free);
-	gint exit_status = 0;
-
-	g_timer_start(timer_);  // start the timer
-
-	if (!g_spawn_sync(curr_dir.get(), argvp.get(), NULL,
-			GSpawnFlags(G_SPAWN_SEARCH_PATH),
-			NULL, NULL,  // child setup function
-			&stdout_str.get_ref(), &stderr_str.get_ref(), &exit_status, &spawn_error.get_ref()))
-	{
-		// no data is returned to &-parameters on error.
-		push_error(Error<void>("gspawn", ErrorLevel::error, spawn_error->message), false);
-		return false;
+	try {
+		Glib::spawn_async_with_pipes(Glib::get_current_dir(), argvp, std::vector<std::string>(),
+				Glib::SpawnFlags::SPAWN_SEARCH_PATH | Glib::SpawnFlags::SPAWN_DO_NOT_REAP_CHILD,
+				Glib::SlotSpawnChildSetup(),
+				&this->pid_, nullptr, &fd_stdout_, &fd_stderr_);
 	}
-
-#else // async way:
-*/
-	if (!g_spawn_async_with_pipes(curr_dir.get(), argvp.get(), NULL,
-			GSpawnFlags(G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD),
-			NULL, NULL,  // child setup function
-			&this->pid_, 0, &fd_stdout_, &fd_stderr_, &spawn_error.get_ref()))
-	{
+	catch(Glib::SpawnError& e) {
 		// no data is returned to &-parameters on error.
-		push_error(Error<void>("gspawn", ErrorLevel::error, spawn_error->message), false);
+		push_error(Error<void>("gspawn", ErrorLevel::error, e.what()), false);
 		return false;
 	}
 
 	g_timer_start(timer_);  // start the timer
-
-// #endif
 
 
 	#ifdef _WIN32
@@ -461,14 +430,15 @@ gboolean Cmdex::on_channel_io(GIOChannel* channel,
 
 	// while there's anything to read, read it
 	do {
-		hz::scoped_ptr<GError> channel_error(0, g_error_free);
+		GError* channel_error = 0;
 		gsize bytes_read = 0;
-		GIOStatus status = g_io_channel_read_chars(channel, buf, count, &bytes_read, &channel_error.get_ref());
+		GIOStatus status = g_io_channel_read_chars(channel, buf, count, &bytes_read, &channel_error);
 		if (bytes_read)
 			output_str->append(buf, bytes_read);
 
 		if (channel_error) {
 			self->push_error(Error<void>("giochannel", ErrorLevel::error, channel_error->message), false);
+			g_error_free(channel_error);
 			break;  // stop on next invocation (is this correct?)
 		}
 

@@ -20,6 +20,7 @@
 #include <bitset>
 #include <map>
 #include <vector>
+#include <memory>
 
 #include "hz/win32_tools.h"
 #include "hz/string_sprintf.h"
@@ -146,7 +147,7 @@ std::map<char, DriveLetterInfo> win32_get_drive_letter_map()
 		std::string volume_name;
 		wchar_t volume_name_w[MAX_PATH+1] = {0};
 		DWORD dummy = 0;
-		hz::scoped_array<wchar_t> drive_name(hz::win32_utf8_to_utf16((drive + std::string(":\\")).c_str()));
+		hz::unique_ptr<wchar_t[]> drive_name(hz::win32_utf8_to_utf16((drive + std::string(":\\")).c_str()));
 		if (drive_name && GetVolumeInformationW(drive_name.get(),
 				volume_name_w, MAX_PATH+1,
 				NULL, &dummy, &dummy, NULL, 0)) {

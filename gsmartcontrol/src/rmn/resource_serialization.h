@@ -38,8 +38,8 @@
 #include <ostream>  // std::ostream definition (calling bad() member)
 #include <ios>  // std::ios::*
 #include <locale>  // std::locale::classic()
+#include <cstdint>
 
-#include "hz/cstdint.h"
 #include "hz/hz_config.h"  // RMN_* (global_macros.h)
 #include "hz/string_algo.h"  // string_split(), string_trim(), string_trim_copy()
 #include "hz/string_num.h"  // string_is_numeric(), number_to_string()

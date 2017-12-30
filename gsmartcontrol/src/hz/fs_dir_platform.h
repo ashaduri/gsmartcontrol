@@ -22,6 +22,7 @@
 	#include <cstddef>  // std::size_t
 	#include <cstring>  // for string.h
 	#include <string.h>  // wcslen()
+	#include <memory>
 #else
 	#include <sys/types.h>  // dirent needs this
 	#include <dirent.h>
@@ -29,7 +30,6 @@
 
 #ifdef _WIN32
 	#include "win32_tools.h"  // hz::win32_utf8_to_utf16(), hz::win32_utf16_to_utf8
-	#include "scoped_array.h"  // hz::scoped_array
 #endif
 
 // Limited dirent-like API to hide platform differences.
@@ -140,7 +140,7 @@ inline directory_handle_type directory_open(const char* path)  // NULL on error,
 		return 0;
 	}
 
-	hz::scoped_array<wchar_t> wpath(hz::win32_utf8_to_utf16(path));
+	hz::unique_ptr<wchar_t[]> wpath(hz::win32_utf8_to_utf16(path));
 	if (!wpath) {
 		errno = ENOENT;  // not specified by opendir (3), not sure about this.
 		return 0;

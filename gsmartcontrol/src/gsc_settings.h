@@ -12,8 +12,8 @@
 #ifndef GSC_SETTINGS_H
 #define GSC_SETTINGS_H
 
+#include <cstdint>
 #include "rconfig/rconfig_mini.h"
-#include "hz/cstdint.h"
 
 
 

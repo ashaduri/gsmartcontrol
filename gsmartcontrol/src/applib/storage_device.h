@@ -14,9 +14,9 @@
 
 #include <string>
 #include <map>
+#include <optional>
 #include <sigc++/sigc++.h>
 
-#include "hz/optional_value.h"
 #include "hz/intrusive_ptr.h"
 
 #include "storage_property.h"
@@ -290,15 +290,15 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 
 		// Note: These are detected through info output
 		detected_type_t detected_type_;  ///< e.g. type_unknown
-		hz::OptionalValue<bool> smart_supported_;  ///< SMART support status
-		hz::OptionalValue<bool> smart_enabled_;  ///< SMART enabled status
-		mutable hz::OptionalValue<status_t> aodc_status_;  ///< Cached aodc status.
-		hz::OptionalValue<std::string> model_name_;  ///< Model name
-		hz::OptionalValue<std::string> family_name_;  ///< Family name
-		hz::OptionalValue<std::string> serial_number_;  ///< Serial number
-		hz::OptionalValue<std::string> size_;  ///< Formatted size
-		hz::OptionalValue<bool> hdd_;  ///< Whether it's a rotational drive (HDD) or something else (SSD, flash, etc...)
-		mutable hz::OptionalValue<StorageProperty> health_property_;  ///< Cached health property.
+		std::optional<bool> smart_supported_;  ///< SMART support status
+		std::optional<bool> smart_enabled_;  ///< SMART enabled status
+		mutable std::optional<status_t> aodc_status_;  ///< Cached aodc status.
+		std::optional<std::string> model_name_;  ///< Model name
+		std::optional<std::string> family_name_;  ///< Family name
+		std::optional<std::string> serial_number_;  ///< Serial number
+		std::optional<std::string> size_;  ///< Formatted size
+		std::optional<bool> hdd_;  ///< Whether it's a rotational drive (HDD) or something else (SSD, flash, etc...)
+		mutable std::optional<StorageProperty> health_property_;  ///< Cached health property.
 
 		SmartctlParser::prop_list_t properties_;  ///< Smart properties. Detected through full output.
 

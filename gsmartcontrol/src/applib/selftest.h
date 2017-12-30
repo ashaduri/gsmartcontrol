@@ -12,10 +12,15 @@
 #ifndef SELFTEST_H
 #define SELFTEST_H
 
+// TODO Remove this in gtkmm4.
+#include <bits/stdc++.h>  // to avoid throw() macro errors.
+#define throw(a)  // glibmm uses dynamic exception specifications, remove them.
 #include <glibmm.h>
-#include <string>
+#undef throw
 
-#include "hz/cstdint.h"
+#include <string>
+#include <cstdint>
+
 #include "hz/intrusive_ptr.h"
 
 #include "storage_device.h"

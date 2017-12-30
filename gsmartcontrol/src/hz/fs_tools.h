@@ -165,7 +165,7 @@ inline bool set_current_dir(const std::string& dir)
 {
 #ifdef _WIN32
 	// Dont check the parameter, let the function do it.
-	return (_wchdir(hz::scoped_array<wchar_t>(hz::win32_utf8_to_utf16(dir.c_str())).get()) == 0);
+	return (_wchdir(hz::unique_ptr<wchar_t[]>(hz::win32_utf8_to_utf16(dir.c_str())).get()) == 0);
 #else
 	return (chdir(dir.c_str()) == 0);
 #endif

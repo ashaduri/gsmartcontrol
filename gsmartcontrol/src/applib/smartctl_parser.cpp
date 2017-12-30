@@ -10,9 +10,9 @@
 /// @{
 
 #include <clocale>  // localeconv
+#include <cstdint>
 
 #include "hz/locale_tools.h"  // ScopedCLocale, locale_c_get().
-#include "hz/cstdint.h"  // uint64_t
 #include "hz/string_algo.h"  // string_*
 #include "hz/string_num.h"  // string_is_numeric, number_to_string
 #include "hz/format_unit.h"  // format_size

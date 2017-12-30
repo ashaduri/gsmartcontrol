@@ -55,7 +55,7 @@ std::string StorageAttribute::format_raw_value() const
 std::ostream& operator<< (std::ostream& os, const StorageAttribute& p)
 {
 //	os << p.name << ": "
-	if (p.value.defined()) {
+	if (p.value.has_value()) {
 		os << static_cast<int>(p.value.value());
 	} else {
 		os << "-";

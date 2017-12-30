@@ -289,7 +289,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	// been parsed by parse_data() which failed at it).
 	if (do_set_properties) {
 		StorageAttribute::DiskType disk_type = StorageAttribute::DiskAny;
-		if (hdd_.defined()) {
+		if (hdd_.has_value()) {
 			disk_type = hdd_.value() ? StorageAttribute::DiskHDD : StorageAttribute::DiskSSD;
 		}
 		SmartctlParser ps;
@@ -299,7 +299,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	}
 
 	// A model field (and its aliases) is a good indication whether there was any data or not
-	set_parse_status(model_name_.defined() ? parse_status_info : parse_status_none);
+	set_parse_status(model_name_.has_value() ? parse_status_info : parse_status_none);
 
 	if (emit_signal)
 		signal_changed.emit(this);  // notify listeners
@@ -353,7 +353,7 @@ std::string StorageDevice::parse_data()
 	this->clear_fetched(false);  // clear everything fetched before, except outputs
 
 	StorageAttribute::DiskType disk_type = StorageAttribute::DiskAny;
-	if (hdd_.defined()) {
+	if (hdd_.has_value()) {
 		disk_type = hdd_.value() ? StorageAttribute::DiskHDD : StorageAttribute::DiskSSD;
 	}
 	SmartctlParser ps;
@@ -475,11 +475,11 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 StorageDevice::status_t StorageDevice::get_smart_status() const
 {
 	status_t status = status_unsupported;
-	if (smart_enabled_.defined()) {
+	if (smart_enabled_.has_value()) {
 		if (smart_enabled_.value()) {  // enabled, supported
 			status = status_enabled;
 		} else {  // if it's disabled, maybe it's unsupported, check that:
-			if (smart_supported_.defined()) {
+			if (smart_supported_.has_value()) {
 				if (smart_supported_.value()) {  // disabled, supported
 					status = status_disabled;
 				} else {  // disabled, unsupported
@@ -490,7 +490,7 @@ StorageDevice::status_t StorageDevice::get_smart_status() const
 			}
 		}
 	} else {  // status unknown
-		if (smart_supported_.defined()) {
+		if (smart_supported_.has_value()) {
 			if (smart_supported_.value()) {  // status unknown, supported
 				status = status_disabled;  // at least give the user a chance to try enabling it
 			} else {  // status unknown, unsupported
@@ -512,7 +512,7 @@ StorageDevice::status_t StorageDevice::get_aodc_status() const
 	if (get_smart_status() != status_enabled)
 		return status_unsupported;
 
-	if (aodc_status_.defined())  // cached return value
+	if (aodc_status_.has_value())  // cached return value
 		return aodc_status_.value();
 
 	status_t status = status_unknown;  // for now
@@ -552,14 +552,14 @@ StorageDevice::status_t StorageDevice::get_aodc_status() const
 
 std::string StorageDevice::get_device_size_str() const
 {
-	return (size_.defined() ? size_.value() : "");
+	return (size_.has_value() ? size_.value() : "");
 }
 
 
 
 StorageProperty StorageDevice::get_health_property() const
 {
-	if (health_property_.defined())  // cached return value
+	if (health_property_.has_value())  // cached return value
 		return health_property_.value();
 
 	StorageProperty p = this->lookup_property("overall_health",
@@ -725,28 +725,28 @@ StorageProperty StorageDevice::lookup_property(const std::string& generic_name, 
 
 std::string StorageDevice::get_model_name() const
 {
-	return (model_name_.defined() ? model_name_.value() : "");
+	return (model_name_.has_value() ? model_name_.value() : "");
 }
 
 
 
 std::string StorageDevice::get_family_name() const
 {
-	return (family_name_.defined() ? family_name_.value() : "");
+	return (family_name_.has_value() ? family_name_.value() : "");
 }
 
 
 
 std::string StorageDevice::get_serial_number() const
 {
-	return (serial_number_.defined() ? serial_number_.value() : "");
+	return (serial_number_.has_value() ? serial_number_.value() : "");
 }
 
 
 
 bool StorageDevice::get_is_hdd() const
 {
-	return hdd_.defined() ? hdd_.value() : false;
+	return hdd_.has_value() ? hdd_.value() : false;
 }
 
 

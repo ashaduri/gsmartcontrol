@@ -17,8 +17,8 @@
 #include <string>
 #include <cstddef>  // std::size_t
 #include <ctime>  // for time.h, std::strftime, std::time, std::localtime, ...
+#include <cstdint>
 
-#include "cstdint.h"
 #include "locale_tools.h"  // hz::ScopedCLocale
 #include "string_num.h"  // hz::number_to_string
 #include "i18n.h"  // HZ_NC_, HZ_C_
