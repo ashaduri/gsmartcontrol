@@ -13,17 +13,10 @@
 #define RCONFIG_RCMAIN_H
 
 #include <string>
+#include <stdexcept>  // std::runtime_error
 
-#include "hz/hz_config.h"  // DISABLE_RTTI, RMN_TYPE_TRACKING
-
-// if there's RTTI or type tracking enabled
-#if !(defined DISABLE_RTTI && DISABLE_RTTI) \
-		|| (defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING)
-	#include <stdexcept>  // std::runtime_error
-#endif
-
+#include "hz/hz_config.h"
 #include "hz/sync.h"
-#include "hz/exceptions.h"  // THROW_FATAL
 
 #include "rmn/resource_node.h"  // resource_node type
 #include "rmn/resource_data_any.h"  // any_type data provider
@@ -316,20 +309,16 @@ bool set_data(const std::string& path, T data)
 {
 	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
 
-	// Verify that the default's type matches T,
-	// if there's RTTI or type tracking enabled.
-#if !(defined DISABLE_RTTI && DISABLE_RTTI) \
-		|| (defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING)
+	// Verify that the default's type matches T
 	if (!node_t::is_abs_path(path)) {
 		node_ptr def_node = get_default_node(path);
 		if (def_node && !def_node->data_is_empty()) {  // if exists and not empty
 			// template is needed for gcc3.3
 			if (!def_node->template data_is_type<T>())
-				THROW_FATAL(std::runtime_error(std::string(
-						"rconfig::set_data(): Error: Type mismatch between default and config value for \"") + path + "\"!"));
+				throw std::runtime_error(std::string(
+						"rconfig::set_data(): Error: Type mismatch between default and config value for \"") + path + "\"!");
 		}
 	}
-#endif
 
 	node_ptr cnode = get_config_node(path, true);  // auto-create. note that it still may fail.
 	if (cnode)
@@ -411,9 +400,6 @@ inline bool data_is_empty(const std::string& path)
 }
 
 
-#if !(defined DISABLE_RTTI && DISABLE_RTTI) \
-		|| (defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING)
-
 /// Check if data at path is of type \c T. If the path is relative, look in /config, then /default.
 /// This function works only if either RTTI or type tracking is enabled
 template<typename T> inline
@@ -426,8 +412,6 @@ bool data_is_type(const std::string& path)
 		return false;  // no such node
 	return node->data_is_type<T>();
 }
-
-#endif
 
 
 
@@ -457,7 +441,7 @@ T get_data(const std::string& path)
 
 	node_ptr node = get_node(path);
 	if (!node)
-		THROW_FATAL(rmn::no_such_node(path));  // no such node
+		throw rmn::no_such_node(path);  // no such node
 	return node->get_data<T>();
 }
 
@@ -490,7 +474,7 @@ T convert_data(const std::string& path)
 
 	node_ptr node = get_node(path);
 	if (!node)
-		THROW_FATAL(rmn::no_such_node(path));
+		throw rmn::no_such_node(path);
 	return node->convert_data<T>();
 }
 

@@ -14,9 +14,7 @@
 #include <sstream>
 #include <cstdarg>  // std::va_start, va_list macro and friends
 
-#include "hz/tls.h"
 #include "hz/string_sprintf.h"  // string_vsprintf()
-#include "hz/exceptions.h"  // THROW_FATAL
 
 #include "dout.h"
 #include "dflags.h"
@@ -44,7 +42,7 @@ std::ostream& debug_out(debug_level::flag level, const std::string& domain)
 		}
 
 		// this is an internal error
-		THROW_FATAL(debug_internal_error(msg.c_str()));
+		throw debug_internal_error(msg.c_str());
 	}
 
 	debug_internal::DebugState::level_map_t::iterator os = level_map->second.find(level);
@@ -53,7 +51,7 @@ std::ostream& debug_out(debug_level::flag level, const std::string& domain)
 				debug_level::get_name(level) + " in domain: \"" + domain + "\".";
 
 		// this is an internal error
-		THROW_FATAL(debug_internal_error(msg.c_str()));
+		throw debug_internal_error(msg.c_str());
 	}
 
 	return *(os->second);

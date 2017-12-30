@@ -80,15 +80,9 @@ struct TestClass {
 
 		a.get<std::string>();
 
-		// is_type<> is available only with RTTI
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 		if (a.is_type<std::string>())
 			return any_cast<std::string>(a);
 		return std::string();
-
-#else  // can't do any checking here
-		return any_cast<std::string>(a);
-#endif
 	}
 
 

@@ -154,12 +154,8 @@ int main()
 		std::cerr << number_to_string(2L) << "\n";  // long int
 		std::cerr << number_to_string(6) << "\n";  // int
 
-#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
 		std::cerr << number_to_string(3LL) << "\n";  // long long int
-#endif
-#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
 		std::cerr << number_to_string(4ULL) << "\n";  // unsigned long long int
-#endif
 
 		std::cerr << number_to_string(5.f) << "\n";  // float
 		std::cerr << number_to_string(1.33) << "\n";  // double

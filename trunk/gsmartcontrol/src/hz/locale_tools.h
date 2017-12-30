@@ -72,20 +72,16 @@ inline std::string locale_c_get()
 /// \return false on failure (no exception is thrown)
 inline bool locale_cpp_set(const std::locale& loc, std::locale& old_locale)
 {
-#if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
 	try {
-#endif
 		// under FreeBSD (at least 6.x) and OSX, this may throw on anything
 		// except "C" and "POSIX" with message:
 		// "locale::facet::_S_create_c_locale name not valid".
 		// Blame inadequate implementations.
 		old_locale = std::locale::global(loc);
-#if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
 	}
 	catch (const std::runtime_error& e) {
 		return false;
 	}
-#endif
 	return true;
 }
 
@@ -96,16 +92,12 @@ inline bool locale_cpp_set(const std::locale& loc, std::locale& old_locale)
 /// \return false on failure (no exception is thrown)
 inline bool locale_cpp_set(const std::locale& loc, std::string& old_locale)
 {
-#if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
 	try {
-#endif
 		old_locale = std::locale::global(loc).name();  // not sure, but name() may not be unique (?)
-#if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
 	}
 	catch (const std::runtime_error& e) {
 		return false;
 	}
-#endif
 	return true;
 }
 
@@ -116,16 +108,12 @@ inline bool locale_cpp_set(const std::locale& loc, std::string& old_locale)
 /// \return false on failure (no exception is thrown)
 inline bool locale_cpp_set(const std::locale& loc)
 {
-#if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
 	try {
-#endif
 		std::locale::global(loc);
-#if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
 	}
 	catch (const std::runtime_error& e) {
 		return false;
 	}
-#endif
 	return true;
 }
 
@@ -136,16 +124,12 @@ inline bool locale_cpp_set(const std::locale& loc)
 /// \return false on failure (no exception is thrown)
 inline bool locale_cpp_set(const std::string& loc, std::locale& old_locale)
 {
-#if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
 	try {
-#endif
 		old_locale = std::locale::global(std::locale(loc.c_str()));
-#if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
 	}
 	catch (const std::runtime_error& e) {
 		return false;
 	}
-#endif
 	return true;
 }
 
@@ -155,16 +139,12 @@ inline bool locale_cpp_set(const std::string& loc, std::locale& old_locale)
 /// \return false on failure (no exception is thrown)
 inline bool locale_cpp_set(const std::string& loc, std::string& old_locale)
 {
-#if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
 	try {
-#endif
 		old_locale = std::locale::global(std::locale(loc.c_str())).name();  // not sure, but name() may not be unique (?)
-#if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
 	}
 	catch (const std::runtime_error& e) {
 		return false;
 	}
-#endif
 	return true;
 }
 
@@ -174,16 +154,12 @@ inline bool locale_cpp_set(const std::string& loc, std::string& old_locale)
 /// \return false on failure (no exception is thrown)
 inline bool locale_cpp_set(const std::string& loc)
 {
-#if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
 	try {
-#endif
 		std::locale::global(std::locale(loc.c_str()));
-#if !(defined DISABLE_EXCEPTIONS && DISABLE_EXCEPTIONS)
 	}
 	catch (const std::runtime_error& e) {
 		return false;
 	}
-#endif
 	return true;
 }
 

@@ -184,13 +184,8 @@ namespace debug_internal {
 
 /// \def DBG_FUNC_NAME
 /// Function name (without classes / namespaces) only, e.g. "main", as const char*.
-#if defined HAVE_CXX___func__ && HAVE_CXX___func__
-	#define DBG_FUNC_NAME __func__
-#elif defined HAVE_CXX___FUNCTION__ && HAVE_CXX___FUNCTION__
-	#define DBG_FUNC_NAME __FUNCTION__
-#else
-	#define DBG_FUNC_NAME "unknown"
-#endif
+#define DBG_FUNC_NAME __func__
+
 
 /// \def DBG_FUNC_PRNAME
 /// Function pretty name is the whole function prototype,

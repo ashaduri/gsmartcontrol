@@ -20,8 +20,6 @@
 #endif
 
 #include "hz/process_signal.h"  // hz::process_signal_send, win32's W*
-#include "hz/tls.h"
-#include "hz/tls_policy_glib.h"
 #include "hz/debug.h"
 #include "hz/string_num.h"  // hz::number_to_string()
 #include "hz/env_tools.h"  // hz::ScopedEnv

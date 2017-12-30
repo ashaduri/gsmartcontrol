@@ -14,8 +14,6 @@
 
 #include "hz/hz_config.h"  // DEBUG_BUILD
 
-#include "hz/exceptions.h"  // THROW_FATAL
-
 #include "dstate.h"
 #include "dflags.h"
 #include "dchannel.h"
@@ -99,8 +97,8 @@ bool debug_register_domain(const std::string& domain)
 	// copy the "default" domain - use it as a template
 	DebugState::domain_map_t::iterator def_iter = dm.find("default");
 	if (def_iter == dm.end()) {
-		THROW_FATAL(debug_internal_error(("debug_register_domain(\"" + domain
-			+ "\"): Domain \"default\" doesn't exist.").c_str()));
+		throw debug_internal_error(("debug_register_domain(\"" + domain
+			+ "\"): Domain \"default\" doesn't exist.").c_str());
 	}
 
 	DebugState::level_map_t& def_level_map = def_iter->second;

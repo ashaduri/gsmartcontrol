@@ -54,9 +54,9 @@ namespace internal {
 	inline void sync_pthread_throw_exception(const std::string& msg, int errno_value = 0)
 	{
 		if (errno_value == 0) {
-			THROW_FATAL(sync_resource_error(msg));
+			throw (sync_resource_error(msg));
 		} else {
-			THROW_FATAL(sync_resource_error(msg + " Errno: " + hz::errno_string(errno_value)));
+			throw (sync_resource_error(msg + " Errno: " + hz::errno_string(errno_value)));
 		}
 	}
 

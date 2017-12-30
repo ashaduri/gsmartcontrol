@@ -37,12 +37,7 @@ See http://www.boost.org/libs/smart_ptr/intrusive_ptr.html for documentation.
 #include <cstring>  // strncpy / strlen
 #include <exception>  // std::exception
 // #include <iosfwd>  // std::ostream (for operator<<)
-
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
-	#include <typeinfo>  // std::type_info
-#endif
-
-#include "exceptions.h"  // THROW_FATAL
+#include <typeinfo>  // std::type_info
 
 
 /// \def INTRUSIVE_PTR_TRACING
@@ -81,15 +76,12 @@ struct intrusive_ptr_error : virtual public std::exception {  // from <exception
 
 	/// Constructor
 	intrusive_ptr_error(const char* msg)
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 			: type_(typeid(void))
-#endif
 	{
 		std::size_t buf_len = std::strlen(msg) + 1;
 		msg_ = std::strncpy(new char[buf_len], msg, buf_len);
 	}
 
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 	/// Constructor
 	intrusive_ptr_error(const char* msg, const std::type_info& type)
 		: msg_(0), type_(type)
@@ -104,7 +96,6 @@ struct intrusive_ptr_error : virtual public std::exception {  // from <exception
 		std::strncpy(msg_ + msg_len, tmsg, tmsg_len);
 		std::strncpy(msg_ + msg_len + tmsg_len, tname, tname_len + 1);
 	}
-#endif
 
 	/// Virtual destructor
 	virtual ~intrusive_ptr_error() throw()
@@ -121,9 +112,7 @@ struct intrusive_ptr_error : virtual public std::exception {  // from <exception
 	}
 
 	char* msg_;  ///< Error message
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 	const std::type_info& type_;  ///< Type information of the pointee
-#endif
 };
 
 
@@ -136,60 +125,28 @@ struct intrusive_ptr_error : virtual public std::exception {  // from <exception
 /// additional information to std::cerr.
 
 
+#if defined INTRUSIVE_PTR_TRACING && INTRUSIVE_PTR_TRACING \
+		&& defined INTRUSIVE_PTR_RUNTIME_CHECKS && INTRUSIVE_PTR_RUNTIME_CHECKS
+	#define INTRUSIVE_PTR_THROW(cond, type, msg) \
+		if (cond) { \
+			std::cerr << (msg) << " Type: " << type.name() << "\n"; \
+			throw intrusive_ptr_error(msg, type); \
+		}
 
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
+#elif defined INTRUSIVE_PTR_TRACING && INTRUSIVE_PTR_TRACING
+	#define INTRUSIVE_PTR_THROW(cond, type, msg) \
+		{ \
+			std::cerr << (msg) << " Type: " << type.name() << "\n"; \
+		}
 
-	#if defined INTRUSIVE_PTR_TRACING && INTRUSIVE_PTR_TRACING \
-			&& defined INTRUSIVE_PTR_RUNTIME_CHECKS && INTRUSIVE_PTR_RUNTIME_CHECKS
-		#define INTRUSIVE_PTR_THROW(cond, type, msg) \
-			if (cond) { \
-				std::cerr << (msg) << " Type: " << type.name() << "\n"; \
-				THROW_FATAL(intrusive_ptr_error(msg, type)); \
-			}
+#elif defined INTRUSIVE_PTR_RUNTIME_CHECKS && INTRUSIVE_PTR_RUNTIME_CHECKS
+	#define INTRUSIVE_PTR_THROW(cond, type, msg) \
+		if (cond) { \
+			throw intrusive_ptr_error(msg, type); \
+		}
 
-	#elif defined INTRUSIVE_PTR_TRACING && INTRUSIVE_PTR_TRACING
-		#define INTRUSIVE_PTR_THROW(cond, type, msg) \
-			{ \
-				std::cerr << (msg) << " Type: " << type.name() << "\n"; \
-			}
-
-	#elif defined INTRUSIVE_PTR_RUNTIME_CHECKS && INTRUSIVE_PTR_RUNTIME_CHECKS
-		#define INTRUSIVE_PTR_THROW(cond, type, msg) \
-			if (cond) { \
-				THROW_FATAL(intrusive_ptr_error(msg, type)); \
-			}
-
-	#else
-		#define INTRUSIVE_PTR_THROW(cond, type, msg) { }
-	#endif
-
-
-#else  // no rtti
-
-	#if defined INTRUSIVE_PTR_TRACING && INTRUSIVE_PTR_TRACING \
-			&& defined INTRUSIVE_PTR_RUNTIME_CHECKS && INTRUSIVE_PTR_RUNTIME_CHECKS
-		#define INTRUSIVE_PTR_THROW(cond, type, msg) \
-			if (cond) { \
-				std::cerr << (msg) << "\n"; \
-				THROW_FATAL(intrusive_ptr_error(msg)); \
-			}
-
-	#elif defined INTRUSIVE_PTR_TRACING && INTRUSIVE_PTR_TRACING
-		#define INTRUSIVE_PTR_THROW(cond, type, msg) \
-			{ \
-				std::cerr << (msg) << "\n"; \
-			}
-
-	#elif defined INTRUSIVE_PTR_RUNTIME_CHECKS && INTRUSIVE_PTR_RUNTIME_CHECKS
-		#define INTRUSIVE_PTR_THROW(cond, type, msg) \
-			if (cond) { \
-				THROW_FATAL(intrusive_ptr_error(msg)); \
-			}
-
-	#else
-		#define INTRUSIVE_PTR_THROW(cond, type, msg) { }
-	#endif
-
+#else
+	#define INTRUSIVE_PTR_THROW(cond, type, msg) { }
 #endif
 
 
@@ -641,17 +598,12 @@ intrusive_ptr<T, R> ptr_const_cast(const intrusive_ptr<U, S>& p)
     return const_cast<T*>(p.get());
 }
 
-
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
-
 /// Perform a dynamic cast on intrusive_ptr
 template<class T, class R, class U> inline
 intrusive_ptr<T> ptr_dynamic_cast(const intrusive_ptr<U, R>& p)
 {
     return dynamic_cast<T*>(p.get());
 }
-
-#endif
 
 
 

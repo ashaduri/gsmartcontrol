@@ -40,7 +40,7 @@
 #include <locale>  // std::locale::classic()
 
 #include "hz/cstdint.h"
-#include "hz/hz_config.h"  // DISABLE_RTTI, RMN_* (global_macros.h)
+#include "hz/hz_config.h"  // RMN_* (global_macros.h)
 #include "hz/string_algo.h"  // string_split(), string_trim(), string_trim_copy()
 #include "hz/string_num.h"  // string_is_numeric(), number_to_string()
 #include "hz/bin2ascii_encoder.h"
@@ -213,15 +213,6 @@ inline node_data_type node_data_type_from_string(const std::string& str)
 
 // --------------------------- Saving
 
-
-
-// Serializer works only if type tracking or RTTI is enabled
-#if (defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING) \
-		|| !(defined DISABLE_RTTI && DISABLE_RTTI)
-
-/// Whether rmn serialization is available or not.
-// Serializer works only if type tracking or RTTI is enabled.
-#define RMN_SERIALIZE_AVAILABLE 1
 
 
 /// Serialize _one_ node data to string (one line).
@@ -449,10 +440,6 @@ bool serialize_node_to_file_recursive(intrusive_ptr<resource_node<Data> > node,
 {
 	return serialize_node_to_file_recursive(intrusive_ptr<const resource_node<Data> >(node), file);
 }
-
-
-
-#endif  // defined RMN_TYPE_TRACKING || !defined DISABLE_RTTI
 
 
 

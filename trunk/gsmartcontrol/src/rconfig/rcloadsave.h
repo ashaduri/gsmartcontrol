@@ -44,18 +44,7 @@ inline bool load_from_string(const std::string& str)
 
 
 
-
-/// \fn bool save_to_file(const std::string& file)
 /// Save the "/config" branch to a file. This function is thread-safe.
-/// This function is available only if \c RMN_SERIALIZE_AVAILABLE is 1.
-
-/// \fn bool save_to_string(std::string& put_here)
-/// Save the "/config" branch to a string. This function is thread-safe.
-/// This function is available only if \c RMN_SERIALIZE_AVAILABLE is 1.
-
-
-#if defined RMN_SERIALIZE_AVAILABLE && RMN_SERIALIZE_AVAILABLE
-
 inline bool save_to_file(const std::string& file)
 {
 	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
@@ -64,6 +53,7 @@ inline bool save_to_file(const std::string& file)
 }
 
 
+/// Save the "/config" branch to a string. This function is thread-safe.
 inline bool save_to_string(std::string& put_here)
 {
 	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
@@ -71,20 +61,6 @@ inline bool save_to_string(std::string& put_here)
 	return rmn::serialize_node_to_string_recursive(get_config_branch(), put_here);
 }
 
-#else  // no save function
-
-inline bool save_to_file(const std::string& file)
-{
-	return false;
-}
-
-
-inline bool save_to_string(std::string& put_here)
-{
-	return false;
-}
-
-#endif
 
 
 

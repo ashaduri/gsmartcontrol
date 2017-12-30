@@ -28,33 +28,6 @@ Additionally, it may be included through compiler's "-include" option
 #define APP_GLOBAL_MACROS_INCLUDED 1
 
 
-// #ifdef _WIN32
-	// needed for hz::send_process_signal(), winxp or later.
-// 	#define WINVER 0x0501
-// #endif
-
-// this is either defined to 1 (by autoconf), or undefined
-#ifdef HAVE_LONG_LONG_INT
-	#define DISABLE_LL_INT 0
-
-#else  // there is no long long int
-	// explicitly disable it in our code. by default, it assumes that long long int exists.
-	#define DISABLE_LL_INT 1
-
-#endif
-
-
-// this is either defined to 1 (by autoconf), or undefined
-#ifdef HAVE_UNSIGNED_LONG_LONG_INT
-	#define DISABLE_ULL_INT 0
-
-#else  // there is no long long int
-	// explicitly disable it in our code. by default, it assumes that long long int exists.
-	#define DISABLE_ULL_INT 1
-
-#endif
-
-
 
 // HAVE_func means that func doesn't throw undefined symbol.
 // HAVE_DECL_func means that it's declared in a header.
@@ -91,29 +64,9 @@ Additionally, it may be included through compiler's "-include" option
 // #define ENABLE_GLIBMM 1
 
 
-// -- RMN settings - see rmn/rmn.h for details
-// #define RMN_TYPE_TRACKING
-
-
 // Note: We use DISABLE_* because all the libraries should assume
 // complete C++ support, unless indicated otherwise. This also
 // makes the headers work in full when there is no config.h.
-
-// -- Define this if using -fno-rtti or similar (automatic from autoconf).
-// HAVE_RTTI is always defined as 1 or 0.
-#if !defined DISABLE_RTTI && defined HAVE_RTTI && !HAVE_RTTI
-	#define DISABLE_RTTI 1
-#else
-	#define DISABLE_RTTI 0
-#endif
-
-// -- Define this if using -fno-exceptions (automatic from autoconf).
-// HAVE_EXCEPTIONS is always defined as 1 or 0.
-#if !defined DISABLE_EXCEPTIONS && defined HAVE_EXCEPTIONS && !HAVE_EXCEPTIONS
-	#define DISABLE_EXCEPTIONS 1
-#else
-	#define DISABLE_EXCEPTIONS 0
-#endif
 
 
 
@@ -140,34 +93,6 @@ Additionally, it may be included through compiler's "-include" option
 	// #define HZ_SYNC_DEFAULT_POLICY_GLIBMM
 	// #define HZ_SYNC_DEFAULT_POLICY_BOOST
 	// #define HZ_SYNC_DEFAULT_POLICY_POCO
-
-#endif
-*/
-
-
-// -- Default policy for thread-local storage pointer (tls.h);
-// (define only one of these):
-/*
-// check if any of them are forced
-#if (!defined HZ_TLS_DEFAULT_POLICY_BOOST) \
-		&& (!defined HZ_TLS_DEFAULT_POLICY_GLIB) \
-		&& (!defined HZ_TLS_DEFAULT_POLICY_PTHREAD) \
-		&& (!defined HZ_TLS_DEFAULT_POLICY_WIN32)
-
-	#if defined ENABLE_GLIB && ENABLE_GLIB
-		#define HZ_TLS_DEFAULT_POLICY_GLIB
-
-	#elif defined _WIN32
-		// use pthread-win32 or boost on win32.
-		// our win32 policy lacks good cleanup function support.
-		#define HZ_TLS_DEFAULT_POLICY_PTHREAD
-
-	#else
-		#define HZ_TLS_DEFAULT_POLICY_PTHREAD
-	#endif
-
-	// #define HZ_TLS_DEFAULT_POLICY_BOOST
-	// #define HZ_TLS_DEFAULT_POLICY_WIN32
 
 #endif
 */

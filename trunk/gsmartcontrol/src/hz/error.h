@@ -16,14 +16,7 @@
 
 #include <string>
 #include <exception>  // for std::exception specialization
-
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
-	#include <typeinfo>  // std::type_info
-#endif
-
-// #if defined ENABLE_GLIBMM && ENABLE_GLIBMM
-// #	include <glibmm/error.h>  // for Glib::Error specialization
-// #endif
+#include <typeinfo>  // std::type_info
 
 #include "debug.h"  // DBG_ASSERT
 #include "errno_string.h"  // hz::errno_string
@@ -31,17 +24,6 @@
 #include "bad_cast_exception.h"
 #include "i18n.h"  // HZ__
 
-
-
-/**
-\file
-Compilation options:
-- Define DISABLE_RTTI to disable RTTI checks and typeinfo-getter
-	functions. NOT recommended.
-- Define ENABLE_GLIBMM to 1 to enable glibmm-related code (mainly
-	utf8 string messages and Glib::Error specialization). Note that this
-	will also enable GLIB.
-*/
 
 
 namespace hz {
@@ -103,20 +85,16 @@ class ErrorBase {
 		virtual ErrorBase* clone() = 0;  // needed for copying by base pointers
 
 
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 		/// Get std::type_info for the error code type.
 		virtual const std::type_info& get_code_type() const = 0;
-#endif
 
 		
 		/// Get error code of type \c CodeMemberType
 		template<class CodeMemberType>
 		CodeMemberType get_code() const  // this may throw on bad cast!
 		{
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 			if (get_code_type() != typeid(CodeMemberType))
-				THROW_CUSTOM_BAD_CAST(type_mismatch, get_code_type(), typeid(CodeMemberType));
-#endif
+				throw type_mismatch(get_code_type(), typeid(CodeMemberType));
 			return static_cast<const Error<CodeMemberType>*>(this)->code;
 		}
 
@@ -124,10 +102,8 @@ class ErrorBase {
 		template<class CodeMemberType>
 		bool get_code(CodeMemberType& put_it_here) const  // this doesn't throw
 		{
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 			if (get_code_type() != typeid(CodeMemberType))
 				return false;
-#endif
 			put_it_here = static_cast<const Error<CodeMemberType>*>(this)->code;
 			return true;
 		}
@@ -175,7 +151,7 @@ class ErrorBase {
 	protected:
 
 		std::string type;  ///< Error type
-		level_t level;  ///< Error severity
+		level_t level = ErrorLevel::none;  ///< Error severity
 		std::string message;  ///< Error message
 
 };
@@ -202,12 +178,10 @@ class ErrorCodeHolder : public ErrorBase {
 
 	public:
 
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 		// Reimplemented from ErrorBase
 		const std::type_info& get_code_type() const { return typeid(CodeType); }
-#endif
 
-		CodeType code;  ///< Error code. We have a class specialization for references too
+		CodeType code = CodeType();  ///< Error code. We have a class specialization for references too
 
 };
 
@@ -225,10 +199,8 @@ class ErrorCodeHolder<void> : public ErrorBase {
 
 	public:
 
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 		// Reimplemented from ErrorBase
 		const std::type_info& get_code_type() const { return typeid(void); }
-#endif
 
 };
 

@@ -30,9 +30,7 @@
 #define RMN_RESOURCE_DATA_TYPES_H
 
 #include <string>
-
-#include "hz/hz_config.h"  // DISABLE_RTTI, RMN_TYPE_TRACKING (global_macros.h)
-#include "hz/cstdint.h"
+#include <cstdint>
 
 
 
@@ -41,7 +39,7 @@ namespace rmn {
 
 
 
-/// Node data type, used mainly in \c RMN_TYPE_TRACKING.
+/// Node data type.
 /// Only serializable and some additional types are here.
 enum node_data_type {
 	T_EMPTY,  ///< Not really a type, but may be handy
@@ -85,35 +83,7 @@ template<> struct node_data_type_by_real<void*> { static const node_data_type ty
 
 
 
-
-/// \fn node_data_type resource_node_get_type(intrusive_ptr<resource_node<Data> > node)
-/// Get node_data_type from rmn node. Const pointer overload.
-
-/// \fn node_data_type resource_node_get_type(intrusive_ptr<const resource_node<Data> > node)
 /// Get node_data_type from rmn node.
-
-
-
-#if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
-
-template<class Data> inline
-node_data_type resource_node_get_type(intrusive_ptr<const resource_node<Data> > node)
-{
-	return node->get_type();
-}
-
-
-template<class Data> inline
-node_data_type resource_node_get_type(intrusive_ptr<resource_node<Data> > node)
-{
-	return resource_node_get_type(intrusive_ptr<const resource_node<Data> >(node));
-}
-
-
-
-#elif !(defined DISABLE_RTTI && DISABLE_RTTI)
-
-// RTTI version (slower)
 template<class Data> inline
 node_data_type resource_node_get_type(intrusive_ptr<const resource_node<Data> > node)
 {
@@ -131,17 +101,6 @@ node_data_type resource_node_get_type(intrusive_ptr<const resource_node<Data> > 
 
 	return T_UNKNOWN;
 }
-
-template<class Data> inline
-node_data_type resource_node_get_type(intrusive_ptr<resource_node<Data> > node)
-{
-	return resource_node_get_type(intrusive_ptr<const resource_node<Data> >(node));
-}
-
-#endif
-
-
-
 
 
 

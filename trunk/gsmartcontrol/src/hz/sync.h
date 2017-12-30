@@ -18,7 +18,6 @@
 #include <string>
 
 #include "noncopyable.h"
-#include "exceptions.h"  // THROW_FATAL
 #include "sync_part_get_policy.h"  // internal header, SyncGetPolicy struct.
 
 
@@ -294,7 +293,7 @@ struct SyncScopedLockProvider {
 			bool retry()
 			{
 				if (locked_) {
-					THROW_FATAL(sync_resource_error("GenericScopedTryLock::trylock(): Attempting to lock an already locked mutex."));
+					throw sync_resource_error("GenericScopedTryLock::trylock(): Attempting to lock an already locked mutex.");
 					return false;
 				}
 				if (do_lock_)
@@ -372,7 +371,7 @@ struct SyncScopedLockProvider {
 			bool retry()
 			{
 				if (locked_)  // it's a fatal error, so no point in returning anything.
-					THROW_FATAL(sync_resource_error("GenericScopedRWTryLock::trylock(): Attempting to lock an already locked mutex."));
+					throw sync_resource_error("GenericScopedRWTryLock::trylock(): Attempting to lock an already locked mutex.");
 				if (do_lock_)
 					return (locked_= Policy::trylock(mutex_, for_write_));
 				return true;  // it's always success if do_lock was false.
@@ -478,7 +477,7 @@ struct SyncPolicyNone {
 			bool retry()
 			{
 				if (do_lock_)  // assume that constructor locked it successfully (api-wise).
-					THROW_FATAL(sync_resource_error("GenericScopedTryLock::trylock(): Attempting to lock an already locked mutex."));
+					throw sync_resource_error("GenericScopedTryLock::trylock(): Attempting to lock an already locked mutex.");
 				return true;
 			}
 
@@ -524,7 +523,7 @@ struct SyncPolicyNone {
 			bool retry()
 			{
 				if (do_lock_)  // assume that constructor locked it successfully (api-wise).
-					THROW_FATAL(sync_resource_error("GenericScopedRWTryLock::trylock(): Attempting to lock an already locked mutex."));
+					throw sync_resource_error("GenericScopedRWTryLock::trylock(): Attempting to lock an already locked mutex.");
 				return true;
 			}
 
