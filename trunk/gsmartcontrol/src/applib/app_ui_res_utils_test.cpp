@@ -9,8 +9,13 @@
 /// \weakgroup applib_tests
 /// @{
 
-#include <iostream>
+// TODO Remove this in gtkmm4.
+#include <bits/stdc++.h>  // to avoid throw() macro errors.
+#define throw(a)  // glibmm uses dynamic exception specifications, remove them.
+#include <glibmm.h>  // NOT NEEDED
+#undef throw
 
+#include <iostream>
 #include <gtkmm.h>
 
 #include "app_ui_res_utils.h"

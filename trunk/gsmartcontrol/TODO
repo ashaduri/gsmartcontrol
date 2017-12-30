@@ -33,15 +33,24 @@ Port to C++17 (or at least 14, that's what libsigc++ requires)
 	Remove glibmm thread stuff (it's gone in gtkmm4).
 
 
-Remove strtold / strtof.
-DISABLE_STRTOF
-DISABLE_STRTOLD
+strtold / strtof, DISABLE_STRTOF, DISABLE_STRTOLD (after ascii.h)
 Port to std::filesystem.
-convert hz::any_type to std::any
-type_properties.h
-static_assert
-scoped_ptr
-cstdint
+type_properties.h / type_categories.h (after ascii.h and string_num.h)
+scoped_ptr (after we have GtkFileChooserNative in gtkmm)
+scoped_array (after we get rid of hz::fs)
+Fix ResourceDataAnyDumper.
+sync.
+common_types (after sync).
+format_date() -> C++17 has it.
+noncopyable (after sync)
+snprintf
+ptr_container
+stream_cast?
+some string_algo
+string_sprintf?
+wcmatch (through regex)?
+std::wstring in mingw instead of wchar_t?
+Check licenses - do we still use boost, bsd?
 
 
 After JSON:

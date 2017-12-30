@@ -1118,9 +1118,11 @@ void GscMainWindow::run_update_drivedb()
 	update_binary = "xterm -hold -e " + update_binary;
 #endif
 
-	hz::scoped_ptr<GError> spawn_error(0, g_error_free);
-	if (!g_spawn_command_line_async(update_binary.c_str(), &spawn_error.get_ref())) {
-		gui_show_error_dialog("Error Updating Drive Database", spawn_error->message, this);
+	try {
+		Glib::spawn_command_line_async(update_binary);
+	}
+	catch(Glib::Error& e) {
+		gui_show_error_dialog("Error Updating Drive Database", e.what(), this);
 	}
 }
 

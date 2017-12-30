@@ -15,8 +15,8 @@
 #include "hz_config.h"  // feature macros
 
 #include <string>
+#include <cstdint>
 
-#include "cstdint.h"
 #include "data_file.h"
 #include "fs_file.h"
 

@@ -15,9 +15,8 @@
 #include <string>
 #include <vector>
 #include <iosfwd>
-
-#include "hz/optional_value.h"
-#include "hz/cstdint.h"
+#include <cstdint>
+#include <optional>
 
 
 
@@ -130,9 +129,9 @@ class StorageAttribute {
 
 		int32_t id;  ///< Attribute ID (most vendors agree on this)
 		std::string flag;  ///< "Old" format is "0xXXXX", "brief" format is "PO--C-".
-		hz::OptionalValue<uint8_t> value;  ///< Normalized value. May be unset ("---").
-		hz::OptionalValue<uint8_t> worst;  ///< Worst ever value. May be unset ("---").
-		hz::OptionalValue<uint8_t> threshold;  ///< Threshold for normalized value. May be unset ("---").
+		std::optional<uint8_t> value;  ///< Normalized value. May be unset ("---").
+		std::optional<uint8_t> worst;  ///< Worst ever value. May be unset ("---").
+		std::optional<uint8_t> threshold;  ///< Threshold for normalized value. May be unset ("---").
 		attr_t attr_type;  ///< Attribute pre-fail / old-age type
 		update_t update_type;  ///< When-updated type
 		fail_time_t when_failed;  ///< When-failed type

@@ -12,8 +12,13 @@
 #ifndef APP_CMDEX_SYNC_GUI_H
 #define APP_CMDEX_SYNC_GUI_H
 
-#include <gtkmm/messagedialog.h>
-#include <glibmm/timer.h>
+// TODO Remove this in gtkmm4.
+#include <bits/stdc++.h>  // to avoid throw() macro errors.
+#define throw(a)  // glibmm uses dynamic exception specifications, remove them.
+#include <glibmm.h>  // NOT NEEDED
+#undef throw
+
+#include <gtkmm.h>
 
 #include "hz/noncopyable.h"
 

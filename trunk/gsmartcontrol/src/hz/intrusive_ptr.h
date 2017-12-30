@@ -84,7 +84,7 @@ struct intrusive_ptr_error : virtual public std::exception {  // from <exception
 
 	/// Constructor
 	intrusive_ptr_error(const char* msg, const std::type_info& type)
-		: msg_(0), type_(type)
+		: type_(type)
 	{
 		const char* tname = type.name();
 		const char* tmsg = " Type: ";
@@ -111,7 +111,7 @@ struct intrusive_ptr_error : virtual public std::exception {  // from <exception
 		return msg_;
 	}
 
-	char* msg_;  ///< Error message
+	char* msg_ = 0;  ///< Error message
 	const std::type_info& type_;  ///< Type information of the pointee
 };
 
