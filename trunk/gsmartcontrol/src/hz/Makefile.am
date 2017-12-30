@@ -1,7 +1,7 @@
 AM_CPPFLAGS = $(all_includes)
 METASOURCES = AUTO
 
-noinst_HEADERS = any_convert.h any_type.h any_type_holder.h ascii.h \
+noinst_HEADERS = ascii.h \
 	bad_cast_exception.h bin2ascii_encoder.h common_types.h cstdint.h cstdint_impl_msvc.h \
 	data_file.h debug.h env_tools.h errno_string.h error.h error_holder.h \
 	format_unit.h fs_common.h fs_dir.h fs_dir_platform.h fs_error_holder.h \
@@ -14,7 +14,6 @@ noinst_HEADERS = any_convert.h any_type.h any_type_holder.h ascii.h \
 	sync_policy_glib.h sync_policy_glibmm.h sync_policy_pthread.h \
 	sync_policy_win32.h system_specific.h type_categories.h type_properties.h win32_tools.h
 
-any_type_test_SOURCES = any_type_test.cpp
 bin2ascii_encoder_test_SOURCES = bin2ascii_encoder_test.cpp
 errno_string_test_SOURCES = errno_string_test.cpp
 format_unit_test_SOURCES = format_unit_test.cpp
@@ -31,7 +30,7 @@ sync_multilock_test_SOURCES = sync_multilock_test.cpp
 # we don't list them in a separate variable because otherwise kdevelop won't see them.
 noinst_PROGRAMS =
 if ENABLE_TESTS
-noinst_PROGRAMS += any_type_test bin2ascii_encoder_test errno_string_test \
+noinst_PROGRAMS += bin2ascii_encoder_test errno_string_test \
 	format_unit_test fs_dir_test fs_file_test fs_path_test string_algo_test string_num_test \
 	string_wcmatch_test sync_test sync_multilock_test
 endif

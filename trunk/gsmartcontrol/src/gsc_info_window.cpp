@@ -9,6 +9,12 @@
 /// \weakgroup gsc
 /// @{
 
+// TODO Remove this in gtkmm4.
+#include <bits/stdc++.h>  // to avoid throw() macro errors.
+#define throw(a)  // glibmm uses dynamic exception specifications, remove them.
+#include <glibmm.h>  // NOT NEEDED
+#undef throw
+
 #include <gtkmm.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
 #include <vector>  // better use vector, it's needed by others too

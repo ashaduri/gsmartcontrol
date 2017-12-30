@@ -173,26 +173,6 @@ class ResourceDataOne {
 		}
 
 
-		/// Get data (use static_cast conversion).
-		template<typename T>
-		inline bool convert_data(T& put_it_here) const  // returns false if cast failed
-		{
-			put_it_here = static_cast<T>(data_);
-			return true;  // static_cast will check it at compile-time.
-		}
-
-
-		/// Get a copy of data (use static_cast conversion).
-		/// \throw rmn::empty_data_retrieval if data is empty
-		template<typename T>
-		T convert_data() const
-		{
-			if (empty_)
-				throw empty_data_retrieval();
-			return static_cast<T>(data_);
-		}
-
-
 
 		template<class T>
 		friend struct ResourceDataOneDumper;

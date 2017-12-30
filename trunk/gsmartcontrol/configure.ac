@@ -194,7 +194,7 @@ LIBS="$LIBS $PCRECPP_LIBS"
 # Ideally, gcc should use the "latest" standard, but it just uses the latest option.
 # TODO For now, since gtkmm3 uses dynamic exception specifications, we have
 # to enable 14 instead of 17.
-CXXFLAGS="$CXXFLAGS -std=c++14"
+CXXFLAGS="$CXXFLAGS -std=c++17"
 
 
 # -------------------------------------------------------------------------------------
