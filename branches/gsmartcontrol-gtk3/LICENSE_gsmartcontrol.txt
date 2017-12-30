@@ -1,0 +1,34 @@
+
+GSmartControl License
+
+This product is multi-licensed under GNU GPL versions 2 and 3.
+You are free to choose which one you use.
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of either version 2 or (at your option) version 3 of the GNU General
+Public License as published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+A PARTICULAR PURPOSE. See the GNU General Public Licenses for more details.
+
+You should have received copies of these licenses along with this program.
+If not, see <http://www.gnu.org/licenses/>.
+
+See LICENSE_gpl2.txt and LICENSE_gpl3.txt for details.
+
+
+All files which don't have any copyright notices, as well as tests and
+examples are covered under the Unlicense. See LICENSE_unlicense.txt for
+details.
+
+
+This product includes the HZ library (or portions of it). See LICENSE_hz.txt
+for details.
+
+
+This product includes icons from Crystal Project,
+copyright 2006-2007 Everaldo Coelho.
+http://www.everaldo.com/crystal, http://www.yellowicon.com .
+Crystal Project icons are licensed under GNU LGPL. See
+http://www.everaldo.com/crystal/?action=license for details.
