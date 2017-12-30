@@ -26,6 +26,31 @@ TODO:
 Don't rely on smartctl return code (2), parse the output instead.
 	This will allow us to show the Info page.
 	Need usage cases.
+	JSON may fix this.
+
+
+Port to C++17 (or at least 14, that's what libsigc++ requires)
+	Remove glibmm thread stuff (it's gone in gtkmm4).
+
+
+Remove strtold / strtof.
+DISABLE_STRTOF
+DISABLE_STRTOLD
+Port to std::filesystem.
+convert hz::any_type to std::any
+type_properties.h
+static_assert
+scoped_ptr
+cstdint
+
+
+After JSON:
+	Port to std::regex, get rid of pcre requirement.
+
+
+
+
+
 
 
 Testing:

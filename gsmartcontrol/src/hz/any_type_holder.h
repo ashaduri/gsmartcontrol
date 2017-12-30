@@ -21,10 +21,7 @@
 Internal header, do not include manually.
 */
 
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
-	#include <typeinfo>  // std::type_info
-#endif
-
+#include <typeinfo>  // std::type_info
 #include <iosfwd>  // std::ostream
 #include <string>
 
@@ -48,10 +45,9 @@ struct AnyHolderBase {
 	/// Virtual destructor
 	virtual ~AnyHolderBase() { }
 
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 	/// Get std::type_info for the wrapped variable
 	virtual const std::type_info& type() const = 0;
-#endif
+
 	/// Clone the wrapped variable
 	virtual AnyHolderBase* clone() const = 0;
 
@@ -75,12 +71,8 @@ struct AnyHolderBase {
 	virtual bool convert(unsigned int& val) const = 0;
 	virtual bool convert(long int& val) const = 0;
 	virtual bool convert(unsigned long int& val) const = 0;
-#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
 	virtual bool convert(long long int& val) const = 0;
-#endif
-#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
 	virtual bool convert(unsigned long long int& val) const = 0;
-#endif
 
 	virtual bool convert(double& val) const = 0;
 	virtual bool convert(float& val) const = 0;
@@ -109,13 +101,11 @@ struct AnyHolder : public AnyHolderBase {
 	{ }
 
 
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 	/// Get std::type_info object for the wrapped variable
 	const std::type_info& type() const
 	{
 		return typeid(ValueType);
 	}
-#endif
 
 	/// Clone the wrapped variable. Note that this is not a deep clone.
 	AnyHolderBase* clone() const
@@ -147,12 +137,8 @@ struct AnyHolder : public AnyHolderBase {
 	bool convert(unsigned int& val) const { return any_convert(value, val); }
 	bool convert(long int& val) const { return any_convert(value, val); }
 	bool convert(unsigned long int& val) const { return any_convert(value, val); }
-#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
 	bool convert(long long int& val) const { return any_convert(value, val); }
-#endif
-#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
 	bool convert(unsigned long long int& val) const { return any_convert(value, val); }
-#endif
 
 	bool convert(double& val) const { return any_convert(value, val); }
 	bool convert(float& val) const { return any_convert(value, val); }

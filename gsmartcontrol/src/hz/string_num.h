@@ -25,7 +25,6 @@
 
 #include "type_properties.h"  // type_is_*
 #include "type_categories.h"  // type_check_category
-// #include "static_assert.h"  // HZ_STATIC_ASSERT
 #include "ascii.h"  // ascii_*
 
 
@@ -208,12 +207,8 @@ DEFINE_STRING_IS_NUMERIC(unsigned int)
 DEFINE_STRING_IS_NUMERIC(long int)
 DEFINE_STRING_IS_NUMERIC(unsigned long int)
 
-#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
-	DEFINE_STRING_IS_NUMERIC(long long int)
-#endif
-#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
-	DEFINE_STRING_IS_NUMERIC(unsigned long long int)
-#endif
+DEFINE_STRING_IS_NUMERIC(long long int)
+DEFINE_STRING_IS_NUMERIC(unsigned long long int)
 
 DEFINE_STRING_IS_NUMERIC(float)
 DEFINE_STRING_IS_NUMERIC(double)
@@ -235,13 +230,7 @@ namespace internal {
 
 
 	template<typename T, typename SpecCat = typename type_check_category<T>::type>
-	struct number_to_string_impl {
-// 		static std::string func(T number, int alpha_or_base_or_precision, bool ignored_param)
-// 		{
-// 			HZ_STATIC_ASSERT(hz::static_false<T>::value, not_a_number);
-// 			return std::string();
-// 		}
-	};
+	struct number_to_string_impl;
 
 
 	// bool spec

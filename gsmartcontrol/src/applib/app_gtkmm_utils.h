@@ -15,8 +15,6 @@
 #include <string>
 #include <gtkmm.h>
 
-#include "hz/down_cast.h"
-
 
 
 /// Get column header widget of a tree view column.
@@ -56,8 +54,7 @@ int app_gtkmm_create_tree_view_column(Gtk::TreeModelColumn<T>& mcol, Gtk::TreeVi
 		app_gtkmm_set_widget_tooltip(*header, tooltip_text);
 
 	if (cell_markup) {
-		Gtk::CellRendererText* cr_type = hz::down_cast<Gtk::CellRendererText*>(treeview.get_column_cell_renderer(num_tree_cols - 1));
-		if (cr_type) {  // may not be true if it's not Text (unless static_cast is used, in which case we're screwed)
+		if (Gtk::CellRendererText* cr_type = dynamic_cast<Gtk::CellRendererText*>(treeview.get_column_cell_renderer(num_tree_cols - 1))) {
 			treeview.get_column(num_tree_cols - 1)->clear_attributes(*cr_type);  // clear "text" attribute. "markup" won't work without this.
 			treeview.get_column(num_tree_cols - 1)->add_attribute(cr_type->property_markup(), mcol);  // render col_type as markup.
 		}

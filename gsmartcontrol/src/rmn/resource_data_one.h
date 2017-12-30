@@ -31,10 +31,7 @@
 
 #include <string>
 #include <iosfwd>  // std::ostream
-
-#include "hz/type_properties.h"  // type_is_same<>
-#include "hz/exceptions.h"  // THROW_FATAL
-#include "hz/static_assert.h"  // HZ_STATIC_ASSERT
+#include <type_traits>
 
 #include "resource_data_types.h"
 #include "resource_exception.h"
@@ -132,7 +129,7 @@ class ResourceDataOne {
 		template<typename T>
 		inline bool data_is_type() const
 		{
-			return !empty_ && hz::type_is_same<T, DataType>::value;
+			return !empty_ && std::is_same_v<T, DataType>;
 		}
 
 
@@ -169,9 +166,9 @@ class ResourceDataOne {
 		T get_data() const
 		{
 			// use static assertion - early compile-time error is better than runtime error.
-			HZ_STATIC_ASSERT((hz::type_is_same<T, DataType>::value), rmn_type_mismatch);
+			static_assert((std::is_same_v<T, DataType>), "rmn type mismatch");
 			if (empty_)
-				THROW_FATAL(empty_data_retrieval());
+				throw empty_data_retrieval();
 			return data_;
 		}
 
@@ -191,7 +188,7 @@ class ResourceDataOne {
 		T convert_data() const
 		{
 			if (empty_)
-				THROW_FATAL(empty_data_retrieval());
+				throw empty_data_retrieval();
 			return static_cast<T>(data_);
 		}
 

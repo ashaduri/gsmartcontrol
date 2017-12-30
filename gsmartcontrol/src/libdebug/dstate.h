@@ -17,8 +17,6 @@
 #include <stack>
 
 #include "hz/intrusive_ptr.h"
-#include "hz/tls.h"
-#include "hz/exceptions.h"  // THROW_FATAL
 
 #include "dflags.h"
 #include "dstream.h"
@@ -73,51 +71,37 @@ namespace debug_internal {
 			/// Get current indentation level. This is function thread-safe.
 			int get_indent_level() const
 			{
-				if (!indent_level_.get())
-					indent_level_.reset(new int(0));
-				return *indent_level_;
+				return indent_level_;
 			}
 
 			/// Set current indentation level. This is function thread-safe.
 			void set_indent_level(int indent_level)
 			{
-				if (!indent_level_.get()) {
-					indent_level_.reset(new int(indent_level));
-				} else {
-					*indent_level_ = indent_level;
-				}
+				indent_level_ = indent_level;
 			}
 
 			/// Open a debug_begin() context. This is function thread-safe.
 			void push_inside_begin(bool value = true)
 			{
-				if (!inside_begin_.get())
-					inside_begin_.reset(new std::stack<bool>());
-				inside_begin_->push(value);
+				inside_begin_.push(value);
 			}
 
 			/// Close a debug_begin() context. This is function thread-safe.
 			bool pop_inside_begin()
 			{
-				if (!inside_begin_.get())
-					inside_begin_.reset(new std::stack<bool>());
-
-				if (inside_begin_->empty())
-					THROW_FATAL(debug_usage_error("DebugState::pop_inside_begin(): Begin / End stack underflow! Mismatched begin()/end()?"));
-				bool val = inside_begin_->top();
-				inside_begin_->pop();
+				if (inside_begin_.empty())
+					throw debug_usage_error("DebugState::pop_inside_begin(): Begin / End stack underflow! Mismatched begin()/end()?");
+				bool val = inside_begin_.top();
+				inside_begin_.pop();
 				return val;
 			}
 
 			/// Check if we're inside a debug_begin() context. This is function thread-safe.
 			bool get_inside_begin() const
 			{
-				if (!inside_begin_.get())
-					inside_begin_.reset(new std::stack<bool>());
-
-				if (inside_begin_->empty())
+				if (inside_begin_.empty())
 					return false;
-				return inside_begin_->top();
+				return inside_begin_.top();
 			}
 
 
@@ -139,8 +123,8 @@ namespace debug_internal {
 			// We can't provide any manual cleanup, because the only one we can do
 			// is in main thread, and it's already being done with the destructor.
 
-			mutable hz::thread_local_ptr<int> indent_level_;  ///< Current indentation level
-			mutable hz::thread_local_ptr<std::stack<bool> > inside_begin_;  ///< True if inside debug_begin() / debug_end() block
+			mutable int indent_level_ = 0;  ///< Current indentation level
+			mutable std::stack<bool> inside_begin_;  ///< True if inside debug_begin() / debug_end() block
 
 			domain_map_t domain_map;  ///< Domain / debug level mapping.
 

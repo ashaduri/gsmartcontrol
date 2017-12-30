@@ -538,12 +538,12 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 			break;
 
 		case action_enable_smart:  // this may be invoked on menu manipulation
-			on_action_enable_smart_toggled(hz::down_cast<Gtk::ToggleAction*>(
+			on_action_enable_smart_toggled(dynamic_cast<Gtk::ToggleAction*>(
 					actiongroup_device->get_action(APP_ACTION_NAME(action_enable_smart)).operator->()));
 			break;
 
 		case action_enable_aodc:  // this may be invoked on menu manipulation
-			on_action_enable_aodc_toggled(hz::down_cast<Gtk::ToggleAction*>(
+			on_action_enable_aodc_toggled(dynamic_cast<Gtk::ToggleAction*>(
 					actiongroup_device->get_action(APP_ACTION_NAME(action_enable_aodc)).operator->()));
 			break;
 
@@ -815,9 +815,9 @@ Gtk::Menu* GscMainWindow::get_popup_menu(StorageDeviceRefPtr drive)
 	if (!ui_manager)
 		return 0;
 	if (drive) {
-		return hz::down_cast<Gtk::Menu*>(ui_manager->get_widget("/device_popup"));
+		return dynamic_cast<Gtk::Menu*>(ui_manager->get_widget("/device_popup"));
 	}
-	return hz::down_cast<Gtk::Menu*>(ui_manager->get_widget("/empty_area_popup"));
+	return dynamic_cast<Gtk::Menu*>(ui_manager->get_widget("/empty_area_popup"));
 }
 
 
@@ -875,7 +875,7 @@ void GscMainWindow::set_drive_menu_status(StorageDeviceRefPtr drive)
 
 		// smart toggle status
 		{
-			Gtk::ToggleAction* action = hz::down_cast<Gtk::ToggleAction*>(
+			Gtk::ToggleAction* action = dynamic_cast<Gtk::ToggleAction*>(
 					actiongroup_device->get_action(APP_ACTION_NAME(action_enable_smart)).operator->());
 			if (action) {
 				action->set_active(smart_status == StorageDevice::status_enabled);
@@ -885,13 +885,13 @@ void GscMainWindow::set_drive_menu_status(StorageDeviceRefPtr drive)
 
 		// aodc toggle status
 		{
-			Gtk::ToggleAction* action = hz::down_cast<Gtk::ToggleAction*>(
+			Gtk::ToggleAction* action = dynamic_cast<Gtk::ToggleAction*>(
 					actiongroup_device->get_action(APP_ACTION_NAME(action_enable_aodc)).operator->());
 
 			if (action) {
-				Gtk::CheckMenuItem* dev_odc_item = hz::down_cast<Gtk::CheckMenuItem*>(ui_manager->get_widget(
+				Gtk::CheckMenuItem* dev_odc_item = dynamic_cast<Gtk::CheckMenuItem*>(ui_manager->get_widget(
 						"/main_menubar/device_menu/" APP_ACTION_NAME(action_enable_aodc)));
-				Gtk::CheckMenuItem* popup_odc_item = hz::down_cast<Gtk::CheckMenuItem*>(ui_manager->get_widget(
+				Gtk::CheckMenuItem* popup_odc_item = dynamic_cast<Gtk::CheckMenuItem*>(ui_manager->get_widget(
 						"/device_popup/" APP_ACTION_NAME(action_enable_aodc)));
 				Gtk::CheckButton* status_aodc_check = lookup_widget<Gtk::CheckButton*>("status_aodc_enabled_check");
 

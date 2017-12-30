@@ -54,9 +54,6 @@ namespace debug_internal {
 
 	void DebugStreamBuf::flush_to_channel()
 	{
-		if (!oss_.get())  // tls
-			oss_.reset(new std::ostringstream());
-
 		debug_format::type flags = dos_->format_;
 		bool is_first_line = false;
 		if (get_debug_state().get_inside_begin()) {
@@ -75,10 +72,10 @@ namespace debug_internal {
 		for (; iter != dos_->channels_.end(); ++iter) {
 			// send() locks the channel if needed
 			(*iter)->send(dos_->level_, dos_->domain_, flags,
-					get_debug_state().get_indent_level(), is_first_line, oss_->str());
+					get_debug_state().get_indent_level(), is_first_line, oss_.str());
 		}
-		oss_->str("");  // clear the buffer
-		oss_->clear();  // clear the flags
+		oss_.str("");  // clear the buffer
+		oss_.clear();  // clear the flags
 	}
 
 

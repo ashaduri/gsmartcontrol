@@ -14,12 +14,7 @@
 #include <string>
 #include <sstream>
 #include <limits>  // std::numeric_limits
-
-#if __cplusplus > 201100L
-	#include <type_traits>
-#else
-	#include "type_properties.h"  // type_is_pointer
-#endif
+#include <type_traits>
 
 #include "bad_cast_exception.h"
 
@@ -85,15 +80,9 @@ namespace internal {
 			template<typename InputStreamable>
 			bool operator>>(InputStreamable &output)
 			{
-#if __cplusplus > 201100L
 				return !std::is_pointer<InputStreamable>::value &&
 					stream >> output &&
 					stream.get() == std::char_traits<std::stringstream::char_type>::eof();
-#else
-				return !hz::type_is_pointer<InputStreamable>::value &&
-					stream >> output &&
-					stream.get() == std::char_traits<std::stringstream::char_type>::eof();
-#endif
 			}
 
 			/// Input operator
@@ -145,7 +134,7 @@ Target stream_cast(const Source& arg)
 	Target result;
 
 	if (!(interpreter << arg && interpreter >> result)) {
-		THROW_CUSTOM_BAD_CAST(bad_stream_cast, typeid(NewSource), typeid(Target));
+		throw bad_stream_cast(typeid(NewSource), typeid(Target));
 	}
 
 	return result;

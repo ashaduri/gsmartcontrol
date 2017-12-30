@@ -48,7 +48,7 @@ class MutexWin32 : public hz::noncopyable {
 				EnterCriticalSection(&mutex);
 			}
 			catch (...) {
-				THROW_FATAL(sync_resource_error("MutexWin32::native_lock(): Error locking mutex."));
+				throw (sync_resource_error("MutexWin32::native_lock(): Error locking mutex."));
 			}
 		}
 
@@ -59,7 +59,7 @@ class MutexWin32 : public hz::noncopyable {
 				res = TryEnterCriticalSection(&mutex);
 			}
 			catch (...) {
-				THROW_FATAL(sync_resource_error("MutexWin32::native_trylock(): Error trying to lock mutex."));
+				throw (sync_resource_error("MutexWin32::native_trylock(): Error trying to lock mutex."));
 			}
 			return res;
 		}
@@ -70,7 +70,7 @@ class MutexWin32 : public hz::noncopyable {
 				LeaveCriticalSection(&mutex);
 			}
 			catch (...) {
-				THROW_FATAL(sync_resource_error("MutexWin32::native_unlock(): Error unlocking mutex."));
+				throw (sync_resource_error("MutexWin32::native_unlock(): Error unlocking mutex."));
 			}
 		}
 
@@ -80,10 +80,10 @@ class MutexWin32 : public hz::noncopyable {
 			try {
 				// MSDN says 4000 is a good value. has effect only for SMP.
 				if (!InitializeCriticalSectionAndSpinCount(&cs_, 4000))
-					THROW_FATAL(sync_resource_error("MutexWin32::MutexWin32(): Error creating mutex."));
+					throw (sync_resource_error("MutexWin32::MutexWin32(): Error creating mutex."));
 			}
 			catch (...) {
-				THROW_FATAL(sync_resource_error("MutexWin32::MutexWin32(): Error creating mutex."));
+				throw (sync_resource_error("MutexWin32::MutexWin32(): Error creating mutex."));
 			}
 		}
 
@@ -93,7 +93,7 @@ class MutexWin32 : public hz::noncopyable {
 				DeleteCriticalSection(&cs_);
 			}
 			catch (...) {
-				THROW_FATAL(sync_resource_error("MutexWin32::MutexWin32(): Error destroying mutex."));
+				throw (sync_resource_error("MutexWin32::MutexWin32(): Error destroying mutex."));
 			}
 		}
 
@@ -123,7 +123,7 @@ class RWMutexWin32 : public hz::noncopyable {
 					}
 				}
 			}
-			THROW_FATAL(sync_resource_error("RWMutexWin32::RWMutexWin32(): Error creating read/write lock."));
+			throw (sync_resource_error("RWMutexWin32::RWMutexWin32(): Error creating read/write lock."));
 		}
 
 
@@ -138,7 +138,7 @@ class RWMutexWin32 : public hz::noncopyable {
 					CloseHandle(write_event_);
 			}
 			catch (...) {
-				THROW_FATAL(sync_resource_error("RWMutexWin32::~RWMutexWin32(): Error destroying read/write lock."));
+				throw (sync_resource_error("RWMutexWin32::~RWMutexWin32(): Error destroying read/write lock."));
 			}
 		}
 
@@ -159,7 +159,7 @@ class RWMutexWin32 : public hz::noncopyable {
 
 				} else {
 					remove_writer();
-					THROW_FATAL(sync_resource_error("RWMutexWin32::lock(): Error write-locking a read/write lock."));
+					throw (sync_resource_error("RWMutexWin32::lock(): Error write-locking a read/write lock."));
 				}
 
 			} else {  // read:
@@ -171,7 +171,7 @@ class RWMutexWin32 : public hz::noncopyable {
 					ReleaseMutex(mutex_);
 
 				} else {
-					THROW_FATAL(sync_resource_error("RWMutexWin32::lock(): Error read-locking a read/write lock."));
+					throw (sync_resource_error("RWMutexWin32::lock(): Error read-locking a read/write lock."));
 				}
 			}
 		}
@@ -195,7 +195,7 @@ class RWMutexWin32 : public hz::noncopyable {
 				} else {
 					remove_writer();
 					if (res != WAIT_TIMEOUT)
-						THROW_FATAL(sync_resource_error("RWMutexWin32::trylock(): Error while trying to write-lock a read/write lock."));
+						throw (sync_resource_error("RWMutexWin32::trylock(): Error while trying to write-lock a read/write lock."));
 					return false;
 				}
 
@@ -210,7 +210,7 @@ class RWMutexWin32 : public hz::noncopyable {
 
 				} else {
 					if (res != WAIT_TIMEOUT)
-						THROW_FATAL(sync_resource_error("RWMutexWin32::trylock(): Error while trying to read-lock a read/write lock."));
+						throw (sync_resource_error("RWMutexWin32::trylock(): Error while trying to read-lock a read/write lock."));
 					return false;
 				}
 			}
@@ -227,7 +227,7 @@ class RWMutexWin32 : public hz::noncopyable {
 				ReleaseMutex(mutex_);
 				return;
 			}
-			THROW_FATAL(sync_resource_error("RWMutexWin32::unlock(): Error while unlocking a read/write lock."));
+			throw (sync_resource_error("RWMutexWin32::unlock(): Error while unlocking a read/write lock."));
 		}
 
 
@@ -241,7 +241,7 @@ class RWMutexWin32 : public hz::noncopyable {
 				ReleaseMutex(mutex_);
 				return;
 			}
-			THROW_FATAL(sync_resource_error("RWMutexWin32::add_writer(): Error while locking a read/write lock."));
+			throw (sync_resource_error("RWMutexWin32::add_writer(): Error while locking a read/write lock."));
 		}
 
 
@@ -253,7 +253,7 @@ class RWMutexWin32 : public hz::noncopyable {
 				ReleaseMutex(mutex_);
 				return;
 			}
-			THROW_FATAL(sync_resource_error("RWMutexWin32::remove_writer(): Error while locking a read/write lock."));
+			throw (sync_resource_error("RWMutexWin32::remove_writer(): Error while locking a read/write lock."));
 		}
 
 

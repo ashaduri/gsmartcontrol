@@ -37,18 +37,12 @@ Original notes and copyright info follow:
 
 
 // Compilation options:
-// - Define DISABLE_RTTI=1 to disable RTTI checks and typeinfo-getter
-// functions. NOT recommended.
-
 // - Define DISABLE_ANY_CONVERT=1 to disable all .convert functions
 // (avoids dependency on any_convert.h)
 */
 
 
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
-	#include <typeinfo>  // std::type_info
-#endif
-
+#include <typeinfo>  // std::type_info
 #include <iosfwd>  // std::ostream
 #include <string>  // to enable std::string printing. <string> is included already from any_type_holder.h.
 
@@ -107,7 +101,6 @@ class any_type {
 		}
 
 
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 		/// Get type info of the wrapped variable
 		const std::type_info& type() const
 		{
@@ -118,7 +111,6 @@ class any_type {
 		/// Check whether the wrapped variable is of type T.
 		template<typename T> inline
 		bool is_type() const;  // e.g. is_type<int>
-#endif
 
 
 
@@ -248,9 +240,7 @@ ValueType any_cast(any_type* operand)
 	typedef typename type_remove_pointer<ValueType>::type nopointer;
 
 	if (operand && operand->content
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 		&& operand->type() == typeid(nopointer)
-#endif
 		) {
 		return &static_cast<internal::AnyHolder<nopointer>*>(operand->content)->value;
 	}
@@ -276,12 +266,10 @@ ValueType any_cast(any_type& operand)
 	typedef typename type_remove_reference<ValueType>::type nonref;
 
 	if (!operand.content)
-		THROW_CUSTOM_BAD_CAST(bad_any_cast, operand.type(), typeid(nonref));
+		throw bad_any_cast(operand.type(), typeid(nonref));
 
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 	if (operand.type() != typeid(nonref))
-		THROW_CUSTOM_BAD_CAST(bad_any_cast, operand.type(), typeid(nonref));
-#endif
+		throw bad_any_cast(operand.type(), typeid(nonref));
 
 	return static_cast<internal::AnyHolder<nonref>*>(operand.content)->value;
 }
@@ -294,12 +282,10 @@ ValueType any_cast(const any_type& operand)
 	typedef typename type_remove_reference<ValueType>::type nonref;
 
 	if (!operand.content)
-		THROW_CUSTOM_BAD_CAST(bad_any_cast, operand.type(), typeid(nonref));
+		throw bad_any_cast(operand.type(), typeid(nonref));
 
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 	if (operand.type() != typeid(nonref))
-		THROW_CUSTOM_BAD_CAST(bad_any_cast, operand.type(), typeid(nonref));
-#endif
+		throw bad_any_cast(operand.type(), typeid(nonref));
 
 	return static_cast<const internal::AnyHolder<nonref>*>(operand.content)->value;
 }
@@ -320,16 +306,12 @@ inline any_type& any_type::swap(any_type& rhs)
 }
 
 
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
-
 template<typename T> inline
 bool any_type::is_type() const
 {
 	// without rtti, any_cast<T*> will always return true.
 	return static_cast<bool>(any_cast<T*>(this));
 }
-
-#endif
 
 
 template<typename T> inline
@@ -366,7 +348,7 @@ T any_type::convert() const
 	typedef typename type_remove_reference<T>::type nonref;
 	nonref result;
 	if (!this->convert(result))
-		THROW_CUSTOM_BAD_CAST(bad_any_cast, this->type(), typeid(nonref));
+		throw bad_any_cast(this->type(), typeid(nonref));
 
 	return result;
 }

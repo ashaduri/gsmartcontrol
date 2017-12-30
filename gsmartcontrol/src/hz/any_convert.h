@@ -127,21 +127,6 @@ struct any_convertible<From, From> : public AnyConvertibleValue<true> { };
 	}
 
 
-#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
-	#define DEFINE_ANY_CONVERT_SPEC_STATIC_LLI(from_type) \
-			DEFINE_ANY_CONVERT_SPEC_STATIC(from_type, long long int)
-#else
-	#define DEFINE_ANY_CONVERT_SPEC_STATIC_LLI(from_type)
-#endif
-
-#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
-	#define DEFINE_ANY_CONVERT_SPEC_STATIC_ULLI(from_type) \
-			DEFINE_ANY_CONVERT_SPEC_STATIC(from_type, unsigned long long int)
-#else
-	#define DEFINE_ANY_CONVERT_SPEC_STATIC_ULLI(from_type)
-#endif
-
-
 /// Define \c any_convertible and \c any_convert specializations for all built-in types as \c To.
 #define DEFINE_ANY_CONVERT_SPEC_ALL(from_type) \
 	DEFINE_ANY_CONVERT_SPEC_STATIC_TOBOOL(from_type) \
@@ -155,8 +140,8 @@ struct any_convertible<From, From> : public AnyConvertibleValue<true> { };
 	DEFINE_ANY_CONVERT_SPEC_STATIC(from_type, unsigned int) \
 	DEFINE_ANY_CONVERT_SPEC_STATIC(from_type, long int) \
 	DEFINE_ANY_CONVERT_SPEC_STATIC(from_type, unsigned long int) \
-	DEFINE_ANY_CONVERT_SPEC_STATIC_LLI(from_type) \
-	DEFINE_ANY_CONVERT_SPEC_STATIC_ULLI(from_type) \
+	DEFINE_ANY_CONVERT_SPEC_STATIC(from_type, long long int) \
+	DEFINE_ANY_CONVERT_SPEC_STATIC(from_type, unsigned long long int) \
 	DEFINE_ANY_CONVERT_SPEC_STATIC(from_type, double) \
 	DEFINE_ANY_CONVERT_SPEC_STATIC(from_type, float) \
 	DEFINE_ANY_CONVERT_SPEC_STATIC(from_type, long double) \
@@ -178,12 +163,8 @@ DEFINE_ANY_CONVERT_SPEC_ALL(int)
 DEFINE_ANY_CONVERT_SPEC_ALL(unsigned int)
 DEFINE_ANY_CONVERT_SPEC_ALL(long int)
 DEFINE_ANY_CONVERT_SPEC_ALL(unsigned long int)
-#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
-	DEFINE_ANY_CONVERT_SPEC_ALL(long long int)
-#endif
-#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
-	DEFINE_ANY_CONVERT_SPEC_ALL(unsigned long long int)
-#endif
+DEFINE_ANY_CONVERT_SPEC_ALL(long long int)
+DEFINE_ANY_CONVERT_SPEC_ALL(unsigned long long int)
 
 DEFINE_ANY_CONVERT_SPEC_ALL(double)
 DEFINE_ANY_CONVERT_SPEC_ALL(float)

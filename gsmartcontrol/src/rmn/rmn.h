@@ -35,31 +35,6 @@
 \file
 Include this file to use the whole rmn.
 Otherwise, include individual headers.
-
-
-Configuration macros:
-
-RMN_TYPE_TRACKING to enable explicit data type tracking in
-resource_data providers.
-
-Note: Either RTTI or RMN_TYPE_TRACKING must be enabled to
-be able to serialize the node data! (Loading the serialized data will still work).
-
-Note: Type tracking allows you to track them only from a predefined
-set of types.
-
-Type tracking and RTTI effects on resource_data_any:
-
-Type tracking (RMN_TYPE_TRACKING):
-- Fast (one integer comparison when checking types).
-- One more member variable in each node.
-- All type checks are limited to predefined types.
-
-RTTI (disabled through DISABLE_RTTI, otherwise always present):
-- Possibly slower (type checks are performed through std::type_info comparisons).
-- No additional member variables.
-- Can check any type, thus it's more reliable when working with
-non-predefined types.
 */
 
 
@@ -74,18 +49,8 @@ Resource manager library internal implementation helpers.
 */
 
 
-
-/// \def RMN_TYPE_TRACKING
-/// If 1, enables rmn runtime type tracking (to report type errors),
-/// useful if there's no RTTI available.
-
 /// \def RMN_RESOURCE_NODE_DEBUG
 /// Define this to 1 to enable debug printing of resource node operations.
-
-
-// #ifndef RMN_TYPE_TRACKING
-// 	#define RMN_TYPE_TRACKING 0
-// #endif
 
 
 #include "resource_base.h"  // needed for node

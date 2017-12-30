@@ -19,7 +19,6 @@
 #include <vector>
 
 #include "hz/intrusive_ptr.h"
-#include "hz/tls.h"
 
 #include "dflags.h"
 #include "dchannel.h"
@@ -125,10 +124,7 @@ namespace debug_internal {
 			/// Write contents if necessary.
 			void write_char(char c)
 			{
-				if (!oss_.get())
-					oss_.reset(new std::ostringstream());
-
-				*oss_ << c;
+				oss_ << c;
 				if (c == '\n')  // send to channels on newline
 					flush_to_channel();
 			}
@@ -143,10 +139,7 @@ namespace debug_internal {
 
 			DebugOutStream* dos_;  ///< Debug output stream
 
-			// It's thread-local because it is not shared between different flows.
-			// we can't provide any manual cleanup, because the only one we can do it
-			// is in main thread, and it's already being done with the destructor.
-			hz::thread_local_ptr<std::ostringstream> oss_;  ///< A buffer for output storage.
+			std::ostringstream oss_;  ///< A buffer for output storage.
 
 			/// Disallow copying
 			DebugStreamBuf(const DebugStreamBuf& from);
@@ -257,19 +250,13 @@ namespace debug_internal {
 			/// as the first one.
 			bool get_is_first_line()
 			{
-				if (!is_first_line_.get())
-					is_first_line_.reset(new bool(true));
-				return *is_first_line_;
+				return is_first_line_;
 			}
 
 			/// Set whether we're on the first line of the output or not.
 			void set_is_first_line(bool b)
 			{
-				if (!is_first_line_.get()) {
-					is_first_line_.reset(new bool(b));
-				} else {
-					*is_first_line_ = b;
-				}
+				is_first_line_ = b;
 			}
 
 
@@ -289,10 +276,7 @@ namespace debug_internal {
 			std::string domain_;  ///< Domain of this stream
 			debug_format::type format_;  ///< Format flags
 
-			// It's thread-local because it is not shared between different flows.
-			// we can't provide any manual cleanup, because the only one we can do
-			// is in main thread, and it's already being done with the destructor.
-			hz::thread_local_ptr<bool> is_first_line_;  ///< Whether it's the first line of output or not
+			bool is_first_line_ = true;  ///< Whether it's the first line of output or not
 
 			channel_list_t channels_;  ///< Channels that the output is sent to
 

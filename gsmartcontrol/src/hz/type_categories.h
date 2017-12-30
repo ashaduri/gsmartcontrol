@@ -47,12 +47,8 @@ template<> struct type_check_arithmetic<int> { typedef type_arithm_integral type
 template<> struct type_check_arithmetic<unsigned int> { typedef type_arithm_integral type; };
 template<> struct type_check_arithmetic<long int> { typedef type_arithm_integral type; };
 template<> struct type_check_arithmetic<unsigned long int> { typedef type_arithm_integral type; };
-#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
-	template<> struct type_check_arithmetic<long long int> { typedef type_arithm_integral type; };
-#endif
-#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
-	template<> struct type_check_arithmetic<unsigned long long int> { typedef type_arithm_integral type; };
-#endif
+template<> struct type_check_arithmetic<long long int> { typedef type_arithm_integral type; };
+template<> struct type_check_arithmetic<unsigned long long int> { typedef type_arithm_integral type; };
 
 template<> struct type_check_arithmetic<double> { typedef type_arithm_floating_point type; };
 template<> struct type_check_arithmetic<float> { typedef type_arithm_floating_point type; };
@@ -86,12 +82,8 @@ template<> struct type_check_category<int> { typedef type_cat_int type; };
 template<> struct type_check_category<unsigned int> { typedef type_cat_int type; };
 template<> struct type_check_category<long int> { typedef type_cat_int type; };
 template<> struct type_check_category<unsigned long int> { typedef type_cat_int type; };
-#if !(defined DISABLE_LL_INT && DISABLE_LL_INT)
-	template<> struct type_check_category<long long int> { typedef type_cat_int type; };
-#endif
-#if !(defined DISABLE_ULL_INT && DISABLE_ULL_INT)
-	template<> struct type_check_category<unsigned long long int> { typedef type_cat_int type; };
-#endif
+template<> struct type_check_category<long long int> { typedef type_cat_int type; };
+template<> struct type_check_category<unsigned long long int> { typedef type_cat_int type; };
 
 template<> struct type_check_category<double> { typedef type_cat_float type; };
 template<> struct type_check_category<float> { typedef type_cat_float type; };

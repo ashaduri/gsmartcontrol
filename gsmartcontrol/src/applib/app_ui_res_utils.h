@@ -25,7 +25,6 @@
 
 #include "hz/debug.h"
 #include "hz/instance_manager.h"
-#include "hz/down_cast.h"
 #include "hz/res_data.h"
 
 #include "gui_utils.h"  // gui_show_error_dialog
@@ -218,7 +217,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 		template<typename ObjectPtr>
 		ObjectPtr lookup_object(const Glib::ustring& name, ObjectPtr& obj)
 		{
-			return (obj = hz::down_cast<ObjectPtr>(lookup_object(name)));  // up, then down
+			return (obj = dynamic_cast<ObjectPtr>(lookup_object(name)));  // up, then down
 		}
 
 

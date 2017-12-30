@@ -1,5 +1,5 @@
 
-AC_INIT([GSmartControl],[1.1.3],[],[gsmartcontrol])
+AC_INIT([GSmartControl],[2.0.0],[],[gsmartcontrol])
 
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_HEADERS([config.h])
@@ -43,10 +43,13 @@ AC_PROG_LN_S
 
 # -------------------------------------------------------------------------------------
 
-# -------------------------------------------------------------------------------------
-
 
 # ------------- Detect compiler, OS, environment. Enable system features.
+
+
+# Enable C++17 support.
+# This has to be AFTER gtkmm, since gtkmm has its own C++ flags.
+AX_CXX_COMPILE_STDCXX([17], [], [mandatory])
 
 
 # detect compiler vendor (sets $ax_cv_cxx_compiler_vendor)
@@ -64,10 +67,6 @@ APP_DETECT_OS_KERNEL([build], [CONFIG_HOST_KERNEL_])
 # which is important for some compatibility flags (e.g. __func__ visibility, etc...).
 APP_COMPILER_OPTIONS([])
 
-# Enable C++11 support. This is implied by gtkmm3, but CentOS7 fails to add it
-# to gtkmm flags, so we have to enable it manually. Make it optional for Debian 7 (gcc 4.7).
-AX_CXX_COMPILE_STDCXX([11], [], [optional])
-
 # Thread support for known configurations.
 # Sun compiler (at least on linux) has some runtime issues with stringstream
 # unless we use the thread flags. Also, Linux-based gdb fails to debug
@@ -84,33 +83,7 @@ APP_USE_SYSTEM_EXTENSIONS([])
 AC_SYS_LARGEFILE
 
 
-
-# ------------- Correct incomplete standard libraries
-
-# define int8_t and friends if the standard doesn't have them
-AC_TYPE_INT8_T
-AC_TYPE_UINT8_T
-AC_TYPE_INT16_T
-AC_TYPE_UINT16_T
-AC_TYPE_INT32_T
-AC_TYPE_UINT32_T
-AC_TYPE_INT64_T
-AC_TYPE_UINT64_T
-AC_TYPE_INTMAX_T
-AC_TYPE_UINTMAX_T
-
-AC_TYPE_LONG_LONG_INT
-AC_TYPE_UNSIGNED_LONG_LONG_INT
-
-
-
 # ------------- Language / Standard Library checks
-
-# detect RTTI (defines HAVE_RTTI)
-AC_CXX_RTTI
-
-# detect exception support (defines HAVE_EXCEPTIONS)
-AC_CXX_EXCEPTIONS
 
 # detect abi::__cxa_demangle (defines HAVE_GCC_ABI_DEMANGLE)
 AX_CXX_GCC_ABI_DEMANGLE
@@ -129,22 +102,6 @@ APP_CXX___FUNCTION__
 APP_CXX_EXTERN_C_OVERLOAD
 
 
-# This may be needed for pch support
-AC_CHECK_HEADERS([stdc++.h])
-
-# Non-C99 systems don't have strtof and strtold. some have strtodf for strtof,
-# but let's ignore it. Note: They may be supported by system libc,
-# but not enabled by default (e.g. by glibc feature macros). In that case,
-# defining them still leads to undefined symbols at link time, so we don't do it.
-# Header check is the best way to determine availability.
-# This defines HAVE_DECL_<symbol> to 1 or 0.
-AC_CHECK_DECLS([strtof, strtold], [], [], [[#include <stdlib.h>]])
-# link check only:
-# AC_CHECK_FUNCS([strtof strtold])
-
-
-# -------------------------------------------------------------------------------------
-
 # -------------------------------------------------------------------------------------
 
 
@@ -156,8 +113,6 @@ AC_CHECK_LIB(util, getrawpartition, [ 	LIBS="$LIBS -lutil" ])
 
 # -------------------------------------------------------------------------------------
 
-# -------------------------------------------------------------------------------------
-
 
 # enable / disable compilation of tests
 AC_ARG_ENABLE([tests], AS_HELP_STRING([--enable-tests],
@@ -165,8 +120,6 @@ AC_ARG_ENABLE([tests], AS_HELP_STRING([--enable-tests],
 # export to automake.am-s
 AM_CONDITIONAL([ENABLE_TESTS], [test "$with_tests" = "yes"])
 
-
-# -------------------------------------------------------------------------------------
 
 # -------------------------------------------------------------------------------------
 
@@ -207,9 +160,6 @@ CXXFLAGS="$GTKMM_CFLAGS $CXXFLAGS"
 LIBS="$GTKMM_LIBS $LIBS"
 
 
-
-# -------------------------------------------------------------------------------------
-
 # -------------------------------------------------------------------------------------
 
 
@@ -237,6 +187,15 @@ LIBS="$LIBS $PCRECPP_LIBS"
 
 
 # -------------------------------------------------------------------------------------
+
+
+# gtkmm may have an older -std standard in its CXXFLAGS which screws up
+# our -std flag in CXX. Override it.
+# Ideally, gcc should use the "latest" standard, but it just uses the latest option.
+# TODO For now, since gtkmm3 uses dynamic exception specifications, we have
+# to enable 14 instead of 17.
+CXXFLAGS="$CXXFLAGS -std=c++14"
+
 
 # -------------------------------------------------------------------------------------
 
@@ -290,8 +249,6 @@ AC_SUBST(WINDOWS_SUFFIX)
 
 # -------------------------------------------------------------------------------------
 
-# -------------------------------------------------------------------------------------
-
 
 # Win32 security manifest support
 
@@ -304,8 +261,6 @@ fi
 
 AC_SUBST(WINDOWS_ARCH)
 
-
-# -------------------------------------------------------------------------------------
 
 # -------------------------------------------------------------------------------------
 
@@ -370,8 +325,6 @@ _AM_SUBST_NOTMAKE([RES_TARGETS])
 
 # -------------------------------------------------------------------------------------
 
-# -------------------------------------------------------------------------------------
-
 
 # Export some configure variables as defines for the source code.
 # Note: Autoconf manual says that AC_DEFINE won't work here.
@@ -411,8 +364,6 @@ CXXFLAGS="$ADDITIONAL_INCLUDES $CXXFLAGS"
 
 # -------------------------------------------------------------------------------------
 
-# -------------------------------------------------------------------------------------
-
 
 # final setup
 
@@ -431,8 +382,6 @@ AC_SUBST(CXXFLAGS)
 AC_SUBST(LIBS)
 AC_SUBST(LDFLAGS)
 
-
-# -------------------------------------------------------------------------------------
 
 # -------------------------------------------------------------------------------------
 
@@ -468,8 +417,6 @@ $LIBS
 
 AC_SUBST(AUTODIRS)
 
-
-# -------------------------------------------------------------------------------------
 
 # -------------------------------------------------------------------------------------
 

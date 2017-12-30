@@ -32,9 +32,7 @@
 #include <string>
 #include <iosfwd>  // std::ostream
 
-#include "hz/exceptions.h"  // THROW_FATAL
 #include "hz/any_type.h"
-#include "hz/hz_config.h"  // DISABLE_RTTI, RMN_TYPE_TRACKING (global_macros.h)
 
 #include "resource_data_types.h"
 #include "resource_exception.h"
@@ -85,14 +83,6 @@ class ResourceDataAny {
 
 	public:
 
-		/// Constructor
-		ResourceDataAny()
-#if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
-			: type_(T_EMPTY)
-#endif
-		{ }
-
-
 		/// Copy data from \c src node
 		template<class T>
 		bool copy_data_from(const T& src)
@@ -101,9 +91,6 @@ class ResourceDataAny {
 				return false;
 
 			data_ = src->data_;
-#if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
-			type_ = src->get_type();
-#endif
 			return true;
 		}
 
@@ -119,9 +106,6 @@ class ResourceDataAny {
 		void clear_data()
 		{
 			data_.clear();
-#if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
-			type_ = T_EMPTY;
-#endif
 		}
 
 
@@ -130,9 +114,6 @@ class ResourceDataAny {
 		inline bool set_data(T data)
 		{
 			data_ = data;
-#if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
-			type_ = node_data_type_by_real<T>::type;
-#endif
 			return true;
 		}
 
@@ -141,48 +122,17 @@ class ResourceDataAny {
 		inline bool set_data(const char* data)
 		{
 			data_ = std::string(data);
-#if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
-			type_ = node_data_type_by_real<std::string>::type;
-#endif
 			return true;
 		}
 
 
-		/// \fn bool data_is_type() const
 		/// Check whether data is of type \c T.
 		/// This function is available only if either RTTI or type tracking is enabled.
-#if !(defined DISABLE_RTTI && DISABLE_RTTI)
 		template<typename T>
 		inline bool data_is_type() const
 		{
-			// template is needed for gcc 3.3
-			return data_.template is_type<T>();  // won't work without RTTI! If empty, reacts to void only.
+			return data_.template is_type<T>();
 		}
-#elif defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
-		template<typename T>
-		inline bool data_is_type() const
-		{
-			return node_data_type_by_real<T>::type == type_;
-		}
-#endif
-
-
-
-#if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
-		/// Check whether data is of type \c type.
-		/// This function is available only if type tracking is enabled.
-		inline bool data_is_type(node_data_type type) const
-		{
-			return type == type_;
-		}
-
-		/// Get data type.
-		/// This function is available only if type tracking is enabled.
-		inline node_data_type get_type() const
-		{
-			return type_;
-		}
-#endif
 
 
 		/// Get data of type \c T.
@@ -190,10 +140,6 @@ class ResourceDataAny {
 		template<typename T>
 		inline bool get_data(T& put_it_here) const
 		{
-#if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
-			if (node_data_type_by_real<T>::type != type_)
-				return false;
-#endif
 			return data_.get(put_it_here);  // returns false if empty or invalid type
 		}
 
@@ -205,18 +151,14 @@ class ResourceDataAny {
 		T get_data() const
 		{
 			if (data_.empty())
-				THROW_FATAL(empty_data_retrieval());
+				throw empty_data_retrieval();
 
-#if defined DISABLE_RTTI && defined RMN_TYPE_TRACKING
-			if (node_data_type_by_real<T>::type != type_)
-				THROW_FATAL(type_mismatch());
-#endif
 			try {
 				// template is needed for gcc 3.3
 				return data_.template get<T>();  // won't work if empty or invalid type
 			}
 			catch (hz::bad_any_cast& e) {  // convert any_type exception to rmn exception.
-				THROW_CUSTOM_BAD_CAST(type_mismatch, data_.type(), typeid(T));
+				throw type_mismatch(data_.type(), typeid(T));
 			}
 		}
 
@@ -240,24 +182,15 @@ class ResourceDataAny {
 		T convert_data() const
 		{
 			if (data_.empty())
-				THROW_FATAL(empty_data_retrieval());
+				throw empty_data_retrieval();
 
-#if defined DISABLE_RTTI && defined RMN_TYPE_TRACKING
-			node_data_type to = node_data_type_by_real<T>::type;
-
-			// any T_ type is ok except these:
-			if (type_ == T_VOIDPTR || type_ == T_UNKNOWN
-					|| to == T_VOIDPTR || to == T_UNKNOWN) {
-				THROW_FATAL(type_convert_error());
-			}
-#endif
 			try {
 				// Note: This throws only if RTTI is enabled.
 				// template is needed for gcc 3.3
 				return data_.template convert<T>();  // won't work if empty or invalid type
 			}
 			catch (hz::bad_any_cast& e) {
-				THROW_CUSTOM_BAD_CAST(type_convert_error, data_.type(), typeid(T));
+				throw type_convert_error(data_.type(), typeid(T));
 			}
 		}
 
@@ -278,10 +211,6 @@ class ResourceDataAny {
 	private:
 
 		hz::any_type data_;  ///< The data
-
-#if defined RMN_TYPE_TRACKING && RMN_TYPE_TRACKING
-		node_data_type type_;  ///< Type of the data
-#endif
 
 };
 

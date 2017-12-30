@@ -15,7 +15,6 @@
 #include <algorithm>  // std::min, std::max
 
 #include "hz/scoped_ptr.h"
-#include "hz/down_cast.h"
 #include "hz/string_num.h"  // number_to_string
 #include "hz/string_sprintf.h"  // string_sprintf
 #include "hz/string_algo.h"  // string_join
@@ -113,7 +112,7 @@ namespace {
 			Gtk::TreeModelColumn<const StorageProperty*> storage_column)
 	{
 		const StorageProperty* p = (*iter)[storage_column];
-		Gtk::CellRendererText* crt = hz::down_cast<Gtk::CellRendererText*>(cr);
+		Gtk::CellRendererText* crt = dynamic_cast<Gtk::CellRendererText*>(cr);
 		if (crt) {
 			std::string fg, bg;
 			if (app_property_get_row_highlight_colors(p->warning, fg, bg)) {
@@ -141,7 +140,7 @@ namespace {
 	inline void app_highlight_tab_label(Gtk::Widget* label_widget,
 			StorageProperty::warning_t warning, const Glib::ustring& original_label)
 	{
-		Gtk::Label* label = hz::down_cast<Gtk::Label*>(label_widget);
+		Gtk::Label* label = dynamic_cast<Gtk::Label*>(label_widget);
 		if (!label)
 			return;
 
@@ -607,7 +606,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		num_tree_cols = app_gtkmm_create_tree_view_column(col_name, *treeview,
 				"Name", "Attribute name (this is deduced from ID by smartctl and may be incorrect, as it's highly vendor-specific)", true);
 		treeview->set_search_column(col_name.index());
-		Gtk::CellRendererText* cr_name = hz::down_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
+		Gtk::CellRendererText* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
 		if (cr_name)
 			cr_name->property_weight() = Pango::WEIGHT_BOLD;
 
@@ -752,7 +751,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		num_tree_cols = app_gtkmm_create_tree_view_column(col_description, *treeview,
 				"Description", "Entry description", true);
 		treeview->set_search_column(col_description.index());
-// 		Gtk::CellRendererText* cr_name = hz::down_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
+// 		Gtk::CellRendererText* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
 // 		if (cr_name)
 // 			cr_name->property_weight() = Pango::WEIGHT_BOLD ;
 
@@ -951,7 +950,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		model_columns.add(col_num);  // we can use the column variable by value after this.
 		num_tree_cols = app_gtkmm_create_tree_view_column(col_num, *treeview,
 				"Test #", "Test # (greater may mean newer or older depending on drive model)", true);
-		Gtk::CellRendererText* cr_test_num = hz::down_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
+		Gtk::CellRendererText* cr_test_num = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
 		if (cr_test_num)
 			cr_test_num->property_weight() = Pango::WEIGHT_BOLD ;
 
@@ -1065,7 +1064,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		model_columns.add(col_num);  // we can use the column variable by value after this.
 		num_tree_cols = app_gtkmm_create_tree_view_column(col_num, *treeview,
 				"Error #", "Error # in the error log (greater means newer)", true);
-		Gtk::CellRendererText* cr_name = hz::down_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
+		Gtk::CellRendererText* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
 		if (cr_name)
 			cr_name->property_weight() = Pango::WEIGHT_BOLD ;
 
@@ -1290,7 +1289,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		model_columns.add(col_name);
 		num_tree_cols = app_gtkmm_create_tree_view_column(col_name, *treeview, "Name", "Name", true);
 		treeview->set_search_column(col_name.index());
-		Gtk::CellRendererText* cr_name = hz::down_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
+		Gtk::CellRendererText* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
 		if (cr_name)
 			cr_name->property_weight() = Pango::WEIGHT_BOLD ;
 

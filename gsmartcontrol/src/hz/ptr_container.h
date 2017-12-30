@@ -15,7 +15,7 @@
 
 #include "hz_config.h"  // feature macros
 
-#include "type_properties.h"
+#include <type_traits>
 
 
 
@@ -213,7 +213,7 @@ class ptr_container : public Container {
 		{
 			put_here.assign(this->begin(), this->end());
 			for (typename ReturnedContainer::iterator i = put_here.begin(); i != put_here.end(); ++i) {
-				*i = new typename hz::type_remove_pointer<value_type>::type(*i);
+				*i = new typename std::remove_pointer_t<value_type>(*i);
 			}
 		}
 

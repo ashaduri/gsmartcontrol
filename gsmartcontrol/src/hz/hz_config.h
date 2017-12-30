@@ -80,30 +80,6 @@ HZ library internal implementation helpers.
 
 
 
-/// \def DISABLE_RTTI
-/// Defined to 0 or 1. If 1, RTTI is disabled.
-#ifndef DISABLE_RTTI
-	// No auto-detection here...
-	// There's __GXX_RTTI (not used here; since gcc >= 4.3 (?)), but I'm not sure if it's valid.
-	#define DISABLE_RTTI 0
-#endif
-
-
-
-
-/// \def DISABLE_EXCEPTIONS
-/// Defined to 0 or 1. If 1, exceptions are disabled.
-#ifndef DISABLE_EXCEPTIONS
-	// some auto-detection (gcc 3.3 or later (I think))
-	#if defined __GNUC__ && ((__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3)) && !defined __EXCEPTIONS
-		#define DISABLE_EXCEPTIONS 0
-	#else
-		#define DISABLE_EXCEPTIONS 1
-	#endif
-#endif
-
-
-
 /// \def HAVE_CXX_EXTERN_C_OVERLOAD
 /// Defined to 0 or 1. If 1, compiler supports overloading on extern "C" function pointer arguments.
 #ifndef HAVE_CXX_EXTERN_C_OVERLOAD
@@ -137,32 +113,6 @@ HZ library internal implementation helpers.
 		#define HAVE_GCC_ABI_DEMANGLE 1
 	#else
 		#define HAVE_GCC_ABI_DEMANGLE 0
-	#endif
-#endif
-
-
-
-
-/// \def HAVE_CXX___func__
-/// Defined to 0 or 1. If 1, compiler supports __func__.
-#ifndef HAVE_CXX___func__
-	// this is a C99 thing, but I don't know of any other compiler which supports it
-	#if defined __GNUC__
-		#define HAVE_CXX___func__ 1
-	#else
-		#define HAVE_CXX___func__ 0
-	#endif
-#endif
-
-
-/// \def HAVE_CXX___FUNCTION__
-/// Defined to 0 or 1. If 1, compiler supports __FUNCTION__.
-#ifndef HAVE_CXX___FUNCTION__
-	// suncc supports this, but only with extensions enabled (can we check those?)
-	#if defined __GNUC__ || defined _MSC_VER
-		#define HAVE_CXX___FUNCTION__ 1
-	#else
-		#define HAVE_CXX___FUNCTION__ 0
 	#endif
 #endif
 

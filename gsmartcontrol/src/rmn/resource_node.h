@@ -363,7 +363,7 @@ T resource_node<Data>::get_data_by_path(const std::string& path) const
 {
 	node_ptr p = find_node(path);
 	if (!p)
-		THROW_FATAL(no_such_node(path));
+		throw no_such_node(path);
 	return p->template get_data<T>();
 }
 

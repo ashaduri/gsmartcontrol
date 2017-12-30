@@ -27,8 +27,6 @@ AC_DEFUN([AC_CXX_VERBOSE_TERMINATE_HANDLER],
 [AC_CACHE_CHECK(whether the compiler has __gnu_cxx::__verbose_terminate_handler,
 	ac_cv_verbose_terminate_handler,
 	[
-		AC_REQUIRE([AC_CXX_EXCEPTIONS])
-		AC_REQUIRE([AC_CXX_NAMESPACES])
 		AC_LANG_PUSH([C++])
 		AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 			[[#include <exception>]],
