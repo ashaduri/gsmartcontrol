@@ -116,7 +116,7 @@ bool Cmdex::execute()
 	}
 	catch(Glib::ShellError& e)
 	{
-		push_error(Error<void>("gshell", ErrorLevel::error, e.what()), false);
+		push_error(Error<void>("gshell", ErrorLevel::error, e.what()));
 		return false;
 	}
 
@@ -146,7 +146,7 @@ bool Cmdex::execute()
 	}
 	catch(Glib::SpawnError& e) {
 		// no data is returned to &-parameters on error.
-		push_error(Error<void>("gspawn", ErrorLevel::error, e.what()), false);
+		push_error(Error<void>("gspawn", ErrorLevel::error, e.what()));
 		return false;
 	}
 
@@ -233,7 +233,7 @@ bool Cmdex::try_stop(hz::signal_t sig)
 	}
 
 	// Possible: EPERM (no permissions), ESRCH (no such process, or zombie)
-	push_error(Error<int>("errno", ErrorLevel::error, errno), false);
+	push_error(Error<int>("errno", ErrorLevel::error, errno));
 
 	DBG_FUNCTION_EXIT_MSG;
 	return false;
@@ -310,7 +310,7 @@ void Cmdex::stopped_cleanup()
 			// translate the exit_code into a message
 			std::string msg = (translator_func_ ? translator_func_(exit_status, translator_func_data_)
 					: "[no translator function, exit code: " + hz::number_to_string(exit_status));
-			push_error(Error<int>("exit", ErrorLevel::warn, exit_status, msg), false);
+			push_error(Error<int>("exit", ErrorLevel::warn, exit_status, msg));
 		}
 
 	} else {
@@ -320,9 +320,9 @@ void Cmdex::stopped_cleanup()
 			// If it's not our signal, treat as error.
 			// Note: they will never match under win32
 			if (sig_num != this->kill_signal_sent_) {
-				push_error(Error<int>("signal", ErrorLevel::error, sig_num), false);
+				push_error(Error<int>("signal", ErrorLevel::error, sig_num));
 			} else {  // it's our signal, treat as warning
-				push_error(Error<int>("signal", ErrorLevel::warn, sig_num), false);
+				push_error(Error<int>("signal", ErrorLevel::warn, sig_num));
 			}
 		}
 	}
@@ -437,7 +437,7 @@ gboolean Cmdex::on_channel_io(GIOChannel* channel,
 			output_str->append(buf, bytes_read);
 
 		if (channel_error) {
-			self->push_error(Error<void>("giochannel", ErrorLevel::error, channel_error->message), false);
+			self->push_error(Error<void>("giochannel", ErrorLevel::error, channel_error->message));
 			g_error_free(channel_error);
 			break;  // stop on next invocation (is this correct?)
 		}

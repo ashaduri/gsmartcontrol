@@ -110,7 +110,7 @@ GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, const app_ui
 	// ---------------
 
 	// Connect to CmdexSync signal
-	cmdex_sync_signal_execute_finish()->connect(sigc::mem_fun(*this, &self_type::on_command_output_received));
+	cmdex_sync_signal_execute_finish().connect(sigc::mem_fun(*this, &self_type::on_command_output_received));
 
 
 	// show();

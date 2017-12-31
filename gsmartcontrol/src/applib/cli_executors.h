@@ -63,9 +63,7 @@ class TwCliExecutorGeneric : public ExecutorSync {
 		virtual void import_error()
 		{
 			Cmdex& cmdex = this->get_command_executor();
-			cmdex.errors_lock();
-
-			Cmdex::error_list_t errors = cmdex.get_errors(false);  // these are not clones
+			Cmdex::error_list_t errors = cmdex.get_errors();  // these are not clones
 
 			hz::ErrorBase* e = 0;
 			// find the last relevant error.
@@ -78,9 +76,7 @@ class TwCliExecutorGeneric : public ExecutorSync {
 				}
 			}
 
-			cmdex.clear_errors(false);  // and clear them
-
-			cmdex.errors_unlock();
+			cmdex.clear_errors();  // and clear them
 
 			if (e) {  // if error is present, alert the user
 				on_error_warn(e);
@@ -175,9 +171,7 @@ class ArecaCliExecutorGeneric : public ExecutorSync {
 		virtual void import_error()
 		{
 			Cmdex& cmdex = this->get_command_executor();
-			cmdex.errors_lock();
-
-			Cmdex::error_list_t errors = cmdex.get_errors(false);  // these are not clones
+			Cmdex::error_list_t errors = cmdex.get_errors();  // these are not clones
 
 			hz::ErrorBase* e = 0;
 			// find the last relevant error.
@@ -190,9 +184,7 @@ class ArecaCliExecutorGeneric : public ExecutorSync {
 				}
 			}
 
-			cmdex.clear_errors(false);  // and clear them
-
-			cmdex.errors_unlock();
+			cmdex.clear_errors();  // and clear them
 
 			if (e) {  // if error is present, alert the user
 				on_error_warn(e);

@@ -16,8 +16,6 @@
 #include <stdexcept>  // std::runtime_error
 
 #include "hz/hz_config.h"
-#include "hz/sync.h"
-
 #include "rmn/resource_node.h"  // resource_node type
 #include "rmn/resource_data_any.h"  // any_type data provider
 #include "rmn/resource_data_locking.h"  // locking policies for data
@@ -30,13 +28,10 @@ namespace rconfig {
 
 
 /// Rconfig node type
-typedef rmn::resource_node< rmn::ResourceDataAny<rmn::ResourceSyncPolicyNone> > node_t;
+typedef rmn::resource_node<rmn::ResourceDataAny> node_t;
 
 /// Rconfig strong reference-holding node pointer
 typedef node_t::node_ptr node_ptr;
-
-/// Locking policy for rconfig (thread-safe)
-typedef hz::SyncPolicyMtDefault ConfigLockPolicy;
 
 
 /// Config branch for serializable values ("/config")
@@ -60,14 +55,12 @@ struct NodeStaticHolder {
 	static node_ptr root_node;  ///< Node for "/"
 	static node_ptr config_node;  ///< Node for "/config"
 	static node_ptr default_node;  ///< Node for "/default"
-	static ConfigLockPolicy::Mutex mutex;  ///< Mutex for static variables
 };
 
 // definitions
 template<typename Dummy> node_ptr NodeStaticHolder<Dummy>::root_node = 0;
 template<typename Dummy> node_ptr NodeStaticHolder<Dummy>::config_node = 0;
 template<typename Dummy> node_ptr NodeStaticHolder<Dummy>::default_node = 0;
-template<typename Dummy> ConfigLockPolicy::Mutex NodeStaticHolder<Dummy>::mutex;
 
 
 // Specify the same template parameter to get the same set of variables.
@@ -77,10 +70,8 @@ typedef NodeStaticHolder<void> RootHolder;  ///< Holder for static variables (on
 
 /// Initialize the root node. This is called automatically.
 /// This function is thread-safe.
-inline bool init_root(bool do_lock = true)
+inline bool init_root()
 {
-	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex, do_lock);
-
 	// Note: Do NOT check every node individually. This will break handling
 	// of absolute paths, e.g. get_data("/default/...") will check for existance of "/config".
 	if (RootHolder::root_node)  // already inited
@@ -118,7 +109,7 @@ inline bool init_root(bool do_lock = true)
 inline node_ptr get_root()
 {
 	if (!RootHolder::root_node)
-		init_root(false);
+		init_root();
 	return RootHolder::root_node;
 }
 
@@ -127,7 +118,7 @@ inline node_ptr get_root()
 inline node_ptr get_config_branch()
 {
 	if (!RootHolder::root_node)
-		init_root(false);
+		init_root();
 	return RootHolder::config_node;
 }
 
@@ -136,17 +127,13 @@ inline node_ptr get_config_branch()
 inline node_ptr get_default_branch()
 {
 	if (!RootHolder::root_node)
-		init_root(false);
+		init_root();
 	return RootHolder::default_node;
 }
 
 
 
 // --------------------------------- Getting nodes by config path.
-
-// Note: These functions are NOT thread-safe, because they return non-thread-safe
-// node structure. (That is, the user may access node_ptr in non-locked environment).
-// To use them in a thread-safe environment, you have to lock their access manually.
 
 
 /// Get a node by path (relative or absolute). If relative, look in /config, then /default.
@@ -242,13 +229,12 @@ inline node_ptr get_default_node(std::string path, bool create_if_not_exists = f
 
 
 
-// --------------------------------- (Thread-safe) Root node manipulation
+// --------------------------------- Root node manipulation
 
 
 /// Clear everything, including /config and /default.
 inline void clear_root_all()
 {
-	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
 	RootHolder::root_node = 0;  // this will delete everything.
 }
 
@@ -256,7 +242,6 @@ inline void clear_root_all()
 /// Clear /config
 inline void clear_config_all()
 {
-	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
 	if (RootHolder::config_node)
 		RootHolder::config_node->clear_children();
 }
@@ -265,7 +250,6 @@ inline void clear_config_all()
 /// Clear /default
 inline void clear_default_all()
 {
-	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
 	if (RootHolder::default_node)
 		RootHolder::default_node->clear_children();
 }
@@ -273,7 +257,7 @@ inline void clear_default_all()
 
 
 
-// --------------------------------- (Thread-safe) Data manipulation
+// --------------------------------- Data manipulation
 
 // Note: if path is absolute (starts with "/"), then it's looked up in root ("/").
 
@@ -282,8 +266,6 @@ inline void clear_default_all()
 /// Clear the data in path (the node becomes empty), or "/config" if the path is relative.
 inline void clear_data(const std::string& path)
 {
-	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
-
 	node_ptr cnode = get_config_node(path);
 	if (cnode)
 		cnode->clear_data();
@@ -293,8 +275,6 @@ inline void clear_data(const std::string& path)
 /// Clear the data in path (the node becomes empty), or "/default" if the path is relative.
 inline void clear_default_data(const std::string& path)
 {
-	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
-
 	node_ptr cnode = get_default_node(path);
 	if (cnode)
 		cnode->clear_data();
@@ -307,8 +287,6 @@ inline void clear_default_data(const std::string& path)
 template<typename T> inline
 bool set_data(const std::string& path, T data)
 {
-	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
-
 	// Verify that the default's type matches T
 	if (!node_t::is_abs_path(path)) {
 		node_ptr def_node = get_default_node(path);
@@ -333,8 +311,6 @@ bool set_data(const std::string& path, T data)
 template<typename T> inline
 bool set_default_data(const std::string& path, T data)
 {
-	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
-
 	node_ptr cnode = get_default_node(path, true);  // auto-create. note that it still may fail.
 	if (cnode)
 		return cnode->set_data(data);
@@ -344,7 +320,7 @@ bool set_default_data(const std::string& path, T data)
 
 
 
-// --------------------------------- (Thread-safe) Data Reading
+// --------------------------------- Data Reading
 
 // These functions search in "/config" _or_ "/default" only.
 // Note: if path is absolute (starts with "/"), then it's looked up in root ("/").
@@ -355,8 +331,6 @@ bool set_default_data(const std::string& path, T data)
 template<typename T> inline
 bool get_config_data(const std::string& path, T& put_it_here)
 {
-	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
-
 	node_ptr node = get_config_node(path);
 	if (!node)
 		return false;  // no such node
@@ -370,8 +344,6 @@ bool get_config_data(const std::string& path, T& put_it_here)
 template<typename T> inline
 bool get_default_data(const std::string& path, T& put_it_here)
 {
-	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
-
 	node_ptr node = get_default_node(path);
 	if (!node)
 		return false;  // no such node
@@ -381,7 +353,7 @@ bool get_default_data(const std::string& path, T& put_it_here)
 
 
 
-// --------------------------------- (Thread-safe) Merged Data Reading
+// --------------------------------- Merged Data Reading
 
 // These functions search in "/config", _then_ in "/default".
 // Note: if path is absolute (starts with "/"), then it's looked up in root ("/").
@@ -391,8 +363,6 @@ bool get_default_data(const std::string& path, T& put_it_here)
 /// Check if data at path is empty. If the path is relative, look in /config, then /default.
 inline bool data_is_empty(const std::string& path)
 {
-	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
-
 	node_ptr node = get_node(path);
 	if (!node)
 		return false;  // no such node
@@ -405,8 +375,6 @@ inline bool data_is_empty(const std::string& path)
 template<typename T> inline
 bool data_is_type(const std::string& path)
 {
-	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
-
 	node_ptr node = get_node(path);
 	if (!node)
 		return false;  // no such node
@@ -420,8 +388,6 @@ bool data_is_type(const std::string& path)
 template<typename T> inline
 bool get_data(const std::string& path, T& put_it_here)
 {
-	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
-
 	node_ptr node = get_node(path);
 	if (!node)
 		return false;  // no such node
@@ -437,8 +403,6 @@ bool get_data(const std::string& path, T& put_it_here)
 template<typename T> inline
 T get_data(const std::string& path)
 {
-	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
-
 	node_ptr node = get_node(path);
 	if (!node)
 		throw rmn::no_such_node(path);  // no such node

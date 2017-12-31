@@ -14,9 +14,6 @@
 
 #include "hz_config.h"  // feature macros
 
-#include "sync.h"  // SyncPolicyNone
-#include "noncopyable.h"
-
 
 
 namespace hz {
@@ -36,15 +33,21 @@ pointers you hold.
 
 \c SingleLockPolicy has no effect if MultiInstance is true.
 */
-template<class Child, bool MultiInstance, class SingleLockPolicy = SyncPolicyNone>
-class InstanceManager : public hz::noncopyable {  // disallow copying
+template<class Child, bool MultiInstance>
+class InstanceManager {
 	protected:
 
 		/// Can't construct / delete this directly! use create() and destroy()
-		InstanceManager() { }
+		InstanceManager() = default;
 
 		/// Virtual destructor (protected, can't delete this directly, use destroy()).
-		virtual ~InstanceManager() { }
+		virtual ~InstanceManager() = default;
+
+		/// Non-construction-copyable
+		InstanceManager(const InstanceManager& other) = delete;
+
+		/// Non-copyable
+		InstanceManager& operator=(const InstanceManager&) = delete;
 
 
 	public:
@@ -89,21 +92,21 @@ class InstanceManager : public hz::noncopyable {  // disallow copying
 
 		/// Returns true if there is a valid single-instance object.
 		/// In multi-instance version this always returns false.
-		static bool has_single_instance(bool do_lock = true)
+		static bool has_single_instance()
 		{
 			return false;
 		}
 
 		/// Returns the instance if there is a valid single-instance one.
 		/// In multi-instance version this always returns 0.
-		static Child* get_single_instance(bool do_lock = true)
+		static Child* get_single_instance()
 		{
 			return 0;
 		}
 
 		/// Set single-instance object.
 		/// This function has no effect in multi-instance version.
-		static void set_single_instance(Child* instance, bool do_lock = true)
+		static void set_single_instance(Child* instance)
 		{ }
 
 };
@@ -112,21 +115,25 @@ class InstanceManager : public hz::noncopyable {  // disallow copying
 
 
 /// Single-instance specialization
-template<class Child, class SingleLockPolicy>
-class InstanceManager<Child, false, SingleLockPolicy> : public hz::noncopyable {  // disallow copying
+template<class Child>
+class InstanceManager<Child, false> {
 	protected:
 
-		InstanceManager() { }
+		InstanceManager() = default;
 
-		virtual ~InstanceManager() { }
+		virtual ~InstanceManager() = default;
+
+		/// Non-construction-copyable
+		InstanceManager(const InstanceManager& other) = delete;
+
+		/// Non-copyable
+		InstanceManager& operator=(const InstanceManager&) = delete;
 
 
 	public:
 
 		static Child* create()
 		{
-			typename SingleLockPolicy::ScopedLock lock(instance_mutex_);
-
 			if (instance_)  // for single-instance objects
 				return instance_;
 
@@ -140,8 +147,6 @@ class InstanceManager<Child, false, SingleLockPolicy> : public hz::noncopyable {
 
 		static void destroy(Child* instance = 0)
 		{
-			typename SingleLockPolicy::ScopedLock lock(instance_mutex_);
-
 			if (instance_) {
 				instance_->obj_destroy();
 				delete instance_;
@@ -157,28 +162,24 @@ class InstanceManager<Child, false, SingleLockPolicy> : public hz::noncopyable {
 		virtual void obj_destroy() { }
 
 
-		static bool has_single_instance(bool do_lock = true)
+		static bool has_single_instance()
 		{
-			typename SingleLockPolicy::ScopedLock lock(instance_mutex_, do_lock);
 			return instance_;
 		}
 
-		static Child* get_single_instance(bool do_lock = true)
+		static Child* get_single_instance()
 		{
-			typename SingleLockPolicy::ScopedLock lock(instance_mutex_, do_lock);
 			return instance_;
 		}
 
-		static void set_single_instance(Child* instance, bool do_lock = true)
+		static void set_single_instance(Child* instance)
 		{
-			typename SingleLockPolicy::ScopedLock lock(instance_mutex_, do_lock);
 			instance_ = instance;
 		}
 
 
 		// if an object is allowed to have a single instance only, these are needed.
 		static Child* instance_;  ///< Single instance pointer
-		static typename SingleLockPolicy::Mutex instance_mutex_;  ///< Single instance pointer mutex
 
 // 		static const bool multi_instance_ = false;
 
@@ -192,11 +193,8 @@ class InstanceManager<Child, false, SingleLockPolicy> : public hz::noncopyable {
 /// (it can be in a header (as opposed to cpp) if it's class template member).
 /// This will generate different instances as long as the class type is different.
 /// By passing the child's class type as template parameter we guarantee that.
-template<class Child, class SingleLockPolicy>
-Child* InstanceManager<Child, false, SingleLockPolicy>::instance_ = 0;
-
-template<class Child, class SingleLockPolicy>
-typename SingleLockPolicy::Mutex InstanceManager<Child, false, SingleLockPolicy>::instance_mutex_;
+template<class Child>
+Child* InstanceManager<Child, false>::instance_ = 0;
 
 
 

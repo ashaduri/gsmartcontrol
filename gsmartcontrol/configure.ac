@@ -49,7 +49,7 @@ AC_PROG_LN_S
 
 # Enable C++17 support.
 # This has to be AFTER gtkmm, since gtkmm has its own C++ flags.
-AX_CXX_COMPILE_STDCXX([17], [], [mandatory])
+AX_CXX_COMPILE_STDCXX([17], [noext], [mandatory])
 
 
 # detect compiler vendor (sets $ax_cv_cxx_compiler_vendor)

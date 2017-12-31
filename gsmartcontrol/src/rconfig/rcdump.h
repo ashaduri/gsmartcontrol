@@ -29,8 +29,6 @@ namespace rconfig {
 /// Dump a config tree to libdebug stream (in displayable format). This function is thread-safe.
 inline void dump_tree()
 {
-	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
-
 	debug_begin();
 	// includes the trailing newline
 	debug_out_dump("rconfig", rmn::resource_node_dump_recursive(get_root()));
@@ -41,8 +39,6 @@ inline void dump_tree()
 /// Dump a config tree to std::ostream (in displayable format). This function is thread-safe.
 inline void dump_tree_to_stream(std::ostream& os)
 {
-	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
-
 	debug_begin();
 	// includes the trailing newline
 	os << rmn::resource_node_dump_recursive(get_root());
@@ -54,8 +50,6 @@ inline void dump_tree_to_stream(std::ostream& os)
 /// Dump a config tree to a string (in displayable format). This function is thread-safe.
 inline std::string dump_tree_to_string()
 {
-	ConfigLockPolicy::ScopedLock locker(RootHolder::mutex);
-
 	return rmn::resource_node_dump_recursive(get_root());
 }
 

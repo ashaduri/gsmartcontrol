@@ -70,34 +70,6 @@ Additionally, it may be included through compiler's "-include" option
 
 
 
-// -- Default policy for synchronization primitives (sync.h);
-// (define only one of these):
-/*
-// check if any of them are forced
-#if (!defined HZ_SYNC_DEFAULT_POLICY_BOOST) \
-		&& (!defined HZ_SYNC_DEFAULT_POLICY_GLIB) \
-		&& (!defined HZ_SYNC_DEFAULT_POLICY_GLIBMM) \
-		&& (!defined HZ_SYNC_DEFAULT_POLICY_POCO) \
-		&& (!defined HZ_SYNC_DEFAULT_POLICY_PTHREAD) \
-		&& (!defined HZ_SYNC_DEFAULT_POLICY_WIN32)
-
-	#if defined ENABLE_GLIB && ENABLE_GLIB
-		#define HZ_SYNC_DEFAULT_POLICY_GLIB
-	#elif defined _WIN32
-		#define HZ_SYNC_DEFAULT_POLICY_WIN32
-	#else
-		#define HZ_SYNC_DEFAULT_POLICY_PTHREAD
-	#endif
-
-	// #define HZ_SYNC_DEFAULT_POLICY_NONE
-	// #define HZ_SYNC_DEFAULT_POLICY_GLIBMM
-	// #define HZ_SYNC_DEFAULT_POLICY_BOOST
-	// #define HZ_SYNC_DEFAULT_POLICY_POCO
-
-#endif
-*/
-
-
 // -- hz/debug.h settings.
 //
 #ifndef HZ_USE_LIBDEBUG

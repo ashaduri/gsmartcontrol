@@ -20,17 +20,13 @@ namespace {
 	/// "Execution finished" signal
 	static sigc::signal<void, const CmdexSyncCommandInfo&> s_cmdex_sync_signal_execute_finish;
 
-	/// Mutex for "Execution finished" signal
-	static hz::SyncPolicyMtDefault::Mutex s_cmdex_sync_signal_execute_finish_mutex;
-
 }
 
 
 
-cmdex_signal_execute_finish_type cmdex_sync_signal_execute_finish()
+cmdex_signal_execute_finish_type& cmdex_sync_signal_execute_finish()
 {
-	return cmdex_signal_execute_finish_type(s_cmdex_sync_signal_execute_finish,
-			new hz::SyncPolicyMtDefault::ScopedLock(s_cmdex_sync_signal_execute_finish_mutex));
+	return s_cmdex_sync_signal_execute_finish;
 }
 
 
@@ -52,7 +48,7 @@ bool CmdexSync::execute()
 		import_error();  // get error from cmdex and display warnings if needed
 
 		// emit this for execution loggers
-		cmdex_sync_signal_execute_finish()->emit(CmdexSyncCommandInfo(get_command_name(),
+		cmdex_sync_signal_execute_finish().emit(CmdexSyncCommandInfo(get_command_name(),
 				get_command_args(), get_stdout_str(), get_stderr_str(), get_error_msg()));
 
 		if (slot_connected)
@@ -111,7 +107,7 @@ bool CmdexSync::execute()
 	import_error();  // get error from cmdex and display warnings if needed
 
 	// emit this for execution loggers
-	cmdex_sync_signal_execute_finish()->emit(CmdexSyncCommandInfo(get_command_name(),
+	cmdex_sync_signal_execute_finish().emit(CmdexSyncCommandInfo(get_command_name(),
 			get_command_args(), get_stdout_str(), get_stderr_str(), get_error_msg()));
 
 	if (slot_connected)
@@ -124,15 +120,11 @@ bool CmdexSync::execute()
 
 void CmdexSync::import_error()
 {
-	cmdex_.errors_lock();
-
-	Cmdex::error_list_t errors = cmdex_.get_errors(false);  // these are not clones
+	Cmdex::error_list_t errors = cmdex_.get_errors();  // these are not clones
 	hz::ErrorBase* e = 0;
 	if (!errors.empty())
 		e = errors.back()->clone();
-	cmdex_.clear_errors(false);  // and clear them
-
-	cmdex_.errors_unlock();
+	cmdex_.clear_errors();  // and clear them
 
 	if (e) {  // if error is present, alert the user
 		on_error_warn(e);

@@ -9,10 +9,10 @@
 
 #include <glib.h>
 #include <string>
+#include <functional>
 
 #include "hz/process_signal.h"  // hz::SIGNAL_*
 #include "hz/error_holder.h"
-#include "hz/sync.h"  // hz::SyncPolicyNone
 
 
 
@@ -22,29 +22,22 @@
 /// 2. Manually poll stopped_cleanup_needed() (from the same thread).
 /// In both cases, stopped_cleanup() must be called afterwards
 /// (from the main thread).
-class Cmdex : public hz::ErrorHolder<hz::SyncPolicyNone> {
+class Cmdex : public hz::ErrorHolder {
 	public:
 
-		using hz::ErrorHolder<hz::SyncPolicyNone>::ptr_error_list_t;  ///< Auto-deleting pointer container
-		using hz::ErrorHolder<hz::SyncPolicyNone>::error_list_t;  ///< Error list type
+		using hz::ErrorHolder::ptr_error_list_t;  ///< Auto-deleting pointer container
+		using hz::ErrorHolder::error_list_t;  ///< Error list type
 
 		/// A function that translates the exit error code into a readable string
-		typedef std::string (*exit_status_translator_func_t)(int, void*);
+		using exit_status_translator_func_t = std::function<std::string(int, void*)>;
 
 		/// A function that is called whenever a process exits.
-		typedef void (*exited_callback_func_t)(void*);
+		using exited_callback_func_t = std::function<void(void*)>;
 
 
 		/// Constructor
-		Cmdex(exited_callback_func_t exited_cb = NULL, void* exited_cb_data = NULL)
-				: running_(false), kill_signal_sent_(0), child_watch_handler_called_(false),
-				pid_(0), waitpid_status_(0),
-				timer_(g_timer_new()),
-				event_source_id_term(0), event_source_id_kill(0),
-				fd_stdout_(0), fd_stderr_(0), channel_stdout_(0), channel_stderr_(0),
-				channel_stdout_buffer_size_(100 * 1024), channel_stderr_buffer_size_(10 * 1024),  // 100K and 10K
-				event_source_id_stdout_(0), event_source_id_stderr_(0),
-				translator_func_(0), translator_func_data_(0),
+		Cmdex(exited_callback_func_t exited_cb = nullptr, void* exited_cb_data = nullptr)
+				: timer_(g_timer_new()),
 				exited_callback_(exited_cb), exited_callback_data_(exited_cb_data)
 		{ }
 
@@ -233,31 +226,31 @@ class Cmdex : public hz::ErrorHolder<hz::SyncPolicyNone> {
 		std::string command_args_;  /// Arguments that always go with the binary. NOT affected by cleanup_members().
 
 
-		bool running_;  ///< If true, the child process is running now. NOT affected by cleanup_members().
-		int kill_signal_sent_;  ///< If non-zero, the process has been sent this signal to terminate
-		bool child_watch_handler_called_;  ///< true after child_watch_handler callback, before stopped_cleanup().
+		bool running_ = false;  ///< If true, the child process is running now. NOT affected by cleanup_members().
+		int kill_signal_sent_ = 0;  ///< If non-zero, the process has been sent this signal to terminate
+		bool child_watch_handler_called_ = false;  ///< true after child_watch_handler callback, before stopped_cleanup().
 
-		GPid pid_;  ///< Process ID. int in Unix, pointer in win32
-		int waitpid_status_;  ///< After the command is stopped, before cleanup, this will be available (waitpid() status).
-
-
-		GTimer* timer_;  ///< Keeps track of elapsed time since command execution. Value is not used by this class, but may be handy.
-
-		int event_source_id_term;  ///< Timeout event source ID for SIGTERM.
-		int event_source_id_kill;  ///< Timeout event source ID for SIGKILL.
+		GPid pid_ = 0;  ///< Process ID. int in Unix, pointer in win32
+		int waitpid_status_ = 0;  ///< After the command is stopped, before cleanup, this will be available (waitpid() status).
 
 
-		int fd_stdout_;  ///< stdout file descriptor
-		int fd_stderr_;  ///< stderr file descriptor
+		GTimer* timer_ = 0;  ///< Keeps track of elapsed time since command execution. Value is not used by this class, but may be handy.
 
-		GIOChannel* channel_stdout_;  ///< stdout channel
-		GIOChannel* channel_stderr_;  ///< stderr channel
+		int event_source_id_term = 0;  ///< Timeout event source ID for SIGTERM.
+		int event_source_id_kill = 0;  ///< Timeout event source ID for SIGKILL.
 
-		int channel_stdout_buffer_size_;  ///< stdout channel buffer size. NOT affected by cleanup_members().
-		int channel_stderr_buffer_size_;  ///< stderr channel buffer size. NOT affected by cleanup_members().
 
-		int event_source_id_stdout_;  ///< IO watcher event source ID for stdout
-		int event_source_id_stderr_;  ///< IO watcher event source ID for stderr
+		int fd_stdout_ = 0;  ///< stdout file descriptor
+		int fd_stderr_ = 0;  ///< stderr file descriptor
+
+		GIOChannel* channel_stdout_ = 0;  ///< stdout channel
+		GIOChannel* channel_stderr_ = 0;  ///< stderr channel
+
+		int channel_stdout_buffer_size_ = 100 * 1024;  ///< stdout channel buffer size. NOT affected by cleanup_members(). 100K.
+		int channel_stderr_buffer_size_ = 10 * 1024;  ///< stderr channel buffer size. NOT affected by cleanup_members(). 10K.
+
+		int event_source_id_stdout_ = 0;  ///< IO watcher event source ID for stdout
+		int event_source_id_stderr_ = 0;  ///< IO watcher event source ID for stderr
 
 		std::string str_stdout_;  ///< stdout data read during execution. NOT affected by cleanup_members().
 		std::string str_stderr_;  ///< stderr data read during execution. NOT affected by cleanup_members().
@@ -267,12 +260,11 @@ class Cmdex : public hz::ErrorHolder<hz::SyncPolicyNone> {
 
 		// convert command exit status to message string
 		exit_status_translator_func_t translator_func_;  ///< Exit status translator function. NOT affected by cleanup_members().
-		void* translator_func_data_;  ///< Data to supply to the exit status translator function.
+		void* translator_func_data_ = 0;  ///< Data to supply to the exit status translator function.
 
 		// "command exited" signal callback.
 		exited_callback_func_t exited_callback_;  ///< Exit notifier function. NOT affected by cleanup_members().
-		void* exited_callback_data_;  ///< Data to supply to the exit notifier function.
-
+		void* exited_callback_data_ = 0;  ///< Data to supply to the exit notifier function.
 
 };
 
