@@ -80,10 +80,9 @@ inline std::ostream& operator<<(std::ostream& os, const ResourceDataAnyDumper<T>
 
 
 /// Resource data which can hold variables of any type.
-template<class LockingPolicy>
 class ResourceDataAny {
 
-	typedef ResourceDataAny<LockingPolicy> self_type;  ///< Self type
+	typedef ResourceDataAny self_type;  ///< Self type
 
 	public:
 

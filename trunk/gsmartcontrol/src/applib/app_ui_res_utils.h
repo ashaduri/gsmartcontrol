@@ -247,8 +247,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 
 
 		/// Virtual destructor
-		virtual ~AppUIResWidget()
-		{ }
+		virtual ~AppUIResWidget() = default;
 
 
 	private:

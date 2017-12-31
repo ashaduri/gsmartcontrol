@@ -29,20 +29,22 @@ Don't rely on smartctl return code (2), parse the output instead.
 	JSON may fix this.
 
 
-Port to C++17 (or at least 14, that's what libsigc++ requires)
+GTKMM 4.
+
+JSON.
+
+Port to C++17
 	Remove glibmm thread stuff (it's gone in gtkmm4).
 
 
+string_num (may require locale set to C).
 strtold / strtof, DISABLE_STRTOF, DISABLE_STRTOLD (after ascii.h)
-Port to std::filesystem.
+Port to std::filesystem (gcc 8; mingw not yet supported).
 type_properties.h / type_categories.h (after ascii.h and string_num.h)
 scoped_ptr (after we have GtkFileChooserNative in gtkmm)
 scoped_array (after we get rid of hz::fs)
 Fix ResourceDataAnyDumper.
-sync.
-common_types (after sync).
 format_date() -> C++17 has it.
-noncopyable (after sync)
 snprintf
 ptr_container
 stream_cast?
@@ -51,12 +53,15 @@ string_sprintf?
 wcmatch (through regex)?
 std::wstring in mingw instead of wchar_t?
 Check licenses - do we still use boost, bsd?
+std::string setters -> no const&, use std::move.
 
+typedef -> using
+NULL -> nullptr
 
 After JSON:
 	Port to std::regex, get rid of pcre requirement.
 
-
+Test with clang-tidy, gcc's -Wsuggest-*.
 
 
 

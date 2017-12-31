@@ -63,7 +63,6 @@ namespace {
 
 
 	/// Get libdebug buffer channel (create new one if unavailable).
-	/// This function is not thread-safe. The channel must be locked properly.
 	inline debug_channel_base_ptr app_get_debug_buf_channel()
 	{
 		if (!s_debug_buf_channel)
@@ -78,8 +77,6 @@ namespace {
 std::string app_get_debug_buffer_str()
 {
 	debug_channel_base_ptr channel = app_get_debug_buf_channel();
-	DebugChannelOStream::intrusive_ptr_scoped_lock_type locker(channel->get_ref_mutex());  // lock
-	// now the channel is locked, so we have a proper access to the stream.
 	return s_debug_buf_channel_stream.str();
 }
 
@@ -324,9 +321,6 @@ namespace {
 
 bool app_init_and_loop(int& argc, char**& argv)
 {
-	// initialize GThread (for mutexes, etc... to work). Must be called before any other glib function.
-// 	Glib::thread_init();
-
 #ifdef _WIN32
 	// Disable client-side decorations (enable native windows decorations) under Windows.
 	hz::env_set_value("GTK_CSD", "0");

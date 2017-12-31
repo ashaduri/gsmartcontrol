@@ -18,8 +18,6 @@
 #include "hz/error.h"
 #include "hz/intrusive_ptr.h"
 #include "hz/process_signal.h"  // hz::SIGNAL_*
-#include "hz/sync.h"
-#include "hz/sync_lock_ptr.h"
 
 #include "cmdex.h"
 
@@ -67,13 +65,12 @@ struct CmdexSyncCommandInfo {
 
 
 
-/// cmdex_sync_signal_execute_finish() return type, mt-synchronized signal.
-typedef hz::sync_lock_ptr< sigc::signal<void, const CmdexSyncCommandInfo&>&,
-		hz::SyncPolicyMtDefault::ScopedLock > cmdex_signal_execute_finish_type;
+/// cmdex_sync_signal_execute_finish() return signal.
+typedef sigc::signal<void, const CmdexSyncCommandInfo&> cmdex_signal_execute_finish_type;
 
 
 /// This signal is emitted every time execute() finishes.
-cmdex_signal_execute_finish_type cmdex_sync_signal_execute_finish();
+cmdex_signal_execute_finish_type& cmdex_sync_signal_execute_finish();
 
 
 

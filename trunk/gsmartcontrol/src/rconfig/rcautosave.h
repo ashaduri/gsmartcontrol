@@ -23,8 +23,6 @@
 #include <glib.h>
 
 #include "hz/debug.h"
-#include "hz/sync.h"
-#include "hz/sync_policy_glib.h"
 #include "hz/fs_path.h"
 
 #include "rcloadsave.h"
@@ -34,22 +32,16 @@
 namespace rconfig {
 
 
-/// Auto-save sync policy, to avoid race conditions while saving configuration.
-typedef hz::SyncPolicyMtDefault AutoSaveLockPolicy;
-
-
 /// Holder for static variables
 template<typename Dummy>
 struct AutoSaveStaticHolder {
 	static std::string config_file;  ///< Config file to autosave to.
 	static bool autosave_enabled;  ///< Autosave enabled or not. This acts as a stopper flag for autosave callback.
-	static AutoSaveLockPolicy::Mutex mutex;  // Mutex for the static variables.
 };
 
 // definitions
 template<typename Dummy> std::string AutoSaveStaticHolder<Dummy>::config_file;
 template<typename Dummy> bool AutoSaveStaticHolder<Dummy>::autosave_enabled = false;
-template<typename Dummy> AutoSaveLockPolicy::Mutex AutoSaveStaticHolder<Dummy>::mutex;
 
 
 /// Specify the same template parameter to get the same set of variables.
@@ -60,23 +52,9 @@ typedef AutoSaveStaticHolder<void> AutoSaveHolder;  // one (and only) specializa
 extern "C" {
 
 	/// Autosave timeout callback for Glib. internal.
-	inline gboolean autosave_timeout_callback(gpointer data)
+	inline gboolean autosave_timeout_callback(void* data)
 	{
 		bool force = (bool)data;
-
-		// If previous call is active, return (callback registered multiple times?).
-		// Don't do this for forced call, because it may expect the file to be updated
-		// once this function exits.
-		if (!force) {
-			if (!AutoSaveLockPolicy::trylock(AutoSaveHolder::mutex))  // can't lock, another save active, exit.
-				return true;  // automatically try next time
-			AutoSaveLockPolicy::unlock(AutoSaveHolder::mutex);  // unlock so we can use the scoped lock.
-		}
-
-		// manually called or no parallel threads saving:
-
-		// lock all static vars of this file.
-		AutoSaveLockPolicy::ScopedLock locker(AutoSaveHolder::mutex);
 
 		if (!force && !AutoSaveHolder::autosave_enabled)  // no more autosaves
 			return false;  // remove timeout, disable autosave for real.
@@ -109,7 +87,6 @@ inline bool autosave_set_config_file(const std::string& file)
 		return false;
 	}
 
-	AutoSaveLockPolicy::ScopedLock locker(AutoSaveHolder::mutex);
 	AutoSaveHolder::config_file = file;
 
 	debug_print_info("rconfig", "Setting autosave config file to \"%s\"\n", file.c_str());
@@ -121,8 +98,6 @@ inline bool autosave_set_config_file(const std::string& file)
 /// Enable autosave every \c sec_interval seconds.
 inline bool autosave_start(unsigned int sec_interval)
 {
-	AutoSaveLockPolicy::ScopedLock locker(AutoSaveHolder::mutex);
-
 	if (AutoSaveHolder::autosave_enabled) {  // already autosaving, you should stop it first.
 		debug_print_warn("rconfig", "Error while starting config autosave: Autosave is active already.\n");
 		return false;
@@ -143,8 +118,6 @@ inline bool autosave_start(unsigned int sec_interval)
 inline void autosave_stop()
 {
 	debug_print_info("rconfig", "Stopping config autosave.\n");
-
-	AutoSaveLockPolicy::ScopedLock locker(AutoSaveHolder::mutex);
 
 	// set the stop flag. it will make autosave stop on next timeout callback call.
 	AutoSaveHolder::autosave_enabled = false;

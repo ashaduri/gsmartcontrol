@@ -43,7 +43,7 @@
 int main()
 {
 
-	typedef rmn::resource_node< rmn::ResourceDataAny<rmn::ResourceSyncPolicyNone> > resource_node;
+	typedef rmn::resource_node< rmn::ResourceDataAny> resource_node;
 	typedef resource_node::node_ptr resource_node_ptr;
 
 

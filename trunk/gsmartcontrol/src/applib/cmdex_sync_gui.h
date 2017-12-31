@@ -20,15 +20,13 @@
 
 #include <gtkmm.h>
 
-#include "hz/noncopyable.h"
-
 #include "cmdex_sync.h"
 
 
 
 /// Same as CmdexSync, but with GTK UI support.
 /// This one is noncopyable, because we can't copy the dialogs, etc...
-class CmdexSyncGui : public CmdexSync, public hz::noncopyable {
+class CmdexSyncGui : public CmdexSync {
 	public:
 
 		/// Constructor
@@ -47,6 +45,13 @@ class CmdexSyncGui : public CmdexSync, public hz::noncopyable {
 		{
 			signal_execute_tick.connect(sigc::mem_fun(*this, &CmdexSyncGui::execute_tick_func));
 		}
+
+
+		/// Non-construction-copyable
+		CmdexSyncGui(const CmdexSyncGui& other) = delete;
+
+		/// Non-copyable
+		CmdexSyncGui& operator=(const CmdexSyncGui&) = delete;
 
 
 		/// Destructor
