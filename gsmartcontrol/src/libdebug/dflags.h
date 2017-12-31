@@ -28,7 +28,7 @@ namespace debug_level {
 		bits = 5  ///< Number of bits for bitset
 	};
 
-	typedef std::bitset<bits> type;  ///< Combination of debug level flags
+	using type = std::bitset<bits>;  ///< Combination of debug level flags
 
 	/// Get debug level name
 	const char* get_name(flag level);
@@ -69,7 +69,7 @@ namespace debug_format {
 		bits = 6  ///< Number of bits for bitset
 	};
 
-	typedef std::bitset<bits> type;  ///< Combination of format flags
+	 using type = std::bitset<bits>;  ///< Combination of format flags
 }
 
 
@@ -86,7 +86,7 @@ namespace debug_pos {
 		bits = 4  ///< Number of bits for bitset
 	};
 
-	typedef std::bitset<bits> type;  ///< Combination of flags
+	using type = std::bitset<bits>;  ///< Combination of flags
 }
 
 

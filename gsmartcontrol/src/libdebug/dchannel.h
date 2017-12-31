@@ -23,10 +23,10 @@
 class DebugChannelBase;
 
 /// Strong reference-holding pointer
-typedef hz::intrusive_ptr<DebugChannelBase> debug_channel_base_ptr;
+using debug_channel_base_ptr = hz::intrusive_ptr<DebugChannelBase>;
 
 /// Strong reference-holding pointer
-typedef hz::intrusive_ptr<const DebugChannelBase> debug_channel_base_const_ptr;
+using debug_channel_base_const_ptr = hz::intrusive_ptr<const DebugChannelBase>;
 
 
 
@@ -38,8 +38,7 @@ class DebugChannelBase : public hz::intrusive_ptr_referenced {
 	public:
 
 		/// Virtual destructor
-		virtual ~DebugChannelBase()
-		{ }
+		virtual ~DebugChannelBase() = default;
 
 		/// Clone the channel and return a strong reference-holding pointer
 		virtual debug_channel_base_ptr clone_ptr() = 0;

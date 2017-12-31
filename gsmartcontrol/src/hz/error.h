@@ -37,16 +37,13 @@ Predefined error types are: "errno", "signal" (child exited with signal).
 
 
 /// Error level (severity)
-struct ErrorLevel {
-	/// Error level (severity)
-	enum level_t {
-		none = 0,  ///< No error
-		dump = 1 << 0,  ///< Dump
-		info = 1 << 1,  ///< Informational (default)
-		warn = 1 << 2,  ///< Warning
-		error = 1 << 3,  ///< Error
-		fatal = 1 << 4  ///< Fatal
-	};
+enum class ErrorLevel {
+	none = 0,  ///< No error
+	dump = 1 << 0,  ///< Dump
+	info = 1 << 1,  ///< Informational (default)
+	warn = 1 << 2,  ///< Warning
+	error = 1 << 3,  ///< Error
+	fatal = 1 << 4  ///< Fatal
 };
 
 
@@ -60,20 +57,16 @@ class Error;
 class ErrorBase {
 	public:
 
-		/// Severity level
-		typedef ErrorLevel::level_t level_t;
-
-
 		DEFINE_BAD_CAST_EXCEPTION(type_mismatch,
 				"Error type mismatch. Original type: \"%s\", requested type: \"%s\".", "Error type mismatch.");
 
 		/// Constructor
-		ErrorBase(const std::string& type_, level_t level_, const std::string& msg)
+		ErrorBase(const std::string& type_, ErrorLevel level_, const std::string& msg)
 				: type(type_), level(level_), message(msg)
 		{ }
 
 		/// Constructor
-		ErrorBase(const std::string& type_, level_t level_)
+		ErrorBase(const std::string& type_, ErrorLevel level_)
 				: type(type_), level(level_)
 		{ }
 
@@ -110,23 +103,23 @@ class ErrorBase {
 
 
 		/// Increase the level (severity) of the error
-		level_t level_inc()
+		ErrorLevel level_inc()
 		{
 			if (level == ErrorLevel::fatal)
 				return level;
-			return (level = static_cast<level_t>(static_cast<int>(level) << 1));
+			return (level = static_cast<ErrorLevel>(static_cast<int>(level) << 1));
 		}
 
 		/// Decrease the level (severity) of the error
-		level_t level_dec()
+		ErrorLevel level_dec()
 		{
 			if (level == ErrorLevel::none)
 				return level;
-			return (level = static_cast<level_t>(static_cast<int>(level) >> 1));
+			return (level = static_cast<ErrorLevel>(static_cast<int>(level) >> 1));
 		}
 
 		/// Get error level (severity)
-		level_t get_level() const
+		ErrorLevel get_level() const
 		{
 			return level;
 		}
@@ -151,7 +144,7 @@ class ErrorBase {
 	protected:
 
 		std::string type;  ///< Error type
-		level_t level = ErrorLevel::none;  ///< Error severity
+		ErrorLevel level = ErrorLevel::none;  ///< Error severity
 		std::string message;  ///< Error message
 
 };
@@ -166,13 +159,13 @@ class ErrorCodeHolder : public ErrorBase {
 	protected:
 
 		/// Constructor
-		ErrorCodeHolder(const std::string& type_, ErrorLevel::level_t level_, const CodeType& code_,
+		ErrorCodeHolder(const std::string& type_, ErrorLevel level_, const CodeType& code_,
 				const std::string& msg)
 			: ErrorBase(type_, level_, msg), code(code_)
 		{ }
 
 		/// Constructor
-		ErrorCodeHolder(const std::string& type_, ErrorLevel::level_t level_, const CodeType& code_)
+		ErrorCodeHolder(const std::string& type_, ErrorLevel level_, const CodeType& code_)
 			: ErrorBase(type_, level_), code(code_)
 		{ }
 
@@ -193,7 +186,7 @@ class ErrorCodeHolder<void> : public ErrorBase {
 	protected:
 
 		/// Constructor
-		ErrorCodeHolder(const std::string& type_, ErrorLevel::level_t level_, const std::string& msg)
+		ErrorCodeHolder(const std::string& type_, ErrorLevel level_, const std::string& msg)
 			: ErrorBase(type_, level_, msg)
 		{ }
 
@@ -216,7 +209,7 @@ class Error : public ErrorCodeHolder<CodeType> {
 	public:
 
 		/// Constructor
-		Error(const std::string& type_, ErrorLevel::level_t level_, const CodeType& code_,
+		Error(const std::string& type_, ErrorLevel level_, const CodeType& code_,
 				const std::string& msg)
 			: ErrorCodeHolder<CodeType>(type_, level_, code_, msg)
 		{ }
@@ -237,7 +230,7 @@ template<>
 class Error<void> : public ErrorCodeHolder<void> {
 	public:
 
-		Error(const std::string& type_, ErrorLevel::level_t level_, const std::string& msg)
+		Error(const std::string& type_, ErrorLevel level_, const std::string& msg)
 			: ErrorCodeHolder<void>(type_, level_, msg)
 		{ }
 
@@ -259,13 +252,13 @@ class Error<int> : public ErrorCodeHolder<int> {
 	public:
 
 		/// Constructor
-		Error(const std::string& type_, ErrorLevel::level_t level_, int code_, const std::string& msg)
+		Error(const std::string& type_, ErrorLevel level_, int code_, const std::string& msg)
 			: ErrorCodeHolder<int>(type_, level_, code_, msg)
 		{ }
 
 		/// Constructor
-		Error(const std::string& type_, ErrorLevel::level_t level_, int code_)
-			: ErrorCodeHolder<int>(type_, level_, code)
+		Error(const std::string& type_, ErrorLevel level_, int code_)
+			: ErrorCodeHolder<int>(type_, level_, code_)
 		{
 			if (type == "errno") {
 				message = hz::errno_string(code_);

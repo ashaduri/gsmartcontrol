@@ -25,18 +25,10 @@
 /// (only for non-time-interval blocks).
 class StorageCapability {
 	public:
-
-		/// Constructor
-		StorageCapability() : flag_value(0x0)
-		{ }
-
-		/// String list
-		typedef std::vector<std::string> strvalue_list_t;
-
 		std::string reported_flag_value;  ///< original flag value as a string
-		uint16_t flag_value;  ///< Flag value. This is one or sometimes two bytes (maybe more?)
+		uint16_t flag_value = 0x0;  ///< Flag value. This is one or sometimes two bytes (maybe more?)
 		std::string reported_strvalue;  ///< Original flag descriptions
-		strvalue_list_t strvalues;  ///< A list of capabilities in the block.
+		std::vector<std::string> strvalues;  ///< A list of capabilities in the block.
 };
 
 
@@ -117,26 +109,20 @@ class StorageAttribute {
 		}
 
 
-		/// Constructor
-		StorageAttribute() : id(-1), attr_type(attr_type_unknown), update_type(update_type_unknown),
-			when_failed(fail_time_unknown), raw_value_int(0)
-		{ }
-
-
 		/// Format raw value with commas (if it's a number)
 		std::string format_raw_value() const;
 
 
-		int32_t id;  ///< Attribute ID (most vendors agree on this)
+		int32_t id = -1;  ///< Attribute ID (most vendors agree on this)
 		std::string flag;  ///< "Old" format is "0xXXXX", "brief" format is "PO--C-".
 		std::optional<uint8_t> value;  ///< Normalized value. May be unset ("---").
 		std::optional<uint8_t> worst;  ///< Worst ever value. May be unset ("---").
 		std::optional<uint8_t> threshold;  ///< Threshold for normalized value. May be unset ("---").
-		attr_t attr_type;  ///< Attribute pre-fail / old-age type
-		update_t update_type;  ///< When-updated type
-		fail_time_t when_failed;  ///< When-failed type
+		attr_t attr_type = attr_type_unknown;  ///< Attribute pre-fail / old-age type
+		update_t update_type = update_type_unknown;  ///< When-updated type
+		fail_time_t when_failed = fail_time_unknown;  ///< When-failed type
 		std::string raw_value;  ///< Raw value as a string, as presented by smartctl (formatted).
-		int64_t raw_value_int;  ///< Same as raw_value, but parsed as int64. original value is 6 bytes I think.
+		int64_t raw_value_int = 0;  ///< Same as raw_value, but parsed as int64. original value is 6 bytes I think.
 
 };
 
@@ -183,10 +169,6 @@ std::ostream& operator<< (std::ostream& os, const StorageStatistic& p);
 class StorageErrorBlock {
 	public:
 
-		/// Constructor
-		StorageErrorBlock() : error_num(0), lifetime_hours(0)
-		{ }
-
 		/// Get readable error types from reported types
 		static std::string get_readable_error_types(const std::vector<std::string>& types);
 
@@ -196,8 +178,8 @@ class StorageErrorBlock {
 		/// Format lifetime hours with comma
 		std::string format_lifetime_hours() const;
 
-		uint32_t error_num;  ///< Error number
-		uint32_t lifetime_hours;  ///< When the error occurred (in lifetime hours)
+		uint32_t error_num = 0;  ///< Error number
+		uint32_t lifetime_hours = 0;  ///< When the error occurred (in lifetime hours)
 		std::string device_state;  ///< Device state during the error - "active or idle", standby, etc...
 		std::vector<std::string> reported_types;  ///< Array of reported types (strings), e.g. "UNC".
 		std::string type_more_info;  ///< More info on error type (e.g. "at LBA = 0x0253eac0 = 39054016")
@@ -278,10 +260,6 @@ class StorageSelftestEntry {
 			return severity_none;
 		}
 
-		/// Constructor
-		StorageSelftestEntry() : test_num(0), status(status_unknown),
-				remaining_percent(-1), lifetime_hours()
-		{ }
 
 		/// Get error status as a string
 		std::string get_status_str() const
@@ -294,12 +272,12 @@ class StorageSelftestEntry {
 		std::string format_lifetime_hours() const;
 
 
-		uint32_t test_num;  ///< Test number. always starts from 1. larger means older or newer, depending on model. 0 for capability.
+		uint32_t test_num = 0;  ///< Test number. always starts from 1. larger means older or newer, depending on model. 0 for capability.
 		std::string type;  ///< Extended offline, Short offline, Conveyance offline, etc... . capability: unused.
 		std::string status_str;  ///< Self-test routine in progress, Completed without error, etc... (as reported by log or capability)
-		status_t status;  ///< same as status_str, but from enum
-		int8_t remaining_percent;  ///< Remaining %. 0% for completed, 90% for started. -1 if n/a.
-		uint32_t lifetime_hours;  ///< When the test happened (in lifetime hours). capability: unused.
+		status_t status = status_unknown;  ///< same as status_str, but from enum
+		int8_t remaining_percent = -1;  ///< Remaining %. 0% for completed, 90% for started. -1 if n/a.
+		uint32_t lifetime_hours = 0;  ///< When the test happened (in lifetime hours). capability: unused.
 		std::string lba_of_first_error;  ///< LBA of the first error. "-" or value (format? usually hex). capability: unused.
 };
 
@@ -415,16 +393,6 @@ class StorageProperty {
 		};
 
 
-		/// Constructor
-		StorageProperty()
-			: section(section_unknown), subsection(subsection_unknown),
-			value_type(value_type_unknown), warning(warning_none), show_in_ui(true)
-		{
-// 			value_from_db = false;
-			value_integer = 0;  // this should nullify all union members
-		}
-
-
 		/// Check if this is an empty object with no value set.
 		bool empty() const
 		{
@@ -471,8 +439,8 @@ class StorageProperty {
 
 		std::string description;  ///< Property description (for tooltips, etc...)
 
-		section_t section;  ///< Section this property belongs to
-		subsection_t subsection;  ///< Subsection this property belongs to
+		section_t section = section_unknown;  ///< Section this property belongs to
+		subsection_t subsection = subsection_unknown;  ///< Subsection this property belongs to
 
 // 		bool empty_value;  // the property has an empty value
 // 		bool value_from_db;  // value retrieved from the database, not the drive
@@ -480,12 +448,12 @@ class StorageProperty {
 		std::string reported_value;  ///< String representation of the value as reported
 		std::string readable_value;  ///< User-friendly readable representation of value. if empty, use the other members.
 
-		value_type_t value_type;  ///< Property value type
+		value_type_t value_type = value_type_unknown;  ///< Property value type
 
 		std::string value_string;  ///< Value (if it's a string)
 		std::string value_version;  ///< Value (if it's a version)
 		union {
-			int64_t value_integer;  ///< Value (if it's an integer)
+			int64_t value_integer = 0;  ///< Value (if it's an integer)
 			bool value_bool;  ///< Value (if it's bool)
 			uint64_t value_time_length;  ///< Value in seconds (if it's time interval)
 		};
@@ -496,10 +464,10 @@ class StorageProperty {
 		StorageErrorBlock value_error_block;  ///< Value (if it's a error block)
 		StorageSelftestEntry value_selftest_entry;  ///< Value (if it's a self-test entry)
 
-		warning_t warning;  ///< Warning severity for this property
+		warning_t warning = warning_none;  ///< Warning severity for this property
 		std::string warning_reason;  // Warning reason (displayable)
 
-		bool show_in_ui;  ///< Whether to show this property in UI or not
+		bool show_in_ui = true;  ///< Whether to show this property in UI or not
 
 };
 

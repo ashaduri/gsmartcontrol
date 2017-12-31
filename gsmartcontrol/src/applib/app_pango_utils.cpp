@@ -9,6 +9,12 @@
 /// \weakgroup applib
 /// @{
 
+// TODO Remove this in gtkmm4.
+#include <bits/stdc++.h>  // to avoid throw() macro errors.
+#define throw(a)  // glibmm uses dynamic exception specifications, remove them.
+#include <glibmm.h>  // NOT NEEDED
+#undef throw
+
 #include <pango/pango.h>  // pango_parse_markup()
 
 #include "app_pango_utils.h"
@@ -20,7 +26,7 @@ bool app_pango_strip_markup(const Glib::ustring& str, Glib::ustring& stripped)
 {
 	gchar* gstripped = 0;
 	bool ok = false;
-	if (pango_parse_markup(str.c_str(), -1, 0, NULL, &gstripped, NULL, NULL) && gstripped) {
+	if (pango_parse_markup(str.c_str(), -1, 0, nullptr, &gstripped, nullptr, nullptr) && gstripped) {
 		stripped = gstripped;
 		ok = true;
 	}
@@ -41,7 +47,7 @@ bool app_pango_strip_markup(const std::string& str, std::string& stripped)
 {
 	gchar* gstripped = 0;
 	bool ok = false;
-	if (pango_parse_markup(str.c_str(), -1, 0, NULL, &gstripped, NULL, NULL) && gstripped) {
+	if (pango_parse_markup(str.c_str(), -1, 0, nullptr, &gstripped, nullptr, nullptr) && gstripped) {
 		stripped = gstripped;
 		ok = true;
 	}

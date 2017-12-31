@@ -401,7 +401,7 @@ struct DirSortMTime : public DirSortBase<DirSortMTime> {
 	{
 		time_t e1_ts = 0, e2_ts = 0;
 		if (!path1.get_last_modified(e1_ts) || !path2.get_last_modified(e2_ts) || (e1_ts == e2_ts))
-			path1.str() < path2.str();  // error or similar timestamps, fall back to this.
+			return path1.str() < path2.str();  // error or similar timestamps, fall back to this.
 
 		return e1_ts < e2_ts;
 	}

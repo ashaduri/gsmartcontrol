@@ -42,18 +42,14 @@
 /// A label for StorageProperty
 struct PropertyLabel {
 	/// Constructor
-	PropertyLabel(const std::string& label_, const StorageProperty* prop, bool markup_ = false) :
-		label(label_), property(prop), markup(markup_)
+	PropertyLabel(std::string label_, const StorageProperty* prop, bool markup_ = false) :
+		label(std::move(label_)), property(prop), markup(markup_)
 	{ }
 
 	std::string label;  ///< Label text
-	const StorageProperty* property;  ///< Storage property
-	bool markup;  ///< Whether the label text uses markup
+	const StorageProperty* property = 0;  ///< Storage property
+	bool markup = false;  ///< Whether the label text uses markup
 };
-
-
-/// A vector of PropertyLabel objects
-typedef std::vector<PropertyLabel> label_list_t;
 
 
 
@@ -62,7 +58,7 @@ namespace {
 
 
 	/// Set "top" labels - the generic text at the top of each tab page.
-	inline void app_set_top_labels(Gtk::Box* vbox, const label_list_t& label_strings)
+	inline void app_set_top_labels(Gtk::Box* vbox, const std::vector<PropertyLabel>& label_strings)
 	{
 		if (!vbox)
 			return;
@@ -85,7 +81,7 @@ namespace {
 		} else {
 
 			// add one label per element
-			for (label_list_t::const_iterator iter = label_strings.begin(); iter != label_strings.end(); ++iter) {
+			for (std::vector<PropertyLabel>::const_iterator iter = label_strings.begin(); iter != label_strings.end(); ++iter) {
 				std::string label_text = (iter->markup ? Glib::ustring(iter->label) : Glib::Markup::escape_text(iter->label));
 				Gtk::Label* label = Gtk::manage(new Gtk::Label());
 				label->set_markup(label_text);
@@ -485,8 +481,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 	// Fill the tabs with info
 
 	// we need reference here - we take addresses of the elements
-	const SmartctlParser::prop_list_t& props = drive->get_properties();  // it's a vector
-	typedef SmartctlParser::prop_list_t::const_iterator prop_iterator;
+	const auto& props = drive->get_properties();  // it's a vector
 
 
 
@@ -495,29 +490,29 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 	do {
 
 		// filter out some properties
-		SmartctlParser::prop_list_t id_props, version_props, health_props;
+		std::vector<StorageProperty> id_props, version_props, health_props;
 
-		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
-			if (iter->section == StorageProperty::section_info) {
-				if (iter->generic_name == "smartctl_version_full") {
-					version_props.push_back(*iter);
-				} else if (iter->generic_name == "smartctl_version") {
+		for (auto&& p : props) {
+			if (p.section == StorageProperty::section_info) {
+				if (p.generic_name == "smartctl_version_full") {
+					version_props.push_back(p);
+				} else if (p.generic_name == "smartctl_version") {
 					continue;  // we use the full version string instead.
 				} else {
-					id_props.push_back(*iter);
+					id_props.push_back(p);
 				}
-			} else if (iter->section == StorageProperty::section_data && iter->subsection == StorageProperty::subsection_health) {
-				health_props.push_back(*iter);
+			} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_health) {
+				health_props.push_back(p);
 			}
 		}
 
 		// put version after all the info
-		for (prop_iterator iter = version_props.begin(); iter != version_props.end(); ++iter)
-			id_props.push_back(*iter);
+		for (auto&& p : version_props)
+			id_props.push_back(p);
 
 		// health is the last one
-		for (prop_iterator iter = health_props.begin(); iter != health_props.end(); ++iter)
-			id_props.push_back(*iter);
+		for (auto&& p : health_props)
+			id_props.push_back(p);
 
 
 		Gtk::Grid* identity_table = lookup_widget<Gtk::Grid*>("identity_table");
@@ -529,12 +524,12 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
 		int row = 0;
 
-		for (prop_iterator iter = id_props.begin(); iter != id_props.end(); ++iter) {
-			if (!iter->show_in_ui) {
+		for (auto&& p : id_props) {
+			if (!p.show_in_ui) {
 				continue;  // hide debug messages from smartctl
 			}
 
-			if (iter->generic_name == "overall_health") {  // a little distance for this one
+			if (p.generic_name == "overall_health") {  // a little distance for this one
 				Gtk::Label* empty_label = Gtk::manage(new Gtk::Label());
 				empty_label->set_can_focus(false);
 				identity_table->attach(*empty_label, 0, row, 2, 1);
@@ -546,7 +541,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			name->set_alignment(Gtk::ALIGN_END);  // right-align
 			name->set_selectable(true);
 			name->set_can_focus(false);
-			name->set_markup("<b>" + Glib::Markup::escape_text(iter->readable_name) + "</b>");
+			name->set_markup("<b>" + Glib::Markup::escape_text(p.readable_name) + "</b>");
 
 			// If the above is Label, then this has to be Label too, else it will shrink
 			// and "name" will take most of the horizontal space. If "name" is set to shrink,
@@ -556,10 +551,10 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			value->set_alignment(Gtk::ALIGN_START);  // left-align
 			value->set_selectable(true);
 			value->set_can_focus(false);
-			value->set_markup(Glib::Markup::escape_text(iter->format_value()));
+			value->set_markup(Glib::Markup::escape_text(p.format_value()));
 
 			std::string fg;
-			if (app_property_get_label_highlight_color(iter->warning, fg)) {
+			if (app_property_get_label_highlight_color(p.warning, fg)) {
 				name->set_markup("<span color=\"" + fg + "\">"+ name->get_label() + "</span>");
 				value->set_markup("<span color=\"" + fg + "\">"+ value->get_label() + "</span>");
 			}
@@ -567,12 +562,12 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			identity_table->attach(*name, 0, row, 1, 1);
 			identity_table->attach(*value, 1, row, 1, 1);
 
-			app_gtkmm_set_widget_tooltip(*name, iter->get_description(), true);
+			app_gtkmm_set_widget_tooltip(*name, p.get_description(), true);
 			app_gtkmm_set_widget_tooltip(*value, // value->get_label() + "\n\n" +
-					iter->get_description(), true);
+					p.get_description(), true);
 
-			if (int(iter->warning) > int(max_tab_warning))
-				max_tab_warning = iter->warning;
+			if (int(p.warning) > int(max_tab_warning))
+				max_tab_warning = p.warning;
 
 			++row;
 		}
@@ -687,46 +682,46 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 
 		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
-		label_list_t label_strings;  // outside-of-tree properties
+		std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
-		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
-			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_attributes)
+		for (auto&& p : props) {
+			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_attributes)
 				continue;
 
 			// add non-attribute-type properties to label above
-			if (iter->value_type != StorageProperty::value_type_attribute) {
-				label_strings.push_back(PropertyLabel(iter->readable_name + ": " + iter->format_value(), &(*iter)));
+			if (p.value_type != StorageProperty::value_type_attribute) {
+				label_strings.push_back(PropertyLabel(p.readable_name + ": " + p.format_value(), &p));
 
-				if (int(iter->warning) > int(max_tab_warning))
-					max_tab_warning = iter->warning;
+				if (int(p.warning) > int(max_tab_warning))
+					max_tab_warning = p.warning;
 				continue;
 			}
 
-			std::string attr_type = StorageAttribute::get_attr_type_name(iter->value_attribute.attr_type);
-			if (iter->value_attribute.attr_type == StorageAttribute::attr_type_prefail)
+			std::string attr_type = StorageAttribute::get_attr_type_name(p.value_attribute.attr_type);
+			if (p.value_attribute.attr_type == StorageAttribute::attr_type_prefail)
 				attr_type = "<b>" + attr_type + "</b>";
 
-			std::string fail_time = StorageAttribute::get_fail_time_name(iter->value_attribute.when_failed);
-			if (iter->value_attribute.when_failed != StorageAttribute::fail_time_none)
+			std::string fail_time = StorageAttribute::get_fail_time_name(p.value_attribute.when_failed);
+			if (p.value_attribute.when_failed != StorageAttribute::fail_time_none)
 				fail_time = "<b>" + fail_time + "</b>";
 
 			Gtk::TreeRow row = *(list_store->append());
 
-			row[col_id] = iter->value_attribute.id;
-			row[col_name] = iter->readable_name;
-			row[col_flag_value] = iter->value_attribute.flag;  // it's a string, not int.
-			row[col_value] = (iter->value_attribute.value.has_value() ? hz::number_to_string(iter->value_attribute.value.value()) : "-");
-			row[col_worst] = (iter->value_attribute.worst.has_value() ? hz::number_to_string(iter->value_attribute.worst.value()) : "-");
-			row[col_threshold] = (iter->value_attribute.threshold.has_value() ? hz::number_to_string(iter->value_attribute.threshold.value()) : "-");
-			row[col_raw] = iter->value_attribute.format_raw_value();
+			row[col_id] = p.value_attribute.id;
+			row[col_name] = p.readable_name;
+			row[col_flag_value] = p.value_attribute.flag;  // it's a string, not int.
+			row[col_value] = (p.value_attribute.value.has_value() ? hz::number_to_string(p.value_attribute.value.value()) : "-");
+			row[col_worst] = (p.value_attribute.worst.has_value() ? hz::number_to_string(p.value_attribute.worst.value()) : "-");
+			row[col_threshold] = (p.value_attribute.threshold.has_value() ? hz::number_to_string(p.value_attribute.threshold.value()) : "-");
+			row[col_raw] = p.value_attribute.format_raw_value();
 			row[col_type] = attr_type;
-// 			row[col_updated] = StorageAttribute::get_update_type_name(iter->value_attribute.update_type);
+// 			row[col_updated] = StorageAttribute::get_update_type_name(p.value_attribute.update_type);
 			row[col_failed] = fail_time;
-			row[col_tooltip] = iter->get_description();
-			row[col_storage] = &(*iter);
+			row[col_tooltip] = p.get_description();
+			row[col_storage] = &p;
 
-			if (int(iter->warning) > int(max_tab_warning))
-				max_tab_warning = iter->warning;
+			if (int(p.warning) > int(max_tab_warning))
+				max_tab_warning = p.warning;
 		}
 
 
@@ -803,33 +798,33 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 
 		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
-		label_list_t label_strings;  // outside-of-tree properties
+		std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
-		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
-			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_devstat)
+		for (auto&& p : props) {
+			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_devstat)
 				continue;
 
 			// add non-entry-type properties to label above
-			if (iter->value_type != StorageProperty::value_type_statistic) {
-				label_strings.push_back(PropertyLabel(iter->readable_name + ": " + iter->format_value(), &(*iter)));
+			if (p.value_type != StorageProperty::value_type_statistic) {
+				label_strings.push_back(PropertyLabel(p.readable_name + ": " + p.format_value(), &p));
 
-				if (int(iter->warning) > int(max_tab_warning))
-					max_tab_warning = iter->warning;
+				if (int(p.warning) > int(max_tab_warning))
+					max_tab_warning = p.warning;
 				continue;
 			}
 
 			Gtk::TreeRow row = *(list_store->append());
 
-			row[col_description] = (iter->value_statistic.is_header ? iter->readable_name : ("    " + iter->readable_name));
-			row[col_value] = iter->value_statistic.format_value();
-			row[col_flags] = iter->value_statistic.flags;  // it's a string, not int.
-			row[col_page_offset] = (iter->value_statistic.is_header ? std::string()
-					: hz::string_sprintf("0x%02x, 0x%03x", int(iter->value_statistic.page), int(iter->value_statistic.offset)));
-			row[col_tooltip] = iter->get_description();
-			row[col_storage] = &(*iter);
+			row[col_description] = (p.value_statistic.is_header ? p.readable_name : ("    " + p.readable_name));
+			row[col_value] = p.value_statistic.format_value();
+			row[col_flags] = p.value_statistic.flags;  // it's a string, not int.
+			row[col_page_offset] = (p.value_statistic.is_header ? std::string()
+					: hz::string_sprintf("0x%02x, 0x%03x", int(p.value_statistic.page), int(p.value_statistic.offset)));
+			row[col_tooltip] = p.get_description();
+			row[col_storage] = &p;
 
-			if (int(iter->warning) > int(max_tab_warning))
-				max_tab_warning = iter->warning;
+			if (int(p.warning) > int(max_tab_warning))
+				max_tab_warning = p.warning;
 		}
 
 
@@ -1007,39 +1002,39 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 
 		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
-		label_list_t label_strings;  // outside-of-tree properties
+		std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
-		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
-			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_selftest_log)
+		for (auto&& p : props) {
+			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_selftest_log)
 				continue;
 
-			if (iter->generic_name == "selftest_log")  // the whole section, we don't need it
+			if (p.generic_name == "selftest_log")  // the whole section, we don't need it
 				continue;
 
 			// add non-entry properties to label above
-			if (iter->value_type != StorageProperty::value_type_selftest_entry) {
-				label_strings.push_back(PropertyLabel(iter->readable_name + ": " + iter->format_value(), &(*iter)));
+			if (p.value_type != StorageProperty::value_type_selftest_entry) {
+				label_strings.push_back(PropertyLabel(p.readable_name + ": " + p.format_value(), &p));
 
-				if (int(iter->warning) > int(max_tab_warning))
-					max_tab_warning = iter->warning;
+				if (int(p.warning) > int(max_tab_warning))
+					max_tab_warning = p.warning;
 				continue;
 			}
 
 			Gtk::TreeRow row = *(list_store->append());
 
-			row[col_num] = iter->value_selftest_entry.test_num;
-			row[col_type] = iter->value_selftest_entry.type;
-			row[col_status] = iter->value_selftest_entry.get_status_str();
-			row[col_percent] = hz::number_to_string(100 - iter->value_selftest_entry.remaining_percent) + "%";
-			row[col_hours] = iter->value_selftest_entry.format_lifetime_hours();
-			row[col_lba] = iter->value_selftest_entry.lba_of_first_error;
+			row[col_num] = p.value_selftest_entry.test_num;
+			row[col_type] = p.value_selftest_entry.type;
+			row[col_status] = p.value_selftest_entry.get_status_str();
+			row[col_percent] = hz::number_to_string(100 - p.value_selftest_entry.remaining_percent) + "%";
+			row[col_hours] = p.value_selftest_entry.format_lifetime_hours();
+			row[col_lba] = p.value_selftest_entry.lba_of_first_error;
 			// There are no descriptions in self-test log entries, so don't display
 			// "No description available" for all of them.
-			// row[col_tooltip] = iter->get_description();
-			row[col_storage] = &(*iter);
+			// row[col_tooltip] = p.get_description();
+			row[col_storage] = &p;
 
-			if (int(iter->warning) > int(max_tab_warning))
-				max_tab_warning = iter->warning;
+			if (int(p.warning) > int(max_tab_warning))
+				max_tab_warning = p.warning;
 		}
 
 
@@ -1118,20 +1113,20 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 
 		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
-		label_list_t label_strings;  // outside-of-tree properties
+		std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
-		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
-			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_error_log)
+		for (auto&& p : props) {
+			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_error_log)
 				continue;
 
 			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-			if (iter->generic_name == "error_log") {
+			if (p.generic_name == "error_log") {
 				Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("error_log_textview");
 				if (textview) {
 					// Add complete error log to textview window.
 					Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 					if (buffer) {
-						buffer->set_text("\nComplete error log:\n\n" + iter->value_string);
+						buffer->set_text("\nComplete error log:\n\n" + p.value_string);
 
 						// set marks so we can scroll to them
 
@@ -1155,29 +1150,29 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 
 			// add non-tree properties to label above
-			} else if (iter->value_type != StorageProperty::value_type_error_block) {
-				label_strings.push_back(PropertyLabel(iter->readable_name + ": " + iter->format_value(), &(*iter)));
-				if (iter->generic_name == "error_log_error_count")
+			} else if (p.value_type != StorageProperty::value_type_error_block) {
+				label_strings.push_back(PropertyLabel(p.readable_name + ": " + p.format_value(), &p));
+				if (p.generic_name == "error_log_error_count")
 					label_strings.back().label += " (Note: The number of entries may be limited to the newest ones)";
 
 			} else {
-				std::string type_details = iter->value_error_block.type_more_info;
+				std::string type_details = p.value_error_block.type_more_info;
 
 				Gtk::TreeRow row = *(list_store->append());
-				row[col_num] = iter->value_error_block.error_num;
-				row[col_hours] = iter->value_error_block.format_lifetime_hours();
-				row[col_state] = iter->value_error_block.device_state;
-				row[col_type] = StorageErrorBlock::get_readable_error_types(iter->value_error_block.reported_types);
+				row[col_num] = p.value_error_block.error_num;
+				row[col_hours] = p.value_error_block.format_lifetime_hours();
+				row[col_state] = p.value_error_block.device_state;
+				row[col_type] = StorageErrorBlock::get_readable_error_types(p.value_error_block.reported_types);
 				row[col_details] = (type_details.empty() ? "-" : type_details);  // e.g. OBS has no details
 				// There are no descriptions in self-test log entries, so don't display
 				// "No description available" for all of them.
-				row[col_tooltip] = iter->get_description();
-				row[col_storage] = &(*iter);
-				row[col_mark_name] = "Error " + hz::number_to_string(iter->value_error_block.error_num);
+				row[col_tooltip] = p.get_description();
+				row[col_storage] = &p;
+				row[col_mark_name] = "Error " + hz::number_to_string(p.value_error_block.error_num);
 			}
 
-			if (int(iter->warning) > int(max_tab_warning))
-				max_tab_warning = iter->warning;
+			if (int(p.warning) > int(max_tab_warning))
+				max_tab_warning = p.warning;
 		}
 
 		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("error_log_label_vbox");
@@ -1201,50 +1196,50 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			break;
 
 		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
-		label_list_t label_strings;  // outside-of-tree properties
+		std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 		std::string temperature;
 		StorageProperty temp_property;
 		enum { temp_attr2 = 1, temp_attr1, temp_stat, temp_sct };  // less important to more important
 		int temp_prop_source = 0;
 
-		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
+		for (auto&& p : props) {
 			// Find temperature
-			if (temp_prop_source < temp_sct && iter->generic_name == "sct_temperature_celsius") {
-				temperature = hz::number_to_string(iter->value_integer);
-				temp_property = *iter;
+			if (temp_prop_source < temp_sct && p.generic_name == "sct_temperature_celsius") {
+				temperature = hz::number_to_string(p.value_integer);
+				temp_property = p;
 				temp_prop_source = temp_sct;
 			}
-			if (temp_prop_source < temp_stat && iter->generic_name == "stat_temperature_celsius") {
-				temperature = hz::number_to_string(iter->value_statistic.value_int);
-				temp_property = *iter;
+			if (temp_prop_source < temp_stat && p.generic_name == "stat_temperature_celsius") {
+				temperature = hz::number_to_string(p.value_statistic.value_int);
+				temp_property = p;
 				temp_prop_source = temp_stat;
 			}
-			if (temp_prop_source < temp_attr1 && iter->generic_name == "attr_temperature_celsius") {
-				temperature = hz::number_to_string(iter->value_attribute.raw_value_int);
-				temp_property = *iter;
+			if (temp_prop_source < temp_attr1 && p.generic_name == "attr_temperature_celsius") {
+				temperature = hz::number_to_string(p.value_attribute.raw_value_int);
+				temp_property = p;
 				temp_prop_source = temp_attr1;
 			}
-			if (temp_prop_source < temp_attr2 && iter->generic_name == "attr_temperature_celsius_x10") {
-				temperature = hz::number_to_string(iter->value_attribute.raw_value_int / 10);
-				temp_property = *iter;
+			if (temp_prop_source < temp_attr2 && p.generic_name == "attr_temperature_celsius_x10") {
+				temperature = hz::number_to_string(p.value_attribute.raw_value_int / 10);
+				temp_property = p;
 				temp_prop_source = temp_attr2;
 			}
 
-			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_temperature_log)
+			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_temperature_log)
 				continue;
 
-			if (iter->generic_name == "sct_unsupported" && iter->value_bool) {  // only show if unsupported
-				label_strings.push_back(PropertyLabel("SCT temperature commands not supported.", &(*iter)));
-				if (int(iter->warning) > int(max_tab_warning))
-					max_tab_warning = iter->warning;
+			if (p.generic_name == "sct_unsupported" && p.value_bool) {  // only show if unsupported
+				label_strings.push_back(PropertyLabel("SCT temperature commands not supported.", &p));
+				if (int(p.warning) > int(max_tab_warning))
+					max_tab_warning = p.warning;
 				continue;
 			}
 
 			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-			if (iter->generic_name == "scttemp_log") {
+			if (p.generic_name == "scttemp_log") {
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-				buffer->set_text("\nComplete SCT temperature log:\n\n" + iter->value_string);
+				buffer->set_text("\nComplete SCT temperature log:\n\n" + p.value_string);
 			}
 		}
 
@@ -1330,20 +1325,20 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
 		int index = 1;
 
-		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
-			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_capabilities)
+		for (auto&& p : props) {
+			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_capabilities)
 				continue;
 
-			Glib::ustring name = iter->readable_name;
+			Glib::ustring name = p.readable_name;
 			std::string flag_value;
 			Glib::ustring str_value;
 
-			if (iter->value_type == StorageProperty::value_type_capability) {
-				flag_value = hz::number_to_string(iter->value_capability.flag_value, 16);  // 0xXX
-				str_value = hz::string_join(iter->value_capability.strvalues, "\n");
+			if (p.value_type == StorageProperty::value_type_capability) {
+				flag_value = hz::number_to_string(p.value_capability.flag_value, 16);  // 0xXX
+				str_value = hz::string_join(p.value_capability.strvalues, "\n");
 			} else {
 				// no flag value here
-				str_value = iter->format_value();
+				str_value = p.format_value();
 			}
 
 			Gtk::TreeRow row = *(list_store->append());
@@ -1351,11 +1346,11 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			row[col_name] = name;
 			row[col_flag_value] = (flag_value.empty() ? "-" : flag_value);
 			row[col_str_values] = str_value;
-			row[col_tooltip] = iter->get_description();
-			row[col_storage] = &(*iter);
+			row[col_tooltip] = p.get_description();
+			row[col_storage] = &p;
 
-			if (int(iter->warning) > int(max_tab_warning))
-				max_tab_warning = iter->warning;
+			if (int(p.warning) > int(max_tab_warning))
+				max_tab_warning = p.warning;
 
 			++index;
 		}
@@ -1382,14 +1377,14 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
 
-		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
-			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_erc_log)
+		for (auto&& p : props) {
+			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_erc_log)
 				continue;
 
 			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-			if (iter->generic_name == "scterc_log") {
+			if (p.generic_name == "scterc_log") {
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-				buffer->set_text("\nComplete SCT Error Recovery Control settings:\n\n" + iter->value_string);
+				buffer->set_text("\nComplete SCT Error Recovery Control settings:\n\n" + p.value_string);
 			}
 		}
 
@@ -1415,14 +1410,14 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
 
-		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
-			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_selective_selftest_log)
+		for (auto&& p : props) {
+			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_selective_selftest_log)
 				continue;
 
 			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-			if (iter->generic_name == "selective_selftest_log") {
+			if (p.generic_name == "selective_selftest_log") {
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-				buffer->set_text("\nComplete selective self-test log:\n\n" + iter->value_string);
+				buffer->set_text("\nComplete selective self-test log:\n\n" + p.value_string);
 			}
 		}
 
@@ -1448,14 +1443,14 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
 
-		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
-			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_phy_log)
+		for (auto&& p : props) {
+			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_phy_log)
 				continue;
 
 			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-			if (iter->generic_name == "sataphy_log") {
+			if (p.generic_name == "sataphy_log") {
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-				buffer->set_text("\nComplete phy log:\n\n" + iter->value_string);
+				buffer->set_text("\nComplete phy log:\n\n" + p.value_string);
 			}
 		}
 
@@ -1481,14 +1476,14 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
 
-		for (prop_iterator iter = props.begin(); iter != props.end(); ++iter) {
-			if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_directory_log)
+		for (auto&& p : props) {
+			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_directory_log)
 				continue;
 
 			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-			if (iter->generic_name == "directory_log") {
+			if (p.generic_name == "directory_log") {
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-				buffer->set_text("\nComplete directory log:\n\n" + iter->value_string);
+				buffer->set_text("\nComplete directory log:\n\n" + p.value_string);
 			}
 		}
 
@@ -1539,7 +1534,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 
 	{
 		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("attributes_label_vbox");
-		app_set_top_labels(label_vbox, label_list_t());
+		app_set_top_labels(label_vbox, std::vector<PropertyLabel>());
 
 		Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>("attributes_treeview");
 		if (treeview) {
@@ -1556,7 +1551,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 
 	{
 		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("statistics_label_vbox");
-		app_set_top_labels(label_vbox, label_list_t());
+		app_set_top_labels(label_vbox, std::vector<PropertyLabel>());
 
 		Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>("statistics_treeview");
 		if (treeview) {
@@ -1570,7 +1565,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 
 	{
 		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("selftest_log_label_vbox");
-		app_set_top_labels(label_vbox, label_list_t());
+		app_set_top_labels(label_vbox, std::vector<PropertyLabel>());
 
 		Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>("selftest_log_treeview");
 		if (treeview) {
@@ -1630,7 +1625,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 
 	{
 		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("error_log_label_vbox");
-		app_set_top_labels(label_vbox, label_list_t());
+		app_set_top_labels(label_vbox, std::vector<PropertyLabel>());
 
 		Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>("error_log_treeview");
 		if (treeview) {
@@ -1810,7 +1805,7 @@ void GscInfoWindow::on_save_info_button_clicked()
 
 #if GTK_CHECK_VERSION(3, 20, 0)
 	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-			"Save Data As...", this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, NULL, NULL), g_object_unref);
+			"Save Data As...", this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr), g_object_unref);
 
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
 

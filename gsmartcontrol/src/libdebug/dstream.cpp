@@ -68,7 +68,7 @@ namespace debug_internal {
 		}
 
 // 		std::cerr << "SENDING: " << oss.str();
-		channel_list_t::iterator iter = dos_->channels_.begin();
+		std::vector<debug_channel_base_ptr>::iterator iter = dos_->channels_.begin();
 		for (; iter != dos_->channels_.end(); ++iter) {
 			// send() locks the channel if needed
 			(*iter)->send(dos_->level_, dos_->domain_, flags,

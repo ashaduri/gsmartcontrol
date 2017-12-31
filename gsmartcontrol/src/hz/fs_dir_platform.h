@@ -92,7 +92,7 @@ inline void directory_seek(directory_handle_type dir, directory_offset_type pos)
 /// Get current entry name
 inline std::string directory_entry_name(directory_entry_handle_type entry)
 {
-	return (entry && entry->d_name) ? entry->d_name : "";
+	return entry ? entry->d_name : std::string();
 }
 
 
@@ -121,9 +121,9 @@ namespace internal {
 }
 
 
-typedef internal::Directory* directory_handle_type;
-typedef internal::DirectoryEntry* directory_entry_handle_type;
-typedef long directory_offset_type;  // that's what they use...
+using directory_handle_type = internal::Directory*;
+using directory_entry_handle_type = internal::DirectoryEntry*;
+using directory_offset_type = long;  // that's what they use...
 
 
 
@@ -140,14 +140,14 @@ inline directory_handle_type directory_open(const char* path)  // NULL on error,
 		return 0;
 	}
 
-	hz::unique_ptr<wchar_t[]> wpath(hz::win32_utf8_to_utf16(path));
-	if (!wpath) {
+	std::wstring wpath = hz::win32_utf8_to_utf16(path);
+	if (wpath.empty()) {
 		errno = ENOENT;  // not specified by opendir (3), not sure about this.
 		return 0;
 	}
 
 	struct _stat s;
-	if (_wstat(wpath.get(), &s) == -1) {
+	if (_wstat(wpath.c_str(), &s) == -1) {
 		errno = ENOENT;  // Directory does not exist, or name is an empty string.
 		return 0;
 	}
@@ -164,7 +164,7 @@ inline directory_handle_type directory_open(const char* path)  // NULL on error,
 
 	// We store an absolute path so that we don't depend on current directory
 	// (after rewind, for example).
-	_wfullpath(dir->full_pattern, wpath.get(), MAX_PATH);  // make an absolute path
+	_wfullpath(dir->full_pattern, wpath.c_str(), MAX_PATH);  // make an absolute path
 	std::size_t len = wcslen(dir->full_pattern);
 
 	if (len == 0 || (len+1) >= MAX_PATH) {  // not sure about the conditions, but just in case.
@@ -332,8 +332,7 @@ inline std::string directory_entry_name(directory_entry_handle_type entry)
 {
 	if (!entry->d_name)
 		return std::string();
-
-	return win32_utf16_to_utf8_string(entry->d_name);
+	return win32_utf16_to_utf8(entry->d_name);
 }
 
 

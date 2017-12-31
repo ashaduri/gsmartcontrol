@@ -114,7 +114,7 @@ inline std::string errno_string(int errno_value)
 			portable_snprintf(buf, buf_size, "Error while getting description for errno: %d.", errno_value);
 			msg = buf;
 		}
-		msg = hz::win32_utf16_to_utf8_string(msg_buf);
+		msg = hz::win32_utf16_to_utf8(msg_buf);
 
 	#else  // win32 and non-gnu/posix systems.
 		// win32 has thread-safe strerror().

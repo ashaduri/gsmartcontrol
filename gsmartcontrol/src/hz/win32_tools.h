@@ -94,57 +94,38 @@ inline bool win32_redirect_stdio_to_files(std::string stdout_file = "", std::str
 
 /// Convert a string in user-specified encoding to utf-16 string (00-terminated array of wchar_t).
 /// wchar_t is 2 bytes on windows, thus holding utf-16 code unit.
-/// Caller must delete[] the returned value.
-/// returned_buf_size (if not 0) will be set to the size of returned buffer
-/// (in wchar_t; including terminating 00). The byte size will be (returned_buf_size*2).
-inline wchar_t* win32_user_to_utf16(UINT from_cp, const char* from_str, unsigned int* returned_buf_size = 0);
+inline std::wstring win32_user_to_utf16(UINT from_cp, std::string_view from_str, bool* ok = nullptr);
 
 
 /// Convert utf-16 string (represented as 0-terminated array of wchar_t, where
 /// wchar_t is 2 bytes (on windows)) to a string in user-specified encoding.
-/// Caller must delete[] the returned value.
-/// The size of the returned buffer is std::strlen(buf) + 1.
-/// returned_buf_size (if not 0) will be set to the size of returned buffer
-/// (in char; including terminating 0).
-inline char* win32_utf16_to_user(UINT to_cp, const wchar_t* utf16_str, unsigned int* returned_buf_size = 0);
+inline std::string win32_utf16_to_user(UINT to_cp, std::wstring_view utf16_str, bool* ok = nullptr);
 
 
 /// Convert utf-8 string to utf-16 string. See win32_user_to_utf16() for details.
-inline wchar_t* win32_utf8_to_utf16(const char* utf8_str, unsigned int* returned_buf_size = 0);
+inline std::wstring win32_utf8_to_utf16(std::string_view utf8_str, bool* ok = nullptr);
 
 
 /// Convert utf-16 string to utf-8 string. See win32_utf16_to_user() for details.
-inline char* win32_utf16_to_utf8(const wchar_t* utf16_str, unsigned int* returned_buf_size = 0);
-
-
-/// Same as win32_utf16_to_utf8(), but safer since it never returns 0 (it returns "" instead).
-/// Note that we don't provide non-utf8 versions of this function, because the other charsets
-/// may actually be multi-byte (std::string can't hold their terminating 0 properly).
-/// Also, we don't provide std::wstring versions for utf16, because they are not always
-/// supported by non-MS compilers (mingw, for example).
-inline std::string win32_utf16_to_utf8_string(const wchar_t* utf16_str);
+inline std::string win32_utf16_to_utf8(std::wstring_view utf16_str, bool* ok = nullptr);
 
 
 /// Convert current locale-encoded string to utf-16 string. See win32_user_to_utf16() for details.
 /// Use CP_ACP is system default windows ANSI codepage.
 /// Use CP_THREAD_ACP is for current thread. Think before you choose. :)
-inline wchar_t* win32_locale_to_utf16(const char* loc_str, unsigned int* returned_buf_size = 0,
-		bool use_thread_locale = false);
+inline std::wstring win32_locale_to_utf16(std::string_view loc_str, bool use_thread_locale = false, bool* ok = nullptr);
 
 
 /// Convert utf-16 string to locale-encoded string. See win32_utf16_to_user() for details.
-inline char* win32_utf16_to_locale(const wchar_t* utf16_str, unsigned int* returned_buf_size = 0,
-		bool use_thread_locale = false);
+inline std::string win32_utf16_to_locale(std::wstring_view utf16_str, bool use_thread_locale = false, bool* ok = nullptr);
 
 
-/// Convert current locale-encoded string to utf-8 string. The returned value must be freed by caller.
-inline char* win32_locale_to_utf8(const char* loc_str, unsigned int* returned_buf_size = 0,
-		bool use_thread_locale = false);
+/// Convert current locale-encoded string to utf-8 string.
+inline std::string win32_locale_to_utf8(std::string_view loc_str, bool use_thread_locale = false, bool* ok = nullptr);
 
 
 /// Convert utf-8 string to locale-encoded string. See win32_utf8_to_user() for details.
-inline char* win32_utf8_to_locale(const char* utf8_str, unsigned int* returned_buf_size = 0,
-		bool use_thread_locale = false);
+inline std::string win32_utf8_to_locale(std::string_view utf8_str, bool use_thread_locale = false, bool* ok = nullptr);
 
 
 
@@ -178,7 +159,7 @@ bool win32_get_drive_list(Container& put_here)
 	// add the drives to list
 	while (*text_ptr != 0) {
 		text_ptr[0] = static_cast<wchar_t>(towupper(text_ptr[0]));
-		std::string drive = win32_utf16_to_utf8_string(text_ptr);
+		std::string drive = win32_utf16_to_utf8(text_ptr);
 		if (!drive.empty()) {
 			put_here.push_back(drive + ":\\");
 		}
@@ -203,14 +184,14 @@ inline std::string win32_get_special_folder(int csidl, bool auto_create)
 
 	// SHGetSpecialFolderPath() is since ie4
 #if (defined _WIN32_IE) && (_WIN32_IE >= 0x0400)
-	if (SHGetSpecialFolderPathW(NULL, buf, csidl, auto_create)) {
-		return win32_utf16_to_utf8_string(buf);
+	if (SHGetSpecialFolderPathW(nullptr, buf, csidl, auto_create)) {
+		return win32_utf16_to_utf8(buf);
 	}
 
 #else
 	LPITEMIDLIST pidl = 0;
 
-	if (SHGetSpecialFolderLocation(NULL, csidl, &pidl) == S_OK) {
+	if (SHGetSpecialFolderLocation(nullptr, csidl, &pidl) == S_OK) {
 		if (SHGetPathFromIDListW(pidl, buf)) {
 			errno = 0;
 			// 00 is F_OK (for msvc). ENOENT is "no such file or directory".
@@ -218,7 +199,7 @@ inline std::string win32_get_special_folder(int csidl, bool auto_create)
 			if (auto_create && _waccess(buf, 00) == -1 && errno == ENOENT) {
 				_wmkdir(buf);
 			}
-			return win32_utf16_to_utf8_string(buf);
+			return win32_utf16_to_utf8(buf);
 		}
 
 		// We must free pidl. This can be done in two ways:
@@ -246,7 +227,7 @@ inline std::string win32_get_windows_directory()
 {
 	wchar_t buf[MAX_PATH] = {0};
 	UINT status = GetWindowsDirectoryW(buf, MAX_PATH);
-	return ((status != 0 && buf[0]) ? win32_utf16_to_utf8_string(buf) : "C:\\");
+	return ((status != 0 && buf[0]) ? win32_utf16_to_utf8(buf) : std::string("C:\\"));
 }
 
 
@@ -257,20 +238,19 @@ inline std::string win32_get_windows_directory()
 inline bool win32_get_registry_value_string(HKEY base,
 		const std::string& keydir, const std::string& key, std::string& put_here)
 {
-	wchar_t* wkeydir = win32_utf8_to_utf16(keydir.c_str());
-	if (!wkeydir)
+	std::wstring wkeydir = win32_utf8_to_utf16(keydir);
+	if (wkeydir.empty())
 		return false;
 
-	HKEY reg_key = NULL;
-	bool open_status = (RegOpenKeyExW(base, wkeydir, 0, KEY_QUERY_VALUE, &reg_key) == ERROR_SUCCESS);
-
-	delete[] wkeydir;
+	HKEY reg_key = nullptr;
+	bool open_status = (RegOpenKeyExW(base, wkeydir.c_str(), 0, KEY_QUERY_VALUE, &reg_key) == ERROR_SUCCESS);
 
 	if (!open_status)
 		return false;
 
-	wchar_t* wkey = win32_utf8_to_utf16(key.c_str());
-	if (!wkey) {  // conversion error. Note that an empty string is not an error.
+	bool ok = false;
+	std::wstring wkey = win32_utf8_to_utf16(key, &ok);
+	if (!ok) {  // conversion error. Note that an empty string is not an error.
 		if (reg_key)
 			RegCloseKey(reg_key);
 		return false;
@@ -279,20 +259,19 @@ inline bool win32_get_registry_value_string(HKEY base,
 	DWORD type = 0;
 	DWORD nbytes = 0;
 	// This returns the size, including the 0 character only if the data was stored with it.
-	bool status = (RegQueryValueExW(reg_key, wkey, 0, &type, NULL, &nbytes) == ERROR_SUCCESS);
+	bool status = (RegQueryValueExW(reg_key, wkey.c_str(), 0, &type, nullptr, &nbytes) == ERROR_SUCCESS);
 
 	if (status) {
 		DWORD buf_len = ((nbytes % 2) ? (nbytes+1) : nbytes);  // 00-terminate on 2-byte boundary, in case the value isn't.
 		BYTE* result = new BYTE[buf_len];
 		result[buf_len-1] = result[buf_len-2] = result[buf_len-3] = 0;
 
-		status = (RegQueryValueExW(reg_key, wkey, 0, &type, result, &nbytes) == ERROR_SUCCESS);
+		status = (RegQueryValueExW(reg_key, wkey.c_str(), 0, &type, result, &nbytes) == ERROR_SUCCESS);
 
 		if (status) {
-			char* utf8 = win32_utf16_to_utf8(reinterpret_cast<wchar_t*>(result));
-			if (utf8) {
+			std::string utf8 = win32_utf16_to_utf8(reinterpret_cast<wchar_t*>(result), &ok);
+			if (ok) {
 				put_here = utf8;
-				delete[] utf8;
 			} else {
 				status = false;
 			}
@@ -302,8 +281,6 @@ inline bool win32_get_registry_value_string(HKEY base,
 
 	if (reg_key)
 		RegCloseKey(reg_key);
-
-	delete[] wkey;
 
 	return status;
 }
@@ -316,32 +293,30 @@ inline bool win32_get_registry_value_string(HKEY base,
 inline bool win32_set_registry_value_string(HKEY base,
 		const std::string& keydir, const std::string& key, const std::string& value)
 {
-	wchar_t* wkeydir = win32_utf8_to_utf16(keydir.c_str());
-	if (!wkeydir)
+	std::wstring wkeydir = win32_utf8_to_utf16(keydir);
+	if (wkeydir.empty())
 		return false;
 
-	HKEY reg_key = NULL;
-	if (RegOpenKeyExW(base, wkeydir, 0, KEY_QUERY_VALUE, &reg_key) != ERROR_SUCCESS)
+	HKEY reg_key = nullptr;
+	if (RegOpenKeyExW(base, wkeydir.c_str(), 0, KEY_QUERY_VALUE, &reg_key) != ERROR_SUCCESS)
 		return false;
-
-	delete[] wkeydir;
 
 	bool status = true;
 
-	unsigned int value_size = 0;  // including terminating 00
-	wchar_t* wvalue = win32_utf8_to_utf16(value.c_str(), &value_size);
-	wchar_t* wkey = win32_utf8_to_utf16(key.c_str());
-	if (!wvalue || !wkey) {
+	bool ok = false;
+	std::wstring wvalue = win32_utf8_to_utf16(value, &ok);
+	std::wstring wkey;
+	if (ok) {
+		wkey = win32_utf8_to_utf16(key, &ok);
+	}
+	if (!ok) {
 		status = false;
 	}
 
 	if (status) {
-		status = (RegSetValueExW(reg_key, wkey, 0, REG_SZ,
-				reinterpret_cast<BYTE*>(wvalue), value_size) == ERROR_SUCCESS);
+		status = (RegSetValueExW(reg_key, wkey.c_str(), 0, REG_SZ,
+				reinterpret_cast<const BYTE*>(wvalue.data()), wvalue.size() + 1*sizeof(wchar_t)) == ERROR_SUCCESS);
 	}
-
-	delete[] wvalue;
-	delete[] wkey;
 
 	if (reg_key)
 		RegCloseKey(reg_key);
@@ -411,50 +386,30 @@ inline bool win32_redirect_stdio_to_console(bool create_if_none, bool& console_c
 namespace internal {
 
 
-	template<typename Dummy>
-	struct Win32RedirectStaticHolder {
-		static const wchar_t* stdout_file;
-		static const wchar_t* stderr_file;
+	struct Win32RedirectHolder {
+		static inline std::wstring stdout_file = 0;
+		static inline std::wstring stderr_file = 0;
 	};
-
-	// definitions
-	template<typename Dummy> const wchar_t* Win32RedirectStaticHolder<Dummy>::stdout_file = 0;
-	template<typename Dummy> const wchar_t* Win32RedirectStaticHolder<Dummy>::stderr_file = 0;
-
-	typedef Win32RedirectStaticHolder<void> Win32RedirectHolder;  // one (and only) specialization.
-
 
 
 
 	/// Returns full path (in utf-16) to the output filename (in utf-8)
-	inline wchar_t* win32_get_std_output_file(const char* base)
+	inline std::wstring win32_get_std_output_file(std::wstring_view base)
 	{
-		if (!base)
-			return 0;
-
-		// GetModuleFileName() is since win2k
-	#if defined WINVER && WINVER >= 0x0500
 		wchar_t name[MAX_PATH] = {0};
 
 		// This function doesn't write terminating 0 if the buffer is insufficient,
 		// so we reserve some space for it.
 		if (GetModuleFileNameW(0, name, MAX_PATH - 1)) {
-			std::string name_str = win32_utf16_to_utf8_string(name);
-			if (!name_str.empty()) {
-				std::string::size_type pos = name_str.find_last_of(".");
-				name_str = name_str.substr(0, pos);  // full path, including the executable without extension.
-				if (!name_str.empty()) {
-					return win32_utf8_to_utf16((name_str + "-" + base).c_str());
-				}
+			std::wstring wname = name;
+			std::wstring::size_type pos = wname.find_last_of(L".");
+			wname = wname.substr(0, pos);  // full path, including the executable without extension.
+			if (!wname.empty()) {
+				return wname + L"-" + std::wstring(base);
 			}
-			// std::string::size_type pos = name_str.find_last_of("\\/");
-			// if (pos != std::string::npos && name_str.size() > pos + 1) {
-			// 	name_str.substr(pos + 1);
-			// }
 		}
-	#endif
 
-		return win32_utf8_to_utf16(base);
+		return std::wstring(base);
 	}
 
 
@@ -468,41 +423,39 @@ namespace internal {
 		std::fclose(stderr);
 
 		// See if the files have any output in them
-		if (Win32RedirectHolder::stdout_file && Win32RedirectHolder::stdout_file[0] != 0) {
+		if (!Win32RedirectHolder::stdout_file.empty()) {
 			std::FILE* file = 0;
 		#if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
-			errno = _wfopen_s(&file, Win32RedirectHolder::stdout_file, L"rb");
+			errno = _wfopen_s(&file, Win32RedirectHolder::stdout_file.c_str(), L"rb");
 		#else
-			file = _wfopen(Win32RedirectHolder::stdout_file, L"rb");
+			file = _wfopen(Win32RedirectHolder::stdout_file.c_str(), L"rb");
 		#endif
 			if (file) {
 				bool empty = (std::fgetc(file) == EOF);
 				std::fclose(file);
 				if (empty) {
-					(void)_wremove(Win32RedirectHolder::stdout_file);  // ignore possible failure
+					(void)_wremove(Win32RedirectHolder::stdout_file.c_str());  // ignore possible failure
 				}
 			}
 		}
-		delete[] Win32RedirectHolder::stdout_file;
-		Win32RedirectHolder::stdout_file = 0;
+		Win32RedirectHolder::stdout_file.clear();
 
-		if (Win32RedirectHolder::stdout_file && Win32RedirectHolder::stderr_file[0] != 0) {
+		if (!Win32RedirectHolder::stdout_file.empty()) {
 			std::FILE* file = 0;
 		#if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
-			errno = _wfopen_s(&file, Win32RedirectHolder::stderr_file, L"rb");
+			errno = _wfopen_s(&file, Win32RedirectHolder::stderr_file.c_str(), L"rb");
 		#else
-			file = _wfopen(Win32RedirectHolder::stderr_file, L"rb");
+			file = _wfopen(Win32RedirectHolder::stderr_file.c_str(), L"rb");
 		#endif
 			if (file) {
 				bool empty = (std::fgetc(file) == EOF);
 				std::fclose(file);
 				if (empty) {
-					(void)_wremove(Win32RedirectHolder::stderr_file);  // ignore possible failure
+					(void)_wremove(Win32RedirectHolder::stderr_file.c_str());  // ignore possible failure
 				}
 			}
 		}
-		delete[] Win32RedirectHolder::stderr_file;
-		Win32RedirectHolder::stderr_file = 0;
+		Win32RedirectHolder::stderr_file.clear();
 	}
 
 
@@ -515,47 +468,47 @@ namespace internal {
 // Call once.
 inline bool win32_redirect_stdio_to_files(std::string stdout_file, std::string stderr_file)
 {
-	wchar_t* wstdout_file = 0;  // freed on cleanup
+	std::wstring wstdout_file;
 	if (stdout_file.empty()) {
-		wstdout_file = internal::win32_get_std_output_file("stdout.txt");
+		wstdout_file = internal::win32_get_std_output_file(L"stdout.txt");
 	} else {
-		wstdout_file = win32_utf8_to_utf16(stdout_file.c_str());
+		wstdout_file = win32_utf8_to_utf16(stdout_file);
 	}
 	std::FILE* fp_out = 0;
-	if (wstdout_file) {
+	if (!wstdout_file.empty()) {
 #if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
-		errno = _wfopen_s(&fp_out, wstdout_file, L"wb");
+		errno = _wfopen_s(&fp_out, wstdout_file.c_str(), L"wb");
 #else
-		fp_out = _wfopen(wstdout_file, L"wb");
+		fp_out = _wfopen(wstdout_file.c_str(), L"wb");
 #endif
 	}
-	if (wstdout_file && fp_out) {
+	if (!wstdout_file.empty() && fp_out) {
 		*stdout = *fp_out;
 		std::setvbuf(stdout, 0, _IOLBF, BUFSIZ);  // Line buffered
 	} else {
-		delete[] wstdout_file;
+		wstdout_file.clear();
 	}
-	internal::Win32RedirectHolder::stdout_file = wstdout_file;  // so that it's freed properly
+	internal::Win32RedirectHolder::stdout_file = wstdout_file;
 
-	wchar_t* wstderr_file = 0;  // freed on cleanup
+	std::wstring wstderr_file = 0;  // freed on cleanup
 	if (stderr_file.empty()) {
-		wstderr_file = internal::win32_get_std_output_file("stderr.txt");
+		wstderr_file = internal::win32_get_std_output_file(L"stderr.txt");
 	} else {
-		wstderr_file = win32_utf8_to_utf16(stderr_file.c_str());
+		wstderr_file = win32_utf8_to_utf16(stderr_file);
 	}
 	std::FILE* fp_err = 0;
-	if (wstderr_file) {
+	if (!wstderr_file.empty()) {
 #if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
-		errno = _wfopen_s(&fp_err, wstderr_file, L"wb");
+		errno = _wfopen_s(&fp_err, wstderr_file.c_str(), L"wb");
 #else
-		fp_err = _wfopen(wstderr_file, L"wb");
+		fp_err = _wfopen(wstderr_file.c_str(), L"wb");
 #endif
 	}
-	if (wstderr_file && fp_out) {
+	if (!wstderr_file.empty() && fp_out) {
 		*stderr = *fp_err;
 		std::setvbuf(stderr, 0, _IONBF, BUFSIZ);  // No buffering
 	} else {
-		delete[] wstderr_file;
+		wstderr_file.clear();
 	}
 	internal::Win32RedirectHolder::stderr_file = wstderr_file;  // so that it's freed properly
 
@@ -576,37 +529,35 @@ inline bool win32_redirect_stdio_to_files(std::string stdout_file, std::string s
 
 
 
-// Despite what MSDN says, these MultiByteToWideChar and
-// WideCharToMultiByte are even on win95.
 
-
-// Convert a string in user-specified encoding to utf-16 string (00-terminated array of wchar_t).
-// wchar_t is 2 bytes on windows, thus holding utf-16 code unit.
-// Caller must delete[] the returned value.
-// returned_buf_size (if not 0) will be set to the size of returned buffer
-// (in wchar_t; including terminating 00). The byte size will be (returned_buf_size*2).
-inline wchar_t* win32_user_to_utf16(UINT from_cp, const char* from_str, unsigned int* returned_buf_size)
+inline std::wstring win32_user_to_utf16(UINT from_cp, std::string_view from_str, bool* ok)
 {
-	if (!from_str)
-		return 0;
+	if (from_str.empty()) {
+		if (ok) {
+			*ok = true;
+		}
+		return std::wstring();
+	}
 
-	int wide_bufsize = MultiByteToWideChar(from_cp, 0, from_str, -1, 0, 0);  // including terminating 0
+	int wide_bufsize = MultiByteToWideChar(from_cp, 0, from_str.data(), from_str.size(), nullptr, 0);  // excluding terminating 0
 	if (wide_bufsize == ERROR_NO_UNICODE_TRANSLATION) {
-		return 0;  // invalid sequence
+		if (ok) {
+			*ok = false;
+		}
+		return std::wstring();  // invalid sequence
 	}
 	if (wide_bufsize == 0) {
-		return 0;  // error in conversion
+		if (ok) {
+			*ok = false;
+		}
+		return std::wstring();  // error in conversion
 	}
 
-	wchar_t* res = new wchar_t[wide_bufsize];
-	int conv_size = MultiByteToWideChar(from_cp, 0, from_str, -1, res, wide_bufsize);
+	std::wstring res(wide_bufsize, L'\0');
+	MultiByteToWideChar(from_cp, 0, from_str.data(), from_str.size(), res.data(), res.size());
 
-	if (conv_size != wide_bufsize) {
-		delete[] res;
-		return 0;  // ?
-	}
-	if (returned_buf_size) {
-		*returned_buf_size = wide_bufsize;
+	if (ok) {
+		*ok = true;
 	}
 	return res;
 }
@@ -619,25 +570,28 @@ inline wchar_t* win32_user_to_utf16(UINT from_cp, const char* from_str, unsigned
 // The size of the returned buffer is std::strlen(buf) + 1.
 // returned_buf_size (if not 0) will be set to the size of returned buffer
 // (in char; including terminating 0).
-inline char* win32_utf16_to_user(UINT to_cp, const wchar_t* utf16_str, unsigned int* returned_buf_size)
+inline std::string win32_utf16_to_user(UINT to_cp, std::wstring_view utf16_str, bool* ok)
 {
-	if (!utf16_str)
-		return 0;
+	if (utf16_str.empty()) {
+		if (ok) {
+			*ok = true;
+		}
+		return std::string();
+	}
 
-	int buf_size = WideCharToMultiByte(to_cp, 0, utf16_str, -1, 0, 0, 0, 0);
+	int buf_size = WideCharToMultiByte(to_cp, 0, utf16_str.data(), utf16_str.size(), nullptr, 0, nullptr, 0);
 	if (buf_size == 0) {
-		return 0;
+		if (ok) {
+			*ok = false;
+		}
+		return std::string();
 	}
 
-	char* res = new char[buf_size];
-	int conv_size = WideCharToMultiByte(to_cp, 0, utf16_str, -1, res, buf_size, 0, 0);
+	std::string res(buf_size, '\0');
+	WideCharToMultiByte(to_cp, 0, utf16_str.data(), utf16_str.size(), res.data(), res.size(), nullptr, 0);
 
-	if (conv_size != buf_size) {
-		delete[] res;
-		return 0;  // ?
-	}
-	if (returned_buf_size) {
-		*returned_buf_size = buf_size;
+	if (ok) {
+		*ok = true;
 	}
 	return res;
 }
@@ -645,31 +599,16 @@ inline char* win32_utf16_to_user(UINT to_cp, const wchar_t* utf16_str, unsigned 
 
 
 // Convert utf-8 string to utf-16 string. See win32_user_to_utf16() for details.
-inline wchar_t* win32_utf8_to_utf16(const char* utf8_str, unsigned int* returned_buf_size)
+inline std::wstring win32_utf8_to_utf16(std::string_view utf8_str, bool* ok)
 {
-	return win32_user_to_utf16(CP_UTF8, utf8_str, returned_buf_size);
+	return win32_user_to_utf16(CP_UTF8, utf8_str, ok);
 }
 
 
 // Convert utf-16 string to utf-8 string. See win32_utf16_to_user() for details.
-inline char* win32_utf16_to_utf8(const wchar_t* utf16_str, unsigned int* returned_buf_size)
+inline std::string win32_utf16_to_utf8(std::wstring_view utf16_str, bool* ok)
 {
-	return win32_utf16_to_user(CP_UTF8, utf16_str, returned_buf_size);
-}
-
-
-
-// Same as win32_utf16_to_utf8(), but safer since it never returns 0 (it returns "" instead).
-// Note that we don't provide non-utf8 versions of this function, because the other charsets
-// may actually be multi-byte (std::string can't hold their terminating 0 properly).
-// Also, we don't provide std::wstring versions for utf16, because they are not always
-// supported by non-MS compilers (mingw, for example).
-inline std::string win32_utf16_to_utf8_string(const wchar_t* utf16_str)
-{
-	char* buf = win32_utf16_to_utf8(utf16_str);
-	std::string ret(buf ? buf : "");
-	delete[] buf;
-	return ret;
+	return win32_utf16_to_user(CP_UTF8, utf16_str, ok);
 }
 
 
@@ -677,41 +616,39 @@ inline std::string win32_utf16_to_utf8_string(const wchar_t* utf16_str)
 // Convert current locale-encoded string to utf-16 string. See win32_user_to_utf16() for details.
 // Use CP_ACP is system default windows ANSI codepage.
 // Use CP_THREAD_ACP is for current thread. Think before you choose. :)
-inline wchar_t* win32_locale_to_utf16(const char* loc_str, unsigned int* returned_buf_size,
-		bool use_thread_locale)
+inline std::wstring win32_locale_to_utf16(std::string_view loc_str, bool use_thread_locale, bool* ok)
 {
-	return win32_user_to_utf16(use_thread_locale ? CP_THREAD_ACP : CP_ACP, loc_str, returned_buf_size);
+	return win32_user_to_utf16(use_thread_locale ? CP_THREAD_ACP : CP_ACP, loc_str, ok);
 }
 
 
 // Convert utf-16 string to locale-encoded string. See win32_utf16_to_user() for details.
-inline char* win32_utf16_to_locale(const wchar_t* utf16_str, unsigned int* returned_buf_size,
-		bool use_thread_locale)
+inline std::string win32_utf16_to_locale(std::wstring_view utf16_str, bool use_thread_locale, bool* ok)
 {
-	return win32_utf16_to_user(use_thread_locale ? CP_THREAD_ACP : CP_ACP, utf16_str, returned_buf_size);
+	return win32_utf16_to_user(use_thread_locale ? CP_THREAD_ACP : CP_ACP, utf16_str, ok);
 }
 
 
 
-// Convert current locale-encoded string to utf-8 string. The returned value must be freed by caller.
-inline char* win32_locale_to_utf8(const char* loc_str, unsigned int* returned_buf_size,
-		bool use_thread_locale)
+// Convert current locale-encoded string to utf-8 string.
+inline std::string win32_locale_to_utf8(std::string_view loc_str, bool use_thread_locale, bool* ok)
 {
-	wchar_t* utf16_str = win32_locale_to_utf16(loc_str, 0, use_thread_locale);
-	char* utf8_str = win32_utf16_to_utf8(utf16_str, returned_buf_size);
-	delete[] utf16_str;
-	return utf8_str;
+	std::wstring utf16_str = win32_locale_to_utf16(loc_str, use_thread_locale, ok);
+	if (ok && !(*ok)) {
+		return std::string();
+	}
+	return win32_utf16_to_utf8(utf16_str, ok);
 }
 
 
 // Convert utf-8 string to locale-encoded string. See win32_utf8_to_user() for details.
-inline char* win32_utf8_to_locale(const char* utf8_str, unsigned int* returned_buf_size,
-		bool use_thread_locale)
+inline std::string win32_utf8_to_locale(std::string_view utf8_str, bool use_thread_locale, bool* ok)
 {
-	wchar_t* utf16_str = win32_utf8_to_utf16(utf8_str);
-	char* loc_str = win32_utf16_to_locale(utf16_str, returned_buf_size, use_thread_locale);
-	delete[] utf16_str;
-	return loc_str;
+	std::wstring utf16_str = win32_utf8_to_utf16(utf8_str, ok);
+	if (ok && !(*ok)) {
+		return std::string();
+	}
+	return win32_utf16_to_locale(utf16_str, use_thread_locale, ok);
 }
 
 

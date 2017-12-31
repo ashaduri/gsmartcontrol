@@ -225,18 +225,14 @@ class FsErrorHolder {
 
 	#ifdef _WIN32
 		// files are in system locale. we're using console, don't use thread locale.
-		char* err_path1 = hz::win32_utf8_to_locale(error_path1_.c_str(), 0, false);
-		char* err_path2 = hz::win32_utf8_to_locale(error_path2_.c_str(), 0, false);
+		std::string err_path1 = hz::win32_utf8_to_locale(error_path1_, 0, false);
+		std::string err_path2 = hz::win32_utf8_to_locale(error_path2_, 0, false);
 		std::string errno_str = hz::errno_string(error_errno_);
-		char* errno_cstr = hz::win32_utf8_to_locale(errno_str.c_str(), 0, false);
+		std::string errno_cstr = hz::win32_utf8_to_locale(errno_str, 0, false);
 
 		hz::string_replace(msg, "/path1/", (err_path1 ? err_path1 : error_path1_), 1);
 		hz::string_replace(msg, "/path2/", (err_path2 ? err_path2 : error_path2_), 1);
 		hz::string_replace(msg, "/errno/", (errno_cstr ? errno_cstr : errno_str), 1);  // utf-8
-
-		delete[] err_path1;
-		delete[] err_path2;
-		delete[] errno_cstr;
 
 	#else
 		// filesystem charset (possibly locale). screwed up, probably.

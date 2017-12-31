@@ -520,7 +520,7 @@ StorageDevice::status_t StorageDevice::get_aodc_status() const
 	bool aodc_supported = false;
 	int found = 0;
 
-	for (SmartctlParser::prop_list_t::const_iterator iter = properties_.begin(); iter != properties_.end(); ++iter) {
+	for (std::vector<StorageProperty>::const_iterator iter = properties_.begin(); iter != properties_.end(); ++iter) {
 		if (iter->section == StorageProperty::section_internal) {
 			if (iter->generic_name == "aodc_enabled") {  // if this is not present at all, we set the unknown status.
 				status = (iter->value_bool ? status_enabled : status_disabled);
@@ -700,7 +700,7 @@ std::string StorageDevice::get_virtual_filename() const
 
 
 
-const SmartctlParser::prop_list_t& StorageDevice::get_properties() const
+const std::vector<StorageProperty>& StorageDevice::get_properties() const
 {
 	return properties_;
 }
@@ -709,7 +709,7 @@ const SmartctlParser::prop_list_t& StorageDevice::get_properties() const
 
 StorageProperty StorageDevice::lookup_property(const std::string& generic_name, StorageProperty::section_t section, StorageProperty::subsection_t subsection) const
 {
-	for (SmartctlParser::prop_list_t::const_iterator iter = properties_.begin(); iter != properties_.end(); ++iter) {
+	for (std::vector<StorageProperty>::const_iterator iter = properties_.begin(); iter != properties_.end(); ++iter) {
 		if (section != StorageProperty::section_unknown && iter->section != section)
 			continue;
 		if (subsection != StorageProperty::subsection_unknown && iter->subsection != subsection)
@@ -901,7 +901,7 @@ void StorageDevice::set_parse_status(parse_status_t value)
 
 
 
-void StorageDevice::set_properties(const SmartctlParser::prop_list_t& props)
+void StorageDevice::set_properties(const std::vector<StorageProperty>& props)
 {
 	properties_ = props;
 }

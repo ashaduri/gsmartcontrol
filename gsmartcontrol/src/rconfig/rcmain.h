@@ -18,7 +18,6 @@
 #include "hz/hz_config.h"
 #include "rmn/resource_node.h"  // resource_node type
 #include "rmn/resource_data_any.h"  // any_type data provider
-#include "rmn/resource_data_locking.h"  // locking policies for data
 #include "rmn/resource_exception.h"  // rmn::no_such_node
 
 
@@ -28,17 +27,17 @@ namespace rconfig {
 
 
 /// Rconfig node type
-typedef rmn::resource_node<rmn::ResourceDataAny> node_t;
+using node_t = rmn::resource_node<rmn::ResourceDataAny>;
 
 /// Rconfig strong reference-holding node pointer
-typedef node_t::node_ptr node_ptr;
+using node_ptr = node_t::node_ptr;
 
 
 /// Config branch for serializable values ("/config")
-static const char* const s_config_name = "config";
+static inline auto s_config_name = "config";
 
 /// Config branch for default config values ("/default")
-static const char* const s_default_name = "default";
+static inline auto s_default_name = "default";
 
 
 
@@ -50,26 +49,15 @@ static const char* const s_default_name = "default";
 
 
 /// Static variable holder
-template<typename Dummy>
-struct NodeStaticHolder {
-	static node_ptr root_node;  ///< Node for "/"
-	static node_ptr config_node;  ///< Node for "/config"
-	static node_ptr default_node;  ///< Node for "/default"
+struct RootHolder {
+	static inline node_ptr root_node = 0;  ///< Node for "/"
+	static inline node_ptr config_node = 0;  ///< Node for "/config"
+	static inline node_ptr default_node = 0;  ///< Node for "/default"
 };
-
-// definitions
-template<typename Dummy> node_ptr NodeStaticHolder<Dummy>::root_node = 0;
-template<typename Dummy> node_ptr NodeStaticHolder<Dummy>::config_node = 0;
-template<typename Dummy> node_ptr NodeStaticHolder<Dummy>::default_node = 0;
-
-
-// Specify the same template parameter to get the same set of variables.
-typedef NodeStaticHolder<void> RootHolder;  ///< Holder for static variables (one (and only) instantiation).
 
 
 
 /// Initialize the root node. This is called automatically.
-/// This function is thread-safe.
 inline bool init_root()
 {
 	// Note: Do NOT check every node individually. This will break handling
@@ -99,10 +87,6 @@ inline bool init_root()
 
 
 // --------------------------------- Get root, config, default branches of rconfig tree.
-
-// Note: These functions are NOT thread-safe, because they return non-thread-safe
-// node structure. (That is, the user may access node_ptr in non-locked environment).
-// To use them in a thread-safe environment, you have to lock their access manually.
 
 
 /// Get the root node.

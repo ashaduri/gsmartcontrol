@@ -47,12 +47,10 @@
 
 
 
-/// \typedef app_ui_res_ref_t
 /// A reference-counting pointer to application UI resource
-typedef Glib::RefPtr<Gtk::Builder> app_ui_res_ref_t;
+using app_ui_res_ref_t = Glib::RefPtr<Gtk::Builder>;
 
 
-/// \fn bool app_ui_res_create_from(app_ui_res_ref_t& ref, const unsigned char* buf, unsigned int buf_size, std::string& error_msg)
 /// Create application UI resource from a static buffer.
 inline bool app_ui_res_create_from(app_ui_res_ref_t& ref,
 		const unsigned char* buf, unsigned int buf_size, std::string& error_msg)
@@ -122,7 +120,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 	public:
 
 		/// Instance class type, which is also the parent class.
-		typedef hz::InstanceManager<Child, MultiInstance> instance_class;
+		using instance_class = hz::InstanceManager<Child, MultiInstance>;
 		friend class Gtk::Builder;  // allow construction through gtkbuilder
 		friend class hz::InstanceManager<Child, MultiInstance>;  // allow construction through instance class
 
@@ -224,8 +222,8 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 
 	protected:
 
-		typedef Child self_type;  ///< This is needed by APP_UI_ macros
-		typedef WidgetType widget_type;  ///< This is needed by APP_UI_ macros
+		using self_type = Child;  ///< This is needed by APP_UI_ macros
+		using widget_type = WidgetType;  ///< This is needed by APP_UI_ macros
 
 
 		// protected constructor / destructor, use create() / destroy() instead of new / delete.

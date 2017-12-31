@@ -19,14 +19,10 @@
 /// Command executor.
 /// There are two ways to detect when the command exits:
 /// 1. Add a callback to signal_exited.
-/// 2. Manually poll stopped_cleanup_needed() (from the same thread).
-/// In both cases, stopped_cleanup() must be called afterwards
-/// (from the main thread).
+/// 2. Manually poll stopped_cleanup_needed().
+/// In both cases, stopped_cleanup() must be called afterwards.
 class Cmdex : public hz::ErrorHolder {
 	public:
-
-		using hz::ErrorHolder::ptr_error_list_t;  ///< Auto-deleting pointer container
-		using hz::ErrorHolder::error_list_t;  ///< Error list type
 
 		/// A function that translates the exit error code into a readable string
 		using exit_status_translator_func_t = std::function<std::string(int, void*)>;

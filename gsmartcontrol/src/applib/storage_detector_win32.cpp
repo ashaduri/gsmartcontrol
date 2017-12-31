@@ -123,8 +123,8 @@ std::map<char, DriveLetterInfo> win32_get_drive_letter_map()
 		char drive = good_drives[i];
 		string drive_str = string("\\\\.\\") + drive + ":";
 		HANDLE h = CreateFileA(
-				drive_str.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-				OPEN_EXISTING, FILE_FLAG_NO_BUFFERING | FILE_FLAG_RANDOM_ACCESS, NULL);
+				drive_str.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+				OPEN_EXISTING, FILE_FLAG_NO_BUFFERING | FILE_FLAG_RANDOM_ACCESS, nullptr);
 		if (h == INVALID_HANDLE_VALUE) {
 			debug_out_warn("app", "Windows drive " << drive << " cannot be opened.\n");
 			continue;
@@ -133,7 +133,7 @@ std::map<char, DriveLetterInfo> win32_get_drive_letter_map()
 		VOLUME_DISK_EXTENTS vde;
 		if (!DeviceIoControl(
 				h, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS,
-				NULL, 0, &vde, sizeof(vde), &bytesReturned, NULL)) {
+				nullptr, 0, &vde, sizeof(vde), &bytesReturned, nullptr)) {
 			debug_out_warn("app", "Windows drive " << drive << " is not mapped to any physical drives.\n");
 			continue;
 		}
@@ -147,11 +147,11 @@ std::map<char, DriveLetterInfo> win32_get_drive_letter_map()
 		std::string volume_name;
 		wchar_t volume_name_w[MAX_PATH+1] = {0};
 		DWORD dummy = 0;
-		hz::unique_ptr<wchar_t[]> drive_name(hz::win32_utf8_to_utf16((drive + std::string(":\\")).c_str()));
-		if (drive_name && GetVolumeInformationW(drive_name.get(),
+		std::wstring drive_name = hz::win32_utf8_to_utf16(drive + std::string(":\\"));
+		if (!drive_name.empty() && GetVolumeInformationW(drive_name.c_str(),
 				volume_name_w, MAX_PATH+1,
-				NULL, &dummy, &dummy, NULL, 0)) {
-			volume_name = hz::win32_utf16_to_utf8_string(volume_name_w);
+				nullptr, &dummy, &dummy, nullptr, 0)) {
+			volume_name = hz::win32_utf16_to_utf8(volume_name_w);
 		}
 
 		DriveLetterInfo dli;
@@ -714,7 +714,7 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 		// NOTE: Administrative privileges are required to open it.
 		// We don't use any long/unopenable files here, so use the ANSI version.
 		HANDLE h = CreateFileA(phys_name.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE,
-				NULL, OPEN_EXISTING, 0, NULL);
+				nullptr, OPEN_EXISTING, 0, nullptr);
 
 		// The numbers are usually consecutive, but sometimes there are holes when
 		// removable devices are removed. Try 3 extra drives just in case.

@@ -42,7 +42,7 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 		APP_UI_RES_DATA_INIT(gsc_text_window);
 
 		/// Self type, needed for GtkBuilder, not inherited from parent because of templates
-		typedef GscTextWindow<InstanceSwitch> self_type;
+		using self_type = GscTextWindow<InstanceSwitch>;
 
 
 		/// Constructor, GtkBuilder needs this.
@@ -157,7 +157,7 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 
 #if GTK_CHECK_VERSION(3, 20, 0)
 			hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-					"Save Data As...", this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, NULL, NULL), g_object_unref);
+					"Save Data As...", this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr), g_object_unref);
 
 			gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
 

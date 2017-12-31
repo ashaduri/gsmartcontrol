@@ -261,7 +261,7 @@ inline std::string format_date(const std::string& format, std::time_t timet, boo
 /// See strftime() documentation for format details.
 inline std::string format_date(const std::string& format, bool use_locale = true)
 {
-	const std::time_t timet = std::time(NULL);
+	const std::time_t timet = std::time(nullptr);
 	if (timet == static_cast<std::time_t>(-1))
 		return std::string();
 

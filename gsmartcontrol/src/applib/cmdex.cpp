@@ -176,13 +176,13 @@ bool Cmdex::execute()
 		// Since we invoke shutdown() manually before unref(), this would cause
 		// a double-shutdown.
 		// g_io_channel_set_close_on_unref(channel_stdout_, true);  // close() on fd
-		g_io_channel_set_encoding(channel_stdout_, NULL, 0);  // binary IO
+		g_io_channel_set_encoding(channel_stdout_, nullptr, 0);  // binary IO
 		g_io_channel_set_flags(channel_stdout_, GIOFlags(g_io_channel_get_flags(channel_stdout_) & channel_flags), 0);
 		g_io_channel_set_buffer_size(channel_stdout_, channel_stdout_buffer_size_);
 	}
 	if (channel_stderr_) {
 		// g_io_channel_set_close_on_unref(channel_stderr_, true);  // close() on fd
-		g_io_channel_set_encoding(channel_stderr_, NULL, 0);  // binary IO
+		g_io_channel_set_encoding(channel_stderr_, nullptr, 0);  // binary IO
 		g_io_channel_set_flags(channel_stderr_, GIOFlags(g_io_channel_get_flags(channel_stderr_) & channel_flags), 0);
 		g_io_channel_set_buffer_size(channel_stderr_, channel_stderr_buffer_size_);
 	}
@@ -193,11 +193,11 @@ bool Cmdex::execute()
 	gint io_priority = G_PRIORITY_HIGH;
 
 	this->event_source_id_stdout_ = g_io_add_watch_full(channel_stdout_, io_priority, cond,
-			&cmdex_on_channel_io_stdout, this, NULL);
+			&cmdex_on_channel_io_stdout, this, nullptr);
 // 	g_io_channel_unref(channel_stdout_);  // g_io_add_watch_full() holds its own reference
 
 	this->event_source_id_stderr_ = g_io_add_watch_full(channel_stderr_, io_priority, cond,
-			&cmdex_on_channel_io_stderr, this, NULL);
+			&cmdex_on_channel_io_stderr, this, nullptr);
 // 	g_io_channel_unref(channel_stderr_);  // g_io_add_watch_full() holds its own reference
 
 
@@ -275,14 +275,14 @@ void Cmdex::unset_stop_timeouts()
 {
 	DBG_FUNCTION_ENTER_MSG;
 	if (event_source_id_term) {
-		GSource* source_term = g_main_context_find_source_by_id(NULL, event_source_id_term);
+		GSource* source_term = g_main_context_find_source_by_id(nullptr, event_source_id_term);
 		if (source_term)
 			g_source_destroy(source_term);
 		event_source_id_term = 0;
 	}
 
 	if (event_source_id_kill) {
-		GSource* source_kill = g_main_context_find_source_by_id(NULL, event_source_id_kill);
+		GSource* source_kill = g_main_context_find_source_by_id(nullptr, event_source_id_kill);
 		if (source_kill)
 			g_source_destroy(source_kill);
 		event_source_id_kill = 0;
@@ -292,7 +292,7 @@ void Cmdex::unset_stop_timeouts()
 
 
 
-// executed in main thread, manually by the caller.
+// Executed manually by the caller.
 void Cmdex::stopped_cleanup()
 {
 	DBG_FUNCTION_ENTER_MSG;
@@ -352,20 +352,20 @@ void Cmdex::on_child_watch_handler(GPid arg_pid, int waitpid_status, gpointer da
 	self->running_ = false;  // process is not running anymore
 
 	// These are needed because Windows doesn't read the remaining data otherwise.
-	g_io_channel_flush(self->channel_stdout_, NULL);
+	g_io_channel_flush(self->channel_stdout_, nullptr);
 	on_channel_io(self->channel_stdout_, GIOCondition(0), self, channel_type_stdout);
 
-	g_io_channel_flush(self->channel_stderr_, NULL);
+	g_io_channel_flush(self->channel_stderr_, nullptr);
 	on_channel_io(self->channel_stderr_, GIOCondition(0), self, channel_type_stderr);
 
 	if (self->channel_stdout_) {
-		g_io_channel_shutdown(self->channel_stdout_, false, NULL);
+		g_io_channel_shutdown(self->channel_stdout_, false, nullptr);
 		g_io_channel_unref(self->channel_stdout_);
 		self->channel_stdout_ = 0;
 	}
 
 	if (self->channel_stderr_) {
-		g_io_channel_shutdown(self->channel_stderr_, false, NULL);
+		g_io_channel_shutdown(self->channel_stderr_, false, nullptr);
 		g_io_channel_unref(self->channel_stderr_);
 		self->channel_stderr_ = 0;
 	}
@@ -374,13 +374,13 @@ void Cmdex::on_child_watch_handler(GPid arg_pid, int waitpid_status, gpointer da
 	// This will force calling the iochannel callback (they may not be called
 	// otherwise at all if there was no output).
 	if (self->event_source_id_stdout_) {
-		GSource* source_stdout = g_main_context_find_source_by_id(NULL, self->event_source_id_stdout_);
+		GSource* source_stdout = g_main_context_find_source_by_id(nullptr, self->event_source_id_stdout_);
 		if (source_stdout)
 			g_source_destroy(source_stdout);
 	}
 
 	if (self->event_source_id_stderr_) {
-		GSource* source_stderr = g_main_context_find_source_by_id(NULL, self->event_source_id_stderr_);
+		GSource* source_stderr = g_main_context_find_source_by_id(nullptr, self->event_source_id_stderr_);
 		if (source_stderr)
 			g_source_destroy(source_stderr);
 	}

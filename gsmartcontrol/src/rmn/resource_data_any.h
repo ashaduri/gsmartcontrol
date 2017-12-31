@@ -58,9 +58,36 @@ struct ResourceDataAnyDumper {
 	{
 		const std::type_info& type = obj->data_.type();
 		if (type == typeid(char)) {
-			os << std::any_cast<char>(std::any_cast<char>(obj->data_));
+			os << std::any_cast<char>(obj->data_);
+		} else if (type == typeid(unsigned char)) {
+			os << std::any_cast<unsigned char>(obj->data_);
+		} else if (type == typeid(signed char)) {
+			os << std::any_cast<signed char>(obj->data_);
+		} else if (type == typeid(wchar_t)) {
+			os << std::any_cast<wchar_t>(obj->data_);
+		} else if (type == typeid(short)) {
+			os << std::any_cast<short>(obj->data_);
+		} else if (type == typeid(unsigned short)) {
+			os << std::any_cast<unsigned short>(obj->data_);
+		} else if (type == typeid(int)) {
+			os << std::any_cast<int>(obj->data_);
+		} else if (type == typeid(unsigned int)) {
+			os << std::any_cast<unsigned int>(obj->data_);
+		} else if (type == typeid(long)) {
+			os << std::any_cast<long>(obj->data_);
+		} else if (type == typeid(unsigned long)) {
+			os << std::any_cast<unsigned long>(obj->data_);
+		} else if (type == typeid(long long)) {
+			os << std::any_cast<long long>(obj->data_);
+		} else if (type == typeid(unsigned long long)) {
+			os << std::any_cast<unsigned long long>(obj->data_);
+		} else if (type == typeid(float)) {
+			os << std::any_cast<float>(obj->data_);
+		} else if (type == typeid(double)) {
+			os << std::any_cast<double>(obj->data_);
+		} else if (type == typeid(std::string)) {
+			os << std::any_cast<std::string>(obj->data_);
 		}
-		// TODO other types.
 	}
 
 	T* obj;  ///< ResourceDataAny object

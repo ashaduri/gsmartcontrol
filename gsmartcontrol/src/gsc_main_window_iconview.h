@@ -34,7 +34,7 @@
 class GscMainWindowIconView : public Gtk::IconView {
 	public:
 
-		typedef GscMainWindowIconView self_type;  ///< Self type, needed for CONNECT_VIRTUAL
+		using self_type = GscMainWindowIconView;  ///< Self type, needed for CONNECT_VIRTUAL
 
 		/// Message type to show
 		enum message_t {
@@ -224,7 +224,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 			// gdk_cairo_surface_create_from_pixbuf() (and create_similar_image_surface()) from gtk 3.10.
 			cairo_surface_t* surface = gdk_cairo_surface_create_from_pixbuf(pixbuf->gobj(), get_scale_factor(), get_window()->gobj());
-			g_object_set(G_OBJECT(cell_renderer_pixbuf.gobj()), "surface", surface, NULL);
+			g_object_set(G_OBJECT(cell_renderer_pixbuf.gobj()), "surface", surface, nullptr);
 			cairo_surface_destroy(surface);
 		}
 #endif
@@ -468,7 +468,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 		{
 			// if there's nothing selected, disable items from "Drives" menu
 			if (!this->get_selected_items().size()) {
-				main_window->set_drive_menu_status(NULL);
+				main_window->set_drive_menu_status(nullptr);
 
 			} else {  // enable drives menu, set proper smart toggles
 				Gtk::TreePath model_path = *(this->get_selected_items().begin());

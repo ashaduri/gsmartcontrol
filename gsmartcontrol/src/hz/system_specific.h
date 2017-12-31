@@ -94,7 +94,7 @@ namespace hz {
 	inline std::string type_name_demangle(const std::string& name)
 	{
 		int status = 0;
-		char* demangled = ::abi::__cxa_demangle(name.c_str(), NULL, NULL, &status);
+		char* demangled = ::abi::__cxa_demangle(name.c_str(), nullptr, nullptr, &status);
 		std::string ret;
 		if (demangled) {
 			if (status == 0)

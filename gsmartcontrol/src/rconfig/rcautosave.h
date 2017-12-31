@@ -33,19 +33,10 @@ namespace rconfig {
 
 
 /// Holder for static variables
-template<typename Dummy>
-struct AutoSaveStaticHolder {
-	static std::string config_file;  ///< Config file to autosave to.
-	static bool autosave_enabled;  ///< Autosave enabled or not. This acts as a stopper flag for autosave callback.
+struct AutoSaveHolder {
+	static inline std::string config_file;  ///< Config file to autosave to.
+	static inline bool autosave_enabled = false;  ///< Autosave enabled or not. This acts as a stopper flag for autosave callback.
 };
-
-// definitions
-template<typename Dummy> std::string AutoSaveStaticHolder<Dummy>::config_file;
-template<typename Dummy> bool AutoSaveStaticHolder<Dummy>::autosave_enabled = false;
-
-
-/// Specify the same template parameter to get the same set of variables.
-typedef AutoSaveStaticHolder<void> AutoSaveHolder;  // one (and only) specialization.
 
 
 
@@ -107,7 +98,7 @@ inline bool autosave_start(unsigned int sec_interval)
 	debug_print_info("rconfig", "Starting config autosave with %u sec. interval.\n", sec_interval);
 
 	g_timeout_add_full(G_PRIORITY_DEFAULT_IDLE, sec_interval*1000,
-			&autosave_timeout_callback, NULL, NULL);
+			&autosave_timeout_callback, nullptr, nullptr);
 
 	return true;
 }

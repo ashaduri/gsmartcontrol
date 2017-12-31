@@ -25,17 +25,10 @@
 namespace hz {
 
 
-
 /// Static variable holder
-template<typename Dummy>
-struct DataFileStaticHolderTemplate {
-	static std::vector<std::string> search_directories;  ///< Search directories for data files
+struct DataFileStaticHolder {
+	static inline std::vector<std::string> search_directories;  ///< Search directories for data files
 };
-
-// definitions
-template<typename Dummy> std::vector<std::string> DataFileStaticHolderTemplate<Dummy>::search_directories;
-
-typedef DataFileStaticHolderTemplate<void> DataFileStaticHolder;  ///< Static variable holder (one (and only) specialization)
 
 
 

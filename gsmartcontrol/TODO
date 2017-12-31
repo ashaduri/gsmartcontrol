@@ -30,36 +30,33 @@ Don't rely on smartctl return code (2), parse the output instead.
 
 
 GTKMM 4.
+	app_pango_strip_markup to pangomm (seems to be in the latest version, but not in the shipped one).
+	scoped_ptr (after we have GtkFileChooserNative in gtkmm)
 
 JSON.
-
-Port to C++17
-	Remove glibmm thread stuff (it's gone in gtkmm4).
+	Port the rest to std::regex, get rid of pcre requirement.
 
 
 string_num (may require locale set to C).
-strtold / strtof, DISABLE_STRTOF, DISABLE_STRTOLD (after ascii.h)
+	strtold / strtof, DISABLE_STRTOF, DISABLE_STRTOLD (after ascii.h)
+	type_properties.h / type_categories.h (after ascii.h and string_num.h)
+
 Port to std::filesystem (gcc 8; mingw not yet supported).
-type_properties.h / type_categories.h (after ascii.h and string_num.h)
-scoped_ptr (after we have GtkFileChooserNative in gtkmm)
-scoped_array (after we get rid of hz::fs)
-Fix ResourceDataAnyDumper.
+	wcmatch (once fs is gone)
+
+scoped_array
+std::wstring in mingw instead of wchar_t?
 format_date() -> C++17 has it.
 snprintf
-ptr_container
-stream_cast?
 some string_algo
 string_sprintf?
-wcmatch (through regex)?
-std::wstring in mingw instead of wchar_t?
 Check licenses - do we still use boost, bsd?
 std::string setters -> no const&, use std::move.
+local_algo (after hz::fs)
 
-typedef -> using
-NULL -> nullptr
-
-After JSON:
-	Port to std::regex, get rid of pcre requirement.
+enum class
+static std::map
+for iter -> for auto
 
 Test with clang-tidy, gcc's -Wsuggest-*.
 

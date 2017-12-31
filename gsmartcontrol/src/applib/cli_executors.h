@@ -38,8 +38,7 @@ class TwCliExecutorGeneric : public ExecutorSync {
 
 
 		/// Virtual destructor
-		virtual ~TwCliExecutorGeneric()
-		{ }
+		virtual ~TwCliExecutorGeneric() = default;
 
 
 	protected:
@@ -108,18 +107,18 @@ class TwCliExecutorGeneric : public ExecutorSync {
 
 
 /// tw_cli executor without GUI support
-typedef TwCliExecutorGeneric<CmdexSync> TwCliExecutor;
+using TwCliExecutor = TwCliExecutorGeneric<CmdexSync>;
 
 /// A reference-counting pointer to TwCliExecutor
-typedef hz::intrusive_ptr<TwCliExecutor> TwCliExecutorRefPtr;
+using TwCliExecutorRefPtr = hz::intrusive_ptr<TwCliExecutor>;
 
 
 
 /// tw_cli executor with GUI support
-typedef TwCliExecutorGeneric<CmdexSyncGui> TwCliExecutorGui;
+using TwCliExecutorGui = TwCliExecutorGeneric<CmdexSyncGui>;
 
 /// A reference-counting pointer to TwCliExecutorGui
-typedef hz::intrusive_ptr<TwCliExecutorGui> TwCliExecutorGuiRefPtr;
+using TwCliExecutorGuiRefPtr = hz::intrusive_ptr<TwCliExecutorGui>;
 
 
 
@@ -146,8 +145,7 @@ class ArecaCliExecutorGeneric : public ExecutorSync {
 
 
 		/// Virtual destructor
-		virtual ~ArecaCliExecutorGeneric()
-		{ }
+		virtual ~ArecaCliExecutorGeneric() = default;
 
 
 	protected:
@@ -216,18 +214,18 @@ class ArecaCliExecutorGeneric : public ExecutorSync {
 
 
 /// tw_cli executor without GUI support
-typedef ArecaCliExecutorGeneric<CmdexSync> ArecaCliExecutor;
+using ArecaCliExecutor = ArecaCliExecutorGeneric<CmdexSync>;
 
 /// A reference-counting pointer to ArecaCliExecutor
-typedef hz::intrusive_ptr<ArecaCliExecutor> ArecaCliExecutorRefPtr;
+using ArecaCliExecutorRefPtr = hz::intrusive_ptr<ArecaCliExecutor>;
 
 
 
 /// tw_cli executor with GUI support
-typedef ArecaCliExecutorGeneric<CmdexSyncGui> ArecaCliExecutorGui;
+using ArecaCliExecutorGui = ArecaCliExecutorGeneric<CmdexSyncGui>;
 
 /// A reference-counting pointer to ArecaCliExecutorGui
-typedef hz::intrusive_ptr<ArecaCliExecutorGui> ArecaCliExecutorGuiRefPtr;
+using ArecaCliExecutorGuiRefPtr = hz::intrusive_ptr<ArecaCliExecutorGui>;
 
 
 

@@ -23,7 +23,7 @@
 
 
 /// A map of Device =\> Options
-typedef std::map<std::string, std::string> device_option_map_t;
+using device_option_map_t = std::map<std::string, std::string>;
 
 
 

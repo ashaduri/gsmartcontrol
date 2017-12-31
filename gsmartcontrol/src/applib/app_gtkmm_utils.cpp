@@ -9,6 +9,12 @@
 /// \weakgroup applib
 /// @{
 
+// TODO Remove this in gtkmm4.
+#include <bits/stdc++.h>  // to avoid throw() macro errors.
+#define throw(a)  // glibmm uses dynamic exception specifications, remove them.
+#include <glibmm.h>  // NOT NEEDED
+#undef throw
+
 #include <gtkmm.h>
 #include <glibmm.h>
 #include <glib.h>
@@ -33,7 +39,7 @@ Gtk::Widget* app_gtkmm_get_column_header(Gtk::TreeViewColumn& column)
 	if (w && (p1 = w->get_parent()) && (p2 = p1->get_parent()) && (p3 = p2->get_parent()))
 		return p3;
 
-	return NULL;
+	return nullptr;
 }
 
 
@@ -74,9 +80,9 @@ namespace {
 		const gchar* remainder, *invalid;
 		gint remaining_bytes, valid_bytes;
 
-		g_return_val_if_fail (name != NULL, NULL);
+		g_return_val_if_fail (name != nullptr, nullptr);
 
-		str = NULL;
+		str = nullptr;
 		remainder = name;
 		remaining_bytes = gint(std::strlen(name));
 
@@ -86,7 +92,7 @@ namespace {
 
 			valid_bytes = gint(invalid - remainder);
 
-			if (str == NULL)
+			if (str == nullptr)
 				str = g_string_sized_new (remaining_bytes);
 
 			g_string_append_len (str, remainder, valid_bytes);
@@ -97,12 +103,12 @@ namespace {
 			remainder = invalid + 1;
 		}
 
-		if (str == NULL)
+		if (str == nullptr)
 			return g_strdup (name);
 
 		g_string_append (str, remainder);
 
-		g_assert (g_utf8_validate (str->str, -1, NULL));
+		g_assert (g_utf8_validate (str->str, -1, nullptr));
 
 		return g_string_free (str, FALSE);
 	}

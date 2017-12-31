@@ -154,7 +154,7 @@ inline bool read_proc_file(hz::File& file, std::string& contents)
 		return false;
 
 	char line[256];
-	while (std::fgets(line, static_cast<int>(sizeof(line)), fp) != NULL) {
+	while (std::fgets(line, static_cast<int>(sizeof(line)), fp) != nullptr) {
 		if (*line != '\0')
 			contents += line;  // line contains the terminating newline as well
 	}

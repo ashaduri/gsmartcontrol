@@ -50,15 +50,15 @@ inline bool env_get_value(const std::string& name, std::string& value)
 
 	// getenv and _wgetenv are not thread-safe under windows, so use winapi.
 
-	hz::scoped_array<wchar_t> wname(hz::win32_utf8_to_utf16(name.c_str()));
-	if (!wname)  // conversion error
+	std::wstring wname = hz::win32_utf8_to_utf16(name);
+	if (wname.empty())  // conversion error
 		return false;
 
 	wchar_t dummy[2];
 	// Determine the size of needed buffer by supplying an undersized one.
 	// If it fits, returns number of chars not including 0. If not, returns the number
 	// of chars needed for full data, including 0.
-	DWORD len = GetEnvironmentVariableW(wname.get(), dummy, 2);
+	DWORD len = GetEnvironmentVariableW(wname.c_str(), dummy, 2);
 
 	if (len == 0) {  // failure
 		return false;
@@ -69,7 +69,7 @@ inline bool env_get_value(const std::string& name, std::string& value)
 
 	hz::scoped_array<wchar_t> wvalue(new wchar_t[len]);
 
-	if (GetEnvironmentVariableW(wname.get(), wvalue.get(), len) != len - 1) {  // failure
+	if (GetEnvironmentVariableW(wname.c_str(), wvalue.get(), len) != len - 1) {  // failure
 		return false;
 	}
 
@@ -84,29 +84,22 @@ inline bool env_get_value(const std::string& name, std::string& value)
 			if (ExpandEnvironmentStringsW(wvalue.get(), wvalue_exp.get(), len) != len)  // failure
 				return false;
 
-			hz::scoped_array<char> val(hz::win32_utf16_to_utf8(wvalue_exp.get()));
-			if (val) {
-				value = val.get();
-			}
-			return val;
+			value = hz::win32_utf16_to_utf8(wvalue_exp.get());
+			return true;
 		}
 	}
 
-	hz::scoped_array<char> val(hz::win32_utf16_to_utf8(wvalue.get()));
-	if (val) {
-		value = val.get();
-	}
-	return val;
+	value = hz::win32_utf16_to_utf8(wvalue.get());
+	return true;
 
 
-	// glib version may be thread-unsafe on win32, so don't use it there.
 #elif defined ENABLE_GLIB && ENABLE_GLIB
+	// glib version may be thread-unsafe on win32, so don't use it there.
 	const char* v = g_getenv(name.c_str());
 	if (!v)
 		return false;
 	value = v;
 	return true;
-
 
 #else
 	const char* v = std::getenv(name.c_str());
@@ -133,10 +126,10 @@ inline bool env_set_value(const std::string& name, const std::string& value, boo
 	if (!overwrite && env_get_value(name, oldvalue))
 		return true;
 
-	hz::scoped_array<wchar_t> wname(hz::win32_utf8_to_utf16(name.c_str()));
-	hz::scoped_array<wchar_t> wvalue(hz::win32_utf8_to_utf16(value.c_str()));
+	std::wstring wname = hz::win32_utf8_to_utf16(name);
+	std::wstring wvalue = hz::win32_utf8_to_utf16(value);
 
-	if (!wname || !wvalue)  // conversion error
+	if (wname.empty() || wvalue.empty())  // conversion error
 		return false;
 
 	// Since using main() instead of wmain() causes environment tables to be
@@ -144,13 +137,7 @@ inline bool env_set_value(const std::string& name, const std::string& value, boo
 	// However, both of them are not thread-safe (their secure variants too),
 	// so we avoid them.
 
-	// hz::scoped_array<wchar_t> put_arg(hz::win32_utf8_to_utf16((name + "=" + value).c_str()));
-	// if (put_arg)
-	// 	_wputenv(put_arg.get());
-	if (wname) {
-		return (SetEnvironmentVariableW(wname.get(), wvalue.get()) != 0);
-	}
-	return false;
+	return (SetEnvironmentVariableW(wname.c_str(), wvalue.c_str()) != 0);
 
 	// glib version may be thread-unsafe on win32, so don't use it there.
 #elif defined ENABLE_GLIB && ENABLE_GLIB
@@ -184,11 +171,11 @@ inline bool env_unset_value(const std::string& name)
 		return false;
 
 #if defined _WIN32
-	hz::scoped_array<wchar_t> wname(hz::win32_utf8_to_utf16(name.c_str()));
+	std::wstring wname = hz::win32_utf8_to_utf16(name);
 
-	if (wname) {
+	if (!wname.empty()) {
 		// we could do _wputenv("name=") or _wputenv_s(...) too, but they're not thread-safe.
-		return SetEnvironmentVariableW(wname.get(), 0);
+		return SetEnvironmentVariableW(wname.c_str(), 0);
 	}
 	return false;
 

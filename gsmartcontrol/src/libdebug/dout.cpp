@@ -80,17 +80,15 @@ void debug_print(debug_level::flag level, const std::string& domain, const char*
 
 void debug_begin()
 {
-	// inside_begin is thread-local, no need to lock anything
 	debug_internal::get_debug_state().push_inside_begin();
 }
 
 
 void debug_end()
 {
-	// inside_begin is thread-local, no need to lock anything
 	debug_internal::get_debug_state().pop_inside_begin();
 	// this is needed because else the contents won't be written until next write.
-	debug_internal::get_debug_state().force_output();  // this call is thread-safe in read-only context.
+	debug_internal::get_debug_state().force_output();
 }
 
 
@@ -140,7 +138,6 @@ namespace debug_internal {
 // increase indentation level for all debug levels
 void debug_indent_inc(int by)
 {
-	// indent level is thread-local, no need to lock anything
 	int curr = debug_internal::get_debug_state().get_indent_level();
 	debug_internal::get_debug_state().set_indent_level(curr + by);
 }
@@ -148,7 +145,6 @@ void debug_indent_inc(int by)
 
 void debug_indent_dec(int by)
 {
-	// indent level is thread-local, no need to lock anything
 	int curr = debug_internal::get_debug_state().get_indent_level();
 	curr -= by;
 	if (curr < 0)
@@ -159,7 +155,6 @@ void debug_indent_dec(int by)
 
 void debug_indent_reset()
 {
-	// indent level is thread-local, no need to lock anything
 	debug_internal::get_debug_state().set_indent_level(0);
 }
 
