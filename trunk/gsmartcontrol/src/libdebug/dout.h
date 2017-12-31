@@ -24,15 +24,6 @@
 #include "dflags.h"
 
 
-/**
-\file
-These functions are thread-safe if the state doesn't change. That is, you may use
-the output functions in different threads, but if you modify the state (channels,
-default format flags, etc...), then you _must_ stop all libdebug activity in _all_
-threads except the one you're modifying with.
-*/
-
-
 
 /// Get a libdebug-handled stream for \c level and \c domain.
 /// \throw debug_usage_error if invalid domain or level.

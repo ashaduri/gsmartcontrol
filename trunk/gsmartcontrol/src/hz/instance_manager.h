@@ -21,17 +21,6 @@ namespace hz {
 
 /**
 Inherit this class to have a single- or multi-instance objects, e.g. windows.
-
-Single-instance variant uses locks to protect the data when
-manipulating it through its functions. If you intend to write to
-the pointed object and use it in separate threads, you will
-need to lock it manually.
-
-Multi-instance variant doesn't store any instances itself, so
-you are expected to perform any necessary locking with the
-pointers you hold.
-
-\c SingleLockPolicy has no effect if MultiInstance is true.
 */
 template<class Child, bool MultiInstance>
 class InstanceManager {

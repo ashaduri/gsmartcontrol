@@ -91,7 +91,7 @@ int main()
 	rconfig::autosave_start(2);  // every 2 seconds
 	while(true) {
 		// without this the timeout function won't be called.
-		g_main_context_iteration(NULL, false);
+		g_main_context_iteration(nullptr, false);
 	}
 #endif
 

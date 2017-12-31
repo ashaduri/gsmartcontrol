@@ -48,7 +48,7 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 		/// Called by constructors
 		void construct()
 		{
-			ExecutorSync::get_command_executor().set_exit_status_translator(&SmartctlExecutorGeneric::translate_exit_status, NULL);
+			ExecutorSync::get_command_executor().set_exit_status_translator(&SmartctlExecutorGeneric::translate_exit_status, nullptr);
 			this->set_error_header("An error occurred while executing smartctl:\n\n");
 		}
 
@@ -158,10 +158,10 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 
 
 /// Smartctl executor without GUI support
-typedef SmartctlExecutorGeneric<CmdexSync> SmartctlExecutor;
+using SmartctlExecutor = SmartctlExecutorGeneric<CmdexSync>;
 
 /// A reference-counting pointer to SmartctlExecutor
-typedef hz::intrusive_ptr<SmartctlExecutor> SmartctlExecutorRefPtr;
+using SmartctlExecutorRefPtr = hz::intrusive_ptr<SmartctlExecutor>;
 
 
 

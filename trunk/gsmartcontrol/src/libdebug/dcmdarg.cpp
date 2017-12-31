@@ -203,29 +203,29 @@ GOptionGroup* debug_get_option_group()
 
 	GOptionGroup* group = g_option_group_new("debug",
 			"Libdebug Logging Options", "Show libdebug options",
-			args, NULL);
+			args, nullptr);
 
 	static const GOptionEntry entries[] =
 	{
 		{ "verbose", 'v', G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE,
-				&(args->verbose), "Enable verbose logging; same as --verbosity-level 5", NULL },
+				&(args->verbose), "Enable verbose logging; same as --verbosity-level 5", nullptr },
 		{ "quiet", 'q', G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE,
-				&(args->quiet), "Disable logging; same as --verbosity-level 0", NULL },
+				&(args->quiet), "Disable logging; same as --verbosity-level 0", nullptr },
 		{ "verbosity-level", 'b', G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_INT,
-				&(args->verbosity_level), "Set verbosity level [0-5]", NULL },
+				&(args->verbosity_level), "Set verbosity level [0-5]", nullptr },
 		{ "debug-levels", '\0', 0, G_OPTION_ARG_CALLBACK,
 				(gpointer)(&debug_internal_parse_levels),  // reinterpret_cast<> doesn't work here
-				"Enable only these logging levels; the argument is a comma-separated list of (dump, info, warn, error, fatal)", NULL },
+				"Enable only these logging levels; the argument is a comma-separated list of (dump, info, warn, error, fatal)", nullptr },
 		{ "debug-colorize", '\0', 0, G_OPTION_ARG_NONE,
-				&(args->debug_colorize), "Enable colored output", NULL },
+				&(args->debug_colorize), "Enable colored output", nullptr },
 		{ "debug-no-colorize", '\0', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE,
-				&(args->debug_colorize), "Disable colored output", NULL },
-		{ NULL }
+				&(args->debug_colorize), "Disable colored output", nullptr },
+		{ nullptr }
 	};
 
 	g_option_group_add_entries(group, entries);
 
-	g_option_group_set_parse_hooks(group, NULL, &debug_internal_post_parse_func);
+	g_option_group_set_parse_hooks(group, nullptr, &debug_internal_post_parse_func);
 
 	return group;
 }

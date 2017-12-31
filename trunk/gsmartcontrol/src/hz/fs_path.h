@@ -59,28 +59,19 @@ class FsPathHolder {
 
 		/// Constructor
 		FsPathHolder()
-#ifdef _WIN32
-				: utf16_path_(0)
-#endif
 		{ }
 
 		/// Constructor.
-		FsPathHolder(const std::string& path) : path_(path)
-#ifdef _WIN32
-				, utf16_path_(0)
-#endif
-		{ }
+		FsPathHolder(const std::string& path)
+		{
+			set_path(path);
+		}
 
 
 	public:
 
 		/// Virtual destructor
-		virtual ~FsPathHolder()
-		{
-#ifdef _WIN32
-			delete[] utf16_path_;
-#endif
-		}
+		virtual ~FsPathHolder() = default;
 
 
 		// --- these will _not_ set bad() status
@@ -89,10 +80,6 @@ class FsPathHolder {
 		void set_path(const std::string& path)
 		{
 			path_ = path;
-#ifdef _WIN32
-			delete[] utf16_path_;
-			utf16_path_ = 0;  // reset
-#endif
 		}
 
 		/// Get current path
@@ -122,25 +109,16 @@ class FsPathHolder {
 
 		// These are sort-of internal
 #ifdef _WIN32
-		/// Get path in UTF-16 format and store it (convert it from UTF-8)
-		/// Note: This may actually return 0 if it's unsupported or the encoded string is invalid.
-		const wchar_t* get_utf16() const
+		/// Get path in UTF-16 format (convert it from UTF-8)
+		std::wstring get_utf16() const
 		{
-			if (!utf16_path_)
-				utf16_path_ = hz::win32_utf8_to_utf16(path_.c_str());
-			return utf16_path_;
+			return hz::win32_utf8_to_utf16(path_);
 		}
 
-		/// Set path in UTF-16 format. Also convert it to UTF-8 and store it.
-		bool set_utf16(const wchar_t* path)
+		/// Set path in UTF-16 format. Converts it to UTF-8 and stores it.
+		void set_utf16(std::wstring_view path)
 		{
-			char* utf8 = win32_utf16_to_utf8(path);
-			if (utf8) {
-				set_path(utf8);  // this correctly resets utf16_path_
-				delete[] utf8;
-				return true;
-			}
-			return false;
+			set_path(hz::win32_utf16_to_utf8(path));
 		}
 #endif
 
@@ -148,10 +126,6 @@ class FsPathHolder {
 	private:  // don't let children modify path_ directly, it will desync utf16_path_.
 
 		std::string path_;  ///< Current path. Always UTF-8 in windows.
-
-#ifdef _WIN32
-		mutable wchar_t* utf16_path_;  ///< Same as path_, but in UTF-16.
-#endif
 
 };
 
@@ -489,9 +463,9 @@ inline bool FsPath::is_readable()
 	}
 
 #if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
-	if (_waccess_s(this->get_utf16(), 04))  // msvc uses integers instead (R_OK == 04 anyway).
+	if (_waccess_s(this->get_utf16().c_str(), 04))  // msvc uses integers instead (R_OK == 04 anyway).
 #elif defined _WIN32
-	if (_waccess(this->get_utf16(), 04) == -1)  // *access*() may not work with < win2k with directories.
+	if (_waccess(this->get_utf16().c_str(), 04) == -1)  // *access*() may not work with < win2k with directories.
 #else
 	if (access(this->c_str(), R_OK) == -1)  // from unistd.h
 #endif
@@ -536,9 +510,9 @@ inline bool FsPath::is_writable()
 	// pcheck either doesn't exist, or it's a file. try to open it.
 	std::FILE* f = 0;
 #if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
-	errno = _wfopen_s(&f, path_to_check.get_utf16(), L"ab");
+	errno = _wfopen_s(&f, path_to_check.get_utf16().c_str(), L"ab");
 #else
-	f = _wfopen(path_to_check.get_utf16(), L"ab");   // this creates a 0 size file if it doesn't exist!
+	f = _wfopen(path_to_check.get_utf16().c_str(), L"ab");   // this creates a 0 size file if it doesn't exist!
 #endif
 	if (!f) {
 		set_error(HZ__("File or directory \"/path1/\" is not writable: /errno/."), errno, this->get_path());
@@ -552,7 +526,7 @@ inline bool FsPath::is_writable()
 	}
 
 	// remove the created file
-	if (path_exists && _wunlink(path_to_check.get_utf16()) == -1) {
+	if (path_exists && _wunlink(path_to_check.get_utf16().c_str()) == -1) {
 		set_error(std::string(HZ__("Unable to check if a file or directory \"/path1/\" is writable: "))
 				+ HZ__("Error while removing file: /errno/."), errno, this->get_path());
 		return false;
@@ -595,9 +569,9 @@ inline bool FsPath::exists()
 	}
 
 #if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
-	if (_waccess_s(this->get_utf16(), 00) != 0)  // msvc uses integers instead (F_OK == 00 anyway).
+	if (_waccess_s(this->get_utf16().c_str(), 00) != 0)  // msvc uses integers instead (F_OK == 00 anyway).
 #elif defined _WIN32
-	if (_waccess(this->get_utf16(), 00) != 0)  // msvc uses integers instead (F_OK == 00 anyway).
+	if (_waccess(this->get_utf16().c_str(), 00) != 0)  // msvc uses integers instead (F_OK == 00 anyway).
 #else
 	if (access(this->c_str(), F_OK) == -1)
 #endif
@@ -622,7 +596,7 @@ inline bool FsPath::is_file()
 
 #ifdef _WIN32
 	struct _stat s;
-	const int stat_result = _wstat(this->get_utf16(), &s);
+	const int stat_result = _wstat(this->get_utf16().c_str(), &s);
 #else
 	struct stat s;
 	const int stat_result = stat(this->c_str(), &s);
@@ -658,7 +632,7 @@ inline bool FsPath::is_regular()
 
 #ifdef _WIN32
 	struct _stat s;
-	const int stat_result = _wstat(this->get_utf16(), &s);
+	const int stat_result = _wstat(this->get_utf16().c_str(), &s);
 #else
 	struct stat s;
 	const int stat_result = stat(this->c_str(), &s);
@@ -698,7 +672,7 @@ inline bool FsPath::is_dir()
 
 #ifdef _WIN32
 	struct _stat s;
-	const int stat_result = _wstat(this->get_utf16(), &s);
+	const int stat_result = _wstat(this->get_utf16().c_str(), &s);
 #else
 	struct stat s;
 	const int stat_result = stat(this->c_str(), &s);
@@ -815,7 +789,7 @@ inline bool FsPath::get_last_modified(std::time_t& put_here)
 
 #ifdef _WIN32
 	struct _stat s;
-	const int stat_result = _wstat(this->get_utf16(), &s);
+	const int stat_result = _wstat(this->get_utf16().c_str(), &s);
 #else
 	struct stat s;
 	const int stat_result = stat(this->c_str(), &s);
@@ -850,7 +824,7 @@ inline bool FsPath::set_last_modified(std::time_t t)
 	tb.modtime = t;
 
 #ifdef _WIN32
-	if (_wutime(this->get_utf16(), &tb) == -1)
+	if (_wutime(this->get_utf16().c_str(), &tb) == -1)
 #else
 	if (utime(this->c_str(), &tb) == -1)
 #endif
@@ -891,7 +865,7 @@ inline bool FsPath::make_dir(mode_type octal_mode, bool with_parents)
 	}
 
 #ifdef _WIN32
-	int status = _wmkdir(this->get_utf16());
+	int status = _wmkdir(this->get_utf16().c_str());
 #else
 	int status = mkdir(this->c_str(), octal_mode);
 #endif
@@ -923,7 +897,7 @@ namespace internal {
 
 // 		if (! p.is_file().bad()) {  // file
 // #ifdef _WIN32
-// 			return static_cast<int>(_wunlink(p.get_utf16()) == -1);
+// 			return static_cast<int>(_wunlink(p.get_utf16().c_str()) == -1);
 // #else
 // 			return static_cast<int>(unlink(p.c_str()) == -1);
 // #endif
@@ -959,7 +933,7 @@ namespace internal {
 
 				} else {  // just remove it
 #ifdef _WIN32
-					if (_wunlink(ep.get_utf16()) == -1)
+					if (_wunlink(ep.get_utf16().c_str()) == -1)
 #else
 					if (unlink(ep.c_str()) == -1)
 #endif
@@ -974,7 +948,7 @@ namespace internal {
 
 		// try to remove dir even if it's non-readable.
 #ifdef _WIN32
-		const int rmdir_result = _wrmdir(p.get_utf16());
+		const int rmdir_result = _wrmdir(p.get_utf16().c_str());
 #else
 		const int rmdir_result = rmdir(p.c_str());
 #endif
@@ -1015,10 +989,10 @@ inline bool FsPath::remove(bool recursive)
 #ifdef _WIN32  // win2k (maybe later wins too) remove() says "permission denied" (!) on directories.
 	int status = 0;
 	if (is_dir()) {
-		status = _wrmdir(this->get_utf16());  // empty dir only
+		status = _wrmdir(this->get_utf16().c_str());  // empty dir only
 
 	} else {
-		status = _wunlink(this->get_utf16());  // files only
+		status = _wunlink(this->get_utf16().c_str());  // files only
 	}
 
 	if (status == -1) {

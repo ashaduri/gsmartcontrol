@@ -26,10 +26,6 @@ class SmartctlParser {
 
 	public:
 
-		/// Property list
-		typedef std::vector<StorageProperty> prop_list_t;
-
-
 		/// Constructor
 		SmartctlParser();
 
@@ -124,7 +120,7 @@ class SmartctlParser {
 
 
 		/// Get parse result properties
-		const prop_list_t& get_properties() const
+		const std::vector<StorageProperty>& get_properties() const
 		{
 			return properties_;
 		}
@@ -167,7 +163,7 @@ class SmartctlParser {
 
 
 
-		prop_list_t properties_;  ///< Parsed data properties
+		std::vector<StorageProperty> properties_;  ///< Parsed data properties
 
 		std::string data_full_;  ///< full data, filled by parse_full()
 		std::string data_section_info_;  ///< "info" section data, filled by parse_section_info()

@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
 
 
 
-	// these begin()/end() lock the streams so no other threads can write, and turn off prefix printing
+	// these begin()/end() turn off prefix printing
 	debug_begin();  // don't use different levels inside, or they might get merged (the order will be different).
 		debug_out_info("default", "The following lines should have no prefixes\n");
 		debug_out_info("default", "1st line\n" << "2nd line\n");

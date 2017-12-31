@@ -156,7 +156,7 @@ class SelfTest : public hz::intrusive_ptr_referenced {
 
 
 /// A reference-counting pointer to SelfTest
-typedef hz::intrusive_ptr<SelfTest> SelfTestPtr;
+using SelfTestPtr = hz::intrusive_ptr<SelfTest>;
 
 
 

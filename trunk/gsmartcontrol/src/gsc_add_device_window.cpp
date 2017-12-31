@@ -183,7 +183,7 @@ void GscAddDeviceWindow::on_device_name_browse_button_clicked()
 
 #if GTK_CHECK_VERSION(3, 20, 0)
 	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-			"Choose Device...", this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, NULL, NULL), g_object_unref);
+			"Choose Device...", this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, nullptr, nullptr), g_object_unref);
 
 	if (path.is_absolute())
 		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog.get()), path.c_str());

@@ -206,27 +206,15 @@ namespace {
 
 	/// Command-line argument values
 	struct CmdArgs {
-		CmdArgs() :
-			// defaults
-			arg_locale(TRUE),
-			arg_version(FALSE),
-			arg_scan(TRUE),
-			arg_hide_tabs(TRUE),
-			arg_add_virtual(NULL),
-			arg_add_device(NULL),
-			arg_gdk_scale(std::numeric_limits<double>::quiet_NaN()),
-			arg_gdk_dpi_scale(std::numeric_limits<double>::quiet_NaN())
-		{ }
-
 		// Note: Use GLib types here:
-		gboolean arg_locale;  ///< if false, disable using system locale
-		gboolean arg_version;  ///< if true, show version and exit
-		gboolean arg_scan;  ///< if false, don't scan the system for drives on startup
-		gboolean arg_hide_tabs;  ///< if true, hide additional info tabs when smart is disabled. false may help debugging.
-		gchar** arg_add_virtual;  ///< load smartctl data from these files as virtual drives
-		gchar** arg_add_device;  ///< add these device files manually
-		double arg_gdk_scale;  ///< The value of GDK_SCALE environment variable
-		double arg_gdk_dpi_scale;  ///< The value of GDK_DPI_SCALE environment variable
+		gboolean arg_locale = true;  ///< if false, disable using system locale
+		gboolean arg_version = false;  ///< if true, show version and exit
+		gboolean arg_scan = true;  ///< if false, don't scan the system for drives on startup
+		gboolean arg_hide_tabs = true;  ///< if true, hide additional info tabs when smart is disabled. false may help debugging.
+		gchar** arg_add_virtual = nullptr;  ///< load smartctl data from these files as virtual drives
+		gchar** arg_add_device = nullptr;  ///< add these device files manually
+		double arg_gdk_scale = std::numeric_limits<double>::quiet_NaN();  ///< The value of GDK_SCALE environment variable
+		double arg_gdk_dpi_scale = std::numeric_limits<double>::quiet_NaN();  ///< The value of GDK_DPI_SCALE environment variable
 	};
 
 
@@ -237,34 +225,34 @@ namespace {
 		static const GOptionEntry arg_entries[] =
 		{
 			{ "no-locale", 'l', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_locale),
-					"Don't use system locale", NULL },
+					"Don't use system locale", nullptr },
 			{ "version", 'V', 0, G_OPTION_ARG_NONE, &(args.arg_version),
-					"Display version information", NULL },
+					"Display version information", nullptr },
 			{ "no-scan", '\0', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_scan),
-					"Don't scan devices on startup", NULL },
+					"Don't scan devices on startup", nullptr },
 			{ "no-hide-tabs", '\0', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_hide_tabs),
-					"Don't hide non-identity tabs when SMART is disabled. Useful for debugging.", NULL },
+					"Don't hide non-identity tabs when SMART is disabled. Useful for debugging.", nullptr },
 			{ "add-virtual", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &(args.arg_add_virtual),
-					"Load smartctl data from file, creating a virtual drive. You can specify this option multiple times.", NULL },
+					"Load smartctl data from file, creating a virtual drive. You can specify this option multiple times.", nullptr },
 			{ "add-device", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &(args.arg_add_device),
 					"Add this device to device list. The format of the device is \"<device>::<type>::<extra_args>\", where type and extra_args are optional."
 					" This option is useful with --no-scan to list certain drives only. You can specify this option multiple times."
-					" Example: --add-device /dev/sda --add-device /dev/twa0::3ware,2 --add-device '/dev/sdb::::-T permissive'", NULL },
+					" Example: --add-device /dev/sda --add-device /dev/twa0::3ware,2 --add-device '/dev/sdb::::-T permissive'", nullptr },
 #ifndef _WIN32
 			// X11-specific
 			{ "gdk-scale", 'l', 0, G_OPTION_ARG_DOUBLE, &(args.arg_gdk_scale),
-					"The value of GDK_SCALE environment variable (useful when executing with pkexec)", NULL },
+					"The value of GDK_SCALE environment variable (useful when executing with pkexec)", nullptr },
 			{ "gdk-dpi-scale", 'l', 0, G_OPTION_ARG_DOUBLE, &(args.arg_gdk_dpi_scale),
-					"The value of GDK_DPI_SCALE environment variable (useful when executing with pkexec)", NULL },
+					"The value of GDK_DPI_SCALE environment variable (useful when executing with pkexec)", nullptr },
 #endif
-			{ NULL }
+			{ nullptr }
 		};
 
 		GError* error = 0;
 		GOptionContext* context = g_option_context_new("- A GTK+ GUI for smartmontools");
 
 		// our options
-		g_option_context_add_main_entries(context, arg_entries, NULL);
+		g_option_context_add_main_entries(context, arg_entries, nullptr);
 
 		// gtk options
 		g_option_context_add_group(context, gtk_get_option_group(false));
@@ -283,7 +271,7 @@ namespace {
 			g_error_free(error);
 
 	#if (GLIB_CHECK_VERSION(2,14,0))
-			gchar* help_text = g_option_context_get_help(context, true, NULL);
+			gchar* help_text = g_option_context_get_help(context, true, nullptr);
 			if (help_text) {
 				error_text += help_text;
 				g_free(help_text);
@@ -374,7 +362,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 	std::vector<std::string> load_virtuals;
 	if (args.arg_add_virtual) {
 		const gchar* entry = 0;
-		while ( (entry = *(args.arg_add_virtual)++) != NULL ) {
+		while ( (entry = *(args.arg_add_virtual)++) != nullptr ) {
 			load_virtuals.push_back(entry);
 		}
 	}
@@ -383,7 +371,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 	std::vector<std::string> load_devices;
 	if (args.arg_add_device) {
 		const gchar* entry = 0;
-		while ( (entry = *(args.arg_add_device)++) != NULL ) {
+		while ( (entry = *(args.arg_add_device)++) != nullptr ) {
 			load_devices.push_back(entry);
 		}
 	}
@@ -427,7 +415,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 	for (unsigned int i = 0; i < G_N_ELEMENTS(gtkdomains); ++i) {
 		g_log_set_handler(gtkdomains[i], GLogLevelFlags(G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
-				| G_LOG_FLAG_RECURSION), glib_message_handler, NULL);
+				| G_LOG_FLAG_RECURSION), glib_message_handler, nullptr);
 	}
 
 

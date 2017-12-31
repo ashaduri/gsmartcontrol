@@ -214,7 +214,7 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 
 #if GTK_CHECK_VERSION(3, 20, 0)
 	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-			"Save Data As...", this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, NULL, NULL), g_object_unref);
+			"Save Data As...", this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr), g_object_unref);
 
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
 
@@ -331,7 +331,7 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 
 #if GTK_CHECK_VERSION(3, 20, 0)
 	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-			"Save Data As...", this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, NULL, NULL), g_object_unref);
+			"Save Data As...", this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr), g_object_unref);
 
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
 

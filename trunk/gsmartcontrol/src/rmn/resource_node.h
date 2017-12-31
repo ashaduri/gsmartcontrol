@@ -32,7 +32,7 @@
 #define RMN_RESOURCE_NODE_H
 
 #include <string>
-#include <list>  // for children list
+#include <deque>  // for children list
 #include <stack>  // std::stack
 
 #include "hz/string_algo.h"  // string_split(), string_join()
@@ -64,21 +64,17 @@ class resource_node : public resource_base, public Data {
 	public:
 
 		// Do NOT return parent_node_ptr from public functions, return node_ptr instead.
-		typedef resource_node* parent_node_ptr;  ///< Parent node (non-reference-holding pointer). Must be able to assign this to node_ptr.
-		typedef intrusive_ptr<resource_node<Data> > node_ptr;  ///< Ref-counting smart pointer to node, also child type.
-		typedef intrusive_ptr<const resource_node<Data> > node_const_ptr;  ///< Const pointer version of node_ptr.
+		using parent_node_ptr = resource_node*;  ///< Parent node (non-reference-holding pointer). Must be able to assign this to node_ptr.
+		using node_ptr = intrusive_ptr<resource_node<Data>>;  ///< Ref-counting smart pointer to node, also child type.
+		using node_const_ptr = intrusive_ptr<const resource_node<Data>>;  ///< Const pointer version of node_ptr.
 
-		typedef std::list<node_ptr> child_list_t;  ///< Child list
-		typedef typename child_list_t::iterator child_iterator;  ///< Child list iterator
-		typedef typename child_list_t::const_iterator child_const_iterator;  ///< Child list const iterator
-		typedef typename child_list_t::size_type child_size_type;  ///< Child list size type
+		using child_list_t = std::deque<node_ptr>;  ///< Child list
+		using child_iterator = typename child_list_t::iterator;  ///< Child list iterator
+		using child_const_iterator = typename child_list_t::const_iterator;  ///< Child list const iterator
+		using child_size_type = typename child_list_t::size_type;  ///< Child list size type
 
-		typedef resource_node<Data> self_type;  ///< Self type
+		using self_type = resource_node<Data>;  ///< Self type
 
-
-		/// Constructor, constructs empty node
-		resource_node() : parent_(0)
-		{ }
 
 		/// Destructor
 		~resource_node()
@@ -223,7 +219,7 @@ class resource_node : public resource_base, public Data {
 	private:
 
 		child_list_t children_;  ///< Child list (strong reference holding pointers)
-		parent_node_ptr parent_;  ///< Parent node (non-reference-holding pointer)
+		parent_node_ptr parent_ = 0;  ///< Parent node (non-reference-holding pointer)
 
 		mutable std::string path_cache_;  ///< Path cache
 
@@ -587,13 +583,13 @@ bool resource_node<Data>::build_nodes(const std::string& path, bool allow_side_c
 
 	// Path to construct, absolute.
 	std::string constr_path = ((path[0] == PATH_DELIMITER) ? path : (our_path + PATH_DELIMITER_S + path));
-	std::list<std::string> components, components_canonical;
+	std::deque<std::string> components, components_canonical;
 
 	// Split to components. This will skip empty results (double slashes, etc...)
 	hz::string_split(constr_path, PATH_DELIMITER, components, true);
 
 	// We don't compare paths directly - they may contain "..", double-slashes, etc...
-	for (std::list<std::string>::const_iterator iter = components.begin(); iter != components.end(); ++iter) {
+	for (std::deque<std::string>::const_iterator iter = components.begin(); iter != components.end(); ++iter) {
 		if (*iter == ".")
 			continue;  // nothing
 
@@ -628,11 +624,11 @@ bool resource_node<Data>::build_nodes(const std::string& path, bool allow_side_c
 
 	// For our subpaths we can optimize away part of traversing.
 	if (is_subpath) {
-		std::list<std::string> our_components;
+		std::deque<std::string> our_components;
 		hz::string_split(our_path, PATH_DELIMITER, our_components, true);
 
 		// remove common ancestry
-		for (std::list<std::string>::const_iterator iter = our_components.begin(); iter != our_components.end(); ++iter) {
+		for (std::deque<std::string>::const_iterator iter = our_components.begin(); iter != our_components.end(); ++iter) {
 			components_canonical.pop_front();
 		}
 		cur = this;  // start constructing from us
@@ -642,7 +638,7 @@ bool resource_node<Data>::build_nodes(const std::string& path, bool allow_side_c
 	}
 
 	// Create them
-	for (std::list<std::string>::const_iterator iter = components_canonical.begin(); iter != components_canonical.end(); ++iter) {
+	for (std::deque<std::string>::const_iterator iter = components_canonical.begin(); iter != components_canonical.end(); ++iter) {
 		node_ptr child = cur->get_child_node(*iter);  // get child node by name
 		if (child) {  // if child with such name exists
 			cur = child;  // switch to it
@@ -694,10 +690,10 @@ resource_node<Data>::find_node(const std::string& path) const
 
 	node_const_ptr cur(this);
 
-	std::list<std::string> components;
+	std::deque<std::string> components;
 	hz::string_split(path, PATH_DELIMITER, components, true);  // this will skip empty results
 
-	for (std::list<std::string>::const_iterator iter = components.begin(); iter != components.end(); ++iter) {
+	for (std::deque<std::string>::const_iterator iter = components.begin(); iter != components.end(); ++iter) {
 
 		if (*iter == ".")  // this has no effect
 			continue;

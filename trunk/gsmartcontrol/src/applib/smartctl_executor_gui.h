@@ -20,11 +20,11 @@
 
 
 /// Smartctl executor with GUI support
-typedef SmartctlExecutorGeneric<CmdexSyncGui> SmartctlExecutorGui;
+using SmartctlExecutorGui = SmartctlExecutorGeneric<CmdexSyncGui>;
 
 
 /// A reference-counting pointer to SmartctlExecutor
-typedef hz::intrusive_ptr<SmartctlExecutorGui> SmartctlExecutorGuiRefPtr;
+using SmartctlExecutorGuiRefPtr = hz::intrusive_ptr<SmartctlExecutorGui>;
 
 
 

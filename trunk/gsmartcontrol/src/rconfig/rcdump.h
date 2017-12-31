@@ -26,7 +26,7 @@ namespace rconfig {
 
 
 
-/// Dump a config tree to libdebug stream (in displayable format). This function is thread-safe.
+/// Dump a config tree to libdebug stream (in displayable format).
 inline void dump_tree()
 {
 	debug_begin();
@@ -36,7 +36,7 @@ inline void dump_tree()
 }
 
 
-/// Dump a config tree to std::ostream (in displayable format). This function is thread-safe.
+/// Dump a config tree to std::ostream (in displayable format).
 inline void dump_tree_to_stream(std::ostream& os)
 {
 	debug_begin();
@@ -47,7 +47,7 @@ inline void dump_tree_to_stream(std::ostream& os)
 
 
 
-/// Dump a config tree to a string (in displayable format). This function is thread-safe.
+/// Dump a config tree to a string (in displayable format).
 inline std::string dump_tree_to_string()
 {
 	return rmn::resource_node_dump_recursive(get_root());

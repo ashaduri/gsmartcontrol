@@ -41,8 +41,7 @@ See http://www.boost.org/libs/smart_ptr/intrusive_ptr.html for documentation.
 
 
 /// \def INTRUSIVE_PTR_TRACING
-/// Defined to 0 (default if undefined) or 1. This enables reference count
-/// and lock tracing (very verbose).
+/// Defined to 0 (default if undefined) or 1. This enables reference count tracing (very verbose).
 #ifndef INTRUSIVE_PTR_TRACING
 	#define INTRUSIVE_PTR_TRACING 0
 #endif
@@ -160,7 +159,7 @@ struct intrusive_ptr_error : virtual public std::exception {  // from <exception
 
 
 
-/// Default threading policy for intrusive_ptr wrapped classes.
+/// Default refcount policy for intrusive_ptr wrapped classes.
 /// The wrapped class MUST provide: inc_ref(), dec_ref(), ref_count().
 template<class PtrType>
 struct IntrusivePtrRefFunctionsDefault {
@@ -191,39 +190,10 @@ struct IntrusivePtrRefFunctionsDefault {
 
 
 
-/// If using intrusive_ptr_referenced_self_locked, this provides
-/// the default functions to use when locking the wrapped object.
-template<class Child>
-struct IntrusivePtrChildLockFunctionsDefault {
-
-	/// Increase reference count
-	static void ref_lock(Child* p)
-	{
-		INTRUSIVE_PTR_THROW(!p, typeid(Child), "IntrusivePtrChildLockFunctionsDefault::ref_lock(): Error: NULL pointer passed!");
-		INTRUSIVE_PTR_TRACE_MSG("IntrusivePtrChildLockFunctionsDefault::ref_lock() called.");
-		p->ref_lock();
-	}
-
-	/// Decrease reference count
-	static void ref_unlock(Child* p)
-	{
-		INTRUSIVE_PTR_THROW(!p, typeid(Child), "IntrusivePtrChildLockFunctionsDefault::ref_unlock(): Error: NULL pointer passed!");
-		INTRUSIVE_PTR_TRACE_MSG("IntrusivePtrChildLockFunctionsDefault::ref_unlock() called.");
-		p->ref_unlock();
-	}
-
-};
-
-
-
 /// Convenience class to use as parent for user classes to provide
 /// intrusive_ptr support (reference counting functions).
 class intrusive_ptr_referenced {
 	public:
-
-		/// Constructor
-		intrusive_ptr_referenced() : ref_count_(0)
-		{ }
 
 		// Note: methods are const to allow construction of intrusive_ptr<const T>
 		// from const data while still incrementing the refcount.
@@ -250,125 +220,10 @@ class intrusive_ptr_referenced {
 
 	protected:
 
-		mutable int ref_count_;  ///< Reference count
+		mutable int ref_count_ = 0;  ///< Reference count
 
 };
 
-
-
-/// Same as intrusive_ptr_referenced, but with locking multi-threading policy
-/// (mutex included) for thread-safe reference counting.
-template<class LockPolicy>
-class intrusive_ptr_referenced_locked {
-	public:
-
-		typedef LockPolicy intrusive_ptr_lock_policy;  ///< Locking policy
-		typedef typename LockPolicy::ScopedLock intrusive_ptr_scoped_lock_type;  ///< Scoped lock type
-
-		/// Constructor
-		intrusive_ptr_referenced_locked() : ref_count_(0)
-		{ }
-
-		/// Increase reference count
-		int inc_ref() const
-		{
-			intrusive_ptr_scoped_lock_type locker(ref_mutex_);
-			return (++ref_count_);
-		}
-
-		/// Decrease reference count
-		int dec_ref() const
-		{
-			intrusive_ptr_scoped_lock_type locker(ref_mutex_);
-			INTRUSIVE_PTR_THROW(ref_count_ <= 0, typeid(void), "intrusive_ptr_referenced_locked::dec_ref(): ref_count <= 0 and decrease request received!");
-			return (--ref_count_);
-		}
-
-		/// Get reference count
-		int	ref_count() const
-		{
-			intrusive_ptr_scoped_lock_type locker(ref_mutex_);
-			return ref_count_;
-		}
-
-		/// Get protecting mutex
-		typename LockPolicy::Mutex& get_ref_mutex()
-		{
-			return ref_mutex_;
-		}
-
-
-	protected:
-
-		mutable int ref_count_;  ///< Reference count
-		mutable typename LockPolicy::Mutex ref_mutex_;  ///< Protecting mutex
-
-};
-
-
-
-/// Same as intrusive_ptr_referenced_locked, but with locking functions and
-/// mutex inside the child class. This is useful if the child already has them.
-template<class Child, class LockFunctions = IntrusivePtrChildLockFunctionsDefault<Child> >
-class intrusive_ptr_referenced_self_locked {
-	public:
-
-		/// Constructor
-		intrusive_ptr_referenced_self_locked() : ref_count_(0)
-		{ }
-
-		/// Increase reference count
-		int inc_ref() const
-		{
-			LockFunctions::ref_lock(static_cast<Child*>(this));  // this uses less memory than Locker.
-			int c = ++ref_count_;
-			LockFunctions::ref_unlock(static_cast<Child*>(this));
-			return c;
-		}
-
-		/// Decrease reference count
-		int dec_ref() const
-		{
-			Locker locker(this);  // we have to use this here because of its fuzzy scope
-			INTRUSIVE_PTR_THROW(ref_count_ <= 0, typeid(void), "intrusive_ptr_referenced_self_locked::dec_ref(): ref_count <= 0 and decrease request received!");
-			return (--ref_count_);
-		}
-
-		/// Get reference count
-		int	ref_count() const
-		{
-			LockFunctions::ref_lock(static_cast<Child*>(this));
-			int c = ref_count_;
-			LockFunctions::ref_unlock(static_cast<Child*>(this));
-			return c;
-		}
-
-
-	protected:
-
-		mutable int ref_count_;  /// Reference count
-
-
-	private:
-
-		/// Scoped locker object
-		struct Locker {
-			/// Constructor, locks \c self_
-			Locker(intrusive_ptr_referenced_self_locked* self_) : self(self_)
-			{
-				LockFunctions::ref_lock(static_cast<Child*>(self));
-			}
-
-			/// Destructor, unlocks \c self_
-			~Locker()
-			{
-				LockFunctions::ref_unlock(static_cast<Child*>(self));
-			}
-
-			intrusive_ptr_referenced_self_locked* self;  ///< An object to lock
-		};
-
-};
 
 
 

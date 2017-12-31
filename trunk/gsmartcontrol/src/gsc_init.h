@@ -25,7 +25,6 @@ void app_quit();
 
 /// Return everything that went through libdebug's channels.
 /// Useful for showing logs.
-/// This should be called from one thread only.
 std::string app_get_debug_buffer_str();
 
 

@@ -53,19 +53,21 @@ namespace debug_internal {
 			{
 				// in case of overflow for output, overflow() will be called to _output_ the data.
 
-				// no buffers here - we process it char-by-char. Apart from practical reasons,
-				// this is also needed to ensure that the state of the object (buffer) doesn't
-				// change during calls to methods - to ensure read-only thread-safety.
+				// no buffers here - we process it char-by-char.
 				int buf_size = 0;
 				if (buf_size) {
 					char* buf = new char[buf_size];  // further accessible through pbase().
 					setp(buf, buf + buf_size);  // Set output sequence pointers, aka output buffer
 				} else {
-					setp(NULL, NULL);
+					setp(nullptr, nullptr);
 				}
 
-				setg(NULL, NULL, NULL);  // Set input sequence pointers; not relevant in this class.
+				setg(nullptr, nullptr, nullptr);  // Set input sequence pointers; not relevant in this class.
 			}
+
+
+			/// Disallow copying
+			DebugStreamBuf(const DebugStreamBuf& from) = delete;
 
 
 			/// Virtual destructor
@@ -77,7 +79,6 @@ namespace debug_internal {
 
 
 			/// Force output of the stringstream's contents to the channels.
-			/// This is function thread-safe as long as state is not modified.
 			void force_output()
 			{
 				flush_to_channel();
@@ -131,25 +132,17 @@ namespace debug_internal {
 
 
 			/// Flush contents to debug channel.
-			/// This is function thread-safe as long as state is not modified.
 			void flush_to_channel();
 
 
 		private:
 
-			DebugOutStream* dos_;  ///< Debug output stream
+			DebugOutStream* dos_ = nullptr;  ///< Debug output stream
 
 			std::ostringstream oss_;  ///< A buffer for output storage.
 
-			/// Disallow copying
-			DebugStreamBuf(const DebugStreamBuf& from);
 	};
 
-
-
-
-	/// Debug channel list
-	typedef std::vector<debug_channel_base_ptr> channel_list_t;
 
 
 
@@ -162,22 +155,22 @@ namespace debug_internal {
 
 			/// Constructor
 			DebugOutStream(debug_level::flag level, const std::string& domain, const debug_format::type& format_flags)
-					: std::ostream(NULL), level_(level), domain_(domain), format_(format_flags), buf_(this)
+					: std::ostream(nullptr), level_(level), domain_(domain), format_(format_flags), buf_(this)
 			{
 				set_enabled(true);  // sets ostream's rdbuf
 			}
 
-// 			DebugOutStream() : std::ostream(NULL), buf_(this)
+// 			DebugOutStream() : std::ostream(nullptr), buf_(this)
 // 			{
 // 				set_enabled(false);
 // 			}
 
 			/// Construct with settings from another DebugOutStream.
 			DebugOutStream(const DebugOutStream& other, const std::string& domain)
-					: std::ostream(NULL), level_(other.level_), domain_(domain), format_(other.format_), buf_(this)
+					: std::ostream(nullptr), level_(other.level_), domain_(domain), format_(other.format_), buf_(this)
 			{
 				set_enabled(other.get_enabled());  // sets ostream's rdbuf
-				for (channel_list_t::const_iterator iter = other.channels_.begin(); iter != other.channels_.end(); ++iter) {
+				for (std::vector<debug_channel_base_ptr>::const_iterator iter = other.channels_.begin(); iter != other.channels_.end(); ++iter) {
 					// we let the object dictate the copy rules because really copying it
 					// may harm the underlying locking mechanism
 					channels_.push_back((*iter)->clone_ptr());
@@ -227,13 +220,13 @@ namespace debug_internal {
 
 
 			/// Set channel list to send the data to.
-			void set_channels(const channel_list_t& channels)
+			void set_channels(const std::vector<debug_channel_base_ptr>& channels)
 			{
 				channels_ = channels;
 			}
 
 			/// Get channel list
-			channel_list_t& get_channels()
+			std::vector<debug_channel_base_ptr>& get_channels()
 			{
 				return channels_;
 			}
@@ -262,7 +255,6 @@ namespace debug_internal {
 
 			/// Force output of buf_'s contents to the channels.
 			/// This also outputs a prefix if needed.
-			/// This is function thread-safe in read-only context.
 			std::ostream& force_output()
 			{
 				buf_.force_output();
@@ -278,9 +270,9 @@ namespace debug_internal {
 
 			bool is_first_line_ = true;  ///< Whether it's the first line of output or not
 
-			channel_list_t channels_;  ///< Channels that the output is sent to
+			std::vector<debug_channel_base_ptr> channels_;  ///< Channels that the output is sent to
 
-			DebugStreamBuf buf_;  /// Streambuf for implementation. Not thread-local, but its internal buffer is.
+			DebugStreamBuf buf_;  /// Streambuf for implementation.
 	};
 
 

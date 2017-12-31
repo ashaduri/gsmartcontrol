@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 	}
 
 
-	const SmartctlParser::prop_list_t& props = sp.get_properties();
+	const std::vector<StorageProperty>& props = sp.get_properties();
 
 	for(unsigned int i = 0; i < props.size(); ++i) {
 		debug_out_dump("app", props[i] << "\n");

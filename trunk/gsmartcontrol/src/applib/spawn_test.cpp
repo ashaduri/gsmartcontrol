@@ -17,8 +17,6 @@
 /// Main function of the test
 int main(int argc, char** argv)
 {
-// 	g_thread_init(NULL);
-
 	GPid pid;
 	int fd_stdout = 0, fd_stderr = 0;
 
@@ -37,9 +35,9 @@ int main(int argc, char** argv)
 
 	GError* spawn_error = 0;
 
-	g_spawn_async_with_pipes(curr_dir, argvp, NULL,
+	g_spawn_async_with_pipes(curr_dir, argvp, nullptr,
 			GSpawnFlags(G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD),
-			NULL, NULL,  // child setup function
+			nullptr, nullptr,  // child setup function
 			&pid, 0, &fd_stdout, &fd_stderr, &spawn_error);
 
 	g_free(curr_dir);
@@ -60,20 +58,20 @@ int main(int argc, char** argv)
 	int channel_flags = ~G_IO_FLAG_NONBLOCK;
 
 	if (channel_stdout) {
-		g_io_channel_set_encoding(channel_stdout, NULL, 0);  // binary IO
+		g_io_channel_set_encoding(channel_stdout, nullptr, 0);  // binary IO
 		g_io_channel_set_flags(channel_stdout, GIOFlags(g_io_channel_get_flags(channel_stdout) & channel_flags), 0);
 		g_io_channel_set_buffer_size(channel_stdout, 10000);
 	}
 
 	if (channel_stderr) {
-		g_io_channel_set_encoding(channel_stderr, NULL, 0);  // binary IO
+		g_io_channel_set_encoding(channel_stderr, nullptr, 0);  // binary IO
 		g_io_channel_set_flags(channel_stderr, GIOFlags(g_io_channel_get_flags(channel_stderr) & channel_flags), 0);
 		g_io_channel_set_buffer_size(channel_stderr, 10000);
 	}
 
 
 
-	g_main_loop_run(g_main_loop_new(NULL, false));
+	g_main_loop_run(g_main_loop_new(nullptr, false));
 
 
 	return 0;

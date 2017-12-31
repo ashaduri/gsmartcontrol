@@ -29,7 +29,7 @@ class StorageDevice;
 
 
 /// A reference-counting pointer to StorageDevice
-typedef hz::intrusive_ptr<StorageDevice> StorageDeviceRefPtr;
+using StorageDeviceRefPtr = hz::intrusive_ptr<StorageDevice>;
 
 
 
@@ -187,7 +187,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 
 
 		/// Get all detected properties
-		const SmartctlParser::prop_list_t& get_properties() const;
+		const std::vector<StorageProperty>& get_properties() const;
 
 
 		/// Find a property
@@ -264,7 +264,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		void set_parse_status(parse_status_t value);
 
 		/// Set parsed properties
-		void set_properties(const SmartctlParser::prop_list_t& props);
+		void set_properties(const std::vector<StorageProperty>& props);
 
 
 	private:
@@ -300,7 +300,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		std::optional<bool> hdd_;  ///< Whether it's a rotational drive (HDD) or something else (SSD, flash, etc...)
 		mutable std::optional<StorageProperty> health_property_;  ///< Cached health property.
 
-		SmartctlParser::prop_list_t properties_;  ///< Smart properties. Detected through full output.
+		std::vector<StorageProperty> properties_;  ///< Smart properties. Detected through full output.
 
 
 };

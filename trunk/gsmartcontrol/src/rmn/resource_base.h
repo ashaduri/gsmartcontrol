@@ -79,12 +79,6 @@ class resource_base : public hz::intrusive_ptr_referenced {
 
 
 
-// smart pointer to resource_base
-// typedef intrusive_ptr<resource_base> resource_base_ptr;
-// typedef intrusive_ptr<const resource_base> resource_base_const_ptr;
-
-
-
 
 struct resource_base::compare_name {
 

@@ -36,7 +36,7 @@
 class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 	public:
 
-		typedef GscPreferencesDeviceOptionsTreeView self_type;  ///< Self type, needed for CONNECT_VIRTUAL
+		using self_type = GscPreferencesDeviceOptionsTreeView;  ///< Self type, needed for CONNECT_VIRTUAL
 
 
 		/// Constructor, GtkBuilder needs this.
@@ -594,7 +594,7 @@ void GscPreferencesWindow::on_smartctl_binary_browse_button_clicked()
 
 #if GTK_CHECK_VERSION(3, 20, 0)
 	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-			"Choose Smartctl Binary...", this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, NULL, NULL), g_object_unref);
+			"Choose Smartctl Binary...", this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, nullptr, nullptr), g_object_unref);
 
 	if (path.is_absolute())
 		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog.get()), path.c_str());

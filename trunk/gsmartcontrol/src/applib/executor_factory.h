@@ -54,7 +54,7 @@ class ExecutorFactory : public hz::intrusive_ptr_referenced {
 
 
 /// A reference-counting pointer to ExecutorFactory
-typedef hz::intrusive_ptr<ExecutorFactory> ExecutorFactoryRefPtr;
+using ExecutorFactoryRefPtr = hz::intrusive_ptr<ExecutorFactory>;
 
 
 

@@ -1324,7 +1324,7 @@ void GscMainWindow::show_load_virtual_file_chooser()
 
 #if GTK_CHECK_VERSION(3, 20, 0)
 	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-			"Load Data From...", this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, NULL, NULL), g_object_unref);
+			"Load Data From...", this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, nullptr, nullptr), g_object_unref);
 
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), specific_filter->gobj());
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), all_filter->gobj());

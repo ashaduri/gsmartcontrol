@@ -39,7 +39,7 @@ struct CmdexSyncCommandInfoCopy : public hz::intrusive_ptr_referenced {
 };
 
 /// A reference-counting pointer to CmdexSyncCommandInfoCopy
-typedef hz::intrusive_ptr<CmdexSyncCommandInfoCopy> CmdexSyncCommandInfoRefPtr;
+using CmdexSyncCommandInfoRefPtr = hz::intrusive_ptr<CmdexSyncCommandInfoCopy>;
 
 
 
@@ -66,7 +66,7 @@ struct CmdexSyncCommandInfo {
 
 
 /// cmdex_sync_signal_execute_finish() return signal.
-typedef sigc::signal<void, const CmdexSyncCommandInfo&> cmdex_signal_execute_finish_type;
+using cmdex_signal_execute_finish_type = sigc::signal<void, const CmdexSyncCommandInfo&>;
 
 
 /// This signal is emitted every time execute() finishes.
@@ -81,32 +81,32 @@ class CmdexSync : public hz::intrusive_ptr_referenced, public sigc::trackable {
 	public:
 
 		/// Constructor
-		CmdexSync(const std::string& command_exec, const std::string& command_args)
+		CmdexSync(std::string command_name, std::string command_args)
+			: CmdexSync()
 		{
-			construct();
-			this->set_command(command_exec, command_args);
+			this->set_command(std::move(command_name), std::move(command_args));
 		}
 
 
 		/// Constructor
 		CmdexSync()
 		{
-			construct();
+			running_msg_ = "Running %s...";  // %s will be replaced by command basename
+			set_error_header("An error occurred while executing the command:\n\n");
 		}
 
 
 		/// Virtual destructor
-		virtual ~CmdexSync()
-		{ }
+		virtual ~CmdexSync() = default;
 
 
 		/// Set command to execute and its parameters
-		void set_command(const std::string& command_name, const std::string& command_args)
+		void set_command(std::string command_name, std::string command_args)
 		{
 			cmdex_.set_command(command_name, command_args);
 			// keep a copy locally to avoid locking on get() every time
-			command_name_ = command_name;
-			command_args_ = command_args;
+			command_name_ = std::move(command_name);
+			command_args_ = std::move(command_args);
 		}
 
 
@@ -136,7 +136,7 @@ class CmdexSync : public hz::intrusive_ptr_referenced, public sigc::trackable {
 		/// Used if manual stop was requested through ticker.
 		void set_forced_kill_timeout(int timeout_msec)
 		{
-			forced_kill_timeout_msec = timeout_msec;
+			forced_kill_timeout_msec_ = timeout_msec;
 		}
 
 
@@ -256,15 +256,6 @@ class CmdexSync : public hz::intrusive_ptr_referenced, public sigc::trackable {
 
 	protected:
 
-		/// Initialize the members (constructor calls this)
-		void construct()
-		{
-			forced_kill_timeout_msec = 3 * 1000;  // 3 sec default
-			running_msg_ = "Running %s...";  // %s will be replaced by command basename
-			set_error_header("An error occurred while executing the command:\n\n");
-		}
-
-
 		/// Import the last error from cmdex_ and clear all errors there.
 		virtual void import_error();
 
@@ -309,11 +300,10 @@ class CmdexSync : public hz::intrusive_ptr_referenced, public sigc::trackable {
 
 		std::string running_msg_;  ///< "Running" message (to show in the dialogs, etc...)
 
-		int forced_kill_timeout_msec;  ///< Kill timeout in ms.
+		int forced_kill_timeout_msec_ = 3 * 1000;  // 3 sec by default. Kill timeout in ms.
 
 		std::string error_msg_;  ///< Execution error message
 		std::string error_header_;  ///< The error message may have this prepended to it.
-		hz::ErrorBase* error_;  ///< Error holder.
 
 };
 

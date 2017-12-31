@@ -1099,9 +1099,8 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 
 			// split capability lines into a vector. every flag sentence ends with "."
 			hz::string_split(strvalue, '.', p.value_capability.strvalues, true);
-			for (StorageCapability::strvalue_list_t::iterator iter = p.value_capability.strvalues.begin();
-					iter != p.value_capability.strvalues.end(); ++iter) {
-				hz::string_trim(*iter);
+			for (auto&& v : p.value_capability.strvalues) {
+				hz::string_trim(v);
 			}
 
 			// find some special capabilities we're interested in and add them. p is unmodified.
@@ -1208,61 +1207,60 @@ bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& c
 		p.value_selftest_entry.remaining_percent = -1;  // unknown or n/a
 
 		// check for lines in capability vector
-		for (StorageCapability::strvalue_list_t::const_iterator iter = cap.value_capability.strvalues.begin();
-				iter != cap.value_capability.strvalues.end(); ++iter) {
+		for (auto&& sv : cap.value_capability.strvalues) {
 			std::string value;
 
-			if (app_pcre_match("/^([0-9]+)% of test remaining/mi", *iter, &value)) {
+			if (app_pcre_match("/^([0-9]+)% of test remaining/mi", sv, &value)) {
 				uint8_t v = 0;
 				if (hz::string_is_numeric(value, v))
 					p.value_selftest_entry.remaining_percent = v;
 
-			} else if (app_pcre_match("/^(The previous self-test routine completed without error or no .*)/mi", *iter, &value)) {
+			} else if (app_pcre_match("/^(The previous self-test routine completed without error or no .*)/mi", sv, &value)) {
 				p.value_selftest_entry.status_str = value;
 				p.value_selftest_entry.status = StorageSelftestEntry::status_completed_no_error;
 
-			} else if (app_pcre_match("/^(The self-test routine was aborted by the host)/mi", *iter, &value)) {
+			} else if (app_pcre_match("/^(The self-test routine was aborted by the host)/mi", sv, &value)) {
 				p.value_selftest_entry.status_str = value;
 				p.value_selftest_entry.status = StorageSelftestEntry::status_aborted_by_host;
 
-			} else if (app_pcre_match("/^(The self-test routine was interrupted by the host with a hard.*)/mi", *iter, &value)) {
+			} else if (app_pcre_match("/^(The self-test routine was interrupted by the host with a hard.*)/mi", sv, &value)) {
 				p.value_selftest_entry.status_str = value;
 				p.value_selftest_entry.status = StorageSelftestEntry::status_interrupted;
 
-			} else if (app_pcre_match("/^(A fatal error or unknown test error occurred while the device was executing its .*)/mi", *iter, &value)) {
+			} else if (app_pcre_match("/^(A fatal error or unknown test error occurred while the device was executing its .*)/mi", sv, &value)) {
 				p.value_selftest_entry.status_str = value;
 				p.value_selftest_entry.status = StorageSelftestEntry::status_fatal_or_unknown;
 
-			} else if (app_pcre_match("/^(The previous self-test completed having a test element that failed and the test element that failed is not known)/mi", *iter, &value)) {
+			} else if (app_pcre_match("/^(The previous self-test completed having a test element that failed and the test element that failed is not known)/mi", sv, &value)) {
 				p.value_selftest_entry.status_str = value;
 				p.value_selftest_entry.status = StorageSelftestEntry::status_compl_unknown_failure;
 
-			} else if (app_pcre_match("/^(The previous self-test completed having the electrical element of the test failed)/mi", *iter, &value)) {
+			} else if (app_pcre_match("/^(The previous self-test completed having the electrical element of the test failed)/mi", sv, &value)) {
 				p.value_selftest_entry.status_str = value;
 				p.value_selftest_entry.status = StorageSelftestEntry::status_compl_electrical_failure;
 
-			} else if (app_pcre_match("/^(The previous self-test completed having the servo .*)/mi", *iter, &value)) {
+			} else if (app_pcre_match("/^(The previous self-test completed having the servo .*)/mi", sv, &value)) {
 				p.value_selftest_entry.status_str = value;
 				p.value_selftest_entry.status = StorageSelftestEntry::status_compl_servo_failure;
 
-			} else if (app_pcre_match("/^(The previous self-test completed having the read element of the test failed)/mi", *iter, &value)) {
+			} else if (app_pcre_match("/^(The previous self-test completed having the read element of the test failed)/mi", sv, &value)) {
 				p.value_selftest_entry.status_str = value;
 				p.value_selftest_entry.status = StorageSelftestEntry::status_compl_read_failure;
 
-			} else if (app_pcre_match("/^(The previous self-test completed having a test element that failed and the device is suspected of having handling damage)/mi", *iter, &value)) {
+			} else if (app_pcre_match("/^(The previous self-test completed having a test element that failed and the device is suspected of having handling damage)/mi", sv, &value)) {
 				p.value_selftest_entry.status_str = value;
 				p.value_selftest_entry.status = StorageSelftestEntry::status_compl_handling_damage;
 
 			// samsung bug (?), as per smartctl sources.
-			} else if (app_pcre_match("/^(The previous self-test routine completed with unknown result or self-test .*)/mi", *iter, &value)) {
+			} else if (app_pcre_match("/^(The previous self-test routine completed with unknown result or self-test .*)/mi", sv, &value)) {
 				p.value_selftest_entry.status_str = value;
 				p.value_selftest_entry.status = StorageSelftestEntry::status_compl_unknown_failure;  // we'll use this again (correct?)
 
-			} else if (app_pcre_match("/^(Self-test routine in progress)/mi", *iter, &value)) {
+			} else if (app_pcre_match("/^(Self-test routine in progress)/mi", sv, &value)) {
 				p.value_selftest_entry.status_str = value;
 				p.value_selftest_entry.status = StorageSelftestEntry::status_in_progress;
 
-			} else if (app_pcre_match("/^(Reserved)/mi", *iter, &value)) {
+			} else if (app_pcre_match("/^(Reserved)/mi", sv, &value)) {
 				p.value_selftest_entry.status_str = value;
 				p.value_selftest_entry.status = StorageSelftestEntry::status_reserved;
 			}
@@ -1300,10 +1298,9 @@ bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& c
 	if (cap.value_type == StorageProperty::value_type_capability) {
 
 		// check for lines in capability vector
-		for (StorageCapability::strvalue_list_t::const_iterator iter = cap.value_capability.strvalues.begin();
-				iter != cap.value_capability.strvalues.end(); ++iter) {
+		for (auto&& sv : cap.value_capability.strvalues) {
 
-			// debug_out_dump("app", "Looking for internal capability in: \"" << (*iter) << "\"\n");
+			// debug_out_dump("app", "Looking for internal capability in: \"" << sv << "\"\n");
 
 			StorageProperty p;
 			p.section = StorageProperty::section_internal;
@@ -1311,64 +1308,64 @@ bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& c
 
 			std::string name, value;
 
-			if (re_offline_status.PartialMatch(*iter, &name, &value)) {
+			if (re_offline_status.PartialMatch(sv, &name, &value)) {
 				p.set_name(name, "odc_status");
 				p.value_type = StorageProperty::value_type_string;
 				p.value_string = hz::string_trim_copy(value);
 
-			} else if (re_offline_enabled.PartialMatch(*iter, &name, &value)) {
+			} else if (re_offline_enabled.PartialMatch(sv, &name, &value)) {
 				p.set_name(name, "aodc_enabled");
 				p.value_type = StorageProperty::value_type_bool;
 				p.value_bool = (hz::string_trim_copy(value) == "Enabled");
 
-			} else if (re_offline_immediate.PartialMatch(*iter, &name)) {
+			} else if (re_offline_immediate.PartialMatch(sv, &name)) {
 				p.set_name(name, "iodc_support");
 				p.value_type = StorageProperty::value_type_bool;
 				p.value_bool = true;
 
-			} else if (re_offline_auto.PartialMatch(*iter, &value, &name) || re_offline_auto2.PartialMatch(*iter, &value, &name)) {
+			} else if (re_offline_auto.PartialMatch(sv, &value, &name) || re_offline_auto2.PartialMatch(sv, &value, &name)) {
 				p.set_name(name, "aodc_support", "Automatic Offline Data Collection toggle support");
 				p.value_type = StorageProperty::value_type_bool;
 				p.value_bool = (hz::string_trim_copy(value) != "No");
 
-			} else if (re_offline_suspend.PartialMatch(*iter, &value, &name)) {
+			} else if (re_offline_suspend.PartialMatch(sv, &value, &name)) {
 				p.set_name(name, "iodc_command_suspends", "Offline Data Collection suspends upon new command");
 				p.value_type = StorageProperty::value_type_bool;
 				p.value_bool = (hz::string_trim_copy(value) == "Suspend");
 
-			} else if (re_offline_surface.PartialMatch(*iter, &value, &name)) {
+			} else if (re_offline_surface.PartialMatch(sv, &value, &name)) {
 				p.set_name(name, "odc_surface_scan_support");
 				p.value_type = StorageProperty::value_type_bool;
 				p.value_bool = (hz::string_trim_copy(value) != "No");
 
 
-			} else if (re_selftest_support.PartialMatch(*iter, &value, &name)) {
+			} else if (re_selftest_support.PartialMatch(sv, &value, &name)) {
 				p.set_name(name, "selftest_support");
 				p.value_type = StorageProperty::value_type_bool;
 				p.value_bool = (hz::string_trim_copy(value) != "No");
 
-			} else if (re_conv_selftest_support.PartialMatch(*iter, &value, &name)) {
+			} else if (re_conv_selftest_support.PartialMatch(sv, &value, &name)) {
 				p.set_name(name, "conveyance_support");
 				p.value_type = StorageProperty::value_type_bool;
 				p.value_bool = (hz::string_trim_copy(value) != "No");
 
-			} else if (re_selective_selftest_support.PartialMatch(*iter, &value, &name)) {
+			} else if (re_selective_selftest_support.PartialMatch(sv, &value, &name)) {
 				p.set_name(name, "selective_selftest_support");
 				p.value_type = StorageProperty::value_type_bool;
 				p.value_bool = (hz::string_trim_copy(value) != "No");
 
 
-			} else if (re_sct_status.PartialMatch(*iter, &name)) {
+			} else if (re_sct_status.PartialMatch(sv, &name)) {
 				p.set_name(name, "sct_status_support");
 				p.value_type = StorageProperty::value_type_bool;
 				p.value_bool = true;
 
-			} else if (re_sct_control.PartialMatch(*iter, &name)) {
+			} else if (re_sct_control.PartialMatch(sv, &name)) {
 				p.set_name(name, "sct_control_support");
 				p.value_type = StorageProperty::value_type_bool;
 				p.value_bool = true;
 
-			} else if (re_sct_data.PartialMatch(*iter, &name)) {
+			} else if (re_sct_data.PartialMatch(sv, &name)) {
 				p.set_name(name, "sct_data_support");
 				p.value_type = StorageProperty::value_type_bool;
 				p.value_bool = true;
@@ -1821,8 +1818,8 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 
 			std::vector<std::string> etypes;
 			hz::string_split(etypes_str, ",", etypes, true);
-			for (std::vector<std::string>::iterator iter = etypes.begin(); iter != etypes.end(); ++iter) {
-				hz::string_trim(*iter);
+			for (auto&& v : etypes) {
+				hz::string_trim(v);
 			}
 
 			p.value_error_block.device_state = hz::string_trim_copy(state);

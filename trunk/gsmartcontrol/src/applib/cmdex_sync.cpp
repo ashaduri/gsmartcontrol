@@ -78,7 +78,7 @@ bool CmdexSync::execute()
 			}
 
 			// set sigkill timeout to 3 sec (in case sigterm fails); won't do anything if already exited.
-			cmdex_.set_stop_timeouts(0, forced_kill_timeout_msec);
+			cmdex_.set_stop_timeouts(0, forced_kill_timeout_msec_);
 			// import_error();  // don't need errors here - they will be available later anyway.
 
 			signals_sent = true;
@@ -95,8 +95,8 @@ bool CmdexSync::execute()
 		// hang waiting for the child to exit (the watch handler won't be called).
 		// Note: If you have an idle callback, g_main_context_pending() will
 		// always return true (until the idle callback returns false and unregisters itself).
-		while(g_main_context_pending(NULL)) {
-			g_main_context_iteration(NULL, false);
+		while(g_main_context_pending(nullptr)) {
+			g_main_context_iteration(nullptr, false);
 		}
 
 		g_usleep(50*1000);  // 50 msec. avoids 100% CPU usage.

@@ -47,7 +47,7 @@ class Bin2AsciiEncoder {
 		bool string_is_encoded(const std::string& s) const
 		{
 			return (s.find_first_not_of(url_mode_ ?
-					char_holder::encoded_chars_url : char_holder::encoded_chars) == std::string::npos);
+					encoded_chars_url : encoded_chars) == std::string::npos);
 		}
 
 
@@ -55,22 +55,28 @@ class Bin2AsciiEncoder {
 		bool char_is_encoded(char c) const
 		{
 			return std::strchr((url_mode_ ?
-					char_holder::encoded_chars_url : char_holder::encoded_chars), c);
+					encoded_chars_url : encoded_chars), c);
 		}
 
 
 	private:
 
-		/// Static member holder
-		template<typename Dummy>
-		struct StaticHolder {
-			static const char* const encoded_chars;  ///< Characters which may appear in encoded string (no-url mode).
-			static const char* const encoded_chars_url;  ///<Characters which may appear in encoded string (url mode). Note: '+' is a special case.
-		};
+		/// Characters which may appear in encoded string (no-url mode).
+		static constexpr auto encoded_chars =
+			"!^&()_-+=|.<>%"
+			"0123456789"
+			"abcdefghijklmnopqrstuvwxyz"
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-		typedef StaticHolder<void> char_holder;  ///< Static member holder instantiation
+		/// Characters which may appear in encoded string (url mode). Note: '+' is a special case.
+		static constexpr auto encoded_chars_url =
+			"-_.!~*'()+%"
+			"0123456789"
+			"abcdefghijklmnopqrstuvwxyz"
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-		bool url_mode_;  ///< URL encoding mode (or not)
+
+		bool url_mode_ = false;  ///< URL encoding mode (or not)
 
 
 		/// Get a byte value of a hex digit
@@ -93,23 +99,6 @@ class Bin2AsciiEncoder {
 
 
 
-template<typename Dummy>
-const char* const Bin2AsciiEncoder::StaticHolder<Dummy>::encoded_chars =
-	"!^&()_-+=|.<>%"
-	"0123456789"
-	"abcdefghijklmnopqrstuvwxyz"
-	"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-
-template<typename Dummy>
-const char* const Bin2AsciiEncoder::StaticHolder<Dummy>::encoded_chars_url =
-	"-_.!~*'()+%"
-	"0123456789"
-	"abcdefghijklmnopqrstuvwxyz"
-	"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-
-
 inline std::string Bin2AsciiEncoder::encode(const std::string& src) const
 {
 	std::size_t src_size = src.size();
@@ -127,7 +116,7 @@ inline std::string Bin2AsciiEncoder::encode(const std::string& src) const
 
 		// don't use isalnum & friends, they're locale-dependent.
 		} else if (c != '%' && std::strchr((url_mode_ ?
-				char_holder::encoded_chars_url : char_holder::encoded_chars), c)) {
+				encoded_chars_url : encoded_chars), c)) {
 			dest += c;
 
 		} else {

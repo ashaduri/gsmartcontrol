@@ -42,9 +42,8 @@
 /// Main function for the test
 int main()
 {
-
-	typedef rmn::resource_node< rmn::ResourceDataAny> resource_node;
-	typedef resource_node::node_ptr resource_node_ptr;
+	using resource_node = rmn::resource_node<rmn::ResourceDataAny>;
+	using resource_node_ptr = resource_node::node_ptr;
 
 
 	resource_node_ptr root(new resource_node);

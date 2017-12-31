@@ -28,10 +28,10 @@
 std::ostream& operator<< (std::ostream& os, const StorageCapability& p)
 {
 	os
-	// << p.name << ": "
-	<< p.flag_value;
-	for (StorageCapability::strvalue_list_t::const_iterator iter = p.strvalues.begin(); iter != p.strvalues.end(); ++iter) {
-		os << "\n\t" << *iter;
+			// << p.name << ": "
+			<< p.flag_value;
+	for (auto&& v : p.strvalues) {
+		os << "\n\t" << v;
 	}
 	return os;
 }

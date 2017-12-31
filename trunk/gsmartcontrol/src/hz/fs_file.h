@@ -573,12 +573,12 @@ inline bool File::get_size(file_size_t& put_here, bool use_read)
 
 #if defined HAVE_WIN_LFS_FUNCS && HAVE_WIN_LFS_FUNCS
 		struct _stati64 s;  // this contains 64-bit file size
-		const int stat_result = _wstati64(this->get_utf16(), &s);
+		const int stat_result = _wstati64(this->get_utf16().c_str(), &s);
 #elif defined _WIN32
 		// The _stat* family may return stale info. _fstat*() doesn't have this problem
 		// but requires opening the file, which may be bad (no permissions, etc...).
 		struct _stat s;
-		const int stat_result = _wstat(this->get_utf16(), &s);
+		const int stat_result = _wstat(this->get_utf16().c_str(), &s);
 #else
 		struct stat s;
 		const int stat_result = stat(this->c_str(), &s);
@@ -669,7 +669,7 @@ inline bool File::move(const std::string& to)
 	bool success = false;
 
 #ifdef _WIN32
-	success = (_wrename(this->get_utf16(), FsPath(to).get_utf16()) == 0);
+	success = (_wrename(this->get_utf16().c_str(), FsPath(to).get_utf16().c_str()) == 0);
 
 	// win32 rename() doesn't replace contents if newpath exists and says "file exists".
 	// Try to rename first, then unlink/rename again. This way we have at least some atomicity.
@@ -677,7 +677,7 @@ inline bool File::move(const std::string& to)
 		File dest_file(to);
 		if (dest_file.is_file()) {
 			dest_file.remove();  // no error tracking here, rename() will report the needed error.
-			success = (_wrename(this->get_utf16(), FsPath(to).get_utf16()) == 0);
+			success = (_wrename(this->get_utf16().c_str(), FsPath(to).get_utf16().c_str()) == 0);
 		}
 	}
 #else
@@ -767,7 +767,7 @@ inline bool File::copy(const std::string& to)
 		std::fclose(fsrc);
 		std::fclose(fdest);
 #ifdef _WIN32
-		(void)_wunlink(FsPath(to).get_utf16());
+		(void)_wunlink(FsPath(to).get_utf16().c_str());
 #else
 		unlink(to.c_str());
 #endif
@@ -778,7 +778,7 @@ inline bool File::copy(const std::string& to)
 	if (std::fclose(fsrc) == -1) {
 		std::fclose(fdest);
 #ifdef _WIN32
-		(void)_wunlink(FsPath(to).get_utf16());
+		(void)_wunlink(FsPath(to).get_utf16().c_str());
 #else
 		unlink(to.c_str());
 #endif
@@ -790,7 +790,7 @@ inline bool File::copy(const std::string& to)
 
 	if (std::fclose(fdest) == -1) {  // the OS may delay writing until this point (or even further).
 #ifdef _WIN32
-		(void)_wunlink(FsPath(to).get_utf16());
+		(void)_wunlink(FsPath(to).get_utf16().c_str());
 #else
 		unlink(to.c_str());
 #endif
@@ -803,7 +803,7 @@ inline bool File::copy(const std::string& to)
 	// copy permissions. don't check for errors here - they are harmless.
 	if (stat_result == 0) {
 #ifdef _WIN32
-		(void)_wchmod(FsPath(to).get_utf16(), st.st_mode & (_S_IREAD | _S_IWRITE));  // it won't accept anything else.
+		(void)_wchmod(FsPath(to).get_utf16().c_str(), st.st_mode & (_S_IREAD | _S_IWRITE));  // it won't accept anything else.
 #else
 		chmod(to.c_str(), st.st_mode & 07777);  // don't transfer unneeded stuff (like "is directory").
 #endif
@@ -819,12 +819,10 @@ File::handle_type inline File::platform_fopen(const char* file, const char* open
 	// Don't validate parameters, they will be validated by the called functions.
 #if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
 	handle_type f = 0;
-	errno = _wfopen_s(&f, hz::scoped_array<wchar_t>(hz::win32_utf8_to_utf16(file)).get(),
-			hz::scoped_array<wchar_t>(hz::win32_utf8_to_utf16(open_mode)).get() );
+	errno = _wfopen_s(&f, hz::win32_utf8_to_utf16(file).c_str(), hz::win32_utf8_to_utf16(open_mode).c_str());
 	return f;
 #elif defined _WIN32
-	return _wfopen(hz::scoped_array<wchar_t>(hz::win32_utf8_to_utf16(file)).get(),
-			hz::scoped_array<wchar_t>(hz::win32_utf8_to_utf16(open_mode)).get());
+	return _wfopen(hz::win32_utf8_to_utf16(file).c_str(), hz::win32_utf8_to_utf16(open_mode).c_str());
 #else
 	return std::fopen(file, open_mode);
 #endif

@@ -57,9 +57,7 @@ Resource manager library internal implementation helpers.
 #include "resource_node.h"  // resource_node type
 #include "resource_exception.h"  // exceptions thrown in critical situations
 #include "resource_data_types.h"  // type tracking helpers for data
-#include "resource_data_locking.h"  // locking policies for data
 #include "resource_data_any.h"  // any_type data provider
-#include "resource_data_one.h"  // a specific type data provider
 #include "resource_node_dump.h"  // node dumper functions
 #include "resource_serialization.h"  // serialize / unserialize nodes
 

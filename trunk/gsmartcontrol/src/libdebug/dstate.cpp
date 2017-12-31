@@ -292,7 +292,7 @@ bool debug_clear_channels(const std::string& domain, const debug_level::type& le
 	std::vector<debug_level::flag> matched_levels;
 	debug_level::get_matched_levels_array(levels, matched_levels);
 	for (unsigned int i = 0; i < matched_levels.size(); ++i) {
-		found->second[matched_levels[i]]->set_channels(channel_list_t());
+		found->second[matched_levels[i]]->set_channels(std::vector<debug_channel_base_ptr>());
 	}
 
 	return true;

@@ -219,19 +219,17 @@ std::string SelfTest::update(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 		return ps.get_error_msg();
 	}
 
-	SmartctlParser::prop_list_t props = ps.get_properties();
-
 	// Note: Since the self-test log is sometimes late
 	// and in undetermined order (sorting by hours is too rough),
 	// we use the "self-test status" capability.
 	StorageProperty p;
-	for (SmartctlParser::prop_list_t::const_iterator iter = props.begin(); iter != props.end(); ++iter) {
-// 		if (iter->section != StorageProperty::section_data || iter->subsection != StorageProperty::subsection_selftest_log
-		if (iter->section != StorageProperty::section_internal
-				|| iter->value_type != StorageProperty::value_type_selftest_entry || iter->value_selftest_entry.test_num != 0
-				|| iter->generic_name != "last_selftest_status")
+	for (auto&& e : ps.get_properties()) {
+// 		if (e.section != StorageProperty::section_data || e.subsection != StorageProperty::subsection_selftest_log
+		if (e.section != StorageProperty::section_internal
+				|| e.value_type != StorageProperty::value_type_selftest_entry || e.value_selftest_entry.test_num != 0
+				|| e.generic_name != "last_selftest_status")
 			continue;
-		p = *iter;
+		p = e;
 	}
 
 	if (p.empty())
