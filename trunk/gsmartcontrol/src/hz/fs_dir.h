@@ -17,8 +17,8 @@
 #include <string>
 #include <vector>
 #include <sys/types.h>  // dirent needs this
+#include <algorithm>
 
-#include "local_algo.h"  // shell_sort
 #include "string_wcmatch.h"  // string_wcmatch
 
 #include "fs_path.h"  // Path
@@ -876,7 +876,7 @@ bool Dir::list(Container& put_here, bool put_with_path, SortFunctor sort_func, F
 	sort_func.set_dir(this->get_path());
 
 	if (sort_using_paths) {
-		hz::shell_sort(path_results.begin(), path_results.end(), sort_func);
+		std::sort(path_results.begin(), path_results.end(), sort_func);
 
 		for (list_path_list_t::const_iterator iter = path_results.begin(); iter != path_results.end(); ++iter) {
 			if (put_with_path) {
@@ -887,7 +887,7 @@ bool Dir::list(Container& put_here, bool put_with_path, SortFunctor sort_func, F
 		}
 
 	} else {
-		hz::shell_sort(string_results.begin(), string_results.end(), sort_func);
+		std::sort(string_results.begin(), string_results.end(), sort_func);
 
 		for (list_string_list_t::const_iterator iter = string_results.begin(); iter != string_results.end(); ++iter) {
 			if (put_with_path) {

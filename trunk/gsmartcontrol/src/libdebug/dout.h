@@ -19,7 +19,7 @@
 
 #include "hz/system_specific.h"
 #include "hz/hz_config.h"  // HAVE_CXX_*
-#include "hz/string_sprintf_macros.h"  // HZ_FUNC_STRING_SPRINTF_CHECK
+#include "hz/system_specific.h"  // HZ_FUNC_PRINTF_ISO_CHECK
 
 #include "dflags.h"
 
@@ -61,7 +61,7 @@ std::ostream& debug_out(debug_level::flag level, const std::string& domain);
 
 /// Send a printf-like-formatted string to libdebug stream.
 void debug_print(debug_level::flag level, const std::string& domain,
-		const char* format, ...) HZ_FUNC_STRING_SPRINTF_CHECK(3, 4);
+		const char* format, ...) HZ_FUNC_PRINTF_ISO_CHECK(3, 4);
 
 
 /// Send a printf-like-formatted string to libdebug stream. For example:

@@ -15,6 +15,7 @@
 #include "hz_config.h"  // feature macros
 
 #include <string>
+#include <cstdio>  // std::snprintf
 
 #if defined ENABLE_GLIB && ENABLE_GLIB
 	#include <glib.h>  // g_strsignal()
@@ -34,8 +35,6 @@
 	#include <csignal>  // for signal.h
 	#include <signal.h>  // kill()
 #endif
-
-#include "portable_snprintf.h"  // portable_snprintf
 
 
 
@@ -129,7 +128,7 @@ inline std::string signal_to_string(int signal_value)
 #elif defined _WIN32
 
 	char buf[64] = {0};
-	portable_snprintf(buf, 64, "Unknown signal: %d.", signal_value);
+	std::snprintf(buf, 64, "Unknown signal: %d.", signal_value);
 	msg = buf;
 
 #else  // no glib and not win32
@@ -139,7 +138,7 @@ inline std::string signal_to_string(int signal_value)
 		msg = m;
 	} else {
 		char buf[64] = {0};
-		portable_snprintf(buf, 64, "Unknown signal: %d.", signal_value);
+		std::snprintf(buf, 64, "Unknown signal: %d.", signal_value);
 		msg = buf;
 	}
 #endif

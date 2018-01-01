@@ -553,8 +553,9 @@ inline std::wstring win32_user_to_utf16(UINT from_cp, std::string_view from_str,
 		return std::wstring();  // error in conversion
 	}
 
-	std::wstring res(wide_bufsize, L'\0');
-	MultiByteToWideChar(from_cp, 0, from_str.data(), from_str.size(), res.data(), res.size());
+	wchar_t* res = new wchar_t[wide_bufsize + 1];
+	MultiByteToWideChar(from_cp, 0, from_str.data(), from_str.size(), res, wide_bufsize + 1);
+	res[wide_bufsize] = L'\0';
 
 	if (ok) {
 		*ok = true;

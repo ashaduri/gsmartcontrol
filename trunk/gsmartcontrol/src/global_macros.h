@@ -83,13 +83,6 @@ Additionally, it may be included through compiler's "-include" option
 // or none of the above to disable debug output completely.
 
 
-// -- hz/i18n.h settings.
-//
-#ifndef ENABLE_NLS
-	#define ENABLE_NLS 0
-#endif
-
-
 // -- hz/res_data.h settings.
 //
 #ifndef HZ_ENABLE_COMPILED_RES_DATA

@@ -17,6 +17,7 @@
 #include <string>
 #include <cstddef>  // std::size_t
 #include <cstdarg>  // for stdarg.h, va_start, std::va_list and friends.
+#include <cstdio>  // std::snprintf
 
 #if defined ENABLE_GLIB && ENABLE_GLIB
 	#include <glib.h>  // g_strerror(), g_strsignal()
@@ -44,9 +45,6 @@
 	#endif
 
 #endif
-
-
-#include "portable_snprintf.h"  // portable_snprintf
 
 
 // Compilation options:
@@ -91,10 +89,10 @@ inline std::string errno_string(int errno_value)
 			msg = buf;
 		} else {  // errno is set on error
 			if (errno == EINVAL) {  // errno may be a macro
-				portable_snprintf(buf, buf_size, "Unknown errno: %d.", errno_value);
+				std::snprintf(buf, buf_size, "Unknown errno: %d.", errno_value);
 				msg = buf;
 			} else if (errno == ERANGE) {
-				portable_snprintf(buf, buf_size, "Insufficient buffer to store description for errno: %d.", errno_value);
+				std::snprintf(buf, buf_size, "Insufficient buffer to store description for errno: %d.", errno_value);
 				msg = buf;
 			}
 		}
@@ -104,14 +102,14 @@ inline std::string errno_string(int errno_value)
 		if (rmsg) {
 			msg = rmsg;
 		} else {
-			portable_snprintf(buf, buf_size, "Error while getting description for errno: %d.", errno_value);
+			std::snprintf(buf, buf_size, "Error while getting description for errno: %d.", errno_value);
 			msg = buf;
 		}
 
 	#elif defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
 		wchar_t msg_buf[128] = {0};  // MS docs don't say exactly, but it's somewhere in 80-100 range.
 		if (_wcserror_s(msg_buf, 128, errno_value) != 0) {  // always 0-terminated
-			portable_snprintf(buf, buf_size, "Error while getting description for errno: %d.", errno_value);
+			std::snprintf(buf, buf_size, "Error while getting description for errno: %d.", errno_value);
 			msg = buf;
 		}
 		msg = hz::win32_utf16_to_utf8(msg_buf);
@@ -122,7 +120,7 @@ inline std::string errno_string(int errno_value)
 		if (m) {
 			msg = m;
 		} else {
-			portable_snprintf(buf, buf_size, "Error while getting description for errno: %d.", errno_value);
+			std::snprintf(buf, buf_size, "Error while getting description for errno: %d.", errno_value);
 			msg = buf;
 		}
 

@@ -91,16 +91,6 @@ AX_CXX_GCC_ABI_DEMANGLE
 # detect __gnu_cxx::__verbose_terminate_handler (defines HAVE_VERBOSE_TERMINATE_HANDLER.)
 AC_CXX_VERBOSE_TERMINATE_HANDLER
 
-# detect __func__ support (defines HAVE_CXX___func__)
-APP_CXX___func__
-
-# detect __FUNCTION__ support (defines HAVE_CXX___FUNCTION__)
-APP_CXX___FUNCTION__
-
-# detect if the compiler accepts extern "C" function pointer overloads
-# (defines HAVE_CXX_EXTERN_C_OVERLOAD)
-APP_CXX_EXTERN_C_OVERLOAD
-
 
 # -------------------------------------------------------------------------------------
 
