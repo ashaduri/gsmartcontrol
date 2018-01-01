@@ -1649,6 +1649,10 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 			case StorageProperty::subsection_directory_log:
 				// nothing here
 				break;
+
+			case StorageProperty::subsection_unknown:
+				// nothing
+				break;
 		}
 	}
 
@@ -1928,6 +1932,10 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 				break;
 
 			case StorageProperty::subsection_directory_log:
+				// nothing here
+				break;
+
+			case StorageProperty::subsection_unknown:
 				// nothing here
 				break;
 		}

@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2003 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2003 - 2017  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
 /// \file
@@ -16,10 +16,11 @@
 
 #include <string>
 #include <cstddef>  // std::size_t
-#include <ctime>  // for time.h, std::strftime, std::time, std::localtime, ...
+#include <ctime>  // for time.h, std::time, std::localtime, ...
+#include <iomanip>  // std::put_time
 #include <cstdint>
+#include <sstream>
 
-#include "locale_tools.h"  // hz::ScopedCLocale
 #include "string_num.h"  // hz::number_to_string
 #include "i18n.h"  // HZ_NC_, HZ_C_
 
@@ -123,7 +124,7 @@ inline std::string format_size(uint64_t size, bool use_decimal = false, bool siz
 				+ HZ_RC_("filesize", names[(1 * 4) + addn]);
 	}
 
-	return hz::number_to_string(size) + HZ_RC_("filesize", names[(0 * 4) + addn]);
+	return std::to_string(size) + HZ_RC_("filesize", names[(0 * 4) + addn]);
 }
 
 
@@ -149,14 +150,12 @@ inline std::string format_time_length(int64_t secs)
 		    if (hours > 0 && sec_diff < (-hour_size / 2))
 		       days--;
 
-			return hz::number_to_string(days) + " " + HZ_C_("time", "d")
-					+ " " + hz::number_to_string(hours) + " " + HZ_C_("time", "h");
+			return std::to_string(days) + " " + HZ_C_("time", "d")
+					+ " " + std::to_string(hours) + " " + HZ_C_("time", "h");
 
 		} else {  // display days only
-			return hz::number_to_string(days) + " " + HZ_C_("time", "d");
-
+			return std::to_string(days) + " " + HZ_C_("time", "d");
 		}
-
 
 	} else if (secs >= 100 * min_size) {
 		int64_t hours = (secs + hour_size / 2) / hour_size;  // time in hours (rounded to nearest)
@@ -167,22 +166,20 @@ inline std::string format_time_length(int64_t secs)
 			if (minutes > 0 && sec_diff < (-min_size / 2))
 				hours--;
 
-			return hz::number_to_string(hours) + " " + HZ_C_("time", "h")
-					+ " " + hz::number_to_string(minutes) + " " + HZ_C_("time", "min");
+			return std::to_string(hours) + " " + HZ_C_("time", "h")
+					+ " " + std::to_string(minutes) + " " + HZ_C_("time", "min");
 
 		} else {  // display hours only
-			return hz::number_to_string(hours) + " " + HZ_C_("time", "h");
-
+			return std::to_string(hours) + " " + HZ_C_("time", "h");
 		}
 
 
 	} else if (secs >= 100) {
 		int64_t minutes = (secs + min_size / 2) / min_size;  // time in minutes (rounded to nearest)
-		return hz::number_to_string(minutes) + " " + HZ_C_("time", "min");
-
+		return std::to_string(minutes) + " " + HZ_C_("time", "min");
 	}
 
-	return hz::number_to_string(secs) + " " + HZ_C_("time", "sec");
+	return std::to_string(secs) + " " + HZ_C_("time", "sec");
 }
 
 
@@ -193,48 +190,26 @@ inline std::string format_time_length(int64_t secs)
 
 
 /// Format a date specified by \c ltmp (pointer to tm structure).
-/// See strftime() documentation for format details. To print ISO datetime
+/// See std::put_time() documentation for format details. To print ISO datetime
 /// use "%Y-%m-%d %H:%M:%S" (sometimes 'T' is used instead of space).
-inline std::string format_date(const std::string& format, const struct std::tm* ltmp, bool use_locale = true)
+inline std::string format_date(const std::string& format, const struct std::tm* ltmp, bool use_classic_locale)
 {
 	if (!ltmp || format.empty())
 		return std::string();
 
-	// try to guess the appropriate buffer size for strftime
-	std::size_t buf_size = format.size() + (format.size() / 2);  // this should be enough for most of them
-	std::size_t written = 0;
-	std::string res;
-	int iterations = 0;
-
-	// strftime is locale-dependent. unless use_locale is true, we switch to classic locale.
-	const ScopedCLocale classic(!use_locale);
-
-	do {
-		char* buf = new char[buf_size];
-
-		// note: this actually may return 0 on success (e.g. for %p), but I don't know a
-		// correct way to distinguish between error and legal 0. complain to strftime designers.
-		written = std::strftime(buf, buf_size, format.c_str(), ltmp);
-		if (written) {
-			buf[written] = '\0';  // strftime specifically leaves a place for this.
-			res = buf;
-		} else {
-			buf_size *= 2;
-		}
-
-		delete[] buf;
-		++iterations;
-
-	} while (!written && iterations <= 4);  // limit to 4 iterations (that's 2^4 original size) to avoid infinite loops.
-
-	return res;
+	std::ostringstream ss;
+	if (!use_classic_locale) {
+		ss.imbue(std::locale::classic());
+	}
+	ss << std::put_time(ltmp, format.c_str());
+	return ss.str();
 }
 
 
 
 /// Format a date specified by \c timet (seconds since Epoch).
 /// See strftime() documentation for format details.
-inline std::string format_date(const std::string& format, std::time_t timet, bool use_locale = true)
+inline std::string format_date(const std::string& format, std::time_t timet, bool use_classic_locale)
 {
 #if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
 	struct std::tm ltm;
@@ -252,20 +227,20 @@ inline std::string format_date(const std::string& format, std::time_t timet, boo
 	const struct std::tm* ltmp = &ltm;
 #endif
 
-	return format_date(format, ltmp, use_locale);
+	return format_date(format, ltmp, use_classic_locale);
 }
 
 
 
 /// Format current date.
 /// See strftime() documentation for format details.
-inline std::string format_date(const std::string& format, bool use_locale = true)
+inline std::string format_date(const std::string& format, bool use_classic_locale)
 {
 	const std::time_t timet = std::time(nullptr);
 	if (timet == static_cast<std::time_t>(-1))
 		return std::string();
 
-	return format_date(format, timet, use_locale);
+	return format_date(format, timet, use_classic_locale);
 }
 
 

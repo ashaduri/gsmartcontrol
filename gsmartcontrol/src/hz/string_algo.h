@@ -681,6 +681,8 @@ std::string string_replace_array_copy(const std::string& s,
 // --------------------------------------------- Matching
 
 
+// FIXME These should be in C++20.
+
 
 /// Check whether a string begins with another string
 inline bool string_begins_with(const std::string& str, const std::string& substr)

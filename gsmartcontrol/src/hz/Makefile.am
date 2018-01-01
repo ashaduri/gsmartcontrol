@@ -1,8 +1,7 @@
 AM_CPPFLAGS = $(all_includes)
 METASOURCES = AUTO
 
-noinst_HEADERS = ascii.h \
-	bad_cast_exception.h bin2ascii_encoder.h \
+noinst_HEADERS = bad_cast_exception.h bin2ascii_encoder.h \
 	data_file.h debug.h env_tools.h errno_string.h error.h error_holder.h \
 	format_unit.h fs_common.h fs_dir.h fs_dir_platform.h fs_error_holder.h \
 	fs_file.h fs_path.h fs_path_utils.h fs_tools.h hz_config.h i18n.h \
@@ -10,7 +9,7 @@ noinst_HEADERS = ascii.h \
 	locale_tools.h process_signal.h \
 	res_data.h scoped_ptr.h stream_cast.h \
 	string_algo.h string_num.h string_sprintf.h string_wcmatch.h \
-	system_specific.h type_categories.h type_properties.h win32_tools.h
+	system_specific.h win32_tools.h
 
 bin2ascii_encoder_test_SOURCES = bin2ascii_encoder_test.cpp
 errno_string_test_SOURCES = errno_string_test.cpp

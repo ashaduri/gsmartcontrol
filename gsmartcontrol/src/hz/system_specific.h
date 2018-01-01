@@ -63,15 +63,6 @@ System/compiler-specific stuff goes here...
 	#define HZ_FUNC_PRINTF_ISO_CHECK(format_idx, check_idx) HZ_GCC_ATTR(format(printf, format_idx, check_idx))
 #endif
 
-#ifndef HZ_FUNC_PRINTF_MS_CHECK
-	#if defined _WIN32 && HZ_GCC_CHECK_VERSION(4, 4, 0)
-		#define HZ_FUNC_PRINTF_MS_CHECK(format_idx, check_idx) HZ_GCC_ATTR(format(ms_printf, format_idx, check_idx))
-	#else
-		#define HZ_FUNC_PRINTF_MS_CHECK(format_idx, check_idx)
-	#endif
-#endif
-
-
 
 
 #include <string>

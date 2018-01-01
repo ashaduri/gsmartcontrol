@@ -9,7 +9,6 @@
 /// \weakgroup applib
 /// @{
 
-#include "app_pango_utils.h"  // app_pango_strip_markup()
 #include "gui_utils.h"
 
 

@@ -21,7 +21,6 @@
 #include <cstring>  // std::strlen
 #include <vector>
 
-#include "app_pango_utils.h"  // app_pango_strip_markup()
 #include "app_gtkmm_utils.h"
 
 
