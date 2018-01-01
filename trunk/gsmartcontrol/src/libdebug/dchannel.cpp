@@ -29,7 +29,7 @@ std::string debug_format_message(debug_level::flag level, const std::string& dom
 	if (is_first_line || !(format_flags.to_ulong() & debug_format::first_line_only)) {
 
 		if (format_flags.to_ulong() & debug_format::datetime) {  // print time
-			ret += hz::format_date("%Y-%m-%d %H:%M:%S: ", false);
+			ret += hz::format_date("%Y-%m-%d %H:%M:%S: ", true);
 		}
 
 		if (format_flags.to_ulong() & debug_format::level) {  // print level name

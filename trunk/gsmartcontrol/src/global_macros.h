@@ -29,29 +29,6 @@ Additionally, it may be included through compiler's "-include" option
 
 
 
-// HAVE_func means that func doesn't throw undefined symbol.
-// HAVE_DECL_func means that it's declared in a header.
-// HAVE_DECL_func is always defined as 0 or 1.
-
-// check if it's not in stdlib.h.
-// HAVE_DECL_* is always either 1 or 0.
-#if !defined DISABLE_STRTOF && defined HAVE_DECL_STRTOF && !HAVE_DECL_STRTOF
-	#define DISABLE_STRTOF 1
-#else
-	#define DISABLE_STRTOF 0
-#endif
-
-
-// HAVE_DECL_* is always either 1 or 0.
-#if !defined DISABLE_STRTOLD && defined HAVE_DECL_STRTOLD && !HAVE_DECL_STRTOLD
-	#define DISABLE_STRTOLD 1
-#else
-	#define DISABLE_STRTOLD 0
-#endif
-
-
-
-
 // -- Make most file operations work with large files (replaces
 // off_t -> off64_t, stat -> stat64, fopen -> fopen64, etc...).
 // Works on glibc. Automatically defined by autoconf.
