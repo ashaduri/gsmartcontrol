@@ -6,10 +6,10 @@ noinst_HEADERS = ascii.h \
 	data_file.h debug.h env_tools.h errno_string.h error.h error_holder.h \
 	format_unit.h fs_common.h fs_dir.h fs_dir_platform.h fs_error_holder.h \
 	fs_file.h fs_path.h fs_path_utils.h fs_tools.h hz_config.h i18n.h \
-	instance_manager.h intrusive_ptr.h launch_url.h local_algo.h \
-	locale_tools.h portable_snprintf.h process_signal.h \
-	res_data.h scoped_array.h scoped_ptr.h stream_cast.h \
-	string_algo.h string_num.h string_sprintf.h string_sprintf_macros.h string_wcmatch.h \
+	instance_manager.h intrusive_ptr.h launch_url.h \
+	locale_tools.h process_signal.h \
+	res_data.h scoped_ptr.h stream_cast.h \
+	string_algo.h string_num.h string_sprintf.h string_wcmatch.h \
 	system_specific.h type_categories.h type_properties.h win32_tools.h
 
 bin2ascii_encoder_test_SOURCES = bin2ascii_encoder_test.cpp

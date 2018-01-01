@@ -20,7 +20,6 @@
 #ifdef _WIN32
 	#include <windows.h>  // seems to be needed by shellapi.h
 	#include <shellapi.h>  // ShellExecuteW()
-	#include "scoped_array.h"
 	#include "win32_tools.h"  // hz::win32_utf8_to_utf16
 #else
 	#include "scoped_ptr.h"

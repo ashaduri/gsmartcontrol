@@ -51,9 +51,9 @@ Configuration macros: HZ_ENABLE_COMPILED_RES_DATA (0 | 1).
 				return std::string(); \
 			return std::string(reinterpret_cast<const char*>(buf), size); \
 		} \
-		const unsigned char* buf; \
-		unsigned int size; \
-		const char* root_name; \
+		const unsigned char* buf = 0; \
+		unsigned int size = 0; \
+		const char* root_name = 0; \
 	}
 
 
@@ -70,7 +70,7 @@ Configuration macros: HZ_ENABLE_COMPILED_RES_DATA (0 | 1).
 /// to register the data file search paths.
 #define HZ_RES_DATA_LOADED_INIT_NAMED(res_name, data_file, class_name) \
 	struct class_name { \
-		class_name() : buf(0), size(0), root_name(0) \
+		class_name() \
 		{ \
 			std::string path = hz::data_file_find(data_file); \
 			if (path.empty()) \
@@ -99,9 +99,9 @@ Configuration macros: HZ_ENABLE_COMPILED_RES_DATA (0 | 1).
 				return std::string(); \
 			return std::string(reinterpret_cast<const char*>(buf), size); \
 		} \
-		const unsigned char* buf; \
-		unsigned int size; \
-		const char* root_name; \
+		const unsigned char* buf = 0; \
+		unsigned int size = 0; \
+		const char* root_name = 0; \
 	}
 
 
@@ -114,15 +114,15 @@ Configuration macros: HZ_ENABLE_COMPILED_RES_DATA (0 | 1).
 /// Dummy fallback
 #define HZ_RES_DATA_DUMMY_INIT_NAMED(res_name, dummy, class_name) \
 	struct class_name { \
-		class_name() : buf(0), size(0), root_name(#res_name) \
+		class_name() : root_name(#res_name) \
 		{ } \
 		std::string get_string() const \
 		{ \
 			return std::string(); \
 		} \
-		const unsigned char* buf; \
-		unsigned int size; \
-		const char* root_name; \
+		const unsigned char* buf = 0; \
+		unsigned int size = 0; \
+		const char* root_name = 0; \
 	}
 
 /// Dummy fallback

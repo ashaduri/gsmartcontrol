@@ -17,12 +17,6 @@
 
 #include "hz/hz_config.h"  // feature test macros (ENABLE_*)
 
-// Old glibmm versions had exceptions but didn't define this at all.
-// New ones define it to 0 if there are no glibmm exceptions.
-#if !defined GLIBMM_EXCEPTIONS_ENABLED || GLIBMM_EXCEPTIONS_ENABLED
-	#include <memory>  // std::auto_ptr
-#endif
-
 #include "hz/debug.h"
 #include "hz/instance_manager.h"
 #include "hz/res_data.h"
@@ -60,7 +54,6 @@ inline bool app_ui_res_create_from(app_ui_res_ref_t& ref,
 		return false;
 	}
 
-#if !defined GLIBMM_EXCEPTIONS_ENABLED || GLIBMM_EXCEPTIONS_ENABLED
 	try {
 		// ref->add_from_file("main_window.ui");
 		ref->add_from_string(reinterpret_cast<const char*>(buf), static_cast<gsize>(buf_size));
@@ -69,17 +62,6 @@ inline bool app_ui_res_create_from(app_ui_res_ref_t& ref,
 		error_msg = ex.what();
 		return false;
 	}
-
-#else
-
-	std::auto_ptr<Glib::BuilderError> error;
-	ref->add_from_string(reinterpret_cast<const char*>(buf), static_cast<gsize>(buf_size),"", "", error);
-
-	if (error.get()) {
-		error_msg = error->what();
-		return false;
-	}
-#endif
 
 	return true;
 }

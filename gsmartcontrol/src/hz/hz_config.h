@@ -80,18 +80,6 @@ HZ library internal implementation helpers.
 
 
 
-/// \def HAVE_CXX_EXTERN_C_OVERLOAD
-/// Defined to 0 or 1. If 1, compiler supports overloading on extern "C" function pointer arguments.
-#ifndef HAVE_CXX_EXTERN_C_OVERLOAD
-	#ifdef __SUNPRO_CC
-		#define HAVE_CXX_EXTERN_C_OVERLOAD 1
-	#else
-		#define HAVE_CXX_EXTERN_C_OVERLOAD 0
-	#endif
-#endif
-
-
-
 
 /// \def HAVE_VERBOSE_TERMINATE_HANDLER
 /// Defined to 0 or 1. If 1, compiler supports __gnu_cxx::__verbose_terminate_handler.
@@ -187,72 +175,6 @@ HZ library internal implementation helpers.
 
 
 
-
-/// \def HAVE_ISO_STDIO
-/// Defined to 0 or 1. If 1, the *printf() family (but not _*printf() or *printf_s()) behaves
-/// according to ISO specification in terms of 0-termination, return value
-/// and accepting %lld, %llu and %Lf format specifiers.
-/// Note: If using mingw runtime >= 3.15 and __USE_MINGW_ANSI_STDIO,
-/// mingw supports both C99/POSIX and msvcrt format specifiers.
-/// This includes proper printing of long double (%Lf), %lld and %llu, etc...
-/// This does _not_ affect _snprintf() and similar non-standard functions.
-#ifndef HAVE_ISO_STDIO
-	// On win32, assume only with mingw with ansi/iso extensions.
-	// for others, assume it's always there.
-	#if !defined _WIN32 || ( defined __GNUC__ && \
-			(!defined __NO_ISOCEXT || defined __USE_MINGW_ANSI_STDIO) )
-		#define HAVE_ISO_STDIO 1
-	#else
-		#define HAVE_ISO_STDIO 0
-	#endif
-#endif
-
-
-
-/// \def HAVE__SNPRINTF
-/// Defined to 0 or 1. If 1, the compiler has Win32's _snprintf (broken 0-termination).
-#ifndef HAVE__SNPRINTF
-	#if defined _WIN32
-		#define HAVE__SNPRINTF 1
-	#else
-		#define HAVE__SNPRINTF 0
-	#endif
-#endif
-
-
-/// \def HAVE__VSNPRINTF
-/// Defined to 0 or 1. If 1, the compiler has Win32's _vsnprintf (broken 0-termination).
-#ifndef HAVE__VSNPRINTF
-	#if defined _WIN32
-		#define HAVE__VSNPRINTF 1
-	#else
-		#define HAVE__VSNPRINTF 0
-	#endif
-#endif
-
-
-/// \def HAVE_SNPRINTF_S
-/// Defined to 0 or 1. If 1, the compiler has snprintf_s (msvc 2005/8.0).
-#ifndef HAVE_SNPRINTF_S
-	#if defined _MSC_VER && _MSC_VER >= 1400
-		#define HAVE_SNPRINTF_S 1
-	#else
-		#define HAVE_SNPRINTF_S 0
-	#endif
-#endif
-
-
-/// \def HAVE_VSNPRINTF_S
-/// Defined to 0 or 1. If 1, the compiler has vsnprintf_s (msvc 2005/8.0).
-#ifndef HAVE_VSNPRINTF_S
-	#if defined _MSC_VER && _MSC_VER >= 1400
-		#define HAVE_VSNPRINTF_S 1
-	#else
-		#define HAVE_VSNPRINTF_S 0
-	#endif
-#endif
-
-
 /// \def HAVE_VASPRINTF
 /// Defined to 0 or 1. If 1, the compiler has vasprintf() (GNU/glibc extension).
 #ifndef HAVE_VASPRINTF
@@ -262,7 +184,6 @@ HZ library internal implementation helpers.
 		#define HAVE_VASPRINTF 0
 	#endif
 #endif
-
 
 
 

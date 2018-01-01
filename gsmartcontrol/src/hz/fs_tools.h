@@ -28,7 +28,6 @@
 
 #ifdef _WIN32
 	#include "win32_tools.h"  // win32_* stuff
-	#include "scoped_array.h"  // hz::scoped_array
 #endif
 
 

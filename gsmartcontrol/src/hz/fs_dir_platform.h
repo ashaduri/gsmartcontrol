@@ -107,15 +107,15 @@ inline std::string directory_entry_name(directory_entry_handle_type entry)
 namespace internal {
 
 	struct DirectoryEntry {
-		const wchar_t* d_name;  // this is owned by Directory's data field. utf-16.
+		const wchar_t* d_name = 0;  // this is owned by Directory's data field. utf-16.
 	};
 
 	struct Directory {
 		struct _wfinddata_t data;  // entry data as given by _wfindfirst().
 		DirectoryEntry entry;  // current directory entry
-		intptr_t handle;  // directory handle as returned by _wfindfirst().
-		long status;  // 0 - not started, -1 - off the end, positive - 0-based index of next entry.
-		wchar_t full_pattern[MAX_PATH + 3];  // directory search pattern + "\\*"
+		intptr_t handle = 0;  // directory handle as returned by _wfindfirst().
+		long status = 0;  // 0 - not started, -1 - off the end, positive - 0-based index of next entry.
+		wchar_t full_pattern[MAX_PATH + 3] = {0};  // directory search pattern + "\\*"
 	};
 
 }

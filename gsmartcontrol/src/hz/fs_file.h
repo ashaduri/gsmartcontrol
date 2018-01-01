@@ -102,7 +102,6 @@ One has to use _fseeki64() and friends explicitly.
 #include "fs_path.h"  // FsPath
 
 #ifdef _WIN32
-	#include "scoped_array.h"  // hz::scoped_array
 	#include "win32_tools.h"  // hz::win32_utf8_to_utf16
 #endif
 

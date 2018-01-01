@@ -18,7 +18,6 @@
 
 #if defined _WIN32
 	#include <windows.h>  // winapi stuff
-	#include "scoped_array.h"
 	#include "win32_tools.h"  // win32_*
 #elif defined ENABLE_GLIB && ENABLE_GLIB
 	#include <glib.h>
@@ -67,8 +66,7 @@ inline bool env_get_value(const std::string& name, std::string& value)
 		len = 2;
 	}
 
-	hz::scoped_array<wchar_t> wvalue(new wchar_t[len]);
-
+	auto wvalue = std::make_unique<wchar_t[]>(len);
 	if (GetEnvironmentVariableW(wname.c_str(), wvalue.get(), len) != len - 1) {  // failure
 		return false;
 	}
@@ -79,8 +77,7 @@ inline bool env_get_value(const std::string& name, std::string& value)
 		len = ExpandEnvironmentStringsW(wvalue.get(), dummy, 2);  // get the needed length
 
 		if (len > 0) {  // not failure
-			hz::scoped_array<wchar_t> wvalue_exp(new wchar_t[len]);
-
+			auto wvalue_exp = std::make_unique<wchar_t[]>(len);
 			if (ExpandEnvironmentStringsW(wvalue.get(), wvalue_exp.get(), len) != len)  // failure
 				return false;
 
@@ -102,6 +99,8 @@ inline bool env_get_value(const std::string& name, std::string& value)
 	return true;
 
 #else
+	// Since C++11, getenv has to be thread-safe (unless some other thread is
+	// modifying the environment).
 	const char* v = std::getenv(name.c_str());
 	if (!v)
 		return false;

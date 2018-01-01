@@ -265,7 +265,7 @@ class Error<int> : public ErrorCodeHolder<int> {
 
 			} else if (type == "signal") {
 				// hz::signal_string should be translated already
-				message = HZ__("Child exited with signal: ") + hz::signal_to_string(code_);
+				message = "Child exited with signal: " + hz::signal_to_string(code_);
 
 			} else {  // nothing else supported here. use constructor with a message.
 				DBG_ASSERT(0);
