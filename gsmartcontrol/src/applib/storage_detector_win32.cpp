@@ -25,6 +25,7 @@
 #include "hz/win32_tools.h"
 #include "hz/string_sprintf.h"
 #include "hz/fs_path.h"
+#include "hz/string_num.h"
 #include "rconfig/rconfig_mini.h"
 #include "app_pcrecpp.h"
 #include "storage_detector_win32.h"
@@ -429,11 +430,10 @@ inline std::string areca_cli_get_drives(const std::string& cli_binary, const std
 			std::string enclosure_str;
 			if (exp_port_re.PartialMatch(hz::string_trim_copy(lines.at(i)), &enclosure_str, &port_str, &model_str)) {
 				if (model_str != "N.A.") {
-					int port = -1, enclosure = -1;
-					hz::string_is_numeric(port_str, port);
-					hz::string_is_numeric(enclosure_str, enclosure);
+					int port = hz::string_to_number_nolocale<int>(port_str);
+					int enclosure = hz::string_to_number_nolocale<int>(enclosure_str);
 					drives.push_back(StorageDeviceRefPtr(new StorageDevice(dev,
-							"areca," + hz::number_to_string(port) + "/" + hz::number_to_string(enclosure))));
+							"areca," + hz::number_to_string_nolocale(port) + "/" + hz::number_to_string_nolocale(enclosure))));
 					debug_out_info("app", "Added Areca drive " << drives.back()->get_device_with_type() << ".\n");
 				}
 			}
@@ -441,9 +441,8 @@ inline std::string areca_cli_get_drives(const std::string& cli_binary, const std
 			pcrecpp::RE port_re = (format_type == FormatNoEnc1 ? noexp1_port_re : noexp2_port_re);
 			if (port_re.PartialMatch(hz::string_trim_copy(lines.at(i)), &port_str, &model_str)) {
 				if (model_str != "N.A.") {
-					int port = -1;
-					hz::string_is_numeric(port_str, port);
-					drives.push_back(StorageDeviceRefPtr(new StorageDevice(dev, "areca," + hz::number_to_string(port))));
+					int port = hz::string_to_number_nolocale<int>(port_str);
+					drives.push_back(StorageDeviceRefPtr(new StorageDevice(dev, "areca," + hz::number_to_string_nolocale(port))));
 					debug_out_info("app", "Added Areca drive " << drives.back()->get_device_with_type() << ".\n");
 				}
 			}
@@ -577,7 +576,7 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDeviceRefPtr>& d
 		debug_out_info("app", "Scanning Areca drives using CLI...\n");
 		int cli_max_controllers = 1;  // TODO controller # with CLI.
 		for (int controller_no = 0; controller_no < cli_max_controllers; ++controller_no) {
-			std::string error_msg = areca_cli_get_drives(cli_binary, "/dev/arcmsr" + hz::number_to_string(controller_no), controller_no, drives, ex_factory);
+			std::string error_msg = areca_cli_get_drives(cli_binary, "/dev/arcmsr" + hz::number_to_string_nolocale(controller_no), controller_no, drives, ex_factory);
 			// If we get an error on controller 0, fall back to no-cli detection.
 			if (!error_msg.empty() && controller_no == 0) {
 				use_cli = 0;
@@ -602,7 +601,7 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDeviceRefPtr>& d
 		max_enclosures = std::max(1, std::min(8, max_enclosures));  // 1-8 sanity check
 
 		for (int controller_no = 0; controller_no < max_controllers; ++controller_no) {
-			std::string dev = std::string("/dev/arcmsr") + hz::number_to_string(controller_no);
+			std::string dev = std::string("/dev/arcmsr") + hz::number_to_string_nolocale(controller_no);
 
 			// First, scan using the areca,N format.
 			debug_out_dump("app", "Starting brute-force port scan (no-enclosure) on 1-" << max_noenc_ports << " ports, device \"" << dev
@@ -624,7 +623,7 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDeviceRefPtr>& d
 				for (int enclosure_no = 1; enclosure_no < max_enclosures; ++enclosure_no) {
 					debug_out_dump("app", "Starting brute-force port scan (enclosure #" << enclosure_no << ") on 1-" << max_enc_ports << " ports, device \"" << dev
 							<< "\". Change the maximums by setting \"system/win32_areca_onc_max_scan_port\" and \"system/win32_areca_enc_max_enclosure\" config keys.\n");
-					error_msg = smartctl_scan_drives_sequentially(dev, "areca,%d/" + hz::number_to_string(enclosure_no), 1, max_enc_ports, drives, ex_factory, last_output);
+					error_msg = smartctl_scan_drives_sequentially(dev, "areca,%d/" + hz::number_to_string_nolocale(enclosure_no), 1, max_enc_ports, drives, ex_factory, last_output);
 				}
 			}
 

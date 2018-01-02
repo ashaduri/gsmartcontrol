@@ -315,7 +315,7 @@ bool SmartctlParser::check_parsed_version(const std::string& version_str, const 
 	const double minimum_req_version = 5.0;
 
 	double version = 0;
-	if (hz::string_is_numeric<double>(version_str, version, false)) {
+	if (hz::string_is_numeric_nolocale<double>(version_str, version, false)) {
 		if (version >= minimum_req_version)
 			return true;
 	}
@@ -365,10 +365,10 @@ std::string SmartctlParser::parse_byte_size(const std::string& str, uint64_t& by
 	std::string s = hz::string_replace_array_copy(hz::string_trim_copy(str), to_replace, "");
 
 	uint64_t v = 0;
-	if (hz::string_is_numeric(s, v, false)) {
+	if (hz::string_is_numeric_nolocale(s, v, false)) {
 		bytes = v;
 		return hz::format_size(v, true) + (extended ?
-				" [" + hz::format_size(v, false) + ", " + hz::number_to_string(v) + " bytes]" : "");
+				" [" + hz::format_size(v, false) + ", " + hz::number_to_string_locale(v) + " bytes]" : "");
 	}
 
 	return std::string();
@@ -1053,7 +1053,7 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 				hz::string_replace_chars_copy(strvalue_orig, "\t\n", ' '), ' '));
 
 		int numvalue = -1;
-		if (!hz::string_is_numeric<int>(hz::string_trim_copy(numvalue_orig), numvalue, false)) {  // this will autodetect number base.
+		if (!hz::string_is_numeric_nolocale<int>(hz::string_trim_copy(numvalue_orig), numvalue, false)) {  // this will autodetect number base.
 			debug_out_warn("app", DBG_FUNC_MSG
 					<< "Numeric value: \"" << numvalue_orig << "\" cannot be parsed as number.\n");
 		}
@@ -1212,7 +1212,7 @@ bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& c
 
 			if (app_pcre_match("/^([0-9]+)% of test remaining/mi", sv, &value)) {
 				uint8_t v = 0;
-				if (hz::string_is_numeric(value, v))
+				if (hz::string_is_numeric_nolocale(value, v))
 					p.value_selftest_entry.remaining_percent = v;
 
 			} else if (app_pcre_match("/^(The previous self-test routine completed without error or no .*)/mi", sv, &value)) {
@@ -1492,7 +1492,7 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 				hz::string_trim(name);
 				hz::string_trim(value);
 				int64_t value_num = 0;
-				hz::string_is_numeric(value, value_num, false);
+				hz::string_is_numeric_nolocale(value, value_num, false);
 
 				StorageProperty p(pt);
 				p.set_name(name, "data_structure_version");
@@ -1543,17 +1543,17 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 
 
 			StorageAttribute a;
-			hz::string_is_numeric(hz::string_trim_copy(id), a.id, true, 10);
+			hz::string_is_numeric_nolocale(hz::string_trim_copy(id), a.id, true, 10);
 			a.flag = hz::string_trim_copy(flag);
 			uint8_t norm_value = 0, worst_value = 0, threshold_value = 0;
 
-			if (hz::string_is_numeric(hz::string_trim_copy(value), norm_value, true, 10)) {
+			if (hz::string_is_numeric_nolocale(hz::string_trim_copy(value), norm_value, true, 10)) {
 				a.value = norm_value;
 			}
-			if (hz::string_is_numeric(hz::string_trim_copy(worst), worst_value, true, 10)) {
+			if (hz::string_is_numeric_nolocale(hz::string_trim_copy(worst), worst_value, true, 10)) {
 				a.worst = worst_value;
 			}
-			if (hz::string_is_numeric(hz::string_trim_copy(threshold), threshold_value, true, 10)) {
+			if (hz::string_is_numeric_nolocale(hz::string_trim_copy(threshold), threshold_value, true, 10)) {
 				a.threshold = threshold_value;
 			}
 
@@ -1592,7 +1592,7 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 			}
 
 			a.raw_value = hz::string_trim_copy(raw_value);
-			hz::string_is_numeric(hz::string_trim_copy(raw_value), a.raw_value_int, false);  // same as raw_value, but parsed as int.
+			hz::string_is_numeric_nolocale(hz::string_trim_copy(raw_value), a.raw_value_int, false);  // same as raw_value, but parsed as int.
 
 			StorageProperty p(pt);
 			p.set_name(hz::string_trim_copy(name));
@@ -1733,7 +1733,7 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 			p.value_type = StorageProperty::value_type_integer;
 
 			int64_t value_num = 0;
-			hz::string_is_numeric(value, value_num, false);
+			hz::string_is_numeric_nolocale(value, value_num, false);
 			p.value_integer = value_num;
 
 			add_property(p);
@@ -1771,7 +1771,7 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 
 			int64_t value_num = 0;
 			if (!re2.PartialMatch(sub)) {  // if no errors, when value should be zero. otherwise, this:
-				hz::string_is_numeric(value, value_num, false);
+				hz::string_is_numeric_nolocale(value, value_num, false);
 			}
 			p.value_integer = value_num;
 
@@ -1813,8 +1813,8 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 			p.reported_value = block;
 			p.value_type = StorageProperty::value_type_error_block;
 
-			hz::string_is_numeric(value_num, p.value_error_block.error_num, false);
-			hz::string_is_numeric(value_time, p.value_error_block.lifetime_hours, false);
+			hz::string_is_numeric_nolocale(value_num, p.value_error_block.error_num, false);
+			hz::string_is_numeric_nolocale(value_time, p.value_error_block.lifetime_hours, false);
 
 			std::vector<std::string> etypes;
 			hz::string_split(etypes_str, ",", etypes, true);
@@ -1926,7 +1926,7 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 			p.value_type = StorageProperty::value_type_integer;
 
 			int64_t value_num = 0;
-			hz::string_is_numeric(value, value_num, false);
+			hz::string_is_numeric_nolocale(value, value_num, false);
 			p.value_integer = value_num;
 
 			add_property(p);
@@ -1955,9 +1955,9 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 			p.reported_value = hz::string_trim_copy(line);
 			p.value_type = StorageProperty::value_type_selftest_entry;
 
-			hz::string_is_numeric(num, p.value_selftest_entry.test_num, false);
-			hz::string_is_numeric(hz::string_trim_copy(remaining), p.value_selftest_entry.remaining_percent, false);
-			hz::string_is_numeric(hz::string_trim_copy(hours), p.value_selftest_entry.lifetime_hours, false);
+			hz::string_is_numeric_nolocale(num, p.value_selftest_entry.test_num, false);
+			hz::string_is_numeric_nolocale(hz::string_trim_copy(remaining), p.value_selftest_entry.remaining_percent, false);
+			hz::string_is_numeric_nolocale(hz::string_trim_copy(hours), p.value_selftest_entry.lifetime_hours, false);
 
 			p.value_selftest_entry.type = hz::string_trim_copy(type);
 			p.value_selftest_entry.lba_of_first_error = hz::string_trim_copy(lba);
@@ -2152,7 +2152,7 @@ Index    Estimated Time   Temperature Celsius
 			p.set_name("Current Temperature", "sct_temperature_celsius");
 			p.value_type = StorageProperty::value_type_integer;
 			p.reported_value = value;
-			hz::string_is_numeric(value, p.value_integer);
+			hz::string_is_numeric_nolocale(value, p.value_integer);
 			add_property(p);
 		}
 	}
@@ -2354,9 +2354,9 @@ Page Offset Size         Value  Description
 		st.is_header = (hz::string_trim_copy(value) == "=");
 		st.flags = st.is_header ? std::string() : hz::string_trim_copy(flags);
 		st.value = st.is_header ? std::string() : hz::string_trim_copy(value);
-		hz::string_is_numeric(st.value, st.value_int, false);
-		hz::string_is_numeric(page, st.page, false, 16);
-		hz::string_is_numeric(offset, st.offset, false, 16);
+		hz::string_is_numeric_nolocale(st.value, st.value_int, false);
+		hz::string_is_numeric_nolocale(page, st.page, false, 16);
+		hz::string_is_numeric_nolocale(offset, st.offset, false, 16);
 
 		if (st.is_header) {
 			description = hz::string_trim_copy(hz::string_trim_copy(description, "="));

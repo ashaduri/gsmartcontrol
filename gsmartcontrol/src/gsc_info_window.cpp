@@ -710,9 +710,9 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			row[col_id] = p.value_attribute.id;
 			row[col_name] = p.readable_name;
 			row[col_flag_value] = p.value_attribute.flag;  // it's a string, not int.
-			row[col_value] = (p.value_attribute.value.has_value() ? hz::number_to_string(p.value_attribute.value.value()) : "-");
-			row[col_worst] = (p.value_attribute.worst.has_value() ? hz::number_to_string(p.value_attribute.worst.value()) : "-");
-			row[col_threshold] = (p.value_attribute.threshold.has_value() ? hz::number_to_string(p.value_attribute.threshold.value()) : "-");
+			row[col_value] = (p.value_attribute.value.has_value() ? hz::number_to_string_locale(p.value_attribute.value.value()) : "-");
+			row[col_worst] = (p.value_attribute.worst.has_value() ? hz::number_to_string_locale(p.value_attribute.worst.value()) : "-");
+			row[col_threshold] = (p.value_attribute.threshold.has_value() ? hz::number_to_string_locale(p.value_attribute.threshold.value()) : "-");
 			row[col_raw] = p.value_attribute.format_raw_value();
 			row[col_type] = attr_type;
 // 			row[col_updated] = StorageAttribute::get_update_type_name(p.value_attribute.update_type);
@@ -1025,7 +1025,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			row[col_num] = p.value_selftest_entry.test_num;
 			row[col_type] = p.value_selftest_entry.type;
 			row[col_status] = p.value_selftest_entry.get_status_str();
-			row[col_percent] = hz::number_to_string(100 - p.value_selftest_entry.remaining_percent) + "%";
+			row[col_percent] = hz::number_to_string_locale(100 - p.value_selftest_entry.remaining_percent) + "%";
 			row[col_hours] = p.value_selftest_entry.format_lifetime_hours();
 			row[col_lba] = p.value_selftest_entry.lba_of_first_error;
 			// There are no descriptions in self-test log entries, so don't display
@@ -1168,7 +1168,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 				// "No description available" for all of them.
 				row[col_tooltip] = p.get_description();
 				row[col_storage] = &p;
-				row[col_mark_name] = "Error " + hz::number_to_string(p.value_error_block.error_num);
+				row[col_mark_name] = "Error " + hz::number_to_string_locale(p.value_error_block.error_num);
 			}
 
 			if (int(p.warning) > int(max_tab_warning))
@@ -1206,22 +1206,22 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		for (auto&& p : props) {
 			// Find temperature
 			if (temp_prop_source < temp_sct && p.generic_name == "sct_temperature_celsius") {
-				temperature = hz::number_to_string(p.value_integer);
+				temperature = hz::number_to_string_locale(p.value_integer);
 				temp_property = p;
 				temp_prop_source = temp_sct;
 			}
 			if (temp_prop_source < temp_stat && p.generic_name == "stat_temperature_celsius") {
-				temperature = hz::number_to_string(p.value_statistic.value_int);
+				temperature = hz::number_to_string_locale(p.value_statistic.value_int);
 				temp_property = p;
 				temp_prop_source = temp_stat;
 			}
 			if (temp_prop_source < temp_attr1 && p.generic_name == "attr_temperature_celsius") {
-				temperature = hz::number_to_string(p.value_attribute.raw_value_int);
+				temperature = hz::number_to_string_locale(p.value_attribute.raw_value_int);
 				temp_property = p;
 				temp_prop_source = temp_attr1;
 			}
 			if (temp_prop_source < temp_attr2 && p.generic_name == "attr_temperature_celsius_x10") {
-				temperature = hz::number_to_string(p.value_attribute.raw_value_int / 10);
+				temperature = hz::number_to_string_locale(p.value_attribute.raw_value_int / 10);
 				temp_property = p;
 				temp_prop_source = temp_attr2;
 			}
@@ -1334,7 +1334,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			Glib::ustring str_value;
 
 			if (p.value_type == StorageProperty::value_type_capability) {
-				flag_value = hz::number_to_string(p.value_capability.flag_value, 16);  // 0xXX
+				flag_value = hz::number_to_string_nolocale(p.value_capability.flag_value, 16);  // 0xXX
 				str_value = hz::string_join(p.value_capability.strvalues, "\n");
 			} else {
 				// no flag value here
@@ -1943,7 +1943,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 		}
 
 		int8_t rem_percent = self->current_test->get_remaining_percent();
-		std::string rem_percent_str = (rem_percent == -1 ? "Unknown" : hz::number_to_string(100 - rem_percent));
+		std::string rem_percent_str = (rem_percent == -1 ? "Unknown" : hz::number_to_string_locale(100 - rem_percent));
 
 		int64_t poll_in = self->current_test->get_poll_in_seconds();  // sec
 
@@ -2267,7 +2267,7 @@ void GscInfoWindow::on_treeview_menu_copy_clicked(Gtk::TreeView* treeview)
 			if (type == G_TYPE_INT) {
 				int32_t value = 0;
 				row.get_value(j, value);
-				cell_texts.push_back(hz::number_to_string(value));
+				cell_texts.push_back(hz::number_to_string_nolocale(value));  // no locale for export
 			} else if (type == G_TYPE_STRING) {
 				std::string value;
 				row.get_value(j, value);

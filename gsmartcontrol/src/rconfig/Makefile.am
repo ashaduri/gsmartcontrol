@@ -3,15 +3,15 @@ METASOURCES = AUTO
 noinst_HEADERS = rcautosave.h rcdump.h rcloadsave.h rcmain.h rconfig.h \
 	rconfig_mini.h
 
-rconfig_test_SOURCES = rconfig_test.cpp
+rconfig_example_SOURCES = rconfig_example.cpp
 
 
 # we don't list them in a separate variable because otherwise kdevelop won't see them.
 noinst_PROGRAMS =
-if ENABLE_TESTS
-noinst_PROGRAMS += rconfig_test
+if ENABLE_EXAMPLES
+noinst_PROGRAMS += rconfig_example
 endif
 
-tests: $(noinst_PROGRAMS)
+examples: $(noinst_PROGRAMS)
 
 

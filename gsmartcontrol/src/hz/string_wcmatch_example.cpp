@@ -5,8 +5,8 @@
 ***************************************************************************/
 /// \file
 /// \author Alexander Shaduri
-/// \ingroup hz_tests
-/// \weakgroup hz_tests
+/// \ingroup hz_examples
+/// \weakgroup hz_examples
 /// @{
 
 // disable libdebug, we don't link to it
@@ -18,35 +18,24 @@
 
 // The first header should be then one we're testing, to avoid missing
 // header pitfalls.
-#include "bin2ascii_encoder.h"
+#include "string_wcmatch.h"
 
 #include <iostream>
-
+#include <ios>
 
 
 /// Main function for the test
 int main()
 {
-
-	std::string s = "adbeq 2dd +-23\nqqq#4 $";
-
-
-	hz::Bin2AsciiEncoder enc;
-
-	std::string e = enc.encode(s);
-	std::string d = enc.decode(e);
-
-	std::cerr << "Original: \"" << s << "\"\n";
-	std::cerr << "Encoded:  \"" << e << "\"\n";
-	std::cerr << "Decoded:  \"" << d << "\"\n";
-
-
-
+	std::cerr << std::boolalpha << hz::string_wcmatch("*aa", "21345") << "\n";  // false
+	std::cerr << std::boolalpha << hz::string_wcmatch("*aa", "21345aaa") << "\n";  // true
+	std::cerr << std::boolalpha << hz::string_wcmatch("2??45", "21345") << "\n";  // true
+	std::cerr << std::boolalpha << hz::string_wcmatch("*a*", "abcd") << "\n";  // true
+	std::cerr << std::boolalpha << hz::string_wcmatch("[123]45", "245") << "\n";  // true
+	std::cerr << std::boolalpha << hz::string_wcmatch("\\*aa", "aaa") << "\n";  // false
 
 	return 0;
 }
-
-
 
 
 

@@ -18,7 +18,6 @@
 
 You should include this file if you're using any of:
 - macros from autoconf-generated config.h
-- macros from global_macros.h
 
 The purpose of this file is to provide some common compatibility
 solutions for the whole hz, while not depending on pasting autoconf's
@@ -38,36 +37,8 @@ HZ library internal implementation helpers.
 */
 
 
-#ifdef DOXYGEN_ONLY
-	/// Define HZ_USE_GLOBAL_MACROS=1 from a compiler option to enable
-	/// auto-inclusion of global_macros.h.
-	#define HZ_USE_GLOBAL_MACROS
-#endif
-
-
-#if defined HZ_USE_GLOBAL_MACROS && HZ_USE_GLOBAL_MACROS
-	// define manually
-	#include "global_macros.h"
-	#define HZ_NO_GLOBAL_MACROS 0
-#else
-	#define HZ_NO_GLOBAL_MACROS 1
-#endif
-
-
-// if there was no global_macros.h included, do our own mini version
-#if defined HZ_NO_GLOBAL_MACROS && HZ_NO_GLOBAL_MACROS
-
-	// Autoconf's config.h. The macro is defined by ./configure automatically.
-	#ifdef HAVE_CONFIG_H
-		#include <config.h>
-	#endif
-
-	// No assumptions on config.h contents - it may not do any of these
-	// checks, so don't rely on them. You should use global_macros.h instead,
-	// or manually define them.
-
-#endif
-
+// Autoconf-generated feature macros
+#include "config.h"
 
 
 

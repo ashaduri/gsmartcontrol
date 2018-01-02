@@ -5,8 +5,8 @@
 ***************************************************************************/
 /// \file
 /// \author Alexander Shaduri
-/// \ingroup libdebug_tests
-/// \weakgroup libdebug_tests
+/// \ingroup libdebug_examples
+/// \weakgroup libdebug_examples
 /// @{
 
 // The first header should be then one we're testing, to avoid missing
@@ -17,7 +17,7 @@
 
 
 /// libdebug namespace for tests
-namespace libdebug_test {
+namespace libdebug_example {
 
 	/// Libdebug test class
 	struct TestClassA {
@@ -176,7 +176,7 @@ int main(int argc, char *argv[])
 	os << "";
 
 
-	libdebug_test::TestClassA().func();
+	libdebug_example::TestClassA().func();
 
 	TestClassB<unsigned int>().func2(TestClassC<char*>(), 0);
 

@@ -21,10 +21,12 @@
 #include <map>
 #include <vector>
 #include <utility>  // std::pair
+#include <string>
 
 #include "hz/debug.h"
 #include "hz/fs_path_utils.h"
 #include "hz/fs_file.h"
+#include "hz/string_num.h"
 #include "rconfig/rconfig_mini.h"
 #include "app_pcrecpp.h"
 #include "storage_detector_linux.h"
@@ -269,7 +271,7 @@ inline std::string read_proc_scsi_scsi_file(std::vector< std::pair<int, std::str
 		std::string scsi_host_str;
 		if (host_re.PartialMatch(trimmed, &scsi_host_str)) {
 			// debug_out_dump("app", "SCSI Host " << scsi_host_str << " found.\n");
-			hz::string_is_numeric(scsi_host_str, last_scsi_host);
+			hz::string_is_numeric_nolocale(scsi_host_str, last_scsi_host);
 
 		} else if (last_scsi_host != -1 && app_pcre_match("/Vendor: /i", trimmed)) {
 			vendors_models.push_back(std::make_pair(last_scsi_host, trimmed));
@@ -314,7 +316,7 @@ inline std::string read_proc_scsi_sg_devices_file(std::vector< std::vector<int> 
 		if (parse_re.PartialMatch(trimmed, &line[0], &line[1], &line[2], &line[3], &line[4], &line[5], &line[6], &line[7], &line[8])) {
 			std::vector<int> line_num(line.size(), -1);
 			for (std::size_t j = 0; j < line_num.size(); ++j) {
-				hz::string_is_numeric(line[j], line_num[j]);
+				hz::string_is_numeric_nolocale(line[j], line_num[j]);
 			}
 			sg_entries.resize(i+1);  // maintain the line indices
 			sg_entries[i] = line_num;
@@ -563,7 +565,7 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 		}
 
 		// We can't map twaX to scsiY, so lets assume the relative order is the same.
-		std::string dev = std::string("/dev/") + dev_base + hz::number_to_string(device_numbers[dev_base]);
+		std::string dev = std::string("/dev/") + dev_base + hz::number_to_string_nolocale(device_numbers[dev_base]);
 		++device_numbers[dev_base];
 
 		error_msg = tw_cli_get_drives(dev, vendors_models[i].first, drives, ex_factory, false);
@@ -677,7 +679,7 @@ inline std::string detect_drives_linux_adaptec(std::vector<StorageDeviceRefPtr>&
 				continue;
 			}
 
-			std::string dev = std::string("/dev/sg") + hz::number_to_string(sg_num);
+			std::string dev = std::string("/dev/sg") + hz::number_to_string_nolocale(sg_num);
 			StorageDeviceRefPtr drive(new StorageDevice(dev, std::string("sat")));
 
 			std::string local_error_msg = drive->fetch_basic_data_and_parse(smartctl_ex);
@@ -811,13 +813,13 @@ inline std::string detect_drives_linux_areca(std::vector<StorageDeviceRefPtr>& d
 				int max_ports = rconfig::get_data<int32_t>("system/linux_areca_enc_max_scan_port");
 				max_ports = std::max(1, std::min(128, max_ports));  // 1-128 sanity check
 
-				std::string dev = std::string("/dev/sg") + hz::number_to_string(sg_num);
+				std::string dev = std::string("/dev/sg") + hz::number_to_string_nolocale(sg_num);
 
 				debug_out_dump("app", "Starting brute-force port/enclosure scan on 1-" << max_ports << " ports, 1-" << max_enclosures << " enclosures, device \"" << dev
 						<< "\". Change the maximums by setting \"system/linux_areca_enc_max_scan_port\" and \"system/linux_areca_enc_max_enclosure\" config keys.\n");
 				std::string last_output;
 				for (int enclosure_no = 1; enclosure_no < max_enclosures; ++enclosure_no) {
-					error_msg = smartctl_scan_drives_sequentially(dev, "areca,%d/" + hz::number_to_string(enclosure_no), 1, max_ports, drives, ex_factory, last_output);
+					error_msg = smartctl_scan_drives_sequentially(dev, "areca,%d/" + hz::number_to_string_nolocale(enclosure_no), 1, max_ports, drives, ex_factory, last_output);
 				}
 				debug_out_dump("app", "Brute-force port/enclosure scan finished.\n");
 
@@ -832,7 +834,7 @@ inline std::string detect_drives_linux_areca(std::vector<StorageDeviceRefPtr>& d
 					debug_out_warn("app", DBG_FUNC_MSG << "Couldn't read the number of ports on Areca controller (\"" << ports_path << "\"): "
 							<< ports_file.get_error_utf8() << ", trying manually.\n");
 				} else {
-					hz::string_is_numeric(hz::string_trim_copy(ports_file_contents), max_ports);
+					hz::string_is_numeric_nolocale(hz::string_trim_copy(ports_file_contents), max_ports);
 					debug_out_dump("app", DBG_FUNC_MSG << "Detected " << max_ports << " ports, through \"" << ports_path << "\".\n");
 				}
 				if (max_ports == 0) {
@@ -840,7 +842,7 @@ inline std::string detect_drives_linux_areca(std::vector<StorageDeviceRefPtr>& d
 				}
 				max_ports = std::max(1, std::min(24, max_ports));  // 1-24 sanity check
 
-				std::string dev = std::string("/dev/sg") + hz::number_to_string(sg_num);
+				std::string dev = std::string("/dev/sg") + hz::number_to_string_nolocale(sg_num);
 				debug_out_dump("app", "Starting brute-force port scan on 1-" << max_ports << " ports, device \"" << dev
 						<< "\". Change the maximum by setting \"system/linux_areca_noenc_max_scan_port\" config key.\n");
 				std::string last_output;
@@ -906,9 +908,7 @@ inline std::string detect_drives_linux_cciss(std::vector<StorageDeviceRefPtr>& d
 		std::string controller_no_str;
 		if (app_pcre_match("/^[ \\t]*[0-9]+[ \\t]+cciss([0-9]+)(?:[ \\t]*|$)/", hz::string_trim_copy(lines[i]), &controller_no_str)) {
 			debug_out_dump("app", DBG_FUNC_MSG << "Found cciss" << controller_no_str << " entry in devices file.\n");
-			int controller_no = 0;
-			hz::string_is_numeric(controller_no_str, controller_no);
-			controllers.push_back(controller_no);
+			controllers.push_back(hz::string_to_number_nolocale<int>(controller_no_str));
 		}
 	}
 	if (controllers.empty()) {
@@ -921,13 +921,13 @@ inline std::string detect_drives_linux_cciss(std::vector<StorageDeviceRefPtr>& d
 	for (std::size_t controller_index = 0; controller_index < controllers.size(); ++controller_index) {
 		int controller_no = controllers.at(controller_index);
 
-		std::string dev = std::string("/dev/cciss/c") + hz::number_to_string(controller_no) + "d0";
+		std::string dev = std::string("/dev/cciss/c") + hz::number_to_string_nolocale(controller_no) + "d0";
 
 		const int max_port = 127;
 		debug_out_dump("app", "Starting brute-force port scan on 1-" << max_port << " ports, device \"" << dev << "\".\n");
 
 		for (int port = 0; port <= max_port; ++port) {
-			StorageDeviceRefPtr drive(new StorageDevice(dev, std::string("cciss,") + hz::number_to_string(port)));
+			StorageDeviceRefPtr drive(new StorageDevice(dev, std::string("cciss,") + hz::number_to_string_nolocale(port)));
 
 			std::string local_error_msg = drive->fetch_basic_data_and_parse(smartctl_ex);
 			std::string output = drive->get_info_output();
@@ -1026,13 +1026,13 @@ inline std::string detect_drives_linux_hpsa(std::vector<StorageDeviceRefPtr>& dr
 				continue;
 			}
 
-			std::string dev = std::string("/dev/sg") + hz::number_to_string(sg_num);
+			std::string dev = std::string("/dev/sg") + hz::number_to_string_nolocale(sg_num);
 
 			const int max_port = 127;
 			debug_out_dump("app", "Starting brute-force port scan on 0-" << max_port << " ports, device \"" << dev << "\".\n");
 
 			for (int port = 0; port <= max_port; ++port) {
-				StorageDeviceRefPtr drive(new StorageDevice(dev, std::string("cciss,") + hz::number_to_string(port)));
+				StorageDeviceRefPtr drive(new StorageDevice(dev, std::string("cciss,") + hz::number_to_string_nolocale(port)));
 
 				std::string local_error_msg = drive->fetch_basic_data_and_parse(smartctl_ex);
 				std::string output = drive->get_info_output();

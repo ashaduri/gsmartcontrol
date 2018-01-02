@@ -270,8 +270,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 
 	std::string rpm_str;
 	if (app_pcre_match("/^Rotation Rate:[ \\t]*(.*)$/mi", info_output_, &rpm_str)) {
-		int rpm = 0;
-		hz::string_is_numeric(rpm_str, rpm, false);
+		int rpm = hz::string_to_number_nolocale<int>(rpm_str, false);
 		hdd_ = rpm > 0;
 	}
 

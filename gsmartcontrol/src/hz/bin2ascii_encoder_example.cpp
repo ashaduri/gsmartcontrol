@@ -1,12 +1,12 @@
 /**************************************************************************
  Copyright:
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
- License: See LICENSE_zlib.txt file
+ License: See LICENSE_unlicense.txt
 ***************************************************************************/
 /// \file
 /// \author Alexander Shaduri
-/// \ingroup hz_tests
-/// \weakgroup hz_tests
+/// \ingroup hz_examples
+/// \weakgroup hz_examples
 /// @{
 
 // disable libdebug, we don't link to it
@@ -18,34 +18,35 @@
 
 // The first header should be then one we're testing, to avoid missing
 // header pitfalls.
-#include "fs_file.h"
+#include "bin2ascii_encoder.h"
 
 #include <iostream>
-#include <vector>
 
 
 
 /// Main function for the test
 int main()
 {
-	std::vector<std::string> files;
-	files.push_back("/usr/bin/ar");
-	files.push_back("/proc/partitions");
 
-	for (unsigned int i = 0; i < files.size(); ++i) {
-		hz::File file(files[i]);
+	std::string s = "adbeq 2dd +-23\nqqq#4 $";
 
-		hz::file_size_t size1 = 0, size2 = 0;
 
-		file.get_size(size1);  // stat() method
-		file.get_size(size2, true);  // fread() method
+	hz::Bin2AsciiEncoder enc;
 
-		std::cerr << "File " << file.str() << "\n";
-		std::cerr << "stat size: " << size1 << ", fread size: " << size2 << "\n\n";
-	}
+	std::string e = enc.encode(s);
+	std::string d = enc.decode(e);
+
+	std::cerr << "Original: \"" << s << "\"\n";
+	std::cerr << "Encoded:  \"" << e << "\"\n";
+	std::cerr << "Decoded:  \"" << d << "\"\n";
+
+
+
 
 	return 0;
 }
+
+
 
 
 

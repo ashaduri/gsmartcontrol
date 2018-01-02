@@ -5,8 +5,8 @@
 ***************************************************************************/
 /// \file
 /// \author Alexander Shaduri
-/// \ingroup applib_tests
-/// \weakgroup applib_tests
+/// \ingroup applib_examples
+/// \weakgroup applib_examples
 /// @{
 
 #include <iostream>

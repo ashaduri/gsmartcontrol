@@ -16,23 +16,23 @@ noinst_HEADERS = app_gtkmm_features.h app_gtkmm_utils.h \
 # don't use absolute path for the current dir's .a, because the make
 # dependency resolver won't get it (needed for parallel builds)
 
-app_ui_res_utils_test_SOURCES = app_ui_res_utils_test.cpp app_ui_res_utils_test_data.cpp
-app_ui_res_utils_test_LDADD = libapplib.a \
+app_ui_res_utils_example_SOURCES = app_ui_res_utils_example.cpp app_ui_res_utils_example_data.cpp
+app_ui_res_utils_example_LDADD = libapplib.a \
 	$(top_builddir)/src/libdebug/libdebug.a
 
-smartctl_executor_test_SOURCES = smartctl_executor_test.cpp
-smartctl_executor_test_LDADD = libapplib.a \
+smartctl_executor_example_SOURCES = smartctl_executor_example.cpp
+smartctl_executor_example_LDADD = libapplib.a \
 	$(top_builddir)/src/libdebug/libdebug.a
 
-smartctl_parser_test_SOURCES = smartctl_parser_test.cpp
-smartctl_parser_test_LDADD = libapplib.a \
+smartctl_parser_example_SOURCES = smartctl_parser_example.cpp
+smartctl_parser_example_LDADD = libapplib.a \
 	$(top_builddir)/src/libdebug/libdebug.a
 
-storage_detector_test_SOURCES = storage_detector_test.cpp
-storage_detector_test_LDADD = libapplib.a \
+storage_detector_example_SOURCES = storage_detector_example.cpp
+storage_detector_example_LDADD = libapplib.a \
 	$(top_builddir)/src/libdebug/libdebug.a
 
-spawn_test_SOURCES = spawn_test.cpp
+spawn_example_SOURCES = spawn_example.cpp
 
 # Build them first
 SUBDIRS=../libdebug
@@ -40,11 +40,11 @@ SUBDIRS=../libdebug
 
 # we don't list them in a separate variable because otherwise kdevelop won't see them.
 noinst_PROGRAMS =
-if ENABLE_TESTS
-noinst_PROGRAMS += app_ui_res_utils_test smartctl_executor_test smartctl_parser_test \
-	storage_detector_test spawn_test
+if ENABLE_EXAMPLES
+noinst_PROGRAMS += app_ui_res_utils_example smartctl_executor_example smartctl_parser_example \
+	storage_detector_example spawn_example
 endif
 
-tests: $(noinst_PROGRAMS)
+examples: $(noinst_PROGRAMS)
 
 

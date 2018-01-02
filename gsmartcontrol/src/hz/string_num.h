@@ -22,6 +22,7 @@
 #include <limits>  // std::numeric_limits
 #include <cstring>  // std::strncmp
 #include <exception>
+#include <type_traits>
 
 #include "locale_tools.h"
 
@@ -46,11 +47,11 @@ namespace hz {
 	/// This function has no definition, only specializations.
 	/// A version that operates in global locale.
 	template<typename T>
-	bool string_is_numeric(const std::string& s, T& number, bool strict, int base_or_boolalpha);
+	bool string_is_numeric_locale(const std::string& s, T& number, bool strict, int base_or_boolalpha);
 
 	/// A version that operates in global locale.
 	template<typename T>
-	bool string_is_numeric(const std::string& s, T& number, bool strict = true);
+	bool string_is_numeric_locale(const std::string& s, T& number, bool strict = true);
 
 
 	/// A version that operates in classic locale.
@@ -64,12 +65,14 @@ namespace hz {
 
 	/// A convenience string_is_numeric wrapper.
 	/// Note that in strict mode, T() is returned for invalid values.
+	/// A version that operates in global locale.
 	template<typename T>
-	T string_to_number(const std::string& s, bool strict, int base_or_boolalpha);
+	T string_to_number_locale(const std::string& s, bool strict, int base_or_boolalpha);
 
 	/// Short version with default base. (Needed because default base is different for bool and int).
+	/// A version that operates in global locale.
 	template<typename T>
-	T string_to_number(const std::string& s, bool strict = true);
+	T string_to_number_locale(const std::string& s, bool strict = true);
 
 
 	/// A version that operates in classic locale.
@@ -86,12 +89,14 @@ namespace hz {
 	/// for bool, 0 means 1/0, 1 means true/false;
 	/// for int family (including char), it's the base to format in (8, 10, 16 are definitely supported);
 	/// for float family, it controls the number of digits after comma.
+	/// A version that operates in global locale.
 	template<typename T>
-	std::string number_to_string(T number, int alpha_or_base_or_precision, bool fixed_prec = false);
+	std::string number_to_string_locale(T number, int alpha_or_base_or_precision, bool fixed_prec = false);
 
 	/// Short version with default base / precision.
+	/// A version that operates in global locale.
 	template<typename T>
-	std::string number_to_string(T number);
+	std::string number_to_string_locale(T number);
 
 
 	/// A version that operates in classic locale.
@@ -140,25 +145,25 @@ namespace internal {
 					return false;  // out of range
 				}
 				value = static_cast<T>(tmp);
-			} else if (std::is_same_v<T, long>) {
+			} else if constexpr(std::is_same_v<T, long>) {
 				value = std::stol(s, &num_read, base);
-			} else if (std::is_same_v<T, long long>) {
+			} else if constexpr(std::is_same_v<T, long long>) {
 				value = std::stoll(s, &num_read, base);
-			} else if (std::is_same_v<T, unsigned short> || std::is_same_v<T, unsigned int> ||
+			} else if constexpr(std::is_same_v<T, unsigned short> || std::is_same_v<T, unsigned int> ||
 					std::is_same_v<T, unsigned long>) {
 				unsigned long tmp = std::stoul(s, &num_read, base);
-				if (tmp != static_cast<unsigned long>(static_cast<T>(tmp))) {
+				if (tmp != static_cast<T>(tmp)) {
 					return false;  // out of range
 				}
 				value = static_cast<T>(tmp);
-			} else if (std::is_same_v<T, unsigned long long>) {
+			} else if constexpr(std::is_same_v<T, unsigned long long>) {
 				value = std::stoull(s, &num_read, base);
-			} else if (std::is_same_v<T, float>) {
-				value = (std::stof(s, &num_read));
-			} else if (std::is_same_v<T, double>) {
-				value = (std::stod(s, &num_read));
-			} else if (std::is_same_v<T, long double>) {
-				value = (std::stold(s, &num_read));
+			} else if constexpr(std::is_same_v<T, float>) {
+				value = std::stof(s, &num_read);
+			} else if constexpr(std::is_same_v<T, double>) {
+				value = std::stod(s, &num_read);
+			} else if constexpr(std::is_same_v<T, long double>) {
+				value = std::stold(s, &num_read);
 			}
 		}
 		catch (std::exception&) {  // std::invalid_argument, std::out_of_range
@@ -242,7 +247,7 @@ namespace internal {
 
 
 template<typename T>
-bool string_is_numeric(const std::string& s, T& number, bool strict, int base_or_boolalpha)
+bool string_is_numeric_locale(const std::string& s, T& number, bool strict, int base_or_boolalpha)
 {
 	if constexpr(std::is_same_v<T, bool>) {
 		return internal::string_is_numeric_impl_bool(s, number, strict, base_or_boolalpha, false);
@@ -254,7 +259,7 @@ bool string_is_numeric(const std::string& s, T& number, bool strict, int base_or
 
 
 template<typename T>
-bool string_is_numeric(const std::string& s, T& number, bool strict)
+bool string_is_numeric_locale(const std::string& s, T& number, bool strict)
 {
 	if constexpr(std::is_same_v<T, bool>) {
 		return internal::string_is_numeric_impl_bool(s, number, strict, 1, false);  // use boolalpha
@@ -293,20 +298,20 @@ bool string_is_numeric_nolocale(const std::string& s, T& number, bool strict)
 
 
 template<typename T>
-T string_to_number(const std::string& s, bool strict, int base_or_boolalpha)
+T string_to_number_locale(const std::string& s, bool strict, int base_or_boolalpha)
 {
 	T value = T();
-	string_is_numeric(s, value, strict, base_or_boolalpha);
+	string_is_numeric_locale(s, value, strict, base_or_boolalpha);
 	return value;
 }
 
 
 
 template<typename T>
-T string_to_number(const std::string& s, bool strict)
+T string_to_number_locale(const std::string& s, bool strict)
 {
 	T value = T();
-	string_is_numeric(s, value, strict);
+	string_is_numeric_locale(s, value, strict);
 	return value;
 }
 
@@ -420,14 +425,14 @@ namespace internal {
 
 
 template<typename T>
-std::string number_to_string(T number, int boolalpha_or_base_or_precision, bool fixed_prec)
+std::string number_to_string_locale(T number, int boolalpha_or_base_or_precision, bool fixed_prec)
 {
 	return internal::number_to_string_impl(number, boolalpha_or_base_or_precision, fixed_prec, false);
 }
 
 
 template<typename T>
-std::string number_to_string(T number)
+std::string number_to_string_locale(T number)
 {
 	int base = 0;
 	if constexpr(std::is_same_v<bool, T>) {
@@ -438,7 +443,7 @@ std::string number_to_string(T number)
 		base = std::numeric_limits<T>::digits10 + 1;  // precision. 1 is for sign
 	}
 	// don't use fixed prec here, digits10 is for the whole number
-	return number_to_string(number, base, false);
+	return number_to_string_locale(number, base, false);
 }
 
 
@@ -455,9 +460,9 @@ std::string number_to_string_nolocale(T number)
 	int base = 0;
 	if constexpr(std::is_same_v<bool, T>) {
 		base = 1;  // alpha (true / false), as opposed to 1 / 0.
-	} else if (std::is_integral_v<T>) {
+	} else if constexpr(std::is_integral_v<T>) {
 		base = 10;  // default base - 10
-	} else if (std::is_floating_point_v<T>) {
+	} else if constexpr(std::is_floating_point_v<T>) {
 		base = std::numeric_limits<T>::digits10 + 1;  // precision. 1 is for sign
 	}
 	// don't use fixed prec here, digits10 is for the whole number

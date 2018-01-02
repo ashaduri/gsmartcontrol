@@ -40,9 +40,8 @@
 #include <locale>  // std::locale::classic()
 #include <cstdint>
 
-#include "hz/hz_config.h"  // RMN_* (global_macros.h)
 #include "hz/string_algo.h"  // string_split(), string_trim(), string_trim_copy()
-#include "hz/string_num.h"  // string_is_numeric(), number_to_string()
+#include "hz/string_num.h"  // string_is_numeric_nolocale(), hz::number_to_string_nolocale()
 #include "hz/bin2ascii_encoder.h"
 #include "hz/debug.h"
 #include "hz/fs_file.h"  // hz::File
@@ -87,8 +86,8 @@ inline bool serializer_version_from_string(const std::string& str, int& major, i
 	if (v.size() < 3)
 		return false;
 
-	if (hz::string_is_numeric(v[0], major) && hz::string_is_numeric(v[0], minor)
-			&& hz::string_is_numeric(v[0], revision)) {
+	if (hz::string_is_numeric_nolocale(v[0], major) && hz::string_is_numeric_nolocale(v[0], minor)
+			&& hz::string_is_numeric_nolocale(v[0], revision)) {
 		return true;
 	}
 	return false;
@@ -133,16 +132,16 @@ template<class Data> inline
 bool resource_node_set_data_from_string(intrusive_ptr<resource_node<Data> > node,
 		node_data_type type, const std::string& value_str)
 {
-	using hz::string_is_numeric;
+	using hz::string_is_numeric_nolocale;
 
-	if (type == T_BOOL) { bool val = 0; if (string_is_numeric(value_str, val, true, true)) return node->set_data(val); return false; }  // with boolalpha
-	if (type == T_INT32) { int32_t val = 0; if (string_is_numeric(value_str, val)) return node->set_data(val); return false; }
-	if (type == T_UINT32) { uint32_t val = 0; if (string_is_numeric(value_str, val)) return node->set_data(val); return false; }
-	if (type == T_INT64) { int64_t val = 0; if (string_is_numeric(value_str, val)) return node->set_data(val); return false; }
-	if (type == T_UINT64) { uint64_t val = 0; if (string_is_numeric(value_str, val)) return node->set_data(val); return false; }
-	if (type == T_DOUBLE) { double val = 0; if (string_is_numeric(value_str, val)) return node->set_data(val); return false; }
-	if (type == T_FLOAT) { float val = 0; if (string_is_numeric(value_str, val)) return node->set_data(val); return false; }
-	if (type == T_LDOUBLE) { long double val = 0; if (string_is_numeric(value_str, val)) return node->set_data(val); return false; }
+	if (type == T_BOOL) { bool val = 0; if (string_is_numeric_nolocale(value_str, val, true, true)) return node->set_data(val); return false; }  // with boolalpha
+	if (type == T_INT32) { int32_t val = 0; if (string_is_numeric_nolocale(value_str, val)) return node->set_data(val); return false; }
+	if (type == T_UINT32) { uint32_t val = 0; if (string_is_numeric_nolocale(value_str, val)) return node->set_data(val); return false; }
+	if (type == T_INT64) { int64_t val = 0; if (string_is_numeric_nolocale(value_str, val)) return node->set_data(val); return false; }
+	if (type == T_UINT64) { uint64_t val = 0; if (string_is_numeric_nolocale(value_str, val)) return node->set_data(val); return false; }
+	if (type == T_DOUBLE) { double val = 0; if (string_is_numeric_nolocale(value_str, val)) return node->set_data(val); return false; }
+	if (type == T_FLOAT) { float val = 0; if (string_is_numeric_nolocale(value_str, val)) return node->set_data(val); return false; }
+	if (type == T_LDOUBLE) { long double val = 0; if (string_is_numeric_nolocale(value_str, val)) return node->set_data(val); return false; }
 
 	if (type == T_STRING) {
 		if (value_str.size() >= 2 && value_str[0] == '"' && value_str[value_str.size() - 1] == '"') {
@@ -219,30 +218,28 @@ inline node_data_type node_data_type_from_string(const std::string& str)
 template<class Data> inline
 std::string serialize_node_data(intrusive_ptr<const resource_node<Data> > node)
 {
-	using hz::number_to_string;
-
 	node_data_type type = resource_node_get_type(node);
 
 	switch(type) {
 		case T_BOOL:
-			{ bool val = 0; if (node->get_data(val)) { return number_to_string(val, true); } break; }  // use boolalpha
+			{ bool val = 0; if (node->get_data(val)) { return hz::number_to_string_nolocale(val, true); } break; }  // use boolalpha
 
 		case T_INT32:
-			{ int32_t val = 0; if (node->get_data(val)) { return number_to_string(val); } break; }
+			{ int32_t val = 0; if (node->get_data(val)) { return hz::number_to_string_nolocale(val); } break; }
 		case T_UINT32:
-			{ uint32_t val = 0; if (node->get_data(val)) { return number_to_string(val); } break; }
+			{ uint32_t val = 0; if (node->get_data(val)) { return hz::number_to_string_nolocale(val); } break; }
 		case T_INT64:
-			{ int64_t val = 0; if (node->get_data(val)) { return number_to_string(val); } break; }
+			{ int64_t val = 0; if (node->get_data(val)) { return hz::number_to_string_nolocale(val); } break; }
 		case T_UINT64:
-			{ uint64_t val = 0; if (node->get_data(val)) { return number_to_string(val); } break; }
+			{ uint64_t val = 0; if (node->get_data(val)) { return hz::number_to_string_nolocale(val); } break; }
 
 		// the (non-fixed) precision here is std::numeric_limits<T>::digits10+1
 		case T_DOUBLE:
-			{ double val = 0; if (node->get_data(val)) { return number_to_string(val); } break; }
+			{ double val = 0; if (node->get_data(val)) { return hz::number_to_string_nolocale(val); } break; }
 		case T_FLOAT:
-			{ float val = 0; if (node->get_data(val)) { return number_to_string(val); } break; }
+			{ float val = 0; if (node->get_data(val)) { return hz::number_to_string_nolocale(val); } break; }
 		case T_LDOUBLE:
-			{ long double val = 0; if (node->get_data(val)) { return number_to_string(val); } break; }
+			{ long double val = 0; if (node->get_data(val)) { return hz::number_to_string_nolocale(val); } break; }
 
 		case T_STRING:
 		{
@@ -517,13 +514,13 @@ create_node_from_serialized_line(intrusive_ptr<resource_node<Data> > under_this_
 		value_str = hz::string_trim_copy(components[0]);
 
 		bool b = 0; int32_t i = 0; double d = 0;
-		if (hz::string_is_numeric(value_str, b, true, true)) {  // true / false. use boolalpha.
+		if (hz::string_is_numeric_nolocale(value_str, b, true, true)) {  // true / false. use boolalpha.
 			type = T_BOOL;
 
-		} else if (hz::string_is_numeric(value_str, i)) {
+		} else if (hz::string_is_numeric_nolocale(value_str, i)) {
 			type = T_INT32;
 
-		} else if (hz::string_is_numeric(value_str, d)) {
+		} else if (hz::string_is_numeric_nolocale(value_str, d)) {
 			type = T_DOUBLE;
 
 		} else if (value_str.size() >= 2 && value_str[0] == '"' && value_str[value_str.size() - 1] == '"') {

@@ -12,9 +12,10 @@
 // TODO Remove this in gtkmm4.
 #include <bits/stdc++.h>  // to avoid throw() macro errors.
 #define throw(a)  // glibmm uses dynamic exception specifications, remove them.
-#include <glibmm.h>  // NOT NEEDED
+#include <glibmm.h>
 #undef throw
 
+#include <string>
 #include <sys/types.h>
 #include <cerrno>  // errno (not std::errno, it may be a macro)
 
@@ -27,7 +28,6 @@
 
 #include "hz/process_signal.h"  // hz::process_signal_send, win32's W*
 #include "hz/debug.h"
-#include "hz/string_num.h"  // hz::number_to_string()
 #include "hz/env_tools.h"  // hz::ScopedEnv
 
 #include "cmdex.h"
@@ -309,7 +309,7 @@ void Cmdex::stopped_cleanup()
 		if (exit_status != 0) {
 			// translate the exit_code into a message
 			std::string msg = (translator_func_ ? translator_func_(exit_status, translator_func_data_)
-					: "[no translator function, exit code: " + hz::number_to_string(exit_status));
+					: "[no translator function, exit code: " + std::to_string(exit_status));
 			push_error(Error<int>("exit", ErrorLevel::warn, exit_status, msg));
 		}
 

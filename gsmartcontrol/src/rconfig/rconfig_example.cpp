@@ -5,8 +5,8 @@
 ***************************************************************************/
 /// \file
 /// \author Alexander Shaduri
-/// \ingroup rconfig_tests
-/// \weakgroup rconfig_tests
+/// \ingroup rconfig_examples
+/// \weakgroup rconfig_examples
 /// @{
 
 // disable libdebug, we don't link to it
