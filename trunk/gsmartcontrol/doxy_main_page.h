@@ -20,15 +20,15 @@ This is GSmartControl internal documentation.
 
 /**
 \addtogroup applib Application-Specific Components
-\addtogroup applib_tests Tests of Application-Specific Components
+\addtogroup applib_examples Examples of Application-Specific Components
 \addtogroup hz HZ Common System Components
-\addtogroup hz_tests Tests for HZ Common System Components
+\addtogroup hz_examples Examples for HZ Common System Components
 \addtogroup libdebug LibDebug Flexible Debug Logging
-\addtogroup libdebug_tests Tests for LibDebug Flexible Debug Logging
+\addtogroup libdebug_examples Examples for LibDebug Flexible Debug Logging
 \addtogroup rmn Resource Manager
-\addtogroup rmn_tests Tests for Resource Manager
+\addtogroup rmn_examples Examples for Resource Manager
 \addtogroup rconfig Resource Manager-Based Configuration
-\addtogroup rconfig_tests Tests for Resource Manager-Based Configuration
+\addtogroup rconfig_examples Examples for Resource Manager-Based Configuration
 \addtogroup gsc GSmartControl Application
 */
 

@@ -1,12 +1,12 @@
 /**************************************************************************
  Copyright:
       (C) 2008 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
- License: See LICENSE_unlicense.txt
+ License: See LICENSE_zlib.txt file
 ***************************************************************************/
 /// \file
 /// \author Alexander Shaduri
-/// \ingroup hz_tests
-/// \weakgroup hz_tests
+/// \ingroup hz_examples
+/// \weakgroup hz_examples
 /// @{
 
 // disable libdebug, we don't link to it
@@ -18,21 +18,31 @@
 
 // The first header should be then one we're testing, to avoid missing
 // header pitfalls.
-#include "string_wcmatch.h"
+#include "fs_file.h"
 
 #include <iostream>
-#include <ios>
+#include <vector>
+
 
 
 /// Main function for the test
 int main()
 {
-	std::cerr << std::boolalpha << hz::string_wcmatch("*aa", "21345") << "\n";  // false
-	std::cerr << std::boolalpha << hz::string_wcmatch("*aa", "21345aaa") << "\n";  // true
-	std::cerr << std::boolalpha << hz::string_wcmatch("2??45", "21345") << "\n";  // true
-	std::cerr << std::boolalpha << hz::string_wcmatch("*a*", "abcd") << "\n";  // true
-	std::cerr << std::boolalpha << hz::string_wcmatch("[123]45", "245") << "\n";  // true
-	std::cerr << std::boolalpha << hz::string_wcmatch("\\*aa", "aaa") << "\n";  // false
+	std::vector<std::string> files;
+	files.push_back("/usr/bin/ar");
+	files.push_back("/proc/partitions");
+
+	for (unsigned int i = 0; i < files.size(); ++i) {
+		hz::File file(files[i]);
+
+		hz::file_size_t size1 = 0, size2 = 0;
+
+		file.get_size(size1);  // stat() method
+		file.get_size(size2, true);  // fread() method
+
+		std::cerr << "File " << file.str() << "\n";
+		std::cerr << "stat size: " << size1 << ", fread size: " << size2 << "\n\n";
+	}
 
 	return 0;
 }

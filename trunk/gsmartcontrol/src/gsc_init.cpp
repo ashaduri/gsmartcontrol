@@ -22,6 +22,7 @@
 #include <vector>
 #include <sstream>
 #include <limits>
+#include <cmath>
 #include <gtkmm.h>
 #include <glib.h>  // g_, G*
 
@@ -392,11 +393,11 @@ bool app_init_and_loop(int& argc, char**& argv)
 	debug_out_dump("app", "LibDebug options:\n" << debug_get_cmd_args_dump());
 
 #ifndef _WIN32
-	if (args.arg_gdk_scale == args.arg_gdk_scale) {  // not NaN
-		hz::env_set_value("GDK_SCALE", hz::number_to_string(args.arg_gdk_scale));
+	if (!std::isnan(args.arg_gdk_scale)) {
+		hz::env_set_value("GDK_SCALE", hz::number_to_string_nolocale(args.arg_gdk_scale));
 	}
-	if (args.arg_gdk_dpi_scale == args.arg_gdk_dpi_scale) {  // not NaN
-		hz::env_set_value("GDK_DPI_SCALE", hz::number_to_string(args.arg_gdk_dpi_scale));
+	if (!std::isnan(args.arg_gdk_dpi_scale)) {
+		hz::env_set_value("GDK_DPI_SCALE", hz::number_to_string_nolocale(args.arg_gdk_dpi_scale));
 	}
 #endif
 

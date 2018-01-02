@@ -7,8 +7,8 @@
 /// \file
 /// \author Irakli Elizbarashvili
 /// \author Alexander Shaduri
-/// \ingroup rmn_tests
-/// \weakgroup rmn_tests
+/// \ingroup rmn_examples
+/// \weakgroup rmn_examples
 /// @{
 
 #undef INTRUSIVE_PTR_RUNTIME_CHECKS

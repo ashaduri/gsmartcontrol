@@ -5,8 +5,8 @@
 ***************************************************************************/
 /// \file
 /// \author Alexander Shaduri
-/// \ingroup hz_tests
-/// \weakgroup hz_tests
+/// \ingroup hz_examples
+/// \weakgroup hz_examples
 /// @{
 
 // disable libdebug, we don't link to it

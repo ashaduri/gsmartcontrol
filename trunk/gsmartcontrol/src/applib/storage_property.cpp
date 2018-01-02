@@ -41,7 +41,7 @@ std::ostream& operator<< (std::ostream& os, const StorageCapability& p)
 std::string StorageAttribute::format_raw_value() const
 {
 	// If it's fully a number, format it with commas
-	if (hz::number_to_string(raw_value_int) == raw_value) {
+	if (hz::number_to_string_nolocale(raw_value_int) == raw_value) {
 		std::stringstream ss;
 		ss.imbue(std::locale(""));
 		ss << std::fixed << raw_value_int;
@@ -69,7 +69,7 @@ std::ostream& operator<< (std::ostream& os, const StorageAttribute& p)
 std::string StorageStatistic::format_value() const
 {
 	// If it's fully a number, format it with commas
-	if (hz::number_to_string(value_int) == value) {
+	if (hz::number_to_string_nolocale(value_int) == value) {
 		std::stringstream ss;
 		ss.imbue(std::locale(""));
 		ss << std::fixed << value_int;
@@ -250,7 +250,7 @@ std::string StorageProperty::format_value(bool add_reported_too) const
 		case StorageProperty::value_type_string:
 			return value_string;
 		case StorageProperty::value_type_integer:
-			return hz::number_to_string(value_integer) + (add_reported_too ? (" [" + reported_value + "]") : "");
+			return hz::number_to_string_locale(value_integer) + (add_reported_too ? (" [" + reported_value + "]") : "");
 		case StorageProperty::value_type_bool:
 			return std::string(value_bool ? "Yes" : "No") + (add_reported_too ? (" [" + reported_value + "]") : "");
 		case StorageProperty::value_type_time_length:

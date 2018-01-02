@@ -63,7 +63,7 @@ APP_DETECT_OS_KERNEL([build], [CONFIG_HOST_KERNEL_])
 
 # Detect common (warning, debug, optimize) compiler flags and
 # export them to C(XX)FLAGS, LDFLAGS.
-# We don't use prefix because this way the flags will be used for tests,
+# We don't use prefix because this way the flags will be used for examples,
 # which is important for some compatibility flags (e.g. __func__ visibility, etc...).
 APP_COMPILER_OPTIONS([])
 
@@ -104,11 +104,11 @@ AC_CHECK_LIB(util, getrawpartition, [ 	LIBS="$LIBS -lutil" ])
 # -------------------------------------------------------------------------------------
 
 
-# enable / disable compilation of tests
-AC_ARG_ENABLE([tests], AS_HELP_STRING([--enable-tests],
-		[enable compilation of test programs (default: no)]), [with_tests=${enableval}], [with_tests=no])
+# enable / disable compilation of examples
+AC_ARG_ENABLE([examples], AS_HELP_STRING([--enable-examples],
+		[enable compilation of example programs (default: no)]), [with_examples=${enableval}], [with_examples=no])
 # export to automake.am-s
-AM_CONDITIONAL([ENABLE_TESTS], [test "$with_tests" = "yes"])
+AM_CONDITIONAL([ENABLE_EXAMPLES], [test "$with_examples" = "yes"])
 
 
 # -------------------------------------------------------------------------------------
@@ -322,7 +322,8 @@ _AM_SUBST_NOTMAKE([RES_TARGETS])
 ADDITIONAL_FLAGS="-DPACKAGE_PKGDATA_DIR=\"\\\"\$(pkgdatadir)\\\"\" \
 -DPACKAGE_SYSCONF_DIR=\"\\\"\$(sysconfdir)\\\"\" \
 -DTOP_SRC_DIR=\"\\\"\$(top_srcdir)\\\"\" \
--DHZ_USE_GLOBAL_MACROS=1"
+-DHZ_USE_LIBDEBUG=1 \
+-DHZ_ENABLE_COMPILED_RES_DATA=1"
 
 #CFLAGS="$CFLAGS $ADDITIONAL_FLAGS"
 CXXFLAGS="$CXXFLAGS $ADDITIONAL_FLAGS"
@@ -355,17 +356,6 @@ CXXFLAGS="$ADDITIONAL_INCLUDES $CXXFLAGS"
 # -------------------------------------------------------------------------------------
 
 
-# final setup
-
-# This macro should be defined by ./configure automatically.
-# However, sometimes it's not (e.g. win32, why?), so we define it manually.
-CXXFLAGS="$CXXFLAGS -DHAVE_CONFIG_H"
-
-#CFLAGS="$CFLAGS $USER_INCLUDES"
-#CXXFLAGS="$CXXFLAGS $USER_INCLUDES"
-#LIBS="$LIBS $USER_LDFLAGS"
-
-
 # make them available in Makefile.am
 AC_SUBST(CFLAGS)
 AC_SUBST(CXXFLAGS)
@@ -373,24 +363,7 @@ AC_SUBST(LIBS)
 AC_SUBST(LDFLAGS)
 
 
-# -------------------------------------------------------------------------------------
-
-
-# all_includes="$all_includes $ALL_CXXFLAGS"
-# all_libraries="$all_libraries $ALL_LIBS"
-#all_includes="$all_includes $USER_INCLUDES"
-#all_libraries="$all_libraries $LIBS"
-
-
-# substitude them in makefile.am-s
-
-#AC_SUBST(all_includes)
-#AC_SUBST(all_libraries)
-
-
-
 # print them out for debug purposes
-
 AC_MSG_NOTICE([
 CXX:
 $CXX
@@ -404,7 +377,6 @@ $LIBS
 
 
 # substitude autotools' predefined dir names in makefile.am-s
-
 AC_SUBST(AUTODIRS)
 
 

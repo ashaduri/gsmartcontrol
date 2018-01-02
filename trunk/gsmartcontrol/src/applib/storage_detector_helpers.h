@@ -98,13 +98,12 @@ inline std::string tw_cli_get_drives(const std::string& dev, int controller,
 		if (port_re.PartialMatch(hz::string_trim_copy(lines.at(i)), &port_str, &status)) {
 			if (status != "NOT-PRESENT") {
 				int port = -1;
-				hz::string_is_numeric(port_str, port);
-				if (port != -1) {
+				if (hz::string_is_numeric_nolocale(port_str, port)) {
 					if (use_tw_cli_dev) {  // use "tw_cli/cx/py" device
 						drives.push_back(StorageDeviceRefPtr(new StorageDevice("tw_cli/c"
-								+ hz::number_to_string(controller) + "/p" + hz::number_to_string(port))));
+								+ hz::number_to_string_nolocale(controller) + "/p" + hz::number_to_string_nolocale(port))));
 					} else {
-						drives.push_back(StorageDeviceRefPtr(new StorageDevice(dev, "3ware," + hz::number_to_string(port))));
+						drives.push_back(StorageDeviceRefPtr(new StorageDevice(dev, "3ware," + hz::number_to_string_nolocale(port))));
 					}
 					debug_out_info("app", "Added 3ware drive " << drives.back()->get_device_with_type() << ".\n");
 				}
@@ -138,8 +137,7 @@ inline std::string tw_cli_get_controllers(ExecutorFactoryRefPtr ex_factory, std:
 		std::string controller_str;
 		if (controller_re.PartialMatch(hz::string_trim_copy(lines.at(i)), &controller_str)) {
 			int controller = -1;
-			hz::string_is_numeric(controller_str, controller);
-			if (controller != -1) {
+			if (hz::string_is_numeric_nolocale(controller_str, controller)) {
 				debug_out_info("app", "Found 3ware controller " << controller << ".\n");
 				controllers.push_back(controller);
 			}

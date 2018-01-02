@@ -21,7 +21,7 @@
 #include <cstdint>
 #include <sstream>
 
-#include "string_num.h"  // hz::number_to_string
+#include "string_num.h"  // hz::number_to_string_locale
 #include "i18n.h"  // HZ_NC_, HZ_C_
 
 
@@ -95,32 +95,32 @@ inline std::string format_size(uint64_t size, bool use_decimal = false, bool siz
 	const int addn = static_cast<int>(!use_decimal) + (static_cast<int>(size_is_bits) * 2);
 
 	if (size >= eb_size) {  // exa
-		return hz::number_to_string(static_cast<long double>(size) / static_cast<long double>(eb_size), 2, true)
+		return hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(eb_size), 2, true)
 				+ HZ_RC_("filesize", names[(6 * 4) + addn]);
 	}
 
 	if (size >= pb_size) {  // peta
-		return hz::number_to_string(static_cast<long double>(size) / static_cast<long double>(pb_size), 2, true)
+		return hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(pb_size), 2, true)
 				+ HZ_RC_("filesize", names[(5 * 4) + addn]);
 	}
 
 	if (size >= tb_size) {  // tera
-		return hz::number_to_string(static_cast<long double>(size) / static_cast<long double>(tb_size), 2, true)
+		return hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(tb_size), 2, true)
 				+ HZ_RC_("filesize", names[(4 * 4) + addn]);
 	}
 
 	if (size >= gb_size) {  // giga
-		return hz::number_to_string(static_cast<long double>(size) / static_cast<long double>(gb_size), 2, true)
+		return hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(gb_size), 2, true)
 				+ HZ_RC_("filesize", names[(3 * 4) + addn]);
 	}
 
 	if (size >= mb_size) {  // mega
-		return hz::number_to_string(static_cast<long double>(size) / static_cast<long double>(mb_size), 2, true)
+		return hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(mb_size), 2, true)
 				+ HZ_RC_("filesize", names[(2 * 4) + addn]);
 	}
 
 	if (size >= kb_size) {  // kilo
-		return hz::number_to_string(static_cast<long double>(size) / static_cast<long double>(kb_size), 2, true)
+		return hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(kb_size), 2, true)
 				+ HZ_RC_("filesize", names[(1 * 4) + addn]);
 	}
 
