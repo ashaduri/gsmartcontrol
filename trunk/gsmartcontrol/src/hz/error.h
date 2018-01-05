@@ -19,7 +19,6 @@
 #include <typeinfo>  // std::type_info
 
 #include "debug.h"  // DBG_ASSERT
-#include "errno_string.h"  // hz::errno_string
 #include "process_signal.h"  // hz::signal_to_string
 #include "bad_cast_exception.h"
 #include "i18n.h"  // HZ__
@@ -261,7 +260,7 @@ class Error<int> : public ErrorCodeHolder<int> {
 			: ErrorCodeHolder<int>(type_, level_, code_)
 		{
 			if (type == "errno") {
-				message = hz::errno_string(code_);
+				message = std::error_code(code_, std::system_category()).message();
 
 			} else if (type == "signal") {
 				// hz::signal_string should be translated already
