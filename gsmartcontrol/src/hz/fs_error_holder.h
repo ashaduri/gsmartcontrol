@@ -17,12 +17,12 @@
 #include <string>
 // cerrno is not directly used here, but will be needed in children.
 #include <cerrno>  // errno (not std::errno, it may be a macro)
+#include <system_error>
 
 #if defined ENABLE_GLIB && ENABLE_GLIB
 	#include <glib.h>  // g_*
 #endif
 
-#include "errno_string.h"  // hz::errno_string
 #include "debug.h"  // debug_*
 #include "i18n.h"  // HZ__
 #include "string_algo.h"  // string_replace
@@ -34,6 +34,20 @@
 
 namespace hz {
 
+
+
+namespace impl {
+
+inline std::string errno_string(int errno_value)
+{
+#if defined ENABLE_GLIB && ENABLE_GLIB
+	return g_strerror(errno_value);
+#else
+	return std::error_code(errno_value, std::system_category()).message();
+#endif
+}
+
+}
 
 
 /// Filesystem operation error holder.
@@ -159,9 +173,9 @@ class FsErrorHolder {
 		// Note: Paths are in filesystem charset. On win32 it's always utf-8.
 		// Errno string is in libc locale charset or utf8 (if using glib).
 
-		gchar* loc_errno = g_locale_from_utf8(hz::errno_string(error_errno_).c_str(), -1, NULL, NULL, NULL);
+		gchar* loc_errno = g_locale_from_utf8(g_strerror(error_errno_), -1, NULL, NULL, NULL);
 		std::string loc_errno_str = (loc_errno ? loc_errno
-				: (HZ__("[charset conv error] ") + error_errno_ + hz::errno_string(error_errno_)));
+				: (HZ__("[charset conv error] ") + error_errno_ + std::string(g_strerror(error_errno_))));
 		g_free(loc_errno);
 
 		gchar* p1_utf8 = g_filename_display_name(error_path1_.c_str());  // fs -> utf8. always non-null.
@@ -204,7 +218,7 @@ class FsErrorHolder {
 		std::string msg = error_format_;
 		hz::string_replace(msg, "/path1/", p1, 1);
 		hz::string_replace(msg, "/path2/", p2, 1);
-		hz::string_replace(msg, "/errno/", hz::errno_string(error_errno_), 1);  // Errno string is already utf8 if using glib.
+		hz::string_replace(msg, "/errno/", impl::errno_string(error_errno_), 1);  // Errno string is already utf8 if using glib.
 
 		return msg;
 	}
@@ -227,7 +241,7 @@ class FsErrorHolder {
 		// files are in system locale. we're using console, don't use thread locale.
 		std::string err_path1 = hz::win32_utf8_to_locale(error_path1_, 0, false);
 		std::string err_path2 = hz::win32_utf8_to_locale(error_path2_, 0, false);
-		std::string errno_str = hz::errno_string(error_errno_);
+		std::string errno_str = impl::errno_string(error_errno_);
 		std::string errno_cstr = hz::win32_utf8_to_locale(errno_str, 0, false);
 
 		hz::string_replace(msg, "/path1/", (err_path1 ? err_path1 : error_path1_), 1);
@@ -238,7 +252,7 @@ class FsErrorHolder {
 		// filesystem charset (possibly locale). screwed up, probably.
 		hz::string_replace(msg, "/path1/", error_path1_, 1);
 		hz::string_replace(msg, "/path2/", error_path2_, 1);
-		hz::string_replace(msg, "/errno/", hz::errno_string(error_errno_), 1);  // locale charset
+		hz::string_replace(msg, "/errno/", impl::errno_string(error_errno_), 1);  // locale charset
 	#endif
 
 		return msg;
