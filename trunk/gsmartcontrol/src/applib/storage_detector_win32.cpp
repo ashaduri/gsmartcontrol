@@ -26,7 +26,7 @@
 #include "hz/string_sprintf.h"
 #include "hz/fs_path.h"
 #include "hz/string_num.h"
-#include "rconfig/rconfig_mini.h"
+#include "rconfig/config.h"
 #include "app_pcrecpp.h"
 #include "storage_detector_win32.h"
 #include "storage_detector_helpers.h"
@@ -186,8 +186,7 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDeviceRefPtr>& dr
 		return "Smartctl binary is not specified in configuration.";
 	}
 
-	std::string smartctl_def_options;
-	rconfig::get_data("system/smartctl_options", smartctl_def_options);
+	std::string smartctl_def_options = rconfig::get_data<std::string>("system/smartctl_options");
 
 	if (!smartctl_def_options.empty())
 		smartctl_def_options += " ";
@@ -491,7 +490,7 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDeviceRefPtr>& d
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives behind Areca controller(s)...\n");
 
-	int scan_controllers = rconfig::get_data<int32_t>("system/win32_areca_scan_controllers");
+	int scan_controllers = rconfig::get_data<int>("system/win32_areca_scan_controllers");
 	if (scan_controllers == 0) {  // disabled
 		debug_out_info("app", "Areca controller scanning is disabled through config.\n");
 		return std::string();
@@ -533,7 +532,7 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDeviceRefPtr>& d
 
 	bool cli_found = !cli_inst_path.empty();
 
-	int use_cli = rconfig::get_data<int32_t>("system/win32_areca_use_cli");
+	int use_cli = rconfig::get_data<int>("system/win32_areca_use_cli");
 	bool scan_detect = (use_cli != 1);  // Whether to detect using sequential port scanning. Only do that if CLI is not forced.
 	if (use_cli == 2) {  // auto
 		use_cli = cli_found;
@@ -592,12 +591,12 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDeviceRefPtr>& d
 	if (use_cli == 0 && scan_detect) {
 		debug_out_info("app", "Manually scanning Areca controllers and ports...\n");
 
-		int max_controllers = rconfig::get_data<int32_t>("system/win32_areca_max_controllers");
-		int max_noenc_ports = rconfig::get_data<int32_t>("system/win32_areca_neonc_max_scan_port");
+		int max_controllers = rconfig::get_data<int>("system/win32_areca_max_controllers");
+		int max_noenc_ports = rconfig::get_data<int>("system/win32_areca_neonc_max_scan_port");
 		max_noenc_ports = std::max(1, std::min(24, max_noenc_ports));  // 1-24 sanity check
-		int max_enc_ports = rconfig::get_data<int32_t>("system/win32_areca_enc_max_scan_port");
+		int max_enc_ports = rconfig::get_data<int>("system/win32_areca_enc_max_scan_port");
 		max_enc_ports = std::max(1, std::min(128, max_enc_ports));  // 1-128 sanity check
-		int max_enclosures = rconfig::get_data<int32_t>("system/win32_areca_enc_max_enclosure");
+		int max_enclosures = rconfig::get_data<int>("system/win32_areca_enc_max_enclosure");
 		max_enclosures = std::max(1, std::min(8, max_enclosures));  // 1-8 sanity check
 
 		for (int controller_no = 0; controller_no < max_controllers; ++controller_no) {

@@ -16,13 +16,14 @@
 #undef throw
 
 #include <map>
+#include <type_traits>  // std::decay_t
 #include <gtkmm.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
 
 #include "hz/fs_path.h"
 #include "hz/string_sprintf.h"
 #include "hz/scoped_ptr.h"
-#include "rconfig/rconfig_mini.h"
+#include "rconfig/config.h"
 #include "applib/storage_settings.h"
 #include "applib/app_gtkmm_utils.h"
 #include "gsc_main_window.h"
@@ -148,7 +149,7 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		/// Check whether there is a row selected
 		bool has_selected_row()
 		{
-			return this->get_selection()->count_selected_rows();
+			return this->get_selection()->count_selected_rows() > 0;
 		}
 
 
@@ -156,12 +157,12 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		void set_device_map(const device_option_map_t& devmap)
 		{
 			clear_all();
-			for (device_option_map_t::const_iterator iter = devmap.begin(); iter != devmap.end(); ++iter) {
+			for (const auto& value : devmap) {
 				std::vector<std::string> parts;
-				hz::string_split(iter->first, "::", parts, 2);
+				hz::string_split(value.first, "::", parts, 2);
 				std::string dev = (parts.size() > 0 ? parts.at(0) : "");
 				std::string type = (parts.size() > 1 ? parts.at(1) : "");
-				std::string params = iter->second;
+				std::string params = value.second;
 				this->add_new_row(dev, type, params, false);
 			}
 		}
@@ -238,13 +239,13 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const app_ui
 
 	APP_GTKMM_CONNECT_VIRTUAL(delete_event);  // make sure the event handler is called
 
-	Gtk::Button* window_cancel_button = 0;
+	Gtk::Button* window_cancel_button = nullptr;
 	APP_UI_RES_AUTO_CONNECT(window_cancel_button, clicked);
 
-	Gtk::Button* window_ok_button = 0;
+	Gtk::Button* window_ok_button = nullptr;
 	APP_UI_RES_AUTO_CONNECT(window_ok_button, clicked);
 
-	Gtk::Button* window_reset_all_button = 0;
+	Gtk::Button* window_reset_all_button = nullptr;
 	APP_UI_RES_AUTO_CONNECT(window_reset_all_button, clicked);
 
 
@@ -259,18 +260,18 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const app_ui
 		app_gtkmm_set_widget_tooltip(*smartctl_binary_entry, smartctl_binary_tooltip);
 	}
 
-	Gtk::Button* smartctl_binary_browse_button = 0;
+	Gtk::Button* smartctl_binary_browse_button = nullptr;
 	APP_UI_RES_AUTO_CONNECT(smartctl_binary_browse_button, clicked);
 
 
-	Gtk::Button* device_options_add_device_button = 0;
+	Gtk::Button* device_options_add_device_button = nullptr;
 	APP_UI_RES_AUTO_CONNECT(device_options_add_device_button, clicked);
 
-	Gtk::Button* device_options_remove_device_button = 0;
+	Gtk::Button* device_options_remove_device_button = nullptr;
 	APP_UI_RES_AUTO_CONNECT(device_options_remove_device_button, clicked);
 
 
-	Gtk::Entry* device_options_device_entry = 0;
+	Gtk::Entry* device_options_device_entry = nullptr;
 	APP_UI_RES_AUTO_CONNECT(device_options_device_entry, changed);
 
 	Glib::ustring device_options_tooltip = "A device name to match";
@@ -337,15 +338,13 @@ void GscPreferencesWindow::set_main_window(GscMainWindow* window)
 
 void GscPreferencesWindow::update_device_widgets(const std::string& device, const std::string& type, const std::string& params)
 {
-	Gtk::Entry* entry = 0;
-
-	if ((entry = this->lookup_widget<Gtk::Entry*>("device_options_device_entry")))
+	if (Gtk::Entry* entry = this->lookup_widget<Gtk::Entry*>("device_options_device_entry"))
 		entry->set_text(device);
 
-	if ((entry = this->lookup_widget<Gtk::Entry*>("device_options_type_entry")))
+	if (Gtk::Entry* entry = this->lookup_widget<Gtk::Entry*>("device_options_type_entry"))
 		entry->set_text(type);
 
-	if ((entry = this->lookup_widget<Gtk::Entry*>("device_options_parameter_entry")))
+	if (Gtk::Entry* entry = this->lookup_widget<Gtk::Entry*>("device_options_parameter_entry"))
 		entry->set_text(params);
 }
 
@@ -353,8 +352,7 @@ void GscPreferencesWindow::update_device_widgets(const std::string& device, cons
 
 void GscPreferencesWindow::device_widget_set_remove_possible(bool b)
 {
-	Gtk::Button* button = 0;
-	if ((button = this->lookup_widget<Gtk::Button*>("device_options_remove_device_button")))
+	if (Gtk::Button* button = this->lookup_widget<Gtk::Button*>("device_options_remove_device_button"))
 		button->set_sensitive(b);
 }
 
@@ -364,34 +362,13 @@ namespace {
 
 	/// Set configuration in a smart way - don't set the defaults.
 	template<typename T>
-	inline void prefs_config_set(const std::string& path, const T& data)
+	void prefs_config_set(const std::string& path, T&& data)
 	{
-		T tmp = T();
-		// we set the data only if one of the following is true:
-		// 1. config node with that path already exists.
-		// 2. data differs from default data.
-		if (rconfig::get_config_data(path, tmp)) {
+		using data_type = std::decay_t<T>;
+		data_type def_value = rconfig::get_default_data<data_type>(path);
+		if (def_value != data) {
 			rconfig::set_data(path, data);
-
-		} else if (rconfig::get_default_data(path, tmp)) {
-			if (tmp != data)
-				rconfig::set_data(path, data);
-
-		} else {
-			debug_out_error("app", DBG_FUNC_MSG << "Path \"" << path << "\" doesn't exist in config trees.\n");
 		}
-	}
-
-
-	/// Get configuration for \c path
-	template<typename T>
-	inline bool prefs_config_get(const std::string& path, T& data)
-	{
-		if (rconfig::get_data(path, data))
-			return true;
-
-		debug_out_error("app", DBG_FUNC_MSG << "Path \"" << path << "\" doesn't exist in config trees.\n");
-		return false;
 	}
 
 }
@@ -402,58 +379,45 @@ void GscPreferencesWindow::import_config()
 {
 	// Clear and fill the entries.
 
-	Gtk::CheckButton* check = 0;
-	Gtk::Entry* entry = 0;
-
-
 	// ------- General tab
 
-	bool scan_on_startup = 0;
-	if ( prefs_config_get("gui/scan_on_startup", scan_on_startup)
-			&& (check = this->lookup_widget<Gtk::CheckButton*>("scan_on_startup_check")) )
+	bool scan_on_startup = rconfig::get_data<bool>("gui/scan_on_startup");
+	if (Gtk::CheckButton* check = this->lookup_widget<Gtk::CheckButton*>("scan_on_startup_check"))
 		check->set_active(scan_on_startup);
 
-	bool show_smart_capable_only = 0;
-	if ( prefs_config_get("gui/show_smart_capable_only", show_smart_capable_only)
-			&& (check = this->lookup_widget<Gtk::CheckButton*>("show_smart_capable_only_check")) )
+	bool show_smart_capable_only = rconfig::get_data<bool>("gui/scan_on_startup");
+	if (Gtk::CheckButton* check = this->lookup_widget<Gtk::CheckButton*>("show_smart_capable_only_check"))
 		check->set_active(show_smart_capable_only);
 
-	bool icons_show_device_name = 0;
-	if ( prefs_config_get("gui/icons_show_device_name", icons_show_device_name)
-			&& (check = this->lookup_widget<Gtk::CheckButton*>("show_device_name_under_icon_check")) )
+	bool icons_show_device_name = rconfig::get_data<bool>("gui/icons_show_device_name");
+	if (Gtk::CheckButton* check = this->lookup_widget<Gtk::CheckButton*>("show_device_name_under_icon_check"))
 		check->set_active(icons_show_device_name);
 
-	bool icons_show_serial_number = 0;
-	if ( prefs_config_get("gui/icons_show_serial_number", icons_show_serial_number)
-			&& (check = this->lookup_widget<Gtk::CheckButton*>("show_serial_number_under_icon_check")) )
+	bool icons_show_serial_number = rconfig::get_data<bool>("gui/icons_show_serial_number");
+	if (Gtk::CheckButton* check = this->lookup_widget<Gtk::CheckButton*>("show_serial_number_under_icon_check"))
 		check->set_active(icons_show_serial_number);
 
-	bool win32_search_smartctl_in_smartmontools = 0;
-	if ( prefs_config_get("system/win32_search_smartctl_in_smartmontools", win32_search_smartctl_in_smartmontools)
-			&& (check = this->lookup_widget<Gtk::CheckButton*>("search_in_smartmontools_first_check")) )
+	bool win32_search_smartctl_in_smartmontools = rconfig::get_data<bool>("system/win32_search_smartctl_in_smartmontools");
+	if (Gtk::CheckButton* check = this->lookup_widget<Gtk::CheckButton*>("search_in_smartmontools_first_check"))
 		check->set_active(win32_search_smartctl_in_smartmontools);
 
-	std::string smartctl_binary;
-	if ( prefs_config_get("system/smartctl_binary", smartctl_binary)
-			&& (entry = this->lookup_widget<Gtk::Entry*>("smartctl_binary_entry")) )
+	std::string smartctl_binary = rconfig::get_data<std::string>("system/smartctl_binary");
+	if (Gtk::Entry* entry = this->lookup_widget<Gtk::Entry*>("smartctl_binary_entry"))
 		entry->set_text(smartctl_binary);
 
-	std::string smartctl_options;
-	if ( prefs_config_get("system/smartctl_options", smartctl_options)
-			&& (entry = this->lookup_widget<Gtk::Entry*>("smartctl_options_entry")) )
+	std::string smartctl_options = rconfig::get_data<std::string>("system/smartctl_options");
+	if (Gtk::Entry* entry = this->lookup_widget<Gtk::Entry*>("smartctl_options_entry"))
 		entry->set_text(smartctl_options);
 
 
 	// ------- Drives tab
 
-	std::string device_blacklist_patterns;
-	if ( prefs_config_get("system/device_blacklist_patterns", device_blacklist_patterns)
-			&& (entry = this->lookup_widget<Gtk::Entry*>("device_blacklist_patterns_entry")) )
+	std::string device_blacklist_patterns = rconfig::get_data<std::string>("system/device_blacklist_patterns");
+	if (Gtk::Entry* entry = this->lookup_widget<Gtk::Entry*>("device_blacklist_patterns_entry"))
 		entry->set_text(device_blacklist_patterns);
 
-
-	std::string devmap_str;
-	if ( prefs_config_get("system/smartctl_device_options", devmap_str) ) {
+	{
+		std::string devmap_str = rconfig::get_data<std::string>("system/smartctl_device_options");
 		device_option_map_t devmap = app_unserialize_device_option_map(devmap_str);
 		device_options_treeview->set_device_map(devmap);
 	}
@@ -466,37 +430,33 @@ void GscPreferencesWindow::export_config()
 {
 	// we don't clear config here, it might contain non-dialog options too.
 
-	Gtk::CheckButton* check = 0;
-	Gtk::Entry* entry = 0;
-
-
 	// ------- General tab
 
-	if ((check = this->lookup_widget<Gtk::CheckButton*>("scan_on_startup_check")))
+	if (Gtk::CheckButton* check = this->lookup_widget<Gtk::CheckButton*>("scan_on_startup_check"))
 		prefs_config_set("gui/scan_on_startup", bool(check->get_active()));
 
-	if ((check = this->lookup_widget<Gtk::CheckButton*>("show_smart_capable_only_check")))
+	if (Gtk::CheckButton* check = this->lookup_widget<Gtk::CheckButton*>("show_smart_capable_only_check"))
 		prefs_config_set("gui/show_smart_capable_only", bool(check->get_active()));
 
-	if ((check = this->lookup_widget<Gtk::CheckButton*>("show_device_name_under_icon_check")))
+	if (Gtk::CheckButton* check = this->lookup_widget<Gtk::CheckButton*>("show_device_name_under_icon_check"))
 		prefs_config_set("gui/icons_show_device_name", bool(check->get_active()));
 
-	if ((check = this->lookup_widget<Gtk::CheckButton*>("show_serial_number_under_icon_check")))
+	if (Gtk::CheckButton* check = this->lookup_widget<Gtk::CheckButton*>("show_serial_number_under_icon_check"))
 		prefs_config_set("gui/icons_show_serial_number", bool(check->get_active()));
 
-	if ((check = this->lookup_widget<Gtk::CheckButton*>("search_in_smartmontools_first_check")))
+	if (Gtk::CheckButton* check = this->lookup_widget<Gtk::CheckButton*>("search_in_smartmontools_first_check"))
 		prefs_config_set("system/win32_search_smartctl_in_smartmontools", bool(check->get_active()));
 
-	if ((entry = this->lookup_widget<Gtk::Entry*>("smartctl_binary_entry")))
+	if (Gtk::Entry* entry = this->lookup_widget<Gtk::Entry*>("smartctl_binary_entry"))
 		prefs_config_set("system/smartctl_binary", std::string(entry->get_text()));
 
-	if ((entry = this->lookup_widget<Gtk::Entry*>("smartctl_options_entry")))
+	if (Gtk::Entry* entry = this->lookup_widget<Gtk::Entry*>("smartctl_options_entry"))
 		prefs_config_set("system/smartctl_options", std::string(entry->get_text()));
 
 
 	// ------- Drives tab
 
-	if ((entry = this->lookup_widget<Gtk::Entry*>("device_blacklist_patterns_entry")))
+	if (Gtk::Entry* entry = this->lookup_widget<Gtk::Entry*>("device_blacklist_patterns_entry"))
 		prefs_config_set("system/device_blacklist_patterns", std::string(entry->get_text()));
 
 	device_option_map_t devmap = device_options_treeview->get_device_map();
@@ -561,7 +521,7 @@ void GscPreferencesWindow::on_window_reset_all_button_clicked()
 			true, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO, true);
 
 	if (dialog.run() == Gtk::RESPONSE_YES) {
-		rconfig::clear_config_all();
+		rconfig::clear_config();
 		import_config();
 		// close the window, because the user might get the impression that "Cancel" will revert.
 		destroy(this);
@@ -664,16 +624,15 @@ void GscPreferencesWindow::on_device_options_remove_device_button_clicked()
 
 void GscPreferencesWindow::on_device_options_add_device_button_clicked()
 {
-	Gtk::Entry* entry = 0;
 	std::string dev, type, par;
 
-	if ((entry = this->lookup_widget<Gtk::Entry*>("device_options_device_entry")))
+	if (Gtk::Entry* entry = this->lookup_widget<Gtk::Entry*>("device_options_device_entry"))
 		dev = entry->get_text();
 
-	if ((entry = this->lookup_widget<Gtk::Entry*>("device_options_type_entry")))
+	if (Gtk::Entry* entry = this->lookup_widget<Gtk::Entry*>("device_options_type_entry"))
 		type = entry->get_text();
 
-	if ((entry = this->lookup_widget<Gtk::Entry*>("device_options_parameter_entry")))
+	if (Gtk::Entry* entry = this->lookup_widget<Gtk::Entry*>("device_options_parameter_entry"))
 		par = entry->get_text();
 
 	if (device_options_treeview->has_selected_row()) {
@@ -687,8 +646,7 @@ void GscPreferencesWindow::on_device_options_add_device_button_clicked()
 
 void GscPreferencesWindow::on_device_options_device_entry_changed()
 {
-	Gtk::Entry* entry = 0;
-	if ((entry = this->lookup_widget<Gtk::Entry*>("device_options_device_entry")))
+	if (Gtk::Entry* entry = this->lookup_widget<Gtk::Entry*>("device_options_device_entry"))
 		device_options_treeview->update_selected_row_device(entry->get_text());
 }
 
@@ -696,8 +654,7 @@ void GscPreferencesWindow::on_device_options_device_entry_changed()
 
 void GscPreferencesWindow::on_device_options_type_entry_changed()
 {
-	Gtk::Entry* entry = 0;
-	if ((entry = this->lookup_widget<Gtk::Entry*>("device_options_type_entry")))
+	if (Gtk::Entry* entry = this->lookup_widget<Gtk::Entry*>("device_options_type_entry"))
 		device_options_treeview->update_selected_row_type(entry->get_text());
 }
 
@@ -705,8 +662,7 @@ void GscPreferencesWindow::on_device_options_type_entry_changed()
 
 void GscPreferencesWindow::on_device_options_parameter_entry_changed()
 {
-	Gtk::Entry* entry = 0;
-	if ((entry = this->lookup_widget<Gtk::Entry*>("device_options_parameter_entry")))
+	if (Gtk::Entry* entry = this->lookup_widget<Gtk::Entry*>("device_options_parameter_entry"))
 		device_options_treeview->update_selected_row_params(entry->get_text());
 }
 

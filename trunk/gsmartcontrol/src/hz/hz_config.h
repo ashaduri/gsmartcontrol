@@ -53,9 +53,9 @@ HZ library internal implementation helpers.
 
 
 /// \def HAVE_VERBOSE_TERMINATE_HANDLER
-/// Defined to 0 or 1. If 1, compiler supports __gnu_cxx::__verbose_terminate_handler.
+/// Defined to 0 or 1. If 1, compiler supports __gnu_cxx::__verbose_terminate_handler (libstdc++).
 #ifndef HAVE_VERBOSE_TERMINATE_HANDLER
-	#if defined __GNUC__
+	#if defined __GLIBCXX__
 		#define HAVE_VERBOSE_TERMINATE_HANDLER 1
 	#else
 		#define HAVE_VERBOSE_TERMINATE_HANDLER 0

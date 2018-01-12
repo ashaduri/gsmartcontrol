@@ -26,7 +26,7 @@
 #include "hz/string_algo.h"  // string_join
 #include "hz/fs_file.h"  // hz::File
 #include "hz/format_unit.h"  // format_time_length
-#include "rconfig/rconfig_mini.h"  // rconfig::*
+#include "rconfig/config.h"  // rconfig::*
 
 #include "applib/app_gtkmm_utils.h"  // app_gtkmm_*
 #include "applib/storage_property_colors.h"
@@ -36,7 +36,7 @@
 #include "gsc_text_window.h"
 #include "gsc_info_window.h"
 #include "gsc_executor_error_dialog.h"
-
+#include "gsc_startup_settings.h"
 
 
 /// A label for StorageProperty
@@ -188,9 +188,8 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 {
 	// Size
 	{
-		int def_size_w = 0, def_size_h = 0;
-		rconfig::get_data("gui/info_window/default_size_w", def_size_w);
-		rconfig::get_data("gui/info_window/default_size_h", def_size_h);
+		int def_size_w = rconfig::get_data<int>("gui/info_window/default_size_w");
+		int def_size_h = rconfig::get_data<int>("gui/info_window/default_size_h");
 		if (def_size_w > 0 && def_size_h > 0) {
 			set_default_size(def_size_w, def_size_h);
 		}
@@ -431,12 +430,9 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 	// hide all tabs except the first if smart is disabled, because they may contain
 	// completely random data (smartctl does that sometimes).
-	bool hide_tabs = true;
-	rconfig::get_data("/runtime/gui/hide_tabs_on_smart_disabled", hide_tabs);
-
-	if (hide_tabs) {
+	if (get_startup_settings().hide_tabs_on_smart_disabled) {
 		bool smart_enabled = (drive->get_smart_status() == StorageDevice::status_enabled);
-		Gtk::Widget* note_page_box = 0;
+		Gtk::Widget* note_page_box = nullptr;
 
 		if ((note_page_box = lookup_widget("attributes_tab_vbox")) != 0) {
 			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
@@ -1789,7 +1785,7 @@ void GscInfoWindow::on_save_info_button_clicked()
 {
 	static std::string last_dir;
 	if (last_dir.empty()) {
-		rconfig::get_data("gui/drive_data_open_save_dir", last_dir);
+		last_dir = rconfig::get_data<std::string>("gui/drive_data_open_save_dir");
 	}
 	int result = 0;
 

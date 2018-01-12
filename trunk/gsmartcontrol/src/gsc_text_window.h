@@ -18,7 +18,7 @@
 #include "hz/debug.h"
 #include "hz/fs_file.h"
 #include "hz/scoped_ptr.h"
-#include "rconfig/rconfig_mini.h"
+#include "rconfig/config.h"
 
 #include "applib/app_gtkmm_features.h"
 #include "applib/app_ui_res_utils.h"
@@ -143,7 +143,7 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 		{
 			static std::string last_dir;
 			if (last_dir.empty()) {
-				rconfig::get_data("gui/drive_data_open_save_dir", last_dir);
+				last_dir = rconfig::get_data<std::string>("gui/drive_data_open_save_dir");
 			}
 			int result = 0;
 

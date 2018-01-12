@@ -34,7 +34,9 @@
 #include "hz/hz_config.h"  // ENABLE_GLIB, VERSION, DEBUG_BUILD
 
 #include "libdebug/libdebug.h"  // include full libdebug here (to add domains, etc...)
-#include "rconfig/rconfig.h"  // include full rconfig here
+#include "rconfig/config.h"
+#include "rconfig/loadsave.h"
+#include "rconfig/autosave.h"
 #include "hz/data_file.h"  // data_file_add_search_directory
 #include "hz/fs_tools.h"  // get_user_config_dir()
 #include "hz/fs_path.h"  // FsPath
@@ -42,11 +44,13 @@
 #include "hz/string_algo.h"  // string_join()
 #include "hz/win32_tools.h"  // win32_get_registry_value_string()
 #include "hz/env_tools.h"
+#include "hz/string_num.h"
 
 #include "gsc_main_window.h"
 #include "gsc_executor_log_window.h"
 #include "gsc_settings.h"
 #include "gsc_init.h"
+#include "gsc_startup_settings.h"
 
 
 
@@ -91,42 +95,23 @@ namespace {
 	/// Find the configuration files and load them.
 	inline bool app_init_config()
 	{
-		// $XDG_CONFIG_DIRS defaults to /etc/xdg, which is really silly.
-		// Actually, the whole specification is silly imho, since instead of
-		// removing just one directory/file I have to remove 3 now (and tell
-		// the users to do the same thing). And the *_DIRS stuff completely
-		// breaks parallel installations of the same program. Implementing
-		// only $XDG_CONFIG_HOME is harmless enough, so we do it.
-
 		s_home_config_file = hz::get_user_config_dir() + hz::DIR_SEPARATOR_S
-				+ "gsmartcontrol" + hz::DIR_SEPARATOR_S + "gsmartcontrol.conf";
+				+ "gsmartcontrol" + hz::DIR_SEPARATOR_S + "gsmartcontrol2.conf";
 
 		std::string global_config_file;
-		std::string old_local_config;  // pre-XDG and pre-CSIDL_APPDATA file for migration
 
 	#ifdef _WIN32
-		global_config_file = "gsmartcontrol.conf";  // CWD, installation dir by default.
-
-		std::string old_config_dir;
-		hz::win32_get_registry_value_string(HKEY_CURRENT_USER,
-				"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders", "Personal", old_config_dir);
-
-		old_local_config = old_config_dir + hz::DIR_SEPARATOR_S + "gsmartcontrol.conf";
-
+		global_config_file = "gsmartcontrol2.conf";  // CWD, installation dir by default.
 	#else
 		global_config_file = std::string(PACKAGE_SYSCONF_DIR)
-				+ hz::DIR_SEPARATOR_S + "gsmartcontrol.conf";
-
-		old_local_config = hz::get_home_dir() + hz::DIR_SEPARATOR_S + ".gsmartcontrolrc";
+				+ hz::DIR_SEPARATOR_S + "gsmartcontrol2.conf";
 	#endif
 
 		debug_out_dump("app", DBG_FUNC_MSG << "Global config file: \"" << global_config_file << "\"\n");
 		debug_out_dump("app", DBG_FUNC_MSG << "Local config file: \"" << s_home_config_file << "\"\n");
-		debug_out_dump("app", DBG_FUNC_MSG << "Old local config file: \"" << old_local_config << "\"\n");
 
 		hz::FsPath gp(global_config_file);  // Default system-wide settings. This file is empty by default.
 		hz::FsPath hp(s_home_config_file);  // Per-user settings.
-		hz::FsPath op(old_local_config);  // Old user settings, should be migrated.
 
 		if (gp.exists() && gp.is_readable()) {  // load global first
 			rconfig::load_from_file(gp.str());
@@ -142,40 +127,27 @@ namespace {
 			if (!config_loc.exists()) {
 				config_loc.make_dir(0700, true);  // with parents.
 			}
-
-			if (op.exists() && op.is_readable()) {  // load the old config if the new one doesn't exist.
-				debug_print_info("app", "Old configuration file found at \"%s\", migrating to \"%s\".\n", op.c_str(), hp.c_str());
-				rconfig::load_from_file(op.str());
-				// force saving of the config to the new location (so that it's preserved in case of crash).
-				if (rconfig::save_to_file(hp.str())) {
-					// remove the old config
-					op.remove();
-				}
-			}
 		}
-
-
-		rconfig::dump_tree();
 
 		init_default_settings();  // initialize /default
 
-	#if defined ENABLE_GLIB && ENABLE_GLIB
+		rconfig::dump_config();
+
 		rconfig::autosave_set_config_file(s_home_config_file);
-		uint32_t autosave_timeout = rconfig::get_data<uint32_t>("system/config_autosave_timeout");
-		if (autosave_timeout)
+		int autosave_timeout = rconfig::get_data<int>("system/config_autosave_timeout");
+		if (autosave_timeout) {
 			rconfig::autosave_start(autosave_timeout);
-	#endif
+		}
 
 		return true;
 	}
 
 
-
+/*
 	/// If it's the first time the application was started by this user, show a message.
 	inline void app_show_first_boot_message(Gtk::Window* parent)
 	{
-		bool first_boot = false;
-		rconfig::get_data("system/first_boot", first_boot);
+		bool first_boot = rconfig::get_data<bool>("system/first_boot");
 
 		if (first_boot) {
 	// 		Glib::ustring msg = "First boot";
@@ -184,6 +156,7 @@ namespace {
 
 	// 	rconfig::set_data("system/first_boot", false);  // don't show it again
 	}
+*/
 
 }  // anon. ns
 
@@ -511,16 +484,16 @@ bool app_init_and_loop(int& argc, char**& argv)
 	// Export some command line arguments to rmn
 
 	// obey the command line option for no-scan on startup
-	rconfig::set_data("/runtime/gui/force_no_scan_on_startup", !bool(args.arg_scan));
+	get_startup_settings().no_scan = !bool(args.arg_scan);
 
 	// load virtual drives on startup if specified.
-	rconfig::set_data("/runtime/gui/add_virtuals_on_startup", load_virtuals);
+	get_startup_settings().load_virtuals = load_virtuals;
 
 	// add devices to the list on startup if specified.
-	rconfig::set_data("/runtime/gui/add_devices_on_startup", load_devices);
+	get_startup_settings().add_devices = load_devices;
 
 	// hide tabs if SMART is disabled
-	rconfig::set_data("/runtime/gui/hide_tabs_on_smart_disabled", bool(args.arg_hide_tabs));
+	get_startup_settings().hide_tabs_on_smart_disabled = bool(args.arg_hide_tabs);
 
 
 	// Create executor log window, but don't show it.
@@ -537,7 +510,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 
 	// first-boot message
-	app_show_first_boot_message(win);
+	// app_show_first_boot_message(win);
 
 
 	// The Main Loop (tm)

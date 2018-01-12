@@ -17,11 +17,11 @@
 #include <string>
 #include <exception>  // for std::exception specialization
 #include <typeinfo>  // std::type_info
+#include <system_error>
 
 #include "debug.h"  // DBG_ASSERT
 #include "process_signal.h"  // hz::signal_to_string
 #include "bad_cast_exception.h"
-#include "i18n.h"  // HZ__
 
 
 

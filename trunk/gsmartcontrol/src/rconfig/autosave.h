@@ -9,15 +9,15 @@
 /// \weakgroup rconfig
 /// @{
 
-#ifndef RCONFIG_RCAUTOSAVE_H
-#define RCONFIG_RCAUTOSAVE_H
+#ifndef RCONFIG_AUTOSAVE_H
+#define RCONFIG_AUTOSAVE_H
 
 #include "hz/hz_config.h"  // ENABLE_GLIB
 
-
 // Autosave functions are only available if GLib is enabled.
-#if defined ENABLE_GLIB && ENABLE_GLIB
-
+#if !defined ENABLE_GLIB || !(ENABLE_GLIB)
+	#error "Glib support must be enabled."
+#endif
 
 #include <string>
 #include <glib.h>
@@ -25,17 +25,18 @@
 #include "hz/debug.h"
 #include "hz/fs_path.h"
 
-#include "rcloadsave.h"
+#include "loadsave.h"
 
 
 
 namespace rconfig {
 
 
-/// Holder for static variables
-struct AutoSaveHolder {
-	static inline std::string config_file;  ///< Config file to autosave to.
-	static inline bool autosave_enabled = false;  ///< Autosave enabled or not. This acts as a stopper flag for autosave callback.
+namespace impl {
+	
+	inline std::string autosave_config_file;  ///< Config file to autosave to.
+	inline bool autosave_enabled = false;  ///< Autosave enabled or not. This acts as a stopper flag for autosave callback.
+
 };
 
 
@@ -47,18 +48,18 @@ extern "C" {
 	{
 		bool force = (bool)data;
 
-		if (!force && !AutoSaveHolder::autosave_enabled)  // no more autosaves
+		if (!force && !impl::autosave_enabled)  // no more autosaves
 			return false;  // remove timeout, disable autosave for real.
 
-		debug_print_info("rconfig", "Autosaving config to \"%s\".\n", AutoSaveHolder::config_file.c_str());
+		debug_print_info("rconfig", "Autosaving config to \"%s\".\n", impl::autosave_config_file.c_str());
 
-		hz::FsPath p(AutoSaveHolder::config_file);
+		hz::FsPath p(impl::autosave_config_file);
 		if ((p.exists() && !p.is_regular()) || !p.is_writable()) {
 			debug_out_error("rconfig", "Autosave failed: Cannot write to file: " << p.get_error_locale() << "\n");
 			return (force ? false : true);  // if manual, return failure. else, don't stop the timeout.
 		}
 
-		bool status = rconfig::save_to_file(AutoSaveHolder::config_file);
+		bool status = rconfig::save_to_file(impl::autosave_config_file);
 		if (force)
 			return status;  // return status to caller
 
@@ -78,7 +79,7 @@ inline bool autosave_set_config_file(const std::string& file)
 		return false;
 	}
 
-	AutoSaveHolder::config_file = file;
+	impl::autosave_config_file = file;
 
 	debug_print_info("rconfig", "Setting autosave config file to \"%s\"\n", file.c_str());
 	return true;
@@ -89,12 +90,12 @@ inline bool autosave_set_config_file(const std::string& file)
 /// Enable autosave every \c sec_interval seconds.
 inline bool autosave_start(unsigned int sec_interval)
 {
-	if (AutoSaveHolder::autosave_enabled) {  // already autosaving, you should stop it first.
+	if (impl::autosave_enabled) {  // already autosaving, you should stop it first.
 		debug_print_warn("rconfig", "Error while starting config autosave: Autosave is active already.\n");
 		return false;
 	}
 
-	AutoSaveHolder::autosave_enabled = true;
+	impl::autosave_enabled = true;
 	debug_print_info("rconfig", "Starting config autosave with %u sec. interval.\n", sec_interval);
 
 	g_timeout_add_full(G_PRIORITY_DEFAULT_IDLE, sec_interval*1000,
@@ -111,7 +112,7 @@ inline void autosave_stop()
 	debug_print_info("rconfig", "Stopping config autosave.\n");
 
 	// set the stop flag. it will make autosave stop on next timeout callback call.
-	AutoSaveHolder::autosave_enabled = false;
+	impl::autosave_enabled = false;
 }
 
 
@@ -127,10 +128,6 @@ inline bool autosave_force_now()
 
 
 }  // ns
-
-
-
-#endif  // glib
 
 
 #endif

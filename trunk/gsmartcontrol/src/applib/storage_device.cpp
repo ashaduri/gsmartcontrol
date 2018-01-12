@@ -9,7 +9,7 @@ License: See LICENSE_gsmartcontrol.txt
 /// \weakgroup applib
 /// @{
 
-#include "rconfig/rconfig_mini.h"
+#include "rconfig/config.h"
 #include "hz/string_algo.h"  // string_trim_copy, string_any_to_unix_copy
 #include "hz/fs_path.h"  // FsPath
 #include "hz/fs_path_utils.h"  // hz::filename_make_safe
@@ -816,8 +816,7 @@ std::string StorageDevice::get_save_filename() const
 	std::string serial = this->get_serial_number();
 	std::string date = hz::format_date("%Y-%m-%d", true);
 
-	std::string filename_format;
-	rconfig::get_data("gui/smartctl_output_filename_format", filename_format);
+	std::string filename_format = rconfig::get_data<std::string>("gui/smartctl_output_filename_format");
 	hz::string_replace(filename_format, "{serial}", serial);
 	hz::string_replace(filename_format, "{model}", model);
 	hz::string_replace(filename_format, "{date}", date);

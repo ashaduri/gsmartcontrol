@@ -16,7 +16,7 @@
 #include <vector>
 #include <map>
 
-#include "rconfig/rconfig_mini.h"
+#include "rconfig/config.h"
 #include "hz/string_algo.h"
 #include "hz/bin2ascii_encoder.h"
 
@@ -86,10 +86,7 @@ inline std::string app_get_device_option(const std::string& dev, const std::stri
 	if (dev.empty())
 		return std::string();
 
-	std::string devmap_str;
-	if (!rconfig::get_data("system/smartctl_device_options", devmap_str))
-		return std::string();
-
+	std::string devmap_str = rconfig::get_data<std::string>("system/smartctl_device_options");
 	device_option_map_t devmap = app_unserialize_device_option_map(devmap_str);
 
 	// try the concrete type first

@@ -25,7 +25,7 @@
 #include "hz/fs_path.h"
 #include "hz/fs_file.h"
 #include "hz/fs_dir.h"
-#include "rconfig/rconfig_mini.h"
+#include "rconfig/config.h"
 #include "app_pcrecpp.h"
 #include "storage_detector_other.h"
 
@@ -45,8 +45,9 @@ std::string detect_drives_other(std::vector<StorageDeviceRefPtr>& drives, Execut
 		sdev_config_path = "system/unix_sdev_path";
 	#endif
 
-	std::string dev_dir;  // defaults to /dev for freebsd, /dev/rdsk for solaris.
-	if (!rconfig::get_data(sdev_config_path, dev_dir) || dev_dir.empty()) {
+	// defaults to /dev for freebsd, /dev/rdsk for solaris.
+	std::string dev_dir = rconfig::get_data<std::string>(sdev_config_path);
+	if (dev_dir.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Device directory path is not set.\n");
 		return "Device directory path is not set.";
 	}

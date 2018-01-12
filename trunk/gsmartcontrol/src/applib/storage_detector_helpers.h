@@ -23,7 +23,7 @@
 
 #include "executor_factory.h"
 #include "storage_device.h"
-#include "rconfig/rconfig_mini.h"
+#include "rconfig/config.h"
 #include "app_pcrecpp.h"
 #include "hz/string_num.h"
 
@@ -35,8 +35,7 @@ inline std::string execute_tw_cli(ExecutorFactoryRefPtr ex_factory, const std::s
 {
 	hz::intrusive_ptr<CmdexSync> executor = ex_factory->create_executor(ExecutorFactory::ExecutorTwCli);
 
-	std::string binary;
-	rconfig::get_data("system/tw_cli_binary", binary);
+	std::string binary = rconfig::get_data<std::string>("system/tw_cli_binary");
 
 	if (binary.empty()) {
 		debug_out_error("app", DBG_FUNC_MSG << "tw_cli binary is not set in config.\n");
