@@ -19,7 +19,7 @@
 
 #include "hz/fs_path.h"
 #include "hz/win32_tools.h"
-#include "rconfig/rconfig_mini.h"
+#include "rconfig/config.h"
 #include "app_pcrecpp.h"
 
 
@@ -27,22 +27,19 @@
 
 std::string get_smartctl_binary()
 {
-	std::string smartctl_binary;
-	rconfig::get_data("system/smartctl_binary", smartctl_binary);
+	std::string smartctl_binary = rconfig::get_data<std::string>("system/smartctl_binary");
 
 #ifdef _WIN32
 	// look in smartmontools installation directory.
 	do {
-		bool use_smt = false;
-		rconfig::get_data("system/win32_search_smartctl_in_smartmontools", use_smt);
+		bool use_smt = rconfig::get_data<bool>("system/win32_search_smartctl_in_smartmontools");
 		if (!use_smt)
 			break;
 
-		std::string smt_regpath, smt_regpath_wow, smt_regkey, smt_smartctl;
-		rconfig::get_data("system/win32_smartmontools_regpath", smt_regpath);
-		rconfig::get_data("system/win32_smartmontools_regpath_wow", smt_regpath_wow);  // same as above, but with WOW6432Node
-		rconfig::get_data("system/win32_smartmontools_regkey", smt_regkey);
-		rconfig::get_data("system/win32_smartmontools_smartctl_binary", smt_smartctl);
+		std::string smt_regpath = rconfig::get_data<std::string>("system/win32_smartmontools_regpath");
+		std::string smt_regpath_wow = rconfig::get_data<std::string>("system/win32_smartmontools_regpath_wow");  // same as above, but with WOW6432Node
+		std::string smt_regkey = rconfig::get_data<std::string>("system/win32_smartmontools_regkey");
+		std::string smt_smartctl = rconfig::get_data<std::string>("system/win32_smartmontools_smartctl_binary");
 
 		if ((smt_regpath.empty() && smt_regpath_wow.empty()) || smt_regkey.empty() || smt_smartctl.empty())
 			break;
@@ -102,8 +99,7 @@ std::string execute_smartctl(const std::string& device, const std::string& devic
 		return "Smartctl binary is not specified in configuration.";
 	}
 
-	std::string smartctl_def_options;
-	rconfig::get_data("system/smartctl_options", smartctl_def_options);
+	std::string smartctl_def_options = rconfig::get_data<std::string>("system/smartctl_options");
 
 	if (!smartctl_def_options.empty())
 		smartctl_def_options += " ";

@@ -24,7 +24,7 @@
 #include "hz/debug.h"
 #include "hz/scoped_ptr.h"
 #include "hz/launch_url.h"
-#include "rconfig/rconfig_mini.h"
+#include "rconfig/config.h"
 #include "applib/storage_detector.h"
 #include "applib/smartctl_parser.h"
 #include "applib/gui_utils.h"  // gui_show_error_dialog
@@ -45,6 +45,7 @@
 #include "gsc_main_window.h"
 #include "gsc_add_device_window.h"
 #include "applib/executor_factory.h"
+#include "gsc_startup_settings.h"
 
 
 
@@ -65,9 +66,8 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 
 	// Size
 	{
-		int def_size_w = 0, def_size_h = 0;
-		rconfig::get_data("gui/main_window/default_size_w", def_size_w);
-		rconfig::get_data("gui/main_window/default_size_h", def_size_h);
+		int def_size_w = rconfig::get_data<int>("gui/main_window/default_size_w");
+		int def_size_h = rconfig::get_data<int>("gui/main_window/default_size_h");
 		if (def_size_w > 0 && def_size_h > 0) {
 			set_default_size(def_size_w, def_size_h);
 		}
@@ -78,9 +78,8 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 
 	// Position (after the window has been shown)
 	{
-		int pos_x = 0, pos_y = 0;
-		rconfig::get_data("gui/main_window/default_pos_x", pos_x);
-		rconfig::get_data("gui/main_window/default_pos_y", pos_y);
+		int pos_x = rconfig::get_data<int>("gui/main_window/default_pos_x");
+		int pos_y = rconfig::get_data<int>("gui/main_window/default_pos_y");
 		if (pos_x > 0 && pos_y > 0) {  // to avoid situations where positions are not supported
 			this->move(pos_x, pos_y);
 		}
@@ -100,8 +99,7 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& re
 
 		// Don't use default options here - they are used when invoked
 		// with a device option.
-// 		std::string smartctl_def_options;
-// 		rconfig::get_data("system/smartctl_options", smartctl_def_options);
+// 		std::string smartctl_def_options = rconfig::get_data<std::string>("system/smartctl_options");
 
 		if (smartctl_binary.empty()) {
 			error_msg = "Smartctl binary is not specified in configuration.";
@@ -183,7 +181,7 @@ void GscMainWindow::populate_iconview(bool smartctl_valid)
 			Gtk::Main::iteration();
 
 	} else if (rconfig::get_data<bool>("gui/scan_on_startup")  // config option
-			&& !rconfig::get_data<bool>("/runtime/gui/force_no_scan_on_startup")) {  // command-line option
+			&& !get_startup_settings().no_scan) {  // command-line option
 		rescan_devices();  // scan for devices and fill the iconview
 
 	} else {
@@ -196,29 +194,23 @@ void GscMainWindow::populate_iconview(bool smartctl_valid)
 	// Add command-line-requested devices and virtual drives.
 
 	if (smartctl_valid) {
-		std::vector<std::string> load_devices;
-		if (rconfig::get_data("/runtime/gui/add_devices_on_startup", load_devices)) {
-			for (unsigned int i = 0; i < load_devices.size(); ++i) {
-				if (!load_devices[i].empty()) {
-					std::vector<std::string> parts;
-					hz::string_split(load_devices[i], "::", parts, false);
-					std::string file = (parts.size() > 0 ? parts.at(0) : "");
-					std::string type_arg = (parts.size() > 1 ? parts.at(1) : "");
-					std::string extra_args = (parts.size() > 2 ? parts.at(2) : "");
-					if (!file.empty()) {
-						add_device(file, type_arg, extra_args);
-					}
+		for (auto&& dev_with_type : get_startup_settings().add_devices) {
+			if (!dev_with_type.empty()) {
+				std::vector<std::string> parts;
+				hz::string_split(dev_with_type, "::", parts, false);
+				std::string file = (parts.size() > 0 ? parts.at(0) : "");
+				std::string type_arg = (parts.size() > 1 ? parts.at(1) : "");
+				std::string extra_args = (parts.size() > 2 ? parts.at(2) : "");
+				if (!file.empty()) {
+					add_device(file, type_arg, extra_args);
 				}
 			}
 		}
 	}
 
-	std::vector<std::string> load_virtuals;
-	if (rconfig::get_data("/runtime/gui/add_virtuals_on_startup", load_virtuals)) {
-		for (unsigned int i = 0; i < load_virtuals.size(); ++i) {
-			if (!load_virtuals[i].empty()) {
-				add_virtual_drive(load_virtuals[i]);
-			}
+	for (auto&& virt : get_startup_settings().load_virtuals) {
+		if (!virt.empty()) {
+			add_virtual_drive(virt);
 		}
 	}
 
@@ -1310,7 +1302,7 @@ void GscMainWindow::show_load_virtual_file_chooser()
 {
 	static std::string last_dir;
 	if (last_dir.empty()) {
-		rconfig::get_data("gui/drive_data_open_save_dir", last_dir);
+		last_dir = rconfig::get_data<std::string>("gui/drive_data_open_save_dir");
 	}
 	int result = 0;
 

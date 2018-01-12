@@ -323,7 +323,10 @@ ADDITIONAL_FLAGS="-DPACKAGE_PKGDATA_DIR=\"\\\"\$(pkgdatadir)\\\"\" \
 -DPACKAGE_SYSCONF_DIR=\"\\\"\$(sysconfdir)\\\"\" \
 -DTOP_SRC_DIR=\"\\\"\$(top_srcdir)\\\"\" \
 -DHZ_USE_LIBDEBUG=1 \
--DHZ_ENABLE_COMPILED_RES_DATA=1"
+-DHZ_ENABLE_COMPILED_RES_DATA=1 \
+-DPICOJSON_USE_INT64 \
+-DPICOJSON_USE_RVALUE_REFERENCE \
+-DPICOJSON_USE_LOCALE=0"
 
 #CFLAGS="$CFLAGS $ADDITIONAL_FLAGS"
 CXXFLAGS="$CXXFLAGS $ADDITIONAL_FLAGS"
@@ -396,7 +399,7 @@ AC_CONFIG_FILES([data/gsmartcontrol-root], [chmod +x data/gsmartcontrol-root])
 # these are all the makefiles to generate
 
 AC_CONFIG_FILES([Makefile src/Makefile src/applib/Makefile src/res/Makefile src/hz/Makefile \
-	src/libdebug/Makefile src/rconfig/Makefile src/rmn/Makefile \
+	src/libdebug/Makefile src/rconfig/Makefile src/json/Makefile \
 	data/Makefile data/16/Makefile data/22/Makefile data/24/Makefile data/32/Makefile \
 	data/48/Makefile data/64/Makefile data/128/Makefile data/256/Makefile data/nsis/Makefile \
 	debian.dist/Makefile])

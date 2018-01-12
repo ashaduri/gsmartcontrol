@@ -23,7 +23,7 @@
 #include "applib/app_gtkmm_utils.h"  // app_gtkmm_create_tree_view_column
 #include "applib/app_gtkmm_features.h"
 #include "hz/scoped_ptr.h"
-#include "rconfig/rconfig_mini.h"
+#include "rconfig/config.h"
 
 #include "gsc_executor_log_window.h"
 #include "gsc_init.h"  // app_get_debug_buffer_str()
@@ -200,7 +200,7 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 
 	static std::string last_dir;
 	if (last_dir.empty()) {
-		rconfig::get_data("gui/drive_data_open_save_dir", last_dir);
+		last_dir = rconfig::get_data<std::string>("gui/drive_data_open_save_dir");
 	}
 	int result = 0;
 
@@ -317,7 +317,7 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 
 	static std::string last_dir;
 	if (last_dir.empty()) {
-		rconfig::get_data("gui/drive_data_open_save_dir", last_dir);
+		last_dir = rconfig::get_data<std::string>("gui/drive_data_open_save_dir");
 	}
 	int result = 0;
 

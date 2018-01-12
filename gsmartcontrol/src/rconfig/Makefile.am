@@ -1,7 +1,6 @@
 AM_CPPFLAGS = $(all_includes)
 METASOURCES = AUTO
-noinst_HEADERS = rcautosave.h rcdump.h rcloadsave.h rcmain.h rconfig.h \
-	rconfig_mini.h
+noinst_HEADERS = autosave.h loadsave.h config.h
 
 rconfig_example_SOURCES = rconfig_example.cpp
 

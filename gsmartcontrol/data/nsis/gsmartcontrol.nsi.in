@@ -129,7 +129,7 @@ SectionIn 1 RO
 	SetOutPath "$INSTDIR"
 
 	SetOverwrite Off ; don't overwrite the config file
-	; File "gsmartcontrol.conf"
+	; File "gsmartcontrol2.conf"
 
 	SetOverwrite On
 	File *.exe

@@ -678,7 +678,9 @@ inline bool FsPath::is_dir()
 	const int stat_result = stat(this->c_str(), &s);
 #endif
 	if (stat_result == -1) {
-		set_error(HZ__("Unable to check if a path \"/path1/\" points to directory: /errno/."), errno, this->get_path());
+		if (errno != ENOENT) {  // Don't print warning for "No such file or directory"
+			set_error(HZ__("Unable to check if a path \"/path1/\" points to directory: /errno/."), errno, this->get_path());
+		}
 		return false;
 	}
 

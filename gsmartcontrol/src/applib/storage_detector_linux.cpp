@@ -27,7 +27,7 @@
 #include "hz/fs_path_utils.h"
 #include "hz/fs_file.h"
 #include "hz/string_num.h"
-#include "rconfig/rconfig_mini.h"
+#include "rconfig/config.h"
 #include "app_pcrecpp.h"
 #include "storage_detector_linux.h"
 #include "storage_detector_helpers.h"
@@ -63,8 +63,9 @@ inline std::string detect_drives_linux_udev_byid(std::vector<std::string>& devic
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting through device scan directory /dev/disk/by-id...\n");
 
-	std::string dev_dir;  // this defaults to "/dev/disk/by-id"
-	if (!rconfig::get_data("system/linux_udev_byid_path", dev_dir) || dev_dir.empty()) {
+	// this defaults to "/dev/disk/by-id"
+	std::string dev_dir = rconfig::get_data<std::string>("system/linux_udev_byid_path");
+	if (dev_dir.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Device scan directory path is not set.\n");
 		return "Device scan directory path is not set.";
 	}
@@ -189,8 +190,8 @@ inline bool read_proc_file_lines(hz::File& file, std::vector<std::string>& lines
 /// Read /proc/partitions file. Return error message on error.
 inline std::string read_proc_partitions_file(std::vector<std::string>& lines)
 {
-	std::string path;
-	if (!rconfig::get_data("system/linux_proc_partitions_path", path) || path.empty()) {
+	std::string path = rconfig::get_data<std::string>("system/linux_proc_partitions_path");
+	if (path.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Partitions file path is not set.\n");
 		return "Partitions file path is not set.";
 	}
@@ -214,8 +215,8 @@ inline std::string read_proc_partitions_file(std::vector<std::string>& lines)
 /// Read /proc/devices file. Return error message on error.
 inline std::string read_proc_devices_file(std::vector<std::string>& lines)
 {
-	std::string path;
-	if (!rconfig::get_data("system/linux_proc_devices_path", path) || path.empty()) {
+	std::string path = rconfig::get_data<std::string>("system/linux_proc_devices_path");
+	if (path.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Devices file path is not set.\n");
 		return "Devices file path is not set.";
 	}
@@ -241,8 +242,8 @@ inline std::string read_proc_devices_file(std::vector<std::string>& lines)
 /// Note that scsi host # is not unique.
 inline std::string read_proc_scsi_scsi_file(std::vector< std::pair<int, std::string> >& vendors_models)
 {
-	std::string path;
-	if (!rconfig::get_data("system/linux_proc_scsi_scsi_path", path) || path.empty()) {
+	std::string path = rconfig::get_data<std::string>("system/linux_proc_scsi_scsi_path");
+	if (path.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "SCSI file path is not set.\n");
 		return "SCSI file path is not set.";
 	}
@@ -289,8 +290,8 @@ inline std::string read_proc_scsi_scsi_file(std::vector< std::pair<int, std::str
 /// Each line index corresponds to N in /dev/sgN.
 inline std::string read_proc_scsi_sg_devices_file(std::vector< std::vector<int> >& sg_entries)
 {
-	std::string path;
-	if (!rconfig::get_data("system/linux_proc_scsi_sg_devices_path", path) || path.empty()) {
+	std::string path = rconfig::get_data<std::string>("system/linux_proc_scsi_sg_devices_path");
+	if (path.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Sg devices file path is not set.\n");
 		return "Sg devices path is not set.";
 	}
@@ -570,7 +571,7 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDeviceRefPtr>& d
 
 		error_msg = tw_cli_get_drives(dev, vendors_models[i].first, drives, ex_factory, false);
 		if (!error_msg.empty()) {  // no tw_cli
-			int max_ports = rconfig::get_data<int32_t>("system/linux_3ware_max_scan_port");
+			int max_ports = rconfig::get_data<int>("system/linux_3ware_max_scan_port");
 			max_ports = std::max(0, std::min(max_ports, 127));  // Sanity check
 			debug_out_dump("app", "Starting brute-force port scan on 0-" << max_ports << " ports, device \"" << dev
 					<< "\". Change the maximum by setting \"system/linux_3ware_max_scan_port\" config key.\n");
@@ -807,10 +808,10 @@ inline std::string detect_drives_linux_areca(std::vector<StorageDeviceRefPtr>& d
 				// TODO We have no information on what "/sys/bus/scsi/devices/host%d/scsi_host/host%d/host_fw_hd_channels"
 				// contains in case of enclosure-having cards.
 
-				int max_enclosures = rconfig::get_data<int32_t>("system/linux_areca_enc_max_enclosure");
+				int max_enclosures = rconfig::get_data<int>("system/linux_areca_enc_max_enclosure");
 				max_enclosures = std::max(1, std::min(8, max_enclosures));  // 1-8
 
-				int max_ports = rconfig::get_data<int32_t>("system/linux_areca_enc_max_scan_port");
+				int max_ports = rconfig::get_data<int>("system/linux_areca_enc_max_scan_port");
 				max_ports = std::max(1, std::min(128, max_ports));  // 1-128 sanity check
 
 				std::string dev = std::string("/dev/sg") + hz::number_to_string_nolocale(sg_num);
@@ -838,7 +839,7 @@ inline std::string detect_drives_linux_areca(std::vector<StorageDeviceRefPtr>& d
 					debug_out_dump("app", DBG_FUNC_MSG << "Detected " << max_ports << " ports, through \"" << ports_path << "\".\n");
 				}
 				if (max_ports == 0) {
-					max_ports = rconfig::get_data<int32_t>("system/linux_areca_noenc_max_scan_port");
+					max_ports = rconfig::get_data<int>("system/linux_areca_noenc_max_scan_port");
 				}
 				max_ports = std::max(1, std::min(24, max_ports));  // 1-24 sanity check
 

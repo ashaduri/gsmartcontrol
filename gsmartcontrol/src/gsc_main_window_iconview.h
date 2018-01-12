@@ -24,7 +24,7 @@
 #include "applib/storage_property_colors.h"
 
 #include "gsc_main_window.h"
-#include "rconfig/rconfig_mini.h"
+#include "rconfig/config.h"
 
 
 
