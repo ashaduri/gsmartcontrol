@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2012 - 2018  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_gsmartcontrol.txt
 ***************************************************************************/
 
@@ -25,8 +25,6 @@ This is GSmartControl internal documentation.
 \addtogroup hz_examples Examples for HZ Common System Components
 \addtogroup libdebug LibDebug Flexible Debug Logging
 \addtogroup libdebug_examples Examples for LibDebug Flexible Debug Logging
-\addtogroup rmn Resource Manager
-\addtogroup rmn_examples Examples for Resource Manager
 \addtogroup rconfig Resource Manager-Based Configuration
 \addtogroup rconfig_examples Examples for Resource Manager-Based Configuration
 \addtogroup gsc GSmartControl Application

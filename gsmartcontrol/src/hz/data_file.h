@@ -1,6 +1,6 @@
 /**************************************************************************
  Copyright:
-      (C) 2004 - 2012  Alexander Shaduri <ashaduri 'at' gmail.com>
+      (C) 2004 - 2018  Alexander Shaduri <ashaduri 'at' gmail.com>
  License: See LICENSE_zlib.txt file
 ***************************************************************************/
 /// \file

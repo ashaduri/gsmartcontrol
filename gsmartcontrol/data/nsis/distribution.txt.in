@@ -20,5 +20,5 @@ The binary was compiled against Gtkmm (http://www.gtkmm.org/), GTK+
 with console output), update-smart-drivedb.exe (drive database updater).
 
 
-The combined distribution is multi-licensed under GNU GPL versions 2 and 3.
-See LICENSE_gpl2.txt and LICENSE_gpl3.txt for details.
+The combined distribution is licensed under GNU GPL version 3.
+See LICENSE_gpl3.txt for details.

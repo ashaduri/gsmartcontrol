@@ -4,26 +4,17 @@ HZ Library License
 The HZ library contains software licensed under several different licenses.
 This is due to HZ including portions of other software.
 
-
 All original code (except for the tests) is licensed under the Zlib License.
 See LICENSE_zlib.txt for details.
-
 
 All tests and examples are covered under the Unlicense. See
 LICENSE_unlicense.txt for details.
 
-
 Portions of this software are copyright Regents of the University of
 California, see LICENSE_bsd-ucb.txt for details.
 
-
-Portions of this software are copyright Alexander Chemeris, see
-LICENSE_bsd-ac.txt for details.
-
-
 Portions of this software are licensed under Boost Software License, see
 LICENSE_boost_1_0.txt and individual source files for copyright information.
-
 
 Each source file contains its copyright information.
 

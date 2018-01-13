@@ -5,7 +5,7 @@
 Name:		gsmartcontrol
 Version: 	@VERSION@
 Release:	0
-License:	GPL-2.0 AND GPL-3.0
+License:	GPL-3.0
 Url:		https://gsmartcontrol.sourceforge.io/
 Vendor:		Alexander Shaduri <ashaduri 'at' gmail.com>
 # Packager:	Alexander Shaduri <ashaduri 'at' gmail.com>
