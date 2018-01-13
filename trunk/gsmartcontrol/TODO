@@ -32,23 +32,19 @@ Don't rely on smartctl return code (2), parse the output instead.
 GTKMM 4.
 	scoped_ptr (after we have GtkFileChooserNative in gtkmm)
 	GTK_CHECK_VERSION, GTK_CHECK_VERSION
+	rconfig/autosave.h to glibmm.
 
 JSON.
 	Port the rest to std::regex, get rid of pcre requirement.
+		Not sure, we still want to support old-format files.
 
 Port to std::filesystem (gcc 8; mingw not yet supported).
-	remove wcmatch (once fs is gone)
+	remove wcmatch (once fs is gone) (and its LICENSE_bsd-ucb.txt)
 	remove i18n.h
 	Can use experimental/filesystem (no fstream support yet).
 
 Use std::from_chars() in string_is_numeric_impl_classic_locale() (gcc 8)
 
-
-Check licenses - do we still use boost, bsd?
-	Update license_hz.txt
-Relicense under GPL3 only.
-
-Update copyrights to 2018.
 
 std::string setters -> no const&, use std::move.
 	same for std::vector

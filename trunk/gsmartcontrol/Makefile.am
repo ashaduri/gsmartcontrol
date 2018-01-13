@@ -16,9 +16,7 @@ noinst_DATA = AUTHORS.txt LICENSE_gsmartcontrol.txt
 # Some of these files are actually needed for compilation (see src/res/Makefile.am).
 dist_doc_DATA = AUTHORS.txt ChangeLog NEWS README.txt \
 	LICENSE_boost_1_0.txt \
-	LICENSE_bsd-ac.txt \
 	LICENSE_bsd-ucb.txt \
-	LICENSE_gpl2.txt \
 	LICENSE_gpl3.txt \
 	LICENSE_gsmartcontrol.txt \
 	LICENSE_hz.txt \
