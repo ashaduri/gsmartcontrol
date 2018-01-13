@@ -44,13 +44,6 @@ Port to std::filesystem (gcc 8; mingw not yet supported).
 Use std::from_chars() in string_is_numeric_impl_classic_locale() (gcc 8)
 
 
-rmn -> json
-	+Rename config to gsmartcontrol2
-	+Remove the old "config migration" code.
-	Add picojson license.
-	picojson doesn't have uint64_t, maybe use another library?
-	use ScopedLocale.
-
 Check licenses - do we still use boost, bsd?
 	Update license_hz.txt
 Relicense under GPL3 only.
