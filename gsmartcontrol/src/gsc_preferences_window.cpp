@@ -368,6 +368,8 @@ namespace {
 		data_type def_value = rconfig::get_default_data<data_type>(path);
 		if (def_value != data) {
 			rconfig::set_data(path, data);
+		} else {
+			rconfig::unset_data(path);
 		}
 	}
 

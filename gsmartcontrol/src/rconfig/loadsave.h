@@ -30,15 +30,17 @@ inline bool load_from_file(const std::string& file)
 	// Don't use std::fstream, it's not safe with localized filenames on win32.
 	hz::File f(file);
 
-	std::string json;
-	if (!f.get_contents(json)) {  // this warns
+	std::string json_str;
+	if (!f.get_contents(json_str)) {  // this warns
 		debug_print_error("rconfig", "load_from_file(): Unable to read from file \"%s\".\n", file.c_str());
 		return false;
 	}
 
-	std::string error = picojson::parse(get_config_branch(), json);
-	if (!error.empty()) {
-		debug_out_warn("rconfig", "Cannot load config file \"" << file << "\": " + error + "\n");
+	try {
+		get_config_branch() = json::parse(json_str);
+	}
+	catch (json::parse_error& e) {
+		debug_out_warn("rconfig", "Cannot load config file \"" << file << "\": " << e.what() << "\n");
 		return false;
 	}
 	return true;
@@ -49,7 +51,7 @@ inline bool load_from_file(const std::string& file)
 /// Save the "/config" branch to a file.
 inline bool save_to_file(const std::string& file)
 {
-	std::string json = get_config_branch().serialize();
+	std::string json = get_config_branch().dump(4);
 
 	hz::File f(file);
 	if (!f.put_contents(json)) {
