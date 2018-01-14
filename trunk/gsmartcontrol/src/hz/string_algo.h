@@ -466,7 +466,7 @@ inline std::string string_replace_copy(const std::string& s,
 		char from, char to, int max_replacements = -1)
 {
 	std::string ret(s);
-	string_replace(ret, from, to);
+	string_replace(ret, from, to, max_replacements);
 	return ret;
 }
 
@@ -513,7 +513,7 @@ inline std::string string_replace_chars_copy(const std::string& s,
 		const std::string& from_chars, const std::string& to_chars, int max_replacements = -1)
 {
 	std::string ret(s);
-	string_replace_chars(ret, from_chars, to_chars);
+	string_replace_chars(ret, from_chars, to_chars, max_replacements);
 	return ret;
 }
 
@@ -547,7 +547,7 @@ inline std::string string_replace_chars_copy(const std::string& s,
 		const std::string& from_chars, char to_char, int max_replacements = -1)
 {
 	std::string ret(s);
-	string_replace_chars(ret, from_chars, to_char);
+	string_replace_chars(ret, from_chars, to_char, max_replacements);
 	return ret;
 }
 
@@ -604,7 +604,7 @@ std::string string_replace_array_copy(const std::string& s,
 		const Container1& from_strings, const Container2& to_strings, int max_replacements = -1)
 {
 	std::string ret(s);
-	string_replace_array(ret, from_strings, to_strings);
+	string_replace_array(ret, from_strings, to_strings, max_replacements);
 	return ret;
 }
 
@@ -651,7 +651,7 @@ std::string string_replace_array_copy(const std::string& s,
 		const Container& from_strings, const std::string& to_string, int max_replacements = -1)
 {
 	std::string ret(s);
-	string_replace_array(ret, from_strings, to_string);
+	string_replace_array(ret, from_strings, to_string, max_replacements);
 	return ret;
 }
 

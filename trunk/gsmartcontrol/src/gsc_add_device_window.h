@@ -31,7 +31,7 @@ class GscAddDeviceWindow : public AppUIResWidget<GscAddDeviceWindow, true> {
 
 
 		/// Constructor, GtkBuilder needs this.
-		GscAddDeviceWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui);
+		GscAddDeviceWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui);
 
 		/// Virtual destructor
 		virtual ~GscAddDeviceWindow()

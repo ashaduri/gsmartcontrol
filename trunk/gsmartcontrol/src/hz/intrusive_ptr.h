@@ -74,7 +74,7 @@ namespace hz {
 struct intrusive_ptr_error : virtual public std::exception {  // from <exception>
 
 	/// Constructor
-	intrusive_ptr_error(const char* msg)
+	explicit intrusive_ptr_error(const char* msg)
 			: type_(typeid(void))
 	{
 		std::size_t buf_len = std::strlen(msg) + 1;
@@ -97,20 +97,19 @@ struct intrusive_ptr_error : virtual public std::exception {  // from <exception
 	}
 
 	/// Virtual destructor
-	virtual ~intrusive_ptr_error() throw()
+	~intrusive_ptr_error()
 	{
 		delete[] msg_;
-		msg_ = 0;  // protect from double-deletion compiler bugs
 	}
 
 	/// Reimplemented from std::exception.
 	/// Note: messages in exceptions are not newline-terminated.
-	virtual const char* what() const throw()
+	const char* what() const noexcept override
 	{
 		return msg_;
 	}
 
-	char* msg_ = 0;  ///< Error message
+	char* msg_ = nullptr;  ///< Error message
 	const std::type_info& type_;  ///< Type information of the pointee
 };
 
@@ -212,7 +211,7 @@ class intrusive_ptr_referenced {
 		}
 
 		/// Get reference count
-		int	ref_count() const
+		int ref_count() const
 		{
 			return ref_count_;
 		}

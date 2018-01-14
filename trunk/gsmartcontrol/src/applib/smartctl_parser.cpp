@@ -305,7 +305,7 @@ bool SmartctlParser::parse_version(const std::string& s, std::string& version, s
 
 
 // check that the version of smartctl output can be parsed with this parser.
-bool SmartctlParser::check_parsed_version(const std::string& version_str, const std::string& version_full_str)
+bool SmartctlParser::check_parsed_version(const std::string& version_str, [[maybe_unused]] const std::string& version_full_str)
 {
 	// tested with 5.1-xx versions (1 - 18), and 5.[20 - 38].
 	// note: 5.1-11 (maybe others too) with scsi disk gives non-parsable output (why?).
@@ -592,7 +592,7 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 		if ((p.readable_value = parse_byte_size(p.reported_value, v, true)).empty()) {
 			p.readable_value = "[unknown]";
 		} else {
-			p.value_integer = v;
+			p.value_integer = static_cast<int64_t>(v);
 		}
 
 	} else if (app_pcre_match("/^Sector Sizes$/mi", p.reported_name)) {
@@ -1052,8 +1052,8 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 		std::string strvalue = hz::string_trim_copy(hz::string_remove_adjacent_duplicates_copy(
 				hz::string_replace_chars_copy(strvalue_orig, "\t\n", ' '), ' '));
 
-		int numvalue = -1;
-		if (!hz::string_is_numeric_nolocale<int>(hz::string_trim_copy(numvalue_orig), numvalue, false)) {  // this will autodetect number base.
+		int64_t numvalue = -1;
+		if (!hz::string_is_numeric_nolocale<int64_t>(hz::string_trim_copy(numvalue_orig), numvalue, false)) {  // this will autodetect number base.
 			debug_out_warn("app", DBG_FUNC_MSG
 					<< "Numeric value: \"" << numvalue_orig << "\" cannot be parsed as number.\n");
 		}
@@ -1076,7 +1076,7 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 			p.set_name(name);
 			p.reported_value = numvalue_orig + " | " + strvalue_orig;  // well, not really as reported, but still...
 			p.value_type = StorageProperty::value_type_time_length;
-			p.value_time_length = numvalue;  // always in seconds
+			p.value_time_length = std::chrono::seconds(numvalue);  // always in seconds
 
 			// Set some generic names on the recognized ones
 			parse_section_data_internal_capabilities(p);
@@ -1094,7 +1094,7 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 			p.value_type = StorageProperty::value_type_capability;
 
 			p.value_capability.reported_flag_value = numvalue_orig;
-			p.value_capability.flag_value = static_cast<int16_t>(numvalue);  // full flag value
+			p.value_capability.flag_value = static_cast<uint16_t>(numvalue);  // full flag value
 			p.value_capability.reported_strvalue = strvalue_orig;
 
 			// split capability lines into a vector. every flag sentence ends with "."
@@ -1211,7 +1211,7 @@ bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& c
 			std::string value;
 
 			if (app_pcre_match("/^([0-9]+)% of test remaining/mi", sv, &value)) {
-				uint8_t v = 0;
+				int8_t v = 0;
 				if (hz::string_is_numeric_nolocale(value, v))
 					p.value_selftest_entry.remaining_percent = v;
 
@@ -1635,7 +1635,7 @@ Address    Access  R/W   Size  Description
 0x09           SL  R/W      1  Selective self-test log
 0x0a       GPL     R/W      8  Device Statistics Notification
 */
-	bool data_found = false;  // true if something was found.
+//	bool data_found = false;  // true if something was found.
 
 	// the whole subsection
 	{
@@ -1646,7 +1646,7 @@ Address    Access  R/W   Size  Description
 		p.value_string = p.reported_value;
 
 		add_property(p);
-		data_found = true;
+//		data_found = true;
 	}
 
 	// supported / unsupported
@@ -1659,10 +1659,11 @@ Address    Access  R/W   Size  Description
 		p.value_bool = !app_pcre_match("/General Purpose Log Directory not supported/mi", sub);
 
 		add_property(p);
-		data_found = true;
+//		data_found = true;
 	}
 
-	return data_found;
+//	return data_found;
+	return true;
 }
 
 
@@ -1842,7 +1843,7 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 		p.value_string = p.reported_value;
 
 		add_property(p);
-		data_found = true;
+		// data_found = true;
 	}
 
 	// We may further split this subsection by Error blocks, but it's unnecessary -
@@ -1890,7 +1891,7 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 		p.value_string = p.reported_value;
 
 		add_property(p);
-		data_found = true;
+//		data_found = true;
 	}
 
 
@@ -2126,7 +2127,7 @@ Index    Estimated Time   Temperature Celsius
 		p.value_string = p.reported_value;
 
 		add_property(p);
-		data_found = true;
+//		data_found = true;
 	}
 
 	// supported / unsupported
@@ -2139,7 +2140,10 @@ Index    Estimated Time   Temperature Celsius
 		p.value_bool = app_pcre_match("/(SCT Commands not supported)|(SCT Data Table command not supported)/mi", sub);
 
 		add_property(p);
-		data_found = true;
+
+		if (p.value_bool) {
+			data_found = true;
+		}
 	}
 
 	// Find current temperature
@@ -2154,6 +2158,8 @@ Index    Estimated Time   Temperature Celsius
 			p.reported_value = value;
 			hz::string_is_numeric_nolocale(value, p.value_integer);
 			add_property(p);
+
+			data_found = true;
 		}
 	}
 
@@ -2185,7 +2191,7 @@ SCT Error Recovery Control:
 		p.value_string = p.reported_value;
 
 		add_property(p);
-		data_found = true;
+		// data_found = true;
 	}
 
 	// supported / unsupported
@@ -2198,7 +2204,10 @@ SCT Error Recovery Control:
 		p.value_bool = !app_pcre_match("/SCT Error Recovery Control command not supported/mi", sub);
 
 		add_property(p);
-		data_found = true;
+
+		if (p.value_bool) {
+			data_found = true;
+		}
 	}
 
 	return data_found;
@@ -2293,7 +2302,7 @@ Page Offset Size         Value  Description
 
 	int devstat_format_style = FormatStyleCurrent;
 
-	for(unsigned int i = 0; i < lines.size(); ++i) {
+	for(std::size_t i = 0; i < lines.size(); ++i) {
 		const std::string& line = lines[i];
 
 		// skip the non-informative lines

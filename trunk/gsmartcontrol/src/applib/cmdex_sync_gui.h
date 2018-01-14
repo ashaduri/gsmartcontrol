@@ -62,7 +62,7 @@ class CmdexSyncGui : public CmdexSync {
 
 
 		// Reimplemented from CmdexSync
-		virtual bool execute();
+		bool execute() override;
 
 
 		/// UI callbacks may use this to abort execution.

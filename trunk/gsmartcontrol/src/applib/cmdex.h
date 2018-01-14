@@ -10,6 +10,7 @@
 #include <glib.h>
 #include <string>
 #include <functional>
+#include <chrono>
 
 #include "hz/process_signal.h"  // hz::SIGNAL_*
 #include "hz/error_holder.h"
@@ -25,16 +26,16 @@ class Cmdex : public hz::ErrorHolder {
 	public:
 
 		/// A function that translates the exit error code into a readable string
-		using exit_status_translator_func_t = std::function<std::string(int, void*)>;
+		using exit_status_translator_func_t = std::function<std::string(int)>;
 
 		/// A function that is called whenever a process exits.
-		using exited_callback_func_t = std::function<void(void*)>;
+		using exited_callback_func_t = std::function<void()>;
 
 
 		/// Constructor
-		Cmdex(exited_callback_func_t exited_cb = nullptr, void* exited_cb_data = nullptr)
+		explicit Cmdex(exited_callback_func_t exited_cb = nullptr)
 				: timer_(g_timer_new()),
-				exited_callback_(exited_cb), exited_callback_data_(exited_cb_data)
+				exited_callback_(std::move(exited_cb))
 		{ }
 
 
@@ -84,7 +85,8 @@ class Cmdex : public hz::ErrorHolder {
 		/// kill it or both (use 0 to ignore the parameter).
 		/// The timeouts will be unset automatically when the command exits.
 		/// This has an effect only if the command is running (after execute()).
-		void set_stop_timeouts(int term_timeout_msec = 0, int kill_timeout_msec = 0);
+		void set_stop_timeouts(std::chrono::milliseconds term_timeout_msec,
+				std::chrono::milliseconds kill_timeout_msec);
 
 		/// Unset the terminate / kill timeouts. This will stop the timeout counters.
 		/// This has an effect only if the command is running (after execute()).
@@ -127,7 +129,7 @@ class Cmdex : public hz::ErrorHolder {
 		/// Another way is to delay the command exit so that the event source callback
 		/// catches on and reads the buffer.
 		// Use 0 to ignore the parameter. Call this before execute().
-		void set_buffer_sizes(int stdout_buffer_size = 0, int stderr_buffer_size = 0)
+		void set_buffer_sizes(gsize stdout_buffer_size = 0, gsize stderr_buffer_size = 0)
 		{
 			if (stdout_buffer_size)
 				channel_stdout_buffer_size_ = stdout_buffer_size;  // 100K by default
@@ -174,19 +176,17 @@ class Cmdex : public hz::ErrorHolder {
 
 		/// Set exit status translator callback, disconnecting the old one.
 		/// Call only before execute().
-		void set_exit_status_translator(exit_status_translator_func_t func, void* user_data)
+		void set_exit_status_translator(exit_status_translator_func_t func)
 		{
-			translator_func_ = func;
-			translator_func_data_ = user_data;
+			translator_func_ = std::move(func);
 		}
 
 
 		/// Set exit notifier callback, disconnecting the old one.
 		/// You can poll stopped_cleanup_needed() instead of using this function.
-		void set_exited_callback(exited_callback_func_t func, void* user_data)
+		void set_exited_callback(exited_callback_func_t func)
 		{
-			exited_callback_ = func;
-			exited_callback_data_ = user_data;
+			exited_callback_ = std::move(func);
 		}
 
 
@@ -230,23 +230,23 @@ class Cmdex : public hz::ErrorHolder {
 		int waitpid_status_ = 0;  ///< After the command is stopped, before cleanup, this will be available (waitpid() status).
 
 
-		GTimer* timer_ = 0;  ///< Keeps track of elapsed time since command execution. Value is not used by this class, but may be handy.
+		GTimer* timer_ = nullptr;  ///< Keeps track of elapsed time since command execution. Value is not used by this class, but may be handy.
 
-		int event_source_id_term = 0;  ///< Timeout event source ID for SIGTERM.
-		int event_source_id_kill = 0;  ///< Timeout event source ID for SIGKILL.
+		guint event_source_id_term = 0;  ///< Timeout event source ID for SIGTERM.
+		guint event_source_id_kill = 0;  ///< Timeout event source ID for SIGKILL.
 
 
 		int fd_stdout_ = 0;  ///< stdout file descriptor
 		int fd_stderr_ = 0;  ///< stderr file descriptor
 
-		GIOChannel* channel_stdout_ = 0;  ///< stdout channel
-		GIOChannel* channel_stderr_ = 0;  ///< stderr channel
+		GIOChannel* channel_stdout_ = nullptr;  ///< stdout channel
+		GIOChannel* channel_stderr_ = nullptr;  ///< stderr channel
 
-		int channel_stdout_buffer_size_ = 100 * 1024;  ///< stdout channel buffer size. NOT affected by cleanup_members(). 100K.
-		int channel_stderr_buffer_size_ = 10 * 1024;  ///< stderr channel buffer size. NOT affected by cleanup_members(). 10K.
+		gsize channel_stdout_buffer_size_ = 100 * 1024;  ///< stdout channel buffer size. NOT affected by cleanup_members(). 100K.
+		gsize channel_stderr_buffer_size_ = 10 * 1024;  ///< stderr channel buffer size. NOT affected by cleanup_members(). 10K.
 
-		int event_source_id_stdout_ = 0;  ///< IO watcher event source ID for stdout
-		int event_source_id_stderr_ = 0;  ///< IO watcher event source ID for stderr
+		guint event_source_id_stdout_ = 0;  ///< IO watcher event source ID for stdout
+		guint event_source_id_stderr_ = 0;  ///< IO watcher event source ID for stderr
 
 		std::string str_stdout_;  ///< stdout data read during execution. NOT affected by cleanup_members().
 		std::string str_stderr_;  ///< stderr data read during execution. NOT affected by cleanup_members().
@@ -256,11 +256,9 @@ class Cmdex : public hz::ErrorHolder {
 
 		// convert command exit status to message string
 		exit_status_translator_func_t translator_func_;  ///< Exit status translator function. NOT affected by cleanup_members().
-		void* translator_func_data_ = 0;  ///< Data to supply to the exit status translator function.
 
 		// "command exited" signal callback.
 		exited_callback_func_t exited_callback_;  ///< Exit notifier function. NOT affected by cleanup_members().
-		void* exited_callback_data_ = 0;  ///< Data to supply to the exit notifier function.
 
 };
 

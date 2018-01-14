@@ -99,8 +99,8 @@ extern "C" {
 
 
 // GLib callback
-static gboolean debug_internal_parse_levels(const gchar* option_name,
-		const gchar* value, gpointer data, GError** error)
+static gboolean debug_internal_parse_levels([[maybe_unused]] const gchar* option_name,
+		const gchar* value, gpointer data, [[maybe_unused]] GError** error)
 {
 	if (!value)
 		return false;
@@ -114,8 +114,8 @@ static gboolean debug_internal_parse_levels(const gchar* option_name,
 
 
 // GLib callback
-static gboolean debug_internal_post_parse_func(GOptionContext* context,
-		GOptionGroup *group, gpointer data, GError** error)
+static gboolean debug_internal_post_parse_func([[maybe_unused]] GOptionContext* context,
+		[[maybe_unused]] GOptionGroup *group, gpointer data, [[maybe_unused]] GError** error)
 {
 	debug_internal::DebugCmdArgs* args = static_cast<debug_internal::DebugCmdArgs*>(data);
 

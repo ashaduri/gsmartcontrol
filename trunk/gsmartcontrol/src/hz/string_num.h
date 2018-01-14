@@ -126,7 +126,7 @@ namespace internal {
 
 	// Version for integral / floating point types
 	template<typename T>
-	bool string_is_numeric_impl_global_locale(const std::string& s, T& number, bool strict, int base [[maybe_unused]], const std::locale& loc = std::locale())
+	bool string_is_numeric_impl_global_locale(const std::string& s, T& number, bool strict, [[maybe_unused]] int base, const std::locale& loc = std::locale())
 	{
 		static_assert(std::is_arithmetic_v<T>, "Type T not convertible to a number");
 
@@ -184,7 +184,7 @@ namespace internal {
 
 	// Version for integral / floating point types
 	template<typename T>
-	bool string_is_numeric_impl_classic_locale(const std::string& s, T& number, bool strict, int base [[maybe_unused]])
+	bool string_is_numeric_impl_classic_locale(const std::string& s, T& number, bool strict,  [[maybe_unused]] int base)
 	{
 		// TODO port to std::from_chars().
 		ScopedCLocale loc;
@@ -401,7 +401,7 @@ namespace internal {
 
 	template<typename T>
 	std::string number_to_string_impl(T number, int boolalpha_or_base_or_precision,
-			bool fixed_prec [[maybe_unused]], bool use_classic_locale [[maybe_unused]])
+			[[maybe_unused]] bool fixed_prec,  [[maybe_unused]] bool use_classic_locale)
 	{
 		static_assert(std::is_arithmetic_v<T>, "Type T not convertible to a number");
 

@@ -20,6 +20,7 @@
 
 #include <string>
 #include <cstdint>
+#include <chrono>
 
 #include "hz/intrusive_ptr.h"
 
@@ -68,8 +69,8 @@ class SelfTest : public hz::intrusive_ptr_referenced {
 			status_ = StorageSelftestEntry::status_unknown;
 			remaining_percent_ = -1;
 			last_seen_percent_ = -1;
-			total_duration_ = -1;
-			poll_in_seconds_ = -1;
+			total_duration_ = std::chrono::seconds(-1);
+			poll_in_seconds_ = std::chrono::seconds(-1);
 		}
 
 
@@ -90,7 +91,7 @@ class SelfTest : public hz::intrusive_ptr_referenced {
 
 		/// Get estimated time of completion for the test.
 		/// \return -1 if N/A or unknown. Note that 0 is a valid value.
-		int64_t get_remaining_seconds() const;
+		std::chrono::seconds get_remaining_seconds() const;
 
 
 		/// Get test type
@@ -108,14 +109,14 @@ class SelfTest : public hz::intrusive_ptr_referenced {
 
 
 		/// Get the number of seconds after which the caller should call update().
-		int64_t get_poll_in_seconds() const
+		std::chrono::seconds get_poll_in_seconds() const
 		{
 			return poll_in_seconds_;
 		}
 
 
 		/// Get a constant "test duration during idle" capability drive's stored capabilities. -1 if N/A.
-		int64_t get_min_duration_seconds() const;
+		std::chrono::seconds get_min_duration_seconds() const;
 
 
 		/// Gets the current test type support status from drive's stored capabilities.
@@ -124,17 +125,17 @@ class SelfTest : public hz::intrusive_ptr_referenced {
 
 		/// Start the test.
 		/// \return error message on error, empty string on success.
-		std::string start(hz::intrusive_ptr<CmdexSync> smartctl_ex = 0);
+		std::string start(hz::intrusive_ptr<CmdexSync> smartctl_ex = nullptr);
 
 
 		/// Abort the running test.
 		/// \return error message on error, empty string on success.
-		std::string force_stop(hz::intrusive_ptr<CmdexSync> smartctl_ex = 0);
+		std::string force_stop(hz::intrusive_ptr<CmdexSync> smartctl_ex = nullptr);
 
 
 		/// Update status variables. The user should call this every get_poll_in_seconds() seconds.
 		/// \return error message on error, empty string on success.
-		std::string update(hz::intrusive_ptr<CmdexSync> smartctl_ex = 0);
+		std::string update(hz::intrusive_ptr<CmdexSync> smartctl_ex = nullptr);
 
 
 	private:
@@ -146,8 +147,8 @@ class SelfTest : public hz::intrusive_ptr_referenced {
 		StorageSelftestEntry::status_t status_;  ///< Current status of the test as reported by the drive
 		int8_t remaining_percent_;  ///< Remaining %. 0 means unknown, -1 means N/A. This is set to 100 on start.
 		int8_t last_seen_percent_;  ///< Last reported %, to detect changes in percentage (needed for timer update).
-		mutable int64_t total_duration_;  ///< Total duration needed for the test, as reported by the drive. Constant. This variable acts as a cache.
-		int64_t poll_in_seconds_;  ///< The user is asked to poll after this much seconds have passed.
+		mutable std::chrono::seconds total_duration_;  ///< Total duration needed for the test, as reported by the drive. Constant. This variable acts as a cache.
+		std::chrono::seconds poll_in_seconds_;  ///< The user is asked to poll after this much seconds have passed.
 
 		Glib::Timer timer_;  ///< Counts time since the last percent change
 

@@ -190,7 +190,7 @@ std::ostream& operator<< (std::ostream& os, const StorageSelftestEntry& b)
 
 
 
-void StorageProperty::dump(std::ostream& os, int internal_offset) const
+void StorageProperty::dump(std::ostream& os, std::size_t internal_offset) const
 {
 	std::string offset(internal_offset, ' ');
 
@@ -217,7 +217,7 @@ void StorageProperty::dump(std::ostream& os, int internal_offset) const
 			os << value_bool << " [" << reported_value << "]";
 			break;
 		case StorageProperty::value_type_time_length:
-			os << value_time_length << " [" << reported_value << "]";
+			os << value_time_length.count() << " sec [" << reported_value << "]";
 			break;
 		case StorageProperty::value_type_capability:
 			os << value_capability;

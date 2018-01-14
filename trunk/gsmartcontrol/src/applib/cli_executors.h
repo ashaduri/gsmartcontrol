@@ -46,20 +46,20 @@ class TwCliExecutorGeneric : public ExecutorSync {
 		/// Called from constructors
 		void construct()
 		{
-			ExecutorSync::get_command_executor().set_exit_status_translator(&TwCliExecutorGeneric::translate_exit_status, NULL);
+			ExecutorSync::get_command_executor().set_exit_status_translator(&TwCliExecutorGeneric::translate_exit_status);
 			this->set_error_header("An error occurred while executing tw_cli:\n\n");
 		}
 
 
 		/// Exit status translate handler
-		static std::string translate_exit_status(int status, void* user_data)
+		static std::string translate_exit_status([[maybe_unused]] int status)
 		{
 			return std::string();
 		}
 
 
 		/// Import the last error from command executor and clear all errors there
-		virtual void import_error()
+		void import_error() override
 		{
 			Cmdex& cmdex = this->get_command_executor();
 			Cmdex::error_list_t errors = cmdex.get_errors();  // these are not clones
@@ -85,7 +85,7 @@ class TwCliExecutorGeneric : public ExecutorSync {
 
 		/// This is called when an error occurs in command executor.
 		/// Note: The warnings are already printed via debug_* in cmdex.
-		virtual void on_error_warn(hz::ErrorBase* e)
+		void on_error_warn(hz::ErrorBase* e) override
 		{
 			if (!e)
 				return;
@@ -153,20 +153,20 @@ class ArecaCliExecutorGeneric : public ExecutorSync {
 		/// Called from constructors
 		void construct()
 		{
-			ExecutorSync::get_command_executor().set_exit_status_translator(&ArecaCliExecutorGeneric::translate_exit_status, NULL);
+			ExecutorSync::get_command_executor().set_exit_status_translator(&ArecaCliExecutorGeneric::translate_exit_status);
 			this->set_error_header("An error occurred while executing Areca cli:\n\n");
 		}
 
 
 		/// Exit status translate handler
-		static std::string translate_exit_status(int status, void* user_data)
+		static std::string translate_exit_status([[maybe_unused]] int status)
 		{
 			return std::string();
 		}
 
 
 		/// Import the last error from command executor and clear all errors there
-		virtual void import_error()
+		void import_error() override
 		{
 			Cmdex& cmdex = this->get_command_executor();
 			Cmdex::error_list_t errors = cmdex.get_errors();  // these are not clones
@@ -192,7 +192,7 @@ class ArecaCliExecutorGeneric : public ExecutorSync {
 
 		/// This is called when an error occurs in command executor.
 		/// Note: The warnings are already printed via debug_* in cmdex.
-		virtual void on_error_warn(hz::ErrorBase* e)
+		void on_error_warn(hz::ErrorBase* e) override
 		{
 			if (!e)
 				return;

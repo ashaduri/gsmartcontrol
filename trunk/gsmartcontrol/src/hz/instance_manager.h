@@ -95,7 +95,7 @@ class InstanceManager {
 
 		/// Set single-instance object.
 		/// This function has no effect in multi-instance version.
-		static void set_single_instance(Child* instance)
+		static void set_single_instance([[maybe_unused]] Child* instance)
 		{ }
 
 };
@@ -134,7 +134,7 @@ class InstanceManager<Child, false> {
 		}
 
 
-		static void destroy(Child* instance = 0)
+		static void destroy()
 		{
 			if (instance_) {
 				instance_->obj_destroy();

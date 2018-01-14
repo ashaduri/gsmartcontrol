@@ -24,7 +24,7 @@
 
 
 // GtkBuilder needs this constructor
-GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
+GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui)
 		: AppUIResWidget<GscAboutDialog, false, Gtk::AboutDialog>(gtkcobj, ref_ui)
 {
 	// Connect callbacks
@@ -45,9 +45,7 @@ GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, const app_ui_res_ref_t& 
 	set_license(LicenseTextResData().get_string());
 
 	// This overrides set_license(), so don't do it.
-// #if APP_GTKMM_CHECK_VERSION(3, 12, 0)
 // 	set_license_type(Gtk::LICENSE_GPL_3_0_ONLY);
-// #endif
 
 	// spammers go away
 	set_copyright("Copyright (C) 2008 - 2018  Alexander Shaduri " "<ashaduri" "" "@" "" "" "gmail.com>");
@@ -84,7 +82,7 @@ void GscAboutDialog::on_response_before(int response_id)
 	if (response_id == Gtk::RESPONSE_NONE || response_id == Gtk::RESPONSE_DELETE_EVENT
 			|| response_id == Gtk::RESPONSE_CANCEL || response_id == Gtk::RESPONSE_CLOSE) {
 		debug_out_info("app", DBG_FUNC_MSG << "Closing the dialog.\n");
-		destroy(this);  // close the window and delete the object
+		destroy();  // close the window and delete the object
 	}
 }
 

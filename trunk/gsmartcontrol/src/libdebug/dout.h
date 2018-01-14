@@ -320,7 +320,7 @@ namespace debug_internal {
 
 
 	/// A stream manipulator operator
-	inline std::ostream& operator<< (std::ostream& os, debug_internal::DebugResetIndent& m)
+	inline std::ostream& operator<< (std::ostream& os,  [[maybe_unused]] debug_internal::DebugResetIndent& m)
 	{
 		debug_indent_reset();
 		return os;

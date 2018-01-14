@@ -41,7 +41,7 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 
 
 		/// Constructor, GtkBuilder needs this.
-		GscPreferencesDeviceOptionsTreeView(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
+		GscPreferencesDeviceOptionsTreeView(BaseObjectType* gtkcobj, [[maybe_unused]] const Glib::RefPtr<Gtk::Builder>& ref_ui)
 				: Gtk::TreeView(gtkcobj), preferences_window(0)
 		{
 			Gtk::TreeModelColumnRecord model_columns;
@@ -71,7 +71,6 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 
 			selection->signal_changed().connect(sigc::mem_fun(*this,
 					&self_type::on_selection_changed) );
-
 		}
 
 
@@ -232,7 +231,7 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 
 
 
-GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
+GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui)
 		: AppUIResWidget<GscPreferencesWindow, true>(gtkcobj, ref_ui), device_options_treeview(0)
 {
 	// Connect callbacks
@@ -306,15 +305,15 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const app_ui
 
 	// create Device Options treeview
 	get_ui()->get_widget_derived("device_options_treeview", device_options_treeview);
-	device_options_treeview->set_preferences_window(this);
+	if (device_options_treeview)
+		device_options_treeview->set_preferences_window(this);
 
 	// we can't do this in treeview's constructor, it doesn't know about this window yet.
 	this->device_widget_set_remove_possible(false);  // initial state
 
 	// hide win32-only options for non-win32.
 #ifndef _WIN32
-	Gtk::CheckButton* smartctl_search_check = this->lookup_widget<Gtk::CheckButton*>("search_in_smartmontools_first_check");
-	if (smartctl_search_check)
+	if (auto* smartctl_search_check = this->lookup_widget<Gtk::CheckButton*>("search_in_smartmontools_first_check"))
 		smartctl_search_check->hide();
 #endif
 
@@ -468,7 +467,7 @@ void GscPreferencesWindow::export_config()
 
 
 
-bool GscPreferencesWindow::on_delete_event_before(GdkEventAny* e)
+bool GscPreferencesWindow::on_delete_event_before([[maybe_unused]] GdkEventAny* e)
 {
 	destroy(this);  // deletes this object and nullifies instance
 	return true;  // event handled, don't call default virtual handler

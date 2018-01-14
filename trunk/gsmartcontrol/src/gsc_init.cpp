@@ -136,7 +136,7 @@ namespace {
 		rconfig::autosave_set_config_file(s_home_config_file);
 		int autosave_timeout = rconfig::get_data<int>("system/config_autosave_timeout");
 		if (autosave_timeout) {
-			rconfig::autosave_start(autosave_timeout);
+			rconfig::autosave_start(guint(autosave_timeout));
 		}
 
 		return true;
@@ -164,8 +164,10 @@ namespace {
 
 extern "C" {
 	/// Glib message -> libdebug message convertor
-	static void glib_message_handler(const gchar* log_domain, GLogLevelFlags log_level,
-			const gchar* message, gpointer user_data)
+	static void glib_message_handler([[maybe_unused]] const gchar* log_domain,
+			[[maybe_unused]] GLogLevelFlags log_level,
+			const gchar* message,
+			[[maybe_unused]] gpointer user_data)
 	{
 		// log_domain is already printed as part of message.
 		debug_print_error("gtk", "%s\n", message);

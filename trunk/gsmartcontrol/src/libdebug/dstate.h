@@ -48,7 +48,7 @@ namespace debug_internal {
 
 
 			/// Constructor (statically called), calls setup_default_state().
-			DebugState()
+			DebugState() noexcept
 			{
 				setup_default_state();
 			}
@@ -56,7 +56,7 @@ namespace debug_internal {
 
 			/// Initialize the "default" template domain, set the default enabled levels / format flags.
 			/// Automatically called by constructor.
-			void setup_default_state();
+			void setup_default_state() noexcept;
 
 
 			/// Get the domain/level mapping.

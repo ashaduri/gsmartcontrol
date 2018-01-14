@@ -31,7 +31,7 @@
 
 
 
-GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
+GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui)
 		: AppUIResWidget<GscExecutorLogWindow, false>(gtkcobj, ref_ui)
 {
 	// Connect callbacks
@@ -175,7 +175,7 @@ void GscExecutorLogWindow::on_command_output_received(const CmdexSyncCommandInfo
 
 
 
-bool GscExecutorLogWindow::on_delete_event_before(GdkEventAny* e)
+bool GscExecutorLogWindow::on_delete_event_before([[maybe_unused]] GdkEventAny* e)
 {
 	this->hide();
 	return true;  // event handled, don't call default virtual handler

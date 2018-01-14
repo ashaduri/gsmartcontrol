@@ -46,7 +46,7 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 
 
 		/// Constructor, GtkBuilder needs this.
-		GscTextWindow(typename Gtk::Window::BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
+		GscTextWindow(typename Gtk::Window::BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui)
 				: AppUIResWidget<GscTextWindow<InstanceSwitch>, InstanceSwitch::multi_instance>(gtkcobj, ref_ui)
 		{
 			// Connect callbacks
@@ -129,7 +129,7 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 
 		/// Destroy this object on delete event (by default it calls hide()).
 		/// Reimplemented from Gtk::Window.
-		bool on_delete_event_before(GdkEventAny* e)
+		bool on_delete_event_before([[maybe_unused]] GdkEventAny* e)
 		{
 			this->destroy(this);  // deletes this object and nullifies instance
 			return true;  // event handled, don't call default virtual handler

@@ -30,7 +30,7 @@
 
 
 
-GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
+GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui)
 		: AppUIResWidget<GscAddDeviceWindow, true>(gtkcobj, ref_ui), main_window_(0)
 {
 	// Connect callbacks
@@ -133,7 +133,7 @@ void GscAddDeviceWindow::set_main_window(GscMainWindow* main_window)
 
 
 
-bool GscAddDeviceWindow::on_delete_event_before(GdkEventAny* e)
+bool GscAddDeviceWindow::on_delete_event_before([[maybe_unused]] GdkEventAny* e)
 {
 	destroy(this);  // deletes this object and nullifies instance
 	return true;  // event handled, don't call default virtual handler

@@ -48,7 +48,7 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 		/// Called by constructors
 		void construct()
 		{
-			ExecutorSync::get_command_executor().set_exit_status_translator(&SmartctlExecutorGeneric::translate_exit_status, nullptr);
+			ExecutorSync::get_command_executor().set_exit_status_translator(&SmartctlExecutorGeneric::translate_exit_status);
 			this->set_error_header("An error occurred while executing smartctl:\n\n");
 		}
 
@@ -66,9 +66,9 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 
 
 		/// Translate smartctl error code to a readable message
-		static std::string translate_exit_status(int status, void* user_data)
+		static std::string translate_exit_status(int status)
 		{
-			const char* table[] = {
+			static const char* const table[] = {
 				"Command line did not parse.",
 				"Device open failed, or device did not return an IDENTIFY DEVICE structure.",
 				"Some SMART command to the disk failed, or there was a checksum error in a SMART data structure",
@@ -95,16 +95,16 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 
 
 		/// Import the last error from command executor and clear all errors there
-		virtual void import_error()
+		void import_error() override
 		{
 			Cmdex& cmdex = this->get_command_executor();
 
 			Cmdex::error_list_t errors = cmdex.get_errors();  // these are not clones
 
-			hz::ErrorBase* e = 0;
+			hz::ErrorBase* e = nullptr;
 			// find the last relevant error.
 			// note: const_reverse_iterator doesn't work on gcc 3, so don't do it.
-			for (Cmdex::error_list_t::reverse_iterator iter = errors.rbegin(); iter != errors.rend(); ++iter) {
+			for (auto iter = errors.rbegin(); iter != errors.rend(); ++iter) {
 				// ignore iochannel errors, they may mask the real errors
 				if ((*iter)->get_type() != "giochannel" && (*iter)->get_type() != "custom") {
 					e = (*iter)->clone();
@@ -123,7 +123,7 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 
 		/// This is called when an error occurs in command executor.
 		/// Note: The warnings are already printed via debug_* in cmdex.
-		virtual void on_error_warn(hz::ErrorBase* e)
+		void on_error_warn(hz::ErrorBase* e) override
 		{
 			if (!e)
 				return;

@@ -40,7 +40,7 @@ namespace impl {
 	inline std::string autosave_config_file;  ///< Config file to autosave to.
 	inline bool autosave_enabled = false;  ///< Autosave enabled or not. This acts as a stopper flag for autosave callback.
 
-};
+}
 
 
 

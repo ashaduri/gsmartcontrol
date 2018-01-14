@@ -249,21 +249,21 @@ bool Cmdex::try_kill()
 
 
 
-void Cmdex::set_stop_timeouts(int term_timeout_msec, int kill_timeout_msec)
+void Cmdex::set_stop_timeouts(std::chrono::milliseconds term_timeout_msec, std::chrono::milliseconds kill_timeout_msec)
 {
 	DBG_FUNCTION_ENTER_MSG;
-	DBG_ASSERT(term_timeout_msec == 0 || kill_timeout_msec == 0 || kill_timeout_msec > term_timeout_msec);
+	DBG_ASSERT(term_timeout_msec.count() == 0 || kill_timeout_msec.count() == 0 || kill_timeout_msec > term_timeout_msec);
 
 	if (!this->running_)  // process not running
 		return;
 
 	unset_stop_timeouts();
 
-	if (term_timeout_msec != 0)
-		event_source_id_term = g_timeout_add(term_timeout_msec, &cmdex_on_term_timeout, this);
+	if (term_timeout_msec.count() != 0)
+		event_source_id_term = g_timeout_add(guint(term_timeout_msec.count()), &cmdex_on_term_timeout, this);
 
-	if (kill_timeout_msec != 0)
-		event_source_id_kill = g_timeout_add(kill_timeout_msec, &cmdex_on_kill_timeout, this);
+	if (kill_timeout_msec.count() != 0)
+		event_source_id_kill = g_timeout_add(guint(kill_timeout_msec.count()), &cmdex_on_kill_timeout, this);
 
 	DBG_FUNCTION_EXIT_MSG;
 }
@@ -308,7 +308,7 @@ void Cmdex::stopped_cleanup()
 
 		if (exit_status != 0) {
 			// translate the exit_code into a message
-			std::string msg = (translator_func_ ? translator_func_(exit_status, translator_func_data_)
+			std::string msg = (translator_func_ ? translator_func_(exit_status)
 					: "[no translator function, exit code: " + std::to_string(exit_status));
 			push_error(Error<int>("exit", ErrorLevel::warn, exit_status, msg));
 		}
@@ -340,7 +340,7 @@ void Cmdex::stopped_cleanup()
 
 
 // Called when child exits
-void Cmdex::on_child_watch_handler(GPid arg_pid, int waitpid_status, gpointer data)
+void Cmdex::on_child_watch_handler([[maybe_unused]] GPid arg_pid, int waitpid_status, gpointer data)
 {
 // 	DBG_FUNCTION_ENTER_MSG;
 	Cmdex* self = static_cast<Cmdex*>(data);
@@ -391,7 +391,7 @@ void Cmdex::on_child_watch_handler(GPid arg_pid, int waitpid_status, gpointer da
 // 	close(self->fd_stderr_);
 
 	if (self->exited_callback_)
-		self->exited_callback_(self->exited_callback_data_);
+		self->exited_callback_();
 
 // 	DBG_FUNCTION_EXIT_MSG;
 }

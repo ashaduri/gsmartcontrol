@@ -60,7 +60,7 @@ namespace debug_level {
 		return s_debug_flags.level_colors[level];
 	}
 
-	const char* get_color_stop(flag level)
+	const char* get_color_stop([[maybe_unused]] flag level)
 	{
 		return "\033[0m";
 	}

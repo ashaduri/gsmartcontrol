@@ -67,11 +67,7 @@ namespace internal {
 		scoped_ptr_cleaner(F f) : clean_func(f)
 		{ }
 
-		/// Virtual destructor
-		virtual ~scoped_ptr_cleaner()
-		{ }
-
-		void cleanup(T* p)
+		void cleanup(T* p) override
 		{
 			clean_func(p);
 		}

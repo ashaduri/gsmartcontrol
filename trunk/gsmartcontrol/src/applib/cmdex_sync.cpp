@@ -78,7 +78,7 @@ bool CmdexSync::execute()
 			}
 
 			// set sigkill timeout to 3 sec (in case sigterm fails); won't do anything if already exited.
-			cmdex_.set_stop_timeouts(0, forced_kill_timeout_msec_);
+			cmdex_.set_stop_timeouts(std::chrono::milliseconds(0), forced_kill_timeout_msec_);
 			// import_error();  // don't need errors here - they will be available later anyway.
 
 			signals_sent = true;
