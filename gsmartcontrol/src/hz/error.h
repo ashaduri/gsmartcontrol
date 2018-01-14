@@ -70,8 +70,7 @@ class ErrorBase {
 		{ }
 
 		/// Virtual destructor
-		virtual ~ErrorBase()
-		{ }
+		virtual ~ErrorBase() = default;
 
 		/// Clone this object
 		virtual ErrorBase* clone() = 0;  // needed for copying by base pointers
@@ -171,7 +170,10 @@ class ErrorCodeHolder : public ErrorBase {
 	public:
 
 		// Reimplemented from ErrorBase
-		const std::type_info& get_code_type() const { return typeid(CodeType); }
+		const std::type_info& get_code_type() const override
+		{
+			return typeid(CodeType);
+		}
 
 		CodeType code = CodeType();  ///< Error code. We have a class specialization for references too
 
@@ -192,7 +194,10 @@ class ErrorCodeHolder<void> : public ErrorBase {
 	public:
 
 		// Reimplemented from ErrorBase
-		const std::type_info& get_code_type() const { return typeid(void); }
+		const std::type_info& get_code_type() const override
+		{
+			return typeid(void);
+		}
 
 };
 
@@ -214,7 +219,7 @@ class Error : public ErrorCodeHolder<CodeType> {
 		{ }
 
 		// Reimplemented from ErrorBase
-		ErrorBase* clone()
+		ErrorBase* clone() override
 		{
 			return new Error(ErrorCodeHolder<CodeType>::type, ErrorCodeHolder<CodeType>::level,
 					ErrorCodeHolder<CodeType>::code, ErrorCodeHolder<CodeType>::message);
@@ -234,7 +239,7 @@ class Error<void> : public ErrorCodeHolder<void> {
 		{ }
 
 		// Reimplemented from ErrorBase
-		ErrorBase* clone()
+		ErrorBase* clone() override
 		{
 			return new Error(ErrorCodeHolder<void>::type, ErrorCodeHolder<void>::level,
 					ErrorCodeHolder<void>::message);
@@ -272,7 +277,7 @@ class Error<int> : public ErrorCodeHolder<int> {
 		}
 
 		// Reimplemented from ErrorBase
-		ErrorBase* clone()
+		ErrorBase* clone() override
 		{
 			return new Error(ErrorCodeHolder<int>::type, ErrorCodeHolder<int>::level,
 					ErrorCodeHolder<int>::code, ErrorCodeHolder<int>::message);

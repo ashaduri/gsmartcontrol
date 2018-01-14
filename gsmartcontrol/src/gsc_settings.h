@@ -77,6 +77,9 @@ inline void init_default_settings()
 	rconfig::set_default_data("gui/main_window/default_size_h", 0);
 	rconfig::set_default_data("gui/main_window/default_pos_x", -1);
 	rconfig::set_default_data("gui/main_window/default_pos_y", -1);
+
+	rconfig::set_default_data("gui/info_window/default_size_w", 0);
+	rconfig::set_default_data("gui/info_window/default_size_h", 0);
 }
 
 

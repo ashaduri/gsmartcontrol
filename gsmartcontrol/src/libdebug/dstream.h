@@ -54,7 +54,7 @@ namespace debug_internal {
 				// in case of overflow for output, overflow() will be called to _output_ the data.
 
 				// no buffers here - we process it char-by-char.
-				int buf_size = 0;
+				std::size_t buf_size = 0;
 				if (buf_size) {
 					char* buf = new char[buf_size];  // further accessible through pbase().
 					setp(buf, buf + buf_size);  // Set output sequence pointers, aka output buffer
@@ -90,7 +90,7 @@ namespace debug_internal {
 			/// Overflow happens when a new character is to be written at the put
 			/// pointer pptr position, but this has reached the end pointer epptr.
 			/// Reimplemented.
-			virtual int overflow(int c)
+			int overflow(int c) override
 			{
 				sync();  // write the buffer contents if available
 				if (c != traits_type::eof()) {
@@ -110,7 +110,7 @@ namespace debug_internal {
 
 			/// Sort-of flush the buffer. Only makes sense if there is a buffer.
 			/// Reimplemented.
-			virtual int sync()
+			int sync() override
 			{
 				if (pbase() != pptr()) {  // pptr() - current position; condition is true only if there is something in the buffer.
 	// 				write_out(std::string(pbase(), pptr() - pbase()));

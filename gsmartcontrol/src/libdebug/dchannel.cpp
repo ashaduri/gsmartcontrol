@@ -52,7 +52,7 @@ std::string debug_format_message(debug_level::flag level, const std::string& dom
 
 
 	if (format_flags.to_ulong() & debug_format::indent) {
-		std::string spaces(indent_level * 4, ' ');  // indentation spaces
+		std::string spaces(static_cast<std::size_t>(indent_level * 4), ' ');  // indentation spaces
 // 		std::cerr << "MSG: " << msg;
 
 		// replace all newlines with \n(indent-spaces) except for the last one.

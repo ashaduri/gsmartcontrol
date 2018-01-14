@@ -32,7 +32,7 @@ class GscExecutorLogWindow : public AppUIResWidget<GscExecutorLogWindow, false> 
 
 
 		/// Constructor, GtkBuilder needs this.
-		GscExecutorLogWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui);
+		GscExecutorLogWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui);
 
 		/// Virtual destructor
 		virtual ~GscExecutorLogWindow()

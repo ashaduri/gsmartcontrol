@@ -1611,8 +1611,8 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 				break;
 
 			case StorageProperty::subsection_error_log:
-				found = auto_set(p, "error_log_version", p.readable_name.c_str());
-				found = auto_set(p, "error_log_error_count", "Number of errors in error log. Note: Some manufacturers may list completely harmless errors in this log "
+				found = auto_set(p, "error_log_version", p.readable_name.c_str())
+				|| auto_set(p, "error_log_error_count", "Number of errors in error log. Note: Some manufacturers may list completely harmless errors in this log "
 					"(e.g., command invalid, not implemented, etc...).");
 // 				|| auto_set(p, "error_log_unsupported", "This device does not support error logging.");  // the property text already says that
 				if (p.value_type == StorageProperty::value_type_error_block) {
@@ -1621,12 +1621,11 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 						found = true;
 					}
 				}
-
 				break;
 
 			case StorageProperty::subsection_selftest_log:
-				found = auto_set(p, "selftest_log_version", p.readable_name.c_str());
-				found = auto_set(p, "selftest_num_entries", "Number of tests in selftest log. Note: The number of entries may be limited to the newest manual tests.");
+				found = auto_set(p, "selftest_log_version", p.readable_name.c_str())
+				|| auto_set(p, "selftest_num_entries", "Number of tests in selftest log. Note: The number of entries may be limited to the newest manual tests.");
 		// 		|| auto_set(p, "selftest_log_unsupported", "This device does not support self-test logging.");  // the property text already says that
 				break;
 

@@ -34,11 +34,8 @@ class GscPreferencesWindow : public AppUIResWidget<GscPreferencesWindow, true> {
 
 
 		/// Constructor, GtkBuilder needs this.
-		GscPreferencesWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui);
+		GscPreferencesWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui);
 
-		/// Virtual destructor
-		virtual ~GscPreferencesWindow()
-		{ }
 
 		/// Set main window so that we can manipulate it
 		void set_main_window(GscMainWindow* window);
@@ -102,9 +99,9 @@ class GscPreferencesWindow : public AppUIResWidget<GscPreferencesWindow, true> {
 
 	private:
 
-		GscMainWindow* main_window_;  ///< Main window that called us.
+		GscMainWindow* main_window_ = nullptr;  ///< Main window that called us.
 
-		GscPreferencesDeviceOptionsTreeView* device_options_treeview;  ///< Device options tree view
+		GscPreferencesDeviceOptionsTreeView* device_options_treeview = nullptr;  ///< Device options tree view
 
 };
 

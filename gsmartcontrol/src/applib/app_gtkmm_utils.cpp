@@ -30,9 +30,9 @@
 Gtk::Widget* app_gtkmm_get_column_header(Gtk::TreeViewColumn& column)
 {
 	Gtk::Widget* w = column.get_widget();
-	Gtk::Widget* p1 = 0;
-	Gtk::Widget* p2 = 0;
-	Gtk::Widget* p3 = 0;
+	Gtk::Widget* p1 = nullptr;
+	Gtk::Widget* p2 = nullptr;
+	Gtk::Widget* p3 = nullptr;
 
 	// move up to GtkAlignment, then GtkHBox, then GtkButton.
 	if (w && (p1 = w->get_parent()) && (p2 = p1->get_parent()) && (p3 = p2->get_parent()))
@@ -92,7 +92,7 @@ namespace {
 			valid_bytes = gint(invalid - remainder);
 
 			if (str == nullptr)
-				str = g_string_sized_new (remaining_bytes);
+				str = g_string_sized_new (gsize(remaining_bytes));
 
 			g_string_append_len (str, remainder, valid_bytes);
 			/* append U+FFFD REPLACEMENT CHARACTER */

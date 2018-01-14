@@ -17,7 +17,7 @@
 #include <iosfwd>
 #include <cstdint>
 #include <optional>
-
+#include <chrono>
 
 
 
@@ -401,7 +401,7 @@ class StorageProperty {
 
 
 		/// Dump the property to a stream for debugging purposes
-		void dump(std::ostream& os, int internal_offset = 0) const;
+		void dump(std::ostream& os, std::size_t internal_offset = 0) const;
 
 
 		/// Format this property for debugging purposes
@@ -455,8 +455,8 @@ class StorageProperty {
 		union {
 			int64_t value_integer = 0;  ///< Value (if it's an integer)
 			bool value_bool;  ///< Value (if it's bool)
-			uint64_t value_time_length;  ///< Value in seconds (if it's time interval)
 		};
+		std::chrono::seconds value_time_length;  ///< Value in seconds (if it's time interval)
 
 		StorageCapability value_capability;  ///< Value (if it's a capability)
 		StorageAttribute value_attribute;  ///< Value (if it's an attribute)

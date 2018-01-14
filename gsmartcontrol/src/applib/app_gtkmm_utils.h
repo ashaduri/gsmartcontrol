@@ -47,14 +47,14 @@ int app_gtkmm_create_tree_view_column(Gtk::TreeModelColumn<T>& mcol, Gtk::TreeVi
 		app_gtkmm_labelize_column(*tcol);
 		tcol->set_reorderable(true);
 		tcol->set_resizable(true);
+
+		Gtk::Widget* header = app_gtkmm_get_column_header(*tcol);
+		if (header)
+			app_gtkmm_set_widget_tooltip(*header, tooltip_text);
 	}
 
-	Gtk::Widget* header = app_gtkmm_get_column_header(*tcol);
-	if (header)
-		app_gtkmm_set_widget_tooltip(*header, tooltip_text);
-
 	if (cell_markup) {
-		if (Gtk::CellRendererText* cr_type = dynamic_cast<Gtk::CellRendererText*>(treeview.get_column_cell_renderer(num_tree_cols - 1))) {
+		if (auto cr_type = dynamic_cast<Gtk::CellRendererText*>(treeview.get_column_cell_renderer(num_tree_cols - 1))) {
 			treeview.get_column(num_tree_cols - 1)->clear_attributes(*cr_type);  // clear "text" attribute. "markup" won't work without this.
 			treeview.get_column(num_tree_cols - 1)->add_attribute(cr_type->property_markup(), mcol);  // render col_type as markup.
 		}

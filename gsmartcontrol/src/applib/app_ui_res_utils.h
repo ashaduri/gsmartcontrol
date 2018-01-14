@@ -41,12 +41,9 @@
 
 
 
-/// A reference-counting pointer to application UI resource
-using app_ui_res_ref_t = Glib::RefPtr<Gtk::Builder>;
-
 
 /// Create application UI resource from a static buffer.
-inline bool app_ui_res_create_from(app_ui_res_ref_t& ref,
+inline bool app_ui_res_create_from(Glib::RefPtr<Gtk::Builder>& ref,
 		const unsigned char* buf, unsigned int buf_size, std::string& error_msg)
 {
 	if (!buf_size || !buf || !buf[0]) {
@@ -114,7 +111,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 				return hz::InstanceManager<Child, MultiInstance>::get_single_instance();
 
 			std::string error;
-			app_ui_res_ref_t ui = Gtk::Builder::create();
+			Glib::RefPtr<Gtk::Builder> ui = Gtk::Builder::create();
 			const typename Child::UIResData data;  // this holds the GtkBuilder data
 
 			// this does the actual object construction
@@ -146,7 +143,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 
 
 		/// Get UI resource
-		app_ui_res_ref_t get_ui()
+		Glib::RefPtr<Gtk::Builder> get_ui()
 		{
 			return ref_ui_;
 		}
@@ -212,7 +209,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 
 		/// GtkBuilder needs this constructor in a child.
 		/// BaseObjectType is a C type, defined in specific Gtk:: widget class.
-		AppUIResWidget(typename WidgetType::BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
+		AppUIResWidget(typename WidgetType::BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui)
 				: WidgetType(gtkcobj), ref_ui_(ref_ui)
 		{
 			// manually connecting signals:
@@ -232,7 +229,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 
 	private:
 
-		app_ui_res_ref_t ref_ui_;  ///< UI resource
+		Glib::RefPtr<Gtk::Builder> ref_ui_;  ///< UI resource
 
 };
 

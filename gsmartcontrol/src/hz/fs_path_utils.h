@@ -207,7 +207,7 @@ inline std::string path_get_basename(const std::string& path)
 
 
 
-inline std::string path_get_root(const std::string& path)
+inline std::string path_get_root([[maybe_unused]] const std::string& path)
 {
 #if !defined _WIN32
 	return "/";  // easy

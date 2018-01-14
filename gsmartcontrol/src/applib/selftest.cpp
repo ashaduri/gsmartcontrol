@@ -11,6 +11,7 @@
 
 #include <algorithm>  // std::max, std::min
 #include <cmath>  // std::floor
+#include <chrono>
 
 #include "app_pcrecpp.h"
 #include "storage_property.h"
@@ -20,28 +21,32 @@
 
 
 // Returns estimated time of completion for the test. returns -1 if n/a or unknown. 0 is a valid value.
-int64_t SelfTest::get_remaining_seconds() const
+std::chrono::seconds SelfTest::get_remaining_seconds() const
 {
-	int64_t total = get_min_duration_seconds();
-	if (total <= 0)
-		return -1;  // unknown
+	using namespace std::literals;
 
-	double gran = (double(total) / 9.);  // seconds per 10%
+	std::chrono::seconds total = get_min_duration_seconds();
+	if (total <= 0s)
+		return -1s;  // unknown
+
+	double gran = (double(total.count()) / 9.);  // seconds per 10%
 	// since remaining_percent_ may be manually set to 100, we limit from the above.
-	double rem_seconds_at_last_change = std::min(double(total), gran * remaining_percent_ / 10.);
+	double rem_seconds_at_last_change = std::min(double(total.count()), gran * remaining_percent_ / 10.);
 	double rem = rem_seconds_at_last_change - timer_.elapsed();
-	return std::max(int64_t(0), int64_t(std::floor(rem + 0.5)));  // aka round. don't return negative values.
+	return std::chrono::seconds(std::max(int64_t(0), (int64_t)std::round(rem)));  // don't return negative values.
 }
 
 
 
 // a drive reports a constant "test duration during idle" capability.
-int64_t SelfTest::get_min_duration_seconds() const
+std::chrono::seconds SelfTest::get_min_duration_seconds() const
 {
-	if (!drive_)
-		return -1;  // n/a
+	using namespace std::literals;
 
-	if (total_duration_ != -1)  // cache
+	if (!drive_)
+		return -1s;  // n/a
+
+	if (total_duration_ != -1s)  // cache
 		return total_duration_;
 
 	std::string prop_name;
@@ -56,7 +61,7 @@ int64_t SelfTest::get_min_duration_seconds() const
 			StorageProperty::section_data, StorageProperty::subsection_capabilities);
 
 	// p stores it as uint64_t
-	return (total_duration_ = (p.empty() ? 0 : static_cast<int64_t>(p.value_time_length)));
+	return (total_duration_ = (p.empty() ? 0s : p.value_time_length));
 }
 
 
@@ -135,7 +140,7 @@ std::string SelfTest::start(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 	// "remaining 60sec" on 60sec test twice (5 seconds apart). Since the test starts
 	// at 90% anyway, it's a good thing.
 	last_seen_percent_ = 90;
-	poll_in_seconds_ = 5;  // first update() in 5 seconds
+	poll_in_seconds_ = std::chrono::seconds(5);  // first update() in 5 seconds
 	timer_.start();
 
 	drive_->set_test_is_active(true);
@@ -187,7 +192,7 @@ std::string SelfTest::force_stop(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 		status_ = StorageSelftestEntry::status_aborted_by_host;
 		remaining_percent_ = -1;
 		last_seen_percent_ = -1;
-		poll_in_seconds_ = -1;
+		poll_in_seconds_ = std::chrono::seconds(-1);
 		timer_.stop();
 		drive_->set_test_is_active(false);
 	}
@@ -203,6 +208,8 @@ std::string SelfTest::force_stop(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 // not an hw defect error.
 std::string SelfTest::update(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 {
+	using namespace std::literals;
+
 	if (!drive_)
 		return "Invalid drive given.";
 
@@ -249,32 +256,32 @@ std::string SelfTest::update(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 			timer_.start();  // restart the timer
 		}
 
-		int64_t total = get_min_duration_seconds();
+		std::chrono::seconds total = get_min_duration_seconds();
 
-		if (total <= 0) {  // unknown
-			poll_in_seconds_ = 30;  // just a guess
+		if (total <= 0s) {  // unknown
+			poll_in_seconds_ = 30s;  // just a guess
 
 		} else {
 			// seconds per 10%. use double, because e.g. 60sec test gives silly values with int.
-			double gran = (double(total) / 9.);
+			double gran = (double(total.count()) / 9.);
 
 			// Add 1/10 for disk load delays, etc... . Limit to 15sec, in case of very quick tests.
-			poll_in_seconds_ = std::max(int64_t(15), int64_t(gran / 3. + (gran / 10.)));
+			poll_in_seconds_ = std::chrono::seconds(std::max(int64_t(15), int64_t(gran / 3. + (gran / 10.))));
 
 			// for long tests we don't want to make the user wait too much, so
 			// we need to poll more frequently by the end, in case it's completed.
 			if (type_ == type_long && remaining_percent_ == 10)
-				poll_in_seconds_ = std::max(int64_t(1*60), int64_t(gran / 10.));  // that's 2 min for 180min extended test
+				poll_in_seconds_ = std::chrono::seconds(std::max(int64_t(1*60), int64_t(gran / 10.)));  // that's 2 min for 180min extended test
 
-			debug_out_dump("app", DBG_FUNC_MSG << "total: " << total << ", gran: " << gran
-					<< ", poll in: " << poll_in_seconds_ << ", remaining secs: " << get_remaining_seconds()
+			debug_out_dump("app", DBG_FUNC_MSG << "total: " << total.count() << ", gran: " << gran
+					<< ", poll in: " << poll_in_seconds_.count() << ", remaining secs: " << get_remaining_seconds().count()
 					<< ", remaining %: " << int(remaining_percent_) << ", last seen %: " << int(last_seen_percent_) << ".\n");
 		}
 
 	} else {
 		remaining_percent_ = -1;
 		last_seen_percent_ = -1;
-		poll_in_seconds_ = -1;
+		poll_in_seconds_ = -1s;
 		timer_.stop();
 	}
 

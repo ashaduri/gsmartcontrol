@@ -29,6 +29,8 @@
 #if (defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS) \
 		|| !(defined HAVE_REENTRANT_LOCALTIME && HAVE_REENTRANT_LOCALTIME)
 	#include <time.h>  // localtime_r, localtime_s
+	#include <chrono>
+
 #endif
 
 
@@ -131,16 +133,18 @@ inline std::string format_size(uint64_t size, bool use_decimal = false, bool siz
 
 /// Format time length (e.g. 330 seconds) in a human-readable manner
 /// (e.g. "5 min 30 sec").
-inline std::string format_time_length(int64_t secs)
+inline std::string format_time_length(std::chrono::seconds secs)
 {
+	using namespace std::literals;
+
 	// don't use uints here - there bring bugs.
 	const int64_t min_size = 60;
 	const int64_t hour_size = min_size * 60;
 	const int64_t day_size = hour_size * 24;
 
-	if (secs >= 100 * hour_size) {
-		int64_t days = (secs + day_size / 2) / day_size;  // time in days (rounded to nearest)
-		int64_t sec_diff = secs - days * day_size;  // difference between days and actual time (may be positive or negative)
+	if (secs >= 100h) {
+		int64_t days = (secs.count() + day_size / 2) / day_size;  // time in days (rounded to nearest)
+		int64_t sec_diff = secs.count() - days * day_size;  // difference between days and actual time (may be positive or negative)
 
 		if (days < 10) {  // if less than 10 days, display hours too
 
@@ -157,9 +161,9 @@ inline std::string format_time_length(int64_t secs)
 			return std::to_string(days) + " " + HZ_C_("time", "d");
 		}
 
-	} else if (secs >= 100 * min_size) {
-		int64_t hours = (secs + hour_size / 2) / hour_size;  // time in hours (rounded to nearest)
-		int64_t sec_diff = secs - hours * hour_size;
+	} else if (secs >= 100min) {
+		int64_t hours = (secs.count() + hour_size / 2) / hour_size;  // time in hours (rounded to nearest)
+		int64_t sec_diff = secs.count() - hours * hour_size;
 
 		if (hours < 10) {  // if less than 10 hours, display minutes too
 			int64_t minutes = ((sec_diff < (-min_size / 2) ? sec_diff + hour_size : sec_diff) + min_size / 2) / min_size;
@@ -173,13 +177,12 @@ inline std::string format_time_length(int64_t secs)
 			return std::to_string(hours) + " " + HZ_C_("time", "h");
 		}
 
-
-	} else if (secs >= 100) {
-		int64_t minutes = (secs + min_size / 2) / min_size;  // time in minutes (rounded to nearest)
-		return std::to_string(minutes) + " " + HZ_C_("time", "min");
+	} else if (secs >= 100s) {
+		auto minutes = std::chrono::round<std::chrono::minutes>(secs);
+		return std::to_string(minutes.count()) + " " + HZ_C_("time", "min");
 	}
 
-	return std::to_string(secs) + " " + HZ_C_("time", "sec");
+	return std::to_string(secs.count()) + " " + HZ_C_("time", "sec");
 }
 
 

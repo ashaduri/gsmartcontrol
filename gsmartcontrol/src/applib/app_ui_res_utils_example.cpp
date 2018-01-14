@@ -42,7 +42,7 @@ class AppUiResTestWindow : public AppUIResWidget<AppUiResTestWindow, false>
 
 
 		/// Constructor
-		AppUiResTestWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
+		AppUiResTestWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui)
 				: AppUIResWidget<AppUiResTestWindow, false>(gtkcobj, ref_ui)
 		{
 			Gtk::Box* vbox = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL, 5));

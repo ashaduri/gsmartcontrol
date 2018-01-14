@@ -32,13 +32,13 @@ class GscInfoWindow : public AppUIResWidget<GscInfoWindow, true> {
 
 
 		/// Constructor, GtkBuilder needs this.
-		GscInfoWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui);
+		GscInfoWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui);
 
 		/// Virtual destructor
 		virtual ~GscInfoWindow();
 
 		// Overridden from InstanceManager
-		virtual void obj_destroy();
+		void obj_destroy() override;
 
 
 		/// Set the drive to show

@@ -14,6 +14,7 @@
 
 #include <sigc++/sigc++.h>
 #include <string>
+#include <chrono>
 
 #include "hz/error.h"
 #include "hz/intrusive_ptr.h"
@@ -134,7 +135,7 @@ class CmdexSync : public hz::intrusive_ptr_referenced, public sigc::trackable {
 
 		/// Set timeout (in ms) to send SIGKILL after sending SIGTERM.
 		/// Used if manual stop was requested through ticker.
-		void set_forced_kill_timeout(int timeout_msec)
+		void set_forced_kill_timeout(std::chrono::milliseconds timeout_msec)
 		{
 			forced_kill_timeout_msec_ = timeout_msec;
 		}
@@ -157,7 +158,7 @@ class CmdexSync : public hz::intrusive_ptr_referenced, public sigc::trackable {
 		/// Set a timeout (since call to this function) to terminate, kill or both (use 0 to ignore the parameter).
 		/// the timeouts will be unset automatically when the command exits.
 		/// Call from ticker slot while executing.
-		void set_stop_timeouts(int term_timeout_msec = 0, int kill_timeout_msec = 0)
+		void set_stop_timeouts(std::chrono::milliseconds term_timeout_msec, std::chrono::milliseconds kill_timeout_msec)
 		{
 			cmdex_.set_stop_timeouts(term_timeout_msec, kill_timeout_msec);
 		}
@@ -180,7 +181,7 @@ class CmdexSync : public hz::intrusive_ptr_referenced, public sigc::trackable {
 
 
 		/// See Cmdex::set_buffer_sizes() for details. Call this before execute().
-		void set_buffer_sizes(int stdout_buffer_size = 0, int stderr_buffer_size = 0)
+		void set_buffer_sizes(gsize stdout_buffer_size = 0, gsize stderr_buffer_size = 0)
 		{
 			cmdex_.set_buffer_sizes(stdout_buffer_size, stderr_buffer_size);
 		}
@@ -198,9 +199,9 @@ class CmdexSync : public hz::intrusive_ptr_referenced, public sigc::trackable {
 		}
 
 		/// See Cmdex::set_exit_status_translator() for details.
-		void set_exit_status_translator(Cmdex::exit_status_translator_func_t func, void* user_data)
+		void set_exit_status_translator(Cmdex::exit_status_translator_func_t func)
 		{
-			cmdex_.set_exit_status_translator(func, user_data);
+			cmdex_.set_exit_status_translator(func);
 		}
 
 
@@ -300,7 +301,7 @@ class CmdexSync : public hz::intrusive_ptr_referenced, public sigc::trackable {
 
 		std::string running_msg_;  ///< "Running" message (to show in the dialogs, etc...)
 
-		int forced_kill_timeout_msec_ = 3 * 1000;  // 3 sec by default. Kill timeout in ms.
+		std::chrono::milliseconds forced_kill_timeout_msec_ = std::chrono::milliseconds(3 * 1000);  // 3 sec by default. Kill timeout in ms.
 
 		std::string error_msg_;  ///< Execution error message
 		std::string error_header_;  ///< The error message may have this prepended to it.

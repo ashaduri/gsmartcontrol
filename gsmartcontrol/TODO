@@ -32,7 +32,7 @@ Don't rely on smartctl return code (2), parse the output instead.
 GTKMM 4.
 	scoped_ptr (after we have GtkFileChooserNative in gtkmm)
 	GTK_CHECK_VERSION, GTK_CHECK_VERSION
-	rconfig/autosave.h to glibmm.
+	port rconfig/autosave.h from glib to glibmm.
 
 JSON.
 	Port the rest to std::regex, get rid of pcre requirement.
@@ -51,8 +51,17 @@ std::string setters -> no const&, use std::move.
 enum class
 static std::map
 for iter -> for auto
+throw() -> noexcept
+{ }  -> constructor/destructor = default
+_sec, _ms -> chrono
+0.5 -> round
+unsigned int -> std::size_t
+Should StorageProperty contain also value_uinteger?
 
-Test with clang-tidy, gcc's -Wsuggest-*.
+Check TODOs
+
+Test with clang-tidy
+	add .clang-tidy
 
 
 

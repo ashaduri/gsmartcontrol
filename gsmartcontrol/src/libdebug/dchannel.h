@@ -68,27 +68,23 @@ class DebugChannelOStream : public DebugChannelBase {
 		DebugChannelOStream(std::ostream& os) : os_(os)
 		{ }
 
-		/// Virtual destructor
-		virtual ~DebugChannelOStream()
-		{ }
-
 		// Reimplemented
-		virtual debug_channel_base_ptr clone_ptr()
+		debug_channel_base_ptr clone_ptr() override
 		{
 			// this will prevent the object from being copied, which may harm the wrapped stream.
 			return debug_channel_base_ptr(this);  // aka copy.
 		}
 
 		// Reimplemented
-		virtual debug_channel_base_const_ptr clone_ptr() const
+		debug_channel_base_const_ptr clone_ptr() const override
 		{
 			// this will prevent the object from being copied, which may harm the wrapped stream.
 			return debug_channel_base_const_ptr(this);  // aka copy.
 		}
 
 		/// Reimplemented from DebugChannelBase.
-		virtual void send(debug_level::flag level, const std::string& domain,
-				debug_format::type& format_flags, int indent_level, bool is_first_line, const std::string& msg)
+		void send(debug_level::flag level, const std::string& domain,
+				debug_format::type& format_flags, int indent_level, bool is_first_line, const std::string& msg) override
 		{
 			os_ << debug_format_message(level, domain, format_flags, indent_level, is_first_line, msg);
 		}

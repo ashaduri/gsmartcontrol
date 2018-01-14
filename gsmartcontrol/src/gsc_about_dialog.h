@@ -36,7 +36,7 @@ class GscAboutDialog : public AppUIResWidget<GscAboutDialog, false, Gtk::AboutDi
 
 
 		/// Constructor, GtkBuilder needs this.
-		GscAboutDialog(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui);
+		GscAboutDialog(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui);
 
 		/// Virtual destructor
 		virtual ~GscAboutDialog()

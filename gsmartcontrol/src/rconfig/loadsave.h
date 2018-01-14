@@ -51,10 +51,10 @@ inline bool load_from_file(const std::string& file)
 /// Save the "/config" branch to a file.
 inline bool save_to_file(const std::string& file)
 {
-	std::string json = get_config_branch().dump(4);
+	std::string json_str = get_config_branch().dump(4);
 
 	hz::File f(file);
-	if (!f.put_contents(json)) {
+	if (!f.put_contents(json_str)) {
 		debug_print_error("rconfig", "save_to_file(): Unable to write to file \"%s\".\n", file.c_str());
 		return false;
 	}

@@ -54,7 +54,7 @@
 
 
 
-GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
+GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui)
 		: AppUIResWidget<GscMainWindow, false>(gtkcobj, ref_ui), iconview(0),
 		action_handling_enabled_(true), name_label(0), health_label(0), family_label(0),
 		scanning_(false)
@@ -1020,7 +1020,7 @@ void GscMainWindow::rescan_devices()
 	this->scanning_ = true;
 
 // 	std::string match_str = rconfig::get_data<std::string>("system/device_match_patterns");
-	std::string blacklist_str = rconfig::get_data<std::string>("system/device_blacklist_patterns");
+	auto blacklist_str = rconfig::get_data<std::string>("system/device_blacklist_patterns");
 
 // 	std::vector<std::string> match_patterns;
 	std::vector<std::string> blacklist_patterns;
@@ -1050,9 +1050,9 @@ void GscMainWindow::rescan_devices()
 	// Catch permission errors.
 	// executor errors and outputs, not reported through error_msg.
 	std::vector<std::string> fetch_outputs = sd.get_fetch_data_error_outputs();
-	for (unsigned int i = 0; i < fetch_outputs.size(); ++i) {
+	for (const auto& fetch_output : fetch_outputs) {
 		// debug_out_error("app", DBG_FUNC_MSG << fetch_outputs[i] << "\n");
-		if (app_pcre_match("/Smartctl open device.+Permission denied/mi", fetch_outputs[i])) {
+		if (app_pcre_match("/Smartctl open device.+Permission denied/mi", fetch_output)) {
 			gsc_executor_error_dialog_show("An error occurred while scanning the system",
 					"It seems that smartctl doesn't have enough permissions to access devices.\n"
 					"<small>See \"Resolving Permission Problems\" in Help menu for possible solutions.</small>", this, true, true);
@@ -1065,17 +1065,17 @@ void GscMainWindow::rescan_devices()
 		// we don't show output button here
 		gsc_executor_error_dialog_show("An error occurred while scanning the system",
 				error_msg, this, false, false);
-		error = true;
+		// error = true;
 
 	// add them anyway, in case the error was only on one drive.
 	} else { // if (!error) {
 		// add them to iconview
-		for (unsigned int i = 0; i < drives.size(); ++i) {
+		for (auto& drive : drives) {
 			if (rconfig::get_data<bool>("gui/show_smart_capable_only")) {
-				if (drives[i]->get_smart_status() != StorageDevice::status_unsupported)
-					iconview->add_entry(drives[i]);
+				if (drive->get_smart_status() != StorageDevice::status_unsupported)
+					iconview->add_entry(drive);
 			} else {
-				iconview->add_entry(drives[i]);
+				iconview->add_entry(drive);
 			}
 		}
 	}
@@ -1419,7 +1419,7 @@ bool GscMainWindow::quit_requested()
 
 
 // by default, delete_event calls hide().
-bool GscMainWindow::on_delete_event_before(GdkEventAny* e)
+bool GscMainWindow::on_delete_event_before([[maybe_unused]] GdkEventAny* e)
 {
 	return quit_requested();
 }

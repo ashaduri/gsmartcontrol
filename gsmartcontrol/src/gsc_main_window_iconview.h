@@ -48,7 +48,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 		/// Constructor, GtkBuilder needs this.
-		GscMainWindowIconView(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui)
+		GscMainWindowIconView(BaseObjectType* gtkcobj, [[maybe_unused]] const Glib::RefPtr<Gtk::Builder>& ref_ui)
 				: Gtk::IconView(gtkcobj), num_icons(0), main_window(0), empty_view_message(message_none)
 		{
 			columns.add(col_name);  // we can use the col_name variable by value after this.
@@ -58,14 +58,10 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 			columns.add(col_pixbuf);
 
-#if GTK_CHECK_VERSION(3, 10, 0)
 			// For high quality rendering with GDK_SCALE=2
 			this->pack_start(cell_renderer_pixbuf, false);
 			this->set_cell_data_func(cell_renderer_pixbuf,
 					sigc::mem_fun(this, &GscMainWindowIconView::on_cell_data_render));
-#else
-			this->set_pixbuf_column(col_pixbuf);
-#endif
 
 			columns.add(col_drive_ptr);
 
@@ -91,17 +87,10 @@ class GscMainWindowIconView : public Gtk::IconView {
 			const int icon_size = 64;
 
 			// Try XDG version first
-#if APP_GTKMM_CHECK_VERSION(3, 10, 0)
 			try {
 				hd_icon = default_icon_theme->load_icon("drive-harddisk", icon_size, get_scale_factor(), Gtk::IconLookupFlags(0));
 			} catch (...) { }  // ignore exceptions
-#endif
-			if (!hd_icon) {
-				// Before gtk 3.10 it was called gtk-harddisk.
-				try {
-					hd_icon = default_icon_theme->load_icon("gtk-harddisk", icon_size, Gtk::IconLookupFlags(0));
-				} catch (...) { }  // ignore exceptions
-			}
+
 			if (!hd_icon) {
 				// Still no luck, use bundled ones.
 				std::string icon_file = hz::data_file_find("icon_hdd.png");
@@ -113,17 +102,10 @@ class GscMainWindowIconView : public Gtk::IconView {
 			}
 
 			// Try XDG version first
-#if APP_GTKMM_CHECK_VERSION(3, 10, 0)
 			try {
 				cddvd_icon = default_icon_theme->load_icon("media-optical", icon_size, get_scale_factor(), Gtk::IconLookupFlags(0));
 			} catch (...) { }  // ignore exceptions
-#endif
-			if (!cddvd_icon) {
-				// Before gtk 3.10 it was called gtk-cdrom.
-				try {
-					cddvd_icon = default_icon_theme->load_icon("gtk-cdrom", icon_size, Gtk::IconLookupFlags(0));
-				} catch (...) { }  // ignore exceptions
-			}
+
 			if (!cddvd_icon) {
 				// Still no luck, use bundled ones.
 				std::string icon_file = hz::data_file_find("icon_cddvd.png");
@@ -167,7 +149,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 		// Overridden from Gtk::Widget
-		bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
+		bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr) override
 		{
 			if (empty_view_message != message_none && this->num_icons == 0) {  // no icons
 				std::string msg;
@@ -201,7 +183,6 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 
-#if GTK_CHECK_VERSION(3, 10, 0)
 		/// Cell data renderer (needed for high quality icons in GDK_SCALE=2).
 		/// We have to use Cairo surfaces, because pixbufs are scaled by GtkIconView.
 		void on_cell_data_render(const Gtk::TreeModel::const_iterator& iter)
@@ -227,7 +208,6 @@ class GscMainWindowIconView : public Gtk::IconView {
 			g_object_set(G_OBJECT(cell_renderer_pixbuf.gobj()), "surface", surface, nullptr);
 			cairo_surface_destroy(surface);
 		}
-#endif
 
 
 		/// Add a drive entry to the icon view

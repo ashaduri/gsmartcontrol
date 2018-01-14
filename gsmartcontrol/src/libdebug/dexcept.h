@@ -29,14 +29,13 @@ struct debug_internal_error : virtual public std::exception {
 	}
 
 	/// Virtual destructor
-	virtual ~debug_internal_error() throw()
+	virtual ~debug_internal_error()
 	{
 		delete[] msg_;
-		msg_ = 0;  // protect from double-deletion compiler bugs
 	}
 
 	/// Reimplemented. Note: messages in exceptions are not newline-terminated.
- 	virtual const char* what() const throw()
+ 	const char* what() const noexcept override
 	{
 		return msg_;
 	}
@@ -59,14 +58,13 @@ struct debug_usage_error : virtual public std::exception {  // from <exception>
 	}
 
 	/// Virtual destructor
-	virtual ~debug_usage_error() throw()
+	virtual ~debug_usage_error()
 	{
 		delete[] msg_;
-		msg_ = 0;  // protect from double-deletion compiler bugs
 	}
 
 	/// Reimplemented. Note: messages in exceptions are not newline-terminated.
- 	virtual const char* what() const throw()
+ 	const char* what() const noexcept override
 	{
 		return msg_;
 	}

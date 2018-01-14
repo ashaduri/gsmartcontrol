@@ -126,7 +126,7 @@ bool gui_show_text_entry_dialog(const std::string& title, const std::string& mes
 
 		Gtk::Entry input_entry;
 		input_entry.set_activates_default(true);
-
+		input_entry.set_text(default_str);
 
 		Gtk::Box vbox;
 		vbox.set_spacing(12);

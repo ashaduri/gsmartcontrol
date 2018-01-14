@@ -25,8 +25,8 @@ namespace debug_internal {
 	class NullStreamBuf : public std::streambuf {
 
 		protected:
-			int overflow(int) { return 0; }
-			int sync() { return 0; }
+			int overflow(int) override { return 0; }
+			int sync() override { return 0; }
 	};
 
 

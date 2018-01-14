@@ -25,7 +25,7 @@ namespace debug_internal {
 
 
 
-	void DebugState::setup_default_state()
+	void DebugState::setup_default_state() noexcept
 	{
 		// defaults:
 		debug_level::type levels_enabled = debug_level::warn | debug_level::error | debug_level::fatal;
@@ -41,11 +41,11 @@ namespace debug_internal {
 
 		std::map<debug_level::flag, bool> levels;
 		unsigned long levels_enabled_ulong = levels_enabled.to_ulong();
-		levels[debug_level::dump] = (levels_enabled_ulong & debug_level::dump);
-		levels[debug_level::info] = (levels_enabled_ulong & debug_level::info);
-		levels[debug_level::warn] = (levels_enabled_ulong & debug_level::warn);
-		levels[debug_level::error] = (levels_enabled_ulong & debug_level::error);
-		levels[debug_level::fatal] = (levels_enabled_ulong & debug_level::fatal);
+		levels[debug_level::dump] = bool(levels_enabled_ulong & debug_level::dump);
+		levels[debug_level::info] = bool(levels_enabled_ulong & debug_level::info);
+		levels[debug_level::warn] = bool(levels_enabled_ulong & debug_level::warn);
+		levels[debug_level::error] = bool(levels_enabled_ulong & debug_level::error);
+		levels[debug_level::fatal] = bool(levels_enabled_ulong & debug_level::fatal);
 
 		domain_map_t& dm = get_domain_map();
 
@@ -56,14 +56,13 @@ namespace debug_internal {
 		// we add the same copy to save memory and to ensure proper std::cerr locking.
 		debug_channel_base_ptr channel(new DebugChannelOStream(std::cerr));
 
-		for (std::map<debug_level::flag, bool>::const_iterator iter = levels.begin(); iter != levels.end(); ++iter) {
-			debug_level::flag level = iter->first;
+		for (auto& iter : levels) {
+			debug_level::flag level = iter.first;
 			level_map[level] = out_stream_ptr(new DebugOutStream(level, "default", format_flags));
 
 			level_map[level]->add_channel(channel);  // add by smartpointer
-			level_map[level]->set_enabled(iter->second);
+			level_map[level]->set_enabled(iter.second);
 		}
-
 	}
 
 

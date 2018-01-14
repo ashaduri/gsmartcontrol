@@ -39,14 +39,11 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 
 
 		/// Constructor, GtkBuilder needs this.
-		GscMainWindow(BaseObjectType* gtkcobj, const app_ui_res_ref_t& ref_ui);
+		GscMainWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui);
 
-		/// Virtual destructor
-		virtual ~GscMainWindow()
-		{ }
 
 		// Overridden from InstanceManager
-		virtual void obj_destroy();
+		void obj_destroy() override;
 
 
 		/// Scan for devices and fill the iconview

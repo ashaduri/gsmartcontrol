@@ -28,7 +28,7 @@ namespace hz {
 
 
 /// Children of this class are thrown from various casting functions
-class bad_cast_except : virtual public std::exception {  // from <exception>
+class bad_cast_except : public std::exception {  // from <exception>
 	public:
 
 		/// Constructor
@@ -48,13 +48,9 @@ class bad_cast_except : virtual public std::exception {  // from <exception>
 			error_msg_(error_msg ? error_msg : "Type cast failed from \"%s\" to \"%s\".")  // still need %s here for correct arg count for printf
 		{ }
 
-		/// Virtual destructor
-		virtual ~bad_cast_except() throw()
-		{ }
-
 
 		/// Reimplemented from std::exception
-		virtual const char* what() const throw()
+		const char* what() const throw() override
 		{
 			// Note: we do quite a lot of construction here, but since it's not
 			// an out-of-memory exception, what the heck.
