@@ -1,0 +1,19 @@
+---
+Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,bugprone-*,cppcoreguidelines-*,clang-analyzer-*,misc-*,performance-*,readability-*-cppcoreguidelines-pro-type-const-cast,-cppcoreguidelines-pro-type-reinterpret-cast,-readability-function-size,-readability-simplify-boolean-expr,-cppcoreguidelines-pro-type-cstyle-cast,-performance-inefficient-string-concatenation,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-type-vararg'
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+AnalyzeTemporaryDtors: true
+FormatStyle:     none
+CheckOptions:
+  - key:             readability-braces-around-statements.ShortStatementLines
+    value:           '2'
+  - key:             misc-assert-side-effect.AssertMacros
+    value:           assert,DBG_ASSERT
+  - key:             misc-assert-side-effect.CheckFunctionCalls
+    value:           '0'
+  - key:             readability-implicit-bool-conversion.AllowConditionalPointerCasts
+    value:           '1'
+  - key:             readability-implicit-bool-cast.AllowConditionalPointerCasts
+    value:           '1'
+...
+

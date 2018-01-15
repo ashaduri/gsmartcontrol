@@ -38,7 +38,7 @@ int main()
 
 		string_split(s, '/', v, false);
 
-		for (unsigned int i = 0; i < v.size(); i++)
+		for (std::size_t i = 0; i < v.size(); i++)
 			std::cerr << (v[i] == "" ? "[empty]" : v[i]) << "\n";
 	}
 
@@ -50,7 +50,7 @@ int main()
 
 		string_split(s, "//", v, false);
 
-		for (unsigned int i = 0; i < v.size(); i++)
+		for (std::size_t i = 0; i < v.size(); i++)
 			std::cerr << (v[i] == "" ? "[empty]" : v[i]) << "\n";
 	}
 

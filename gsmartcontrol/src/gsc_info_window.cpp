@@ -10,10 +10,7 @@
 /// @{
 
 // TODO Remove this in gtkmm4.
-#include <bits/stdc++.h>  // to avoid throw() macro errors.
-#define throw(a)  // glibmm uses dynamic exception specifications, remove them.
-#include <glibmm.h>  // NOT NEEDED
-#undef throw
+#include "local_glibmm.h"
 
 #include <gtkmm.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
@@ -64,10 +61,9 @@ namespace {
 			return;
 
 		// remove all first
-		std::vector<Gtk::Widget*> wv = vbox->get_children();
-		for (std::size_t i = 0; i < wv.size(); ++i) {
-			vbox->remove(*(wv[i]));
-			delete wv[i];  // since it's without parent anymore, it won't be auto-deleted.
+		for (auto& w : vbox->get_children()) {
+			vbox->remove(*w);
+			delete w;  // since it's without parent anymore, it won't be auto-deleted.
 		}
 
 		vbox->set_visible(!label_strings.empty());
@@ -128,7 +124,7 @@ namespace {
 				crt->property_cell_background().reset_value();
 				crt->property_foreground().reset_value();
 			}
-			if (p->value_statistic.is_header) {
+			if (p->is_value_type<StorageStatistic>() && p->get_value<StorageStatistic>().is_header) {
 				crt->property_weight() = Pango::WEIGHT_BOLD;
 			} else {
 				crt->property_weight().reset_value();
@@ -162,8 +158,8 @@ namespace {
 	inline void on_error_log_treeview_row_selected(GscInfoWindow* window,
 			Gtk::TreeModelColumn<Glib::ustring> mark_name_column)
 	{
-		Gtk::TreeView* treeview = window->lookup_widget<Gtk::TreeView*>("error_log_treeview");
-		Gtk::TextView* textview = window->lookup_widget<Gtk::TextView*>("error_log_textview");
+		auto* treeview = window->lookup_widget<Gtk::TreeView*>("error_log_treeview");
+		auto* textview = window->lookup_widget<Gtk::TextView*>("error_log_textview");
 		Glib::RefPtr<Gtk::TextBuffer> buffer;
 		if (treeview && textview && (buffer = textview->get_buffer())) {
 			Gtk::TreeModel::iterator iter = treeview->get_selection()->get_selected();
@@ -196,7 +192,7 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Bu
 	}
 
 	// Create missing widgets
-	Gtk::Box* device_name_hbox = lookup_widget<Gtk::Box*>("device_name_label_hbox");
+	auto* device_name_hbox = lookup_widget<Gtk::Box*>("device_name_label_hbox");
 	if (device_name_hbox) {
 		device_name_label = Gtk::manage(new Gtk::Label("No data available", Gtk::ALIGN_START));
 		device_name_label->set_selectable(true);
@@ -239,14 +235,14 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Bu
 
 	// Context menu in treeviews
 	{
-		std::vector<std::string> treeview_names;
-		treeview_names.push_back("attributes_treeview");
-		treeview_names.push_back("statistics_treeview");
-		treeview_names.push_back("selftest_log_treeview");
+		static const std::vector<std::string> treeview_names {
+			"attributes_treeview",
+			"statistics_treeview",
+			"selftest_log_treeview"
+		};
 
-		for (std::size_t i = 0; i < treeview_names.size(); ++i) {
-			std::string treeview_name = treeview_names[i];
-			Gtk::TreeView* treeview = lookup_widget<Gtk::TreeView*>(treeview_name);
+		for (const auto& treeview_name : treeview_names) {
+			auto* treeview = lookup_widget<Gtk::TreeView*>(treeview_name);
 			treeview_menus[treeview_name] = new Gtk::Menu();  // deleted in window destructor
 
 			treeview->signal_button_press_event().connect(
@@ -267,47 +263,29 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Bu
 
 	// Set default texts on TextView-s, because glade's "text" property doesn't work
 	// on them in gtkbuilder.
-	{
-		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("error_log_textview");
-		if (textview) {
-			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-			buffer->set_text("\nNo data available");
-		}
+	if (auto* textview = lookup_widget<Gtk::TextView*>("error_log_textview")) {
+		Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+		buffer->set_text("\nNo data available");
 	}
-	{
-		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("selective_selftest_log_textview");
-		if (textview) {
-			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-			buffer->set_text("\nNo data available");
-		}
+	if (auto* textview = lookup_widget<Gtk::TextView*>("selective_selftest_log_textview")) {
+		Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+		buffer->set_text("\nNo data available");
 	}
-	{
-		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("temperature_log_textview");
-		if (textview) {
-			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-			buffer->set_text("\nNo data available");
-		}
+	if (auto* textview = lookup_widget<Gtk::TextView*>("temperature_log_textview")) {
+		Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+		buffer->set_text("\nNo data available");
 	}
-	{
-		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("erc_log_textview");
-		if (textview) {
-			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-			buffer->set_text("\nNo data available");
-		}
+	if (auto* textview = lookup_widget<Gtk::TextView*>("erc_log_textview")) {
+		Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+		buffer->set_text("\nNo data available");
 	}
-	{
-		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("phy_log_textview");
-		if (textview) {
-			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-			buffer->set_text("\nNo data available");
-		}
+	if (auto* textview = lookup_widget<Gtk::TextView*>("phy_log_textview")) {
+		Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+		buffer->set_text("\nNo data available");
 	}
-	{
-		Gtk::TextView* textview = lookup_widget<Gtk::TextView*>("directory_log_textview");
-		if (textview) {
-			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-			buffer->set_text("\nNo data available");
-		}
+	if (auto* textview = lookup_widget<Gtk::TextView*>("directory_log_textview")) {
+		Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+		buffer->set_text("\nNo data available");
 	}
 
 
@@ -357,8 +335,8 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Bu
 
 GscInfoWindow::~GscInfoWindow()
 {
-	for (std::map<std::string, Gtk::Menu*>::iterator iter = treeview_menus.begin(); iter != treeview_menus.end(); ++iter) {
-		delete iter->second;
+	for (auto& iter : treeview_menus) {
+		delete iter.second;
 	}
 }
 
@@ -382,7 +360,7 @@ void GscInfoWindow::set_drive(StorageDeviceRefPtr d)
 {
 	if (drive)  // if an old drive is present, disconnect our callback from it.
 		drive_changed_connection.disconnect();
-	drive = d;
+	drive = std::move(d);
 	drive_changed_connection = drive->signal_changed.connect(sigc::mem_fun(this,
 			&GscInfoWindow::on_drive_changed));
 }
@@ -685,7 +663,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 				continue;
 
 			// add non-attribute-type properties to label above
-			if (p.value_type != StorageProperty::value_type_attribute) {
+			if (!p.is_value_type<StorageAttribute>()) {
 				label_strings.emplace_back(p.readable_name + ": " + p.format_value(), &p);
 
 				if (int(p.warning) > int(max_tab_warning))
@@ -693,25 +671,27 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 				continue;
 			}
 
-			std::string attr_type = StorageAttribute::get_attr_type_name(p.value_attribute.attr_type);
-			if (p.value_attribute.attr_type == StorageAttribute::attr_type_prefail)
+			const auto& attr = p.get_value<StorageAttribute>();
+
+			std::string attr_type = StorageAttribute::get_attr_type_name(attr.attr_type);
+			if (attr.attr_type == StorageAttribute::attr_type_prefail)
 				attr_type = "<b>" + attr_type + "</b>";
 
-			std::string fail_time = StorageAttribute::get_fail_time_name(p.value_attribute.when_failed);
-			if (p.value_attribute.when_failed != StorageAttribute::fail_time_none)
+			std::string fail_time = StorageAttribute::get_fail_time_name(attr.when_failed);
+			if (attr.when_failed != StorageAttribute::fail_time_none)
 				fail_time = "<b>" + fail_time + "</b>";
 
 			Gtk::TreeRow row = *(list_store->append());
 
-			row[col_id] = p.value_attribute.id;
+			row[col_id] = attr.id;
 			row[col_name] = p.readable_name;
-			row[col_flag_value] = p.value_attribute.flag;  // it's a string, not int.
-			row[col_value] = (p.value_attribute.value.has_value() ? hz::number_to_string_locale(p.value_attribute.value.value()) : "-");
-			row[col_worst] = (p.value_attribute.worst.has_value() ? hz::number_to_string_locale(p.value_attribute.worst.value()) : "-");
-			row[col_threshold] = (p.value_attribute.threshold.has_value() ? hz::number_to_string_locale(p.value_attribute.threshold.value()) : "-");
-			row[col_raw] = p.value_attribute.format_raw_value();
+			row[col_flag_value] = attr.flag;  // it's a string, not int.
+			row[col_value] = (attr.value.has_value() ? hz::number_to_string_locale(attr.value.value()) : "-");
+			row[col_worst] = (attr.worst.has_value() ? hz::number_to_string_locale(attr.worst.value()) : "-");
+			row[col_threshold] = (attr.threshold.has_value() ? hz::number_to_string_locale(attr.threshold.value()) : "-");
+			row[col_raw] = attr.format_raw_value();
 			row[col_type] = attr_type;
-// 			row[col_updated] = StorageAttribute::get_update_type_name(p.value_attribute.update_type);
+// 			row[col_updated] = StorageAttribute::get_update_type_name(attr.update_type);
 			row[col_failed] = fail_time;
 			row[col_tooltip] = p.get_description();
 			row[col_storage] = &p;
@@ -796,13 +776,13 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
 		std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
-		for (auto&& p : props) {
+		for (const auto& p : props) {
 			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_devstat)
 				continue;
 
 			// add non-entry-type properties to label above
-			if (p.value_type != StorageProperty::value_type_statistic) {
-				label_strings.push_back(PropertyLabel(p.readable_name + ": " + p.format_value(), &p));
+			if (!p.is_value_type<StorageStatistic>()) {
+				label_strings.emplace_back(p.readable_name + ": " + p.format_value(), &p);
 
 				if (int(p.warning) > int(max_tab_warning))
 					max_tab_warning = p.warning;
@@ -811,11 +791,12 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 			Gtk::TreeRow row = *(list_store->append());
 
-			row[col_description] = (p.value_statistic.is_header ? p.readable_name : ("    " + p.readable_name));
-			row[col_value] = p.value_statistic.format_value();
-			row[col_flags] = p.value_statistic.flags;  // it's a string, not int.
-			row[col_page_offset] = (p.value_statistic.is_header ? std::string()
-					: hz::string_sprintf("0x%02x, 0x%03x", int(p.value_statistic.page), int(p.value_statistic.offset)));
+			const auto& st = p.get_value<StorageStatistic>();
+			row[col_description] = (st.is_header ? p.readable_name : ("    " + p.readable_name));
+			row[col_value] = st.format_value();
+			row[col_flags] = st.flags;  // it's a string, not int.
+			row[col_page_offset] = (st.is_header ? std::string()
+					: hz::string_sprintf("0x%02x, 0x%03x", int(st.page), int(st.offset)));
 			row[col_tooltip] = p.get_description();
 			row[col_storage] = &p;
 
@@ -824,7 +805,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		}
 
 
-		Gtk::Box* label_vbox = lookup_widget<Gtk::Box*>("statistics_label_vbox");
+		auto* label_vbox = lookup_widget<Gtk::Box*>("statistics_label_vbox");
 		app_set_top_labels(label_vbox, label_strings);
 
 		// tab label
@@ -840,7 +821,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 	if (clear_tests) { do {  // Modify only after clearing tests!
 
-		Gtk::ComboBox* test_type_combo = lookup_widget<Gtk::ComboBox*>("test_type_combo");
+		auto* test_type_combo = lookup_widget<Gtk::ComboBox*>("test_type_combo");
 		if (!test_type_combo)  // huh?
 			break;
 
@@ -1008,7 +989,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 				continue;
 
 			// add non-entry properties to label above
-			if (p.value_type != StorageProperty::value_type_selftest_entry) {
+			if (!p.is_value_type<StorageSelftestEntry>()) {
 				label_strings.emplace_back(p.readable_name + ": " + p.format_value(), &p);
 
 				if (int(p.warning) > int(max_tab_warning))
@@ -1018,12 +999,14 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 			Gtk::TreeRow row = *(list_store->append());
 
-			row[col_num] = p.value_selftest_entry.test_num;
-			row[col_type] = p.value_selftest_entry.type;
-			row[col_status] = p.value_selftest_entry.get_status_str();
-			row[col_percent] = hz::number_to_string_locale(100 - p.value_selftest_entry.remaining_percent) + "%";
-			row[col_hours] = p.value_selftest_entry.format_lifetime_hours();
-			row[col_lba] = p.value_selftest_entry.lba_of_first_error;
+			const auto& sse = p.get_value<StorageSelftestEntry>();
+
+			row[col_num] = sse.test_num;
+			row[col_type] = sse.type;
+			row[col_status] = sse.get_status_str();
+			row[col_percent] = hz::number_to_string_locale(100 - sse.remaining_percent) + "%";
+			row[col_hours] = sse.format_lifetime_hours();
+			row[col_lba] = sse.lba_of_first_error;
 			// There are no descriptions in self-test log entries, so don't display
 			// "No description available" for all of them.
 			// row[col_tooltip] = p.get_description();
@@ -1120,7 +1103,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 					// Add complete error log to textview window.
 					Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 					if (buffer) {
-						buffer->set_text("\nComplete error log:\n\n" + p.value_string);
+						buffer->set_text("\nComplete error log:\n\n" + p.get_value<std::string>());
 
 						// set marks so we can scroll to them
 
@@ -1144,25 +1127,27 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 
 			// add non-tree properties to label above
-			} else if (p.value_type != StorageProperty::value_type_error_block) {
+			} else if (!p.is_value_type<StorageErrorBlock>()) {
 				label_strings.emplace_back(p.readable_name + ": " + p.format_value(), &p);
 				if (p.generic_name == "error_log_error_count")
 					label_strings.back().label += " (Note: The number of entries may be limited to the newest ones)";
 
 			} else {
-				std::string type_details = p.value_error_block.type_more_info;
+				const auto& eb = p.get_value<StorageErrorBlock>();
+
+				std::string type_details = eb.type_more_info;
 
 				Gtk::TreeRow row = *(list_store->append());
-				row[col_num] = p.value_error_block.error_num;
-				row[col_hours] = p.value_error_block.format_lifetime_hours();
-				row[col_state] = p.value_error_block.device_state;
-				row[col_type] = StorageErrorBlock::get_readable_error_types(p.value_error_block.reported_types);
+				row[col_num] = eb.error_num;
+				row[col_hours] = eb.format_lifetime_hours();
+				row[col_state] = eb.device_state;
+				row[col_type] = StorageErrorBlock::get_readable_error_types(eb.reported_types);
 				row[col_details] = (type_details.empty() ? "-" : type_details);  // e.g. OBS has no details
 				// There are no descriptions in self-test log entries, so don't display
 				// "No description available" for all of them.
 				row[col_tooltip] = p.get_description();
 				row[col_storage] = &p;
-				row[col_mark_name] = "Error " + hz::number_to_string_locale(p.value_error_block.error_num);
+				row[col_mark_name] = "Error " + hz::number_to_string_locale(eb.error_num);
 			}
 
 			if (int(p.warning) > int(max_tab_warning))
@@ -1197,25 +1182,25 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		enum { temp_attr2 = 1, temp_attr1, temp_stat, temp_sct };  // less important to more important
 		int temp_prop_source = 0;
 
-		for (auto&& p : props) {
+		for (const auto& p : props) {
 			// Find temperature
 			if (temp_prop_source < temp_sct && p.generic_name == "sct_temperature_celsius") {
-				temperature = hz::number_to_string_locale(p.value_integer);
+				temperature = hz::number_to_string_locale(p.get_value<int64_t>());
 				temp_property = p;
 				temp_prop_source = temp_sct;
 			}
 			if (temp_prop_source < temp_stat && p.generic_name == "stat_temperature_celsius") {
-				temperature = hz::number_to_string_locale(p.value_statistic.value_int);
+				temperature = hz::number_to_string_locale(p.get_value<StorageStatistic>().value_int);
 				temp_property = p;
 				temp_prop_source = temp_stat;
 			}
 			if (temp_prop_source < temp_attr1 && p.generic_name == "attr_temperature_celsius") {
-				temperature = hz::number_to_string_locale(p.value_attribute.raw_value_int);
+				temperature = hz::number_to_string_locale(p.get_value<StorageAttribute>().raw_value_int);
 				temp_property = p;
 				temp_prop_source = temp_attr1;
 			}
 			if (temp_prop_source < temp_attr2 && p.generic_name == "attr_temperature_celsius_x10") {
-				temperature = hz::number_to_string_locale(p.value_attribute.raw_value_int / 10);
+				temperature = hz::number_to_string_locale(p.get_value<StorageAttribute>().raw_value_int / 10);
 				temp_property = p;
 				temp_prop_source = temp_attr2;
 			}
@@ -1223,7 +1208,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_temperature_log)
 				continue;
 
-			if (p.generic_name == "sct_unsupported" && p.value_bool) {  // only show if unsupported
+			if (p.generic_name == "sct_unsupported" && p.get_value<bool>()) {  // only show if unsupported
 				label_strings.emplace_back("SCT temperature commands not supported.", &p);
 				if (int(p.warning) > int(max_tab_warning))
 					max_tab_warning = p.warning;
@@ -1233,7 +1218,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
 			if (p.generic_name == "scttemp_log") {
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-				buffer->set_text("\nComplete SCT temperature log:\n\n" + p.value_string);
+				buffer->set_text("\nComplete SCT temperature log:\n\n" + p.get_value<std::string>());
 			}
 		}
 
@@ -1255,7 +1240,6 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		app_highlight_tab_label(lookup_widget("temperature_log_tab_label"), max_tab_warning, tab_temperature_name);
 
 	} while (false);
-
 
 
 
@@ -1327,9 +1311,9 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			std::string flag_value;
 			Glib::ustring str_value;
 
-			if (p.value_type == StorageProperty::value_type_capability) {
-				flag_value = hz::number_to_string_nolocale(p.value_capability.flag_value, 16);  // 0xXX
-				str_value = hz::string_join(p.value_capability.strvalues, "\n");
+			if (p.is_value_type<StorageCapability>()) {
+				flag_value = hz::number_to_string_nolocale(p.get_value<StorageCapability>().flag_value, 16);  // 0xXX
+				str_value = hz::string_join(p.get_value<StorageCapability>().strvalues, "\n");
 			} else {
 				// no flag value here
 				str_value = p.format_value();
@@ -1378,7 +1362,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
 			if (p.generic_name == "scterc_log") {
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-				buffer->set_text("\nComplete SCT Error Recovery Control settings:\n\n" + p.value_string);
+				buffer->set_text("\nComplete SCT Error Recovery Control settings:\n\n" + p.get_value<std::string>());
 			}
 		}
 
@@ -1411,7 +1395,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
 			if (p.generic_name == "selective_selftest_log") {
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-				buffer->set_text("\nComplete selective self-test log:\n\n" + p.value_string);
+				buffer->set_text("\nComplete selective self-test log:\n\n" + p.get_value<std::string>());
 			}
 		}
 
@@ -1443,7 +1427,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
 			if (p.generic_name == "sataphy_log") {
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-				buffer->set_text("\nComplete phy log:\n\n" + p.value_string);
+				buffer->set_text("\nComplete phy log:\n\n" + p.get_value<std::string>());
 			}
 		}
 
@@ -1475,7 +1459,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
 			if (p.generic_name == "directory_log") {
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-				buffer->set_text("\nComplete directory log:\n\n" + p.value_string);
+				buffer->set_text("\nComplete directory log:\n\n" + p.get_value<std::string>());
 			}
 		}
 
@@ -1710,8 +1694,7 @@ void GscInfoWindow::refresh_info(bool clear_tests_too)
 
 void GscInfoWindow::show_tests()
 {
-	Gtk::Notebook* book = lookup_widget<Gtk::Notebook*>("main_notebook");
-	if (book)
+	if (auto* book = lookup_widget<Gtk::Notebook*>("main_notebook"))
 		book->set_current_page(3);  // the Tests tab
 }
 
@@ -1859,7 +1842,7 @@ void GscInfoWindow::on_save_info_button_clicked()
 
 void GscInfoWindow::on_close_window_button_clicked()
 {
-	on_delete_event_before(0);
+	on_delete_event_before(nullptr);
 }
 
 
@@ -1867,7 +1850,7 @@ void GscInfoWindow::on_close_window_button_clicked()
 
 void GscInfoWindow::on_test_type_combo_changed()
 {
-	Gtk::ComboBox* test_type_combo = lookup_widget<Gtk::ComboBox*>("test_type_combo");
+	auto* test_type_combo = lookup_widget<Gtk::ComboBox*>("test_type_combo");
 	if (!test_type_combo)
 		return;
 
@@ -1876,14 +1859,13 @@ void GscInfoWindow::on_test_type_combo_changed()
 		SelfTestPtr test = row[test_combo_col_self_test];
 
 		//debug_out_error("app", test->get_min_duration_seconds() << "\n");
-		Gtk::Label* min_duration_label = lookup_widget<Gtk::Label*>("min_duration_label");
-		if (min_duration_label) {
+		if (auto* min_duration_label = lookup_widget<Gtk::Label*>("min_duration_label")) {
 			auto duration = test->get_min_duration_seconds();
 			min_duration_label->set_text(duration == std::chrono::seconds(-1) ? "N/A"
 					: (duration.count() == 0 ? "Unknown" : hz::format_time_length(duration)));
 		}
 
-		Gtk::TextView* test_description_textview = lookup_widget<Gtk::TextView*>("test_description_textview");
+		auto* test_description_textview = lookup_widget<Gtk::TextView*>("test_description_textview");
 		if (test_description_textview && test_description_textview->get_buffer())
 			test_description_textview->get_buffer()->set_text(row[test_combo_col_description]);
 	}
@@ -1896,13 +1878,13 @@ void GscInfoWindow::on_test_type_combo_changed()
 // Note: Another loop like this may run inside it for another drive.
 gboolean GscInfoWindow::test_idle_callback(void* data)
 {
-	GscInfoWindow* self = static_cast<GscInfoWindow*>(data);
+	auto* self = static_cast<GscInfoWindow*>(data);
 	DBG_ASSERT(self);
 
 	if (!self->current_test)  // shouldn't happen
 		return false;  // stop
 
-	Gtk::ProgressBar* test_completion_progressbar =
+	auto* test_completion_progressbar =
 			self->lookup_widget<Gtk::ProgressBar*>("test_completion_progressbar");
 
 
@@ -2024,19 +2006,16 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 	}
 
 
-	Gtk::ComboBox* test_type_combo = self->lookup_widget<Gtk::ComboBox*>("test_type_combo");
-	if (test_type_combo)
+	if (auto* test_type_combo = self->lookup_widget<Gtk::ComboBox*>("test_type_combo"))
 		test_type_combo->set_sensitive(true);
 
-	Gtk::Button* test_execute_button = self->lookup_widget<Gtk::Button*>("test_execute_button");
-	if (test_execute_button)
+	if (auto* test_execute_button = self->lookup_widget<Gtk::Button*>("test_execute_button"))
 		test_execute_button->set_sensitive(true);
 
 	if (test_completion_progressbar)
 		test_completion_progressbar->set_text(aborted ? "Test aborted" : "Test completed");
 
-	Gtk::Button* test_stop_button = self->lookup_widget<Gtk::Button*>("test_stop_button");
-	if (test_stop_button)
+	if (auto* test_stop_button = self->lookup_widget<Gtk::Button*>("test_stop_button"))
 		test_stop_button->set_sensitive(false);
 
 	Gtk::StockID stock_id = Gtk::Stock::DIALOG_ERROR;
@@ -2046,19 +2025,16 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 		stock_id = Gtk::Stock::DIALOG_WARNING;
 	}
 
-	Gtk::Image* test_result_image = self->lookup_widget<Gtk::Image*>("test_result_image");
 	// we use large icon size here because the icons we use are from dialogs.
 	// unfortunately, there are no non-dialog icons of this sort.
-	if (test_result_image)
+	if (auto* test_result_image = self->lookup_widget<Gtk::Image*>("test_result_image"))
 		test_result_image->set(stock_id, Gtk::ICON_SIZE_DND);
 
 
-	Gtk::Label* test_result_label = self->lookup_widget<Gtk::Label*>("test_result_label");
-	if (test_result_label)
+	if (auto* test_result_label = self->lookup_widget<Gtk::Label*>("test_result_label"))
 		test_result_label->set_markup(result_msg);
 
-	Gtk::Box* test_result_hbox = self->lookup_widget<Gtk::Box*>("test_result_hbox");
-	if (test_result_hbox)
+	if (auto* test_result_hbox = self->lookup_widget<Gtk::Box*>("test_result_hbox"))
 		test_result_hbox->show();
 
 
@@ -2073,7 +2049,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 
 void GscInfoWindow::on_test_execute_button_clicked()
 {
-	Gtk::ComboBox* test_type_combo = lookup_widget<Gtk::ComboBox*>("test_type_combo");
+	auto* test_type_combo = lookup_widget<Gtk::ComboBox*>("test_type_combo");
 	if (!test_type_combo)
 		return;
 
@@ -2086,8 +2062,7 @@ void GscInfoWindow::on_test_execute_button_clicked()
 		return;
 
 	// hide previous test results from GUI
-	Gtk::Box* test_result_hbox = this->lookup_widget<Gtk::Box*>("test_result_hbox");
-	if (test_result_hbox)
+	if (auto* test_result_hbox = this->lookup_widget<Gtk::Box*>("test_result_hbox"))
 		test_result_hbox->hide();
 
 	SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
@@ -2107,20 +2082,16 @@ void GscInfoWindow::on_test_execute_button_clicked()
 	if (test_type_combo)
 		test_type_combo->set_sensitive(false);
 
-	Gtk::Button* test_execute_button = lookup_widget<Gtk::Button*>("test_execute_button");
-	if (test_execute_button)
+	if (auto* test_execute_button = lookup_widget<Gtk::Button*>("test_execute_button"))
 		test_execute_button->set_sensitive(false);
 
-
-	Gtk::ProgressBar* test_completion_progressbar = lookup_widget<Gtk::ProgressBar*>("test_completion_progressbar");
-	if (test_completion_progressbar) {
+	if (auto* test_completion_progressbar = lookup_widget<Gtk::ProgressBar*>("test_completion_progressbar")) {
 		test_completion_progressbar->set_text("");
 		test_completion_progressbar->set_sensitive(true);
 		test_completion_progressbar->show();
 	}
 
-	Gtk::Button* test_stop_button = lookup_widget<Gtk::Button*>("test_stop_button");
-	if (test_stop_button) {
+	if (auto* test_stop_button = lookup_widget<Gtk::Button*>("test_stop_button")) {
 		test_stop_button->set_sensitive(true);  // true while test is active
 		test_stop_button->show();
 	}
@@ -2182,14 +2153,12 @@ void GscInfoWindow::on_drive_changed([[maybe_unused]] StorageDevice* pdrive)
 	bool test_active = drive->get_test_is_active();
 
 	// disable refresh button if test is active or if it's a virtual drive
-	Gtk::Button* refresh_info_button = lookup_widget<Gtk::Button*>("refresh_info_button");
-	if (refresh_info_button)
+	if (auto* refresh_info_button = lookup_widget<Gtk::Button*>("refresh_info_button"))
 		refresh_info_button->set_sensitive(!test_active && !drive->get_is_virtual());
 
 	// disallow close. usually modal dialogs are used for this, but we can't have
 	// per-drive modal dialogs.
-	Gtk::Button* close_window_button = lookup_widget<Gtk::Button*>("close_window_button");
-	if (close_window_button)
+	if (auto* close_window_button = lookup_widget<Gtk::Button*>("close_window_button"))
 		close_window_button->set_sensitive(!test_active);
 
 	// test_active is also checked in delete_event handler, because this call may not
@@ -2204,8 +2173,8 @@ bool GscInfoWindow::on_treeview_button_press_event(GdkEventButton* button_event,
 	if (button_event->type == GDK_BUTTON_PRESS && button_event->button == 3) {
 		bool selection_empty = treeview->get_selection()->get_selected_rows().empty();
 		std::vector<Widget*> children = menu->get_children();
-		for (std::size_t i = 0; i < children.size(); ++i) {
-			children[i]->set_sensitive(!selection_empty);
+		for (auto& child : children) {
+			child->set_sensitive(!selection_empty);
 		}
 		menu->popup(button_event->button, button_event->time);
 		return true;

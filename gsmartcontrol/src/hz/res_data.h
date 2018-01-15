@@ -40,7 +40,7 @@ Configuration macros: HZ_ENABLE_COMPILED_RES_DATA (0 | 1).
 		class_name() \
 		{ \
 			extern const unsigned char res_name[]; \
-			extern const unsigned int res_name##_size; \
+			extern const unsigned long long int res_name##_size; \
 			buf = res_name; \
 			size = res_name##_size; \
 			root_name = #res_name; \
@@ -52,7 +52,7 @@ Configuration macros: HZ_ENABLE_COMPILED_RES_DATA (0 | 1).
 			return std::string(reinterpret_cast<const char*>(buf), size); \
 		} \
 		const unsigned char* buf = 0; \
-		unsigned int size = 0; \
+		unsigned long long int size = 0; \
 		const char* root_name = 0; \
 	}
 
@@ -86,7 +86,7 @@ Configuration macros: HZ_ENABLE_COMPILED_RES_DATA (0 | 1).
 			} \
 			tmpbuf[file_size] = '\0';  /* add 0-termination, like with compiled-in buffers */ \
 			buf = tmpbuf; \
-			size = static_cast<unsigned int>(loaded_size); \
+			size = static_cast<unsigned long long int>(loaded_size); \
 			root_name = #res_name; \
 		} \
 		~class_name() { \
@@ -99,9 +99,9 @@ Configuration macros: HZ_ENABLE_COMPILED_RES_DATA (0 | 1).
 				return std::string(); \
 			return std::string(reinterpret_cast<const char*>(buf), size); \
 		} \
-		const unsigned char* buf = 0; \
-		unsigned int size = 0; \
-		const char* root_name = 0; \
+		const unsigned char* buf = nullptr; \
+		unsigned long long int size = 0; \
+		const char* root_name = nullptr; \
 	}
 
 
@@ -120,9 +120,9 @@ Configuration macros: HZ_ENABLE_COMPILED_RES_DATA (0 | 1).
 		{ \
 			return std::string(); \
 		} \
-		const unsigned char* buf = 0; \
-		unsigned int size = 0; \
-		const char* root_name = 0; \
+		const unsigned char* buf = nullptr; \
+		unsigned long long int size = 0; \
+		const char* root_name = nullptr; \
 	}
 
 /// Dummy fallback

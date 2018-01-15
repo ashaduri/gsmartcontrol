@@ -136,6 +136,8 @@ inline std::string format_size(uint64_t size, bool use_decimal = false, bool siz
 inline std::string format_time_length(std::chrono::seconds secs)
 {
 	using namespace std::literals;
+	using day_unit = std::chrono::duration
+			<int, std::ratio_multiply<std::ratio<24>, std::chrono::hours::period>>;
 
 	// don't use uints here - there bring bugs.
 	const int64_t min_size = 60;
@@ -143,38 +145,38 @@ inline std::string format_time_length(std::chrono::seconds secs)
 	const int64_t day_size = hour_size * 24;
 
 	if (secs >= 100h) {
-		int64_t days = (secs.count() + day_size / 2) / day_size;  // time in days (rounded to nearest)
-		int64_t sec_diff = secs.count() - days * day_size;  // difference between days and actual time (may be positive or negative)
+		day_unit days = std::chrono::round<day_unit>(secs);
+		std::chrono::seconds sec_diff = secs - days;  // difference between days and actual time (may be positive or negative)
 
-		if (days < 10) {  // if less than 10 days, display hours too
+		if (days.count() < 10) {  // if less than 10 days, display hours too
 
 			// if there's more than half an hour missing from complete day, add a day.
 			// then add half an hour and convert to hours.
-			int64_t hours = ((sec_diff < (-hour_size / 2) ? sec_diff + day_size : sec_diff) + hour_size / 2) / hour_size;
-		    if (hours > 0 && sec_diff < (-hour_size / 2))
+			int64_t hours = ((sec_diff.count() < (-hour_size / 2) ? sec_diff.count() + day_size : sec_diff.count()) + hour_size / 2) / hour_size;
+		    if (hours > 0 && sec_diff.count() < (-hour_size / 2))
 		       days--;
 
-			return std::to_string(days) + " " + HZ_C_("time", "d")
+			return std::to_string(days.count()) + " " + HZ_C_("time", "d")
 					+ " " + std::to_string(hours) + " " + HZ_C_("time", "h");
 
 		} else {  // display days only
-			return std::to_string(days) + " " + HZ_C_("time", "d");
+			return std::to_string(days.count()) + " " + HZ_C_("time", "d");
 		}
 
 	} else if (secs >= 100min) {
-		int64_t hours = (secs.count() + hour_size / 2) / hour_size;  // time in hours (rounded to nearest)
-		int64_t sec_diff = secs.count() - hours * hour_size;
+		auto hours = std::chrono::round<std::chrono::hours>(secs);
+		std::chrono::seconds sec_diff = secs - hours;
 
-		if (hours < 10) {  // if less than 10 hours, display minutes too
-			int64_t minutes = ((sec_diff < (-min_size / 2) ? sec_diff + hour_size : sec_diff) + min_size / 2) / min_size;
-			if (minutes > 0 && sec_diff < (-min_size / 2))
+		if (hours.count() < 10) {  // if less than 10 hours, display minutes too
+			int64_t minutes = ((sec_diff.count() < (-min_size / 2) ? sec_diff.count() + hour_size : sec_diff.count()) + min_size / 2) / min_size;
+			if (minutes > 0 && sec_diff.count() < (-min_size / 2))
 				hours--;
 
-			return std::to_string(hours) + " " + HZ_C_("time", "h")
+			return std::to_string(hours.count()) + " " + HZ_C_("time", "h")
 					+ " " + std::to_string(minutes) + " " + HZ_C_("time", "min");
 
 		} else {  // display hours only
-			return std::to_string(hours) + " " + HZ_C_("time", "h");
+			return std::to_string(hours.count()) + " " + HZ_C_("time", "h");
 		}
 
 	} else if (secs >= 100s) {

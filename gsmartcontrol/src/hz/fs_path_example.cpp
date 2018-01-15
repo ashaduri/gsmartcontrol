@@ -109,7 +109,7 @@ int main()
 
 #endif
 
-		for (unsigned int i = 0; i < paths.size(); ++i) {
+		for (std::size_t i = 0; i < paths.size(); ++i) {
 			FsPath p = paths[i];
 			std::cerr << p.str() << ":\n"
 				<< "\t" << "dir: " << p.get_dirname() << ", "

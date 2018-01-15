@@ -49,7 +49,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 		/// Constructor, GtkBuilder needs this.
 		GscMainWindowIconView(BaseObjectType* gtkcobj, [[maybe_unused]] const Glib::RefPtr<Gtk::Builder>& ref_ui)
-				: Gtk::IconView(gtkcobj), num_icons(0), main_window(0), empty_view_message(message_none)
+				: Gtk::IconView(gtkcobj)
 		{
 			columns.add(col_name);  // we can use the col_name variable by value after this.
 			this->set_markup_column(col_name);
@@ -142,7 +142,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 		/// Get the number of icons currently displayed
-		unsigned int get_num_icons() const
+		int get_num_icons() const
 		{
 			return num_icons;
 		}
@@ -243,7 +243,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 		/// Decorate a drive entry (colorize it if it has errors, etc...).
 		/// This should be called to update the icon of already refreshed drive.
-		void decorate_entry(Gtk::TreePath model_path)
+		void decorate_entry(const Gtk::TreePath& model_path)
 		{
 			if (model_path.empty())
 				return;
@@ -289,8 +289,8 @@ class GscMainWindowIconView : public Gtk::IconView {
 			StorageProperty scan_time_prop;
 			if (drive->get_is_virtual()) {
 				scan_time_prop = drive->lookup_property("scan_time");
-				if (!scan_time_prop.value_string.empty()) {
-					name += "\n" + Glib::Markup::escape_text(scan_time_prop.value_string);
+				if (!scan_time_prop.empty() && !scan_time_prop.get_value<std::string>().empty()) {
+					name += "\n" + Glib::Markup::escape_text(scan_time_prop.get_value<std::string>());
 				}
 			}
 
@@ -299,8 +299,8 @@ class GscMainWindowIconView : public Gtk::IconView {
 			if (drive->get_is_virtual()) {
 				std::string vfile = drive->get_virtual_filename();
 				tooltip_strs.push_back("Loaded from: " + (vfile.empty() ? "[empty]" : Glib::Markup::escape_text(vfile)));
-				if (!scan_time_prop.value_string.empty()) {
-					tooltip_strs.push_back("Scanned on: " + Glib::Markup::escape_text(scan_time_prop.value_string));
+				if (!scan_time_prop.empty() && !scan_time_prop.get_value<std::string>().empty()) {
+					tooltip_strs.push_back("Scanned on: " + Glib::Markup::escape_text(scan_time_prop.get_value<std::string>()));
 				}
 			} else {
 				tooltip_strs.push_back("Device: <b>" + Glib::Markup::escape_text(drive->get_device_with_type()) + "</b>");
@@ -344,7 +344,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 						int rowstride = icon->get_rowstride();
 						guint8* pixels = icon->get_pixels();
 
-						guint8* p = 0;
+						guint8* p = nullptr;
 						for (int y = 0; y < icon_height; ++y) {
 							for (int x = 0; x < icon_width; ++x) {
 								p = pixels + y * rowstride + x * n_channels;
@@ -550,15 +550,15 @@ class GscMainWindowIconView : public Gtk::IconView {
 		Gtk::TreeModelColumn<StorageDeviceRefPtr> col_drive_ptr;  ///< Model column
 
 		Glib::RefPtr<Gtk::ListStore> ref_list_model;  ///< The icon view model
-		unsigned int num_icons;  ///< Track the number of icons, because liststore makes it difficult to count them.
+		int num_icons = 0;  ///< Track the number of icons, because liststore makes it difficult to count them.
 
 		// available icons
 		Glib::RefPtr<Gdk::Pixbuf> hd_icon;  ///< Icon pixbuf
 		Glib::RefPtr<Gdk::Pixbuf> cddvd_icon;  ///< Icon pixbuf
 
-		GscMainWindow* main_window;  ///< The main window, our parent
+		GscMainWindow* main_window = nullptr;  ///< The main window, our parent
 
-		message_t empty_view_message;  ///< Message type to display when not showing any icons
+		message_t empty_view_message = message_none;  ///< Message type to display when not showing any icons
 
 };
 

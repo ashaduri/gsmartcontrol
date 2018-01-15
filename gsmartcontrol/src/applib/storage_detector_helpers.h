@@ -16,10 +16,9 @@
 #include <vector>
 
 // TODO Remove this in gtkmm4.
-#include <bits/stdc++.h>  // to avoid throw() macro errors.
-#define throw(a)  // glibmm uses dynamic exception specifications, remove them.
+#include "local_glibmm.h"
+
 #include <glibmm.h>  // Glib::shell_quote()
-#undef throw
 
 #include "executor_factory.h"
 #include "storage_device.h"

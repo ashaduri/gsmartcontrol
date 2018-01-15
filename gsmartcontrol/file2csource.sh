@@ -43,7 +43,7 @@ hexdump -v -e '1/1 "0x%X,\n"' "$in_file" >> "$out_file";
 echo "
  0x0 };
 
-extern const unsigned int ${sym_name}_size = ${size};
+extern const unsigned long long int ${sym_name}_size = ${size};
 
 " >> "$out_file";
 

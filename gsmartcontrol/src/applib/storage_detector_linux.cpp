@@ -87,7 +87,7 @@ inline std::string detect_drives_linux_udev_byid(std::vector<std::string>& devic
 	blacklist.push_back("/-part[0-9]+$/");
 
 	// filter-out the ones with "partN" in them
-	for (unsigned int i = 0; i < all_devices.size(); ++i) {
+	for (std::size_t i = 0; i < all_devices.size(); ++i) {
 		std::string entry = all_devices[i];
 		if (entry == "." || entry == "..")
 			continue;
@@ -190,7 +190,7 @@ inline bool read_proc_file_lines(hz::File& file, std::vector<std::string>& lines
 /// Read /proc/partitions file. Return error message on error.
 inline std::string read_proc_partitions_file(std::vector<std::string>& lines)
 {
-	std::string path = rconfig::get_data<std::string>("system/linux_proc_partitions_path");
+	auto path = rconfig::get_data<std::string>("system/linux_proc_partitions_path");
 	if (path.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Partitions file path is not set.\n");
 		return "Partitions file path is not set.";
@@ -264,18 +264,18 @@ inline std::string read_proc_scsi_scsi_file(std::vector< std::pair<int, std::str
 	int last_scsi_host = -1;
 	pcrecpp::RE host_re = app_pcre_re("^Host: scsi([0-9]+)");
 
-	for (std::size_t i = 0; i < lines.size(); ++i) {
-		std::string trimmed = hz::string_trim_copy(lines[i]);
+	for (auto line : lines) {
+		hz::string_trim(line);
 		// The format of this file is scsi host number on one line, vendor on another,
 		// some other info on the third.
 		// debug_out_error("app", "SCSI Line: " << hz::string_trim_copy(lines[i]) << "\n");
 		std::string scsi_host_str;
-		if (host_re.PartialMatch(trimmed, &scsi_host_str)) {
+		if (host_re.PartialMatch(line, &scsi_host_str)) {
 			// debug_out_dump("app", "SCSI Host " << scsi_host_str << " found.\n");
 			hz::string_is_numeric_nolocale(scsi_host_str, last_scsi_host);
 
-		} else if (last_scsi_host != -1 && app_pcre_match("/Vendor: /i", trimmed)) {
-			vendors_models.push_back(std::make_pair(last_scsi_host, trimmed));
+		} else if (last_scsi_host != -1 && app_pcre_match("/Vendor: /i", line)) {
+			vendors_models.push_back(std::make_pair(last_scsi_host, line));
 		}
 	}
 
@@ -288,9 +288,9 @@ inline std::string read_proc_scsi_scsi_file(std::vector< std::pair<int, std::str
 /// Read /proc/scsi/sg/devices file. Return error message on error.
 /// \c sg_entries is filled with lines parsed as ints.
 /// Each line index corresponds to N in /dev/sgN.
-inline std::string read_proc_scsi_sg_devices_file(std::vector< std::vector<int> >& sg_entries)
+inline std::string read_proc_scsi_sg_devices_file(std::vector<std::vector<int>>& sg_entries)
 {
-	std::string path = rconfig::get_data<std::string>("system/linux_proc_scsi_sg_devices_path");
+	auto path = rconfig::get_data<std::string>("system/linux_proc_scsi_sg_devices_path");
 	if (path.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Sg devices file path is not set.\n");
 		return "Sg devices path is not set.";
@@ -309,7 +309,8 @@ inline std::string read_proc_scsi_sg_devices_file(std::vector< std::vector<int> 
 		return error_msg;
 	}
 
-	pcrecpp::RE parse_re = app_pcre_re("^([0-9-]+)\\s+([0-9-]+)\\s+([0-9-]+)\\s+([0-9-]+)\\s+([0-9-]+)\\s+([0-9-]+)\\s+([0-9-]+)\\s+([0-9-]+)\\s+([0-9-]+)");
+	pcrecpp::RE parse_re = app_pcre_re(
+			R"(^([0-9-]+)\s+([0-9-]+)\s+([0-9-]+)\s+([0-9-]+)\s+([0-9-]+)\s+([0-9-]+)\s+([0-9-]+)\s+([0-9-]+)\s+([0-9-]+))");
 
 	for (std::size_t i = 0; i < lines.size(); ++i) {
 		std::string trimmed = hz::string_trim_copy(lines[i]);

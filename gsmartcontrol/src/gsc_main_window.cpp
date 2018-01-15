@@ -10,10 +10,7 @@
 /// @{
 
 // TODO Remove this in gtkmm4.
-#include <bits/stdc++.h>  // to avoid throw() macro errors.
-#define throw(a)  // glibmm uses dynamic exception specifications, remove them.
-#include <glibmm.h>  // NOT NEEDED
-#undef throw
+#include "local_glibmm.h"
 
 #include <gtkmm.h>
 #include <vector>
@@ -417,7 +414,7 @@ bool GscMainWindow::create_widgets()
 
 
 	// look after the created widgets
-	Gtk::Box* menubar_vbox = lookup_widget<Gtk::Box*>("menubar_vbox");
+	auto* menubar_vbox = lookup_widget<Gtk::Box*>("menubar_vbox");
 	Gtk::Widget* menubar = ui_manager->get_widget("/main_menubar");
 	if (menubar_vbox && menubar) {
 		menubar_vbox->pack_start(*menubar, Gtk::PACK_EXPAND_WIDGET);
@@ -429,13 +426,13 @@ bool GscMainWindow::create_widgets()
 	// Set tooltips on menu items - gtk does that only on toolbar items.
 	Glib::ustring tooltip_text;
 	std::vector<Glib::RefPtr<Gtk::ActionGroup> > groups = ui_manager->get_action_groups();
-	for (unsigned int i = 0; i < groups.size(); ++i) {
-		std::vector<Glib::RefPtr<Gtk::Action> > actions = groups[i]->get_actions();
-		for (unsigned int j = 0; j < actions.size(); ++j) {
-			std::vector<Gtk::Widget*> widgets = actions[j]->get_proxies();
-			if (!(tooltip_text = actions[j]->property_tooltip()).empty()) {
-				for (unsigned int k = 0; k < widgets.size(); ++k) {
-					app_gtkmm_set_widget_tooltip(*(widgets[k]), tooltip_text, true);
+	for (auto& group : groups) {
+		std::vector<Glib::RefPtr<Gtk::Action> > actions = group->get_actions();
+		for (auto& group_action : actions) {
+			std::vector<Gtk::Widget*> widgets = group_action->get_proxies();
+			if (!(tooltip_text = group_action->property_tooltip()).empty()) {
+				for (auto& widget : widgets) {
+					app_gtkmm_set_widget_tooltip(*widget, tooltip_text, true);
 				}
 			}
 		}

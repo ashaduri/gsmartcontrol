@@ -451,7 +451,7 @@ inline bool File::get_contents_noalloc(unsigned char*& put_data_here, file_size_
 
 		unsigned char* buf = put_data_here;
 		if (auto_alloc)
-			buf = new unsigned char[static_cast<unsigned int>(size)];  // this may throw!
+			buf = new unsigned char[static_cast<std::size_t>(size)];  // this may throw!
 
 		// We don't need large file support here because we read into memory,
 		// which is limited at 31 bits anyway (on 32-bit systems).

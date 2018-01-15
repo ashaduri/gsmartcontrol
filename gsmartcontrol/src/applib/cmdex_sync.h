@@ -301,7 +301,7 @@ class CmdexSync : public hz::intrusive_ptr_referenced, public sigc::trackable {
 
 		std::string running_msg_;  ///< "Running" message (to show in the dialogs, etc...)
 
-		std::chrono::milliseconds forced_kill_timeout_msec_ = std::chrono::milliseconds(3 * 1000);  // 3 sec by default. Kill timeout in ms.
+		std::chrono::milliseconds forced_kill_timeout_msec_ = std::chrono::seconds(3);  // 3 sec by default. Kill timeout in ms.
 
 		std::string error_msg_;  ///< Execution error message
 		std::string error_header_;  ///< The error message may have this prepended to it.

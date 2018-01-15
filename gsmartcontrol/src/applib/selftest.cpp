@@ -61,7 +61,7 @@ std::chrono::seconds SelfTest::get_min_duration_seconds() const
 			StorageProperty::section_data, StorageProperty::subsection_capabilities);
 
 	// p stores it as uint64_t
-	return (total_duration_ = (p.empty() ? 0s : p.value_time_length));
+	return (total_duration_ = (p.empty() ? 0s : p.get_value<std::chrono::seconds>()));
 }
 
 
@@ -83,7 +83,7 @@ bool SelfTest::is_supported() const
 	}
 
 	StorageProperty p = drive_->lookup_property(prop_name, StorageProperty::section_internal);
-	return (!p.empty() && p.value_bool);
+	return (!p.empty() && p.get_value<bool>());
 }
 
 
@@ -118,7 +118,7 @@ std::string SelfTest::start(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 	if (!error_msg.empty())  // checks for empty output too
 		return error_msg;
 
-	if (!app_pcre_match("/^Drive command .* successful\\.\\nTesting has begun\\.$/mi", output)) {
+	if (!app_pcre_match(R"(/^Drive command .* successful\.\nTesting has begun\.$/mi)", output)) {
 		return "Sending command failed.";
 	}
 
@@ -165,7 +165,7 @@ std::string SelfTest::force_stop(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 	// there's no way to abort such test.
 	if (type_ == type_ioffline) {
 		StorageProperty p = drive_->lookup_property("iodc_command_suspends", StorageProperty::section_internal);
-		if (!p.empty() && p.value_bool) {  // if empty, give a chance to abort anyway.
+		if (!p.empty() && p.get_value<bool>()) {  // if empty, give a chance to abort anyway.
 			return "Aborting this test is unsupported by the drive.";
 		}
 		// else, proceed as any other test
@@ -233,7 +233,7 @@ std::string SelfTest::update(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 	for (auto&& e : ps.get_properties()) {
 // 		if (e.section != StorageProperty::section_data || e.subsection != StorageProperty::subsection_selftest_log
 		if (e.section != StorageProperty::section_internal
-				|| e.value_type != StorageProperty::value_type_selftest_entry || e.value_selftest_entry.test_num != 0
+				|| !e.is_value_type<StorageSelftestEntry>() || e.get_value<StorageSelftestEntry>().test_num != 0
 				|| e.generic_name != "last_selftest_status")
 			continue;
 		p = e;
@@ -242,7 +242,7 @@ std::string SelfTest::update(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 	if (p.empty())
 		return "The drive doesn't report the test status.";
 
-	status_ = p.value_selftest_entry.status;
+	status_ = p.get_value<StorageSelftestEntry>().status;
 	bool active = (status_ == StorageSelftestEntry::status_in_progress);
 
 
@@ -250,7 +250,7 @@ std::string SelfTest::update(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 	// and reaches 00% on completion. That's 9 pieces.
 	if (active) {
 
-		remaining_percent_ = p.value_selftest_entry.remaining_percent;
+		remaining_percent_ = p.get_value<StorageSelftestEntry>().remaining_percent;
 		if (remaining_percent_ != last_seen_percent_) {
 			last_seen_percent_ = remaining_percent_;
 			timer_.start();  // restart the timer

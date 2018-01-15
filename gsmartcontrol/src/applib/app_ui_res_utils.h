@@ -44,16 +44,16 @@
 
 /// Create application UI resource from a static buffer.
 inline bool app_ui_res_create_from(Glib::RefPtr<Gtk::Builder>& ref,
-		const unsigned char* buf, unsigned int buf_size, std::string& error_msg)
+		const unsigned char* buf, std::size_t buf_size, std::string& error_msg)
 {
-	if (!buf_size || !buf || !buf[0]) {
+	if (buf_size == 0 || !buf || !buf[0]) {
 		error_msg = "Cannot load data buffers.";
 		return false;
 	}
 
 	try {
 		// ref->add_from_file("main_window.ui");
-		ref->add_from_string(reinterpret_cast<const char*>(buf), static_cast<gsize>(buf_size));
+		ref->add_from_string(reinterpret_cast<const char*>(buf), buf_size);
 	}
 	catch (Gtk::BuilderError& ex) {  // the docs say Glib::MarkupError, but examples say otherwise.
 		error_msg = ex.what();

@@ -22,7 +22,7 @@ inline void init_default_settings()
 {
 	// Populate default
 
-	rconfig::set_default_data("system/config_autosave_timeout", 3*60);  // 3 minutes. 0 to disable.
+	rconfig::set_default_data("system/config_autosave_timeout_sec", 3*60);  // 3 minutes. 0 to disable.
 	// rconfig::set_default_data("system/first_boot", true);  // used to show the first-start warning.
 
 #ifndef _WIN32

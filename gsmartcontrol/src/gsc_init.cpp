@@ -10,10 +10,7 @@
 /// @{
 
 // TODO Remove this in gtkmm4.
-#include <bits/stdc++.h>  // to avoid throw() macro errors.
-#define throw(a)  // glibmm uses dynamic exception specifications, remove them.
-#include <glibmm.h>  // NOT NEEDED
-#undef throw
+#include "local_glibmm.h"
 
 #include <string>
 // #include <locale.h>  // _configthreadlocale (win32)
@@ -57,14 +54,14 @@
 namespace {
 
 	/// Config file in user's HOME
-	static std::string s_home_config_file;
+	std::string s_home_config_file;
 
 
 	/// Libdebug channel buffer
-	static debug_channel_base_ptr s_debug_buf_channel;
+	debug_channel_base_ptr s_debug_buf_channel;
 
 	/// Libdebug channel buffer stream
-	static std::ostringstream s_debug_buf_channel_stream;
+	std::ostringstream s_debug_buf_channel_stream;
 
 
 	/// Get libdebug buffer channel (create new one if unavailable).
@@ -134,9 +131,9 @@ namespace {
 		rconfig::dump_config();
 
 		rconfig::autosave_set_config_file(s_home_config_file);
-		int autosave_timeout = rconfig::get_data<int>("system/config_autosave_timeout");
-		if (autosave_timeout) {
-			rconfig::autosave_start(guint(autosave_timeout));
+		int autosave_timeout_sec = rconfig::get_data<int>("system/config_autosave_timeout_sec");
+		if (autosave_timeout_sec > 0) {
+			rconfig::autosave_start(std::chrono::seconds(autosave_timeout_sec));
 		}
 
 		return true;
@@ -238,7 +235,7 @@ namespace {
 
 		// The command-line parser stops at the first unknown option. Since this
 		// is kind of inconsistent, we abort altogether.
-		bool parsed = g_option_context_parse(context, &argc, &argv, &error);
+		bool parsed = static_cast<bool>(g_option_context_parse(context, &argc, &argv, &error));
 
 		if (error) {
 			std::string error_text = "\n" + std::string("Error parsing command-line options: ");
@@ -337,18 +334,18 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 	std::vector<std::string> load_virtuals;
 	if (args.arg_add_virtual) {
-		const gchar* entry = 0;
+		const gchar* entry = nullptr;
 		while ( (entry = *(args.arg_add_virtual)++) != nullptr ) {
-			load_virtuals.push_back(entry);
+			load_virtuals.emplace_back(entry);
 		}
 	}
 	std::string load_virtuals_str = hz::string_join(load_virtuals, ", ");  // for display purposes only
 
 	std::vector<std::string> load_devices;
 	if (args.arg_add_device) {
-		const gchar* entry = 0;
+		const gchar* entry = nullptr;
 		while ( (entry = *(args.arg_add_device)++) != nullptr ) {
-			load_devices.push_back(entry);
+			load_devices.emplace_back(entry);
 		}
 	}
 	std::string load_devices_str = hz::string_join(load_devices, "; ");  // for display purposes only
@@ -389,7 +386,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 			"Pango", "Gtk", "Gdk", "GdkPixbuf", "libgnomevfs",
 			"glibmm", "giomm", "atkmm", "pangomm", "gdkmm", "gtkmm" };
 
-	for (unsigned int i = 0; i < G_N_ELEMENTS(gtkdomains); ++i) {
+	for (std::size_t i = 0, m = G_N_ELEMENTS(gtkdomains); i < m; ++i) {
 		g_log_set_handler(gtkdomains[i], GLogLevelFlags(G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
 				| G_LOG_FLAG_RECURSION), glib_message_handler, nullptr);
 	}
