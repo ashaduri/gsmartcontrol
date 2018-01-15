@@ -32,29 +32,29 @@ class SelfTest : public hz::intrusive_ptr_referenced {
 	public:
 
 		/// Test type
-		enum test_t {
-			type_ioffline,  ///< Immediate offline, not supported
-			type_short,  ///< Short self-test
-			type_long,  ///< Extended (a.k.a. long) self-test
-			type_conveyance  ///< Conveyance self-test
+		enum class TestType {
+			immediate_offline,  ///< Immediate offline, not supported
+			short_test,  ///< Short self-test
+			long_test,  ///< Extended (a.k.a. long) self-test
+			conveyance  ///< Conveyance self-test
 		};
 
 
 		/// Get displayable name for a test type
-		static std::string get_test_name(test_t t)
+		static std::string get_test_name(TestType t)
 		{
 			switch (t) {
-				case type_ioffline: return "Immediate Offline Test";
-				case type_short: return "Short Self-test";
-				case type_long: return "Extended Self-test";
-				case type_conveyance: return "Conveyance Self-test";
+				case TestType::immediate_offline: return "Immediate Offline Test";
+				case TestType::short_test: return "Short Self-test";
+				case TestType::long_test: return "Extended Self-test";
+				case TestType::conveyance: return "Conveyance Self-test";
 			};
 			return "[error]";
 		}
 
 
 		/// Constructor. \c drive must have the capabilities present in its properties.
-		SelfTest(StorageDeviceRefPtr drive, test_t type)
+		SelfTest(StorageDeviceRefPtr drive, TestType type)
 			: drive_(drive), type_(type)
 		{
 			clear();
@@ -64,7 +64,7 @@ class SelfTest : public hz::intrusive_ptr_referenced {
 		/// Clear results of previous test
 		void clear()
 		{
-			status_ = StorageSelftestEntry::status_unknown;
+			status_ = StorageSelftestEntry::Status::unknown;
 			remaining_percent_ = -1;
 			last_seen_percent_ = -1;
 			total_duration_ = std::chrono::seconds(-1);
@@ -75,7 +75,7 @@ class SelfTest : public hz::intrusive_ptr_referenced {
 		/// Check if the test is currently active
 		bool is_active() const
 		{
-			return (status_ == StorageSelftestEntry::status_in_progress);
+			return (status_ == StorageSelftestEntry::Status::in_progress);
 		}
 
 
@@ -93,14 +93,14 @@ class SelfTest : public hz::intrusive_ptr_referenced {
 
 
 		/// Get test type
-		test_t get_test_type() const
+		TestType get_test_type() const
 		{
 			return type_;
 		}
 
 
 		/// Get test status
-		StorageSelftestEntry::status_t get_status() const
+		StorageSelftestEntry::Status get_status() const
 		{
 			return status_;
 		}
@@ -139,10 +139,10 @@ class SelfTest : public hz::intrusive_ptr_referenced {
 	private:
 
 		StorageDeviceRefPtr drive_;  ///< Drive to run the tests on
-		test_t type_;  ///< Test type
+		TestType type_;  ///< Test type
 
 		// status variables:
-		StorageSelftestEntry::status_t status_;  ///< Current status of the test as reported by the drive
+		StorageSelftestEntry::Status status_;  ///< Current status of the test as reported by the drive
 		int8_t remaining_percent_;  ///< Remaining %. 0 means unknown, -1 means N/A. This is set to 100 on start.
 		int8_t last_seen_percent_;  ///< Last reported %, to detect changes in percentage (needed for timer update).
 		mutable std::chrono::seconds total_duration_;  ///< Total duration needed for the test, as reported by the drive. Constant. This variable acts as a cache.

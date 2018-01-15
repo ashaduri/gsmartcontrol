@@ -40,7 +40,7 @@ bool CmdexSync::execute()
 
 	bool slot_connected = !(signal_execute_tick.slots().begin() == signal_execute_tick.slots().end());
 
-	if (slot_connected && !signal_execute_tick.emit(status_starting))
+	if (slot_connected && !signal_execute_tick.emit(TickStatus::starting))
 		return false;
 
 	if (!cmdex_.execute()) {  // try to execute
@@ -52,7 +52,7 @@ bool CmdexSync::execute()
 				get_command_args(), get_stdout_str(), get_stderr_str(), get_error_msg()));
 
 		if (slot_connected)
-			signal_execute_tick.emit(status_failed);
+			signal_execute_tick.emit(TickStatus::failed);
 		return false;
 	}
 
@@ -64,7 +64,7 @@ bool CmdexSync::execute()
 		if (!stop_requested) {  // running and no stop requested yet
 			// call the tick function with "running" periodically.
 			// if it returns false, try to stop.
-			if (slot_connected && !signal_execute_tick.emit(status_running)) {
+			if (slot_connected && !signal_execute_tick.emit(TickStatus::running)) {
 				debug_out_info("app", DBG_FUNC_MSG << "execute_tick slot returned false, trying to stop the program.\n");
 				stop_requested = true;
 			}
@@ -87,7 +87,7 @@ bool CmdexSync::execute()
 
 		// alert the tick function
 		if (stop_requested && slot_connected) {
-			signal_execute_tick.emit(status_stopping);  // ignore returned value here
+			signal_execute_tick.emit(TickStatus::stopping);  // ignore returned value here
 		}
 
 
@@ -111,7 +111,7 @@ bool CmdexSync::execute()
 			get_command_args(), get_stdout_str(), get_stderr_str(), get_error_msg()));
 
 	if (slot_connected)
-		signal_execute_tick.emit(status_stopped);  // last call
+		signal_execute_tick.emit(TickStatus::stopped);  // last call
 
 	return true;
 }

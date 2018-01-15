@@ -35,40 +35,39 @@ using StorageDeviceRefPtr = hz::intrusive_ptr<StorageDevice>;
 
 /// This class represents a single drive
 class StorageDevice : public hz::intrusive_ptr_referenced {
-
 	public:
 
 		/// These may be used to force smartctl to a special type, as well as
 		/// to display the correct icon
-		enum detected_type_t {
-			detected_type_unknown,  // Unknown. Will be autodetected by smartctl.
-			detected_type_invalid,  // This is set by smartctl executor if it detects invalid type (but not if it's scsi).
-			detected_type_cddvd,  // CD/DVD/Blu-Ray. Unsupported by smartctl, only basic info is given.
-			detected_type_raid,  // RAID controller or volume. Unsupported by smartctl, only basic info is given.
+		enum class DetectedType {
+			unknown,  // Unknown. Will be autodetected by smartctl.
+			invalid,  // This is set by smartctl executor if it detects invalid type (but not if it's scsi).
+			cddvd,  // CD/DVD/Blu-Ray. Unsupported by smartctl, only basic info is given.
+			raid,  // RAID controller or volume. Unsupported by smartctl, only basic info is given.
 		};
 
 
 		/// This gives a string which can be displayed in outputs
-		static std::string get_type_readable_name(detected_type_t type);
+		static std::string get_type_readable_name(DetectedType type);
 
 
 		/// Statuses of various states
-		enum status_t {
-			status_enabled,  ///< SMART, AODC
-			status_disabled,  ///< SMART, AODC
-			status_unsupported,  ///< SMART, AODC
-			status_unknown  ///< AODC - supported but unknown if it's enabled or not.
+		enum class Status {
+			enabled,  ///< SMART, AODC
+			disabled,  ///< SMART, AODC
+			unsupported,  ///< SMART, AODC
+			unknown  ///< AODC - supported but unknown if it's enabled or not.
 		};
 
-		/// Get displayable name for status_t.
-		static std::string get_status_name(status_t status, bool use_yesno = false);
+		/// Get displayable name for Status.
+		static std::string get_status_name(Status status, bool use_yesno = false);
 
 
 		/// Statuses of various parse states
-		enum parse_status_t {
-			parse_status_full,  ///< Fully parsed
-			parse_status_info,  ///< Only info section available
-			parse_status_none,  ///< No data
+		enum class ParseStatus {
+			full,  ///< Fully parsed
+			info,  ///< Only info section available
+			none,  ///< No data
 		};
 
 
@@ -99,7 +98,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		std::string parse_data();
 
 		/// Get the "fully parsed" flag
-		parse_status_t get_parse_status() const;
+		ParseStatus get_parse_status() const;
 
 
 		/// Try to enable SMART.
@@ -112,10 +111,10 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 
 
 		/// Get SMART status
-		status_t get_smart_status() const;
+		Status get_smart_status() const;
 
 		/// Get AODC status
-		status_t get_aodc_status() const;
+		Status get_aodc_status() const;
 
 
 		/// Get format size string, or an empty string on error.
@@ -136,10 +135,10 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 
 
 		/// Set detected type
-		void set_detected_type(detected_type_t t);
+		void set_detected_type(DetectedType t);
 
 		/// Get detected type
-		detected_type_t get_detected_type() const;
+		DetectedType get_detected_type() const;
 
 
 		/// Set argument for "-d" smartctl parameter
@@ -182,8 +181,8 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 
 		/// Find a property
 		StorageProperty lookup_property(const std::string& generic_name,
-				StorageProperty::section_t section = StorageProperty::section_unknown,  // if unknown, search in all.
-				StorageProperty::subsection_t subsection = StorageProperty::subsection_unknown) const;
+				StorageProperty::Section section = StorageProperty::Section::unknown,  // if unknown, search in all.
+				StorageProperty::SubSection subsection = StorageProperty::SubSection::unknown) const;
 
 
 		/// Get model name.
@@ -251,7 +250,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 	protected:
 
 		/// Set the "fully parsed" flag
-		void set_parse_status(parse_status_t value);
+		void set_parse_status(ParseStatus value);
 
 		/// Set parsed properties
 		void set_properties(const std::vector<StorageProperty>& props);
@@ -272,17 +271,17 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		std::string virtual_file_;  ///< A file (smartctl data) the virtual device was loaded from
 		bool is_manually_added_ = false;  ///< StorageDevice doesn't use it, but it's useful for its users.
 
-		parse_status_t parse_status_ = parse_status_none;  ///< "Fully parsed" flag
+		ParseStatus parse_status_ = ParseStatus::none;  ///< "Fully parsed" flag
 
 		/// Sort of a "lock". If true, the device is not allowed to perform any commands
 		/// except "-l selftest" and maybe "--capabilities" and "--info" (not sure).
 		bool test_is_active_ = false;
 
 		// Note: These are detected through info output
-		detected_type_t detected_type_ = detected_type_unknown;  ///< e.g. type_unknown
+		DetectedType detected_type_ = DetectedType::unknown;  ///< e.g. type_unknown
 		std::optional<bool> smart_supported_;  ///< SMART support status
 		std::optional<bool> smart_enabled_;  ///< SMART enabled status
-		mutable std::optional<status_t> aodc_status_;  ///< Cached aodc status.
+		mutable std::optional<Status> aodc_status_;  ///< Cached aodc status.
 		std::optional<std::string> model_name_;  ///< Model name
 		std::optional<std::string> family_name_;  ///< Family name
 		std::optional<std::string> serial_number_;  ///< Serial number
@@ -302,7 +301,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 inline bool operator< (const StorageDeviceRefPtr& a, const StorageDeviceRefPtr& b)
 {
 // 	if (a->get_detected_type() != a->get_detected_type()) {
-// 		return (a->get_detected_type() == StorageDevice::detected_type_unknown);  // hard drives first
+// 		return (a->get_detected_type() == StorageDevice::DetectedType::unknown);  // hard drives first
 // 	}
 	if (a->get_is_virtual() != b->get_is_virtual()) {
 		return int(a->get_is_virtual()) < int(b->get_is_virtual());

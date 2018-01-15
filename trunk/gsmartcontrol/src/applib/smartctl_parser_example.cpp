@@ -47,7 +47,7 @@ int main(int argc, char** argv)
 
 	SmartctlParser sp;
 
-	if (!sp.parse_full(contents, StorageAttribute::DiskAny)) {
+	if (!sp.parse_full(contents, StorageAttribute::DiskType::Any)) {
 		debug_out_error("app", "Cannot parse file contents: " << sp.get_error_msg() << "\n");
 		return EXIT_FAILURE;
 	}

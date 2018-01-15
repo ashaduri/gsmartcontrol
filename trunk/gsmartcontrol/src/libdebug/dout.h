@@ -270,7 +270,7 @@ namespace debug_internal {
 			return DebugIndent(indent_level);
 		}
 
-		int by;  ///< Number of indentation levels to increase with (may be negative)
+		int by = 1;  ///< Number of indentation levels to increase with (may be negative)
 	};
 
 
@@ -286,7 +286,7 @@ namespace debug_internal {
 			return DebugUnindent(unindent_level);
 		}
 
-		int by;  ///< Number of indentation levels to decrease with (may be negative)
+		int by = 1;  ///< Number of indentation levels to decrease with (may be negative)
 	};
 
 

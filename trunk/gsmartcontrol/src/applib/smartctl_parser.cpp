@@ -33,22 +33,22 @@ namespace {
 	inline StorageProperty app_get_checksum_error_property(const std::string& name)
 	{
 		StorageProperty p;
-		p.section = StorageProperty::section_data;
+		p.section = StorageProperty::Section::data;
 
 		if (name == "Attribute Data") {
-			p.subsection = StorageProperty::subsection_attributes;
+			p.subsection = StorageProperty::SubSection::attributes;
 			p.set_name(name, "attribute_data_checksum_error");
 
 		} else if (name == "Attribute Thresholds") {
-			p.subsection = StorageProperty::subsection_attributes;
+			p.subsection = StorageProperty::SubSection::attributes;
 			p.set_name(name, "attribute_thresholds_checksum_error");
 
 		} else if (name == "ATA Error Log") {
-			p.subsection = StorageProperty::subsection_error_log;
+			p.subsection = StorageProperty::SubSection::error_log;
 			p.set_name(name, "ata_error_log_checksum_error");
 
 		} else if (name == "Self-Test Log") {
-			p.subsection = StorageProperty::subsection_selftest_log;
+			p.subsection = StorageProperty::SubSection::selftest_log;
 			p.set_name(name, "selftest_log_checksum_error");
 		}
 
@@ -62,12 +62,6 @@ namespace {
 
 
 }
-
-
-
-SmartctlParser::SmartctlParser()
-		: disk_type_(StorageAttribute::DiskAny)
-{ }
 
 
 
@@ -223,7 +217,7 @@ bool SmartctlParser::parse_full(const std::string& full, StorageAttribute::DiskT
 			p.set_name("Smartctl version", "smartctl_version", "Smartctl Version");
 			p.reported_value = version;
 			p.value = p.reported_value;  // string-type value
-			p.section = StorageProperty::section_info;  // add to info section
+			p.section = StorageProperty::Section::info;  // add to info section
 			add_property(p);
 		}
 		{
@@ -231,7 +225,7 @@ bool SmartctlParser::parse_full(const std::string& full, StorageAttribute::DiskT
 			p.set_name("Smartctl version", "smartctl_version_full", "Smartctl Version");
 			p.reported_value = version_full;
 			p.value = p.reported_value;  // string-type value
-			p.section = StorageProperty::section_info;  // add to info section
+			p.section = StorageProperty::Section::info;  // add to info section
 			add_property(p);
 		}
 	}
@@ -411,7 +405,7 @@ bool SmartctlParser::parse_section_info(const std::string& body)
 {
 	this->set_data_section_info(body);
 
-	StorageProperty::section_t section = StorageProperty::section_info;
+	StorageProperty::Section section = StorageProperty::Section::info;
 
 	// split by lines.
 	// e.g. Device Model:     ST3500630AS
@@ -519,7 +513,7 @@ http://knowledge.seagate.com/articles/en_US/FAQ/213891en
 bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 {
 	// ---- Info
-	if (p.section != StorageProperty::section_info) {
+	if (p.section != StorageProperty::Section::info) {
 		set_error_msg("Internal parser error.");  // set this so we have something to display
 		debug_out_error("app", DBG_FUNC_MSG << "Called with non-info section!\n");
 		return false;
@@ -873,8 +867,8 @@ Device is:        In smartctl database [for details use: -P show]
 */
 
 	StorageProperty pt;  // template for easy copying
-	pt.section = StorageProperty::section_data;
-	pt.subsection = StorageProperty::subsection_health;
+	pt.section = StorageProperty::Section::data;
+	pt.subsection = StorageProperty::SubSection::health;
 
 	std::string name, value;
 	if (app_pcre_match("/^([^:\\n]+):[ \\t]*(.*)$/mi", sub, &name, &value)) {
@@ -939,8 +933,8 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 */
 
 	StorageProperty pt;  // template for easy copying
-	pt.section = StorageProperty::section_data;
-	pt.subsection = StorageProperty::subsection_capabilities;
+	pt.section = StorageProperty::Section::data;
+	pt.subsection = StorageProperty::SubSection::capabilities;
 
 	std::string sub = sub_initial;
 
@@ -1122,7 +1116,7 @@ bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& c
 	pcrecpp::RE re_selftest_long_time = app_pcre_re("/^(Extended self-test routine recommended polling time)/mi");
 	pcrecpp::RE re_conv_selftest_time = app_pcre_re("/^(Conveyance self-test routine recommended polling time)/mi");
 
-	if (cap_prop.section != StorageProperty::section_data || cap_prop.subsection != StorageProperty::subsection_capabilities) {
+	if (cap_prop.section != StorageProperty::Section::data || cap_prop.subsection != StorageProperty::SubSection::capabilities) {
 		debug_out_error("app", DBG_FUNC_MSG << "Non-capability property passed.\n");
 		return false;
 	}
@@ -1156,7 +1150,7 @@ bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& c
 		// The last self-test status. break up into pieces.
 
 		StorageProperty p;
-		p.section = StorageProperty::section_internal;
+		p.section = StorageProperty::Section::internal;
 		p.set_name("last_selftest_status");
 
 		StorageSelftestEntry sse;
@@ -1174,52 +1168,52 @@ bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& c
 
 			} else if (app_pcre_match("/^(The previous self-test routine completed without error or no .*)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = StorageSelftestEntry::status_completed_no_error;
+				sse.status = StorageSelftestEntry::Status::completed_no_error;
 
 			} else if (app_pcre_match("/^(The self-test routine was aborted by the host)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = StorageSelftestEntry::status_aborted_by_host;
+				sse.status = StorageSelftestEntry::Status::aborted_by_host;
 
 			} else if (app_pcre_match("/^(The self-test routine was interrupted by the host with a hard.*)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = StorageSelftestEntry::status_interrupted;
+				sse.status = StorageSelftestEntry::Status::interrupted;
 
 			} else if (app_pcre_match("/^(A fatal error or unknown test error occurred while the device was executing its .*)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = StorageSelftestEntry::status_fatal_or_unknown;
+				sse.status = StorageSelftestEntry::Status::fatal_or_unknown;
 
 			} else if (app_pcre_match("/^(The previous self-test completed having a test element that failed and the test element that failed is not known)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = StorageSelftestEntry::status_compl_unknown_failure;
+				sse.status = StorageSelftestEntry::Status::compl_unknown_failure;
 
 			} else if (app_pcre_match("/^(The previous self-test completed having the electrical element of the test failed)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = StorageSelftestEntry::status_compl_electrical_failure;
+				sse.status = StorageSelftestEntry::Status::compl_electrical_failure;
 
 			} else if (app_pcre_match("/^(The previous self-test completed having the servo .*)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = StorageSelftestEntry::status_compl_servo_failure;
+				sse.status = StorageSelftestEntry::Status::compl_servo_failure;
 
 			} else if (app_pcre_match("/^(The previous self-test completed having the read element of the test failed)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = StorageSelftestEntry::status_compl_read_failure;
+				sse.status = StorageSelftestEntry::Status::compl_read_failure;
 
 			} else if (app_pcre_match("/^(The previous self-test completed having a test element that failed and the device is suspected of having handling damage)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = StorageSelftestEntry::status_compl_handling_damage;
+				sse.status = StorageSelftestEntry::Status::compl_handling_damage;
 
 			// samsung bug (?), as per smartctl sources.
 			} else if (app_pcre_match("/^(The previous self-test routine completed with unknown result or self-test .*)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = StorageSelftestEntry::status_compl_unknown_failure;  // we'll use this again (correct?)
+				sse.status = StorageSelftestEntry::Status::compl_unknown_failure;  // we'll use this again (correct?)
 
 			} else if (app_pcre_match("/^(Self-test routine in progress)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = StorageSelftestEntry::status_in_progress;
+				sse.status = StorageSelftestEntry::Status::in_progress;
 
 			} else if (app_pcre_match("/^(Reserved)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = StorageSelftestEntry::status_reserved;
+				sse.status = StorageSelftestEntry::Status::reserved;
 			}
 		}
 
@@ -1262,7 +1256,7 @@ bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& c
 			// debug_out_dump("app", "Looking for internal capability in: \"" << sv << "\"\n");
 
 			StorageProperty p;
-			p.section = StorageProperty::section_internal;
+			p.section = StorageProperty::Section::internal;
 			// Note: We don't set reported_value on internal properties.
 
 			std::string name, value;
@@ -1339,8 +1333,8 @@ bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& c
 bool SmartctlParser::parse_section_data_subsection_attributes(const std::string& sub)
 {
 	StorageProperty pt;  // template for easy copying
-	pt.section = StorageProperty::section_data;
-	pt.subsection = StorageProperty::subsection_attributes;
+	pt.section = StorageProperty::Section::data;
+	pt.subsection = StorageProperty::SubSection::attributes;
 
 	// split to lines
 	std::vector<std::string> lines;
@@ -1501,37 +1495,37 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 			}
 
 			if (attr_format_style == FormatStyleBrief) {
-				attr.attr_type = app_pcre_match("/P/", attr.flag) ? StorageAttribute::attr_type_prefail : StorageAttribute::attr_type_oldage;
+				attr.attr_type = app_pcre_match("/P/", attr.flag) ? StorageAttribute::AttributeType::prefail : StorageAttribute::AttributeType::old_age;
 			} else {
 				if (attr_type == "Pre-fail") {
-					attr.attr_type = StorageAttribute::attr_type_prefail;
+					attr.attr_type = StorageAttribute::AttributeType::prefail;
 				} else if (attr_type == "Old_age") {
-					attr.attr_type = StorageAttribute::attr_type_oldage;
+					attr.attr_type = StorageAttribute::AttributeType::old_age;
 				} else {
-					attr.attr_type = StorageAttribute::attr_type_unknown;
+					attr.attr_type = StorageAttribute::AttributeType::unknown;
 				}
 			}
 
 			if (attr_format_style == FormatStyleBrief) {
-				attr.update_type = app_pcre_match("/O/", attr.flag) ? StorageAttribute::update_type_always : StorageAttribute::update_type_offline;
+				attr.update_type = app_pcre_match("/O/", attr.flag) ? StorageAttribute::UpdateType::always : StorageAttribute::UpdateType::offline;
 			} else {
 				if (update_type == "Always") {
-					attr.update_type = StorageAttribute::update_type_always;
+					attr.update_type = StorageAttribute::UpdateType::always;
 				} else if (update_type == "Offline") {
-					attr.update_type = StorageAttribute::update_type_offline;
+					attr.update_type = StorageAttribute::UpdateType::offline;
 				} else {
-					attr.update_type = StorageAttribute::update_type_unknown;
+					attr.update_type = StorageAttribute::UpdateType::unknown;
 				}
 			}
 
-			attr.when_failed = StorageAttribute::fail_time_unknown;
+			attr.when_failed = StorageAttribute::FailTime::unknown;
 			hz::string_trim(when_failed);
 			if (when_failed == "-") {
-				attr.when_failed = StorageAttribute::fail_time_none;
+				attr.when_failed = StorageAttribute::FailTime::none;
 			} else if (when_failed == "In_the_past" || when_failed == "Past") {  // the second one if from brief format
-				attr.when_failed = StorageAttribute::fail_time_past;
+				attr.when_failed = StorageAttribute::FailTime::past;
 			} else if (when_failed == "FAILING_NOW" || when_failed == "NOW") {  // the second one if from brief format
-				attr.when_failed = StorageAttribute::fail_time_now;
+				attr.when_failed = StorageAttribute::FailTime::now;
 			}
 
 			attr.raw_value = hz::string_trim_copy(raw_value);
@@ -1559,8 +1553,8 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 bool SmartctlParser::parse_section_data_subsection_directory_log(const std::string& sub)
 {
 	StorageProperty pt;  // template for easy copying
-	pt.section = StorageProperty::section_data;
-	pt.subsection = StorageProperty::subsection_directory_log;
+	pt.section = StorageProperty::Section::data;
+	pt.subsection = StorageProperty::SubSection::directory_log;
 
 	// Directory log contains:
 /*
@@ -1611,8 +1605,8 @@ Address    Access  R/W   Size  Description
 bool SmartctlParser::parse_section_data_subsection_error_log(const std::string& sub)
 {
 	StorageProperty pt;  // template for easy copying
-	pt.section = StorageProperty::section_data;
-	pt.subsection = StorageProperty::subsection_error_log;
+	pt.section = StorageProperty::Section::data;
+	pt.subsection = StorageProperty::SubSection::error_log;
 
 	// Note: The format of this section was changed somewhere between 5.0-x and 5.30.
 	// The old format is doesn't really give any useful info, and whatever's left is somewhat
@@ -1800,8 +1794,8 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 bool SmartctlParser::parse_section_data_subsection_selftest_log(const std::string& sub)
 {
 	StorageProperty pt;  // template for easy copying
-	pt.section = StorageProperty::section_data;
-	pt.subsection = StorageProperty::subsection_selftest_log;
+	pt.section = StorageProperty::Section::data;
+	pt.subsection = StorageProperty::SubSection::selftest_log;
 
 	// Self-test log contains:
 	// * structure revision number
@@ -1909,31 +1903,31 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 				sse.lba_of_first_error = "-";
 
 			hz::string_trim(status_str);
-			StorageSelftestEntry::status_t status = StorageSelftestEntry::status_unknown;
+			StorageSelftestEntry::Status status = StorageSelftestEntry::Status::unknown;
 
 			// don't match end - some of them are not complete here
 			if (app_pcre_match("/^Completed without error/mi", status_str)) {
-				status = StorageSelftestEntry::status_completed_no_error;
+				status = StorageSelftestEntry::Status::completed_no_error;
 			} else if (app_pcre_match("/^Aborted by host/mi", status_str)) {
-				status = StorageSelftestEntry::status_aborted_by_host;
+				status = StorageSelftestEntry::Status::aborted_by_host;
 			} else if (app_pcre_match("/^Interrupted \\(host reset\\)/mi", status_str)) {
-				status = StorageSelftestEntry::status_interrupted;
+				status = StorageSelftestEntry::Status::interrupted;
 			} else if (app_pcre_match("/^Fatal or unknown error/mi", status_str)) {
-				status = StorageSelftestEntry::status_fatal_or_unknown;
+				status = StorageSelftestEntry::Status::fatal_or_unknown;
 			} else if (app_pcre_match("/^Completed: unknown failure/mi", status_str)) {
-				status = StorageSelftestEntry::status_compl_unknown_failure;
+				status = StorageSelftestEntry::Status::compl_unknown_failure;
 			} else if (app_pcre_match("/^Completed: electrical failure/mi", status_str)) {
-				status = StorageSelftestEntry::status_compl_electrical_failure;
+				status = StorageSelftestEntry::Status::compl_electrical_failure;
 			} else if (app_pcre_match("/^Completed: servo\\/seek failure/mi", status_str)) {
-				status = StorageSelftestEntry::status_compl_servo_failure;
+				status = StorageSelftestEntry::Status::compl_servo_failure;
 			} else if (app_pcre_match("/^Completed: read failure/mi", status_str)) {
-				status = StorageSelftestEntry::status_compl_read_failure;
+				status = StorageSelftestEntry::Status::compl_read_failure;
 			} else if (app_pcre_match("/^Completed: handling damage/mi", status_str)) {
-				status = StorageSelftestEntry::status_compl_handling_damage;
+				status = StorageSelftestEntry::Status::compl_handling_damage;
 			} else if (app_pcre_match("/^Self-test routine in progress/mi", status_str)) {
-				status = StorageSelftestEntry::status_in_progress;
+				status = StorageSelftestEntry::Status::in_progress;
 			} else if (app_pcre_match("/^Unknown\\/reserved test status/mi", status_str)) {
-				status = StorageSelftestEntry::status_reserved;
+				status = StorageSelftestEntry::Status::reserved;
 			}
 
 			sse.status_str = status_str;
@@ -1976,8 +1970,8 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 bool SmartctlParser::parse_section_data_subsection_selective_selftest_log(const std::string& sub)
 {
 	StorageProperty pt;  // template for easy copying
-	pt.section = StorageProperty::section_data;
-	pt.subsection = StorageProperty::subsection_selective_selftest_log;
+	pt.section = StorageProperty::Section::data;
+	pt.subsection = StorageProperty::SubSection::selective_selftest_log;
 
 	// Selective self-test log contains:
 /*
@@ -1998,7 +1992,7 @@ If Selective self-test is pending on power-up, resume after 0 minute delay.
 	// the whole subsection
 	{
 		StorageProperty p(pt);
-		p.set_name("SMART Selective self-test log", "selective_selftest_log");
+		p.set_name("SMART Selective self-test log", "SubSection::selective_selftest_log");
 		p.reported_value = sub;
 		p.value = p.reported_value;  // string-type value
 
@@ -2029,8 +2023,8 @@ If Selective self-test is pending on power-up, resume after 0 minute delay.
 bool SmartctlParser::parse_section_data_subsection_scttemp_log(const std::string& sub)
 {
 	StorageProperty pt;  // template for easy copying
-	pt.section = StorageProperty::section_data;
-	pt.subsection = StorageProperty::subsection_temperature_log;
+	pt.section = StorageProperty::Section::data;
+	pt.subsection = StorageProperty::SubSection::temperature_log;
 
 	// scttemp log contains:
 /*
@@ -2096,8 +2090,8 @@ Index    Estimated Time   Temperature Celsius
 		std::string name, value;
 		if (app_pcre_match("/^(Current Temperature):[ \\t]+(.*) Celsius$/mi", sub, &name, &value)) {
 			StorageProperty p;
-			p.section = StorageProperty::section_data;
-			p.subsection = StorageProperty::subsection_temperature_log;
+			p.section = StorageProperty::Section::data;
+			p.subsection = StorageProperty::SubSection::temperature_log;
 			p.set_name("Current Temperature", "sct_temperature_celsius");
 			p.reported_value = value;
 			p.value = hz::string_to_number_nolocale<int64_t>(value);  // integer
@@ -2115,8 +2109,8 @@ Index    Estimated Time   Temperature Celsius
 bool SmartctlParser::parse_section_data_subsection_scterc_log(const std::string& sub)
 {
 	StorageProperty pt;  // template for easy copying
-	pt.section = StorageProperty::section_data;
-	pt.subsection = StorageProperty::subsection_erc_log;
+	pt.section = StorageProperty::Section::data;
+	pt.subsection = StorageProperty::SubSection::erc_log;
 
 	// scterc log contains:
 /*
@@ -2160,8 +2154,8 @@ SCT Error Recovery Control:
 bool SmartctlParser::parse_section_data_subsection_devstat(const std::string& sub)
 {
 	StorageProperty pt;  // template for easy copying
-	pt.section = StorageProperty::section_data;
-	pt.subsection = StorageProperty::subsection_devstat;
+	pt.section = StorageProperty::Section::data;
+	pt.subsection = StorageProperty::SubSection::devstat;
 
 	// devstat log contains:
 /*
@@ -2330,8 +2324,8 @@ Page Offset Size         Value  Description
 bool SmartctlParser::parse_section_data_subsection_sataphy(const std::string& sub)
 {
 	StorageProperty pt;  // template for easy copying
-	pt.section = StorageProperty::section_data;
-	pt.subsection = StorageProperty::subsection_phy_log;
+	pt.section = StorageProperty::Section::data;
+	pt.subsection = StorageProperty::SubSection::phy_log;
 
 	// sataphy log contains:
 /*

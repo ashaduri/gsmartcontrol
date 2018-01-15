@@ -54,14 +54,8 @@ inline std::string errno_string(int errno_value)
 class FsErrorHolder {
 	public:
 
-		/// Constructor
-		FsErrorHolder() : error_errno_(0), bad_(false)
-		{ }
-
 		/// Virtual destructor
-		virtual ~FsErrorHolder()
-		{ }
-
+		virtual ~FsErrorHolder() = default;
 
 		/// Check if the last operation was unsuccessful
 		bool bad() const
@@ -153,9 +147,9 @@ class FsErrorHolder {
 		std::string error_path1_;  ///< This replaces /path1/ parameter in message format
 		std::string error_path2_;  ///< This replaces /path2/ parameter in message format
 
-		int error_errno_;  ///< If not 0, this holds the last error's errno.
+		int error_errno_ = 0;  ///< If not 0, this holds the last error's errno.
 
-		bool bad_;  ///< Error flag
+		bool bad_ = false;  ///< Error flag
 
 };
 

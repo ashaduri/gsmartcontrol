@@ -51,14 +51,14 @@ std::chrono::seconds SelfTest::get_min_duration_seconds() const
 
 	std::string prop_name;
 	switch(type_) {
-		case type_ioffline: prop_name = "iodc_total_time_length"; break;
-		case type_short: prop_name = "short_total_time_length"; break;
-		case type_long: prop_name = "long_total_time_length"; break;
-		case type_conveyance: prop_name = "conveyance_total_time_length"; break;
+		case TestType::immediate_offline: prop_name = "iodc_total_time_length"; break;
+		case TestType::short_test: prop_name = "short_total_time_length"; break;
+		case TestType::long_test: prop_name = "long_total_time_length"; break;
+		case TestType::conveyance: prop_name = "conveyance_total_time_length"; break;
 	}
 
 	StorageProperty p = drive_->lookup_property(prop_name,
-			StorageProperty::section_data, StorageProperty::subsection_capabilities);
+			StorageProperty::Section::data, StorageProperty::SubSection::capabilities);
 
 	// p stores it as uint64_t
 	return (total_duration_ = (p.empty() ? 0s : p.get_value<std::chrono::seconds>()));
@@ -71,18 +71,18 @@ bool SelfTest::is_supported() const
 	if (!drive_)
 		return false;
 
-	if (type_ == type_ioffline)  // disable this for now - it's unsupported.
+	if (type_ == TestType::immediate_offline)  // disable this for now - it's unsupported.
 		return false;
 
 	std::string prop_name;
 	switch(type_) {
-		case type_ioffline: prop_name = "iodc_support"; break;
-		case type_short: prop_name = "selftest_support"; break;
-		case type_long: prop_name = "selftest_support"; break;  // same for short and long
-		case type_conveyance: prop_name = "conveyance_support"; break;
+		case TestType::immediate_offline: prop_name = "iodc_support"; break;
+		case TestType::short_test: prop_name = "selftest_support"; break;
+		case TestType::long_test: prop_name = "selftest_support"; break;  // same for short and long
+		case TestType::conveyance: prop_name = "conveyance_support"; break;
 	}
 
-	StorageProperty p = drive_->lookup_property(prop_name, StorageProperty::section_internal);
+	StorageProperty p = drive_->lookup_property(prop_name, StorageProperty::Section::internal);
 	return (!p.empty() && p.get_value<bool>());
 }
 
@@ -103,10 +103,10 @@ std::string SelfTest::start(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 
 	std::string test_param;
 	switch(type_) {
-		case type_ioffline: test_param = "offline"; break;
-		case type_short: test_param = "short"; break;
-		case type_long: test_param = "long"; break;
-		case type_conveyance: test_param = "conveyance"; break;
+		case TestType::immediate_offline: test_param = "offline"; break;
+		case TestType::short_test: test_param = "short"; break;
+		case TestType::long_test: test_param = "long"; break;
+		case TestType::conveyance: test_param = "conveyance"; break;
 		// no default - this way we get warned by compiler if we're not listing all of them.
 	}
 	if (test_param.empty())
@@ -133,7 +133,7 @@ std::string SelfTest::start(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 
 	// Set up everything so that the caller won't have to.
 
-	status_ = StorageSelftestEntry::status_in_progress;
+	status_ = StorageSelftestEntry::Status::in_progress;
 
 	remaining_percent_ = 100;
 	// set to 90 to avoid the 100->90 timer reset. this way we won't be looking at
@@ -163,8 +163,8 @@ std::string SelfTest::force_stop(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 	// "Abort Offline collection upon new command" capability,
 	// any command (e.g. "--abort") will abort it. If it has "Suspend Offline...",
 	// there's no way to abort such test.
-	if (type_ == type_ioffline) {
-		StorageProperty p = drive_->lookup_property("iodc_command_suspends", StorageProperty::section_internal);
+	if (type_ == TestType::immediate_offline) {
+		StorageProperty p = drive_->lookup_property("iodc_command_suspends", StorageProperty::Section::internal);
 		if (!p.empty() && p.get_value<bool>()) {  // if empty, give a chance to abort anyway.
 			return "Aborting this test is unsupported by the drive.";
 		}
@@ -188,8 +188,8 @@ std::string SelfTest::force_stop(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 
 	// the thing is, update() may fail to actually update the statuses, so
 	// do it manually.
-	if (status_ == StorageSelftestEntry::status_in_progress) {  // update() couldn't do its job
-		status_ = StorageSelftestEntry::status_aborted_by_host;
+	if (status_ == StorageSelftestEntry::Status::in_progress) {  // update() couldn't do its job
+		status_ = StorageSelftestEntry::Status::aborted_by_host;
 		remaining_percent_ = -1;
 		last_seen_percent_ = -1;
 		poll_in_seconds_ = std::chrono::seconds(-1);
@@ -220,7 +220,7 @@ std::string SelfTest::update(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 	if (!error_msg.empty())  // checks for empty output too
 		return error_msg;
 
-	StorageAttribute::DiskType disk_type = drive_->get_is_hdd() ? StorageAttribute::DiskHDD : StorageAttribute::DiskSSD;
+	StorageAttribute::DiskType disk_type = drive_->get_is_hdd() ? StorageAttribute::DiskType::Hdd : StorageAttribute::DiskType::Ssd;
 	SmartctlParser ps;
 	if (!ps.parse_full(output, disk_type)) {  // try to parse it
 		return ps.get_error_msg();
@@ -231,8 +231,8 @@ std::string SelfTest::update(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 	// we use the "self-test status" capability.
 	StorageProperty p;
 	for (auto&& e : ps.get_properties()) {
-// 		if (e.section != StorageProperty::section_data || e.subsection != StorageProperty::subsection_selftest_log
-		if (e.section != StorageProperty::section_internal
+// 		if (e.section != StorageProperty::Section::data || e.subsection != StorageProperty::SubSection::selftest_log
+		if (e.section != StorageProperty::Section::internal
 				|| !e.is_value_type<StorageSelftestEntry>() || e.get_value<StorageSelftestEntry>().test_num != 0
 				|| e.generic_name != "last_selftest_status")
 			continue;
@@ -243,7 +243,7 @@ std::string SelfTest::update(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 		return "The drive doesn't report the test status.";
 
 	status_ = p.get_value<StorageSelftestEntry>().status;
-	bool active = (status_ == StorageSelftestEntry::status_in_progress);
+	bool active = (status_ == StorageSelftestEntry::Status::in_progress);
 
 
 	// Note that the test needs 90% to complete, not 100. It starts at 90%
@@ -270,7 +270,7 @@ std::string SelfTest::update(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 
 			// for long tests we don't want to make the user wait too much, so
 			// we need to poll more frequently by the end, in case it's completed.
-			if (type_ == type_long && remaining_percent_ == 10)
+			if (type_ == TestType::long_test && remaining_percent_ == 10)
 				poll_in_seconds_ = std::chrono::seconds(std::max(int64_t(1*60), int64_t(gran / 10.)));  // that's 2 min for 180min extended test
 
 			debug_out_dump("app", DBG_FUNC_MSG << "total: " << total.count() << ", gran: " << gran

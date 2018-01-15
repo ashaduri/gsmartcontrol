@@ -23,10 +23,10 @@ ExecutorFactory::ExecutorFactory(bool use_gui, Gtk::Window* parent)
 
 
 
-hz::intrusive_ptr<CmdexSync> ExecutorFactory::create_executor(ExecutorFactory::Type type)
+hz::intrusive_ptr<CmdexSync> ExecutorFactory::create_executor(ExecutorFactory::ExecutorType type)
 {
 	switch (type) {
-		case ExecutorSmartctl:
+		case ExecutorType::Smartctl:
 		{
 			if (use_gui_) {
 				SmartctlExecutorGuiRefPtr ex = SmartctlExecutorGuiRefPtr(new SmartctlExecutorGui());
@@ -35,7 +35,7 @@ hz::intrusive_ptr<CmdexSync> ExecutorFactory::create_executor(ExecutorFactory::T
 			}
 			return SmartctlExecutorRefPtr(new SmartctlExecutor());
 		}
-		case ExecutorTwCli:
+		case ExecutorType::TwCli:
 		{
 			if (use_gui_) {
 				TwCliExecutorGuiRefPtr ex = TwCliExecutorGuiRefPtr(new TwCliExecutorGui());
@@ -44,7 +44,7 @@ hz::intrusive_ptr<CmdexSync> ExecutorFactory::create_executor(ExecutorFactory::T
 			}
 			return TwCliExecutorRefPtr(new TwCliExecutor());
 		}
-		case ExecutorArecaCli:
+		case ExecutorType::ArecaCli:
 		{
 			if (use_gui_) {
 				ArecaCliExecutorGuiRefPtr ex = ArecaCliExecutorGuiRefPtr(new ArecaCliExecutorGui());

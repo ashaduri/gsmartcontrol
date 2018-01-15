@@ -9,6 +9,8 @@ License: See LICENSE_gsmartcontrol.txt
 /// \weakgroup applib
 /// @{
 
+#include <unordered_map>
+
 #include "rconfig/config.h"
 #include "hz/string_algo.h"  // string_trim_copy, string_any_to_unix_copy
 #include "hz/fs_path.h"  // FsPath
@@ -24,33 +26,32 @@ License: See LICENSE_gsmartcontrol.txt
 
 
 
-std::string StorageDevice::get_type_readable_name(StorageDevice::detected_type_t type)
+std::string StorageDevice::get_type_readable_name(StorageDevice::DetectedType type)
 {
-	switch (type) {
-	case detected_type_unknown:
-		return "unknown";
-	case detected_type_invalid:
-		return "invalid";
-	case detected_type_cddvd:
-		return "cd/dvd";
-	case detected_type_raid:
-		return "raid";
+	static const std::unordered_map<DetectedType, std::string> m {
+			{DetectedType::unknown, "unknown"},
+			{DetectedType::invalid, "invalid"},
+			{DetectedType::cddvd, "cd/dvd"},
+			{DetectedType::raid, "raid"},
+	};
+	if (auto iter = m.find(type); iter != m.end()) {
+		return iter->second;
 	}
 	return "[internal_error]";
 }
 
 
 
-std::string StorageDevice::get_status_name(StorageDevice::status_t status, bool use_yesno)
+std::string StorageDevice::get_status_name(StorageDevice::Status status, bool use_yesno)
 {
 	switch (status) {
-	case status_enabled:
+	case Status::enabled:
 		return (use_yesno ? "Yes" : "Enabled");
-	case status_disabled:
+	case Status::disabled:
 		return (use_yesno ? "No" : "Disabled");
-	case status_unsupported:
+	case Status::unsupported:
 		return "Unsupported";
-	case status_unknown:
+	case Status::unknown:
 		return "Unknown";
 	};
 	return "[internal_error]";
@@ -85,7 +86,7 @@ void StorageDevice::clear_fetched(bool including_outputs) {
 		full_output_.clear();
 	}
 
-	parse_status_ = parse_status_none;
+	parse_status_ = ParseStatus::none;
 	test_is_active_ = false;  // not sure
 
 	smart_supported_.reset();
@@ -116,7 +117,7 @@ std::string StorageDevice::fetch_basic_data_and_parse(hz::intrusive_ptr<CmdexSyn
 	// This means that the old SCSI identify command isn't executed by default,
 	// and there is no information about the device manufacturer/etc... in the output.
 	// We detect this and set the device type to scsi to at least have _some_ info.
-	if (get_detected_type() == detected_type_invalid && get_type_argument().empty()) {
+	if (get_detected_type() == DetectedType::invalid && get_type_argument().empty()) {
 		debug_out_info("app", "The device seems to be of different type than auto-detected, trying again with scsi.\n");
 		this->set_type_argument("scsi");
 		return this->fetch_basic_data_and_parse(smartctl_ex);  // try again with scsi
@@ -157,18 +158,18 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	// Device type:          CD/DVD
 	if (app_pcre_match("/this device: CD\\/DVD/mi", info_output_) || app_pcre_match("/^Device type:\\s+CD\\/DVD/mi", info_output_)) {
 		debug_out_dump("app", "Drive " << get_device_with_type() << " seems to be a CD/DVD device.\n");
-		this->set_detected_type(detected_type_cddvd);
+		this->set_detected_type(DetectedType::cddvd);
 
 	// This was encountered on a csmi soft-raid under windows with pd0.
 	// The device reported that it had smart supported and enabled.
 	// Product:              Raid 5 Volume
 	} else if (app_pcre_match("/Product:[ \\t]*Raid/mi", info_output_)) {
 		debug_out_dump("app", "Drive " << get_device_with_type() << " seems to be a RAID volume/controller.\n");
-		this->set_detected_type(detected_type_raid);
+		this->set_detected_type(DetectedType::raid);
 	}
 
 	// RAID volume may report that it has SMART, but it obviously doesn't.
-	if (get_detected_type() == detected_type_raid) {
+	if (get_detected_type() == DetectedType::raid) {
 		smart_supported_ = false;
 		smart_enabled_ = false;
 
@@ -235,9 +236,9 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	// Note that this may try to parse data the second time (it may already have
 	// been parsed by parse_data() which failed at it).
 	if (do_set_properties) {
-		StorageAttribute::DiskType disk_type = StorageAttribute::DiskAny;
+		StorageAttribute::DiskType disk_type = StorageAttribute::DiskType::Any;
 		if (hdd_.has_value()) {
-			disk_type = hdd_.value() ? StorageAttribute::DiskHDD : StorageAttribute::DiskSSD;
+			disk_type = hdd_.value() ? StorageAttribute::DiskType::Hdd : StorageAttribute::DiskType::Ssd;
 		}
 		SmartctlParser ps;
 		if (ps.parse_full(this->info_output_, disk_type)) {  // try to parse it
@@ -246,7 +247,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	}
 
 	// A model field (and its aliases) is a good indication whether there was any data or not
-	set_parse_status(model_name_.has_value() ? parse_status_info : parse_status_none);
+	set_parse_status(model_name_.has_value() ? ParseStatus::info : ParseStatus::none);
 
 	if (emit_signal)
 		signal_changed.emit(this);  // notify listeners
@@ -278,7 +279,7 @@ std::string StorageDevice::fetch_data_and_parse(hz::intrusive_ptr<CmdexSync> sma
 				smartctl_ex, output, true);  // set type to invalid if needed
 	}
 	// See notes above (in fetch_basic_data_and_parse()).
-	if (get_detected_type() == detected_type_invalid && get_type_argument().empty()) {
+	if (get_detected_type() == DetectedType::invalid && get_type_argument().empty()) {
 		debug_out_info("app", "The device seems to be of different type than auto-detected, trying again with scsi.\n");
 		this->set_type_argument("scsi");
 		return this->fetch_data_and_parse(smartctl_ex);  // try again with scsi
@@ -299,9 +300,9 @@ std::string StorageDevice::parse_data()
 {
 	this->clear_fetched(false);  // clear everything fetched before, except outputs
 
-	StorageAttribute::DiskType disk_type = StorageAttribute::DiskAny;
+	StorageAttribute::DiskType disk_type = StorageAttribute::DiskType::Any;
 	if (hdd_.has_value()) {
-		disk_type = hdd_.value() ? StorageAttribute::DiskHDD : StorageAttribute::DiskSSD;
+		disk_type = hdd_.value() ? StorageAttribute::DiskType::Hdd : StorageAttribute::DiskType::Ssd;
 	}
 	SmartctlParser ps;
 	if (ps.parse_full(this->full_output_, disk_type)) {  // try to parse it (parse only, set the properties after basic parsing).
@@ -315,7 +316,7 @@ std::string StorageDevice::parse_data()
 		this->parse_basic_data(false, false);  // don't emit signal, we're not complete yet.
 
 		// Call this after parse_basic_data(), since it sets parse status to "info".
-		this->set_parse_status(StorageDevice::parse_status_full);
+		this->set_parse_status(StorageDevice::ParseStatus::full);
 
 		// set the full properties
 		this->set_properties(ps.get_properties());  // copy to our drive, overwriting old data
@@ -341,7 +342,7 @@ std::string StorageDevice::parse_data()
 
 
 
-StorageDevice::parse_status_t StorageDevice::get_parse_status() const
+StorageDevice::ParseStatus StorageDevice::get_parse_status() const
 {
 	return parse_status_;
 }
@@ -419,32 +420,32 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 
 
 
-StorageDevice::status_t StorageDevice::get_smart_status() const
+StorageDevice::Status StorageDevice::get_smart_status() const
 {
-	status_t status = status_unsupported;
+	Status status = Status::unsupported;
 	if (smart_enabled_.has_value()) {
 		if (smart_enabled_.value()) {  // enabled, supported
-			status = status_enabled;
+			status = Status::enabled;
 		} else {  // if it's disabled, maybe it's unsupported, check that:
 			if (smart_supported_.has_value()) {
 				if (smart_supported_.value()) {  // disabled, supported
-					status = status_disabled;
+					status = Status::disabled;
 				} else {  // disabled, unsupported
-					status = status_unsupported;
+					status = Status::unsupported;
 				}
 			} else {  // disabled, support unknown
-				status = status_disabled;
+				status = Status::disabled;
 			}
 		}
 	} else {  // status unknown
 		if (smart_supported_.has_value()) {
 			if (smart_supported_.value()) {  // status unknown, supported
-				status = status_disabled;  // at least give the user a chance to try enabling it
+				status = Status::disabled;  // at least give the user a chance to try enabling it
 			} else {  // status unknown, unsupported
-				status = status_unsupported;  // most likely
+				status = Status::unsupported;  // most likely
 			}
 		} else {  // status unknown, support unknown
-			status = status_unsupported;
+			status = Status::unsupported;
 		}
 	}
 	return status;
@@ -452,25 +453,25 @@ StorageDevice::status_t StorageDevice::get_smart_status() const
 
 
 
-StorageDevice::status_t StorageDevice::get_aodc_status() const
+StorageDevice::Status StorageDevice::get_aodc_status() const
 {
 	// smart-disabled drives are known to print some garbage, so
 	// let's protect us from it.
-	if (get_smart_status() != status_enabled)
-		return status_unsupported;
+	if (get_smart_status() != Status::enabled)
+		return Status::unsupported;
 
 	if (aodc_status_.has_value())  // cached return value
 		return aodc_status_.value();
 
-	status_t status = status_unknown;  // for now
+	Status status = Status::unknown;  // for now
 
 	bool aodc_supported = false;
 	int found = 0;
 
 	for (const auto& p : properties_) {
-		if (p.section == StorageProperty::section_internal) {
+		if (p.section == StorageProperty::Section::internal) {
 			if (p.generic_name == "aodc_enabled") {  // if this is not present at all, we set the unknown status.
-				status = (p.get_value<bool>() ? status_enabled : status_disabled);
+				status = (p.get_value<bool>() ? Status::enabled : Status::disabled);
 				//++found;
 				continue;
 			}
@@ -485,7 +486,7 @@ StorageDevice::status_t StorageDevice::get_aodc_status() const
 	}
 
 	if (!aodc_supported)
-		status = status_unsupported;
+		status = Status::unsupported;
 	// if it's supported, then status may be enabled, disabled or unknown.
 
 	aodc_status_ = status;  // store to cache
@@ -510,7 +511,7 @@ StorageProperty StorageDevice::get_health_property() const
 		return health_property_.value();
 
 	StorageProperty p = this->lookup_property("overall_health",
-			StorageProperty::section_data, StorageProperty::subsection_health);
+			StorageProperty::Section::data, StorageProperty::SubSection::health);
 	if (!p.empty())
 		health_property_ = p;  // store to cache
 
@@ -556,14 +557,14 @@ std::string StorageDevice::get_device_with_type() const
 
 
 
-void StorageDevice::set_detected_type(StorageDevice::detected_type_t t)
+void StorageDevice::set_detected_type(DetectedType t)
 {
 	detected_type_ = t;
 }
 
 
 
-StorageDevice::detected_type_t StorageDevice::get_detected_type() const
+StorageDevice::DetectedType StorageDevice::get_detected_type() const
 {
 	return detected_type_;
 }
@@ -654,16 +655,16 @@ const std::vector<StorageProperty>& StorageDevice::get_properties() const
 
 
 
-StorageProperty StorageDevice::lookup_property(const std::string& generic_name, StorageProperty::section_t section, StorageProperty::subsection_t subsection) const
+StorageProperty StorageDevice::lookup_property(const std::string& generic_name, StorageProperty::Section section, StorageProperty::SubSection subsection) const
 {
-	for (std::vector<StorageProperty>::const_iterator iter = properties_.begin(); iter != properties_.end(); ++iter) {
-		if (section != StorageProperty::section_unknown && iter->section != section)
+	for (const auto& p : properties_) {
+		if (section != StorageProperty::Section::unknown && p.section != section)
 			continue;
-		if (subsection != StorageProperty::subsection_unknown && iter->subsection != subsection)
+		if (subsection != StorageProperty::SubSection::unknown && p.subsection != subsection)
 			continue;
 
-		if (iter->generic_name == generic_name)
-			return *iter;
+		if (p.generic_name == generic_name)
+			return p;
 	}
 	return StorageProperty();  // check with .empty()
 }
@@ -764,7 +765,7 @@ std::string StorageDevice::get_save_filename() const
 	std::string serial = this->get_serial_number();
 	std::string date = hz::format_date("%Y-%m-%d", true);
 
-	std::string filename_format = rconfig::get_data<std::string>("gui/smartctl_output_filename_format");
+	auto filename_format = rconfig::get_data<std::string>("gui/smartctl_output_filename_format");
 	hz::string_replace(filename_format, "{serial}", serial);
 	hz::string_replace(filename_format, "{model}", model);
 	hz::string_replace(filename_format, "{date}", date);
@@ -827,9 +828,9 @@ std::string StorageDevice::execute_device_smartctl(const std::string& command_op
 		// This means that the old SCSI identify command isn't executed by default,
 		// and there is no information about the device manufacturer/etc... in the output.
 		// We detect this and set the device type to scsi to at least have _some_ info.
-		if (check_type && this->get_detected_type() == detected_type_unknown
+		if (check_type && this->get_detected_type() == DetectedType::unknown
 				&& app_pcre_match("/specify device type with the -d option/mi", smartctl_output)) {
-			this->set_detected_type(detected_type_invalid);
+			this->set_detected_type(DetectedType::invalid);
 		}
 
 		return error_msg;
@@ -840,7 +841,7 @@ std::string StorageDevice::execute_device_smartctl(const std::string& command_op
 
 
 
-void StorageDevice::set_parse_status(parse_status_t value)
+void StorageDevice::set_parse_status(ParseStatus value)
 {
 	parse_status_ = value;
 }

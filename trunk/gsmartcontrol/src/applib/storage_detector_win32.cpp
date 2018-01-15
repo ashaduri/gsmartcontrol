@@ -177,7 +177,7 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDeviceRefPtr>& dr
 {
 	debug_out_info("app", "Getting multi-port devices through smartctl --scan-open...\n");
 
-	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
+	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
 
 	std::string smartctl_binary = get_smartctl_binary();
 
@@ -382,31 +382,31 @@ inline std::string areca_cli_get_drives(const std::string& cli_binary, const std
 	std::vector<std::string> lines;
 	hz::string_split(output, '\n', lines, true);
 
-	enum FormatType {
-		FormatUnknown,
-		FormatNoEnc1,
-		FormatNoEnc2,
-		FormatEnc
+	enum class FormatType {
+		Unknown,
+		NoEnc1,
+		NoEnc2,
+		Enc
 	};
 
 	pcrecpp::RE noenc1_header_re = app_pcre_re("/^\\s*#\\s+Ch#/mi");
 	pcrecpp::RE noenc2_header_re = app_pcre_re("/^\\s*#\\s+ModelName/mi");
 	pcrecpp::RE exp_header_re = app_pcre_re("/^\\s*#\\s+Enc#/mi");
 
-	FormatType format_type = FormatUnknown;
+	FormatType format_type = Format::Unknown;
 	for (std::size_t i = 0; i < lines.size(); ++i) {
 		if (noenc1_header_re.PartialMatch(lines.at(i))) {
-			format_type = FormatNoEnc1;
+			format_type = Format::NoEnc1;
 			break;
 		} else if (noenc2_header_re.PartialMatch(lines.at(i))) {
-			format_type = FormatNoEnc2;
+			format_type = Format::NoEnc2;
 			break;
 		} else if (exp_header_re.PartialMatch(lines.at(i))) {
-			format_type = FormatEnc;
+			format_type = Format::Enc;
 			break;
 		}
 	}
-	if (format_type == FormatUnknown) {
+	if (format_type == Format::Unknown) {
 		debug_out_warn("app", "Could not read Areca CLI output: No valid header found.\n");
 		return "Could not read Areca CLI output: No valid header found.";
 	}
@@ -416,7 +416,7 @@ inline std::string areca_cli_get_drives(const std::string& cli_binary, const std
 	pcrecpp::RE noexp2_port_re = app_pcre_re("/^\\s*([0-9]+)\\s+([^\\s]+)/mi");  // matches port, model.
 	pcrecpp::RE exp_port_re = app_pcre_re("/^\\s*[0-9]+\\s+([0-9]+)\\s+(?:Slot#|SLOT\\s+)([0-9]+)\\s+([^\\s]+)/mi");  // matches enclosure, port, model.
 
-	bool has_enclosure = (format_type == FormatEnc);
+	bool has_enclosure = (format_type == Format::Enc);
 	if (has_enclosure) {
 		debug_out_dump("app", "Areca controller seems to have enclosures.\n");
 	} else {
@@ -437,7 +437,7 @@ inline std::string areca_cli_get_drives(const std::string& cli_binary, const std
 				}
 			}
 		} else {  // no enclosures
-			pcrecpp::RE port_re = (format_type == FormatNoEnc1 ? noexp1_port_re : noexp2_port_re);
+			pcrecpp::RE port_re = (format_type == Format::NoEnc1 ? noexp1_port_re : noexp2_port_re);
 			if (port_re.PartialMatch(hz::string_trim_copy(lines.at(i)), &port_str, &model_str)) {
 				if (model_str != "N.A.") {
 					int port = hz::string_to_number_nolocale<int>(port_str);
@@ -550,7 +550,7 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDeviceRefPtr>& d
 		}
 	}
 
-	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
+	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
 
 	// --- CLI mode
 
@@ -656,7 +656,7 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 	std::map<char, DriveLetterInfo> drive_letter_map = win32_get_drive_letter_map();
 
 
-	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
+	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
 
 	// Fetch multiport devices using --scan-open.
 	// Note that this may return duplicates (e.g. /dev/sda and /dev/csmi0,0)

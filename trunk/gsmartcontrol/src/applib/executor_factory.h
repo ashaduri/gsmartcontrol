@@ -29,19 +29,19 @@ class ExecutorFactory : public hz::intrusive_ptr_referenced {
 	public:
 
 		/// Executor type for create_executor()
-		enum Type {
-			ExecutorSmartctl,
-			ExecutorTwCli,
-			ExecutorArecaCli
+		enum class ExecutorType {
+			Smartctl,
+			TwCli,
+			ArecaCli
 		};
 
 
 		/// Constructor. If \c use_gui is true, specify \c parent for the GUI dialogs.
-		ExecutorFactory(bool use_gui, Gtk::Window* parent = 0);
+		explicit ExecutorFactory(bool use_gui, Gtk::Window* parent = nullptr);
 
 
 		/// Create a new executor instance according to \c type and the constructor parameters.
-		hz::intrusive_ptr<CmdexSync> create_executor(Type type);
+		hz::intrusive_ptr<CmdexSync> create_executor(ExecutorType type);
 
 
 	private:

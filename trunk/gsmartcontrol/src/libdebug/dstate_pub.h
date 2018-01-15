@@ -41,15 +41,15 @@ std::vector<std::string> debug_get_registered_domains();
 
 /// Enable/disable output streams. Set the domain to "all" for all domains.
 /// Multiple levels may be passed (OR'ed), as well as debug_level::all.
-bool debug_set_enabled(const std::string& domain, const debug_level::type& levels, bool enabled);
+bool debug_set_enabled(const std::string& domain, const debug_level::types& levels, bool enabled);
 
 /// See which levels are enabled for domain.
-debug_level::type debug_get_enabled(const std::string& domain);
+debug_level::types debug_get_enabled(const std::string& domain);
 
 
 /// Set format flags for domain / level. Set the domain to "all" for all domains.
 /// Multiple levels may be passed (OR'ed), as well as debug_level::all.
-bool debug_set_format(const std::string& domain, const debug_level::type& levels, const debug_format::type& format);
+bool debug_set_format(const std::string& domain, const debug_level::types& levels, const debug_format::type& format);
 
 /// Get all enabled format flags for each level in a domain
 std::map<debug_level::flag, debug_format::type> debug_get_formats(const std::string& domain);
@@ -57,11 +57,11 @@ std::map<debug_level::flag, debug_format::type> debug_get_formats(const std::str
 
 /// Add a new output channel to domain. Set the domain to "all" for all domains.
 /// Multiple levels may be passed (OR'ed), as well as debug_level::all.
-bool debug_add_channel(const std::string& domain, const debug_level::type& levels, debug_channel_base_ptr channel);
+bool debug_add_channel(const std::string& domain, const debug_level::types& levels, debug_channel_base_ptr channel);
 
 /// Remove all output channels from domain. Set the domain to "all" for all domains.
 /// Multiple levels may be passed (OR'ed), as well as debug_level::all.
-bool debug_clear_channels(const std::string& domain, const debug_level::type& levels);
+bool debug_clear_channels(const std::string& domain, const debug_level::types& levels);
 
 
 

@@ -58,8 +58,7 @@ class FsPathHolder {
 	protected:  // construct only from children
 
 		/// Constructor
-		FsPathHolder()
-		{ }
+		FsPathHolder() = default;
 
 		/// Constructor.
 		FsPathHolder(const std::string& path)
@@ -146,16 +145,14 @@ class FsPath : public FsPathHolder, public FsErrorHolder {
 #endif
 
 		/// Constructor
-		FsPath()
-		{ }
+		FsPath() = default;
 
 		/// Constructor, sets current path
 		FsPath(const std::string& path) : FsPathHolder(path)
 		{ }
 
 		/// Destructor
-		virtual ~FsPath()
-		{ }
+		virtual ~FsPath() = default;
 
 
 

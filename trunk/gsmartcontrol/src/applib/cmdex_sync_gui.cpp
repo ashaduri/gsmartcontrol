@@ -145,9 +145,9 @@ void CmdexSyncGui::set_running_dialog_abort_mode(bool aborting)
 
 
 
-bool CmdexSyncGui::execute_tick_func(tick_status_t status)
+bool CmdexSyncGui::execute_tick_func(TickStatus status)
 {
-	if (status == status_starting) {
+	if (status == TickStatus::starting) {
 		if (execution_running_)
 			return false;  // already running, abort the new one (?)
 
@@ -167,7 +167,7 @@ bool CmdexSyncGui::execute_tick_func(tick_status_t status)
 	}
 
 
-	if (status == status_failed) {
+	if (status == TickStatus::failed) {
 
 		// close the dialog
 		this->show_hide_dialog(false);
@@ -180,7 +180,7 @@ bool CmdexSyncGui::execute_tick_func(tick_status_t status)
 	}
 
 
-	if (status == status_running) {
+	if (status == TickStatus::running) {
 
 		while (Gtk::Main::events_pending()) {
 			// Gtk::Main::iteration() returns true if Gtk::Main::quit() has been called, or if there's no Main yet.
@@ -205,7 +205,7 @@ bool CmdexSyncGui::execute_tick_func(tick_status_t status)
 	}
 
 
-	if (status == status_stopping) {
+	if (status == TickStatus::stopping) {
 		if (Gtk::Main::iteration(false) && Gtk::Main::level() > 0) {
 			return false;  // we're exiting from the main loop, so return early
 		}
@@ -216,7 +216,7 @@ bool CmdexSyncGui::execute_tick_func(tick_status_t status)
 	}
 
 
-	if (status == status_stopped) {
+	if (status == TickStatus::stopped) {
 		// close the dialog.
 		this->show_hide_dialog(false);
 

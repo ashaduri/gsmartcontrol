@@ -72,43 +72,43 @@ inline std::string signal_string(int signal_value);
 /// \typedef process_id_t
 /// Process handle
 
-/// \enum signal_t
+/// \enum Signal
 /// Sendable signals
 
-/// \var signal_t SIGNAL_SIGNONE
+/// \var Signal Signal::None
 /// Verify that the process exists
 
-/// \var signal_t SIGNAL_SIGTERM
+/// \var Signal Signal::Term
 /// Ask the process to terminate itself
 
-/// \var signal_t SIGNAL_SIGKILL
+/// \var Signal Signal::Kill
 /// Nuke the process
 
 #ifdef _WIN32
-	typedef HANDLE process_id_t;  // process handle, not process id
+	using process_id_t = HANDLE;  // process handle, not process id
 
-	enum signal_t {
-		SIGNAL_SIGNONE,
-		SIGNAL_SIGTERM,
-		SIGNAL_SIGKILL
+	enum class Signal {
+		None,
+		Terminate,
+		Kill,
 	};
 
 #else
 
-	typedef pid_t process_id_t;
+	using process_id_t = pid_t;
 
-	enum signal_t {
-		SIGNAL_SIGNONE = 0,
-		SIGNAL_SIGTERM = SIGTERM,
-		SIGNAL_SIGKILL = SIGKILL
+	enum class Signal {
+		None = 0,
+		Terminate = SIGTERM,
+		Kill = SIGKILL
 	};
 
 #endif
 
 
-/// Portable kill(). Works with signal_t signals only.
+/// Portable kill(). Works with Signal signals only.
 /// Process groups are not supported under win32.
-inline int process_signal_send(process_id_t process_handle, signal_t sig);
+inline int process_signal_send(process_id_t process_handle, Signal sig);
 
 
 
@@ -155,7 +155,7 @@ namespace internal {
 
 	// structure used to pass parameters to process_signal_find_by_pid.
 	struct process_signal_find_by_pid_arg {
-		process_signal_find_by_pid_arg(DWORD pid_) : pid(pid_), hwnd(0)
+		process_signal_find_by_pid_arg(DWORD pid_) : pid(pid_), hwnd(nullptr)
 		{ }
 		DWORD pid;  // pid we're looking from
 		HWND hwnd;  // hwnd used to return the result
@@ -184,7 +184,7 @@ namespace internal {
 
 #ifndef _WIN32
 
-	inline int process_signal_send(process_id_t process_handle, signal_t sig)
+	inline int process_signal_send(process_id_t process_handle, Signal sig)
 	{
 		return kill(process_handle, static_cast<int>(sig));  // aah, the beauty of simplicity...
 	}
@@ -192,7 +192,7 @@ namespace internal {
 
 #else
 
-	inline int process_signal_send(process_id_t process_handle, signal_t sig)
+	inline int process_signal_send(process_id_t process_handle, Signal sig)
 	{
 		if (process_handle <= 0) {
 			errno = ESRCH;  // The pid or process group does not exist.
@@ -200,7 +200,7 @@ namespace internal {
 		}
 
 		// just check if the process exists
-		if (sig == SIGNAL_SIGNONE) {
+		if (sig == Signal::None) {
 			// Warning: GetProcessId() requires winxp or higher.
 			// Without it we can't do anything meaningful.
 		#if defined(WINVER) && WINVER >= 0x0501
@@ -214,7 +214,7 @@ namespace internal {
 
 
 		// unconditionall kill, no cleanups
-		} else if (sig == SIGNAL_SIGKILL) {
+		} else if (sig == Signal::Kill) {
 
 			// This is an ugly way of murder, but such is the life of processes in win32...
 			// GetExitCodeProcess() will return UINT(-1) as exit code.
@@ -225,7 +225,7 @@ namespace internal {
 
 
 		// try euthanasia
-		} else if (sig == SIGNAL_SIGTERM) {
+		} else if (sig == Signal::Terminate) {
 
 			// Warning: GetProcessId() requires winxp or higher.
 			// Without it we can't do anything meaningful.
