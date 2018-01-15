@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,bugprone-*,cppcoreguidelines-*,clang-analyzer-*,misc-*,performance-*,readability-*-cppcoreguidelines-pro-type-const-cast,-cppcoreguidelines-pro-type-reinterpret-cast,-readability-function-size,-readability-simplify-boolean-expr,-cppcoreguidelines-pro-type-cstyle-cast,-performance-inefficient-string-concatenation,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-type-vararg,-cppguidelines-pro-bounds-pointer-arithmetic,-cppguidelines-pro-bounds-constant-array-index'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,bugprone-*,cppcoreguidelines-*,clang-analyzer-*,misc-*,performance-*,readability-*-cppcoreguidelines-pro-type-const-cast,-cppcoreguidelines-pro-type-reinterpret-cast,-readability-function-size,-readability-simplify-boolean-expr,-cppcoreguidelines-pro-type-cstyle-cast,-performance-inefficient-string-concatenation,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-bounds-constant-array-index'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: true

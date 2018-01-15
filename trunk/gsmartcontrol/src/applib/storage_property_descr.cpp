@@ -1773,73 +1773,75 @@ WarningLevel storage_property_autoset_warning(StorageProperty& p)
 
 			case StorageProperty::SubSection::devstat:
 			{
-				const auto& statistic = p.get_value<StorageStatistic>();
+				if (p.is_value_type<StorageStatistic>()) {
+					const auto& statistic = p.get_value<StorageStatistic>();
 
-				if (name_match(p, "Pending Error Count") && statistic.value_int > 0) {
-					w = WarningLevel::notice;
-					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
+					if (name_match(p, "Pending Error Count") && statistic.value_int > 0) {
+						w = WarningLevel::notice;
+						reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
-				// "Workload Utilization" is either normalized, or encodes several values, so we can't use it.
-/*
-				} else if (name_match(p, "Workload Utilization") && statistic.value_int >= 50) {
-					w = WarningLevel::notice;
-					reason = "The drive has less than half of its estimated life left.";
+					// "Workload Utilization" is either normalized, or encodes several values, so we can't use it.
+	/*
+					} else if (name_match(p, "Workload Utilization") && statistic.value_int >= 50) {
+						w = WarningLevel::notice;
+						reason = "The drive has less than half of its estimated life left.";
 
-				} else if (name_match(p, "Workload Utilization") && statistic.value_int >= 100) {
-					w = WarningLevel::warning;
-					reason = "The drive is past its estimated lifespan.";
-*/
+					} else if (name_match(p, "Workload Utilization") && statistic.value_int >= 100) {
+						w = WarningLevel::warning;
+						reason = "The drive is past its estimated lifespan.";
+	*/
 
-				} else if (name_match(p, "Utilization Usage Rate") && statistic.value_int >= 50) {
-					w = WarningLevel::notice;
-					reason = "The drive has less than half of its estimated life left.";
+					} else if (name_match(p, "Utilization Usage Rate") && statistic.value_int >= 50) {
+						w = WarningLevel::notice;
+						reason = "The drive has less than half of its estimated life left.";
 
-				} else if (name_match(p, "Utilization Usage Rate") && statistic.value_int >= 100) {
-					w = WarningLevel::warning;
-					reason = "The drive is past its estimated lifespan.";
+					} else if (name_match(p, "Utilization Usage Rate") && statistic.value_int >= 100) {
+						w = WarningLevel::warning;
+						reason = "The drive is past its estimated lifespan.";
 
-				} else if (name_match(p, "Number of Reallocated Logical Sectors") && !statistic.is_normalized() && statistic.value_int > 0) {
-					w = WarningLevel::notice;
-					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
+					} else if (name_match(p, "Number of Reallocated Logical Sectors") && !statistic.is_normalized() && statistic.value_int > 0) {
+						w = WarningLevel::notice;
+						reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
-				} else if (name_match(p, "Number of Reallocated Logical Sectors") && statistic.is_normalized() && statistic.value_int <= 0) {
-					w = WarningLevel::warning;
-					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
+					} else if (name_match(p, "Number of Reallocated Logical Sectors") && statistic.is_normalized() && statistic.value_int <= 0) {
+						w = WarningLevel::warning;
+						reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
-				} else if (name_match(p, "Number of Mechanical Start Failures") && statistic.value_int > 0) {
-					w = WarningLevel::notice;
-					reason = "The drive is reporting mechanical errors.";
+					} else if (name_match(p, "Number of Mechanical Start Failures") && statistic.value_int > 0) {
+						w = WarningLevel::notice;
+						reason = "The drive is reporting mechanical errors.";
 
-				} else if (name_match(p, "Number of Realloc. Candidate Logical Sectors") && statistic.value_int > 0) {
-					w = WarningLevel::notice;
-					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
+					} else if (name_match(p, "Number of Realloc. Candidate Logical Sectors") && statistic.value_int > 0) {
+						w = WarningLevel::notice;
+						reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
-				} else if (name_match(p, "Number of Reported Uncorrectable Errors") && statistic.value_int > 0) {
-					w = WarningLevel::notice;
-					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
+					} else if (name_match(p, "Number of Reported Uncorrectable Errors") && statistic.value_int > 0) {
+						w = WarningLevel::notice;
+						reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
-				} else if (name_match(p, "Current Temperature") && statistic.value_int > 50) {
-					w = WarningLevel::notice;
-					reason = "The temperature of the drive is higher than 50 degrees Celsius. "
-							"This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
+					} else if (name_match(p, "Current Temperature") && statistic.value_int > 50) {
+						w = WarningLevel::notice;
+						reason = "The temperature of the drive is higher than 50 degrees Celsius. "
+								"This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 
-				} else if (name_match(p, "Time in Over-Temperature") && statistic.value_int > 0) {
-					w = WarningLevel::notice;
-					reason = "The temperature of the drive is or was over the manufacturer-specified maximum. "
-							"This may have shortened its lifespan and caused damage. Please install a cooling solution.";
+					} else if (name_match(p, "Time in Over-Temperature") && statistic.value_int > 0) {
+						w = WarningLevel::notice;
+						reason = "The temperature of the drive is or was over the manufacturer-specified maximum. "
+								"This may have shortened its lifespan and caused damage. Please install a cooling solution.";
 
-				} else if (name_match(p, "Time in Under-Temperature") && statistic.value_int > 0) {
-					w = WarningLevel::notice;
-					reason = "The temperature of the drive is or was under the manufacturer-specified minimum. "
-							"This may have shortened its lifespan and caused damage. Please operate the drive within manufacturer-specified temperature range.";
+					} else if (name_match(p, "Time in Under-Temperature") && statistic.value_int > 0) {
+						w = WarningLevel::notice;
+						reason = "The temperature of the drive is or was under the manufacturer-specified minimum. "
+								"This may have shortened its lifespan and caused damage. Please operate the drive within manufacturer-specified temperature range.";
 
-				} else if (name_match(p, "Percentage Used Endurance Indicator") && statistic.value_int >= 50) {
-					w = WarningLevel::notice;
-					reason = "The drive has less than half of its estimated life left.";
+					} else if (name_match(p, "Percentage Used Endurance Indicator") && statistic.value_int >= 50) {
+						w = WarningLevel::notice;
+						reason = "The drive has less than half of its estimated life left.";
 
-				} else if (name_match(p, "Percentage Used Endurance Indicator") && statistic.value_int >= 100) {
-					w = WarningLevel::warning;
-					reason = "The drive is past its estimated lifespan.";
+					} else if (name_match(p, "Percentage Used Endurance Indicator") && statistic.value_int >= 100) {
+						w = WarningLevel::warning;
+						reason = "The drive is past its estimated lifespan.";
+					}
 				}
 
 				break;

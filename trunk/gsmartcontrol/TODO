@@ -50,14 +50,11 @@ Use std::from_chars() in string_is_numeric_impl_classic_locale() (gcc 8)
 
 std::string setters -> no const&, use std::move.
 	same for std::vector
-switch -> static const std::map
 for iter -> for auto
 push_back -> static vector
 Should StorageProperty contain also value_uinteger?
 
 Check TODOs
-
-Test with clang-tidy
 
 
 

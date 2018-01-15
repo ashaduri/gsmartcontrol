@@ -45,20 +45,17 @@ int main()
 	std::cerr << hz::format_size(uint64_t(1000204886016ULL), true) << "\n";  // common size of 1 TiB hdd in decimal
 
 
+	using namespace std::literals;
+	using days = std::chrono::duration<int, std::ratio_multiply<std::ratio<24>, std::chrono::hours::period>>;
 
-	const uint64_t min_size = 60;
-	const uint64_t hour_size = min_size * 60;
-	const uint64_t day_size = hour_size * 24;
-
-	std::cerr << hz::format_time_length(5) << "\n";  // 5 sec
-	std::cerr << hz::format_time_length(uint64_t(5.5 * min_size)) << "\n";  // 5.5 min
-	std::cerr << hz::format_time_length(130 * min_size) << "\n";  // 130 min
-	std::cerr << hz::format_time_length(uint64_t(5.5 * hour_size)) << "\n";  // 5.5 hours
-	std::cerr << hz::format_time_length(uint64_t(24.33 * hour_size)) << "\n";  // 24 hours, 20 minutes
-	std::cerr << hz::format_time_length(130 * hour_size + 30 * min_size) << "\n";  // 130.5 hours
-	std::cerr << hz::format_time_length(5 * day_size + 15 * hour_size + 30 * min_size) << "\n";  // 5 days, 15 hours, 30 minutes
-	std::cerr << hz::format_time_length(20 * day_size - 8 * hour_size) << "\n";  // 19 days, 16 hours
-
+	std::cerr << hz::format_time_length(5s) << "\n";  // 5 sec
+	std::cerr << hz::format_time_length(5min + 30s) << "\n";  // 5.5 min
+	std::cerr << hz::format_time_length(130min) << "\n";  // 130 min
+	std::cerr << hz::format_time_length(5h + 30min) << "\n";  // 5.5 hours
+	std::cerr << hz::format_time_length(24h + 20min) << "\n";  // 24 hours, 20 minutes
+	std::cerr << hz::format_time_length(130h + 30min) << "\n";  // 130.5 hours
+	std::cerr << hz::format_time_length(days(5) + 15h + 30min) << "\n";  // 5 days, 15 hours, 30 minutes
+	std::cerr << hz::format_time_length(days(20) - 8h) << "\n";  // 19 days, 16 hours
 
 	return 0;
 }
