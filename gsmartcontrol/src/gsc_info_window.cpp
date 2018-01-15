@@ -44,7 +44,7 @@ struct PropertyLabel {
 	{ }
 
 	std::string label;  ///< Label text
-	const StorageProperty* property = 0;  ///< Storage property
+	const StorageProperty* property = nullptr;  ///< Storage property
 	bool markup = false;  ///< Whether the label text uses markup
 };
 
@@ -136,13 +136,13 @@ namespace {
 
 	/// Highlight a tab label according to \c warning
 	inline void app_highlight_tab_label(Gtk::Widget* label_widget,
-			StorageProperty::warning_t warning, const Glib::ustring& original_label)
+			WarningLevel warning, const Glib::ustring& original_label)
 	{
 		Gtk::Label* label = dynamic_cast<Gtk::Label*>(label_widget);
 		if (!label)
 			return;
 
-		if (warning == StorageProperty::warning_none) {
+		if (warning == WarningLevel::none) {
 			label->set_markup_with_mnemonic(original_label);
 			return;
 		}
@@ -409,7 +409,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 	// hide all tabs except the first if smart is disabled, because they may contain
 	// completely random data (smartctl does that sometimes).
 	if (get_startup_settings().hide_tabs_on_smart_disabled) {
-		bool smart_enabled = (drive->get_smart_status() == StorageDevice::status_enabled);
+		bool smart_enabled = (drive->get_smart_status() == StorageDevice::Status::enabled);
 		Gtk::Widget* note_page_box = nullptr;
 
 		if ((note_page_box = lookup_widget("attributes_tab_vbox")) != 0) {
@@ -467,7 +467,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		std::vector<StorageProperty> id_props, version_props, health_props;
 
 		for (auto&& p : props) {
-			if (p.section == StorageProperty::section_info) {
+			if (p.section == StorageProperty::Section::info) {
 				if (p.generic_name == "smartctl_version_full") {
 					version_props.push_back(p);
 				} else if (p.generic_name == "smartctl_version") {
@@ -475,7 +475,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 				} else {
 					id_props.push_back(p);
 				}
-			} else if (p.section == StorageProperty::section_data && p.subsection == StorageProperty::subsection_health) {
+			} else if (p.section == StorageProperty::Section::data && p.subsection == StorageProperty::SubSection::health) {
 				health_props.push_back(p);
 			}
 		}
@@ -495,7 +495,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		identity_table->hide();
 
-		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+		WarningLevel max_tab_warning = WarningLevel::none;
 		int row = 0;
 
 		for (auto&& p : id_props) {
@@ -655,11 +655,11 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		}
 
 
-		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+		WarningLevel max_tab_warning = WarningLevel::none;
 		std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 		for (const auto& p : props) {
-			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_attributes)
+			if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::attributes)
 				continue;
 
 			// add non-attribute-type properties to label above
@@ -674,11 +674,11 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			const auto& attr = p.get_value<StorageAttribute>();
 
 			std::string attr_type = StorageAttribute::get_attr_type_name(attr.attr_type);
-			if (attr.attr_type == StorageAttribute::attr_type_prefail)
+			if (attr.attr_type == StorageAttribute::AttributeType::prefail)
 				attr_type = "<b>" + attr_type + "</b>";
 
 			std::string fail_time = StorageAttribute::get_fail_time_name(attr.when_failed);
-			if (attr.when_failed != StorageAttribute::fail_time_none)
+			if (attr.when_failed != StorageAttribute::FailTime::none)
 				fail_time = "<b>" + fail_time + "</b>";
 
 			Gtk::TreeRow row = *(list_store->append());
@@ -773,11 +773,11 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 
 
-		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+		WarningLevel max_tab_warning = WarningLevel::none;
 		std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 		for (const auto& p : props) {
-			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_devstat)
+			if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::devstat)
 				continue;
 
 			// add non-entry-type properties to label above
@@ -848,10 +848,10 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		Gtk::TreeModel::Row row;
 
-		SelfTestPtr test_ioffline(new SelfTest(drive, SelfTest::type_ioffline));
+		SelfTestPtr test_ioffline(new SelfTest(drive, SelfTest::TestType::immediate_offline));
 		if (test_ioffline->is_supported()) {
 			row = *(test_combo_model->append());
-			row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::type_ioffline);
+			row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::TestType::immediate_offline);
 			row[test_combo_col_description] =
 				"Immediate Offline Test (also known as Immediate Offline Data Collection)"
 				" is the manual version of Automatic Offline Data Collection, which, if enabled, is automatically run"
@@ -860,10 +860,10 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			row[test_combo_col_self_test] = test_ioffline;
 		}
 
-		SelfTestPtr test_short(new SelfTest(drive, SelfTest::type_short));
+		SelfTestPtr test_short(new SelfTest(drive, SelfTest::TestType::short_test));
 		if (test_short->is_supported()) {
 			row = *(test_combo_model->append());
-			row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::type_short);
+			row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::TestType::short_test);
 			row[test_combo_col_description] =
 				"Short self-test consists of a collection of test routines that have the highest chance"
 				" of detecting drive problems. Its result is reported in the Self-Test Log."
@@ -874,20 +874,20 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			row[test_combo_col_self_test] = test_short;
 		}
 
-		SelfTestPtr test_long(new SelfTest(drive, SelfTest::type_long));
+		SelfTestPtr test_long(new SelfTest(drive, SelfTest::TestType::long_test));
 		if (test_long->is_supported()) {
 			row = *(test_combo_model->append());
-			row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::type_long);
+			row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::TestType::long_test);
 			row[test_combo_col_description] =
 				"Extended self-test examines complete disk surface and performs various test routines"
 				" built into the drive. Its result is reported in the Self-Test Log.";
 			row[test_combo_col_self_test] = test_long;
 		}
 
-		SelfTestPtr test_conveyance(new SelfTest(drive, SelfTest::type_conveyance));
+		SelfTestPtr test_conveyance(new SelfTest(drive, SelfTest::TestType::conveyance));
 		if (test_conveyance->is_supported()) {
 			row = *(test_combo_model->append());
-			row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::type_conveyance);
+			row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::TestType::conveyance);
 			row[test_combo_col_description] =
 				"Conveyance self-test is intended to identify damage incurred during transporting of the drive.";
 			row[test_combo_col_self_test] = test_conveyance;
@@ -978,11 +978,11 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		}
 
 
-		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+		WarningLevel max_tab_warning = WarningLevel::none;
 		std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 		for (auto&& p : props) {
-			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_selftest_log)
+			if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::selftest_log)
 				continue;
 
 			if (p.generic_name == "selftest_log")  // the whole section, we don't need it
@@ -1090,11 +1090,11 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		}
 
 
-		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+		WarningLevel max_tab_warning = WarningLevel::none;
 		std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 		for (auto&& p : props) {
-			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_error_log)
+			if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::error_log)
 				continue;
 
 			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1174,7 +1174,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		if (!textview)
 			break;
 
-		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+		WarningLevel max_tab_warning = WarningLevel::none;
 		std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 		std::string temperature;
@@ -1205,7 +1205,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 				temp_prop_source = temp_attr2;
 			}
 
-			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_temperature_log)
+			if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::temperature_log)
 				continue;
 
 			if (p.generic_name == "sct_unsupported" && p.get_value<bool>()) {  // only show if unsupported
@@ -1246,7 +1246,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 	// ------------------------------------------- Advanced tab - Capabilities
 
 
-	StorageProperty::warning_t max_advanced_tab_warning = StorageProperty::warning_none;
+	WarningLevel max_advanced_tab_warning = WarningLevel::none;
 
 
 	do {
@@ -1300,11 +1300,11 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		}
 
 
-		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+		WarningLevel max_tab_warning = WarningLevel::none;
 		int index = 1;
 
 		for (auto&& p : props) {
-			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_capabilities)
+			if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::capabilities)
 				continue;
 
 			Glib::ustring name = p.readable_name;
@@ -1353,10 +1353,10 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		if (!textview)
 			break;
 
-		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+		WarningLevel max_tab_warning = WarningLevel::none;
 
 		for (auto&& p : props) {
-			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_erc_log)
+			if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::erc_log)
 				continue;
 
 			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1386,14 +1386,14 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		if (!textview)
 			break;
 
-		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+		WarningLevel max_tab_warning = WarningLevel::none;
 
 		for (auto&& p : props) {
-			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_selective_selftest_log)
+			if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::selective_selftest_log)
 				continue;
 
 			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-			if (p.generic_name == "selective_selftest_log") {
+			if (p.generic_name == "SubSection::selective_selftest_log") {
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 				buffer->set_text("\nComplete selective self-test log:\n\n" + p.get_value<std::string>());
 			}
@@ -1418,10 +1418,10 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		if (!textview)
 			break;
 
-		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+		WarningLevel max_tab_warning = WarningLevel::none;
 
 		for (auto&& p : props) {
-			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_phy_log)
+			if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::phy_log)
 				continue;
 
 			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1450,10 +1450,10 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		if (!textview)
 			break;
 
-		StorageProperty::warning_t max_tab_warning = StorageProperty::warning_none;
+		WarningLevel max_tab_warning = WarningLevel::none;
 
 		for (auto&& p : props) {
-			if (p.section != StorageProperty::section_data || p.subsection != StorageProperty::subsection_directory_log)
+			if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::directory_log)
 				continue;
 
 			// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1505,7 +1505,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("general_tab_label"), StorageProperty::warning_none, tab_identity_name);
+		app_highlight_tab_label(lookup_widget("general_tab_label"), WarningLevel::none, tab_identity_name);
 	}
 
 	{
@@ -1521,7 +1521,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("attributes_tab_label"), StorageProperty::warning_none, tab_attributes_name);
+		app_highlight_tab_label(lookup_widget("attributes_tab_label"), WarningLevel::none, tab_attributes_name);
 	}
 
 	{
@@ -1534,7 +1534,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("statistics_tab_label"), StorageProperty::warning_none, tab_statistics_name);
+		app_highlight_tab_label(lookup_widget("statistics_tab_label"), WarningLevel::none, tab_statistics_name);
 	}
 
 	{
@@ -1585,7 +1585,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("test_tab_label"), StorageProperty::warning_none, tab_test_name);
+		app_highlight_tab_label(lookup_widget("test_tab_label"), WarningLevel::none, tab_test_name);
 	}
 
 	{
@@ -1609,7 +1609,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("error_log_tab_label"), StorageProperty::warning_none, tab_error_log_name);
+		app_highlight_tab_label(lookup_widget("error_log_tab_label"), WarningLevel::none, tab_error_log_name);
 	}
 
 	{
@@ -1620,11 +1620,11 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("temperature_log_tab_label"), StorageProperty::warning_none, tab_temperature_name);
+		app_highlight_tab_label(lookup_widget("temperature_log_tab_label"), WarningLevel::none, tab_temperature_name);
 	}
 
 	// tab label
-	app_highlight_tab_label(lookup_widget("advanced_tab_label"), StorageProperty::warning_none, tab_advanced_name);
+	app_highlight_tab_label(lookup_widget("advanced_tab_label"), WarningLevel::none, tab_advanced_name);
 
 	{
 		if (auto* treeview = lookup_widget<Gtk::TreeView*>("capabilities_treeview")) {
@@ -1638,7 +1638,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("capabilities_tab_label"), StorageProperty::warning_none, tab_capabilities_name);
+		app_highlight_tab_label(lookup_widget("capabilities_tab_label"), WarningLevel::none, tab_capabilities_name);
 	}
 
 	{
@@ -1647,7 +1647,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("erc_tab_label"), StorageProperty::warning_none, tab_erc_name);
+		app_highlight_tab_label(lookup_widget("erc_tab_label"), WarningLevel::none, tab_erc_name);
 	}
 
 	{
@@ -1656,7 +1656,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("selective_selftest_tab_label"), StorageProperty::warning_none, tab_selective_selftest_name);
+		app_highlight_tab_label(lookup_widget("selective_selftest_tab_label"), WarningLevel::none, tab_selective_selftest_name);
 	}
 
 	{
@@ -1665,7 +1665,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("phy_tab_label"), StorageProperty::warning_none, tab_phy_name);
+		app_highlight_tab_label(lookup_widget("phy_tab_label"), WarningLevel::none, tab_phy_name);
 	}
 
 	{
@@ -1674,7 +1674,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("directory_tab_label"), StorageProperty::warning_none, tab_directory_name);
+		app_highlight_tab_label(lookup_widget("directory_tab_label"), WarningLevel::none, tab_directory_name);
 	}
 }
 
@@ -1975,22 +1975,22 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 	self->test_timer_poll.stop();  // just in case
 	self->test_timer_bar.stop();  // just in case
 
-	StorageSelftestEntry::status_t status = self->current_test->get_status();
+	StorageSelftestEntry::Status status = self->current_test->get_status();
 
 	bool aborted = false;
-	StorageSelftestEntry::status_severity_t severity = StorageSelftestEntry::severity_none;
+	StorageSelftestEntry::StatusSeverity severity = StorageSelftestEntry::StatusSeverity::none;
 	std::string result_msg;
 
 	if (!self->test_error_msg.empty()) {
 		aborted = true;
-		severity = StorageSelftestEntry::severity_error;
+		severity = StorageSelftestEntry::StatusSeverity::error;
 		result_msg = "<b>Test aborted: </b>" + self->test_error_msg;
 
 	} else {
 		severity = StorageSelftestEntry::get_status_severity(status);
-		if (status == StorageSelftestEntry::status_aborted_by_host) {
+		if (status == StorageSelftestEntry::Status::aborted_by_host) {
 			aborted = true;
-			result_msg = "<b>Test was manually aborted.</b>";  // it's a severity_none message
+			result_msg = "<b>Test was manually aborted.</b>";  // it's a StatusSeverity::none message
 
 		} else {
 			result_msg = "<b>Test result: </b>" + StorageSelftestEntry::get_status_name(status) + ".";
@@ -2001,7 +2001,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 		}
 	}
 
-	if (severity != StorageSelftestEntry::severity_none) {
+	if (severity != StorageSelftestEntry::StatusSeverity::none) {
 		result_msg += "\nCheck the Self-Test Log for more information.";
 	}
 
@@ -2019,9 +2019,9 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 		test_stop_button->set_sensitive(false);
 
 	Gtk::StockID stock_id = Gtk::Stock::DIALOG_ERROR;
-	if (severity == StorageSelftestEntry::severity_none) {
+	if (severity == StorageSelftestEntry::StatusSeverity::none) {
 		stock_id = Gtk::Stock::DIALOG_INFO;
-	} else if (severity == StorageSelftestEntry::severity_warn) {
+	} else if (severity == StorageSelftestEntry::StatusSeverity::warning) {
 		stock_id = Gtk::Stock::DIALOG_WARNING;
 	}
 

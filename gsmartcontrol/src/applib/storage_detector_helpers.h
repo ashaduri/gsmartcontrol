@@ -32,7 +32,7 @@
 /// \return error message
 inline std::string execute_tw_cli(ExecutorFactoryRefPtr ex_factory, const std::string& command_options, std::string& output)
 {
-	hz::intrusive_ptr<CmdexSync> executor = ex_factory->create_executor(ExecutorFactory::ExecutorTwCli);
+	hz::intrusive_ptr<CmdexSync> executor = ex_factory->create_executor(ExecutorFactory::ExecutorType::TwCli);
 
 	std::string binary = rconfig::get_data<std::string>("system/tw_cli_binary");
 
@@ -157,7 +157,7 @@ inline std::string tw_cli_get_controllers(ExecutorFactoryRefPtr ex_factory, std:
 inline std::string smartctl_scan_drives_sequentially(const std::string& dev, const std::string& type,
 	  int from, int to, std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory, std::string& last_output)
 {
-	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
+	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
 
 	for (int i = from; i <= to; ++i) {
 		std::string type_arg = hz::string_sprintf(type.c_str(), i);

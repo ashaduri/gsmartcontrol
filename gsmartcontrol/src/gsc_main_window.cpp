@@ -172,7 +172,7 @@ void GscMainWindow::obj_destroy()
 void GscMainWindow::populate_iconview(bool smartctl_valid)
 {
 	if (!smartctl_valid) {
-		iconview->set_empty_view_message(GscMainWindowIconView::message_no_smartctl);
+		iconview->set_empty_view_message(GscMainWindowIconView::Message::no_smartctl);
 		iconview->clear_all();  // the message won't be shown without invalidating the region.
 		while (Gtk::Main::events_pending())  // give expose event the time it needs
 			Gtk::Main::iteration();
@@ -182,7 +182,7 @@ void GscMainWindow::populate_iconview(bool smartctl_valid)
 		rescan_devices();  // scan for devices and fill the iconview
 
 	} else {
-		iconview->set_empty_view_message(GscMainWindowIconView::message_scan_disabled);
+		iconview->set_empty_view_message(GscMainWindowIconView::Message::scan_disabled);
 		iconview->clear_all();  // the message won't be shown without invalidating the region.
 		while (Gtk::Main::events_pending())  // give expose event the time it needs
 			Gtk::Main::iteration();
@@ -651,14 +651,14 @@ void GscMainWindow::on_action_enable_smart_toggled(Gtk::ToggleAction* action)
 	if (!drive || drive->get_is_virtual() || drive->get_test_is_active())
 		return;
 
-	StorageDevice::status_t status = drive->get_smart_status();
-	if (status == StorageDevice::status_unsupported)  // this shouldn't happen
+	StorageDevice::Status status = drive->get_smart_status();
+	if (status == StorageDevice::Status::unsupported)  // this shouldn't happen
 		return;
 
 	bool toggle_active = action->get_active();
 
-	if ( (toggle_active && status == StorageDevice::status_disabled)
-			|| (!toggle_active && status == StorageDevice::status_enabled) ) {
+	if ( (toggle_active && status == StorageDevice::Status::disabled)
+			|| (!toggle_active && status == StorageDevice::Status::enabled) ) {
 
 		SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
 		ex->create_running_dialog(this);
@@ -690,11 +690,11 @@ void GscMainWindow::on_action_enable_aodc_toggled(Gtk::ToggleAction* action)
 	if (!drive || drive->get_is_virtual() || drive->get_test_is_active())
 		return;
 
-	StorageDevice::status_t status = drive->get_aodc_status();
-	if (status == StorageDevice::status_unsupported)  // this shouldn't happen
+	StorageDevice::Status status = drive->get_aodc_status();
+	if (status == StorageDevice::Status::unsupported)  // this shouldn't happen
 		return;
 
-	if (status == StorageDevice::status_unknown) {
+	if (status == StorageDevice::Status::unknown) {
 		// it's supported, but we don't know if it's enabled or not. ask the user.
 
 		int response = 0;
@@ -763,8 +763,8 @@ void GscMainWindow::on_action_enable_aodc_toggled(Gtk::ToggleAction* action)
 
 	bool toggle_active = action->get_active();
 
-	if ( (toggle_active && status == StorageDevice::status_disabled)
-			|| (!toggle_active && status == StorageDevice::status_enabled) ) {
+	if ( (toggle_active && status == StorageDevice::Status::disabled)
+			|| (!toggle_active && status == StorageDevice::Status::enabled) ) {
 
 		SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
 		ex->create_running_dialog(this);
@@ -837,8 +837,8 @@ void GscMainWindow::set_drive_menu_status(StorageDeviceRefPtr drive)
 
 		bool is_virtual = (drive && drive->get_is_virtual());
 
-		StorageDevice::status_t smart_status = StorageDevice::status_unsupported;
-		StorageDevice::status_t aodc_status = StorageDevice::status_unsupported;
+		StorageDevice::Status smart_status = StorageDevice::Status::unsupported;
+		StorageDevice::Status aodc_status = StorageDevice::Status::unsupported;
 
 		if (drive && !is_virtual) {
 			smart_status = drive->get_smart_status();
@@ -852,7 +852,7 @@ void GscMainWindow::set_drive_menu_status(StorageDeviceRefPtr drive)
 			Glib::RefPtr<Gtk::Action> action;
 
 			if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_perform_tests))))
-				action->set_sensitive(smart_status == StorageDevice::status_enabled);
+				action->set_sensitive(smart_status == StorageDevice::Status::enabled);
 			if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_reread_device_data))))
 				action->set_visible(drive && !is_virtual);
 			if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_remove_device)))) {
@@ -862,10 +862,10 @@ void GscMainWindow::set_drive_menu_status(StorageDeviceRefPtr drive)
 			if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_remove_virtual_device))))
 				action->set_visible(drive && is_virtual);
 			if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_enable_smart)))) {
-				action->set_sensitive(smart_status != StorageDevice::status_unsupported);
+				action->set_sensitive(smart_status != StorageDevice::Status::unsupported);
 			}
 			if ((action = actiongroup_device->get_action(APP_ACTION_NAME(action_enable_aodc))))
-				action->set_sensitive(aodc_status != StorageDevice::status_unsupported);
+				action->set_sensitive(aodc_status != StorageDevice::Status::unsupported);
 		}
 
 
@@ -874,7 +874,7 @@ void GscMainWindow::set_drive_menu_status(StorageDeviceRefPtr drive)
 			Gtk::ToggleAction* action = dynamic_cast<Gtk::ToggleAction*>(
 					actiongroup_device->get_action(APP_ACTION_NAME(action_enable_smart)).operator->());
 			if (action) {
-				action->set_active(smart_status == StorageDevice::status_enabled);
+				action->set_active(smart_status == StorageDevice::Status::enabled);
 			}
 		}
 
@@ -889,18 +889,18 @@ void GscMainWindow::set_drive_menu_status(StorageDeviceRefPtr drive)
 						"/main_menubar/device_menu/" APP_ACTION_NAME(action_enable_aodc)));
 				Gtk::CheckMenuItem* popup_odc_item = dynamic_cast<Gtk::CheckMenuItem*>(ui_manager->get_widget(
 						"/device_popup/" APP_ACTION_NAME(action_enable_aodc)));
-				Gtk::CheckButton* status_aodc_check = lookup_widget<Gtk::CheckButton*>("status_aodc_enabled_check");
+				auto* status_aodc_check = lookup_widget<Gtk::CheckButton*>("status_aodc_enabled_check");
 
 				// true if supported, but unknown whether it's enabled or not.
 				if (dev_odc_item)
-					dev_odc_item->set_inconsistent(aodc_status == StorageDevice::status_unknown);
+					dev_odc_item->set_inconsistent(aodc_status == StorageDevice::Status::unknown);
 				if (popup_odc_item)
-					popup_odc_item->set_inconsistent(aodc_status == StorageDevice::status_unknown);
+					popup_odc_item->set_inconsistent(aodc_status == StorageDevice::Status::unknown);
 				if (status_aodc_check)
-					status_aodc_check->set_inconsistent(aodc_status == StorageDevice::status_unknown);
+					status_aodc_check->set_inconsistent(aodc_status == StorageDevice::Status::unknown);
 
 				// for unknown it doesn't really matter what state it's in.
-				action->set_active(aodc_status == StorageDevice::status_enabled);
+				action->set_active(aodc_status == StorageDevice::Status::enabled);
 			}
 		}
 
@@ -966,7 +966,7 @@ void GscMainWindow::update_status_widgets()
 			// unless it's failing.
 			// app_gtkmm_set_widget_tooltip(*health_label, health_prop.get_description(), true);
 
-			if (health_prop.warning != StorageProperty::warning_none) {
+			if (health_prop.warning != WarningLevel::none) {
 				std::string tooltip_str = storage_property_get_warning_reason(health_prop)
 						+ "\n\nView details for more information.";
 				app_gtkmm_set_widget_tooltip(*health_label, tooltip_str, true);
@@ -1024,7 +1024,7 @@ void GscMainWindow::rescan_devices()
 // 	hz::string_split(match_str, ';', match_patterns, true);
 	hz::string_split(blacklist_str, ';', blacklist_patterns, true);
 
-	iconview->set_empty_view_message(GscMainWindowIconView::message_scanning);
+	iconview->set_empty_view_message(GscMainWindowIconView::Message::scanning);
 
 	iconview->clear_all();  // clear previous icons, invalidate region to update the message.
 	while (Gtk::Main::events_pending())  // give expose event the time it needs
@@ -1069,7 +1069,7 @@ void GscMainWindow::rescan_devices()
 		// add them to iconview
 		for (auto& drive : drives) {
 			if (rconfig::get_data<bool>("gui/show_smart_capable_only")) {
-				if (drive->get_smart_status() != StorageDevice::status_unsupported)
+				if (drive->get_smart_status() != StorageDevice::Status::unsupported)
 					iconview->add_entry(drive);
 			} else {
 				iconview->add_entry(drive);
@@ -1079,7 +1079,7 @@ void GscMainWindow::rescan_devices()
 
 	// in case there are no drives in the system.
 	if (iconview->get_num_icons() == 0)
-		iconview->set_empty_view_message(GscMainWindowIconView::message_no_drives_found);
+		iconview->set_empty_view_message(GscMainWindowIconView::Message::no_drives_found);
 
 	this->scanning_ = false;
 }
@@ -1189,8 +1189,8 @@ bool GscMainWindow::add_virtual_drive(const std::string& file)
 
 bool GscMainWindow::testing_active() const
 {
-	for (std::vector<StorageDeviceRefPtr>::const_iterator iter = drives.begin(); iter != drives.end(); ++iter) {
-		if ((*iter) && (*iter)->get_test_is_active()) {
+	for (const auto& drive : drives) {
+		if (drive && drive->get_test_is_active()) {
 			return true;
 		}
 	}
@@ -1208,7 +1208,7 @@ GscInfoWindow* GscMainWindow::show_device_info_window(StorageDeviceRefPtr drive)
 	}
 
 	// ask to enable SMART if it's supported but disabled
-	if (!drive->get_is_virtual() && (drive->get_smart_status() == StorageDevice::status_disabled)) {
+	if (!drive->get_is_virtual() && (drive->get_smart_status() == StorageDevice::Status::disabled)) {
 
 		int status = 0;
 
@@ -1238,7 +1238,7 @@ GscInfoWindow* GscMainWindow::show_device_info_window(StorageDeviceRefPtr drive)
 
 	// Virtual drives are parsed at load time.
 	// Parse non-virtual, smart-supporting drives here.
-	if (!drive->get_is_virtual() && drive->get_smart_status() != StorageDevice::status_unsupported) {
+	if (!drive->get_is_virtual() && drive->get_smart_status() != StorageDevice::Status::unsupported) {
 		SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
 		ex->create_running_dialog(this, "Running %s on " + drive->get_device_with_type() + "...");
 		std::string error_msg = drive->fetch_data_and_parse(ex);  // run it with GUI support
@@ -1253,7 +1253,7 @@ GscInfoWindow* GscMainWindow::show_device_info_window(StorageDeviceRefPtr drive)
 	// If the drive output wasn't fully parsed (happens with e.g. scsi and
 	// usb devices), only very basic info is available and there's no point
 	// in showing this window. - for both virtual and non-virtual.
-	if (drive->get_parse_status() == StorageDevice::parse_status_none) {
+	if (drive->get_parse_status() == StorageDevice::ParseStatus::none) {
 		gsc_no_info_dialog_show("No additional information is available for this drive.",
 				"", this, false, drive->get_info_output(), "Smartctl Output", drive->get_save_filename());
 		return 0;
@@ -1276,7 +1276,7 @@ GscInfoWindow* GscMainWindow::show_device_info_window(StorageDeviceRefPtr drive)
 
 void GscMainWindow::show_prefs_updated_message()
 {
-	iconview->set_empty_view_message(GscMainWindowIconView::message_please_rescan);
+	iconview->set_empty_view_message(GscMainWindowIconView::Message::please_rescan);
 	iconview->clear_all();  // the message won't be shown without invalidating the region.
 	while (Gtk::Main::events_pending())  // give expose event the time it needs
 		Gtk::Main::iteration();

@@ -37,13 +37,13 @@ class GscMainWindowIconView : public Gtk::IconView {
 		using self_type = GscMainWindowIconView;  ///< Self type, needed for CONNECT_VIRTUAL
 
 		/// Message type to show
-		enum message_t {
-			message_none,  ///< No message
-			message_scan_disabled,  ///< Scanning is disabled
-			message_scanning,  ///< Scanning drives...
-			message_no_drives_found,  ///< No drives found
-			message_no_smartctl,  ///< No smartctl installed
-			message_please_rescan,  ///< Re-scan to see the drives
+		enum class Message {
+			none,  ///< No message
+			scan_disabled,  ///< Scanning is disabled
+			scanning,  ///< Scanning drives...
+			no_drives_found,  ///< No drives found
+			no_smartctl,  ///< No smartctl installed
+			please_rescan,  ///< Re-scan to see the drives
 		};
 
 
@@ -135,7 +135,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 		/// Set the message type to display when there are no icons to show
-		void set_empty_view_message(message_t message)
+		void set_empty_view_message(Message message)
 		{
 			empty_view_message = message;
 		}
@@ -151,14 +151,14 @@ class GscMainWindowIconView : public Gtk::IconView {
 		// Overridden from Gtk::Widget
 		bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr) override
 		{
-			if (empty_view_message != message_none && this->num_icons == 0) {  // no icons
+			if (empty_view_message != Message::none && this->num_icons == 0) {  // no icons
 				std::string msg;
 				switch(empty_view_message) {
-					case message_scan_disabled: msg = "Automatic scanning is disabled.\nPress Ctrl+R to scan manually."; break;
-					case message_scanning: msg = "Scanning system, please wait..."; break;
-					case message_no_drives_found: msg = "No drives found."; break;
-					case message_no_smartctl: msg = "Please specify the correct smartctl binary in\nPreferences and press Ctrl-R to re-scan."; break;
-					case message_please_rescan: msg = "Preferences changed.\nPress Ctrl-R to re-scan."; break;
+					case Message::scan_disabled: msg = "Automatic scanning is disabled.\nPress Ctrl+R to scan manually."; break;
+					case Message::scanning: msg = "Scanning system, please wait..."; break;
+					case Message::no_drives_found: msg = "No drives found."; break;
+					case Message::no_smartctl: msg = "Please specify the correct smartctl binary in\nPreferences and press Ctrl-R to re-scan."; break;
+					case Message::please_rescan: msg = "Preferences changed.\nPress Ctrl-R to re-scan."; break;
 					default: msg = "[error - invalid message]";
 				}
 
@@ -229,7 +229,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 				this->scroll_to_path(tpath, true, 0.5, 0.5);
 				// select it (keyboard & selection)
-				Gtk::CellRenderer* cell = 0;
+				Gtk::CellRenderer* cell = nullptr;
 				if (this->get_cursor(cell) && cell) {
 					this->set_cursor(tpath, *cell, false);
 				}
@@ -323,18 +323,18 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 			Glib::RefPtr<Gdk::Pixbuf> icon;
 			switch(drive->get_detected_type()) {
-				case StorageDevice::detected_type_cddvd:
+				case StorageDevice::DetectedType::cddvd:
 					icon = cddvd_icon;
 					break;
-				case StorageDevice::detected_type_unknown:  // standard HD icon
-				case StorageDevice::detected_type_invalid:
-				case StorageDevice::detected_type_raid:  // TODO a separate icon for this
+				case StorageDevice::DetectedType::unknown:  // standard HD icon
+				case StorageDevice::DetectedType::invalid:
+				case StorageDevice::DetectedType::raid:  // TODO a separate icon for this
 					icon = hd_icon;
 					break;
 			}
 
 			StorageProperty health_prop = drive->get_health_property();
-			if (health_prop.warning != StorageProperty::warning_none && health_prop.generic_name == "overall_health") {
+			if (health_prop.warning != WarningLevel::none && health_prop.generic_name == "overall_health") {
 				if (icon) {
 					icon = icon->copy();  // work on a copy
 					if (icon->get_colorspace() == Gdk::COLORSPACE_RGB && icon->get_bits_per_sample() == 8) {
@@ -558,7 +558,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 		GscMainWindow* main_window = nullptr;  ///< The main window, our parent
 
-		message_t empty_view_message = message_none;  ///< Message type to display when not showing any icons
+		Message empty_view_message = Message::none;  ///< Message type to display when not showing any icons
 
 };
 

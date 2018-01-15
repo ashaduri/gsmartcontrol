@@ -109,7 +109,7 @@ class CmdexSyncGui : public CmdexSync {
 
 
 		/// This function is attached to CmdexSync::signal_execute_tick.
-		bool execute_tick_func(tick_status_t status);
+		bool execute_tick_func(TickStatus status);
 
 
 		bool execution_running_;  ///< If true, the execution is still in progress

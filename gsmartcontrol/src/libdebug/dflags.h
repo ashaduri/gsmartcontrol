@@ -28,7 +28,7 @@ namespace debug_level {
 		bits = 5  ///< Number of bits for bitset
 	};
 
-	using type = std::bitset<bits>;  ///< Combination of debug level flags
+	using types = std::bitset<bits>;  ///< Combination of debug level flags
 
 	/// Get debug level name
 	const char* get_name(flag level);
@@ -42,7 +42,7 @@ namespace debug_level {
 
 	/// Convert ORed flags into a vector of flags
 	template<class Container> inline
-	void get_matched_levels_array(const type& levels, Container& put_here)
+	void get_matched_levels_array(const types& levels, Container& put_here)
 	{
 		unsigned long levels_ulong = levels.to_ulong();
 		if (levels_ulong & debug_level::dump) put_here.push_back(debug_level::dump);

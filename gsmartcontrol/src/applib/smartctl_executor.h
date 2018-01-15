@@ -37,11 +37,6 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 		}
 
 
-		/// Virtual destructor
-		virtual ~SmartctlExecutorGeneric()
-		{ }
-
-
 
 	protected:
 

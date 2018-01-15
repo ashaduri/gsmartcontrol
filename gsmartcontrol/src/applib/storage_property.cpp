@@ -121,29 +121,29 @@ std::string StorageErrorBlock::get_readable_error_types(const std::vector<std::s
 
 
 
-int StorageErrorBlock::get_warning_level_for_error_type(const std::string& type)
+WarningLevel StorageErrorBlock::get_warning_level_for_error_type(const std::string& type)
 {
-	static const std::map<std::string, StorageProperty::warning_t> m = {
-		{"ABRT", StorageProperty::warning_none},
-		{"AMNF", StorageProperty::warning_alert},
-		{"CCTO", StorageProperty::warning_warn},
-		{"EOM", StorageProperty::warning_warn},
-		{"ICRC", StorageProperty::warning_warn},
-		{"IDNF", StorageProperty::warning_alert},
-		{"ILI", StorageProperty::warning_notice},
-		{"MC", StorageProperty::warning_none},
-		{"MCR", StorageProperty::warning_none},
-		{"NM", StorageProperty::warning_none},
-		{"obs", StorageProperty::warning_none},
-		{"TK0NF", StorageProperty::warning_alert},
-		{"UNC", StorageProperty::warning_alert},
-		{"WP", StorageProperty::warning_none},
+	static const std::map<std::string, WarningLevel> m = {
+		{"ABRT", WarningLevel::none},
+		{"AMNF", WarningLevel::alert},
+		{"CCTO", WarningLevel::warning},
+		{"EOM", WarningLevel::warning},
+		{"ICRC", WarningLevel::warning},
+		{"IDNF", WarningLevel::alert},
+		{"ILI", WarningLevel::notice},
+		{"MC", WarningLevel::none},
+		{"MCR", WarningLevel::none},
+		{"NM", WarningLevel::none},
+		{"obs", WarningLevel::none},
+		{"TK0NF", WarningLevel::alert},
+		{"UNC", WarningLevel::alert},
+		{"WP", WarningLevel::none},
 	};
 
 	if (m.find(type) != m.end()) {
-		return int(m.at(type));
+		return m.at(type);
 	}
-	return StorageProperty::warning_none;  // unknown error
+	return WarningLevel::none;  // unknown error
 }
 
 
@@ -193,7 +193,7 @@ void StorageProperty::dump(std::ostream& os, std::size_t internal_offset) const
 	std::string offset(internal_offset, ' ');
 
 	os << offset << "[" << get_section_name(section)
-			<< (section == section_data ? (", " + get_subsection_name(subsection)) : "") << "]"
+			<< (section == Section::data ? (", " + get_subsection_name(subsection)) : "") << "]"
 			<< " " << generic_name
 			// << (generic_name == reported_name ? "" : (" (" + reported_name + ")"))
 			<< ": [" << get_value_type_name() << "] ";

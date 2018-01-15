@@ -99,7 +99,7 @@ std::string StorageDetector::fetch_basic_data(std::vector<StorageDeviceRefPtr>& 
 	fetch_data_errors_.clear();
 	fetch_data_error_outputs_.clear();
 
-	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
+	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
 
 	for (auto& drive : drives) {
 		debug_out_info("app", "Retrieving basic information about the device...\n");

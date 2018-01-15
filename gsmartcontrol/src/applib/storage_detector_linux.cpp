@@ -429,7 +429,7 @@ inline std::string detect_drives_linux_proc_partitions(std::vector<StorageDevice
 		}
 	}
 
-	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
+	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
 
 	for (std::size_t i = 0; i < devices.size(); ++i) {
 		StorageDeviceRefPtr drive(new StorageDevice(devices.at(i)));
@@ -651,7 +651,7 @@ inline std::string detect_drives_linux_adaptec(std::vector<StorageDeviceRefPtr>&
 		return error_msg;
 	}
 
-	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
+	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
 
 	std::set<int> controller_hosts;
 
@@ -788,7 +788,7 @@ inline std::string detect_drives_linux_areca(std::vector<StorageDeviceRefPtr>& d
 		return error_msg;
 	}
 
-	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
+	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
 
 	for (std::map<int, bool>::iterator iter = controller_hosts.begin(); iter != controller_hosts.end(); ++iter) {
 		const int host_num = iter->first;
@@ -918,7 +918,7 @@ inline std::string detect_drives_linux_cciss(std::vector<StorageDeviceRefPtr>& d
 		return std::string();  // no controllers
 	}
 
-	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
+	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
 
 	for (std::size_t controller_index = 0; controller_index < controllers.size(); ++controller_index) {
 		int controller_no = controllers.at(controller_index);
@@ -999,7 +999,7 @@ inline std::string detect_drives_linux_hpsa(std::vector<StorageDeviceRefPtr>& dr
 		return error_msg;
 	}
 
-	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
+	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
 
 	std::set<int> controller_hosts;
 

@@ -245,8 +245,7 @@ class intrusive_ptr {
 		typedef T element_type;
 
 		/// Constructor, creates a null pointer
-		intrusive_ptr() : p_(0)
-		{ }
+		intrusive_ptr() = default;
 
 		/// Constructor. Note that the reference count of \c p is preserved
 		/// and possibly increased if \c add_ref is true.
@@ -358,7 +357,7 @@ class intrusive_ptr {
 
 	private:
 
-		T* p_;  ///< Pointed object
+		T* p_ = nullptr;  ///< Pointed object
 
 };
 

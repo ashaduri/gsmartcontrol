@@ -18,18 +18,18 @@
 
 /// Get colors for tree rows according to warning severity.
 /// \return true if the colors were changed.
-inline bool app_property_get_row_highlight_colors(StorageProperty::warning_t warning, std::string& fg, std::string& bg)
+inline bool app_property_get_row_highlight_colors(WarningLevel warning, std::string& fg, std::string& bg)
 {
 	// Note: we're setting both fg and bg, to avoid theme conflicts.
-	if (warning == StorageProperty::warning_notice) {
+	if (warning == WarningLevel::notice) {
 		fg = "#000000";  // black
 		bg = "#FFD5EE";  // pinkish
 
-	} else if (warning == StorageProperty::warning_warn) {
+	} else if (warning == WarningLevel::warning) {
 		fg = "#000000";  // black
 		bg = "#FFA0A0";  // even more pinkish
 
-	} else if (warning == StorageProperty::warning_alert) {
+	} else if (warning == WarningLevel::alert) {
 		fg = "#000000";  // black
 		bg = "#FF0000";  // red
 	}
@@ -41,15 +41,15 @@ inline bool app_property_get_row_highlight_colors(StorageProperty::warning_t war
 
 /// Get color for labels according to warning severity.
 /// \return true if the color was changed.
-inline bool app_property_get_label_highlight_color(StorageProperty::warning_t warning, std::string& fg)
+inline bool app_property_get_label_highlight_color(WarningLevel warning, std::string& fg)
 {
-	if (warning == StorageProperty::warning_notice) {
+	if (warning == WarningLevel::notice) {
 		fg = "#770000";  // very dark red
 
-	} else if (warning == StorageProperty::warning_warn) {
+	} else if (warning == WarningLevel::warning) {
 		fg = "#C00000";  // dark red
 
-	} else if (warning == StorageProperty::warning_alert) {
+	} else if (warning == WarningLevel::alert) {
 		fg = "#FF0000";  // red
 	}
 
@@ -68,13 +68,13 @@ inline std::string storage_property_get_warning_reason(const StorageProperty& p)
 		stop = "</span>";
 	}
 
-	if (p.warning == StorageProperty::warning_notice) {
+	if (p.warning == WarningLevel::notice) {
 		return "<b>" + start + "Notice:" + stop + "</b> " + p.warning_reason;
 
-	} else if (p.warning == StorageProperty::warning_warn) {
+	} else if (p.warning == WarningLevel::warning) {
 		return "<b>" + start + "Warning:" + stop + "</b> " + p.warning_reason;
 
-	} else if (p.warning == StorageProperty::warning_alert) {
+	} else if (p.warning == WarningLevel::alert) {
 		return "<b>" + start + "ALERT:" + stop + "</b> " + p.warning_reason;
 	}
 

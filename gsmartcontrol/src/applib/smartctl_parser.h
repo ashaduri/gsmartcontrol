@@ -23,12 +23,7 @@
 /// Note: ALL parse_* functions (except parse_full() and parse_version())
 /// expect data in unix-newline format!
 class SmartctlParser {
-
 	public:
-
-		/// Constructor
-		SmartctlParser();
-
 
 		/// Parse full "smartctl -x" output
 		bool parse_full(const std::string& s, StorageAttribute::DiskType disk_type);
@@ -171,7 +166,7 @@ class SmartctlParser {
 
 		std::string error_msg_;  ///< This will be filled with some displayable message on error
 
-		StorageAttribute::DiskType disk_type_;  ///< Disk type (HDD, SSD)
+		StorageAttribute::DiskType disk_type_ = StorageAttribute::DiskType::Any;  ///< Disk type (HDD, SSD)
 
 };
 

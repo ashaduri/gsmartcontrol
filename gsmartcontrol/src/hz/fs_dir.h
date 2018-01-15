@@ -61,11 +61,10 @@ namespace internal {
 			typedef value_type reference;  ///< STL compatibility
 
 			/// Native handle type
-			typedef directory_entry_handle_type handle_type;
+			using handle_type = directory_entry_handle_type;
 
 			/// Constructor
-			DirIterator() : dir_(NULL), entry_(NULL)
-			{ }
+			DirIterator() = default;
 
 			/// Constructor
 			DirIterator(Dir* dir, handle_type entry) : dir_(dir), entry_(entry)
@@ -128,8 +127,8 @@ namespace internal {
 
 		private:
 
-			Dir* dir_;  ///< Directory we're operating with
-			handle_type entry_;  ///< Native handle
+			Dir* dir_ = nullptr;  ///< Directory we're operating with
+			handle_type entry_ = nullptr;  ///< Native handle
 
 	};
 
@@ -427,8 +426,7 @@ class Dir : public FsPath {
 
 
 		/// Create a Dir object.
-		Dir() : dir_(NULL), entry_(NULL)
-		{ }
+		Dir() = default;
 
 		/// Create a Dir object. This will NOT open the directory.
 		Dir(const FsPath& path) : dir_(NULL), entry_(NULL)
@@ -575,8 +573,8 @@ class Dir : public FsPath {
 // 		const Dir& operator=(const Dir& other);  // don't allow it. allow only from non-const.
 
 
-		handle_type dir_;  ///< Native handle (DIR*)
-		entry_handle_type entry_;  ///< Current entry (dirent*)
+		handle_type dir_ = nullptr;  ///< Native handle (DIR*)
+		entry_handle_type entry_ = nullptr;  ///< Current entry (dirent*)
 
 };
 

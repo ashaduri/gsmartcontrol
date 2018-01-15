@@ -36,35 +36,25 @@ namespace debug_internal {
 	/// Internal class, holds values of command line args.
 	struct DebugCmdArgs {
 		/// Constructor
-		DebugCmdArgs() :
-			// defaults
-#ifdef _WIN32
-			verbose(TRUE),
-#else
-			verbose(FALSE),
-#endif
-			quiet(FALSE),
-#ifdef DEBUG_BUILD
-			verbosity_level(5),  // all
-#else
-			verbosity_level(3),  // warn, error, fatal
-#endif
-	// 		debug_levels(),
-#ifndef _WIN32
-			debug_colorize(TRUE)
-#else
-			debug_colorize(FALSE)  // disable colors on win32
-#endif
-		{ }
+		DebugCmdArgs()
+		{
+		#ifdef _WIN32
+			verbose = TRUE;
+			debug_colorize = FALSE;
+		#endif
+		#ifdef DEBUG_BUILD
+			verbosity_level = 5;  // all
+		#endif
+		}
 
 		// use glib types here
-		gboolean verbose;  ///< Verbose output (enables higher verbosity level)
-		gboolean quiet;  ///< Less verbose output (enables lower verbosity level)
-		gint verbosity_level;  ///< Verbosity level override
+		gboolean verbose = FALSE;  ///< Verbose output (enables higher verbosity level)
+		gboolean quiet = FALSE;  ///< Less verbose output (enables lower verbosity level)
+		gint verbosity_level = 3;  ///< Verbosity level override - warn, error, fatal
 		std::vector<std::string> debug_levels;  ///< Comma-separated names of levels to enable
-		gboolean debug_colorize;  ///< Colorize the output or not
+		gboolean debug_colorize = TRUE;  ///< Colorize the output or not
 
-		debug_level::type levels_enabled;  ///< Final vector - not actually an argument, but filled after the parsing.
+		debug_level::types levels_enabled;  ///< Final vector - not actually an argument, but filled after the parsing.
 	};
 
 

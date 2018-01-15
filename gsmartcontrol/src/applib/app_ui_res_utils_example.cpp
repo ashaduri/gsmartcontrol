@@ -60,11 +60,6 @@ class AppUiResTestWindow : public AppUIResWidget<AppUiResTestWindow, false>
 		}
 
 
-		/// Virtual destructor
-		virtual ~AppUiResTestWindow()
-		{ }
-
-
 	private:
 
 		/// Action callback

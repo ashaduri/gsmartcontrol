@@ -36,8 +36,7 @@ namespace {
 	/// Attribute description for attribute database
 	struct AttributeDescription {
 		/// Constructor
-		AttributeDescription() : id(-1), disk_type(StorageAttribute::DiskAny)
-		{ }
+		AttributeDescription() = default;
 
 		/// Constructor
 		AttributeDescription(int32_t id_, StorageAttribute::DiskType type, std::string smartctl_name_,
@@ -46,8 +45,8 @@ namespace {
 				generic_name(std::move(generic_name_)), description(std::move(description_))
 		{ }
 
-		int32_t id;  ///< e.g. 190
-		StorageAttribute::DiskType disk_type;  ///< HDD-only, SSD-only or universal attribute
+		int32_t id = -1;  ///< e.g. 190
+		StorageAttribute::DiskType disk_type = StorageAttribute::DiskType::Any;  ///< HDD-only, SSD-only or universal attribute
 		std::string smartctl_name;  ///< e.g. Airflow_Temperature_Cel
 		std::string readable_name;  ///< e.g. Airflow Temperature (C)
 		std::string generic_name;  ///< Generic name to be set on the property.
@@ -93,49 +92,49 @@ namespace {
 				add(4, "Start_Stop_Count", "Start / Stop Count", "",
 						"Number of start/stop cycles of a spindle (Raw value). That is, number of drive spin-ups.");
 				// Reallocated Sector Count (smartctl)
-				add(5, StorageAttribute::DiskHDD, "Reallocated_Sector_Ct", "Reallocated Sector Count", "attr_reallocated_sector_count",
+				add(5, StorageAttribute::DiskType::Hdd, "Reallocated_Sector_Ct", "Reallocated Sector Count", "attr_reallocated_sector_count",
 						"Number of reallocated sectors (Raw value). Non-zero Raw value indicates a disk surface failure."
 						"\n\n" + s_unc_text);
 				// SSD: Reallocated Sector Count (smartctl)
-				add(5, StorageAttribute::DiskSSD, "Reallocated_Sector_Ct", "Reallocated Sector Count", "attr_reallocated_sector_count",
+				add(5, StorageAttribute::DiskType::Ssd, "Reallocated_Sector_Ct", "Reallocated Sector Count", "attr_reallocated_sector_count",
 						"Number of reallocated sectors (Raw value). High Raw value indicates an old age for an SSD.");
 				// SandForce SSD: Retired_Block_Count (smartctl)
-				add(5, StorageAttribute::DiskSSD, "Retired_Block_Count", "Retired Block Rate", "attr_ssd_life_left",
+				add(5, StorageAttribute::DiskType::Ssd, "Retired_Block_Count", "Retired Block Rate", "attr_ssd_life_left",
 						"Indicates estimated remaining life of the drive. Normalized value is (100-100*RBC/MRB) where RBC is the number of retired blocks and MRB is the minimum required blocks.");
 				// Crucial/Micron SSD: Reallocate_NAND_Blk_Cnt (smartctl)
-				add(5, StorageAttribute::DiskSSD, "Reallocate_NAND_Blk_Cnt", "Reallocated NAND Block Count", "",
+				add(5, StorageAttribute::DiskType::Ssd, "Reallocate_NAND_Blk_Cnt", "Reallocated NAND Block Count", "",
 						"Number of reallocated blocks (Raw value). High Raw value indicates an old age for an SSD.");
 				// Micron SSD: Reallocate_NAND_Blk_Cnt (smartctl)
-				add(5, StorageAttribute::DiskSSD, "Reallocated_Block_Count", "Reallocated Block Count", "",
+				add(5, StorageAttribute::DiskType::Ssd, "Reallocated_Block_Count", "Reallocated Block Count", "",
 						"Number of reallocated blocks (Raw value). High Raw value indicates an old age for an SSD.");
 				// OCZ SSD (smartctl)
-				add(5, StorageAttribute::DiskSSD, "Runtime_Bad_Block", "Runtime Bad Block Count", "",
+				add(5, StorageAttribute::DiskType::Ssd, "Runtime_Bad_Block", "Runtime Bad Block Count", "",
 						"");
 				// Innodisk SSD (smartctl)
-				add(5, StorageAttribute::DiskSSD, "Later_Bad_Block", "Later Bad Block", "",
+				add(5, StorageAttribute::DiskType::Ssd, "Later_Bad_Block", "Later Bad Block", "",
 						"");
 				// Read Channel Margin (smartctl)
-				add(6, StorageAttribute::DiskHDD, "Read_Channel_Margin", "Read Channel Margin", "",
+				add(6, StorageAttribute::DiskType::Hdd, "Read_Channel_Margin", "Read Channel Margin", "",
 						"Margin of a channel while reading data. The function of this attribute is not specified.");
 				// Seek Error Rate (smartctl)
-				add(7, StorageAttribute::DiskHDD, "Seek_Error_Rate", "Seek Error Rate", "",
+				add(7, StorageAttribute::DiskType::Hdd, "Seek_Error_Rate", "Seek Error Rate", "",
 						"Frequency of errors appearance while positioning. When a drive reads data, it positions heads in the needed place. If there is a failure in the mechanical positioning system, a seek error arises. More seek errors indicate worse condition of a disk surface and disk mechanical subsystem. The exact meaning of the Raw value is manufacturer-dependent.");
 				// Seek Time Performance (smartctl)
-				add(8, StorageAttribute::DiskHDD, "Seek_Time_Performance", "Seek Time Performance", "",
+				add(8, StorageAttribute::DiskType::Hdd, "Seek_Time_Performance", "Seek Time Performance", "",
 						"Average efficiency of seek operations of the magnetic heads. If this value is decreasing, it is a sign of problems in the hard disk drive mechanical subsystem.");
 				// Power-On Hours (smartctl) (Maxtor may use minutes, Fujitsu may use seconds, some even temperature?)
 				add(9, "Power_On_Hours", "Power-On Time", "",
 						"Number of hours in power-on state. Raw value shows total count of hours (or minutes, or half-minutes, or seconds, depending on manufacturer) in power-on state.");
 				// SandForce, Intel SSD: Power_On_Hours_and_Msec (smartctl) (description?)
-				add(9, StorageAttribute::DiskSSD, "Power_On_Hours_and_Msec");
+				add(9, StorageAttribute::DiskType::Ssd, "Power_On_Hours_and_Msec");
 				// Smart Storage Systems SSD (smartctl)
-				add(9, StorageAttribute::DiskSSD, "Proprietary_9", "Internal Attribute", "",
+				add(9, StorageAttribute::DiskType::Ssd, "Proprietary_9", "Internal Attribute", "",
 						"This attribute has been reserved by vendor as internal.");
 				// Spin-up Retry Count (smartctl)
-				add(10, StorageAttribute::DiskHDD, "Spin_Retry_Count", "Spin-Up Retry Count", "attr_spin_up_retry_count",
+				add(10, StorageAttribute::DiskType::Hdd, "Spin_Retry_Count", "Spin-Up Retry Count", "attr_spin_up_retry_count",
 						"Number of retries of spin start attempts (Raw value). An increase of this attribute value is a sign of problems in the hard disk mechanical subsystem.");
 				// Calibration Retry Count (smartctl)
-				add(11, StorageAttribute::DiskHDD, "Calibration_Retry_Count", "Calibration Retry Count", "",
+				add(11, StorageAttribute::DiskType::Hdd, "Calibration_Retry_Count", "Calibration Retry Count", "",
 						"Number of times recalibration was requested, under the condition that the first attempt was unsuccessful (Raw value). A decrease is a sign of problems in the hard disk mechanical subsystem.");
 				// Power Cycle Count (smartctl)
 				add(12, "Power_Cycle_Count", "Power Cycle Count", "",
@@ -144,303 +143,303 @@ namespace {
 				add(13, "Read_Soft_Error_Rate", "Soft Read Error Rate", "attr_soft_read_error_rate",
 						"Uncorrected read errors reported to the operating system (Raw value). If the value is non-zero, you should back up your data.");
 				// Sandforce SSD: Soft_Read_Error_Rate (smartctl)
-				add(13, StorageAttribute::DiskSSD, "Soft_Read_Error_Rate");
+				add(13, StorageAttribute::DiskType::Ssd, "Soft_Read_Error_Rate");
 				// Maxtor: Average FHC (custom) (description?)
-				add(99, StorageAttribute::DiskHDD, "", "Average FHC (Flying Height Control)", "",
+				add(99, StorageAttribute::DiskType::Hdd, "", "Average FHC (Flying Height Control)", "",
 						"");
 				// Sandforce SSD: Gigabytes_Erased (smartctl) (description?)
-				add(100, StorageAttribute::DiskSSD, "Gigabytes_Erased", "GiB Erased", "",
+				add(100, StorageAttribute::DiskType::Ssd, "Gigabytes_Erased", "GiB Erased", "",
 						"Number of GiB erased.");
 				// OCZ SSD (smartctl)
-				add(100, StorageAttribute::DiskSSD, "Total_Blocks_Erased", "Total Blocks Erased", "",
+				add(100, StorageAttribute::DiskType::Ssd, "Total_Blocks_Erased", "Total Blocks Erased", "",
 						"Number of total blocks erased.");
 				// STEC CF: (custom)
-				add(100, StorageAttribute::DiskSSD, "", "Erase / Program Cycles", "",  // unused
+				add(100, StorageAttribute::DiskType::Ssd, "", "Erase / Program Cycles", "",  // unused
 						"Number of Erase / Program cycles of the entire drive.");
 				// Maxtor: Maximum FHC (custom) (description?)
-				add(101, StorageAttribute::DiskHDD, "", "Maximum FHC (Flying Height Control)", "",
+				add(101, StorageAttribute::DiskType::Hdd, "", "Maximum FHC (Flying Height Control)", "",
 						"");
 				// Unknown (source says Maxtor, but it's an SSD thing and Maxtor doesn't have them at this point).
 	// 			add(101, "", "Translation Table Rebuild", "",
 	// 					"Indicates power backup fault or internal error resulting in loss of system unit tables.");
 				// STEC CF: Translation Table Rebuild (custom)
-				add(103, StorageAttribute::DiskSSD, "", "Translation Table Rebuild", "",
+				add(103, StorageAttribute::DiskType::Ssd, "", "Translation Table Rebuild", "",
 						"Indicates power backup fault or internal error resulting in loss of system unit tables.");
 				// Smart Storage Systems SSD (smartctl) (description?)
-				add(130, StorageAttribute::DiskSSD, "Minimum_Spares_All_Zs", "Minimum Spares All Zs", "",
+				add(130, StorageAttribute::DiskType::Ssd, "Minimum_Spares_All_Zs", "Minimum Spares All Zs", "",
 						"");
 				// SiliconMotion SSDs (description?) (smartctl)
-				add(148, StorageAttribute::DiskSSD, "Total_SLC_Erase_Ct", "Total SLC Erase Count", "",
+				add(148, StorageAttribute::DiskType::Ssd, "Total_SLC_Erase_Ct", "Total SLC Erase Count", "",
 						"");
 				// SiliconMotion SSDs (description?) (smartctl)
-				add(149, StorageAttribute::DiskSSD, "Max_SLC_Erase_Ct", "Maximum SLC Erase Count", "",
+				add(149, StorageAttribute::DiskType::Ssd, "Max_SLC_Erase_Ct", "Maximum SLC Erase Count", "",
 						"");
 				// SiliconMotion SSDs (description?) (smartctl)
-				add(150, StorageAttribute::DiskSSD, "Min_SLC_Erase_Ct", "Minimum SLC Erase Count", "",
+				add(150, StorageAttribute::DiskType::Ssd, "Min_SLC_Erase_Ct", "Minimum SLC Erase Count", "",
 						"");
 				// SiliconMotion SSDs (description?) (smartctl)
-				add(151, StorageAttribute::DiskSSD, "Average_SLC_Erase_Ct", "Average SLC Erase Count", "",
+				add(151, StorageAttribute::DiskType::Ssd, "Average_SLC_Erase_Ct", "Average SLC Erase Count", "",
 						"");
 				// Apacer Flash (description?) (smartctl)
-				add(160, StorageAttribute::DiskSSD, "Initial_Bad_Block_Count", "Initial Bad Block Count", "",
+				add(160, StorageAttribute::DiskType::Ssd, "Initial_Bad_Block_Count", "Initial Bad Block Count", "",
 						"");
 				// Samsung SSD, Intel SSD: Reported Uncorrectable (smartctl)
-				add(160, StorageAttribute::DiskSSD, "Uncorrectable_Error_Cnt", "Uncorrectable Error Count", "",
+				add(160, StorageAttribute::DiskType::Ssd, "Uncorrectable_Error_Cnt", "Uncorrectable Error Count", "",
 						"");
 				// Apacer Flash (description?) (smartctl)
-				add(161, StorageAttribute::DiskSSD, "Bad_Block_Count", "Bad Block Count", "",
+				add(161, StorageAttribute::DiskType::Ssd, "Bad_Block_Count", "Bad Block Count", "",
 						"Number of bad blocks. SSDs reallocate blocks as part of their normal operation, so low bad block counts are not critical for them.");
 				// Innodisk (description?) (smartctl)
-				add(161, StorageAttribute::DiskSSD, "Number_of_Pure_Spare", "Number of Pure Spare", "",
+				add(161, StorageAttribute::DiskType::Ssd, "Number_of_Pure_Spare", "Number of Pure Spare", "",
 						"");
 				// Innodisk CF (description?) (smartctl)
-				add(161, StorageAttribute::DiskSSD, "Valid_Spare_Block_Cnt", "Valid Spare Block Count", "",
+				add(161, StorageAttribute::DiskType::Ssd, "Valid_Spare_Block_Cnt", "Valid Spare Block Count", "",
 						"Number of available spare blocks. Spare blocks are used when bad blocks develop.");
 				// Apacer Flash (description?) (smartctl)
-				add(162, StorageAttribute::DiskSSD, "Spare_Block_Count", "Spare Block Count", "",
+				add(162, StorageAttribute::DiskType::Ssd, "Spare_Block_Count", "Spare Block Count", "",
 						"Number of spare blocks which are used when bad blocks develop.");
 				// Innodisk CF (smartctl)
-				add(162, StorageAttribute::DiskSSD, "Child_Pair_Count", "Child Pair Count", "",
+				add(162, StorageAttribute::DiskType::Ssd, "Child_Pair_Count", "Child Pair Count", "",
 						"");
 				// Apacer Flash (description?) (smartctl)
-				add(163, StorageAttribute::DiskSSD, "Max_Erase_Count", "Maximum Erase Count", "",
+				add(163, StorageAttribute::DiskType::Ssd, "Max_Erase_Count", "Maximum Erase Count", "",
 						"The maximum of individual erase counts of all the blocks.");
 				// Innodisk SSD: (smartctl)
-				add(163, StorageAttribute::DiskSSD, "Initial_Bad_Block_Count", "Initial Bad Block Count", "",
+				add(163, StorageAttribute::DiskType::Ssd, "Initial_Bad_Block_Count", "Initial Bad Block Count", "",
 						"Factory-determined number of initial bad blocks.");
 				// Innodisk SSD: (smartctl)
-				add(163, StorageAttribute::DiskSSD, "Total_Bad_Block_Count", "Total Bad Block Count", "",
+				add(163, StorageAttribute::DiskType::Ssd, "Total_Bad_Block_Count", "Total Bad Block Count", "",
 						"Number of bad blocks. SSDs reallocate blocks as part of their normal operation, so low bad block counts are not critical for them.");
 				// Apacer Flash (description?) (smartctl)
-				add(164, StorageAttribute::DiskSSD, "Average_Erase_Count", "Average Erase Count", "",
+				add(164, StorageAttribute::DiskType::Ssd, "Average_Erase_Count", "Average Erase Count", "",
 						"");
 				// Innodisk SSD (description?) (smartctl)
-				add(164, StorageAttribute::DiskSSD, "Total_Erase_Count", "Total Erase Count", "",
+				add(164, StorageAttribute::DiskType::Ssd, "Total_Erase_Count", "Total Erase Count", "",
 						"");
 				// Apacer Flash (description?) (smartctl)
-				add(165, StorageAttribute::DiskSSD, "Average_Erase_Count", "Average Erase Count", "",
+				add(165, StorageAttribute::DiskType::Ssd, "Average_Erase_Count", "Average Erase Count", "",
 						"");
 				// Innodisk SSD (description?) (smartctl)
-				add(165, StorageAttribute::DiskSSD, "Max_Erase_Count", "Maximum Erase Count", "",
+				add(165, StorageAttribute::DiskType::Ssd, "Max_Erase_Count", "Maximum Erase Count", "",
 						"");
 				// Sandisk SSD (description?) (smartctl)
-				add(165, StorageAttribute::DiskSSD, "Total_Write/Erase_Count", "Total Write / Erase Count", "",
+				add(165, StorageAttribute::DiskType::Ssd, "Total_Write/Erase_Count", "Total Write / Erase Count", "",
 						"");
 				// Apacer Flash (description?) (smartctl)
-				add(166, StorageAttribute::DiskSSD, "Later_Bad_Block_Count", "Later Bad Block Count", "",
+				add(166, StorageAttribute::DiskType::Ssd, "Later_Bad_Block_Count", "Later Bad Block Count", "",
 						"");
 				// Innodisk SSD (description?) (smartctl)
-				add(166, StorageAttribute::DiskSSD, "Min_Erase_Count", "Minimum Erase Count", "",
+				add(166, StorageAttribute::DiskType::Ssd, "Min_Erase_Count", "Minimum Erase Count", "",
 						"");
 				// Sandisk SSD (description?) (smartctl)
-				add(166, StorageAttribute::DiskSSD, "Min_W/E_Cycle", "Minimum Write / Erase Cycles", "",
+				add(166, StorageAttribute::DiskType::Ssd, "Min_W/E_Cycle", "Minimum Write / Erase Cycles", "",
 						"");
 				// Apacer Flash, OCZ (description?) (smartctl)
-				add(167, StorageAttribute::DiskSSD, "SSD_Protect_Mode", "SSD Protect Mode", "",
+				add(167, StorageAttribute::DiskType::Ssd, "SSD_Protect_Mode", "SSD Protect Mode", "",
 						"");
 				// Innodisk SSD (description?) (smartctl)
-				add(167, StorageAttribute::DiskSSD, "Average_Erase_Count", "Average Erase Count", "",
+				add(167, StorageAttribute::DiskType::Ssd, "Average_Erase_Count", "Average Erase Count", "",
 						"");
 				// Sandisk SSD (description?) (smartctl)
-				add(167, StorageAttribute::DiskSSD, "Min_Bad_Block/Die", "Minimum Bad Block / Die", "",
+				add(167, StorageAttribute::DiskType::Ssd, "Min_Bad_Block/Die", "Minimum Bad Block / Die", "",
 						"");
 				// Apacer Flash (description?) (smartctl)
-				add(168, StorageAttribute::DiskSSD, "SATA_PHY_Err_Ct", "SATA Physical Error Count", "",
+				add(168, StorageAttribute::DiskType::Ssd, "SATA_PHY_Err_Ct", "SATA Physical Error Count", "",
 						"");
 				// Various SSDs: (smartctl) (description?)
-				add(168, StorageAttribute::DiskSSD, "SATA_Phy_Error_Count", "SATA Physical Error Count", "",
+				add(168, StorageAttribute::DiskType::Ssd, "SATA_Phy_Error_Count", "SATA Physical Error Count", "",
 						"");
 				// Innodisk SSDs: (smartctl) (description?)
-				add(168, StorageAttribute::DiskSSD, "Max_Erase_Count_of_Spec", "Maximum Erase Count per Specification", "",
+				add(168, StorageAttribute::DiskType::Ssd, "Max_Erase_Count_of_Spec", "Maximum Erase Count per Specification", "",
 						"");
 				// Sandisk SSD (description?) (smartctl)
-				add(168, StorageAttribute::DiskSSD, "Maximum_Erase_Cycle", "Maximum Erase Cycles", "",
+				add(168, StorageAttribute::DiskType::Ssd, "Maximum_Erase_Cycle", "Maximum Erase Cycles", "",
 						"");
 				// Toshiba SSDs: (smartctl) (description?)
-				add(169, StorageAttribute::DiskSSD, "Bad_Block_Count", "Bad Block Count", "",
+				add(169, StorageAttribute::DiskType::Ssd, "Bad_Block_Count", "Bad Block Count", "",
 						"Number of bad blocks. SSDs reallocate blocks as part of their normal operation, so low bad block counts are not critical for them.");
 				// Sandisk SSD (description?) (smartctl)
-				add(169, StorageAttribute::DiskSSD, "Total_Bad_Blocks", "Total Bad Blocks", "",
+				add(169, StorageAttribute::DiskType::Ssd, "Total_Bad_Blocks", "Total Bad Blocks", "",
 						"Number of bad blocks. SSDs reallocate blocks as part of their normal operation, so low bad block counts are not critical for them.");
 				// Innodisk SSDs: (smartctl) (description?)
-				add(169, StorageAttribute::DiskSSD, "Remaining_Lifetime_Perc", "Remaining Lifetime %", "attr_ssd_life_left",
+				add(169, StorageAttribute::DiskType::Ssd, "Remaining_Lifetime_Perc", "Remaining Lifetime %", "attr_ssd_life_left",
 						"Remaining drive life in % (usually by erase count).");
 				// Intel SSD, STEC CF: Reserved Block Count (smartctl)
-				add(170, StorageAttribute::DiskSSD, "Reserve_Block_Count", "Reserved Block Count", "",
+				add(170, StorageAttribute::DiskType::Ssd, "Reserve_Block_Count", "Reserved Block Count", "",
 						"Number of reserved (spare) blocks for bad block handling.");
 				// Micron SSD: Reserved Block Count (smartctl)
-				add(170, StorageAttribute::DiskSSD, "Reserved_Block_Count", "Reserved Block Count", "",
+				add(170, StorageAttribute::DiskType::Ssd, "Reserved_Block_Count", "Reserved Block Count", "",
 						"Number of reserved (spare) blocks for bad block handling.");
 				// Crucial / Marvell SSD: Grown Failing Block Count (smartctl) (description?)
-				add(170, StorageAttribute::DiskSSD, "Grown_Failing_Block_Ct", "Grown Failing Block Count", "",
+				add(170, StorageAttribute::DiskType::Ssd, "Grown_Failing_Block_Ct", "Grown Failing Block Count", "",
 						"");
 				// Intel SSD: (smartctl) (description?)
-				add(170, StorageAttribute::DiskSSD, "Available_Reservd_Space", "Available Reserved Space", "",
+				add(170, StorageAttribute::DiskType::Ssd, "Available_Reservd_Space", "Available Reserved Space", "",
 						"");
 				// Various SSDs: (smartctl) (description?)
-				add(170, StorageAttribute::DiskSSD, "Bad_Block_Count", "Bad Block Count", "",
+				add(170, StorageAttribute::DiskType::Ssd, "Bad_Block_Count", "Bad Block Count", "",
 						"Number of bad blocks. SSDs reallocate blocks as part of their normal operation, so low bad block counts are not critical for them.");
 				// Kingston SSDs: (smartctl) (description?)
-				add(170, StorageAttribute::DiskSSD, "Bad_Blk_Ct_Erl/Lat", "Bad Block Early / Later", "",
+				add(170, StorageAttribute::DiskType::Ssd, "Bad_Blk_Ct_Erl/Lat", "Bad Block Early / Later", "",
 						"");
 				// Samsung SSDs: (smartctl) (description?)
-				add(170, StorageAttribute::DiskSSD, "Unused_Rsvd_Blk_Ct_Chip", "Unused Reserved Block Count (Chip)", "",
+				add(170, StorageAttribute::DiskType::Ssd, "Unused_Rsvd_Blk_Ct_Chip", "Unused Reserved Block Count (Chip)", "",
 						"");
 				// Innodisk Flash (description?) (smartctl)
-				add(170, StorageAttribute::DiskSSD, "Spare_Block_Count", "Spare Block Count", "",
+				add(170, StorageAttribute::DiskType::Ssd, "Spare_Block_Count", "Spare Block Count", "",
 						"Number of spare blocks which are used in case bad blocks develop.");
 				// Intel SSD, Sandforce SSD, STEC CF, Crucial / Marvell SSD: Program Fail Count (smartctl)
-				add(171, StorageAttribute::DiskSSD, "Program_Fail_Count", "Program Fail Count", "",
+				add(171, StorageAttribute::DiskType::Ssd, "Program_Fail_Count", "Program Fail Count", "",
 						"Number of flash program (write) failures. High values may indicate old drive age or other problems.");
 				// Samsung SSDs: (smartctl) (description?)
-				add(171, StorageAttribute::DiskSSD, "Program_Fail_Count_Chip", "Program Fail Count (Chip)", "",
+				add(171, StorageAttribute::DiskType::Ssd, "Program_Fail_Count_Chip", "Program Fail Count (Chip)", "",
 						"");
 				// OCZ SSD (smartctl)
-				add(171, StorageAttribute::DiskSSD, "Avail_OP_Block_Count", "Available OP Block Count", "",
+				add(171, StorageAttribute::DiskType::Ssd, "Avail_OP_Block_Count", "Available OP Block Count", "",
 						"");
 				// Intel SSD, Sandforce SSD, STEC CF, Crucial / Marvell SSD: Erase Fail Count (smartctl)
-				add(172, StorageAttribute::DiskSSD, "Erase_Fail_Count", "Erase Fail Count", "",
+				add(172, StorageAttribute::DiskType::Ssd, "Erase_Fail_Count", "Erase Fail Count", "",
 						"Number of flash erase command failures. High values may indicate old drive age or other problems.");
 				// Various SSDs (smartctl) (description?)
-				add(173, StorageAttribute::DiskSSD, "Erase_Count", "Erase Count", "",
+				add(173, StorageAttribute::DiskType::Ssd, "Erase_Count", "Erase Count", "",
 						"");
 				// Samsung SSDs (smartctl) (description?)
-				add(173, StorageAttribute::DiskSSD, "Erase_Fail_Count_Chip", "Erase Fail Count (Chip)", "",
+				add(173, StorageAttribute::DiskType::Ssd, "Erase_Fail_Count_Chip", "Erase Fail Count (Chip)", "",
 						"");
 				// Kingston SSDs (smartctl) (description?)
-				add(173, StorageAttribute::DiskSSD, "MaxAvgErase_Ct", "Maximum / Average Erase Count", "",
+				add(173, StorageAttribute::DiskType::Ssd, "MaxAvgErase_Ct", "Maximum / Average Erase Count", "",
 						"");
 				// Crucial/Micron SSDs (smartctl) (description?)
-				add(173, StorageAttribute::DiskSSD, "Ave_Block-Erase_Count", "Average Block-Erase Count", "",
+				add(173, StorageAttribute::DiskType::Ssd, "Ave_Block-Erase_Count", "Average Block-Erase Count", "",
 						"");
 				// STEC CF, Crucial / Marvell SSD: Wear Leveling Count (smartctl) (description?)
-				add(173, StorageAttribute::DiskSSD, "Wear_Leveling_Count", "Wear Leveling Count", "",
+				add(173, StorageAttribute::DiskType::Ssd, "Wear_Leveling_Count", "Wear Leveling Count", "",
 						"Indicates the difference between the most worn block and the least worn block.");
 				// Same as above, old smartctl
-				add(173, StorageAttribute::DiskSSD, "Wear_Levelling_Count", "Wear Leveling Count", "",
+				add(173, StorageAttribute::DiskType::Ssd, "Wear_Levelling_Count", "Wear Leveling Count", "",
 						"Indicates the difference between the most worn block and the least worn block.");
 				// Sandisk SSDs (smartctl) (description?)
-				add(173, StorageAttribute::DiskSSD, "Avg_Write/Erase_Count", "Average Write / Erase Count", "",
+				add(173, StorageAttribute::DiskType::Ssd, "Avg_Write/Erase_Count", "Average Write / Erase Count", "",
 						"");
 				// Intel SSD, Sandforce SSD, Crucial / Marvell SSD: Unexpected Power Loss (smartctl)
-				add(174, StorageAttribute::DiskSSD, "Unexpect_Power_Loss_Ct", "Unexpected Power Loss Count", "",
+				add(174, StorageAttribute::DiskType::Ssd, "Unexpect_Power_Loss_Ct", "Unexpected Power Loss Count", "",
 						"Number of unexpected power loss events.");
 				// OCZ SSD (smartctl)
-				add(174, StorageAttribute::DiskSSD, "Pwr_Cycle_Ct_Unplanned", "Unexpected Power Loss Count", "",
+				add(174, StorageAttribute::DiskType::Ssd, "Pwr_Cycle_Ct_Unplanned", "Unexpected Power Loss Count", "",
 						"Number of unexpected power loss events.");
 				// Apple SSD (smartctl)
-				add(174, StorageAttribute::DiskSSD, "Host_Reads_MiB", "Host Read (MiB)", "",
+				add(174, StorageAttribute::DiskType::Ssd, "Host_Reads_MiB", "Host Read (MiB)", "",
 						"Total number of sectors read by the host system. The Raw value is increased by 1 for every MiB read by the host.");
 				// Program_Fail_Count_Chip (smartctl)
-				add(175, StorageAttribute::DiskSSD, "Program_Fail_Count_Chip", "Program Fail Count (Chip)", "",
+				add(175, StorageAttribute::DiskType::Ssd, "Program_Fail_Count_Chip", "Program Fail Count (Chip)", "",
 						"Number of flash program (write) failures. High values may indicate old drive age or other problems.");
 				// Various SSDs: Bad_Cluster_Table_Count (smartctl) (description?)
-				add(175, StorageAttribute::DiskSSD, "Bad_Cluster_Table_Count", "Bad Cluster Table Count", "",
+				add(175, StorageAttribute::DiskType::Ssd, "Bad_Cluster_Table_Count", "Bad Cluster Table Count", "",
 						"");
 				// Intel SSD (smartctl) (description?)
-				add(175, StorageAttribute::DiskSSD, "Power_Loss_Cap_Test", "Power Loss Capacitor Test", "",
+				add(175, StorageAttribute::DiskType::Ssd, "Power_Loss_Cap_Test", "Power Loss Capacitor Test", "",
 						"");
 				// Intel SSD (smartctl) (description?)
-				add(175, StorageAttribute::DiskSSD, "Host_Writes_MiB", "Host Written (MiB)", "",
+				add(175, StorageAttribute::DiskType::Ssd, "Host_Writes_MiB", "Host Written (MiB)", "",
 						"Total number of sectors written by the host system. The Raw value is increased by 1 for every MiB written by the host.");
 				// Erase_Fail_Count_Chip (smartctl)
-				add(176, StorageAttribute::DiskSSD, "Erase_Fail_Count_Chip", "Erase Fail Count (Chip)", "",
+				add(176, StorageAttribute::DiskType::Ssd, "Erase_Fail_Count_Chip", "Erase Fail Count (Chip)", "",
 						"Number of flash erase command failures. High values may indicate old drive age or other problems.");
 				// Innodisk SSD (smartctl) (description?)
-				add(176, StorageAttribute::DiskSSD, "Uncorr_RECORD_Count", "Uncorrected RECORD Count", "",
+				add(176, StorageAttribute::DiskType::Ssd, "Uncorr_RECORD_Count", "Uncorrected RECORD Count", "",
 						"");
 				// Innodisk SSD (smartctl) (description?)
-				add(176, StorageAttribute::DiskSSD, "RANGE_RECORD_Count", "RANGE RECORD Count", "",
+				add(176, StorageAttribute::DiskType::Ssd, "RANGE_RECORD_Count", "RANGE RECORD Count", "",
 						"");
 				// Wear_Leveling_Count (smartctl) (same as Wear_Range_Delta?)
-				add(177, StorageAttribute::DiskSSD, "Wear_Leveling_Count", "Wear Leveling Count", "",
+				add(177, StorageAttribute::DiskType::Ssd, "Wear_Leveling_Count", "Wear Leveling Count", "",
 						"Indicates the difference (in percent) between the most worn block and the least worn block.");
 				// Sandforce SSD: Wear_Range_Delta (smartctl)
-				add(177, StorageAttribute::DiskSSD, "Wear_Range_Delta", "Wear Range Delta", "",
+				add(177, StorageAttribute::DiskType::Ssd, "Wear_Range_Delta", "Wear Range Delta", "",
 						"Indicates the difference (in percent) between the most worn block and the least worn block.");
 				// Used_Rsvd_Blk_Cnt_Chip (smartctl)
-				add(178, StorageAttribute::DiskSSD, "Used_Rsvd_Blk_Cnt_Chip", "Used Reserved Block Count (Chip)", "",
+				add(178, StorageAttribute::DiskType::Ssd, "Used_Rsvd_Blk_Cnt_Chip", "Used Reserved Block Count (Chip)", "",
 						"Number of a chip's used reserved blocks. High values may indicate old drive age or other problems.");
 				// Innodisk SSD (smartctl)
-				add(178, StorageAttribute::DiskSSD, "Runtime_Invalid_Blk_Cnt", "Runtime Invalid Block Count", "",
+				add(178, StorageAttribute::DiskType::Ssd, "Runtime_Invalid_Blk_Cnt", "Runtime Invalid Block Count", "",
 						"");
 				// Used_Rsvd_Blk_Cnt_Tot (smartctl) (description?)
-				add(179, StorageAttribute::DiskSSD, "Used_Rsvd_Blk_Cnt_Tot", "Used Reserved Block Count (Total)", "",
+				add(179, StorageAttribute::DiskType::Ssd, "Used_Rsvd_Blk_Cnt_Tot", "Used Reserved Block Count (Total)", "",
 						"Number of used reserved blocks. High values may indicate old drive age or other problems.");
 				// Unused_Rsvd_Blk_Cnt_Tot (smartctl)
-				add(180, StorageAttribute::DiskSSD, "Unused_Rsvd_Blk_Cnt_Tot", "Unused Reserved Block Count (Total)", "",
+				add(180, StorageAttribute::DiskType::Ssd, "Unused_Rsvd_Blk_Cnt_Tot", "Unused Reserved Block Count (Total)", "",
 						"Number of unused reserved blocks. High values may indicate old drive age or other problems.");
 				// Crucial / Micron SSDs (smartctl) (description?)
-				add(180, StorageAttribute::DiskSSD, "Unused_Reserve_NAND_Blk", "Unused Reserved NAND Blocks", "",
+				add(180, StorageAttribute::DiskType::Ssd, "Unused_Reserve_NAND_Blk", "Unused Reserved NAND Blocks", "",
 						"");
 				// Program_Fail_Cnt_Total (smartctl)
 				add(181, "Program_Fail_Cnt_Total", "Program Fail Count", "",
 						"Number of flash program (write) failures. High values may indicate old drive age or other problems.");
 				// Sandforce SSD: Program_Fail_Count (smartctl) (Sandforce says it's identical to 171)
-				add(181, StorageAttribute::DiskSSD, "Program_Fail_Count");
+				add(181, StorageAttribute::DiskType::Ssd, "Program_Fail_Count");
 				// Crucial / Marvell SSD (smartctl) (description?)
-				add(181, StorageAttribute::DiskSSD, "Non4k_Aligned_Access", "Non-4k Aligned Access", "",
+				add(181, StorageAttribute::DiskType::Ssd, "Non4k_Aligned_Access", "Non-4k Aligned Access", "",
 						"");
 				// Erase_Fail_Count_Total (smartctl) (description?)
-				add(182, StorageAttribute::DiskSSD, "Erase_Fail_Count_Total", "Erase Fail Count", "",
+				add(182, StorageAttribute::DiskType::Ssd, "Erase_Fail_Count_Total", "Erase Fail Count", "",
 						"Number of flash erase command failures. High values may indicate old drive age or other problems.");
 				// Sandforce SSD: Erase_Fail_Count (smartctl) (Sandforce says it's identical to 172)
-				add(182, StorageAttribute::DiskSSD, "Erase_Fail_Count");
+				add(182, StorageAttribute::DiskType::Ssd, "Erase_Fail_Count");
 				// Runtime_Bad_Block (smartctl) (description?)
 				add(183, "Runtime_Bad_Block", "Runtime Bad Blocks", "",
 						"");
 				// Samsung, WD, Crucial / Marvell SSD: SATA Downshift Error Count (smartctl) (description?)
-				add(183, StorageAttribute::DiskAny, "SATA_Iface_Downshift", "SATA Downshift Error Count", "",
+				add(183, StorageAttribute::DiskType::Any, "SATA_Iface_Downshift", "SATA Downshift Error Count", "",
 						"");
 				// Crucial / Marvell SSD: SATA Downshift Error Count (smartctl) (description?)
-				add(183, StorageAttribute::DiskAny, "SATA_Interfac_Downshift", "SATA Downshift Error Count", "",
+				add(183, StorageAttribute::DiskType::Any, "SATA_Interfac_Downshift", "SATA Downshift Error Count", "",
 						"");
 				// Intel SSD, Ubtek SSD (smartctl) (description?)
-				add(183, StorageAttribute::DiskSSD, "SATA_Downshift_Count", "SATA Downshift Error Count", "",
+				add(183, StorageAttribute::DiskType::Ssd, "SATA_Downshift_Count", "SATA Downshift Error Count", "",
 						"");
 				// End to End Error (smartctl) (description?)
 				add(184, "End-to-End_Error", "End to End Error", "",
 						"Indicates discrepancy of data between the host and the drive cache.");
 				// Sandforce SSD: IO_Error_Detect_Code_Ct (smartctl)
-				add(184, StorageAttribute::DiskSSD, "IO_Error_Detect_Code_Ct", "Input/Output ECC Error Count", "",
+				add(184, StorageAttribute::DiskType::Ssd, "IO_Error_Detect_Code_Ct", "Input/Output ECC Error Count", "",
 						"");
 				// OCZ SSD (smartctl)
-				add(184, StorageAttribute::DiskSSD, "Factory_Bad_Block_Count", "Factory Bad Block Count", "",
+				add(184, StorageAttribute::DiskType::Ssd, "Factory_Bad_Block_Count", "Factory Bad Block Count", "",
 						"");
 				// Indilinx Barefoot SSD: IO_Error_Detect_Code_Ct (smartctl)
-				add(184, StorageAttribute::DiskSSD, "Initial_Bad_Block_Count", "Initial Bad Block Count", "",
+				add(184, StorageAttribute::DiskType::Ssd, "Initial_Bad_Block_Count", "Initial Bad Block Count", "",
 						"Factory-determined number of initial bad blocks.");
 				// Crucial / Micron SSD (smartctl)
-				add(184, StorageAttribute::DiskSSD, "Error_Correction_Count", "Error Correction Count", "",
+				add(184, StorageAttribute::DiskType::Ssd, "Error_Correction_Count", "Error Correction Count", "",
 						"");
 				// WD: Head Stability (custom)
-				add(185, StorageAttribute::DiskHDD, "", "Head Stability", "",
+				add(185, StorageAttribute::DiskType::Hdd, "", "Head Stability", "",
 						"");
 				// WD: Induced Op-Vibration Detection (custom)
-				add(185, StorageAttribute::DiskHDD, "", "Induced Op-Vibration Detection", "",  // unused
+				add(185, StorageAttribute::DiskType::Hdd, "", "Induced Op-Vibration Detection", "",  // unused
 						"");
 				// Reported Uncorrectable (smartctl)
 				add(187, "Reported_Uncorrect", "Reported Uncorrectable", "",
 						"Number of errors that could not be recovered using hardware ECC (Error-Correcting Code).");
 				// Innodisk SSD: Reported Uncorrectable (smartctl)
-				add(187, StorageAttribute::DiskSSD, "Uncorrectable_Error_Cnt");
+				add(187, StorageAttribute::DiskType::Ssd, "Uncorrectable_Error_Cnt");
 				// OCZ SSD (smartctl)
-				add(187, StorageAttribute::DiskSSD, "Total_Unc_NAND_Reads", "Total Uncorrectable NAND Reads", "",
+				add(187, StorageAttribute::DiskType::Ssd, "Total_Unc_NAND_Reads", "Total Uncorrectable NAND Reads", "",
 						"");
 				// Command Timeout (smartctl)
 				add(188, "Command_Timeout", "Command Timeout", "",
 						"Number of aborted operations due to drive timeout. High values may indicate problems with cabling or power supply.");
 				// Micron SSD (smartctl)
-				add(188, StorageAttribute::DiskSSD, "Command_Timeouts", "Command Timeout", "",
+				add(188, StorageAttribute::DiskType::Ssd, "Command_Timeouts", "Command Timeout", "",
 						"Number of aborted operations due to drive timeout. High values may indicate problems with cabling or power supply.");
 				// High Fly Writes (smartctl)
-				add(189, StorageAttribute::DiskHDD, "High_Fly_Writes", "High Fly Writes", "",
+				add(189, StorageAttribute::DiskType::Hdd, "High_Fly_Writes", "High Fly Writes", "",
 						"Some drives can detect when a recording head is flying outside its normal operating range. "
 						"If an unsafe fly height condition is encountered, the write process is stopped, and the information "
 						"is rewritten or reallocated to a safe region of the drive. This attribute indicates the count of "
 						"these errors detected over the lifetime of the drive.");
 				// Crucial / Marvell SSD (smartctl)
-				add(189, StorageAttribute::DiskSSD, "Factory_Bad_Block_Ct", "Factory Bad Block Count", "",
+				add(189, StorageAttribute::DiskType::Ssd, "Factory_Bad_Block_Ct", "Factory Bad Block Count", "",
 						"Factory-determined number of initial bad blocks.");
 				// Various SSD (smartctl)
 				add(189, "Airflow_Temperature_Cel", "Airflow Temperature", "",
@@ -458,36 +457,36 @@ namespace {
 				add(190, "Temperature_Case", "Case Temperature (Celsius)", "",
 						"Drive case temperature. The Raw value shows built-in heat sensor registrations (in Celsius).");
 				// G-sense error rate (smartctl) (same as 221?)
-				add(191, StorageAttribute::DiskHDD, "G-Sense_Error_Rate", "G-Sense Error Rate", "",
+				add(191, StorageAttribute::DiskType::Hdd, "G-Sense_Error_Rate", "G-Sense Error Rate", "",
 						"Number of errors caused by externally-induced shock and vibration (Raw value). May indicate incorrect installation.");
 				// Power-Off Retract Cycle (smartctl)
-				add(192, StorageAttribute::DiskHDD, "Power-Off_Retract_Count", "Head Retract Cycle Count", "",
+				add(192, StorageAttribute::DiskType::Hdd, "Power-Off_Retract_Count", "Head Retract Cycle Count", "",
 						"Number of times the heads were loaded off the media (during power-offs or emergency conditions).");
 				// Intel SSD: Unsafe_Shutdown_Count (smartctl)
-				add(192, StorageAttribute::DiskSSD, "Unsafe_Shutdown_Count", "Unsafe Shutdown Count", "",
+				add(192, StorageAttribute::DiskType::Ssd, "Unsafe_Shutdown_Count", "Unsafe Shutdown Count", "",
 						"Raw value indicates the number of unsafe (unclean) shutdown events over the drive lifetime. "
 						"An unsafe shutdown occurs whenever the device is powered off without "
 						"STANDBY IMMEDIATE being the last command.");
 				// Various SSDs (smartctl)
-				add(192, StorageAttribute::DiskSSD, "Unexpect_Power_Loss_Ct", "Unexpected Power Loss Count", "",
+				add(192, StorageAttribute::DiskType::Ssd, "Unexpect_Power_Loss_Ct", "Unexpected Power Loss Count", "",
 						"Number of unexpected power loss events.");
 				// Fujitsu: Emergency Retract Cycle Count (smartctl)
-				add(192, StorageAttribute::DiskHDD, "Emerg_Retract_Cycle_Ct", "Emergency Retract Cycle Count", "",
+				add(192, StorageAttribute::DiskType::Hdd, "Emerg_Retract_Cycle_Ct", "Emergency Retract Cycle Count", "",
 						"Number of times the heads were loaded off the media during emergency conditions.");
 				// Load/Unload Cycle (smartctl)
-				add(193, StorageAttribute::DiskHDD, "Load_Cycle_Count", "Load / Unload Cycle", "",
+				add(193, StorageAttribute::DiskType::Hdd, "Load_Cycle_Count", "Load / Unload Cycle", "",
 						"Number of load / unload cycles into Landing Zone position.");
 				// Temperature Celsius (smartctl) (same as 231). This is the most common one. Some Samsungs: 10xTemp.
 				add(194, "Temperature_Celsius", "Temperature (Celsius)", "attr_temperature_celsius",
 						"Drive temperature. The Raw value shows built-in heat sensor registrations (in Celsius). Increases in average drive temperature often signal spindle motor problems (unless the increases are caused by environmental factors).");
 				// Samsung SSD: Temperature Celsius (smartctl) (not sure about the value)
-				add(194, StorageAttribute::DiskSSD, "Airflow_Temperature", "Airflow Temperature (Celsius)", "attr_temperature_celsius",
+				add(194, StorageAttribute::DiskType::Ssd, "Airflow_Temperature", "Airflow Temperature (Celsius)", "attr_temperature_celsius",
 						"Drive temperature (Celsius)");
 				// Temperature Celsius x 10 (smartctl)
 				add(194, "Temperature_Celsius_x10", "Temperature (Celsius) x 10", "attr_temperature_celsius_x10",
 						"Drive temperature. The Raw value shows built-in heat sensor registrations (in Celsius * 10). Increases in average drive temperature often signal spindle motor problems (unless the increases are caused by environmental factors).");
 				// Smart Storage Systems SSD (smartctl)
-				add(194, StorageAttribute::DiskSSD, "Proprietary_194", "Internal Attribute", "",
+				add(194, StorageAttribute::DiskType::Ssd, "Proprietary_194", "Internal Attribute", "",
 						"This attribute has been reserved by vendor as internal.");
 				// Intel SSD (smartctl)
 				add(194, "Temperature_Internal", "Internal Temperature (Celsius)", "attr_temperature_celsius",
@@ -496,38 +495,38 @@ namespace {
 				add(195, "Hardware_ECC_Recovered", "Hardware ECC Recovered", "",
 						"Number of ECC on the fly errors (Raw value). Users are advised to ignore this attribute.");
 				// Fujitsu: ECC_On_The_Fly_Count (smartctl)
-				add(195, StorageAttribute::DiskHDD, "ECC_On_The_Fly_Count");
+				add(195, StorageAttribute::DiskType::Hdd, "ECC_On_The_Fly_Count");
 				// Sandforce SSD: ECC_Uncorr_Error_Count (smartctl) (description?)
-				add(195, StorageAttribute::DiskSSD, "ECC_Uncorr_Error_Count", "Uncorrected ECC Error Count", "",
+				add(195, StorageAttribute::DiskType::Ssd, "ECC_Uncorr_Error_Count", "Uncorrected ECC Error Count", "",
 						"Number of uncorrectable errors (UECC).");
 				// Samsung SSD (smartctl) (description?)
-				add(195, StorageAttribute::DiskSSD, "ECC_Rate", "Uncorrected ECC Error Rate", "",
+				add(195, StorageAttribute::DiskType::Ssd, "ECC_Rate", "Uncorrected ECC Error Rate", "",
 						"");
 				// OCZ SSD (smartctl)
-				add(195, StorageAttribute::DiskSSD, "Total_Prog_Failures", "Total Program Failures", "",
+				add(195, StorageAttribute::DiskType::Ssd, "Total_Prog_Failures", "Total Program Failures", "",
 						"");
 				// Indilinx Barefoot SSD: Program_Failure_Blk_Ct (smartctl) (description?)
-				add(195, StorageAttribute::DiskSSD, "Program_Failure_Blk_Ct", "Program Failure Block Count", "",
+				add(195, StorageAttribute::DiskType::Ssd, "Program_Failure_Blk_Ct", "Program Failure Block Count", "",
 						"Number of flash program (write) failures.");
 				// Micron SSD (smartctl)
-				add(195, StorageAttribute::DiskSSD, "Cumulativ_Corrected_ECC", "Cumulative Corrected ECC Error Count", "",
+				add(195, StorageAttribute::DiskType::Ssd, "Cumulativ_Corrected_ECC", "Cumulative Corrected ECC Error Count", "",
 						"");
 				// Reallocation Event Count (smartctl)
-				add(196, StorageAttribute::DiskAny, "Reallocated_Event_Count", "Reallocation Event Count", "attr_reallocation_event_count",
+				add(196, StorageAttribute::DiskType::Any, "Reallocated_Event_Count", "Reallocation Event Count", "attr_reallocation_event_count",
 						"Number of reallocation (remap) operations. Raw value <i>should</i> show the total number of attempts (both successful and unsuccessful) to reallocate sectors. An increase in Raw value indicates a disk surface failure."
 						"\n\n" + s_unc_text);
 				// Indilinx Barefoot SSD: Erase_Failure_Blk_Ct (smartctl) (description?)
-				add(196, StorageAttribute::DiskSSD, "Erase_Failure_Blk_Ct", "Erase Failure Block Count", "",
+				add(196, StorageAttribute::DiskType::Ssd, "Erase_Failure_Blk_Ct", "Erase Failure Block Count", "",
 						"Number of flash erase failures.");
 				// OCZ SSD (smartctl)
-				add(196, StorageAttribute::DiskSSD, "Total_Erase_Failures", "Total Erase Failures", "",
+				add(196, StorageAttribute::DiskType::Ssd, "Total_Erase_Failures", "Total Erase Failures", "",
 						"");
 				// Current Pending Sector Count (smartctl)
 				add(197, "Current_Pending_Sector", "Current Pending Sector Count", "attr_current_pending_sector_count",
 						"Number of &quot;unstable&quot; (waiting to be remapped) sectors (Raw value). If the unstable sector is subsequently read from or written to successfully, this value is decreased and the sector is not remapped. An increase in Raw value indicates a disk surface failure."
 						"\n\n" + s_unc_text);
 				// Indilinx Barefoot SSD: Read_Failure_Blk_Ct (smartctl) (description?)
-				add(197, StorageAttribute::DiskSSD, "Read_Failure_Blk_Ct", "Read Failure Block Count", "",
+				add(197, StorageAttribute::DiskType::Ssd, "Read_Failure_Blk_Ct", "Read Failure Block Count", "",
 						"Number of blocks that failed to be read.");
 				// Samsung: Total_Pending_Sectors (smartctl). From smartctl man page:
 				// unlike Current_Pending_Sector, this won't decrease on reallocation.
@@ -535,7 +534,7 @@ namespace {
 						"Number of &quot;unstable&quot; (waiting to be remapped) sectors and already remapped sectors (Raw value). An increase in Raw value indicates a disk surface failure."
 						"\n\n" + s_unc_text);
 				// OCZ SSD (smartctl)
-				add(197, StorageAttribute::DiskSSD, "Total_Unc_Read_Failures", "Total Uncorrectable Read Failures", "",
+				add(197, StorageAttribute::DiskType::Ssd, "Total_Unc_Read_Failures", "Total Uncorrectable Read Failures", "",
 						"");
 				// Offline Uncorrectable (smartctl)
 				add(198, "Offline_Uncorrectable", "Offline Uncorrectable", "attr_offline_uncorrectable",
@@ -548,17 +547,17 @@ namespace {
 						"Number of sectors which couldn't be corrected during Offline Data Collection (Raw value), currently and in the past. An increase in Raw value indicates a disk surface failure."
 						"\n\n" + s_unc_text);
 				// Sandforce SSD: Uncorrectable_Sector_Ct (smartctl) (same description?)
-				add(198, StorageAttribute::DiskSSD, "Uncorrectable_Sector_Ct");
+				add(198, StorageAttribute::DiskType::Ssd, "Uncorrectable_Sector_Ct");
 				// Indilinx Barefoot SSD: Read_Sectors_Tot_Ct (smartctl) (description?)
-				add(198, StorageAttribute::DiskSSD, "Read_Sectors_Tot_Ct", "Total Read Sectors", "",
+				add(198, StorageAttribute::DiskType::Ssd, "Read_Sectors_Tot_Ct", "Total Read Sectors", "",
 						"Total count of read sectors.");
 				// OCZ SSD
-				add(198, StorageAttribute::DiskSSD, "Host_Reads_GiB", "Host Read (GiB)", "",
+				add(198, StorageAttribute::DiskType::Ssd, "Host_Reads_GiB", "Host Read (GiB)", "",
 						"Total number of sectors read by the host system. The Raw value is increased by 1 for every GiB read by the host.");
 				// Fujitsu: Offline_Scan_UNC_SectCt (smartctl)
-				add(198, StorageAttribute::DiskHDD, "Offline_Scan_UNC_SectCt");
+				add(198, StorageAttribute::DiskType::Hdd, "Offline_Scan_UNC_SectCt");
 				// Fujitsu version of Offline Uncorrectable (smartctl) (old, not in current smartctl)
-				add(198, StorageAttribute::DiskHDD, "Off-line_Scan_UNC_Sector_Ct");
+				add(198, StorageAttribute::DiskType::Hdd, "Off-line_Scan_UNC_Sector_Ct");
 				// UDMA CRC Error Count (smartctl)
 				add(199, "UDMA_CRC_Error_Count", "UDMA CRC Error Count", "",
 						"Number of errors in data transfer via the interface cable in UDMA mode, as determined by ICRC (Interface Cyclic Redundancy Check) (Raw value).");
@@ -572,461 +571,461 @@ namespace {
 				add(199, "CRC_Error_Count", "CRC Error Count", "",
 						"Number of errors in data transfer via the interface cable (Raw value).");
 				// Indilinx Barefoot SSD: Write_Sectors_Tot_Ct (smartctl) (description?)
-				add(199, StorageAttribute::DiskSSD, "Write_Sectors_Tot_Ct", "Total Written Sectors", "",
+				add(199, StorageAttribute::DiskType::Ssd, "Write_Sectors_Tot_Ct", "Total Written Sectors", "",
 						"Total count of written sectors.");
 				// OCZ SSD
-				add(198, StorageAttribute::DiskSSD, "Host_Writes_GiB", "Host Written (GiB)", "",
+				add(198, StorageAttribute::DiskType::Ssd, "Host_Writes_GiB", "Host Written (GiB)", "",
 						"Total number of sectors written by the host system. The Raw value is increased by 1 for every GiB written by the host.");
 				// WD: Multi-Zone Error Rate (smartctl). (maybe head flying height too (?))
-				add(200, StorageAttribute::DiskHDD, "Multi_Zone_Error_Rate", "Multi Zone Error Rate", "",
+				add(200, StorageAttribute::DiskType::Hdd, "Multi_Zone_Error_Rate", "Multi Zone Error Rate", "",
 						"Number of errors found when writing to sectors (Raw value). The higher the value, the worse the disk surface condition and/or mechanical subsystem is.");
 				// Fujitsu: Write Error Rate (smartctl)
-				add(200, StorageAttribute::DiskHDD, "Write_Error_Count", "Write Error Count", "",
+				add(200, StorageAttribute::DiskType::Hdd, "Write_Error_Count", "Write Error Count", "",
                         "Number of errors found when writing to sectors (Raw value). The higher the value, the worse the disk surface condition and/or mechanical subsystem is.");
 				// Indilinx Barefoot SSD: Read_Commands_Tot_Ct (smartctl) (description?)
-				add(200, StorageAttribute::DiskSSD, "Read_Commands_Tot_Ct", "Total Read Commands Issued", "",
+				add(200, StorageAttribute::DiskType::Ssd, "Read_Commands_Tot_Ct", "Total Read Commands Issued", "",
 						"Total count of read commands issued.");
 				// Soft Read Error Rate (smartctl) (description?)
-				add(201, StorageAttribute::DiskHDD, "Soft_Read_Error_Rate", "Soft Read Error Rate", "attr_soft_read_error_rate",
+				add(201, StorageAttribute::DiskType::Hdd, "Soft_Read_Error_Rate", "Soft Read Error Rate", "attr_soft_read_error_rate",
 						"Uncorrected read errors reported to the operating system (Raw value). If the value is non-zero, you should back up your data.");
 				// Sandforce SSD: Unc_Soft_Read_Err_Rate (smartctl)
-				add(201, StorageAttribute::DiskSSD, "Unc_Soft_Read_Err_Rate");
+				add(201, StorageAttribute::DiskType::Ssd, "Unc_Soft_Read_Err_Rate");
 				// Samsung SSD: (smartctl) (description?)
-				add(201, StorageAttribute::DiskSSD, "Supercap_Status", "Supercapacitor Health", "",
+				add(201, StorageAttribute::DiskType::Ssd, "Supercap_Status", "Supercapacitor Health", "",
 						"");
 				// Maxtor: Off Track Errors (custom)
-// 				add(201, StorageAttribute::DiskHDD, "", "Off Track Errors", "",  // unused
+// 				add(201, StorageAttribute::DiskType::Hdd, "", "Off Track Errors", "",  // unused
 // 						"");
 				// Fujitsu: Detected TA Count (smartctl) (description?)
-				add(201, StorageAttribute::DiskHDD, "Detected_TA_Count", "Torque Amplification Count", "",
+				add(201, StorageAttribute::DiskType::Hdd, "Detected_TA_Count", "Torque Amplification Count", "",
 						"Number of attempts to compensate for platter speed variations.");
 				// Indilinx Barefoot SSD: Write_Commands_Tot_Ct (smartctl) (description?)
-				add(201, StorageAttribute::DiskSSD, "Write_Commands_Tot_Ct", "Total Write Commands Issued", "",
+				add(201, StorageAttribute::DiskType::Ssd, "Write_Commands_Tot_Ct", "Total Write Commands Issued", "",
 						"Total count of write commands issued.");
 				// WD: Data Address Mark Errors (smartctl)
-				add(202, StorageAttribute::DiskHDD, "Data_Address_Mark_Errs", "Data Address Mark Errors", "",
+				add(202, StorageAttribute::DiskType::Hdd, "Data_Address_Mark_Errs", "Data Address Mark Errors", "",
 						"Frequency of the Data Address Mark errors.");
 				// Fujitsu: TA Increase Count (same as 227?)
-				add(202, StorageAttribute::DiskHDD, "TA_Increase_Count", "TA Increase Count", "",
+				add(202, StorageAttribute::DiskType::Hdd, "TA_Increase_Count", "TA Increase Count", "",
 						"Number of attempts to compensate for platter speed variations.");
 				// Indilinx Barefoot SSD: Error_Bits_Flash_Tot_Ct (smartctl) (description?)
-				add(202, StorageAttribute::DiskSSD, "Error_Bits_Flash_Tot_Ct", "Total Count of Error Bits", "",
+				add(202, StorageAttribute::DiskType::Ssd, "Error_Bits_Flash_Tot_Ct", "Total Count of Error Bits", "",
 						"");
 				// Crucial / Marvell SSD: Percent_Lifetime_Used (smartctl) (description?)
-				add(202, StorageAttribute::DiskSSD, "Percent_Lifetime_Used", "Rated Life Used (%)", "attr_ssd_life_used",
+				add(202, StorageAttribute::DiskType::Ssd, "Percent_Lifetime_Used", "Rated Life Used (%)", "attr_ssd_life_used",
 						"Used drive life in %.");
 				// Samsung SSD: (smartctl) (description?)
-				add(202, StorageAttribute::DiskSSD, "Exception_Mode_Status", "Exception Mode Status", "",
+				add(202, StorageAttribute::DiskType::Ssd, "Exception_Mode_Status", "Exception Mode Status", "",
 						"");
 				// OCZ SSD (smartctl) (description?)
-				add(202, StorageAttribute::DiskSSD, "Total_Read_Bits_Corr_Ct", "Total Read Bits Corrected", "",
+				add(202, StorageAttribute::DiskType::Ssd, "Total_Read_Bits_Corr_Ct", "Total Read Bits Corrected", "",
 						"");
 				// Micron SSD (smartctl) (description?)
-				add(202, StorageAttribute::DiskSSD, "Percent_Lifetime_Remain", "Remaining Lifetime (%)", "attr_ssd_life_left",
+				add(202, StorageAttribute::DiskType::Ssd, "Percent_Lifetime_Remain", "Remaining Lifetime (%)", "attr_ssd_life_left",
 						"Remaining drive life in %.");
 				// Run Out Cancel (smartctl). (description?)
 				add(203, "Run_Out_Cancel", "Run Out Cancel", "",
 						"Number of ECC errors.");
 				// Maxtor: ECC Errors (smartctl) (description?)
-				add(203, StorageAttribute::DiskHDD, "Corr_Read_Errors_Tot_Ct", "ECC Errors", "",
+				add(203, StorageAttribute::DiskType::Hdd, "Corr_Read_Errors_Tot_Ct", "ECC Errors", "",
 						"Number of ECC errors.");
 				// Indilinx Barefoot SSD: Corr_Read_Errors_Tot_Ct (smartctl) (description?)
-				add(203, StorageAttribute::DiskSSD, "Corr_Read_Errors_Tot_Ct", "Total Corrected Read Errors", "",
+				add(203, StorageAttribute::DiskType::Ssd, "Corr_Read_Errors_Tot_Ct", "Total Corrected Read Errors", "",
 						"Total cound of read sectors with correctable errors.");
 				// Maxtor: Soft ECC Correction (smartctl)
-				add(204, StorageAttribute::DiskHDD, "Soft_ECC_Correction", "Soft ECC Correction", "",
+				add(204, StorageAttribute::DiskType::Hdd, "Soft_ECC_Correction", "Soft ECC Correction", "",
 						"Number of errors corrected by software ECC (Error-Correcting Code).");
 				// Fujitsu: Shock_Count_Write_Opern (smartctl) (description?)
-				add(204, StorageAttribute::DiskHDD, "Shock_Count_Write_Opern", "Shock Count During Write Operation", "",
+				add(204, StorageAttribute::DiskType::Hdd, "Shock_Count_Write_Opern", "Shock Count During Write Operation", "",
 						"");
 				// Sandforce SSD: Soft_ECC_Correct_Rate (smartctl) (description?)
-				add(204, StorageAttribute::DiskSSD, "Soft_ECC_Correct_Rate", "Soft ECC Correction Rate", "",
+				add(204, StorageAttribute::DiskType::Ssd, "Soft_ECC_Correct_Rate", "Soft ECC Correction Rate", "",
 						"");
 				// Indilinx Barefoot SSD: Bad_Block_Full_Flag (smartctl) (description?)
-				add(204, StorageAttribute::DiskSSD, "Bad_Block_Full_Flag", "Bad Block Area Is Full", "",
+				add(204, StorageAttribute::DiskType::Ssd, "Bad_Block_Full_Flag", "Bad Block Area Is Full", "",
 						"Indicates whether the bad block (reserved) area is full or not.");
 				// Thermal Asperity Rate (TAR) (smartctl)
 				add(205, "Thermal_Asperity_Rate", "Thermal Asperity Rate", "",
 						"Number of problems caused by high temperature.");
 				// Fujitsu: Shock_Rate_Write_Opern (smartctl) (description?)
-				add(205, StorageAttribute::DiskHDD, "Shock_Rate_Write_Opern", "Shock Rate During Write Operation", "",
+				add(205, StorageAttribute::DiskType::Hdd, "Shock_Rate_Write_Opern", "Shock Rate During Write Operation", "",
 						"");
 				// Indilinx Barefoot SSD: Max_PE_Count_Spec (smartctl) (description?)
-				add(205, StorageAttribute::DiskSSD, "Max_PE_Count_Spec", "Maximum Program-Erase Count Specification", "",
+				add(205, StorageAttribute::DiskType::Ssd, "Max_PE_Count_Spec", "Maximum Program-Erase Count Specification", "",
 						"Maximum Program / Erase cycle count as per specification.");
 				// OCZ SSD (smartctl)
-				add(205, StorageAttribute::DiskSSD, "Max_Rated_PE_Count", "Maximum Rated Program-Erase Count", "",
+				add(205, StorageAttribute::DiskType::Ssd, "Max_Rated_PE_Count", "Maximum Rated Program-Erase Count", "",
 						"Maximum Program / Erase cycle count as per specification.");
 				// Flying Height (smartctl)
-				add(206, StorageAttribute::DiskHDD, "Flying_Height", "Head Flying Height", "",
+				add(206, StorageAttribute::DiskType::Hdd, "Flying_Height", "Head Flying Height", "",
 						"The height of the disk heads above the disk surface. A downward trend will often predict a head crash, "
 						"while high values may cause read / write errors.");
 				// Indilinx Barefoot SSD, OCZ SSD: Min_Erase_Count (smartctl) (description?)
-				add(206, StorageAttribute::DiskSSD, "Min_Erase_Count", "Minimum Erase Count", "",
+				add(206, StorageAttribute::DiskType::Ssd, "Min_Erase_Count", "Minimum Erase Count", "",
 						"The minimum of individual erase counts of all the blocks.");
 				// Crucial / Marvell SSD: Write_Error_Rate (smartctl) (description?)
-				add(206, StorageAttribute::DiskSSD, "Write_Error_Rate", "Write Error Rate", "",
+				add(206, StorageAttribute::DiskType::Ssd, "Write_Error_Rate", "Write Error Rate", "",
 						"");
 				// Spin High Current (smartctl)
-				add(207, StorageAttribute::DiskHDD, "Spin_High_Current", "Spin High Current", "",
+				add(207, StorageAttribute::DiskType::Hdd, "Spin_High_Current", "Spin High Current", "",
 						"Amount of high current needed or used to spin up the drive.");
 				// Indilinx Barefoot SSD, OCZ SSD: Max_Erase_Count (smartctl) (description?)
-				add(207, StorageAttribute::DiskSSD, "Max_Erase_Count", "Maximum Erase Count", "",
+				add(207, StorageAttribute::DiskType::Ssd, "Max_Erase_Count", "Maximum Erase Count", "",
 						"");
 				// Spin Buzz (smartctl)
-				add(208, StorageAttribute::DiskHDD, "Spin_Buzz", "Spin Buzz", "",
+				add(208, StorageAttribute::DiskType::Hdd, "Spin_Buzz", "Spin Buzz", "",
 						"Number of buzz routines (retries because of low current) to spin up the drive.");
 				// Indilinx Barefoot SSD, OCZ SSD: Average_Erase_Count (smartctl) (description?)
-				add(208, StorageAttribute::DiskSSD, "Average_Erase_Count", "Average Erase Count", "",
+				add(208, StorageAttribute::DiskType::Ssd, "Average_Erase_Count", "Average Erase Count", "",
 						"The average of individual erase counts of all the blocks.");
 				// Offline Seek Performance (smartctl) (description?)
-				add(209, StorageAttribute::DiskHDD, "Offline_Seek_Performnce", "Offline Seek Performance", "",
+				add(209, StorageAttribute::DiskType::Hdd, "Offline_Seek_Performnce", "Offline Seek Performance", "",
 						"Seek performance during Offline Data Collection operations.");
 				// Indilinx Barefoot SSD, OCZ SSD: Remaining_Lifetime_Perc (smartctl) (description?)
-				add(209, StorageAttribute::DiskSSD, "Remaining_Lifetime_Perc", "Remaining Lifetime (%)", "attr_ssd_life_left",
+				add(209, StorageAttribute::DiskType::Ssd, "Remaining_Lifetime_Perc", "Remaining Lifetime (%)", "attr_ssd_life_left",
 						"Remaining drive life in % (usually by erase count).");
 				// Vibration During Write (custom). wikipedia says 211, but it's wrong. (description?)
-				add(210, StorageAttribute::DiskHDD, "", "Vibration During Write", "",
+				add(210, StorageAttribute::DiskType::Hdd, "", "Vibration During Write", "",
 						"Vibration encountered during write operations.");
 				// OCZ SSD (smartctl)
-				add(210, StorageAttribute::DiskSSD, "SATA_CRC_Error_Count", "SATA CRC Error Count", "",
+				add(210, StorageAttribute::DiskType::Ssd, "SATA_CRC_Error_Count", "SATA CRC Error Count", "",
 						"");
 				// Indilinx Barefoot SSD: Indilinx_Internal (smartctl) (description?)
-				add(210, StorageAttribute::DiskSSD, "Indilinx_Internal", "Internal Attribute", "",
+				add(210, StorageAttribute::DiskType::Ssd, "Indilinx_Internal", "Internal Attribute", "",
 						"This attribute has been reserved by vendor as internal.");
 				// Crucial / Micron SSD (smartctl)
-				add(210, StorageAttribute::DiskSSD, "Success_RAIN_Recov_Cnt", "Success RAIN Recovered Count", "",
+				add(210, StorageAttribute::DiskType::Ssd, "Success_RAIN_Recov_Cnt", "Success RAIN Recovered Count", "",
 						"");
 				// Vibration During Read (description?)
-				add(211, StorageAttribute::DiskHDD, "", "Vibration During Read", "",
+				add(211, StorageAttribute::DiskType::Hdd, "", "Vibration During Read", "",
 						"Vibration encountered during read operations.");
 				// Indilinx Barefoot SSD (smartctl) (description?)
-				add(211, StorageAttribute::DiskSSD, "SATA_Error_Ct_CRC", "SATA CRC Error Count", "",
+				add(211, StorageAttribute::DiskType::Ssd, "SATA_Error_Ct_CRC", "SATA CRC Error Count", "",
 						"Number of errors in data transfer via the SATA interface cable");
 				// OCZ SSD (smartctl) (description?)
-				add(211, StorageAttribute::DiskSSD, "SATA_UNC_Count", "SATA Uncorrectable Error Count", "",
+				add(211, StorageAttribute::DiskType::Ssd, "SATA_UNC_Count", "SATA Uncorrectable Error Count", "",
 						"Number of errors in data transfer via the SATA interface cable");
 				// Shock During Write (custom) (description?)
-				add(212, StorageAttribute::DiskHDD, "", "Shock During Write", "",
+				add(212, StorageAttribute::DiskType::Hdd, "", "Shock During Write", "",
 						"Shock encountered during write operations");
 				// Indilinx Barefoot SSD: SATA_Error_Ct_Handshake (smartctl) (description?)
-				add(212, StorageAttribute::DiskSSD, "SATA_Error_Ct_Handshake", "SATA Handshake Error Count", "",
+				add(212, StorageAttribute::DiskType::Ssd, "SATA_Error_Ct_Handshake", "SATA Handshake Error Count", "",
 						"Number of errors occurring during SATA handshake.");
 				// OCZ SSD (smartctl) (description?)
-				add(212, StorageAttribute::DiskSSD, "Pages_Requiring_Rd_Rtry", "Pages Requiring Read Retry", "",
+				add(212, StorageAttribute::DiskType::Ssd, "Pages_Requiring_Rd_Rtry", "Pages Requiring Read Retry", "",
 						"");
 				// OCZ SSD (smartctl) (description?)
-				add(212, StorageAttribute::DiskSSD, "NAND_Reads_with_Retry", "Number of NAND Reads with Retry", "",
+				add(212, StorageAttribute::DiskType::Ssd, "NAND_Reads_with_Retry", "Number of NAND Reads with Retry", "",
 						"");
 				// Sandisk SSDs: (smartctl) (description?)
-				add(212, StorageAttribute::DiskSSD, "SATA_PHY_Error", "SATA Physical Error Count", "",
+				add(212, StorageAttribute::DiskType::Ssd, "SATA_PHY_Error", "SATA Physical Error Count", "",
 						"");
 				// Indilinx Barefoot SSD: Indilinx_Internal (smartctl) (description?)
-				add(213, StorageAttribute::DiskSSD, "Indilinx_Internal", "Internal Attribute", "",
+				add(213, StorageAttribute::DiskType::Ssd, "Indilinx_Internal", "Internal Attribute", "",
 						"This attribute has been reserved by vendor as internal.");
 				// OCZ SSD (smartctl) (description?)
-				add(213, StorageAttribute::DiskSSD, "Simple_Rd_Rtry_Attempts", "Simple Read Retry Attempts", "",
+				add(213, StorageAttribute::DiskType::Ssd, "Simple_Rd_Rtry_Attempts", "Simple Read Retry Attempts", "",
 						"");
 				// OCZ SSD (smartctl) (description?)
-				add(213, StorageAttribute::DiskSSD, "Snmple_Retry_Attempts", "Simple Retry Attempts", "",
+				add(213, StorageAttribute::DiskType::Ssd, "Snmple_Retry_Attempts", "Simple Retry Attempts", "",
 						"");
 				// OCZ SSD (smartctl) (description?)
-				add(213, StorageAttribute::DiskSSD, "Simple_Retry_Attempts", "Simple Retry Attempts", "",
+				add(213, StorageAttribute::DiskType::Ssd, "Simple_Retry_Attempts", "Simple Retry Attempts", "",
 						"");
 				// OCZ SSD (smartctl) (description?)
-				add(213, StorageAttribute::DiskSSD, "Adaptv_Rd_Rtry_Attempts", "Adaptive Read Retry Attempts", "",
+				add(213, StorageAttribute::DiskType::Ssd, "Adaptv_Rd_Rtry_Attempts", "Adaptive Read Retry Attempts", "",
 						"");
 				// OCZ SSD (smartctl) (description?)
-				add(214, StorageAttribute::DiskSSD, "Adaptive_Retry_Attempts", "Adaptive Retry Attempts", "",
+				add(214, StorageAttribute::DiskType::Ssd, "Adaptive_Retry_Attempts", "Adaptive Retry Attempts", "",
 						"");
 				// Kingston SSD (smartctl)
-				add(218, StorageAttribute::DiskSSD, "CRC_Error_Count", "CRC Error Count", "",
+				add(218, StorageAttribute::DiskType::Ssd, "CRC_Error_Count", "CRC Error Count", "",
 						"");
 				// Disk Shift (smartctl)
 				// Note: There's also smartctl shortcut option "-v 220,temp" (possibly for Temperature Celsius),
 				// but it's not used anywhere, so we ignore it.
-				add(220, StorageAttribute::DiskHDD, "Disk_Shift", "Disk Shift", "",
+				add(220, StorageAttribute::DiskType::Hdd, "Disk_Shift", "Disk Shift", "",
 						"Shift of disks towards spindle. Shift of disks is possible as a result of a strong shock or a fall, high temperature, or some other reasons.");
 				// G-sense error rate (smartctl)
-				add(221, StorageAttribute::DiskHDD, "G-Sense_Error_Rate", "G-Sense Error Rate", "",
+				add(221, StorageAttribute::DiskType::Hdd, "G-Sense_Error_Rate", "G-Sense Error Rate", "",
 						"Number of errors resulting from externally-induced shock and vibration (Raw value). May indicate incorrect installation.");
 				// OCZ SSD (smartctl) (description?)
-				add(213, StorageAttribute::DiskSSD, "Int_Data_Path_Prot_Unc", "Internal Data Path Protection Uncorrectable", "",
+				add(213, StorageAttribute::DiskType::Ssd, "Int_Data_Path_Prot_Unc", "Internal Data Path Protection Uncorrectable", "",
 						"");
 				// Loaded Hours (smartctl)
-				add(222, StorageAttribute::DiskHDD, "Loaded_Hours", "Loaded Hours", "",
+				add(222, StorageAttribute::DiskType::Hdd, "Loaded_Hours", "Loaded Hours", "",
 						"Number of hours spent operating under load (movement of magnetic head armature) (Raw value)");
 				// OCZ SSD (smartctl) (description?)
-				add(222, StorageAttribute::DiskSSD, "RAID_Recovery_Count", "RAID Recovery Count", "",
+				add(222, StorageAttribute::DiskType::Ssd, "RAID_Recovery_Count", "RAID Recovery Count", "",
 						"");
 				// Load/Unload Retry Count (smartctl) (description?)
-				add(223, StorageAttribute::DiskHDD, "Load_Retry_Count", "Load / Unload Retry Count", "",
+				add(223, StorageAttribute::DiskType::Hdd, "Load_Retry_Count", "Load / Unload Retry Count", "",
 						"Number of times the head armature entered / left the data zone.");
 				// Load Friction (smartctl)
-				add(224, StorageAttribute::DiskHDD, "Load_Friction", "Load Friction", "",
+				add(224, StorageAttribute::DiskType::Hdd, "Load_Friction", "Load Friction", "",
 						"Resistance caused by friction in mechanical parts while operating. An increase of Raw value may mean that there is a problem with the mechanical subsystem of the drive.");
 				// OCZ SSD (smartctl) (description?)
-				add(224, StorageAttribute::DiskSSD, "In_Warranty", "In Warranty", "",
+				add(224, StorageAttribute::DiskType::Ssd, "In_Warranty", "In Warranty", "",
 						"");
 				// Load/Unload Cycle Count (smartctl) (description?)
-				add(225, StorageAttribute::DiskHDD, "Load_Cycle_Count", "Load / Unload Cycle Count", "",
+				add(225, StorageAttribute::DiskType::Hdd, "Load_Cycle_Count", "Load / Unload Cycle Count", "",
 						"Total number of load cycles.");
 				// Intel SSD: Host_Writes_32MiB (smartctl) (description?)
-				add(225, StorageAttribute::DiskSSD, "Host_Writes_32MiB", "Host Written (32 MiB)", "",
+				add(225, StorageAttribute::DiskType::Ssd, "Host_Writes_32MiB", "Host Written (32 MiB)", "",
 						"Total number of sectors written by the host system. The Raw value is increased by 1 for every 32 MiB written by the host.");
 				// OCZ SSD (smartctl) (description?)
-				add(225, StorageAttribute::DiskSSD, "DAS_Polarity", "DAS Polarity", "",
+				add(225, StorageAttribute::DiskType::Ssd, "DAS_Polarity", "DAS Polarity", "",
 						"");
 				// Innodisk SSDs: (smartctl) (description?)
-				add(225, StorageAttribute::DiskSSD, "Data_Log_Write_Count", "Data Log Write Count", "",
+				add(225, StorageAttribute::DiskType::Ssd, "Data_Log_Write_Count", "Data Log Write Count", "",
 						"");
 				// Load-in Time (smartctl)
-				add(226, StorageAttribute::DiskHDD, "Load-in_Time", "Load-in Time", "",
+				add(226, StorageAttribute::DiskType::Hdd, "Load-in_Time", "Load-in Time", "",
 						"Total time of loading on the magnetic heads actuator. Indicates total time in which the drive was under load (on the assumption that the magnetic heads were in operating mode and out of the parking area).");
 				// Intel SSD: Intel_Internal (smartctl)
-				add(226, StorageAttribute::DiskSSD, "Intel_Internal", "Internal Attribute", "",
+				add(226, StorageAttribute::DiskType::Ssd, "Intel_Internal", "Internal Attribute", "",
 						"This attribute has been reserved by vendor as internal.");
 				// Intel SSD: Workld_Media_Wear_Indic (smartctl)
-				add(226, StorageAttribute::DiskSSD, "Workld_Media_Wear_Indic", "Timed Workload Media Wear", "",
+				add(226, StorageAttribute::DiskType::Ssd, "Workld_Media_Wear_Indic", "Timed Workload Media Wear", "",
 						"Timed workload media wear indicator (percent*1024)");
 				// OCZ SSD (smartctl) (description?)
-				add(226, StorageAttribute::DiskSSD, "Partial_Pfail", "Partial Program Fail", "",
+				add(226, StorageAttribute::DiskType::Ssd, "Partial_Pfail", "Partial Program Fail", "",
 						"");
 				// Torque Amplification Count (aka TA) (smartctl)
-				add(227, StorageAttribute::DiskHDD, "Torq-amp_Count", "Torque Amplification Count", "",
+				add(227, StorageAttribute::DiskType::Hdd, "Torq-amp_Count", "Torque Amplification Count", "",
 						"Number of attempts to compensate for platter speed variations.");
 				// Intel SSD: Intel_Internal (smartctl)
-				add(227, StorageAttribute::DiskSSD, "Intel_Internal", "Internal Attribute", "",
+				add(227, StorageAttribute::DiskType::Ssd, "Intel_Internal", "Internal Attribute", "",
 						"This attribute has been reserved by vendor as internal.");
 				// Intel SSD: Workld_Host_Reads_Perc (smartctl)
-				add(227, StorageAttribute::DiskSSD, "Workld_Host_Reads_Perc", "Timed Workload Host Reads %", "",
+				add(227, StorageAttribute::DiskType::Ssd, "Workld_Host_Reads_Perc", "Timed Workload Host Reads %", "",
 						"");
 				// Power-Off Retract Count (smartctl)
 				add(228, "Power-off_Retract_Count", "Power-Off Retract Count", "",
 						"Number of times the magnetic armature was retracted automatically as a result of power loss.");
 				// Intel SSD: Intel_Internal (smartctl)
-				add(228, StorageAttribute::DiskSSD, "Intel_Internal", "Internal Attribute", "",
+				add(228, StorageAttribute::DiskType::Ssd, "Intel_Internal", "Internal Attribute", "",
 						"This attribute has been reserved by vendor as internal.");
 				// Intel SSD: Workload_Minutes (smartctl)
-				add(228, StorageAttribute::DiskSSD, "Workload_Minutes", "Workload (Minutes)", "",
+				add(228, StorageAttribute::DiskType::Ssd, "Workload_Minutes", "Workload (Minutes)", "",
 						"");
 				// Transcend SSD: Halt_System_ID (smartctl) (description?)
-				add(229, StorageAttribute::DiskSSD, "Halt_System_ID", "Halt System ID", "",
+				add(229, StorageAttribute::DiskType::Ssd, "Halt_System_ID", "Halt System ID", "",
 						"Halt system ID and flash ID");
 				// InnoDisk SSD (smartctl)
-				add(229, StorageAttribute::DiskSSD, "Flash_ID", "Flash ID", "",
+				add(229, StorageAttribute::DiskType::Ssd, "Flash_ID", "Flash ID", "",
 						"Flash ID");
 				// IBM: GMR Head Amplitude (smartctl)
-				add(230, StorageAttribute::DiskHDD, "Head_Amplitude", "GMR Head Amplitude", "",
+				add(230, StorageAttribute::DiskType::Hdd, "Head_Amplitude", "GMR Head Amplitude", "",
 						"Amplitude of heads trembling (GMR-head) in running mode.");
 				// Sandforce SSD: Life_Curve_Status (smartctl) (description?)
-				add(230, StorageAttribute::DiskSSD, "Life_Curve_Status", "Life Curve Status", "",
+				add(230, StorageAttribute::DiskType::Ssd, "Life_Curve_Status", "Life Curve Status", "",
 						"Current state of drive operation based upon the Life Curve.");
 				// OCZ SSD (smartctl) (description?)
-				add(230, StorageAttribute::DiskSSD, "SuperCap_Charge_Status", "Super-Capacitor Charge Status", "",
+				add(230, StorageAttribute::DiskType::Ssd, "SuperCap_Charge_Status", "Super-Capacitor Charge Status", "",
 						"0 means not charged, 1 - fully charged, 2 - unknown.");
 				// OCZ SSD (smartctl) (description?)
-				add(230, StorageAttribute::DiskSSD, "Write_Throttling", "Write Throttling", "",
+				add(230, StorageAttribute::DiskType::Ssd, "Write_Throttling", "Write Throttling", "",
 						"");
 				// Sandisk SSD (smartctl) (description?)
-				add(230, StorageAttribute::DiskSSD, "Perc_Write/Erase_Count", "Write / Erase Count (%)", "",
+				add(230, StorageAttribute::DiskType::Ssd, "Perc_Write/Erase_Count", "Write / Erase Count (%)", "",
 						"");
 				// Temperature (Some drives) (smartctl)
 				add(231, "Temperature_Celsius", "Temperature", "attr_temperature_celsius",
 						"Drive temperature. The Raw value shows built-in heat sensor registrations (in Celsius). Increases in average drive temperature often signal spindle motor problems (unless the increases are caused by environmental factors).");
 				// Sandforce SSD: SSD_Life_Left
-				add(231, StorageAttribute::DiskSSD, "SSD_Life_Left", "SSD Life Left", "attr_ssd_life_left",
+				add(231, StorageAttribute::DiskType::Ssd, "SSD_Life_Left", "SSD Life Left", "attr_ssd_life_left",
 						"A measure of drive's estimated life left. A Normalized value of 100 indicates a new drive. "
 						"10 means there are reserved blocks left but Program / Erase cycles have been used. "
 						"0 means insufficient reserved blocks, drive may be in read-only mode to allow recovery of the data.");
 				// Intel SSD: Available_Reservd_Space (smartctl) (description?)
-				add(232, StorageAttribute::DiskSSD, "Available_Reservd_Space", "Available reserved space", "",
+				add(232, StorageAttribute::DiskType::Ssd, "Available_Reservd_Space", "Available reserved space", "",
 						"Number of reserved blocks remaining. The Normalized value indicates percentage, with 100 meaning new and 10 meaning the drive being close to its end of life.");
 				// Transcend SSD: Firmware_Version_information (smartctl) (description?)
-				add(232, StorageAttribute::DiskSSD, "Firmware_Version_Info", "Firmware Version Information", "",
+				add(232, StorageAttribute::DiskType::Ssd, "Firmware_Version_Info", "Firmware Version Information", "",
 						"Firmware version information (year, month, day, channels, banks).");
 				// Same as Firmware_Version_Info, but in older smartctl versions.
-				add(232, StorageAttribute::DiskSSD, "Firmware_Version_information", "Firmware Version Information", "",
+				add(232, StorageAttribute::DiskType::Ssd, "Firmware_Version_information", "Firmware Version Information", "",
 						"Firmware version information (year, month, day, channels, banks).");
 				// OCZ SSD (description?) (smartctl)
-				add(232, StorageAttribute::DiskSSD, "Lifetime_Writes", "Lifetime_Writes", "",
+				add(232, StorageAttribute::DiskType::Ssd, "Lifetime_Writes", "Lifetime_Writes", "",
 						"");
 				// Kingston SSD (description?) (smartctl)
-				add(232, StorageAttribute::DiskSSD, "Flash_Writes_GiB", "Flash Written (GiB)", "",
+				add(232, StorageAttribute::DiskType::Ssd, "Flash_Writes_GiB", "Flash Written (GiB)", "",
 						"");
 				// Innodisk SSD (description?) (smartctl)
-				add(232, StorageAttribute::DiskSSD, "Spares_Remaining_Perc", "Spare Blocks Remaining (%)", "attr_ssd_life_left",
+				add(232, StorageAttribute::DiskType::Ssd, "Spares_Remaining_Perc", "Spare Blocks Remaining (%)", "attr_ssd_life_left",
 						"Percentage of spare blocks remaining. Spare blocks are used when bad blocks develop.");
 				// Innodisk SSD (description?) (smartctl)
-				add(232, StorageAttribute::DiskSSD, "Perc_Avail_Resrvd_Space", "Available Reserved Space (%)", "attr_ssd_life_left",
+				add(232, StorageAttribute::DiskType::Ssd, "Perc_Avail_Resrvd_Space", "Available Reserved Space (%)", "attr_ssd_life_left",
 						"Percentage of spare blocks remaining. Spare blocks are used when bad blocks develop.");
 				// Intel SSD: Media_Wearout_Indicator (smartctl) (description?)
-				add(233, StorageAttribute::DiskSSD, "Media_Wearout_Indicator", "Media Wear Out Indicator", "attr_ssd_life_left",
+				add(233, StorageAttribute::DiskType::Ssd, "Media_Wearout_Indicator", "Media Wear Out Indicator", "attr_ssd_life_left",
 						"Number of cycles the NAND media has experienced. The Normalized value decreases linearly from 100 to 1 as the average erase cycle "
 						"count increases from 0 to the maximum rated cycles.");
 				// OCZ SSD
-				add(233, StorageAttribute::DiskSSD, "Remaining_Lifetime_Perc", "Remaining Lifetime %", "attr_ssd_life_left",
+				add(233, StorageAttribute::DiskType::Ssd, "Remaining_Lifetime_Perc", "Remaining Lifetime %", "attr_ssd_life_left",
 						"Remaining drive life in % (usually by erase count).");
 				// Sandforce SSD: SandForce_Internal (smartctl) (description?)
-				add(233, StorageAttribute::DiskSSD, "SandForce_Internal", "Internal Attribute", "",
+				add(233, StorageAttribute::DiskType::Ssd, "SandForce_Internal", "Internal Attribute", "",
 						"This attribute has been reserved by vendor as internal.");
 				// Transcend SSD: ECC_Fail_Record (smartctl) (description?)
-				add(233, StorageAttribute::DiskSSD, "ECC_Fail_Record", "ECC Failure Record", "",
+				add(233, StorageAttribute::DiskType::Ssd, "ECC_Fail_Record", "ECC Failure Record", "",
 						"Indicates rate of ECC (error-correcting code) failures.");
 				// Innodisk SSD (smartctl) (description?)
-				add(233, StorageAttribute::DiskSSD, "Flash_Writes_32MiB", "Flash Written (32MiB)", "",
+				add(233, StorageAttribute::DiskType::Ssd, "Flash_Writes_32MiB", "Flash Written (32MiB)", "",
 						"");
 				// Innodisk SSD (smartctl) (description?)
-				add(233, StorageAttribute::DiskSSD, "Total_NAND_Writes_GiB", "Total NAND Written (GiB)", "",
+				add(233, StorageAttribute::DiskType::Ssd, "Total_NAND_Writes_GiB", "Total NAND Written (GiB)", "",
 						"");
 				// Sandforce SSD: SandForce_Internal (smartctl) (description?)
-				add(234, StorageAttribute::DiskSSD, "SandForce_Internal", "Internal Attribute", "",
+				add(234, StorageAttribute::DiskType::Ssd, "SandForce_Internal", "Internal Attribute", "",
 						"This attribute has been reserved by vendor as internal.");
 				// Intel SSD (smartctl)
-				add(234, StorageAttribute::DiskSSD, "Thermal_Throttle", "Thermal Throttle", "",
+				add(234, StorageAttribute::DiskType::Ssd, "Thermal_Throttle", "Thermal Throttle", "",
 						"");
 				// Transcend SSD: Erase_Count_Avg (smartctl) (description?)
-				add(234, StorageAttribute::DiskSSD, "Erase_Count_Avg/Max", "Erase Count Average / Maximum", "",
+				add(234, StorageAttribute::DiskType::Ssd, "Erase_Count_Avg/Max", "Erase Count Average / Maximum", "",
 						"");
 				// Innodisk SSD (smartctl) (description?)
-				add(234, StorageAttribute::DiskSSD, "Flash_Reads_32MiB", "Flash Read (32MiB)", "",
+				add(234, StorageAttribute::DiskType::Ssd, "Flash_Reads_32MiB", "Flash Read (32MiB)", "",
 						"");
 				// Sandisk SSD (smartctl) (description / name?)
-				add(234, StorageAttribute::DiskSSD, "Perc_Write/Erase_Ct_BC", "Write / Erase Count BC (%)", "",
+				add(234, StorageAttribute::DiskType::Ssd, "Perc_Write/Erase_Ct_BC", "Write / Erase Count BC (%)", "",
 						"");
 				// Sandforce SSD: SuperCap_Health (smartctl) (description?)
-				add(235, StorageAttribute::DiskSSD, "SuperCap_Health", "Supercapacitor Health", "",
+				add(235, StorageAttribute::DiskType::Ssd, "SuperCap_Health", "Supercapacitor Health", "",
 						"");
 				// Transcend SSD: Block_Count_Good/System (smartctl) (description?)
-				add(235, StorageAttribute::DiskSSD, "Block_Count_Good/System", "Good / System Free Block Count", "",
+				add(235, StorageAttribute::DiskType::Ssd, "Block_Count_Good/System", "Good / System Free Block Count", "",
 						"Good block count and system free block count.");
 				// InnoDisk SSD (smartctl). (description / name?)
-				add(235, StorageAttribute::DiskSSD, "Later_Bad_Block", "Later Bad Block", "",
+				add(235, StorageAttribute::DiskType::Ssd, "Later_Bad_Block", "Later Bad Block", "",
 						"");
 				// InnoDisk SSD (smartctl). (description / name?)
-				add(235, StorageAttribute::DiskSSD, "Later_Bad_Blk_Inf_R/W/E", "Later Bad Block Read / Write / Erase", "",
+				add(235, StorageAttribute::DiskType::Ssd, "Later_Bad_Blk_Inf_R/W/E", "Later Bad Block Read / Write / Erase", "",
 						"");
 				// Samsung SSD (smartctl). (description / name?)
-				add(235, StorageAttribute::DiskSSD, "POR_Recovery_Count", "POR Recovery Count", "",
+				add(235, StorageAttribute::DiskType::Ssd, "POR_Recovery_Count", "POR Recovery Count", "",
 						"");
 				// InnoDisk SSD (smartctl). (description / name?)
-				add(236, StorageAttribute::DiskSSD, "Unstable_Power_Count", "Unstable Power Count", "",
+				add(236, StorageAttribute::DiskType::Ssd, "Unstable_Power_Count", "Unstable Power Count", "",
 						"");
 				// Head Flying Hours (smartctl)
-				add(240, StorageAttribute::DiskHDD, "Head_Flying_Hours", "Head Flying Hours", "",
+				add(240, StorageAttribute::DiskType::Hdd, "Head_Flying_Hours", "Head Flying Hours", "",
 						"Time spent on head is positioning.");
 				// Fujitsu: Transfer_Error_Rate (smartctl) (description?)
-				add(240, StorageAttribute::DiskHDD, "Transfer_Error_Rate", "Transfer Error Rate", "",
+				add(240, StorageAttribute::DiskType::Hdd, "Transfer_Error_Rate", "Transfer Error Rate", "",
 						"");
 				// InnoDisk SSD (smartctl). (description / name?)
-				add(240, StorageAttribute::DiskSSD, "Write_Head", "Write Head", "",
+				add(240, StorageAttribute::DiskType::Ssd, "Write_Head", "Write Head", "",
 						"");
 				// Total_LBAs_Written (smartctl) (description?)
 				add(241, "Total_LBAs_Written", "Total LBAs Written", "",
 						"Logical blocks written during lifetime.");
 				// Sandforce SSD: Lifetime_Writes_GiB (smartctl) (maybe in 64GiB increments?)
-				add(241, StorageAttribute::DiskSSD, "Lifetime_Writes_GiB", "Total GiB Written", "",
+				add(241, StorageAttribute::DiskType::Ssd, "Lifetime_Writes_GiB", "Total GiB Written", "",
 						"Total GiB written during lifetime.");
 				// Intel SSD: Host_Writes_32MiB (smartctl) (description?)
-				add(241, StorageAttribute::DiskSSD, "Host_Writes_32MiB", "Host Written (32 MiB)", "",
+				add(241, StorageAttribute::DiskType::Ssd, "Host_Writes_32MiB", "Host Written (32 MiB)", "",
 						"Total number of sectors written by the host system. The Raw value is increased by 1 for every 32 MiB written by the host.");
 				// OCZ SSD (smartctl)
-				add(241, StorageAttribute::DiskSSD, "Host_Writes_GiB", "Host Written (GiB)", "",
+				add(241, StorageAttribute::DiskType::Ssd, "Host_Writes_GiB", "Host Written (GiB)", "",
 						"Total number of sectors written by the host system. The Raw value is increased by 1 for every GiB written by the host.");
 				// Sandisk SSD (smartctl)
-				add(241, StorageAttribute::DiskSSD, "Total_Writes_GiB", "Total Written (GiB)", "",
+				add(241, StorageAttribute::DiskType::Ssd, "Total_Writes_GiB", "Total Written (GiB)", "",
 						"Total GiB written.");
 				// Toshiba SSD (smartctl)
-				add(241, StorageAttribute::DiskSSD, "Host_Writes", "Host Written", "",
+				add(241, StorageAttribute::DiskType::Ssd, "Host_Writes", "Host Written", "",
 						"Total number of sectors written by the host system.");
 				// Total_LBAs_Read (smartctl) (description?)
 				add(242, "Total_LBAs_Read", "Total LBAs Read", "",
 						"Logical blocks read during lifetime.");
 				// Sandforce SSD: Lifetime_Writes_GiB (smartctl) (maybe in 64GiB increments?)
-				add(242, StorageAttribute::DiskSSD, "Lifetime_Reads_GiB", "Total GiB Read", "",
+				add(242, StorageAttribute::DiskType::Ssd, "Lifetime_Reads_GiB", "Total GiB Read", "",
 						"Total GiB read during lifetime.");
 				// Intel SSD: Host_Reads_32MiB (smartctl) (description?)
-				add(242, StorageAttribute::DiskSSD, "Host_Reads_32MiB", "Host Read (32 MiB)", "",
+				add(242, StorageAttribute::DiskType::Ssd, "Host_Reads_32MiB", "Host Read (32 MiB)", "",
 						"Total number of sectors read by the host system. The Raw value is increased by 1 for every 32 MiB read by the host.");
 				// OCZ SSD (smartctl)
-				add(242, StorageAttribute::DiskSSD, "Host_Reads_GiB", "Host Read (GiB)", "",
+				add(242, StorageAttribute::DiskType::Ssd, "Host_Reads_GiB", "Host Read (GiB)", "",
 						"Total number of sectors read by the host system. The Raw value is increased by 1 for every GiB read by the host.");
 				// Marvell SSD (smartctl)
-				add(242, StorageAttribute::DiskSSD, "Host_Reads", "Host Read", "",
+				add(242, StorageAttribute::DiskType::Ssd, "Host_Reads", "Host Read", "",
 						"");
 				// Sandisk SSD (smartctl)
-				add(241, StorageAttribute::DiskSSD, "Total_Reads_GiB", "Total Read (GiB)", "",
+				add(241, StorageAttribute::DiskType::Ssd, "Total_Reads_GiB", "Total Read (GiB)", "",
 						"Total GiB read.");
 				// Intel SSD: (smartctl) (description?)
-				add(243, StorageAttribute::DiskSSD, "NAND_Writes_32MiB", "NAND Written (32MiB)", "",
+				add(243, StorageAttribute::DiskType::Ssd, "NAND_Writes_32MiB", "NAND Written (32MiB)", "",
 						"");
 				// Samsung SSD (smartctl). (description / name?)
-				add(243, StorageAttribute::DiskSSD, "SATA_Downshift_Ct", "SATA Downshift Count", "",
+				add(243, StorageAttribute::DiskType::Ssd, "SATA_Downshift_Ct", "SATA Downshift Count", "",
 						"");
 				// Kingston SSDs (description?) (smartctl)
-				add(244, StorageAttribute::DiskSSD, "Average_Erase_Count", "Average Erase Count", "",
+				add(244, StorageAttribute::DiskType::Ssd, "Average_Erase_Count", "Average Erase Count", "",
 						"The average of individual erase counts of all the blocks");
 				// Samsung SSDs (description?) (smartctl)
-				add(244, StorageAttribute::DiskSSD, "Thermal_Throttle_St", "Thermal Throttle Status", "",
+				add(244, StorageAttribute::DiskType::Ssd, "Thermal_Throttle_St", "Thermal Throttle Status", "",
 						"");
 				// Sandisk SSDs (description?) (smartctl)
-				add(244, StorageAttribute::DiskSSD, "Thermal_Throttle", "Thermal Throttle Status", "",
+				add(244, StorageAttribute::DiskType::Ssd, "Thermal_Throttle", "Thermal Throttle Status", "",
 						"");
 				// Kingston SSDs (smartctl)
-				add(245, StorageAttribute::DiskSSD, "Max_Erase_Count", "Maximum Erase Count", "",
+				add(245, StorageAttribute::DiskType::Ssd, "Max_Erase_Count", "Maximum Erase Count", "",
 						"The maximum of individual erase counts of all the blocks.");
 				// Innodisk SSD (smartctl) (description?)
-				add(245, StorageAttribute::DiskSSD, "Flash_Writes_32MiB", "Flash Written (32MiB)", "",
+				add(245, StorageAttribute::DiskType::Ssd, "Flash_Writes_32MiB", "Flash Written (32MiB)", "",
 						"");
 				// Samsung SSD (smartctl) (description?)
-				add(245, StorageAttribute::DiskSSD, "Timed_Workld_Media_Wear", "Timed Workload Media Wear", "",
+				add(245, StorageAttribute::DiskType::Ssd, "Timed_Workld_Media_Wear", "Timed Workload Media Wear", "",
 						"");
 				// SiliconMotion SSD (smartctl) (description?)
-				add(245, StorageAttribute::DiskSSD, "TLC_Writes_32MiB", "TLC Written (32MiB)", "",
+				add(245, StorageAttribute::DiskType::Ssd, "TLC_Writes_32MiB", "TLC Written (32MiB)", "",
 						"Total number of sectors written to TLC. The Raw value is increased by 1 for every 32 MiB written by the host.");
 				// Crucial / Micron SSD (smartctl)
-				add(246, StorageAttribute::DiskSSD, "Total_Host_Sector_Write", "Total Host Sectors Written", "",
+				add(246, StorageAttribute::DiskType::Ssd, "Total_Host_Sector_Write", "Total Host Sectors Written", "",
 						"Total number of sectors written by the host system.");
 				// Kingston SSDs (description?) (smartctl)
-				add(246, StorageAttribute::DiskSSD, "Total_Erase_Count", "Total Erase Count", "",
+				add(246, StorageAttribute::DiskType::Ssd, "Total_Erase_Count", "Total Erase Count", "",
 						"");
 				// Samsung SSD (smartctl) (description?)
-				add(246, StorageAttribute::DiskSSD, "Timed_Workld_RdWr_Ratio", "Timed Workload Read/Write Ratio", "",
+				add(246, StorageAttribute::DiskType::Ssd, "Timed_Workld_RdWr_Ratio", "Timed Workload Read/Write Ratio", "",
 						"");
 				// SiliconMotion SSD (smartctl) (description?)
-				add(246, StorageAttribute::DiskSSD, "SLC_Writes_32MiB", "SLC Written (32MiB)", "",
+				add(246, StorageAttribute::DiskType::Ssd, "SLC_Writes_32MiB", "SLC Written (32MiB)", "",
 						"Total number of sectors written to SLC. The Raw value is increased by 1 for every 32 MiB written by the host.");
 				// Crucial / Micron SSD (smartctl)
-				add(247, StorageAttribute::DiskSSD, "Host_Program_Page_Count", "Host Program Page Count", "",
+				add(247, StorageAttribute::DiskType::Ssd, "Host_Program_Page_Count", "Host Program Page Count", "",
 						"");
 				// Samsung SSD (smartctl)
-				add(247, StorageAttribute::DiskSSD, "Timed_Workld_Timer", "Timed Workload Timer", "",
+				add(247, StorageAttribute::DiskType::Ssd, "Timed_Workld_Timer", "Timed Workload Timer", "",
 						"");
 				// SiliconMotion SSD (smartctl) (description?)
-				add(247, StorageAttribute::DiskSSD, "Raid_Recoverty_Ct", "RAID Recovery Count", "",
+				add(247, StorageAttribute::DiskType::Ssd, "Raid_Recoverty_Ct", "RAID Recovery Count", "",
 						"");
-				add(248, StorageAttribute::DiskSSD, "Bckgnd_Program_Page_Cnt", "Background Program Page Count", "",
+				add(248, StorageAttribute::DiskType::Ssd, "Bckgnd_Program_Page_Cnt", "Background Program Page Count", "",
 						"");
 				// Intel SSD: NAND_Writes_1GiB (smartctl) (description?)
-				add(249, StorageAttribute::DiskSSD, "NAND_Writes_1GiB", "NAND Written (1GiB)", "",
+				add(249, StorageAttribute::DiskType::Ssd, "NAND_Writes_1GiB", "NAND Written (1GiB)", "",
 						"");
 				// OCZ SSD: Total_NAND_Prog_Ct_GiB (smartctl) (description?)
-				add(249, StorageAttribute::DiskSSD, "Total_NAND_Prog_Ct_GiB", "Total NAND Written (1GiB)", "",
+				add(249, StorageAttribute::DiskType::Ssd, "Total_NAND_Prog_Ct_GiB", "Total NAND Written (1GiB)", "",
 						"");
 				// Read Error Retry Rate (smartctl) (description?)
 				add(250, "Read_Error_Retry_Rate", "Read Error Retry Rate", "",
 						"Number of errors found while reading.");
 				// Samsung SSD: (smartctl) (description?)
-				add(183, StorageAttribute::DiskAny, "SATA_Iface_Downshift", "SATA Downshift Error Count", "",
+				add(183, StorageAttribute::DiskType::Any, "SATA_Iface_Downshift", "SATA Downshift Error Count", "",
 						"");
 				// OCZ SSD (smartctl) (description?)
-				add(251, StorageAttribute::DiskSSD, "Total_NAND_Read_Ct_GiB", "Total NAND Read (1GiB)", "",
+				add(251, StorageAttribute::DiskType::Ssd, "Total_NAND_Read_Ct_GiB", "Total NAND Read (1GiB)", "",
 						"");
 				// Samsung SSD: (smartctl) (description?)
-				add(251, StorageAttribute::DiskAny, "NAND_Writes", "NAND Write Count", "",
+				add(251, StorageAttribute::DiskType::Any, "NAND_Writes", "NAND Write Count", "",
 						"");
 				// Free Fall Protection (smartctl) (seagate laptop drives)
-				add(254, StorageAttribute::DiskHDD, "Free_Fall_Sensor", "Free Fall Protection", "",
+				add(254, StorageAttribute::DiskType::Hdd, "Free_Fall_Sensor", "Free Fall Protection", "",
 						"Number of free fall events detected by accelerometer sensor.");
 			}
 
@@ -1035,7 +1034,7 @@ namespace {
 			void add(int32_t id, const std::string& smartctl_name, const std::string& readable_name,
 					const std::string& generic_name, const std::string& description)
 			{
-				add(AttributeDescription(id, StorageAttribute::DiskAny, smartctl_name, readable_name, generic_name, description));
+				add(AttributeDescription(id, StorageAttribute::DiskType::Any, smartctl_name, readable_name, generic_name, description));
 			}
 
 
@@ -1047,7 +1046,7 @@ namespace {
 // 				DBG_ASSERT(iter != id_db.end() && !iter->second.empty());
 // 				if (iter != id_db.end() || iter->second.empty()) {
 // 					AttributeDescription attr = iter->second.front();
-// 					add(AttributeDescription(id, StorageAttribute::DiskAny, smartctl_name, attr.readable_name, attr.generic_name, attr.description));
+// 					add(AttributeDescription(id, StorageAttribute::DiskType::Any, smartctl_name, attr.readable_name, attr.generic_name, attr.description));
 // 				}
 // 			}
 
@@ -1094,7 +1093,7 @@ namespace {
 
 				std::vector<AttributeDescription> type_matched;
 				for (const auto& attr_iter : id_iter->second) {
-					if (attr_iter.disk_type == type || attr_iter.disk_type == StorageAttribute::DiskAny || type == StorageAttribute::DiskAny) {
+					if (attr_iter.disk_type == type || attr_iter.disk_type == StorageAttribute::DiskType::Any || type == StorageAttribute::DiskType::Any) {
 						type_matched.push_back(attr_iter);
 					}
 				}
@@ -1534,7 +1533,7 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 		found = true;
 
 	// Section Info
-	} else if (p.section == StorageProperty::section_info) {
+	} else if (p.section == StorageProperty::Section::info) {
 		found = auto_set(p, "model_family", "Model family (from smartctl database)")
 		|| auto_set(p, "device_model", "Device model")
 		|| auto_set(p, "serial_number", "Serial number, unique to each physical drive")
@@ -1555,15 +1554,15 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 			found = true;
 		}
 
-	} else if (p.section == StorageProperty::section_data) {
+	} else if (p.section == StorageProperty::Section::data) {
 
 		switch (p.subsection) {
-			case StorageProperty::subsection_health:
+			case StorageProperty::SubSection::health:
 				found = auto_set(p, "overall_health", "Overall health self-assessment test result. Note: If the drive passes this test, it doesn't mean it's OK. "
 						"However, if the drive doesn't pass it, then it's either already dead, or it's predicting its own failure within the next 24 hours. In this case do a backup immediately!");
 				break;
 
-			case StorageProperty::subsection_capabilities:
+			case StorageProperty::SubSection::capabilities:
 				found = auto_set(p, "offline_status_group", "Offline Data Collection (a.k.a. Offline test) is usually automatically performed when the device is idle or every fixed amount of time. "
 						"This should show if Automatic Offline Data Collection is enabled.")
 				|| auto_set(p, "iodc_total_time_length", "Offline Data Collection (a.k.a. Offline test) is usually automatically performed when the device is idle or every fixed amount of time. "
@@ -1578,7 +1577,7 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 				|| auto_set(p, "sct_cap_group", "Drive properties related to temperature information.");
 				break;
 
-			case StorageProperty::subsection_attributes:
+			case StorageProperty::SubSection::attributes:
 				found = auto_set(p, "data_structure_version", p.readable_name.c_str());
 				if (!found) {
 					auto_set_attr(p, disk_type);
@@ -1586,11 +1585,11 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 				}
 				break;
 
-			case StorageProperty::subsection_devstat:
+			case StorageProperty::SubSection::devstat:
 				found = auto_set_statistic(p);
 				break;
 
-			case StorageProperty::subsection_error_log:
+			case StorageProperty::SubSection::error_log:
 				found = auto_set(p, "error_log_version", p.readable_name.c_str())
 				|| auto_set(p, "error_log_error_count", "Number of errors in error log. Note: Some manufacturers may list completely harmless errors in this log "
 					"(e.g., command invalid, not implemented, etc...).");
@@ -1603,33 +1602,33 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 				}
 				break;
 
-			case StorageProperty::subsection_selftest_log:
+			case StorageProperty::SubSection::selftest_log:
 				found = auto_set(p, "selftest_log_version", p.readable_name.c_str())
 				|| auto_set(p, "selftest_num_entries", "Number of tests in selftest log. Note: The number of entries may be limited to the newest manual tests.");
 		// 		|| auto_set(p, "selftest_log_unsupported", "This device does not support self-test logging.");  // the property text already says that
 				break;
 
-			case StorageProperty::subsection_selective_selftest_log:
+			case StorageProperty::SubSection::selective_selftest_log:
 				// nothing here
 				break;
 
-			case StorageProperty::subsection_temperature_log:
+			case StorageProperty::SubSection::temperature_log:
 				found = auto_set(p, "sct_unsupported", "SCT support is needed for SCT temperature logging.");
 				break;
 
-			case StorageProperty::subsection_erc_log:
+			case StorageProperty::SubSection::erc_log:
 				// nothing here
 				break;
 
-			case StorageProperty::subsection_phy_log:
+			case StorageProperty::SubSection::phy_log:
 				// nothing here
 				break;
 
-			case StorageProperty::subsection_directory_log:
+			case StorageProperty::SubSection::directory_log:
 				// nothing here
 				break;
 
-			case StorageProperty::subsection_unknown:
+			case StorageProperty::SubSection::unknown:
 				// nothing
 				break;
 		}
@@ -1641,48 +1640,48 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 
 
 
-StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
+WarningLevel storage_property_autoset_warning(StorageProperty& p)
 {
-	StorageProperty::warning_t w = StorageProperty::warning_none;
+	WarningLevel w = WarningLevel::none;
 	std::string reason;
 
 	// checksum errors first
 	if (p.generic_name.find("_checksum_error") != std::string::npos) {
-		w = StorageProperty::warning_warn;
+		w = WarningLevel::warning;
 		reason = "The drive may have a broken implementation of SMART, or it's failing.";
 
 
 	// Section Info
-	} else if (p.section == StorageProperty::section_info) {
+	} else if (p.section == StorageProperty::Section::info) {
 		if (name_match(p, "smart_supported") && !p.get_value<bool>()) {
-			w = StorageProperty::warning_notice;
+			w = WarningLevel::notice;
 			reason = "SMART is not supported. You won't be able to read any SMART information from this drive.";
 
 		} else if (name_match(p, "smart_enabled") && !p.get_value<bool>()) {
-			w = StorageProperty::warning_notice;
+			w = WarningLevel::notice;
 			reason = "SMART is disabled. You shoud enable it to read any SMART information from this drive. "
 					"Additionally, some drives do not log useful data with SMART disabled, so it's advisable to keep it always enabled.";
 
 		} else if (name_match(p, "info_warning")) {
-			w = StorageProperty::warning_notice;
+			w = WarningLevel::notice;
 			reason = "Your drive may be affected by the warning, please see the details.";
 		}
 
-	} else if (p.section == StorageProperty::section_data) {
+	} else if (p.section == StorageProperty::Section::data) {
 
 		switch(p.subsection) {
-			case StorageProperty::subsection_health:
+			case StorageProperty::SubSection::health:
 				if (name_match(p, "overall_health") && p.get_value<std::string>() != "PASSED") {
-					w = StorageProperty::warning_alert;
+					w = WarningLevel::alert;
 					reason = "The drive is reporting that it will FAIL very soon. Please back up as soon as possible!";
 				}
 				break;
 
-			case StorageProperty::subsection_capabilities:
+			case StorageProperty::SubSection::capabilities:
 				// nothing
 				break;
 
-			case StorageProperty::subsection_attributes:
+			case StorageProperty::SubSection::attributes:
 			{
 				if (p.is_value_type<StorageAttribute>()) {
 
@@ -1693,78 +1692,78 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 
 					// Reallocated Sector Count
 					if (attr_match(p, "attr_reallocated_sector_count") && attr.raw_value_int > 0) {
-						w = StorageProperty::warning_notice;
+						w = WarningLevel::notice;
 						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					// Spin-up Retry Count
 					} else if (attr_match(p, "attr_spin_up_retry_count") && attr.raw_value_int > 0) {
-						w = StorageProperty::warning_notice;
+						w = WarningLevel::notice;
 						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. Your drive may have problems spinning up, which could lead to a complete mechanical failure. Please back up.";
 
 					// Soft Read Error Rate
 					} else if (attr_match(p, "attr_soft_read_error_rate") && attr.raw_value_int > 0) {
-						w = StorageProperty::warning_notice;
+						w = WarningLevel::notice;
 						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					// Temperature (for some it may be 10xTemp, so limit the upper bound.)
 					} else if (attr_match(p, "attr_temperature_celsius")
 							&& attr.raw_value_int > 50 && attr.raw_value_int <= 120) {  // 50C
-						w = StorageProperty::warning_notice;
+						w = WarningLevel::notice;
 						reason = "The temperature of the drive is higher than 50 degrees Celsius. This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 
 					// Temperature (for some it may be 10xTemp, so limit the upper bound.)
 					} else if (attr_match(p, "attr_temperature_celsius_x10") && attr.raw_value_int > 500) {  // 50C
-						w = StorageProperty::warning_notice;
+						w = WarningLevel::notice;
 						reason = "The temperature of the drive is higher than 50 degrees Celsius. This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 
 					// Reallocation Event Count
 					} else if (attr_match(p, "attr_reallocation_event_count") && attr.raw_value_int > 0) {
-						w = StorageProperty::warning_notice;
+						w = WarningLevel::notice;
 						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					// Current Pending Sector Count
 					} else if ((attr_match(p, "attr_current_pending_sector_count") || attr_match(p, "attr_total_pending_sectors"))
 								&& attr.raw_value_int > 0) {
-						w = StorageProperty::warning_notice;
+						w = WarningLevel::notice;
 						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					// Uncorrectable Sector Count
 					} else if ((attr_match(p, "attr_offline_uncorrectable") || attr_match(p, "attr_total_attr_offline_uncorrectable"))
 								&& attr.raw_value_int > 0) {
-						w = StorageProperty::warning_notice;
+						w = WarningLevel::notice;
 						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					// SSD Life Left (%)
 					} else if ((attr_match(p, "attr_ssd_life_left"))
 								&& attr.value.value() < 50) {
-						w = StorageProperty::warning_notice;
+						w = WarningLevel::notice;
 						reason = "The drive has less than half of its estimated life left.";
 
 					// SSD Life Used (%)
 					} else if ((attr_match(p, "attr_ssd_life_used"))
 								&& attr.raw_value_int >= 50) {
-						w = StorageProperty::warning_notice;
+						w = WarningLevel::notice;
 						reason = "The drive has less than half of its estimated life left.";
 					}
 
 					// Now override this with reported SMART attribute failure warnings / errors
 
-					if (attr.when_failed == StorageAttribute::fail_time_now) {  // NOW
+					if (attr.when_failed == StorageAttribute::FailTime::now) {  // NOW
 
-						if (attr.attr_type == StorageAttribute::attr_type_oldage) {  // old-age
-							w = StorageProperty::warning_warn;
+						if (attr.attr_type == StorageAttribute::AttributeType::old_age) {  // old-age
+							w = WarningLevel::warning;
 							reason = "The drive has a failing old-age attribute. Usually this indicates a wear-out. You should consider replacing the drive.";
 						} else {  // pre-fail
-							w = StorageProperty::warning_alert;
+							w = WarningLevel::alert;
 							reason = "The drive has a failing pre-fail attribute. Usually this indicates a that the drive will FAIL soon. Please back up immediately!";
 						}
 
-					} else if (attr.when_failed == StorageAttribute::fail_time_past) {  // PAST
+					} else if (attr.when_failed == StorageAttribute::FailTime::past) {  // PAST
 
-						if (attr.attr_type == StorageAttribute::attr_type_oldage) {  // old-age
+						if (attr.attr_type == StorageAttribute::AttributeType::old_age) {  // old-age
 							// nothing. we don't warn about e.g. temperature increase in the past
 						} else {  // pre-fail
-							w = StorageProperty::warning_warn;  // there was a problem, it got corrected (hopefully)
+							w = WarningLevel::warning;  // there was a problem, it got corrected (hopefully)
 							reason = "The drive had a failing pre-fail attribute, but it has been restored to a normal value. This may be a serious problem, you should consider replacing the drive.";
 						}
 					}
@@ -1772,93 +1771,93 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 				break;
 			}
 
-			case StorageProperty::subsection_devstat:
+			case StorageProperty::SubSection::devstat:
 			{
 				const auto& statistic = p.get_value<StorageStatistic>();
 
 				if (name_match(p, "Pending Error Count") && statistic.value_int > 0) {
-					w = StorageProperty::warning_notice;
+					w = WarningLevel::notice;
 					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 				// "Workload Utilization" is either normalized, or encodes several values, so we can't use it.
 /*
 				} else if (name_match(p, "Workload Utilization") && statistic.value_int >= 50) {
-					w = StorageProperty::warning_notice;
+					w = WarningLevel::notice;
 					reason = "The drive has less than half of its estimated life left.";
 
 				} else if (name_match(p, "Workload Utilization") && statistic.value_int >= 100) {
-					w = StorageProperty::warning_warn;
+					w = WarningLevel::warning;
 					reason = "The drive is past its estimated lifespan.";
 */
 
 				} else if (name_match(p, "Utilization Usage Rate") && statistic.value_int >= 50) {
-					w = StorageProperty::warning_notice;
+					w = WarningLevel::notice;
 					reason = "The drive has less than half of its estimated life left.";
 
 				} else if (name_match(p, "Utilization Usage Rate") && statistic.value_int >= 100) {
-					w = StorageProperty::warning_warn;
+					w = WarningLevel::warning;
 					reason = "The drive is past its estimated lifespan.";
 
 				} else if (name_match(p, "Number of Reallocated Logical Sectors") && !statistic.is_normalized() && statistic.value_int > 0) {
-					w = StorageProperty::warning_notice;
+					w = WarningLevel::notice;
 					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 				} else if (name_match(p, "Number of Reallocated Logical Sectors") && statistic.is_normalized() && statistic.value_int <= 0) {
-					w = StorageProperty::warning_warn;
+					w = WarningLevel::warning;
 					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 				} else if (name_match(p, "Number of Mechanical Start Failures") && statistic.value_int > 0) {
-					w = StorageProperty::warning_notice;
+					w = WarningLevel::notice;
 					reason = "The drive is reporting mechanical errors.";
 
 				} else if (name_match(p, "Number of Realloc. Candidate Logical Sectors") && statistic.value_int > 0) {
-					w = StorageProperty::warning_notice;
+					w = WarningLevel::notice;
 					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 				} else if (name_match(p, "Number of Reported Uncorrectable Errors") && statistic.value_int > 0) {
-					w = StorageProperty::warning_notice;
+					w = WarningLevel::notice;
 					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 				} else if (name_match(p, "Current Temperature") && statistic.value_int > 50) {
-					w = StorageProperty::warning_notice;
+					w = WarningLevel::notice;
 					reason = "The temperature of the drive is higher than 50 degrees Celsius. "
 							"This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 
 				} else if (name_match(p, "Time in Over-Temperature") && statistic.value_int > 0) {
-					w = StorageProperty::warning_notice;
+					w = WarningLevel::notice;
 					reason = "The temperature of the drive is or was over the manufacturer-specified maximum. "
 							"This may have shortened its lifespan and caused damage. Please install a cooling solution.";
 
 				} else if (name_match(p, "Time in Under-Temperature") && statistic.value_int > 0) {
-					w = StorageProperty::warning_notice;
+					w = WarningLevel::notice;
 					reason = "The temperature of the drive is or was under the manufacturer-specified minimum. "
 							"This may have shortened its lifespan and caused damage. Please operate the drive within manufacturer-specified temperature range.";
 
 				} else if (name_match(p, "Percentage Used Endurance Indicator") && statistic.value_int >= 50) {
-					w = StorageProperty::warning_notice;
+					w = WarningLevel::notice;
 					reason = "The drive has less than half of its estimated life left.";
 
 				} else if (name_match(p, "Percentage Used Endurance Indicator") && statistic.value_int >= 100) {
-					w = StorageProperty::warning_warn;
+					w = WarningLevel::warning;
 					reason = "The drive is past its estimated lifespan.";
 				}
 
 				break;
 			}
 
-			case StorageProperty::subsection_error_log:
+			case StorageProperty::SubSection::error_log:
 			{
 				// Note: The error list table doesn't display any descriptions, so if any
 				// error-entry related descriptions are added here, don't forget to enable
 				// the tooltips.
 
 				if (name_match(p, "error_log_error_count") && p.get_value<int64_t>() > 0) {
-					w = StorageProperty::warning_notice;
+					w = WarningLevel::notice;
 					reason = "The drive is reporting internal errors. Usually this means uncorrectable data loss and similar severe errors. "
 							"Check the actual errors for details.";
 
 				} else if (name_match(p, "error_log_unsupported")) {
-					w = StorageProperty::warning_notice;
+					w = WarningLevel::notice;
 					reason = "The drive does not support error logging. This means that SMART error history is unavailable.";
 				}
 
@@ -1866,14 +1865,14 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 				if (p.is_value_type<StorageErrorBlock>()) {
 					const auto& eb = p.get_value<StorageErrorBlock>();
 					if (!eb.reported_types.empty()) {
-						StorageProperty::warning_t error_block_warning = StorageProperty::warning_none;
+						WarningLevel error_block_warning = WarningLevel::none;
 						for (const auto& reported_type : eb.reported_types) {
-							int individual_warning = StorageErrorBlock::get_warning_level_for_error_type(reported_type);
-							if (individual_warning > int(error_block_warning)) {
-								error_block_warning = StorageProperty::warning_t(individual_warning);
+							WarningLevel individual_warning = StorageErrorBlock::get_warning_level_for_error_type(reported_type);
+							if (individual_warning > error_block_warning) {
+								error_block_warning = WarningLevel(individual_warning);
 							}
 						}
-						if (int(error_block_warning) > int(StorageProperty::warning_none)) {
+						if (error_block_warning > WarningLevel::none) {
 							w = error_block_warning;
 							reason = "The drive is reporting internal errors. Your data may be at risk depending on error severity.";
 						}
@@ -1883,7 +1882,7 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 				break;
 			}
 
-			case StorageProperty::subsection_selftest_log:
+			case StorageProperty::SubSection::selftest_log:
 			{
 				// Note: The error list table doesn't display any descriptions, so if any
 				// error-entry related descriptions are added here, don't forget to enable
@@ -1893,42 +1892,42 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 				// Self-tests are carried manually anyway, so the user is expected to check their status anyway.
 
 				if (name_match(p, "selftest_log_unsupported")) {
-					w = StorageProperty::warning_notice;
+					w = WarningLevel::notice;
 					reason = "The drive does not support self-test logging. This means that SMART test results won't be logged.";
 				}
 				break;
 			}
 
-			case StorageProperty::subsection_selective_selftest_log:
+			case StorageProperty::SubSection::selective_selftest_log:
 				// nothing here
 				break;
 
-			case StorageProperty::subsection_temperature_log:
+			case StorageProperty::SubSection::temperature_log:
 				// Don't highlight SCT Unsupported as warning, it's harmless.
 // 				if (name_match(p, "sct_unsupported") && p.value_bool) {
-// 					w = StorageProperty::warning_notice;
+// 					w = WarningLevel::notice;
 // 					reason = "The drive does not support SCT Temperature logging.";
 // 				}
 				// Current temperature
 				if (name_match(p, "sct_temperature_celsius") && p.get_value<int64_t>() > 50) {  // 50C
-					w = StorageProperty::warning_notice;
+					w = WarningLevel::notice;
 					reason = "The temperature of the drive is higher than 50 degrees Celsius. This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 				}
 				break;
 
-			case StorageProperty::subsection_erc_log:
+			case StorageProperty::SubSection::erc_log:
 				// nothing here
 				break;
 
-			case StorageProperty::subsection_phy_log:
+			case StorageProperty::SubSection::phy_log:
 				// nothing here
 				break;
 
-			case StorageProperty::subsection_directory_log:
+			case StorageProperty::SubSection::directory_log:
 				// nothing here
 				break;
 
-			case StorageProperty::subsection_unknown:
+			case StorageProperty::SubSection::unknown:
 				// nothing here
 				break;
 		}

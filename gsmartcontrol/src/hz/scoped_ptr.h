@@ -53,8 +53,7 @@ namespace internal {
 	template<typename T>
 	struct scoped_ptr_cleaner_base {
 		/// Virtual destructor
-		virtual ~scoped_ptr_cleaner_base()
-		{ }
+		virtual ~scoped_ptr_cleaner_base() = default;
 
 		/// Delete the pointer. The actual method of deletion is chosen by the overrider.
 		virtual void cleanup(T* p) = 0;
@@ -84,8 +83,8 @@ template<typename T>
 class scoped_ptr {  // non-copyable
 
 	private:
-	    T* ptr;
-	    internal::scoped_ptr_cleaner_base<T>* cleaner;
+	    T* ptr = nullptr;
+	    internal::scoped_ptr_cleaner_base<T>* cleaner = nullptr;
 
     	scoped_ptr (const scoped_ptr&);
     	scoped_ptr& operator= (const scoped_ptr&);
@@ -102,8 +101,8 @@ class scoped_ptr {  // non-copyable
     	typedef T element_type;
 
 		/// Constructor with default cleaner
-	    explicit scoped_ptr(T* p = 0)  // never throws
-	    		: ptr(p), cleaner(0)
+	    explicit scoped_ptr(T* p = nullptr)  // never throws
+	    		: ptr(p), cleaner(nullptr)
     	{ }
 
     	/// Constructor. Takes ownership of \c p. During destruction

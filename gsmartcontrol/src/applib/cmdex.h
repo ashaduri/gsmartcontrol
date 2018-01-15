@@ -72,7 +72,7 @@ class Cmdex : public hz::ErrorHolder {
 
 		/// Send SIGTERM(15) (terminate) to the child process.
 		/// Use only after execute(). Using it after the command has exited has no effect.
-		bool try_stop(hz::signal_t sig = hz::SIGNAL_SIGTERM);
+		bool try_stop(hz::Signal sig = hz::Signal::Terminate);
 
 
 		/// Send SIGKILL(9) (kill) to the child process. Same as
@@ -194,9 +194,9 @@ class Cmdex : public hz::ErrorHolder {
 	// these are sorta-private
 
 		/// Channel type, for passing to callbacks
-		enum channel_t {
-			channel_type_stdout,
-			channel_type_stderr
+		enum class Channel {
+			standard_output,
+			standard_error
 		};
 
 
@@ -206,7 +206,7 @@ class Cmdex : public hz::ErrorHolder {
 		static void on_child_watch_handler(GPid arg_pid, int waitpid_status, gpointer data);
 
 		/// Channel I/O handler
-		static gboolean on_channel_io(GIOChannel* channel, GIOCondition cond, Cmdex* self, Cmdex::channel_t type);
+		static gboolean on_channel_io(GIOChannel* channel, GIOCondition cond, Cmdex* self, Channel channel_type);
 
 
 	private:

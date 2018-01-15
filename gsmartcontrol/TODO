@@ -38,6 +38,7 @@ GTKMM 4.
 JSON.
 	Port the rest to std::regex, get rid of pcre requirement.
 		Not sure, we still want to support old-format files.
+		Maybe make pcre optional (only for parsing the old format)
 
 Port to std::filesystem (gcc 8; mingw not yet supported).
 	remove wcmatch (once fs is gone) (and its LICENSE_bsd-ucb.txt)
@@ -50,16 +51,13 @@ Use std::from_chars() in string_is_numeric_impl_classic_locale() (gcc 8)
 std::string setters -> no const&, use std::move.
 	same for std::vector
 enum class
-switch -> static std::map
+switch -> static const std::map
 for iter -> for auto
-throw() -> noexcept
-{ }  -> constructor/destructor = default
 Should StorageProperty contain also value_uinteger?
 
 Check TODOs
 
 Test with clang-tidy
-	add .clang-tidy
 
 
 

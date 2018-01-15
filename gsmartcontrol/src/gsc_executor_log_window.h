@@ -34,10 +34,6 @@ class GscExecutorLogWindow : public AppUIResWidget<GscExecutorLogWindow, false> 
 		/// Constructor, GtkBuilder needs this.
 		GscExecutorLogWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui);
 
-		/// Virtual destructor
-		virtual ~GscExecutorLogWindow()
-		{ }
-
 
 		/// Show this window and select the last entry
 		void show_last();

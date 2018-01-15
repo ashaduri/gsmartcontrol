@@ -46,9 +46,10 @@ using CmdexSyncCommandInfoRefPtr = hz::intrusive_ptr<CmdexSyncCommandInfoCopy>;
 
 /// Information about a finished command.
 struct CmdexSyncCommandInfo {
-	CmdexSyncCommandInfo(const std::string& c, const std::string& p,
-			const std::string& so, const std::string& se, const std::string& em)
-			: command(c), parameters(p), std_output(so), std_error(se), error_msg(em)
+	CmdexSyncCommandInfo(std::string c, std::string p,
+			std::string so, std::string se, std::string em)
+			: command(std::move(c)), parameters(std::move(p)), std_output(std::move(so)),
+			std_error(std::move(se)), error_msg(std::move(em))
 	{ }
 
 	/// Make a copy of this structure for storage.
@@ -57,11 +58,11 @@ struct CmdexSyncCommandInfo {
 		return new CmdexSyncCommandInfoCopy(command, parameters, std_output, std_error, error_msg);
 	}
 
-	const std::string& command;  ///< Executed command
-	const std::string& parameters;  ///< Command parameters
-	const std::string& std_output;  ///< Stdout data
-	const std::string& std_error;  ///< Stderr data
-	const std::string& error_msg;  ///< Execution error message
+	const std::string command;  ///< Executed command
+	const std::string parameters;  ///< Command parameters
+	const std::string std_output;  ///< Stdout data
+	const std::string std_error;  ///< Stderr data
+	const std::string error_msg;  ///< Execution error message
 };
 
 
@@ -142,7 +143,7 @@ class CmdexSync : public hz::intrusive_ptr_referenced, public sigc::trackable {
 
 
 		/// Try to stop the process. Call this from ticker slot while executing.
-		bool try_stop(hz::signal_t sig = hz::SIGNAL_SIGTERM)
+		bool try_stop(hz::Signal sig = hz::Signal::Terminate)
 		{
 			return cmdex_.try_stop(sig);
 		}
@@ -240,18 +241,18 @@ class CmdexSync : public hz::intrusive_ptr_referenced, public sigc::trackable {
 
 
 		/// Status flags for signal_execute_tick slots, along with possible return values.
-		enum tick_status_t {
-			status_starting,  ///< Return status will indicate whether to proceed with the execution
-			status_failed,  ///< The execution failed
-			status_running,  ///< Return status will indicate whether to abort the execution
-			status_stopping,  ///< The child has been sent a signal
-			status_stopped  ///< The child exited
+		enum class TickStatus {
+			starting,  ///< Return status will indicate whether to proceed with the execution
+			failed,  ///< The execution failed
+			running,  ///< Return status will indicate whether to abort the execution
+			stopping,  ///< The child has been sent a signal
+			stopped  ///< The child exited
 		};
 
 
 		/// This signal is emitted whenever something happens with the execution
 		/// (the status is changed), and periodically while the process is running.
-		sigc::signal<bool, tick_status_t> signal_execute_tick;
+		sigc::signal<bool, TickStatus> signal_execute_tick;
 
 
 

@@ -74,11 +74,6 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 		}
 
 
-		/// Virtual destructor
-		virtual ~GscTextWindow()
-		{ }
-
-
 		/// Set the text to display
 		void set_text(const Glib::ustring& title, const Glib::ustring& contents,
 				bool save_visible = false, bool use_monospace = false)

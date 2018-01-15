@@ -21,7 +21,7 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 
 
 /// Do some basic checks on the property and set warnings if needed.
-StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p);
+WarningLevel storage_property_autoset_warning(StorageProperty& p);
 
 
 

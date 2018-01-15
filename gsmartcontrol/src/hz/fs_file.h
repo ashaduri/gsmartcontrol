@@ -163,8 +163,7 @@ class File : public FsPath {
 		typedef std::FILE* handle_type;  // std::FILE must be identical to ::FILE in C++.
 
 		/// Constructor
-		File() : file_(NULL)
-		{ }
+		File() = default;
 
 		/// Create a File object with path "path". This will NOT open the file.
 		File(const std::string& path) : file_(NULL)
@@ -326,7 +325,7 @@ class File : public FsPath {
 // 		const File& operator=(const File& other);  // don't allow it. allow only from non-const.
 
 
-		handle_type file_;  ///< File handle (FILE*)
+		handle_type file_ = nullptr;  ///< File handle (FILE*)
 
 };
 

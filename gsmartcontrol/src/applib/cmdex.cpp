@@ -52,14 +52,14 @@ extern "C" {
 	/// Child process stdout handler callback
 	inline gboolean cmdex_on_channel_io_stdout(GIOChannel* source, GIOCondition cond, gpointer data)
 	{
-		return Cmdex::on_channel_io(source, cond, static_cast<Cmdex*>(data), Cmdex::channel_type_stdout);
+		return Cmdex::on_channel_io(source, cond, static_cast<Cmdex*>(data), Cmdex::Channel::standard_output);
 	}
 
 
 	/// Child process stderr handler callback
 	inline gboolean cmdex_on_channel_io_stderr(GIOChannel* source, GIOCondition cond, gpointer data)
 	{
-		return Cmdex::on_channel_io(source, cond, static_cast<Cmdex*>(data), Cmdex::channel_type_stderr);
+		return Cmdex::on_channel_io(source, cond, static_cast<Cmdex*>(data), Cmdex::Channel::standard_error);
 	}
 
 
@@ -67,8 +67,8 @@ extern "C" {
 	inline gboolean cmdex_on_term_timeout(gpointer data)
 	{
 		DBG_FUNCTION_ENTER_MSG;
-		Cmdex* self = static_cast<Cmdex*>(data);
-		self->try_stop(hz::SIGNAL_SIGTERM);
+		auto* self = static_cast<Cmdex*>(data);
+		self->try_stop(hz::Signal::Terminate);
 		return false;  // one-time call
 	}
 
@@ -77,8 +77,8 @@ extern "C" {
 	inline gboolean cmdex_on_kill_timeout(gpointer data)
 	{
 		DBG_FUNCTION_ENTER_MSG;
-		Cmdex* self = static_cast<Cmdex*>(data);
-		self->try_stop(hz::SIGNAL_SIGKILL);
+		auto* self = static_cast<Cmdex*>(data);
+		self->try_stop(hz::Signal::Kill);
 		return false;  // one-time call
 	}
 
@@ -185,7 +185,7 @@ bool Cmdex::execute()
 	}
 
 
-	GIOCondition cond = GIOCondition(G_IO_IN | G_IO_PRI | G_IO_HUP | G_IO_ERR | G_IO_NVAL);
+	auto cond = GIOCondition(G_IO_IN | G_IO_PRI | G_IO_HUP | G_IO_ERR | G_IO_NVAL);
 	// Channel reader callback must be called before other stuff so that the loss is minimal.
 	gint io_priority = G_PRIORITY_HIGH;
 
@@ -214,7 +214,7 @@ bool Cmdex::execute()
 
 
 // send SIGTERM(15) (terminate)
-bool Cmdex::try_stop(hz::signal_t sig)
+bool Cmdex::try_stop(hz::Signal sig)
 {
 	DBG_FUNCTION_ENTER_MSG;
 	if (!this->running_ || this->pid_ <= 0)
@@ -241,7 +241,7 @@ bool Cmdex::try_stop(hz::signal_t sig)
 bool Cmdex::try_kill()
 {
 	DBG_TRACE_POINT_AUTO;
-	return try_stop(hz::SIGNAL_SIGKILL);
+	return try_stop(hz::Signal::Kill);
 }
 
 
@@ -340,7 +340,7 @@ void Cmdex::stopped_cleanup()
 void Cmdex::on_child_watch_handler([[maybe_unused]] GPid arg_pid, int waitpid_status, gpointer data)
 {
 // 	DBG_FUNCTION_ENTER_MSG;
-	Cmdex* self = static_cast<Cmdex*>(data);
+	auto* self = static_cast<Cmdex*>(data);
 
 	g_timer_stop(self->timer_);  // stop the timer
 
@@ -350,21 +350,21 @@ void Cmdex::on_child_watch_handler([[maybe_unused]] GPid arg_pid, int waitpid_st
 
 	// These are needed because Windows doesn't read the remaining data otherwise.
 	g_io_channel_flush(self->channel_stdout_, nullptr);
-	on_channel_io(self->channel_stdout_, GIOCondition(0), self, channel_type_stdout);
+	on_channel_io(self->channel_stdout_, GIOCondition(0), self, Channel::standard_output);
 
 	g_io_channel_flush(self->channel_stderr_, nullptr);
-	on_channel_io(self->channel_stderr_, GIOCondition(0), self, channel_type_stderr);
+	on_channel_io(self->channel_stderr_, GIOCondition(0), self, Channel::standard_error);
 
 	if (self->channel_stdout_) {
 		g_io_channel_shutdown(self->channel_stdout_, false, nullptr);
 		g_io_channel_unref(self->channel_stdout_);
-		self->channel_stdout_ = 0;
+		self->channel_stdout_ = nullptr;
 	}
 
 	if (self->channel_stderr_) {
 		g_io_channel_shutdown(self->channel_stderr_, false, nullptr);
 		g_io_channel_unref(self->channel_stderr_);
-		self->channel_stderr_ = 0;
+		self->channel_stderr_ = nullptr;
 	}
 
 	// Remove fd IO callbacks. They may actually be removed already (note sure about this).
@@ -398,18 +398,18 @@ void Cmdex::on_child_watch_handler([[maybe_unused]] GPid arg_pid, int waitpid_st
 
 
 gboolean Cmdex::on_channel_io(GIOChannel* channel,
-		GIOCondition cond, Cmdex* self, channel_t type)
+		GIOCondition cond, Cmdex* self, Channel channel_type)
 {
 // 	DBG_FUNCTION_ENTER_MSG;
 // 	debug_out_dump("app", "Cmdex::on_channel_io("
-// 			<< (type == channel_type_stdout ? "STDOUT" : "STDERR") << ") " << int(cond) << "\n");
+// 			<< (type == Channel::standard_output ? "STDOUT" : "STDERR") << ") " << int(cond) << "\n");
 
 	bool continue_events = true;
 	if ((cond & G_IO_ERR) || (cond & G_IO_HUP) || (cond & G_IO_NVAL)) {
 		continue_events = false;  // there'll be no more data
 	}
 
-	DBG_ASSERT(type == channel_type_stdout || type == channel_type_stderr);
+	DBG_ASSERT(channel_type == Channel::standard_output || channel_type == Channel::standard_error);
 
 // 	const gsize count = 4 * 1024;
 	// read the bytes one by one. without this, a buffered iochannel hangs while waiting for data.
@@ -418,9 +418,9 @@ gboolean Cmdex::on_channel_io(GIOChannel* channel,
 	gchar buf[count] = {0};
 
 	std::string* output_str = 0;
-	if (type == channel_type_stdout) {
+	if (channel_type == Channel::standard_output) {
 		output_str = &self->str_stdout_;
-	} else if (type == channel_type_stderr) {
+	} else if (channel_type == Channel::standard_error) {
 		output_str = &self->str_stderr_;
 	}
 
