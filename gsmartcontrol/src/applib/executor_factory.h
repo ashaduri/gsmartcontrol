@@ -12,8 +12,9 @@
 #ifndef EXECUTOR_FACTORY_H
 #define EXECUTOR_FACTORY_H
 
+#include <memory>
+
 #include "cmdex_sync.h"
-#include "hz/intrusive_ptr.h"
 
 
 // Forward declaration
@@ -25,7 +26,7 @@ namespace Gtk {
 
 /// This class allows you to create new executors for different commands,
 /// without carrying the GUI/CLI stuff manually.
-class ExecutorFactory : public hz::intrusive_ptr_referenced {
+class ExecutorFactory {
 	public:
 
 		/// Executor type for create_executor()
@@ -41,7 +42,7 @@ class ExecutorFactory : public hz::intrusive_ptr_referenced {
 
 
 		/// Create a new executor instance according to \c type and the constructor parameters.
-		hz::intrusive_ptr<CmdexSync> create_executor(ExecutorType type);
+		std::shared_ptr<CmdexSync> create_executor(ExecutorType type);
 
 
 	private:
@@ -54,7 +55,7 @@ class ExecutorFactory : public hz::intrusive_ptr_referenced {
 
 
 /// A reference-counting pointer to ExecutorFactory
-using ExecutorFactoryRefPtr = hz::intrusive_ptr<ExecutorFactory>;
+using ExecutorFactoryPtr = std::shared_ptr<ExecutorFactory>;
 
 
 

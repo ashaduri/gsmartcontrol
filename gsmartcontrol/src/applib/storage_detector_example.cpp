@@ -23,7 +23,7 @@ int main()
 	// These settings contain device search paths, smartctl binary, etc...
 	init_default_settings();
 
-	std::vector<StorageDeviceRefPtr> drives;
+	std::vector<StorageDevicePtr> drives;
 // 	std::vector<std::string> match_patterns;
 	std::vector<std::string> blacklist_patterns;  // additional parameters
 
@@ -31,7 +31,7 @@ int main()
 // 	sd.add_match_patterns(match_patterns);
 	sd.add_blacklist_patterns(blacklist_patterns);
 
-	ExecutorFactoryRefPtr ex_factory(new ExecutorFactory(false));
+	auto ex_factory = std::make_shared<ExecutorFactory>(false);
 	std::string error_msg = sd.detect_and_fetch_basic_data(drives, ex_factory);
 	if (!error_msg.empty()) {
 		std::cerr << error_msg << "\n";

@@ -15,6 +15,7 @@
 #include <vector>
 #include <cstddef>  // std::size_t
 #include <gtkmm.h>
+#include <memory>
 
 #include "applib/app_ui_res_utils.h"
 #include "applib/cmdex_sync.h"
@@ -81,7 +82,7 @@ class GscExecutorLogWindow : public AppUIResWidget<GscExecutorLogWindow, false> 
 
 	private:
 
-		std::vector<CmdexSyncCommandInfoRefPtr> entries;  ///< Command information entries
+		std::vector<std::shared_ptr<CmdexSyncCommandInfo>> entries;  ///< Command information entries
 
 
 		Glib::RefPtr<Gtk::ListStore> list_store;  ///< List store
@@ -89,7 +90,7 @@ class GscExecutorLogWindow : public AppUIResWidget<GscExecutorLogWindow, false> 
 
 		Gtk::TreeModelColumn<std::size_t> col_num;  ///< Tree column
 		Gtk::TreeModelColumn<std::string> col_command;  ///< Tree column
-		Gtk::TreeModelColumn<CmdexSyncCommandInfoRefPtr> col_entry;  ///< Tree column
+		Gtk::TreeModelColumn<std::shared_ptr<CmdexSyncCommandInfo>> col_entry;  ///< Tree column
 
 
 };

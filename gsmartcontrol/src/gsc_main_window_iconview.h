@@ -220,7 +220,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 		/// Add a drive entry to the icon view
-		void add_entry(StorageDeviceRefPtr drive, bool scroll_to_it = false)
+		void add_entry(StorageDevicePtr drive, bool scroll_to_it = false)
 		{
 			if (!drive)
 				return;
@@ -267,7 +267,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 		/// This should be called to update the icon of already refreshed drive.
 		void decorate_entry(Gtk::TreeModel::Row& row)
 		{
-			StorageDeviceRefPtr drive = row[col_drive_ptr];
+			StorageDevicePtr drive = row[col_drive_ptr];
 
 			// it needs this space to be symmetric (why?);
 			std::string name;  // = "<big>" + drive->get_device_with_type() + " </big>\n";
@@ -424,9 +424,9 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 		/// Get selected drive
-		StorageDeviceRefPtr get_selected_drive()
+		StorageDevicePtr get_selected_drive()
 		{
-			StorageDeviceRefPtr drive = 0;
+			StorageDevicePtr drive = 0;
 			if (this->get_selected_items().size()) {
 				Gtk::TreePath model_path = *(this->get_selected_items().begin());
 				Gtk::TreeModel::Row row = *(ref_list_model->get_iter(model_path));
@@ -441,10 +441,9 @@ class GscMainWindowIconView : public Gtk::IconView {
 		Gtk::TreePath get_path_by_drive(StorageDevice* drive)
 		{
 			Gtk::TreeNodeChildren children = ref_list_model->children();
-			for (Gtk::TreeNodeChildren::const_iterator iter = children.begin(); iter != children.end(); ++iter) {
+			for (auto row : children) {
 				// convert iter to row (iter is row's base, but can we cast it?)
-				Gtk::TreeModel::Row row = *iter;
-				if (drive == row.get_value(col_drive_ptr))
+				if (drive == row.get_value(col_drive_ptr).get())
 					return ref_list_model->get_path(row);
 			}
 			return Gtk::TreePath();  // check with .empty()
@@ -456,13 +455,13 @@ class GscMainWindowIconView : public Gtk::IconView {
 		void update_menu_actions()
 		{
 			// if there's nothing selected, disable items from "Drives" menu
-			if (!this->get_selected_items().size()) {
+			if (this->get_selected_items().empty()) {
 				main_window->set_drive_menu_status(nullptr);
 
 			} else {  // enable drives menu, set proper smart toggles
 				Gtk::TreePath model_path = *(this->get_selected_items().begin());
 				Gtk::TreeModel::Row row = *(ref_list_model->get_iter(model_path));
-				StorageDeviceRefPtr drive = row[col_drive_ptr];
+				StorageDevicePtr drive = row[col_drive_ptr];
 
 				main_window->set_drive_menu_status(drive);
 			}
@@ -477,7 +476,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 				return;
 
 			Gtk::TreeModel::Row row = *(ref_list_model->get_iter(model_path));
-			StorageDeviceRefPtr drive = row[col_drive_ptr];
+			StorageDevicePtr drive = row[col_drive_ptr];
 
 			main_window->show_device_info_window(drive);
 		}
@@ -499,7 +498,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 		{
 			// select and show popup menu on right-click
 			if (event_button->type == GDK_BUTTON_PRESS && event_button->button == 3) {
-				StorageDeviceRefPtr drive = 0;  // clicked drive (if any)
+				StorageDevicePtr drive;  // clicked drive (if any)
 
 				// don't use get_item_at_pos() - it's not available in gtkmm < 2.8.
 				Gtk::TreePath tpath = this->get_path_at_pos(static_cast<int>(event_button->x),
@@ -556,7 +555,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 		Gtk::TreeModelColumn<std::string> col_name;  ///< Model column
 		Gtk::TreeModelColumn<Glib::ustring> col_description;  ///< Model column
 		Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > col_pixbuf;  ///< Model column
-		Gtk::TreeModelColumn<StorageDeviceRefPtr> col_drive_ptr;  ///< Model column
+		Gtk::TreeModelColumn<StorageDevicePtr> col_drive_ptr;  ///< Model column
 
 		Glib::RefPtr<Gtk::ListStore> ref_list_model;  ///< The icon view model
 		int num_icons = 0;  ///< Track the number of icons, because liststore makes it difficult to count them.

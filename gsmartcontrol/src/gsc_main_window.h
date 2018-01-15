@@ -67,7 +67,7 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 
 
 		/// Show the info window for the drive
-		GscInfoWindow* show_device_info_window(StorageDeviceRefPtr drive);
+		GscInfoWindow* show_device_info_window(const StorageDevicePtr& drive);
 
 		/// Show "Preferences updated, please rescan" message
 		void show_prefs_updated_message();
@@ -101,10 +101,10 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 
 
 		/// Enable/disable items in Drive menu, set toggles in menu items
-		void set_drive_menu_status(StorageDeviceRefPtr drive);
+		void set_drive_menu_status(const StorageDevicePtr& drive);
 
 		/// Get popup menu for a drive
-		Gtk::Menu* get_popup_menu(StorageDeviceRefPtr drive);
+		Gtk::Menu* get_popup_menu(const StorageDevicePtr& drive);
 
 		/// Update status widgets (status area, etc...)
 		void update_status_widgets();
@@ -158,7 +158,7 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 	private:
 
 		GscMainWindowIconView* iconview;  ///< The main icon view, as created by obj_create()
-		std::vector<StorageDeviceRefPtr> drives;  ///< Scanned drives
+		std::vector<StorageDevicePtr> drives;  ///< Scanned drives
 
 		Glib::RefPtr<Gtk::UIManager> ui_manager;  ///< UI manager
 		Glib::RefPtr<Gtk::ActionGroup> actiongroup_main;  ///< Action group

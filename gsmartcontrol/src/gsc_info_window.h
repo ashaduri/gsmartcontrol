@@ -42,7 +42,7 @@ class GscInfoWindow : public AppUIResWidget<GscInfoWindow, true> {
 
 
 		/// Set the drive to show
-		void set_drive(StorageDeviceRefPtr d);
+		void set_drive(StorageDevicePtr d);
 
 		/// Fill the dialog with info from the drive
 		void fill_ui_with_info(bool scan = true, bool clear_ui = true, bool clear_tests = true);
@@ -142,9 +142,9 @@ class GscInfoWindow : public AppUIResWidget<GscInfoWindow, true> {
 
 		Gtk::Label* device_name_label;  ///< Top label
 
-		StorageDeviceRefPtr drive;  ///< The drive we're showing
+		StorageDevicePtr drive;  ///< The drive we're showing
 
-		SelfTestPtr current_test;  ///< Currently running test, or 0.
+		std::shared_ptr<SelfTest> current_test;  ///< Currently running test, or 0.
 
 		// test idle callback temporaries
 		std::string test_error_msg;  ///< Our errors
@@ -156,7 +156,7 @@ class GscInfoWindow : public AppUIResWidget<GscInfoWindow, true> {
 		// test type combobox stuff
 		Gtk::TreeModelColumn<Glib::ustring> test_combo_col_name;  ///< Combobox model column
 		Gtk::TreeModelColumn<Glib::ustring> test_combo_col_description;  ///< Combobox model column
-		Gtk::TreeModelColumn<SelfTestPtr> test_combo_col_self_test;  ///< Combobox model column
+		Gtk::TreeModelColumn<std::shared_ptr<SelfTest>> test_combo_col_self_test;  ///< Combobox model column
 		Glib::RefPtr<Gtk::ListStore> test_combo_model;  ///< Combobox model
 
 };

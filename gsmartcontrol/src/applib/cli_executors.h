@@ -12,6 +12,8 @@
 #ifndef CLI_EXECUTORS_H
 #define CLI_EXECUTORS_H
 
+#include <memory>  // shared_ptr
+
 #include "cmdex.h"
 #include "cmdex_sync.h"
 
@@ -109,16 +111,9 @@ class TwCliExecutorGeneric : public ExecutorSync {
 /// tw_cli executor without GUI support
 using TwCliExecutor = TwCliExecutorGeneric<CmdexSync>;
 
-/// A reference-counting pointer to TwCliExecutor
-using TwCliExecutorRefPtr = hz::intrusive_ptr<TwCliExecutor>;
-
-
 
 /// tw_cli executor with GUI support
 using TwCliExecutorGui = TwCliExecutorGeneric<CmdexSyncGui>;
-
-/// A reference-counting pointer to TwCliExecutorGui
-using TwCliExecutorGuiRefPtr = hz::intrusive_ptr<TwCliExecutorGui>;
 
 
 
@@ -216,16 +211,9 @@ class ArecaCliExecutorGeneric : public ExecutorSync {
 /// tw_cli executor without GUI support
 using ArecaCliExecutor = ArecaCliExecutorGeneric<CmdexSync>;
 
-/// A reference-counting pointer to ArecaCliExecutor
-using ArecaCliExecutorRefPtr = hz::intrusive_ptr<ArecaCliExecutor>;
-
-
 
 /// tw_cli executor with GUI support
 using ArecaCliExecutorGui = ArecaCliExecutorGeneric<CmdexSyncGui>;
-
-/// A reference-counting pointer to ArecaCliExecutorGui
-using ArecaCliExecutorGuiRefPtr = hz::intrusive_ptr<ArecaCliExecutorGui>;
 
 
 

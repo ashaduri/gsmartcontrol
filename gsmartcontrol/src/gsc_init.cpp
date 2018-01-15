@@ -19,6 +19,7 @@
 #include <vector>
 #include <sstream>
 #include <limits>
+#include <memory>
 #include <cmath>
 #include <gtkmm.h>
 #include <glib.h>  // g_, G*
@@ -58,17 +59,27 @@ namespace {
 
 
 	/// Libdebug channel buffer
-	debug_channel_base_ptr s_debug_buf_channel;
+	DebugChannelBasePtr s_debug_buf_channel;
 
 	/// Libdebug channel buffer stream
-	std::ostringstream s_debug_buf_channel_stream;
+	std::unique_ptr<std::ostringstream> s_debug_buf_channel_stream;
+
+
+	inline void app_get_debug_buf_channel_stream()
+	{
+		if (!s_debug_buf_channel_stream) {
+			s_debug_buf_channel_stream = std::make_unique<std::ostringstream>();
+		}
+	}
 
 
 	/// Get libdebug buffer channel (create new one if unavailable).
-	inline debug_channel_base_ptr app_get_debug_buf_channel()
+	inline DebugChannelBasePtr app_get_debug_buf_channel()
 	{
-		if (!s_debug_buf_channel)
-			return (s_debug_buf_channel = new DebugChannelOStream(s_debug_buf_channel_stream));
+		if (!s_debug_buf_channel) {
+			app_get_debug_buf_channel_stream();
+			s_debug_buf_channel = std::make_shared<DebugChannelOStream>(*s_debug_buf_channel_stream);
+		}
 		return s_debug_buf_channel;
 	}
 
@@ -78,8 +89,9 @@ namespace {
 
 std::string app_get_debug_buffer_str()
 {
-	debug_channel_base_ptr channel = app_get_debug_buf_channel();
-	return s_debug_buf_channel_stream.str();
+	app_get_debug_buf_channel_stream();
+	DebugChannelBasePtr channel = app_get_debug_buf_channel();
+	return s_debug_buf_channel_stream->str();
 }
 
 

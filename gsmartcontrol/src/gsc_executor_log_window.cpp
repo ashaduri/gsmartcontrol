@@ -153,18 +153,17 @@ void GscExecutorLogWindow::clear_view_widgets()
 
 void GscExecutorLogWindow::on_command_output_received(const CmdexSyncCommandInfo& info)
 {
-	CmdexSyncCommandInfoRefPtr entry = info.copy();
+	auto entry = std::make_shared<CmdexSyncCommandInfo>(info);
 	entries.push_back(entry);
 
 	// update tree model
 	Gtk::TreeRow row = *(list_store->append());
 	row[col_num] = entries.size();
-	row[col_command] = entry->command + " " + entry->parameters;
+	row[col_command] = info.command + " " + info.parameters;
 	row[col_entry] = entry;
 
 	// if visible, set the selection to it
-	Gtk::TreeView* treeview = this->lookup_widget<Gtk::TreeView*>("command_list_treeview");
-	if (treeview) {
+	if (auto* treeview = this->lookup_widget<Gtk::TreeView*>("command_list_treeview")) {
 		selection->select(row);
 		treeview->scroll_to_row(list_store->get_path(row));
 	}
@@ -193,7 +192,7 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 		return;
 
 	Gtk::TreeIter iter = selection->get_selected();
-	CmdexSyncCommandInfoRefPtr entry = (*iter)[col_entry];
+	std::shared_ptr<CmdexSyncCommandInfo> entry = (*iter)[col_entry];
 
 	static std::string last_dir;
 	if (last_dir.empty()) {
@@ -418,11 +417,9 @@ void GscExecutorLogWindow::on_tree_selection_changed()
 		Gtk::TreeIter iter = selection->get_selected();
 		Gtk::TreeRow row = *iter;
 
-		CmdexSyncCommandInfoRefPtr entry = row[col_entry];
+		std::shared_ptr<CmdexSyncCommandInfo> entry = row[col_entry];
 
-		Gtk::TextView* output_textview = this->lookup_widget<Gtk::TextView*>("output_textview");
-
-		if (output_textview) {
+		if (auto* output_textview = this->lookup_widget<Gtk::TextView*>("output_textview")) {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = output_textview->get_buffer();
 			if (buffer) {
 				buffer->set_text(app_output_make_valid(entry->std_output));
@@ -439,14 +436,12 @@ void GscExecutorLogWindow::on_tree_selection_changed()
 			}
 		}
 
-		Gtk::Entry* command_entry = this->lookup_widget<Gtk::Entry*>("command_entry");
-		if (command_entry) {
+		if (auto command_entry = this->lookup_widget<Gtk::Entry*>("command_entry")) {
 			std::string cmd_text = entry->command + " " + entry->parameters;
 			command_entry->set_text(app_output_make_valid(cmd_text));
 		}
 
-		Gtk::Button* window_save_current_button = this->lookup_widget<Gtk::Button*>("window_save_current_button");
-		if (window_save_current_button)
+		if (auto window_save_current_button = this->lookup_widget<Gtk::Button*>("window_save_current_button"))
 			window_save_current_button->set_sensitive(true);
 	}
 

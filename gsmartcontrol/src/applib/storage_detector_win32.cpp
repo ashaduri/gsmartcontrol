@@ -170,14 +170,14 @@ std::map<char, DriveLetterInfo> win32_get_drive_letter_map()
 /// Run "smartctl --scan-open" and pick the devices which have
 /// a port parameter. We don't pick the others because the may
 /// conflict with pd* devices, and we like pd* better than sd*.
-std::string get_scan_open_multiport_devices(std::vector<StorageDeviceRefPtr>& drives,
-		ExecutorFactoryRefPtr ex_factory,
+std::string get_scan_open_multiport_devices(std::vector<StorageDevicePtr>& drives,
+		const ExecutorFactoryPtr& ex_factory,
 		const std::map<char, DriveLetterInfo>& drive_letter_map,
 		std::set<int>& equivalent_pds)
 {
 	debug_out_info("app", "Getting multi-port devices through smartctl --scan-open...\n");
 
-	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
+	std::shared_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
 
 	std::string smartctl_binary = get_smartctl_binary();
 
@@ -236,7 +236,7 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDeviceRefPtr>& dr
 			}
 
 			std::string full_dev = dev + "," + port_str;
-			StorageDeviceRefPtr drive(new StorageDevice(full_dev, type));
+			auto drive = std::make_shared<StorageDevice>(full_dev, type);
 
 			std::map<char, std::string> letters_volnames;
 			for (std::map<char, DriveLetterInfo>::const_iterator iter = drive_letter_map.begin(); iter != drive_letter_map.end(); ++iter) {
@@ -258,10 +258,10 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDeviceRefPtr>& dr
 
 /// Find and execute areca cli with specified options, return its output through \c output.
 /// \return error message
-inline std::string execute_areca_cli(ExecutorFactoryRefPtr ex_factory, const std::string& cli_binary,
+inline std::string execute_areca_cli(const ExecutorFactoryPtr& ex_factory, const std::string& cli_binary,
 		const std::string& command_options, std::string& output)
 {
-	hz::intrusive_ptr<CmdexSync> executor = ex_factory->create_executor(ExecutorFactory::ExecutorArecaCli);
+	std::shared_ptr<CmdexSync> executor = ex_factory->create_executor(ExecutorFactory::ExecutorArecaCli);
 
 	executor->set_command(Glib::shell_quote(cli_binary), command_options);
 
@@ -364,7 +364,7 @@ GuiErrMsg<0x00>: Success.
 ------------------------------------------------------------
 </pre> */
 inline std::string areca_cli_get_drives(const std::string& cli_binary, const std::string& dev, int controller,
-		std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
+		std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory)
 {
 	debug_out_info("app", "Getting available Areca drives (ports) for controller " << controller << " through Areca CLI...\n");
 
@@ -431,8 +431,8 @@ inline std::string areca_cli_get_drives(const std::string& cli_binary, const std
 				if (model_str != "N.A.") {
 					int port = hz::string_to_number_nolocale<int>(port_str);
 					int enclosure = hz::string_to_number_nolocale<int>(enclosure_str);
-					drives.push_back(StorageDeviceRefPtr(new StorageDevice(dev,
-							"areca," + hz::number_to_string_nolocale(port) + "/" + hz::number_to_string_nolocale(enclosure))));
+					drives.emplace_back(std::make_shared<StorageDevice>(dev,
+							"areca," + hz::number_to_string_nolocale(port) + "/" + hz::number_to_string_nolocale(enclosure)));
 					debug_out_info("app", "Added Areca drive " << drives.back()->get_device_with_type() << ".\n");
 				}
 			}
@@ -441,7 +441,7 @@ inline std::string areca_cli_get_drives(const std::string& cli_binary, const std
 			if (port_re.PartialMatch(hz::string_trim_copy(lines.at(i)), &port_str, &model_str)) {
 				if (model_str != "N.A.") {
 					int port = hz::string_to_number_nolocale<int>(port_str);
-					drives.push_back(StorageDeviceRefPtr(new StorageDevice(dev, "areca," + hz::number_to_string_nolocale(port))));
+					drives.emplace_back(std::make_shared<StorageDevice>(dev, "areca," + hz::number_to_string_nolocale(port)));
 					debug_out_info("app", "Added Areca drive " << drives.back()->get_device_with_type() << ".\n");
 				}
 			}
@@ -486,7 +486,7 @@ If CLI is not installed, do the brute-force way:
 		-d areca,[1-128]/[1-8] /dev/arcmsrN
 			It's 2-3 drives a second on an empty port, so some limits are set in config.
 </pre> */
-inline std::string detect_drives_win32_areca(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
+inline std::string detect_drives_win32_areca(std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives behind Areca controller(s)...\n");
 
@@ -550,7 +550,7 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDeviceRefPtr>& d
 		}
 	}
 
-	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
+	std::shared_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
 
 	// --- CLI mode
 
@@ -560,7 +560,7 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDeviceRefPtr>& d
 	if (use_cli) {
 		debug_out_dump("app", "Testing Areca controller presence using smartctl...\n");
 
-		StorageDeviceRefPtr drive(new StorageDevice("/dev/arcmsr0", "areca,1"));
+		auto drive = std::make_shared<StorageDevice>("/dev/arcmsr0", "areca,1");
 		std::string error_msg = drive->fetch_basic_data_and_parse(smartctl_ex);
 		std::string output = drive->get_info_output();
 		if (app_pcre_match("/No Areca controller found/mi", output)
@@ -646,7 +646,7 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDeviceRefPtr>& d
 // (or /dev/pdN, /dev/ being optional) where N comes from
 // "\\.\PhysicalDriveN" (winnt only).
 // http://msdn.microsoft.com/en-us/library/aa365247(VS.85).aspx
-std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
+std::string detect_drives_win32(std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory)
 {
 	std::vector<std::string> error_msgs;
 	std::string error_msg;
@@ -656,7 +656,7 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 	std::map<char, DriveLetterInfo> drive_letter_map = win32_get_drive_letter_map();
 
 
-	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
+	std::shared_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
 
 	// Fetch multiport devices using --scan-open.
 	// Note that this may return duplicates (e.g. /dev/sda and /dev/csmi0,0)
@@ -671,7 +671,7 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 	bool areca_open_found = false;  // whether areca devices were found at --scan-open time.
 
 	// Find out their serial numbers and whether there are Arecas there.
-	std::map<std::string, StorageDeviceRefPtr> serials;
+	std::map<std::string, StorageDevicePtr> serials;
 	for (std::size_t i = 0; i < drives.size(); ++i) {
 		std::string local_error = drives.at(i)->fetch_basic_data_and_parse(smartctl_ex);
 		if (!local_error.empty()) {
@@ -730,7 +730,7 @@ std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, Execut
 
 		debug_out_dump("app", "Successfully opened \"" << phys_name << "\".\n");
 
-		StorageDeviceRefPtr drive(new StorageDevice(hz::string_sprintf("pd%d", drive_num)));
+		auto drive = std::make_shared<StorageDevice>(hz::string_sprintf("pd%d", drive_num));
 
 		std::map<char, std::string> letters_volnames;
 		for (std::map<char, DriveLetterInfo>::const_iterator iter = drive_letter_map.begin(); iter != drive_letter_map.end(); ++iter) {

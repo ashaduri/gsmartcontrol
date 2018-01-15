@@ -21,15 +21,13 @@
 #include <chrono>
 #include <unordered_map>
 
-#include "hz/intrusive_ptr.h"
-
 #include "storage_device.h"
 #include "cmdex_sync.h"
 
 
 
 /// SMART self-test runner.
-class SelfTest : public hz::intrusive_ptr_referenced {
+class SelfTest {
 	public:
 
 		/// Test type
@@ -59,7 +57,7 @@ class SelfTest : public hz::intrusive_ptr_referenced {
 
 
 		/// Constructor. \c drive must have the capabilities present in its properties.
-		SelfTest(StorageDeviceRefPtr drive, TestType type)
+		SelfTest(StorageDevicePtr drive, TestType type)
 			: drive_(drive), type_(type)
 		{
 			clear();
@@ -128,22 +126,22 @@ class SelfTest : public hz::intrusive_ptr_referenced {
 
 		/// Start the test.
 		/// \return error message on error, empty string on success.
-		std::string start(hz::intrusive_ptr<CmdexSync> smartctl_ex = nullptr);
+		std::string start(const std::shared_ptr<CmdexSync>& smartctl_ex = nullptr);
 
 
 		/// Abort the running test.
 		/// \return error message on error, empty string on success.
-		std::string force_stop(hz::intrusive_ptr<CmdexSync> smartctl_ex = nullptr);
+		std::string force_stop(const std::shared_ptr<CmdexSync>& smartctl_ex = nullptr);
 
 
 		/// Update status variables. The user should call this every get_poll_in_seconds() seconds.
 		/// \return error message on error, empty string on success.
-		std::string update(hz::intrusive_ptr<CmdexSync> smartctl_ex = nullptr);
+		std::string update(const std::shared_ptr<CmdexSync>& smartctl_ex = nullptr);
 
 
 	private:
 
-		StorageDeviceRefPtr drive_;  ///< Drive to run the tests on
+		StorageDevicePtr drive_;  ///< Drive to run the tests on
 		TestType type_;  ///< Test type
 
 		// status variables:
@@ -156,12 +154,6 @@ class SelfTest : public hz::intrusive_ptr_referenced {
 		Glib::Timer timer_;  ///< Counts time since the last percent change
 
 };
-
-
-
-/// A reference-counting pointer to SelfTest
-using SelfTestPtr = hz::intrusive_ptr<SelfTest>;
-
 
 
 

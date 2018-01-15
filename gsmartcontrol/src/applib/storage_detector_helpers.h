@@ -30,11 +30,11 @@
 
 /// Find and execute tw_cli with specified options, return its output through \c output.
 /// \return error message
-inline std::string execute_tw_cli(ExecutorFactoryRefPtr ex_factory, const std::string& command_options, std::string& output)
+inline std::string execute_tw_cli(const ExecutorFactoryPtr& ex_factory, const std::string& command_options, std::string& output)
 {
-	hz::intrusive_ptr<CmdexSync> executor = ex_factory->create_executor(ExecutorFactory::ExecutorType::TwCli);
+	std::shared_ptr<CmdexSync> executor = ex_factory->create_executor(ExecutorFactory::ExecutorType::TwCli);
 
-	std::string binary = rconfig::get_data<std::string>("system/tw_cli_binary");
+	auto binary = rconfig::get_data<std::string>("system/tw_cli_binary");
 
 	if (binary.empty()) {
 		debug_out_error("app", DBG_FUNC_MSG << "tw_cli binary is not set in config.\n");
@@ -75,7 +75,7 @@ inline std::string execute_tw_cli(ExecutorFactoryRefPtr ex_factory, const std::s
 /// Get the drives on a 3ware controller using tw_cli.
 /// Note that the drives are inserted in the order they are detected.
 inline std::string tw_cli_get_drives(const std::string& dev, int controller,
-		std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory, bool use_tw_cli_dev)
+		std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory, bool use_tw_cli_dev)
 {
 	debug_out_info("app", "Getting available 3ware drives (ports) for controller " << controller << " through tw_cli...\n");
 
@@ -90,18 +90,18 @@ inline std::string tw_cli_get_drives(const std::string& dev, int controller,
 	hz::string_split(output, '\n', lines, true);
 
 	// Note that the ports may be printed in any order. We sort the drives themselves in the end.
-	pcrecpp::RE port_re = app_pcre_re("/^p([0-9]+)[ \\t]+([^\\t\\n]+)/mi");
-	for (std::size_t i = 0; i < lines.size(); ++i) {
+	pcrecpp::RE port_re = app_pcre_re(R"(/^p([0-9]+)[ \t]+([^\t\n]+)/mi)");
+	for (const auto& line : lines) {
 		std::string port_str, status;
-		if (port_re.PartialMatch(hz::string_trim_copy(lines.at(i)), &port_str, &status)) {
+		if (port_re.PartialMatch(hz::string_trim_copy(line), &port_str, &status)) {
 			if (status != "NOT-PRESENT") {
 				int port = -1;
 				if (hz::string_is_numeric_nolocale(port_str, port)) {
 					if (use_tw_cli_dev) {  // use "tw_cli/cx/py" device
-						drives.push_back(StorageDeviceRefPtr(new StorageDevice("tw_cli/c"
-								+ hz::number_to_string_nolocale(controller) + "/p" + hz::number_to_string_nolocale(port))));
+						drives.emplace_back(std::make_shared<StorageDevice>("tw_cli/c"
+								+ hz::number_to_string_nolocale(controller) + "/p" + hz::number_to_string_nolocale(port)));
 					} else {
-						drives.push_back(StorageDeviceRefPtr(new StorageDevice(dev, "3ware," + hz::number_to_string_nolocale(port))));
+						drives.emplace_back(std::make_shared<StorageDevice>(dev, "3ware," + hz::number_to_string_nolocale(port)));
 					}
 					debug_out_info("app", "Added 3ware drive " << drives.back()->get_device_with_type() << ".\n");
 				}
@@ -116,7 +116,7 @@ inline std::string tw_cli_get_drives(const std::string& dev, int controller,
 
 /// Return 3ware SCSI host numbers (same as /c switch to tw_cli).
 /// \return error string on error
-inline std::string tw_cli_get_controllers(ExecutorFactoryRefPtr ex_factory, std::vector<int>& controllers)
+inline std::string tw_cli_get_controllers(const ExecutorFactoryPtr& ex_factory, std::vector<int>& controllers)
 {
 	debug_out_info("app", "Getting available 3ware controllers through tw_cli...\n");
 
@@ -131,9 +131,9 @@ inline std::string tw_cli_get_controllers(ExecutorFactoryRefPtr ex_factory, std:
 	hz::string_split(output, '\n', lines, true);
 
 	pcrecpp::RE controller_re = app_pcre_re("/^c([0-9]+)[ \\t]+/mi");
-	for (std::size_t i = 0; i < lines.size(); ++i) {
+	for (const auto& line : lines) {
 		std::string controller_str;
-		if (controller_re.PartialMatch(hz::string_trim_copy(lines.at(i)), &controller_str)) {
+		if (controller_re.PartialMatch(hz::string_trim_copy(line), &controller_str)) {
 			int controller = -1;
 			if (hz::string_is_numeric_nolocale(controller_str, controller)) {
 				debug_out_info("app", "Found 3ware controller " << controller << ".\n");
@@ -155,13 +155,13 @@ inline std::string tw_cli_get_controllers(ExecutorFactoryRefPtr ex_factory, std:
 /// one of the gives an error. \c type contains a printf-formatted string with %d.
 /// \return an error message on error.
 inline std::string smartctl_scan_drives_sequentially(const std::string& dev, const std::string& type,
-	  int from, int to, std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory, std::string& last_output)
+	  int from, int to, std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory, std::string& last_output)
 {
-	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
+	std::shared_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
 
 	for (int i = from; i <= to; ++i) {
 		std::string type_arg = hz::string_sprintf(type.c_str(), i);
-		StorageDeviceRefPtr drive(new StorageDevice(dev, type_arg));
+		auto drive = std::make_shared<StorageDevice>(dev, type_arg);
 
 		// This will generate an error if smartctl doesn't return 0, which is what happens
 		// with non-populated ports.

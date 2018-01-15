@@ -101,7 +101,7 @@ void StorageDevice::clear_fetched(bool including_outputs) {
 
 
 
-std::string StorageDevice::fetch_basic_data_and_parse(hz::intrusive_ptr<CmdexSync> smartctl_ex)
+std::string StorageDevice::fetch_basic_data_and_parse(const std::shared_ptr<CmdexSync>& smartctl_ex)
 {
 	if (this->test_is_active_)
 		return "A test is currently being performed on this drive.";
@@ -256,7 +256,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 
 
 
-std::string StorageDevice::fetch_data_and_parse(hz::intrusive_ptr<CmdexSync> smartctl_ex)
+std::string StorageDevice::fetch_data_and_parse(const std::shared_ptr<CmdexSync>& smartctl_ex)
 {
 	if (this->test_is_active_)
 		return "A test is currently being performed on this drive.";
@@ -348,7 +348,7 @@ StorageDevice::ParseStatus StorageDevice::get_parse_status() const
 
 
 
-std::string StorageDevice::set_smart_enabled(bool b, hz::intrusive_ptr<CmdexSync> smartctl_ex)
+std::string StorageDevice::set_smart_enabled(bool b, const std::shared_ptr<CmdexSync>& smartctl_ex)
 {
 	if (this->test_is_active_)
 		return "A test is currently being performed on this drive.";
@@ -386,7 +386,7 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 
 
 
-std::string StorageDevice::set_aodc_enabled(bool b, hz::intrusive_ptr<CmdexSync> smartctl_ex)
+std::string StorageDevice::set_aodc_enabled(bool b, const std::shared_ptr<CmdexSync>& smartctl_ex)
 {
 	if (this->test_is_active_)
 		return "A test is currently being performed on this drive.";
@@ -806,7 +806,7 @@ std::string StorageDevice::get_device_options() const
 
 
 std::string StorageDevice::execute_device_smartctl(const std::string& command_options,
-		hz::intrusive_ptr<CmdexSync> smartctl_ex, std::string& smartctl_output, bool check_type)
+		const std::shared_ptr<CmdexSync>& smartctl_ex, std::string& smartctl_output, bool check_type)
 {
 	// don't forbid running on currently tested drive - we need to call this from the test code.
 

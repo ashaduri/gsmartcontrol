@@ -15,32 +15,11 @@
 #include <sigc++/sigc++.h>
 #include <string>
 #include <chrono>
-
+#include <utility>
 #include "hz/error.h"
-#include "hz/intrusive_ptr.h"
 #include "hz/process_signal.h"  // hz::SIGNAL_*
 
 #include "cmdex.h"
-
-
-
-/// Information about finished command (structure for storing it).
-/// Supports intrusive_ptr for memory-efficient storage.
-struct CmdexSyncCommandInfoCopy : public hz::intrusive_ptr_referenced {
-	CmdexSyncCommandInfoCopy(const std::string& c, const std::string& p,
-			const std::string& so, const std::string& se, const std::string& em)
-			: command(c), parameters(p), std_output(so), std_error(se), error_msg(em)
-	{ }
-
-	std::string command;  ///< Executed command
-	std::string parameters;  ///< Command parameters
-	std::string std_output;  ///< Stdout data
-	std::string std_error;  ///< Stderr data
-	std::string error_msg;  ///< Execution error message
-};
-
-/// A reference-counting pointer to CmdexSyncCommandInfoCopy
-using CmdexSyncCommandInfoRefPtr = hz::intrusive_ptr<CmdexSyncCommandInfoCopy>;
 
 
 
@@ -51,12 +30,6 @@ struct CmdexSyncCommandInfo {
 			: command(std::move(c)), parameters(std::move(p)), std_output(std::move(so)),
 			std_error(std::move(se)), error_msg(std::move(em))
 	{ }
-
-	/// Make a copy of this structure for storage.
-	CmdexSyncCommandInfoRefPtr copy() const
-	{
-		return new CmdexSyncCommandInfoCopy(command, parameters, std_output, std_error, error_msg);
-	}
 
 	const std::string command;  ///< Executed command
 	const std::string parameters;  ///< Command parameters
@@ -79,7 +52,7 @@ cmdex_signal_execute_finish_type& cmdex_sync_signal_execute_finish();
 
 
 /// Synchronous Cmdex (command executor) with ticking support.
-class CmdexSync : public hz::intrusive_ptr_referenced, public sigc::trackable {
+class CmdexSync : public sigc::trackable {
 	public:
 
 		/// Constructor

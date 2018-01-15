@@ -90,7 +90,7 @@ bool SelfTest::is_supported() const
 
 
 // start the test
-std::string SelfTest::start(hz::intrusive_ptr<CmdexSync> smartctl_ex)
+std::string SelfTest::start(const std::shared_ptr<CmdexSync>& smartctl_ex)
 {
 	this->clear();  // clear previous results
 
@@ -152,7 +152,7 @@ std::string SelfTest::start(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 
 
 // abort test.
-std::string SelfTest::force_stop(hz::intrusive_ptr<CmdexSync> smartctl_ex)
+std::string SelfTest::force_stop(const std::shared_ptr<CmdexSync>& smartctl_ex)
 {
 	if (!drive_)
 		return "Invalid drive given.";
@@ -206,7 +206,7 @@ std::string SelfTest::force_stop(hz::intrusive_ptr<CmdexSync> smartctl_ex)
 
 // update status variables. note: the returned error is an error in logic,
 // not an hw defect error.
-std::string SelfTest::update(hz::intrusive_ptr<CmdexSync> smartctl_ex)
+std::string SelfTest::update(const std::shared_ptr<CmdexSync>& smartctl_ex)
 {
 	using namespace std::literals;
 

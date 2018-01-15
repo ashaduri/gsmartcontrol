@@ -57,7 +57,7 @@ std::map<debug_level::flag, debug_format::type> debug_get_formats(const std::str
 
 /// Add a new output channel to domain. Set the domain to "all" for all domains.
 /// Multiple levels may be passed (OR'ed), as well as debug_level::all.
-bool debug_add_channel(const std::string& domain, const debug_level::types& levels, debug_channel_base_ptr channel);
+bool debug_add_channel(const std::string& domain, const debug_level::types& levels, const DebugChannelBasePtr& channel);
 
 /// Remove all output channels from domain. Set the domain to "all" for all domains.
 /// Multiple levels may be passed (OR'ed), as well as debug_level::all.
