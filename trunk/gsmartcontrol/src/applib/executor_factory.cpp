@@ -23,40 +23,40 @@ ExecutorFactory::ExecutorFactory(bool use_gui, Gtk::Window* parent)
 
 
 
-hz::intrusive_ptr<CmdexSync> ExecutorFactory::create_executor(ExecutorFactory::ExecutorType type)
+std::shared_ptr<CmdexSync> ExecutorFactory::create_executor(ExecutorFactory::ExecutorType type)
 {
 	switch (type) {
 		case ExecutorType::Smartctl:
 		{
 			if (use_gui_) {
-				SmartctlExecutorGuiRefPtr ex = SmartctlExecutorGuiRefPtr(new SmartctlExecutorGui());
+				auto ex = std::make_shared<SmartctlExecutorGui>();
 				ex->create_running_dialog(parent_);  // dialog parent
 				return ex;
 			}
-			return SmartctlExecutorRefPtr(new SmartctlExecutor());
+			return std::make_shared<SmartctlExecutor>();
 		}
 		case ExecutorType::TwCli:
 		{
 			if (use_gui_) {
-				TwCliExecutorGuiRefPtr ex = TwCliExecutorGuiRefPtr(new TwCliExecutorGui());
+				auto ex = std::make_shared<TwCliExecutorGui>();
 				ex->create_running_dialog(parent_);  // dialog parent
 				return ex;
 			}
-			return TwCliExecutorRefPtr(new TwCliExecutor());
+			return std::make_shared<TwCliExecutor>();
 		}
 		case ExecutorType::ArecaCli:
 		{
 			if (use_gui_) {
-				ArecaCliExecutorGuiRefPtr ex = ArecaCliExecutorGuiRefPtr(new ArecaCliExecutorGui());
+				auto ex = std::make_shared<ArecaCliExecutorGui>();
 				ex->create_running_dialog(parent_);  // dialog parent
 				return ex;
 			}
-			return ArecaCliExecutorRefPtr(new ArecaCliExecutor());
+			return std::make_shared<ArecaCliExecutor>();
 		}
 	}
 
 	DBG_ASSERT(0);
-	return hz::intrusive_ptr<CmdexSync>();
+	return std::make_shared<CmdexSync>();
 }
 
 

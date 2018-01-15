@@ -155,9 +155,6 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 /// Smartctl executor without GUI support
 using SmartctlExecutor = SmartctlExecutorGeneric<CmdexSync>;
 
-/// A reference-counting pointer to SmartctlExecutor
-using SmartctlExecutorRefPtr = hz::intrusive_ptr<SmartctlExecutor>;
-
 
 
 /// Get smartctl binary (from config, etc...). Returns an empty string if not found.
@@ -168,7 +165,7 @@ std::string get_smartctl_binary();
 /// \return error message on error, empty string on success.
 std::string execute_smartctl(const std::string& device, const std::string& device_opts,
 		const std::string& command_options,
-		hz::intrusive_ptr<CmdexSync> smartctl_ex, std::string& smartctl_output);
+		std::shared_ptr<CmdexSync> smartctl_ex, std::string& smartctl_output);
 
 
 

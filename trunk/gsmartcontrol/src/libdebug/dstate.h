@@ -15,8 +15,7 @@
 #include <string>
 #include <map>
 #include <stack>
-
-#include "hz/intrusive_ptr.h"
+#include <memory>
 
 #include "dflags.h"
 #include "dstream.h"
@@ -37,11 +36,8 @@ namespace debug_internal {
 	class DebugState {
 		public:
 
-			/// Debug output stream strong reference-holding pointer
-			using out_stream_ptr = hz::intrusive_ptr<DebugOutStream>;
-
 			/// A mapping of debug levels to respective streams
-			using level_map_t = std::map<debug_level::flag, out_stream_ptr>;
+			using level_map_t = std::map<debug_level::flag, std::shared_ptr<DebugOutStream>>;
 
 			/// A mapping of domains to debug level maps with streams
 			using domain_map_t = std::map<std::string, level_map_t>;

@@ -67,9 +67,7 @@ namespace debug_internal {
 			is_first_line = true;
 		}
 
-// 		std::cerr << "SENDING: " << oss.str();
-		std::vector<debug_channel_base_ptr>::iterator iter = dos_->channels_.begin();
-		for (; iter != dos_->channels_.end(); ++iter) {
+		for (auto iter = dos_->channels_.begin(); iter != dos_->channels_.end(); ++iter) {
 			// send() locks the channel if needed
 			(*iter)->send(dos_->level_, dos_->domain_, flags,
 					get_debug_state().get_indent_level(), is_first_line, oss_.str());

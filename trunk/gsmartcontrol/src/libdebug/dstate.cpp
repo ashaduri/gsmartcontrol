@@ -54,11 +54,11 @@ namespace debug_internal {
 		level_map_t& level_map = dm.find("default")->second;
 
 		// we add the same copy to save memory and to ensure proper std::cerr locking.
-		debug_channel_base_ptr channel(new DebugChannelOStream(std::cerr));
+		auto channel = std::make_shared<DebugChannelOStream>(std::cerr);
 
 		for (auto& iter : levels) {
 			debug_level::flag level = iter.first;
-			level_map[level] = out_stream_ptr(new DebugOutStream(level, "default", format_flags));
+			level_map[level] = std::make_shared<DebugOutStream>(level, "default", format_flags);
 
 			level_map[level]->add_channel(channel);  // add by smartpointer
 			level_map[level]->set_enabled(iter.second);
@@ -106,7 +106,7 @@ bool debug_register_domain(const std::string& domain)
 	DebugState::level_map_t& level_map = dm.find(domain)->second;
 
 	for (DebugState::level_map_t::const_iterator iter = def_level_map.begin(); iter != def_level_map.end(); ++iter) {
-		level_map[iter->first] = DebugState::out_stream_ptr(new DebugOutStream(*(iter->second), domain));
+		level_map[iter->first] = std::make_shared<DebugOutStream>(*(iter->second), domain);
 	}
 
 	return true;
@@ -244,7 +244,7 @@ std::map<debug_level::flag, debug_format::type> debug_get_formats(const std::str
 
 
 
-bool debug_add_channel(const std::string& domain, const debug_level::types& levels, debug_channel_base_ptr channel)
+bool debug_add_channel(const std::string& domain, const debug_level::types& levels, const DebugChannelBasePtr& channel)
 {
 	using namespace debug_internal;
 	DebugState::domain_map_t& dm = get_debug_state().get_domain_map();
@@ -291,7 +291,7 @@ bool debug_clear_channels(const std::string& domain, const debug_level::types& l
 	std::vector<debug_level::flag> matched_levels;
 	debug_level::get_matched_levels_array(levels, matched_levels);
 	for (auto matched_level : matched_levels) {
-		found->second[matched_level]->set_channels(std::vector<debug_channel_base_ptr>());
+		found->second[matched_level]->set_channels(std::vector<DebugChannelBasePtr>());
 	}
 
 	return true;

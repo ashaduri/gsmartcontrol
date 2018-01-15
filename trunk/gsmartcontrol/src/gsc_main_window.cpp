@@ -557,7 +557,7 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 
 		case action_remove_device:
 			if (iconview) {
-				StorageDeviceRefPtr drive = iconview->get_selected_drive();
+				StorageDevicePtr drive = iconview->get_selected_drive();
 				if (drive && drive->get_is_manually_added() && !drive->get_test_is_active())
 					iconview->remove_selected_drive();
 			}
@@ -565,7 +565,7 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 
 		case action_remove_virtual_device:
 			if (iconview) {
-				StorageDeviceRefPtr drive = iconview->get_selected_drive();
+				StorageDevicePtr drive = iconview->get_selected_drive();
 				if (drive && drive->get_is_virtual())
 					iconview->remove_selected_drive();
 			}
@@ -645,7 +645,7 @@ void GscMainWindow::on_action_enable_smart_toggled(Gtk::ToggleAction* action)
 	if (!action->get_sensitive())  // it's insensitive, nothing to do (this shouldn't happen).
 		return;
 
-	StorageDeviceRefPtr drive = iconview->get_selected_drive();
+	StorageDevicePtr drive = iconview->get_selected_drive();
 
 	// we should be protected from these by disabled actions, but still...
 	if (!drive || drive->get_is_virtual() || drive->get_test_is_active())
@@ -660,7 +660,7 @@ void GscMainWindow::on_action_enable_smart_toggled(Gtk::ToggleAction* action)
 	if ( (toggle_active && status == StorageDevice::Status::disabled)
 			|| (!toggle_active && status == StorageDevice::Status::enabled) ) {
 
-		SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
+		std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 		ex->create_running_dialog(this);
 
 		std::string error_msg = drive->set_smart_enabled(toggle_active, ex);  // run it with GUI support
@@ -684,7 +684,7 @@ void GscMainWindow::on_action_enable_aodc_toggled(Gtk::ToggleAction* action)
 	if (!action->get_sensitive())  // it's insensitive, nothing to do (this shouldn't happen).
 		return;
 
-	StorageDeviceRefPtr drive = iconview->get_selected_drive();
+	StorageDevicePtr drive = iconview->get_selected_drive();
 
 	// we should be protected from these by disabled actions, but still...
 	if (!drive || drive->get_is_virtual() || drive->get_test_is_active())
@@ -742,7 +742,7 @@ void GscMainWindow::on_action_enable_aodc_toggled(Gtk::ToggleAction* action)
 				return;
 		}
 
-		SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
+		std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 		ex->create_running_dialog(this);
 
 		std::string error_msg = drive->set_aodc_enabled(enable_aodc, ex);  // run it with GUI support
@@ -766,7 +766,7 @@ void GscMainWindow::on_action_enable_aodc_toggled(Gtk::ToggleAction* action)
 	if ( (toggle_active && status == StorageDevice::Status::disabled)
 			|| (!toggle_active && status == StorageDevice::Status::enabled) ) {
 
-		SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
+		std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 		ex->create_running_dialog(this);
 
 		std::string error_msg = drive->set_aodc_enabled(toggle_active, ex);  // run it with GUI support
@@ -788,10 +788,10 @@ void GscMainWindow::on_action_reread_device_data()
 	if (!iconview)
 		return;
 
-	StorageDeviceRefPtr drive = iconview->get_selected_drive();
+	StorageDevicePtr drive = iconview->get_selected_drive();
 
 	if (!drive->get_is_virtual() && !drive->get_test_is_active()) {  // disallow on virtual and testing
-		SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
+		std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 		ex->create_running_dialog(this);
 
 		// note: this will clear the non-basic properties!
@@ -806,10 +806,10 @@ void GscMainWindow::on_action_reread_device_data()
 
 
 
-Gtk::Menu* GscMainWindow::get_popup_menu(StorageDeviceRefPtr drive)
+Gtk::Menu* GscMainWindow::get_popup_menu(const StorageDevicePtr& drive)
 {
 	if (!ui_manager)
-		return 0;
+		return nullptr;
 	if (drive) {
 		return dynamic_cast<Gtk::Menu*>(ui_manager->get_widget("/device_popup"));
 	}
@@ -818,7 +818,7 @@ Gtk::Menu* GscMainWindow::get_popup_menu(StorageDeviceRefPtr drive)
 
 
 
-void GscMainWindow::set_drive_menu_status(StorageDeviceRefPtr drive)
+void GscMainWindow::set_drive_menu_status(const StorageDevicePtr& drive)
 {
 	// disable any action handling until we're out of here, else we'll get some
 	// bogus toggle actions, etc...
@@ -924,7 +924,7 @@ void GscMainWindow::update_status_widgets()
 // 	Gtk::Label* family_label = this->lookup_widget<Gtk::Label*>("status_family_label");
 // 	Gtk::Statusbar* statusbar = this->lookup_widget<Gtk::Statusbar*>("window_statusbar");
 
-	StorageDeviceRefPtr drive = iconview->get_selected_drive();
+	StorageDevicePtr drive = iconview->get_selected_drive();
 	if (!drive) {
 		if (name_label)
 			name_label->set_text("No drive selected");
@@ -1038,7 +1038,7 @@ void GscMainWindow::rescan_devices()
 	sd.add_blacklist_patterns(blacklist_patterns);
 
 
-	ExecutorFactoryRefPtr ex_factory(new ExecutorFactory(true, this));  // run it with GUI support
+	auto ex_factory = std::make_shared<ExecutorFactory>(true, this);  // run it with GUI support
 
 	std::string error_msg = sd.detect_and_fetch_basic_data(drives, ex_factory);
 
@@ -1129,15 +1129,15 @@ bool GscMainWindow::add_device(const std::string& file, const std::string& type_
 	}
 #endif
 
-	StorageDeviceRefPtr d(new StorageDevice(file));
-	d->set_type_argument(type_arg);
-	d->set_extra_arguments(extra_args);
-	d->set_is_manually_added(true);
+	auto drive = std::make_shared<StorageDevice>(file);
+	drive->set_type_argument(type_arg);
+	drive->set_extra_arguments(extra_args);
+	drive->set_is_manually_added(true);
 
-	ExecutorFactoryRefPtr ex_factory(new ExecutorFactory(true, this));  // pass this as dialog parent
+	auto ex_factory = std::make_shared<ExecutorFactory>(true, this);  // pass this as dialog parent
 
-	std::vector<StorageDeviceRefPtr> tmp_drives;
-	tmp_drives.push_back(d);
+	std::vector<StorageDevicePtr> tmp_drives;
+	tmp_drives.push_back(drive);
 
 	StorageDetector sd;
 	std::string error_msg = sd.fetch_basic_data(tmp_drives, ex_factory, true);  // return its first error
@@ -1145,8 +1145,8 @@ bool GscMainWindow::add_device(const std::string& file, const std::string& type_
 		gsc_executor_error_dialog_show("An error occurred while adding the device", error_msg, this);
 
 	} else {
-		this->drives.push_back(d);
-		this->iconview->add_entry(d, true);  // add it, scroll and select it.
+		this->drives.push_back(drive);
+		this->iconview->add_entry(drive, true);  // add it, scroll and select it.
 	}
 
 	return true;
@@ -1166,18 +1166,18 @@ bool GscMainWindow::add_virtual_drive(const std::string& file)
 
 	// we have to use smart pointers here, because a pointer may be invalidated
 	// on vector reallocation
-	StorageDeviceRefPtr d(new StorageDevice(file, true));
+	auto drive = std::make_shared<StorageDevice>(file, true);
 
-	d->set_full_output(output);
-	d->set_info_output(output);  // info can be parsed from full output string too.
+	drive->set_full_output(output);
+	drive->set_info_output(output);  // info can be parsed from full output string too.
 
-	std::string error_msg = d->parse_data();  // this will set the type and add the properties
+	std::string error_msg = drive->parse_data();  // this will set the type and add the properties
 	if (!error_msg.empty()) {
 		gui_show_error_dialog("Cannot interpret SMART data", error_msg, this);
 		return false;
 	}
 
-	this->drives.push_back(d);
+	this->drives.push_back(drive);
 
 	this->iconview->add_entry(drives.back(), true);  // add it, scroll and select it.
 
@@ -1199,7 +1199,7 @@ bool GscMainWindow::testing_active() const
 
 
 
-GscInfoWindow* GscMainWindow::show_device_info_window(StorageDeviceRefPtr drive)
+GscInfoWindow* GscMainWindow::show_device_info_window(const StorageDevicePtr& drive)
 {
 	// if a test is being run on it, disallow.
 	if (drive->get_test_is_active()) {
@@ -1225,7 +1225,7 @@ GscInfoWindow* GscMainWindow::show_device_info_window(StorageDeviceRefPtr drive)
 		}
 
 		if (status == Gtk::RESPONSE_YES) {
-			SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
+			std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 			ex->create_running_dialog(this, "Running %s on " + drive->get_device_with_type() + "...");
 			std::string error_msg = drive->set_smart_enabled(true, ex);  // run it with GUI support
 
@@ -1239,7 +1239,7 @@ GscInfoWindow* GscMainWindow::show_device_info_window(StorageDeviceRefPtr drive)
 	// Virtual drives are parsed at load time.
 	// Parse non-virtual, smart-supporting drives here.
 	if (!drive->get_is_virtual() && drive->get_smart_status() != StorageDevice::Status::unsupported) {
-		SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
+		std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 		ex->create_running_dialog(this, "Running %s on " + drive->get_device_with_type() + "...");
 		std::string error_msg = drive->fetch_data_and_parse(ex);  // run it with GUI support
 

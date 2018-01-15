@@ -16,9 +16,8 @@
 #include <streambuf>  // std::streambuf definition
 #include <string>
 #include <sstream>
+#include <utility>
 #include <vector>
-
-#include "hz/intrusive_ptr.h"
 
 #include "dflags.h"
 #include "dchannel.h"
@@ -148,14 +147,14 @@ namespace debug_internal {
 
 	/// Debug output stream (inherits std::ostream).
 	/// This is returned by debug_out().
-	class DebugOutStream : public std::ostream, public hz::intrusive_ptr_referenced {
+	class DebugOutStream : public std::ostream {
 		public:
 
 			friend class DebugStreamBuf;
 
 			/// Constructor
-			DebugOutStream(debug_level::flag level, const std::string& domain, const debug_format::type& format_flags)
-					: std::ostream(nullptr), level_(level), domain_(domain), format_(format_flags), buf_(this)
+			DebugOutStream(debug_level::flag level, std::string domain, const debug_format::type& format_flags)
+					: std::ostream(nullptr), level_(level), domain_(std::move(domain)), format_(format_flags), buf_(this)
 			{
 				set_enabled(true);  // sets ostream's rdbuf
 			}
@@ -166,14 +165,12 @@ namespace debug_internal {
 // 			}
 
 			/// Construct with settings from another DebugOutStream.
-			DebugOutStream(const DebugOutStream& other, const std::string& domain)
-					: std::ostream(nullptr), level_(other.level_), domain_(domain), format_(other.format_), buf_(this)
+			DebugOutStream(const DebugOutStream& other, std::string domain)
+					: std::ostream(nullptr), level_(other.level_), domain_(std::move(domain)), format_(other.format_), buf_(this)
 			{
 				set_enabled(other.get_enabled());  // sets ostream's rdbuf
-				for (std::vector<debug_channel_base_ptr>::const_iterator iter = other.channels_.begin(); iter != other.channels_.end(); ++iter) {
-					// we let the object dictate the copy rules because really copying it
-					// may harm the underlying locking mechanism
-					channels_.push_back((*iter)->clone_ptr());
+				for (const auto& channel : other.channels_) {
+					channels_.push_back(channel);
 				}
 			}
 
@@ -220,20 +217,20 @@ namespace debug_internal {
 
 
 			/// Set channel list to send the data to.
-			void set_channels(const std::vector<debug_channel_base_ptr>& channels)
+			void set_channels(const std::vector<DebugChannelBasePtr>& channels)
 			{
 				channels_ = channels;
 			}
 
 			/// Get channel list
-			std::vector<debug_channel_base_ptr>& get_channels()
+			std::vector<DebugChannelBasePtr>& get_channels()
 			{
 				return channels_;
 			}
 
 			/// Add a channel to channel list.
 			/// This will claim the ownership of the passed parameter.
-			void add_channel(debug_channel_base_ptr channel)
+			void add_channel(DebugChannelBasePtr channel)
 			{
 				channels_.push_back(channel);
 			}
@@ -270,7 +267,7 @@ namespace debug_internal {
 
 			bool is_first_line_ = true;  ///< Whether it's the first line of output or not
 
-			std::vector<debug_channel_base_ptr> channels_;  ///< Channels that the output is sent to
+			std::vector<DebugChannelBasePtr> channels_;  ///< Channels that the output is sent to
 
 			DebugStreamBuf buf_;  /// Streambuf for implementation.
 	};

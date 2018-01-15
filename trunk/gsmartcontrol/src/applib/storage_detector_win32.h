@@ -26,7 +26,7 @@
 
 
 /// Detect drives in Windows
-std::string detect_drives_win32(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory);
+std::string detect_drives_win32(std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory);
 
 
 

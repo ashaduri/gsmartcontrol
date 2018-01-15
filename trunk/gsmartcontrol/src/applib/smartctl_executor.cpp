@@ -75,7 +75,7 @@ std::string get_smartctl_binary()
 
 std::string execute_smartctl(const std::string& device, const std::string& device_opts,
 		const std::string& command_options,
-		hz::intrusive_ptr<CmdexSync> smartctl_ex, std::string& smartctl_output)
+		std::shared_ptr<CmdexSync> smartctl_ex, std::string& smartctl_output)
 {
 #ifndef _WIN32  // win32 doesn't have slashes in devices names
 	{
@@ -88,7 +88,7 @@ std::string execute_smartctl(const std::string& device, const std::string& devic
 #endif
 
 	if (!smartctl_ex)  // if it doesn't exist, create a default one
-		smartctl_ex = new SmartctlExecutor();  // will be auto-deleted
+		smartctl_ex = std::make_shared<SmartctlExecutor>();
 
 	std::string smartctl_binary = get_smartctl_binary();
 
@@ -97,7 +97,7 @@ std::string execute_smartctl(const std::string& device, const std::string& devic
 		return "Smartctl binary is not specified in configuration.";
 	}
 
-	std::string smartctl_def_options = rconfig::get_data<std::string>("system/smartctl_options");
+	auto smartctl_def_options = rconfig::get_data<std::string>("system/smartctl_options");
 
 	if (!smartctl_def_options.empty())
 		smartctl_def_options += " ";

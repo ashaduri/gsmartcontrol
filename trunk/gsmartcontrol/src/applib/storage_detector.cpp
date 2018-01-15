@@ -26,11 +26,11 @@
 
 
 
-std::string StorageDetector::detect(std::vector<StorageDeviceRefPtr>& drives, ExecutorFactoryRefPtr ex_factory)
+std::string StorageDetector::detect(std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Starting drive detection.\n");
 
-	std::vector<StorageDeviceRefPtr> all_detected;
+	std::vector<StorageDevicePtr> all_detected;
 	std::string error_msg;
 
 	// Try each one and move to next if it fails.
@@ -93,13 +93,13 @@ std::string StorageDetector::detect(std::vector<StorageDeviceRefPtr>& drives, Ex
 
 
 
-std::string StorageDetector::fetch_basic_data(std::vector<StorageDeviceRefPtr>& drives,
-		ExecutorFactoryRefPtr ex_factory, bool return_first_error)
+std::string StorageDetector::fetch_basic_data(std::vector<StorageDevicePtr>& drives,
+		const ExecutorFactoryPtr& ex_factory, bool return_first_error)
 {
 	fetch_data_errors_.clear();
 	fetch_data_error_outputs_.clear();
 
-	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
+	std::shared_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
 
 	for (auto& drive : drives) {
 		debug_out_info("app", "Retrieving basic information about the device...\n");
@@ -141,8 +141,8 @@ std::string StorageDetector::fetch_basic_data(std::vector<StorageDeviceRefPtr>& 
 
 
 
-std::string StorageDetector::detect_and_fetch_basic_data(std::vector<StorageDeviceRefPtr>& put_drives_here,
-		ExecutorFactoryRefPtr ex_factory)
+std::string StorageDetector::detect_and_fetch_basic_data(std::vector<StorageDevicePtr>& put_drives_here,
+		const ExecutorFactoryPtr& ex_factory)
 {
 	std::string error_msg = detect(put_drives_here, ex_factory);
 

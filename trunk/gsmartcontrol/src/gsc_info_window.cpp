@@ -356,7 +356,7 @@ void GscInfoWindow::obj_destroy()
 
 
 
-void GscInfoWindow::set_drive(StorageDeviceRefPtr d)
+void GscInfoWindow::set_drive(StorageDevicePtr d)
 {
 	if (drive)  // if an old drive is present, disconnect our callback from it.
 		drive_changed_connection.disconnect();
@@ -377,7 +377,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 	if (!drive->get_is_virtual()) {
 		// fetch all smartctl info, even if it already has it (to refresh it).
 		if (scan) {
-			SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
+			std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 			ex->create_running_dialog(this, "Running %s on " + drive->get_device_with_type() + "...");
 			std::string error_msg = drive->fetch_data_and_parse(ex);  // run it with GUI support
 
@@ -848,7 +848,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		Gtk::TreeModel::Row row;
 
-		SelfTestPtr test_ioffline(new SelfTest(drive, SelfTest::TestType::immediate_offline));
+		auto test_ioffline = std::make_shared<SelfTest>(drive, SelfTest::TestType::immediate_offline);
 		if (test_ioffline->is_supported()) {
 			row = *(test_combo_model->append());
 			row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::TestType::immediate_offline);
@@ -860,7 +860,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			row[test_combo_col_self_test] = test_ioffline;
 		}
 
-		SelfTestPtr test_short(new SelfTest(drive, SelfTest::TestType::short_test));
+		auto test_short = std::make_shared<SelfTest>(drive, SelfTest::TestType::short_test);
 		if (test_short->is_supported()) {
 			row = *(test_combo_model->append());
 			row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::TestType::short_test);
@@ -874,7 +874,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			row[test_combo_col_self_test] = test_short;
 		}
 
-		SelfTestPtr test_long(new SelfTest(drive, SelfTest::TestType::long_test));
+		auto test_long = std::make_shared<SelfTest>(drive, SelfTest::TestType::long_test);
 		if (test_long->is_supported()) {
 			row = *(test_combo_model->append());
 			row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::TestType::long_test);
@@ -884,7 +884,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			row[test_combo_col_self_test] = test_long;
 		}
 
-		SelfTestPtr test_conveyance(new SelfTest(drive, SelfTest::TestType::conveyance));
+		auto test_conveyance = std::make_shared<SelfTest>(drive, SelfTest::TestType::conveyance);
 		if (test_conveyance->is_supported()) {
 			row = *(test_combo_model->append());
 			row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::TestType::conveyance);
@@ -1856,7 +1856,7 @@ void GscInfoWindow::on_test_type_combo_changed()
 
 	Gtk::TreeRow row = *(test_type_combo->get_active());
 	if (row) {
-		SelfTestPtr test = row[test_combo_col_self_test];
+		std::shared_ptr<SelfTest> test = row[test_combo_col_self_test];
 
 		//debug_out_error("app", test->get_min_duration_seconds() << "\n");
 		if (auto* min_duration_label = lookup_widget<Gtk::Label*>("min_duration_label")) {
@@ -1946,7 +1946,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 				break;
 			}
 
-			SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
+			std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 			ex->create_running_dialog(self);
 
 			self->test_error_msg = self->current_test->update(ex);
@@ -2057,7 +2057,7 @@ void GscInfoWindow::on_test_execute_button_clicked()
 	if (!row)
 		return;
 
-	SelfTestPtr test = row[test_combo_col_self_test];
+	std::shared_ptr<SelfTest> test = row[test_combo_col_self_test];
 	if (!test)
 		return;
 
@@ -2065,7 +2065,7 @@ void GscInfoWindow::on_test_execute_button_clicked()
 	if (auto* test_result_hbox = this->lookup_widget<Gtk::Box*>("test_result_hbox"))
 		test_result_hbox->hide();
 
-	SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
+	std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 	ex->create_running_dialog(this);
 
 	std::string error_msg = test->start(ex);  // this runs update() too.
@@ -2127,7 +2127,7 @@ void GscInfoWindow::on_test_stop_button_clicked()
 	if (!current_test)
 		return;
 
-	SmartctlExecutorGuiRefPtr ex(new SmartctlExecutorGui());
+	std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 	ex->create_running_dialog(this);
 
 	std::string error_msg = current_test->force_stop(ex);

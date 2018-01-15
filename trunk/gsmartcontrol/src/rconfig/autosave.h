@@ -100,7 +100,7 @@ inline bool autosave_start(std::chrono::seconds sec_interval)
 	}
 
 	impl::autosave_enabled = true;
-	debug_print_info("rconfig", "Starting config autosave with %ld sec. interval.\n", sec_interval.count());
+	debug_print_info("rconfig", "Starting config autosave with %d sec. interval.\n", int(sec_interval.count()));
 
 	g_timeout_add_full(G_PRIORITY_DEFAULT_IDLE, guint(std::chrono::milliseconds(sec_interval).count()),
 			&autosave_timeout_callback, nullptr, nullptr);

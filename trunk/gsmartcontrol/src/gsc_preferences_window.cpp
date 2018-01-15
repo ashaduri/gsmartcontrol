@@ -414,7 +414,7 @@ void GscPreferencesWindow::import_config()
 	if (Gtk::Entry* entry = this->lookup_widget<Gtk::Entry*>("device_blacklist_patterns_entry"))
 		entry->set_text(device_blacklist_patterns);
 
-	{
+	if (device_options_treeview) {
 		std::string devmap_str = rconfig::get_data<std::string>("system/smartctl_device_options");
 		device_option_map_t devmap = app_unserialize_device_option_map(devmap_str);
 		device_options_treeview->set_device_map(devmap);

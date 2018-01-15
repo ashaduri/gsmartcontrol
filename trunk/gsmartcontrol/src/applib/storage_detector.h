@@ -15,8 +15,6 @@
 #include <vector>
 #include <string>
 
-#include "hz/intrusive_ptr.h"
-
 #include "storage_device.h"
 #include "cmdex_sync.h"
 #include "executor_factory.h"
@@ -27,29 +25,22 @@
 class StorageDetector {
 	public:
 
-		/// Constructor
-		StorageDetector()
-		{
-// 			match_patterns_.push_back("/.+/");  // accept anything, the scanner picks up disks only anyway.
-		}
-
-
 		/// Detects a list of drives. Returns detection error message if error occurs.
-		std::string detect(std::vector<StorageDeviceRefPtr>& put_drives_here,
-				ExecutorFactoryRefPtr ex_factory);
+		std::string detect(std::vector<StorageDevicePtr>& put_drives_here,
+				const ExecutorFactoryPtr& ex_factory);
 
 
 		/// For each drive, fetch basic data and parse it.
 		/// If \c return_first_error is true, the function returns on the first error.
 		/// \return An empty string. Or, if return_first_error is true, the first error that occurs.
-		std::string fetch_basic_data(std::vector<StorageDeviceRefPtr>& drives,
-				ExecutorFactoryRefPtr ex_factory, bool return_first_error = false);
+		std::string fetch_basic_data(std::vector<StorageDevicePtr>& drives,
+				const ExecutorFactoryPtr& ex_factory, bool return_first_error = false);
 
 
 		/// Run detect() and fetch_basic_data().
 		/// \return An error if such occurs.
-		std::string detect_and_fetch_basic_data(std::vector<StorageDeviceRefPtr>& put_drives_here,
-				ExecutorFactoryRefPtr ex_factory);
+		std::string detect_and_fetch_basic_data(std::vector<StorageDevicePtr>& put_drives_here,
+				const ExecutorFactoryPtr& ex_factory);
 
 
 // 		void add_match_patterns(std::vector<std::string>& patterns)

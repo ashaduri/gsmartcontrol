@@ -15,9 +15,8 @@
 #include <string>
 #include <map>
 #include <optional>
+#include <memory>
 #include <sigc++/sigc++.h>
-
-#include "hz/intrusive_ptr.h"
 
 #include "storage_property.h"
 #include "smartctl_parser.h"  // prop_list_t
@@ -29,12 +28,12 @@ class StorageDevice;
 
 
 /// A reference-counting pointer to StorageDevice
-using StorageDeviceRefPtr = hz::intrusive_ptr<StorageDevice>;
+using StorageDevicePtr = std::shared_ptr<StorageDevice>;
 
 
 
 /// This class represents a single drive
-class StorageDevice : public hz::intrusive_ptr_referenced {
+class StorageDevice {
 	public:
 
 		/// These may be used to force smartctl to a special type, as well as
@@ -84,14 +83,14 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		/// Calls "smartctl -i -H -c" (info section, health, capabilities), then parse_basic_data().
 		/// Called during drive detection.
 		/// Note: this will clear the non-basic properties!
-		std::string fetch_basic_data_and_parse(hz::intrusive_ptr<CmdexSync> smartctl_ex = 0);
+		std::string fetch_basic_data_and_parse(const std::shared_ptr<CmdexSync>& smartctl_ex = 0);
 
 		/// Detects type, smart support, smart status (on / off).
 		/// Note: this will clear the non-basic properties!
 		std::string parse_basic_data(bool do_set_properties = true, bool emit_signal = true);
 
 		/// Execute smartctl --all (all sections), get output, parse it (basic data too), fill properties.
-		std::string fetch_data_and_parse(hz::intrusive_ptr<CmdexSync> smartctl_ex = 0);  // returns error message on error.
+		std::string fetch_data_and_parse(const std::shared_ptr<CmdexSync>& smartctl_ex);  // returns error message on error.
 
 		// Parses full info. If failed, try to parse it as basic info.
 		/// \return error message on error.
@@ -103,11 +102,11 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 
 		/// Try to enable SMART.
 		/// \return error message on error, empty string on success
-		std::string set_smart_enabled(bool b, hz::intrusive_ptr<CmdexSync> smartctl_ex = 0);
+		std::string set_smart_enabled(bool b, const std::shared_ptr<CmdexSync>&);
 
 		/// Try to enable Automatic Offline Data Collection.
 		/// \return error message on error, empty string on success
-		std::string set_aodc_enabled(bool b, hz::intrusive_ptr<CmdexSync> smartctl_ex = 0);
+		std::string set_aodc_enabled(bool b, const std::shared_ptr<CmdexSync>&);
 
 
 		/// Get SMART status
@@ -240,7 +239,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		/// Execute smartctl on this device. Nothing is modified in this class.
 		/// \return error message on error, empty string on success
 		std::string execute_device_smartctl(const std::string& command_options,
-				hz::intrusive_ptr<CmdexSync> smartctl_ex, std::string& output, bool check_type = false);
+				const std::shared_ptr<CmdexSync>& smartctl_ex, std::string& output, bool check_type = false);
 
 
 		/// Emitted whenever new information is available
@@ -298,7 +297,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 
 
 /// Operator for sorting, hard drives first, then device name base
-inline bool operator< (const StorageDeviceRefPtr& a, const StorageDeviceRefPtr& b)
+inline bool operator< (const StorageDevicePtr& a, const StorageDevicePtr& b)
 {
 // 	if (a->get_detected_type() != a->get_detected_type()) {
 // 		return (a->get_detected_type() == StorageDevice::DetectedType::unknown);  // hard drives first

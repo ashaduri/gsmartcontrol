@@ -14,8 +14,7 @@
 
 #include <string>
 #include <ostream>  // std::ostream (iosfwd is not enough for win32 and suncc)
-
-#include "hz/intrusive_ptr.h"
+#include <memory>
 
 #include "dflags.h"
 
@@ -23,10 +22,7 @@
 class DebugChannelBase;
 
 /// Strong reference-holding pointer
-using debug_channel_base_ptr = hz::intrusive_ptr<DebugChannelBase>;
-
-/// Strong reference-holding pointer
-using debug_channel_base_const_ptr = hz::intrusive_ptr<const DebugChannelBase>;
+using DebugChannelBasePtr = std::shared_ptr<DebugChannelBase>;
 
 
 
@@ -34,17 +30,11 @@ using debug_channel_base_const_ptr = hz::intrusive_ptr<const DebugChannelBase>;
 
 
 /// All channels must inherit this.
-class DebugChannelBase : public hz::intrusive_ptr_referenced {
+class DebugChannelBase {
 	public:
 
 		/// Virtual destructor
 		virtual ~DebugChannelBase() = default;
-
-		/// Clone the channel and return a strong reference-holding pointer
-		virtual debug_channel_base_ptr clone_ptr() = 0;
-
-		/// Clone the channel and return a strong reference-holding pointer
-		virtual debug_channel_base_const_ptr clone_ptr() const = 0;
 
 		/// Send a message to channel
 		virtual void send(debug_level::flag level, const std::string& domain,
@@ -65,22 +55,8 @@ class DebugChannelOStream : public DebugChannelBase {
 	public:
 
 		/// Constructor
-		DebugChannelOStream(std::ostream& os) : os_(os)
+		explicit DebugChannelOStream(std::ostream& os) : os_(os)
 		{ }
-
-		// Reimplemented
-		debug_channel_base_ptr clone_ptr() override
-		{
-			// this will prevent the object from being copied, which may harm the wrapped stream.
-			return debug_channel_base_ptr(this);  // aka copy.
-		}
-
-		// Reimplemented
-		debug_channel_base_const_ptr clone_ptr() const override
-		{
-			// this will prevent the object from being copied, which may harm the wrapped stream.
-			return debug_channel_base_const_ptr(this);  // aka copy.
-		}
 
 		/// Reimplemented from DebugChannelBase.
 		void send(debug_level::flag level, const std::string& domain,
