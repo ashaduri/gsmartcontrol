@@ -26,7 +26,7 @@ License: See LICENSE_gsmartcontrol.txt
 
 
 
-std::string StorageDevice::get_type_readable_name(StorageDevice::DetectedType type)
+std::string StorageDevice::get_type_readable_name(DetectedType type)
 {
 	static const std::unordered_map<DetectedType, std::string> m {
 			{DetectedType::unknown, "unknown"},
@@ -42,18 +42,17 @@ std::string StorageDevice::get_type_readable_name(StorageDevice::DetectedType ty
 
 
 
-std::string StorageDevice::get_status_name(StorageDevice::Status status, bool use_yesno)
+std::string StorageDevice::get_status_name(Status status)
 {
-	switch (status) {
-	case Status::enabled:
-		return (use_yesno ? "Yes" : "Enabled");
-	case Status::disabled:
-		return (use_yesno ? "No" : "Disabled");
-	case Status::unsupported:
-		return "Unsupported";
-	case Status::unknown:
-		return "Unknown";
+	static const std::unordered_map<Status, std::string> m {
+			{Status::enabled, "Enabled"},
+			{Status::disabled, "Disabled"},
+			{Status::unsupported, "Unsupported"},
+			{Status::unknown, "Unknown"},
 	};
+	if (auto iter = m.find(status); iter != m.end()) {
+		return iter->second;
+	}
 	return "[internal_error]";
 }
 

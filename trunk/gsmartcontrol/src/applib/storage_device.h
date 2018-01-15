@@ -60,7 +60,7 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		};
 
 		/// Get displayable name for Status.
-		static std::string get_status_name(Status status, bool use_yesno = false);
+		static std::string get_status_name(Status status);
 
 
 		/// Statuses of various parse states

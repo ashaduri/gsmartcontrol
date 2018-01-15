@@ -19,6 +19,7 @@
 #include <optional>
 #include <chrono>
 #include <variant>
+#include <unordered_map>
 
 #include "warning_level.h"
 
@@ -61,14 +62,17 @@ class StorageAttribute {
 		};
 
 		/// Get readable attribute type name
-		static std::string get_attr_type_name(AttributeType a)
+		static std::string get_attr_type_name(AttributeType type)
 		{
-			switch (a) {
-				case AttributeType::unknown: return "[unknown]";
-				case AttributeType::prefail: return "pre-failure";
-				case AttributeType::old_age: return "old age";
+			static const std::unordered_map<AttributeType, std::string> m {
+					{AttributeType::unknown, "[unknown]"},
+					{AttributeType::prefail, "pre-failure"},
+					{AttributeType::old_age, "old age"},
 			};
-			return "[error]";
+			if (auto iter = m.find(type); iter != m.end()) {
+				return iter->second;
+			}
+			return "[internal_error]";
 		}
 
 
@@ -80,14 +84,17 @@ class StorageAttribute {
 		};
 
 		/// Get readable when-updated type name
-		static std::string get_update_type_name(UpdateType a)
+		static std::string get_update_type_name(UpdateType type)
 		{
-			switch (a) {
-				case UpdateType::unknown: return "[unknown]";
-				case UpdateType::always: return "continuously";
-				case UpdateType::offline: return "on offline data collect.";
+			static const std::unordered_map<UpdateType, std::string> m {
+					{UpdateType::unknown, "[unknown]"},
+					{UpdateType::always, "continuously"},
+					{UpdateType::offline, "on offline data collect."},
 			};
-			return "[error]";
+			if (auto iter = m.find(type); iter != m.end()) {
+				return iter->second;
+			}
+			return "[internal_error]";
 		}
 
 
@@ -100,15 +107,18 @@ class StorageAttribute {
 		};
 
 		/// Get a readable when-failed type name
-		static std::string get_fail_time_name(FailTime a)
+		static std::string get_fail_time_name(FailTime type)
 		{
-			switch (a) {
-				case FailTime::unknown: return "[unknown]";
-				case FailTime::none: return "never";
-				case FailTime::past: return "in the past";
-				case FailTime::now: return "now";
+			static const std::unordered_map<FailTime, std::string> m {
+					{FailTime::unknown, "[unknown]"},
+					{FailTime::none, "never"},
+					{FailTime::past, "in the past"},
+					{FailTime::now, "now"},
 			};
-			return "[error]";
+			if (auto iter = m.find(type); iter != m.end()) {
+				return iter->second;
+			}
+			return "[internal_error]";
 		}
 
 
@@ -221,40 +231,46 @@ class StorageSelftestEntry {
 		/// Get log entry status displayable name
 		static std::string get_status_name(Status s)
 		{
-			switch (s) {
-				case Status::unknown: return "[unknown]";
-				case Status::completed_no_error: return "Completed without error";
-				case Status::aborted_by_host: return "Manually aborted";
-				case Status::interrupted: return "Interrupted (host reset)";
-				case Status::fatal_or_unknown: return "Fatal or unknown error";
-				case Status::compl_unknown_failure: return "Completed with unknown failure";
-				case Status::compl_electrical_failure: return "Completed with electrical failure";
-				case Status::compl_servo_failure: return "Completed with servo/seek failure";
-				case Status::compl_read_failure: return "Completed with read failure";
-				case Status::compl_handling_damage: return "Completed: handling damage";
-				case Status::in_progress: return "In progress";
-				case Status::reserved: return "Unknown / reserved state";
+			static const std::unordered_map<Status, std::string> m {
+					{Status::unknown, "[unknown]"},
+					{Status::completed_no_error, "Completed without error"},
+					{Status::aborted_by_host, "Manually aborted"},
+					{Status::interrupted, "Interrupted (host reset)"},
+					{Status::fatal_or_unknown, "Fatal or unknown error"},
+					{Status::compl_unknown_failure, "Completed with unknown failure"},
+					{Status::compl_electrical_failure, "Completed with electrical failure"},
+					{Status::compl_servo_failure, "Completed with servo/seek failure"},
+					{Status::compl_read_failure, "Completed with read failure"},
+					{Status::compl_handling_damage, "Completed: handling damage"},
+					{Status::in_progress, "In progress"},
+					{Status::reserved, "Unknown / reserved state"},
 			};
-			return "[error]";
+			if (auto iter = m.find(s); iter != m.end()) {
+				return iter->second;
+			}
+			return "[internal_error]";
 		}
 
 		/// Get severity of error status
 		static StatusSeverity get_status_severity(Status s)
 		{
-			switch (s) {
-				case Status::unknown: return StatusSeverity::none;
-				case Status::completed_no_error: return StatusSeverity::none;
-				case Status::aborted_by_host: return StatusSeverity::warning;
-				case Status::interrupted: return StatusSeverity::warning;
-				case Status::fatal_or_unknown: return StatusSeverity::error;
-				case Status::compl_unknown_failure: return StatusSeverity::error;
-				case Status::compl_electrical_failure: return StatusSeverity::error;
-				case Status::compl_servo_failure: return StatusSeverity::error;
-				case Status::compl_read_failure: return StatusSeverity::error;
-				case Status::compl_handling_damage: return StatusSeverity::error;
-				case Status::in_progress: return StatusSeverity::none;
-				case Status::reserved: return StatusSeverity::none;
+			static const std::unordered_map<Status, StatusSeverity> m {
+					{Status::unknown, StatusSeverity::none},
+					{Status::completed_no_error, StatusSeverity::none},
+					{Status::aborted_by_host, StatusSeverity::warning},
+					{Status::interrupted, StatusSeverity::warning},
+					{Status::fatal_or_unknown, StatusSeverity::error},
+					{Status::compl_unknown_failure, StatusSeverity::error},
+					{Status::compl_electrical_failure, StatusSeverity::error},
+					{Status::compl_servo_failure, StatusSeverity::error},
+					{Status::compl_read_failure, StatusSeverity::error},
+					{Status::compl_handling_damage, StatusSeverity::error},
+					{Status::in_progress, StatusSeverity::none},
+					{Status::reserved, StatusSeverity::none},
 			};
+			if (auto iter = m.find(s); iter != m.end()) {
+				return iter->second;
+			}
 			return StatusSeverity::none;
 		}
 
@@ -301,13 +317,16 @@ class StorageProperty {
 		/// Get displayable section type name
 		static std::string get_section_name(Section s)
 		{
-			switch(s) {
-				case Section::unknown: return "unknown";
-				case Section::info: return "info";
-				case Section::data: return "data";
-				case Section::internal: return "internal";
+			static const std::unordered_map<Section, std::string> m {
+					{Section::unknown, "unknown"},
+					{Section::info, "info"},
+					{Section::data, "data"},
+					{Section::internal, "internal"},
+			};
+			if (auto iter = m.find(s); iter != m.end()) {
+				return iter->second;
 			}
-			return "[error]";
+			return "[internal_error]";
 		}
 
 
@@ -330,21 +349,24 @@ class StorageProperty {
 		/// Get displayable subsection type name
 		static std::string get_subsection_name(SubSection s)
 		{
-			switch(s) {
-				case SubSection::unknown: return "unknown";
-				case SubSection::health: return "health";
-				case SubSection::capabilities: return "capabilities";
-				case SubSection::attributes: return "attributes";
-				case SubSection::devstat: return "devstat";
-				case SubSection::error_log: return "error_log";
-				case SubSection::selftest_log: return "selftest_log";
-				case SubSection::selective_selftest_log: return "SubSection::selective_selftest_log";
-				case SubSection::temperature_log: return "temperature_log";
-				case SubSection::erc_log: return "erc_log";
-				case SubSection::phy_log: return "phy_log";
-				case SubSection::directory_log: return "directory_log";
+			static const std::unordered_map<SubSection, std::string> m {
+					{SubSection::unknown, "unknown"},
+					{SubSection::health, "health"},
+					{SubSection::capabilities, "capabilities"},
+					{SubSection::attributes, "attributes"},
+					{SubSection::devstat, "devstat"},
+					{SubSection::error_log, "error_log"},
+					{SubSection::selftest_log, "selftest_log"},
+					{SubSection::selective_selftest_log, "selective_selftest_log"},
+					{SubSection::temperature_log, "temperature_log"},
+					{SubSection::erc_log, "erc_log"},
+					{SubSection::phy_log, "phy_log"},
+					{SubSection::directory_log, "directory_log"},
+			};
+			if (auto iter = m.find(s); iter != m.end()) {
+				return iter->second;
 			}
-			return "[error]";
+			return "[internal_error]";
 		}
 
 

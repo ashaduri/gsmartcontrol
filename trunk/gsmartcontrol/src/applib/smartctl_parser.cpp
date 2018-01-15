@@ -20,6 +20,7 @@
 
 #include "app_pcrecpp.h"
 #include "smartctl_parser.h"
+#include "storage_property.h"
 #include "storage_property_descr.h"
 #include "storage_property_colors.h"
 
