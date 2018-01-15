@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <optional>
 #include <chrono>
+#include <variant>
 
 
 
@@ -173,7 +174,7 @@ class StorageErrorBlock {
 		static std::string get_readable_error_types(const std::vector<std::string>& types);
 
 		/// Get warning level (warning_t) for an error type
-		static int get_warning_level_for_error_type(std::string& type);
+		static int get_warning_level_for_error_type(const std::string& type);
 
 		/// Format lifetime hours with comma
 		std::string format_lifetime_hours() const;
@@ -292,40 +293,6 @@ std::ostream& operator<< (std::ostream& os, const StorageSelftestEntry& b);
 class StorageProperty {
 	public:
 
-		/// Value types
-		enum value_type_t {
-			value_type_unknown,  ///< Empty value
-			value_type_string,  ///< String value
-			value_type_integer,  ///< int64
-			value_type_bool,  ///< Enabled / disabled; available / not available; passed / not passed.
-			value_type_time_length,  ///< Time length in seconds.
-
-			value_type_capability,  ///< For "capabilities" subsection (non-time-interval blocks only)
-			value_type_attribute,  ///< For "attributes" subsection
-			value_type_statistic,  ///< For "devstat" subsection
-			value_type_error_block,  // For "error_log" subsection
-			value_type_selftest_entry  // For "selftest_log" subsection
-		};
-
-		/// Get displayable value type name
-		static std::string get_value_type_name(value_type_t type)
-		{
-			switch(type) {
-				case value_type_unknown: return "empty";
-				case value_type_string: return "string";
-				case value_type_integer: return "integer";
-				case value_type_bool: return "bool";
-				case value_type_time_length: return "time_length";
-				case value_type_capability: return "capability";
-				case value_type_attribute: return "attribute";
-				case value_type_statistic: return "statistic";
-				case value_type_error_block: return "error_block";
-				case value_type_selftest_entry: return "selftest_entry";
-			}
-			return "[error]";
-		}
-
-
 		/// Sections in output
 		enum section_t {
 			section_unknown,  ///< Used when searching in all sections
@@ -393,10 +360,37 @@ class StorageProperty {
 		};
 
 
+		/// Get displayable value type name
+		std::string get_value_type_name() const
+		{
+			if (std::holds_alternative<std::monostate>(value))
+				return "empty";
+			if (std::holds_alternative<std::string>(value))
+				return "string";
+			if (std::holds_alternative<int64_t>(value))
+				return "integer";
+			if (std::holds_alternative<bool>(value))
+				return "bool";
+			if (std::holds_alternative<std::chrono::seconds>(value))
+				return "time_length";
+			if (std::holds_alternative<StorageCapability>(value))
+				return "capability";
+			if (std::holds_alternative<StorageAttribute>(value))
+				return "attribute";
+			if (std::holds_alternative<StorageStatistic>(value))
+				return "statistic";
+			if (std::holds_alternative<StorageErrorBlock>(value))
+				return "error_block";
+			if (std::holds_alternative<StorageSelftestEntry>(value))
+				return "selftest_entry";
+			return "[error]";
+		}
+
+
 		/// Check if this is an empty object with no value set.
 		bool empty() const
 		{
-			return (value_type == value_type_unknown);
+			return std::holds_alternative<std::monostate>(value);
 		}
 
 
@@ -406,6 +400,22 @@ class StorageProperty {
 
 		/// Format this property for debugging purposes
 		std::string format_value(bool add_reported_too = false) const;
+
+
+		/// Get value of type T
+		template<typename T>
+		const T& get_value() const
+		{
+			return std::get<T>(value);
+		}
+
+
+		/// Check if value is of type T
+		template<typename T>
+		bool is_value_type() const
+		{
+			return std::holds_alternative<T>(value);
+		}
 
 
 		/// Get property description (used in tooltips)
@@ -442,27 +452,21 @@ class StorageProperty {
 		section_t section = section_unknown;  ///< Section this property belongs to
 		subsection_t subsection = subsection_unknown;  ///< Subsection this property belongs to
 
-// 		bool empty_value;  // the property has an empty value
-// 		bool value_from_db;  // value retrieved from the database, not the drive
-
 		std::string reported_value;  ///< String representation of the value as reported
 		std::string readable_value;  ///< User-friendly readable representation of value. if empty, use the other members.
 
-		value_type_t value_type = value_type_unknown;  ///< Property value type
-
-		std::string value_string;  ///< Value (if it's a string)
-		std::string value_version;  ///< Value (if it's a version)
-		union {
-			int64_t value_integer = 0;  ///< Value (if it's an integer)
-			bool value_bool;  ///< Value (if it's bool)
-		};
-		std::chrono::seconds value_time_length;  ///< Value in seconds (if it's time interval)
-
-		StorageCapability value_capability;  ///< Value (if it's a capability)
-		StorageAttribute value_attribute;  ///< Value (if it's an attribute)
-		StorageStatistic value_statistic;  ///< Value (if it's a statistic from devstat)
-		StorageErrorBlock value_error_block;  ///< Value (if it's a error block)
-		StorageSelftestEntry value_selftest_entry;  ///< Value (if it's a self-test entry)
+		std::variant<
+			std::monostate,  ///< None
+			std::string,  ///< Value (if it's a string)
+			int64_t,   ///< Value (if it's an integer)
+			bool,  ///< Value (if it's bool)
+			std::chrono::seconds,  ///< Value in seconds (if it's time interval)
+			StorageCapability,  ///< Value (if it's a capability)
+			StorageAttribute,  ///< Value (if it's an attribute)
+			StorageStatistic,  ///< Value (if it's a statistic from devstat)
+			StorageErrorBlock,  ///< Value (if it's a error block)
+			StorageSelftestEntry  ///< Value (if it's a self-test entry)
+		> value;
 
 		warning_t warning = warning_none;  ///< Warning severity for this property
 		std::string warning_reason;  // Warning reason (displayable)

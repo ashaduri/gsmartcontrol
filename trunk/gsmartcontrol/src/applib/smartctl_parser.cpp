@@ -55,8 +55,7 @@ namespace {
 		p.readable_name = "Error in " + name + " structure";
 
 		p.reported_value = "checksum error";
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 		return p;
 	}
@@ -223,8 +222,7 @@ bool SmartctlParser::parse_full(const std::string& full, StorageAttribute::DiskT
 			StorageProperty p;
 			p.set_name("Smartctl version", "smartctl_version", "Smartctl Version");
 			p.reported_value = version;
-			p.value_type = StorageProperty::value_type_string;
-			p.value_string = p.reported_value;
+			p.value = p.reported_value;  // string-type value
 			p.section = StorageProperty::section_info;  // add to info section
 			add_property(p);
 		}
@@ -232,8 +230,7 @@ bool SmartctlParser::parse_full(const std::string& full, StorageAttribute::DiskT
 			StorageProperty p;
 			p.set_name("Smartctl version", "smartctl_version_full", "Smartctl Version");
 			p.reported_value = version_full;
-			p.value_type = StorageProperty::value_type_string;
-			p.value_string = p.reported_value;
+			p.value = p.reported_value;  // string-type value
 			p.section = StorageProperty::section_info;  // add to info section
 			add_property(p);
 		}
@@ -256,7 +253,7 @@ bool SmartctlParser::parse_full(const std::string& full, StorageAttribute::DiskT
 	while (section_start_pos != std::string::npos
 			&& (section_start_pos = s.find("=== START", section_start_pos)) != std::string::npos) {
 
-		tmp_pos = s.find("\n", section_start_pos);  // works with \r\n too. This may be npos if nothing follows the header.
+		tmp_pos = s.find('\n', section_start_pos);  // works with \r\n too. This may be npos if nothing follows the header.
 
 		// trim is needed to remove potential \r in the end
 		std::string section_header = hz::string_trim_copy(s.substr(section_start_pos,
@@ -292,7 +289,7 @@ bool SmartctlParser::parse_version(const std::string& s, std::string& version, s
 	// "smartctl 5.39"
 	// "smartctl 5.39 2009-06-03 20:10" (cvs versions)
 	// "smartctl 5.39 2009-08-08 r2873" (svn versions)
-	if (!app_pcre_match("/^smartctl (?:version )?(([0-9][^ \\t\\n\\r]+)(?: [0-9 r:-]+)?)/mi", s, &version_full, &version)) {
+	if (!app_pcre_match(R"(/^smartctl (?:version )?(([0-9][^ \t\n\r]+)(?: [0-9 r:-]+)?)/mi)", s, &version_full, &version)) {
 		debug_out_error("app", DBG_FUNC_MSG << "No smartctl version information found in supplied string.\n");
 		return false;
 	}
@@ -327,7 +324,7 @@ bool SmartctlParser::check_parsed_version(const std::string& version_str, [[mayb
 
 // convert e.g. "1,000,204,886,016 bytes" to 1.00 TB [931.51 GiB, 1000204886016 bytes].
 // Note: this property is present since 5.33.
-std::string SmartctlParser::parse_byte_size(const std::string& str, uint64_t& bytes, bool extended)
+std::string SmartctlParser::parse_byte_size(const std::string& str, int64_t& bytes, bool extended)
 {
 	// E.g. "500,107,862,016" bytes or "80'060'424'192 bytes" or "80 026 361 856 bytes".
 	// French locale inserts 0xA0 as a separator (non-breaking space, _not_ a valid utf8 char).
@@ -339,12 +336,7 @@ std::string SmartctlParser::parse_byte_size(const std::string& str, uint64_t& by
 
 // 	debug_out_dump("app", "Size reported as: " << str << "\n");
 
-	std::vector<std::string> to_replace;
-	to_replace.push_back(" ");
-	to_replace.push_back("'");
-	to_replace.push_back(",");
-	to_replace.push_back(".");
-	to_replace.push_back(std::string(1, 0xa0));
+	std::vector<std::string> to_replace = {" ", "'", ",", ".", std::string(1, 0xa0)};
 
 #ifdef _WIN32
 	// if current locale is C, then probably we didn't change it at application
@@ -361,14 +353,14 @@ std::string SmartctlParser::parse_byte_size(const std::string& str, uint64_t& by
 	}  // the locale is restored here
 #endif
 
-	to_replace.push_back("bytes");
+	to_replace.emplace_back("bytes");
 	std::string s = hz::string_replace_array_copy(hz::string_trim_copy(str), to_replace, "");
 
-	uint64_t v = 0;
+	int64_t v = 0;
 	if (hz::string_is_numeric_nolocale(s, v, false)) {
 		bytes = v;
-		return hz::format_size(v, true) + (extended ?
-				" [" + hz::format_size(v, false) + ", " + hz::number_to_string_locale(v) + " bytes]" : "");
+		return hz::format_size(static_cast<uint64_t>(v), true) + (extended ?
+				" [" + hz::format_size(static_cast<uint64_t>(v), false) + ", " + hz::number_to_string_locale(v) + " bytes]" : "");
 	}
 
 	return std::string();
@@ -432,8 +424,8 @@ bool SmartctlParser::parse_section_info(const std::string& body)
 	bool expecting_warning_lines = false;
 
 // 	while (re.FindAndConsume(&input, &name, &value)) {
-	for (size_t line_index = 0; line_index < lines.size(); ++line_index) {
-		std::string line = hz::string_trim_copy(lines[line_index]);
+	for (auto line : lines) {
+		hz::string_trim(line);
 
 		if (expecting_warning_lines) {
 			if (!line.empty()) {
@@ -444,8 +436,7 @@ bool SmartctlParser::parse_section_info(const std::string& body)
 				p.section = section;
 				p.set_name("Warning", "info_warning", "Warning");
 				p.reported_value = warning_msg;
-				p.value_type = StorageProperty::value_type_string;
-				p.value_string = p.reported_value;
+				p.value = p.reported_value;  // string-type value
 				add_property(p);
 				warning_msg.clear();
 			}
@@ -537,113 +528,95 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 
 	if (app_pcre_match("/^Model Family$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "model_family", "Model Family");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^(?:Device Model|Device|Product)$/mi", p.reported_name)) {  // "Device" and "Product" are from scsi/usb
 		p.set_name(p.reported_name, "device_model", "Device Model");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^Vendor$/mi", p.reported_name)) {  // From scsi/usb
 		p.set_name(p.reported_name, "vendor", "Vendor");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^Revision$/mi", p.reported_name)) {  // From scsi/usb
 		p.set_name(p.reported_name, "revision", "Revision");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^Device type$/mi", p.reported_name)) {  // From scsi/usb
 		p.set_name(p.reported_name, "device_type", "Device Type");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^Compliance$/mi", p.reported_name)) {  // From scsi/usb
 		p.set_name(p.reported_name, "device_type", "Compliance");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^Serial Number$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "serial_number", "Serial Number");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^LU WWN Device Id$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "wwn_id", "World Wide Name");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^Add. Product Id$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "add_product_id", "Additional Product ID");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^Firmware Version$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "firmware_version", "Firmware Version");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^User Capacity$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "capacity", "Capacity");
-		p.value_type = StorageProperty::value_type_integer;
-		uint64_t v = 0;
+		int64_t v = 0;
 		if ((p.readable_value = parse_byte_size(p.reported_value, v, true)).empty()) {
 			p.readable_value = "[unknown]";
 		} else {
-			p.value_integer = static_cast<int64_t>(v);
+			p.value = v;  // integer-type value
 		}
 
 	} else if (app_pcre_match("/^Sector Sizes$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "sector_sizes", "Sector Sizes");
-		p.value_type = StorageProperty::value_type_string;  // prints 2 values (phys/logical, if they're different)
-		p.value_string = p.reported_value;
+		// This contains 2 values (phys/logical, if they're different)
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^Sector Size$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "sector_size", "Sector Size");
-		p.value_type = StorageProperty::value_type_string;  // prints a single value (if it's not 512)
-		p.value_string = p.reported_value;
+		// This contains a single value (if it's not 512)
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^Logical block size$/mi", p.reported_name)) {  // from scsi/usb
 		p.set_name(p.reported_name, "logical_block_size", "Logical Block Size");
-		p.value_type = StorageProperty::value_type_string;  // "512 bytes"
-		p.value_string = p.reported_value;
+		// "512 bytes"
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^Rotation Rate$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "rotation_rate", "Rotation Rate");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^Form Factor$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "form_factor", "Form Factor");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^Device is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "in_smartctl_db", "In Smartctl Database");
-		p.value_type = StorageProperty::value_type_bool;
-		p.value_bool = (!app_pcre_match("/Not in /mi", p.reported_value));
+		p.value = (!app_pcre_match("/Not in /mi", p.reported_value));  // bool-type value
 
 	} else if (app_pcre_match("/^ATA Version is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "ata_version", "ATA Version");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^ATA Standard is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "ata_standard", "ATA Standard");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^SATA Version is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "sata_version", "SATA Version");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^Local Time is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "scan_time", "Scanned on");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^SMART support is$/mi", p.reported_name)) {
 		// There are two different properties with this name - supported and enabled.
@@ -651,82 +624,67 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 
 		if (app_pcre_match("/Available - device has/mi", p.reported_value)) {
 			p.set_name(p.reported_name, "smart_supported", "SMART Supported");
-			p.value_type = StorageProperty::value_type_bool;
-			p.value_bool = true;
+			p.value = true;
 
 		} else if (app_pcre_match("/Enabled/mi", p.reported_value)) {
 			p.set_name(p.reported_name, "smart_enabled", "SMART Enabled");
-			p.value_type = StorageProperty::value_type_bool;
-			p.value_bool = true;
+			p.value = true;
 
 		} else if (app_pcre_match("/Disabled/mi", p.reported_value)) {
 			p.set_name(p.reported_name, "smart_enabled", "SMART Enabled");
-			p.value_type = StorageProperty::value_type_bool;
-			p.value_bool = false;
+			p.value = false;
 
 		} else if (app_pcre_match("/Unavailable/mi", p.reported_value)) {
 			p.set_name(p.reported_name, "smart_supported", "SMART Supported");
-			p.value_type = StorageProperty::value_type_bool;
-			p.value_bool = false;
+			p.value = false;
 
 		// this should be the last - when ambiguous state is detected, usually smartctl
 		// retries with other methods and prints one of the above.
 		} else if (app_pcre_match("/Ambiguous/mi", p.reported_value)) {
 			p.set_name(p.reported_name, "smart_supported", "SMART Supported");
-			p.value_type = StorageProperty::value_type_bool;
-			p.value_bool = true;  // let's be optimistic - just hope that it doesn't hurt.
+			p.value = true;  // let's be optimistic - just hope that it doesn't hurt.
 		}
 
 	// "-g all" stuff
 	} else if (app_pcre_match("/^AAM feature is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "aam_feature", "AAM Feature");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^AAM level is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "aam_level", "AAM Level");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^APM feature is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "apm_feature", "APM Feature");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^APM level is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "apm_level", "APM Level");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^Rd look-ahead is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "read_lookahead", "Read Look-Ahead");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^Write cache is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "write_cache", "Write Cache");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^Wt Cache Reorder$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "write_cache_reorder", "Write Cache Reorder");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^DSN feature is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "dsn_feature", "DSN Feature");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^Power mode (?:was|is)$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "power_mode", "Power Mode");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	} else if (app_pcre_match("/^ATA Security is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "ata_security", "ATA Security");
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 	// These are some debug warnings from smartctl on usb flash drives
 	} else if (app_pcre_match("/^scsiMode/mi", p.reported_name)) {
@@ -736,8 +694,7 @@ bool SmartctlParser::parse_section_info_property(StorageProperty& p)
 		debug_out_warn("app", DBG_FUNC_MSG << "Unknown property \"" << p.reported_name << "\"\n");
 		// this is not an error, just unknown attribute. treat it as string.
 		// Don't highlight it with warning, it may just be a new smartctl feature.
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 	}
 
 	return true;
@@ -773,8 +730,8 @@ bool SmartctlParser::parse_section_data(const std::string& body)
 	// "SCT Temperature History Version" or
 	// "Index    " or
 	// "Read SCT Temperature History failed".
-	for (unsigned int i = 0; i < split_subsections.size(); ++i) {
-		std::string sub = hz::string_trim_copy(split_subsections[i], "\t\n\r");  // don't trim space
+	for (auto sub : split_subsections) {
+		hz::string_trim(sub, "\t\n\r");  // don't trim space
 		if (app_pcre_re("^  ").PartialMatch(sub) || app_pcre_re("^Error [0-9]+").PartialMatch(sub)
 				|| app_pcre_re("^SCT Temperature History Version").PartialMatch(sub)
 				|| app_pcre_re("^Index[ \t]+").PartialMatch(sub)
@@ -791,8 +748,8 @@ bool SmartctlParser::parse_section_data(const std::string& body)
 
 
 	// parse each subsection
-	for (unsigned int i = 0; i < subsections.size(); ++i) {
-		std::string sub = hz::string_trim_copy(subsections[i]);
+	for (auto sub : subsections) {
+		hz::string_trim(sub);
 		if (sub.empty())
 			continue;
 
@@ -928,8 +885,7 @@ Device is:        In smartctl database [for details use: -P show]
 		if (app_pcre_match("/SMART overall-health self-assessment/mi", name)) {
 			pt.set_name(name, "overall_health", "Overall Health Self-Assessment Test");
 			pt.reported_value = value;
-			pt.value_type = StorageProperty::value_type_string;
-			pt.value_string = pt.reported_value;
+			pt.value = pt.reported_value;  // string-type value
 
 			add_property(pt);
 		}
@@ -1001,37 +957,36 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 	hz::string_split(sub, '\n', lines, true);
 	bool partial = false;
 
-	for(unsigned int i = 0; i < lines.size(); ++i) {
-		std::string line = lines[i];
+	for(auto line : lines) {
 		if (line.empty() || app_pcre_match("/General SMART Values/mi", line))  // skip the non-informative lines
 			continue;
 		line += "\n";  // avoid joining lines without separator. this will get stripped anyway.
 
 		if (line.find_first_of(" \t") != 0 && !partial) {  // new blocks don't start with whitespace
-			blocks.push_back(std::string());  // new block
+			blocks.emplace_back();  // new block
 			blocks.back() += line;
-			if (line.find(":") == std::string::npos)
+			if (line.find(':') == std::string::npos)
 				partial = true;  // if the name spans several lines (they all start with non-whitespace)
 			continue;
 		}
 
-		if (partial && line.find(":") != std::string::npos)
+		if (partial && line.find(':') != std::string::npos)
 			partial = false;
 
 		if (blocks.empty()) {
 			debug_out_error("app", DBG_FUNC_MSG << "Non-block related line found!\n");
-			blocks.push_back(std::string());  // avoid segfault
+			blocks.emplace_back();  // avoid segfault
 		}
 		blocks.back() += line;
 	}
 
 
 	// parse each block
-	pcrecpp::RE re = app_pcre_re("/([^:]*):\\s*\\(([^)]+)\\)\\s*(.*)/ms");
+	pcrecpp::RE re = app_pcre_re(R"(/([^:]*):\s*\(([^)]+)\)\s*(.*)/ms)");
 
 	bool cap_found = false;  // found at least one capability
 
-	for(unsigned int i = 0; i < blocks.size(); ++i) {
+	for(std::size_t i = 0; i < blocks.size(); ++i) {
 		std::string block = hz::string_trim_copy(blocks[i]);
 
 		std::string name_orig, numvalue_orig, strvalue_orig;
@@ -1075,8 +1030,7 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 			StorageProperty p(pt);
 			p.set_name(name);
 			p.reported_value = numvalue_orig + " | " + strvalue_orig;  // well, not really as reported, but still...
-			p.value_type = StorageProperty::value_type_time_length;
-			p.value_time_length = std::chrono::seconds(numvalue);  // always in seconds
+			p.value = std::chrono::seconds(numvalue);  // always in seconds
 
 			// Set some generic names on the recognized ones
 			parse_section_data_internal_capabilities(p);
@@ -1091,17 +1045,19 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 			StorageProperty p(pt);
 			p.set_name(name);
 			p.reported_value = numvalue_orig + " | " + strvalue_orig;  // well, not really as reported, but still...
-			p.value_type = StorageProperty::value_type_capability;
 
-			p.value_capability.reported_flag_value = numvalue_orig;
-			p.value_capability.flag_value = static_cast<uint16_t>(numvalue);  // full flag value
-			p.value_capability.reported_strvalue = strvalue_orig;
+			StorageCapability cap;
+			cap.reported_flag_value = numvalue_orig;
+			cap.flag_value = static_cast<uint16_t>(numvalue);  // full flag value
+			cap.reported_strvalue = strvalue_orig;
 
 			// split capability lines into a vector. every flag sentence ends with "."
-			hz::string_split(strvalue, '.', p.value_capability.strvalues, true);
-			for (auto&& v : p.value_capability.strvalues) {
+			hz::string_split(strvalue, '.', cap.strvalues, true);
+			for (auto&& v : cap.strvalues) {
 				hz::string_trim(v);
 			}
+
+			p.value = cap;  // Capability-type value
 
 			// find some special capabilities we're interested in and add them. p is unmodified.
 			parse_section_data_internal_capabilities(p);
@@ -1123,7 +1079,7 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 
 
 // Check the capabilities for internal properties we can use.
-bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& cap)
+bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& cap_prop)
 {
 	// Some special capabilities we're interested in.
 
@@ -1166,105 +1122,108 @@ bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& c
 	pcrecpp::RE re_selftest_long_time = app_pcre_re("/^(Extended self-test routine recommended polling time)/mi");
 	pcrecpp::RE re_conv_selftest_time = app_pcre_re("/^(Conveyance self-test routine recommended polling time)/mi");
 
-	if (cap.section != StorageProperty::section_data || cap.subsection != StorageProperty::subsection_capabilities) {
+	if (cap_prop.section != StorageProperty::section_data || cap_prop.subsection != StorageProperty::subsection_capabilities) {
 		debug_out_error("app", DBG_FUNC_MSG << "Non-capability property passed.\n");
 		return false;
 	}
 
 
 	// Name the capability groups for easy matching when setting descriptions
-	if (cap.value_type == StorageProperty::value_type_capability) {
-		if (re_offline_status_group.PartialMatch(cap.reported_name)) {
-			cap.generic_name = "offline_status_group";
+	if (cap_prop.is_value_type<StorageCapability>()) {
+		if (re_offline_status_group.PartialMatch(cap_prop.reported_name)) {
+			cap_prop.generic_name = "offline_status_group";
 
-		} else if (re_offline_cap_group.PartialMatch(cap.reported_name)) {
-			cap.generic_name = "offline_cap_group";
+		} else if (re_offline_cap_group.PartialMatch(cap_prop.reported_name)) {
+			cap_prop.generic_name = "offline_cap_group";
 
-		} else if (re_smart_cap_group.PartialMatch(cap.reported_name)) {
-			cap.generic_name = "smart_cap_group";
+		} else if (re_smart_cap_group.PartialMatch(cap_prop.reported_name)) {
+			cap_prop.generic_name = "smart_cap_group";
 
-		} else if (re_error_log_cap_group.PartialMatch(cap.reported_name)) {
-			cap.generic_name = "error_log_cap_group";
+		} else if (re_error_log_cap_group.PartialMatch(cap_prop.reported_name)) {
+			cap_prop.generic_name = "error_log_cap_group";
 
-		} else if (re_sct_cap_group.PartialMatch(cap.reported_name)) {
-			cap.generic_name = "sct_cap_group";
+		} else if (re_sct_cap_group.PartialMatch(cap_prop.reported_name)) {
+			cap_prop.generic_name = "sct_cap_group";
 
-		} else if (re_selftest_status.PartialMatch(cap.reported_name)) {
-			cap.generic_name = "last_selftest_cap_group";
+		} else if (re_selftest_status.PartialMatch(cap_prop.reported_name)) {
+			cap_prop.generic_name = "last_selftest_cap_group";
 		}
 	}
 
 
 	// Last self-test status
-	if (re_selftest_status.PartialMatch(cap.reported_name)) {
+	if (re_selftest_status.PartialMatch(cap_prop.reported_name)) {
 		// The last self-test status. break up into pieces.
 
 		StorageProperty p;
 		p.section = StorageProperty::section_internal;
 		p.set_name("last_selftest_status");
-		p.value_type = StorageProperty::value_type_selftest_entry;
-		p.value_selftest_entry.test_num = 0;
-		p.value_selftest_entry.remaining_percent = -1;  // unknown or n/a
+
+		StorageSelftestEntry sse;
+		sse.test_num = 0;
+		sse.remaining_percent = -1;  // unknown or n/a
 
 		// check for lines in capability vector
-		for (auto&& sv : cap.value_capability.strvalues) {
+		for (const auto& sv : cap_prop.get_value<StorageCapability>().strvalues) {
 			std::string value;
 
 			if (app_pcre_match("/^([0-9]+)% of test remaining/mi", sv, &value)) {
 				int8_t v = 0;
 				if (hz::string_is_numeric_nolocale(value, v))
-					p.value_selftest_entry.remaining_percent = v;
+					sse.remaining_percent = v;
 
 			} else if (app_pcre_match("/^(The previous self-test routine completed without error or no .*)/mi", sv, &value)) {
-				p.value_selftest_entry.status_str = value;
-				p.value_selftest_entry.status = StorageSelftestEntry::status_completed_no_error;
+				sse.status_str = value;
+				sse.status = StorageSelftestEntry::status_completed_no_error;
 
 			} else if (app_pcre_match("/^(The self-test routine was aborted by the host)/mi", sv, &value)) {
-				p.value_selftest_entry.status_str = value;
-				p.value_selftest_entry.status = StorageSelftestEntry::status_aborted_by_host;
+				sse.status_str = value;
+				sse.status = StorageSelftestEntry::status_aborted_by_host;
 
 			} else if (app_pcre_match("/^(The self-test routine was interrupted by the host with a hard.*)/mi", sv, &value)) {
-				p.value_selftest_entry.status_str = value;
-				p.value_selftest_entry.status = StorageSelftestEntry::status_interrupted;
+				sse.status_str = value;
+				sse.status = StorageSelftestEntry::status_interrupted;
 
 			} else if (app_pcre_match("/^(A fatal error or unknown test error occurred while the device was executing its .*)/mi", sv, &value)) {
-				p.value_selftest_entry.status_str = value;
-				p.value_selftest_entry.status = StorageSelftestEntry::status_fatal_or_unknown;
+				sse.status_str = value;
+				sse.status = StorageSelftestEntry::status_fatal_or_unknown;
 
 			} else if (app_pcre_match("/^(The previous self-test completed having a test element that failed and the test element that failed is not known)/mi", sv, &value)) {
-				p.value_selftest_entry.status_str = value;
-				p.value_selftest_entry.status = StorageSelftestEntry::status_compl_unknown_failure;
+				sse.status_str = value;
+				sse.status = StorageSelftestEntry::status_compl_unknown_failure;
 
 			} else if (app_pcre_match("/^(The previous self-test completed having the electrical element of the test failed)/mi", sv, &value)) {
-				p.value_selftest_entry.status_str = value;
-				p.value_selftest_entry.status = StorageSelftestEntry::status_compl_electrical_failure;
+				sse.status_str = value;
+				sse.status = StorageSelftestEntry::status_compl_electrical_failure;
 
 			} else if (app_pcre_match("/^(The previous self-test completed having the servo .*)/mi", sv, &value)) {
-				p.value_selftest_entry.status_str = value;
-				p.value_selftest_entry.status = StorageSelftestEntry::status_compl_servo_failure;
+				sse.status_str = value;
+				sse.status = StorageSelftestEntry::status_compl_servo_failure;
 
 			} else if (app_pcre_match("/^(The previous self-test completed having the read element of the test failed)/mi", sv, &value)) {
-				p.value_selftest_entry.status_str = value;
-				p.value_selftest_entry.status = StorageSelftestEntry::status_compl_read_failure;
+				sse.status_str = value;
+				sse.status = StorageSelftestEntry::status_compl_read_failure;
 
 			} else if (app_pcre_match("/^(The previous self-test completed having a test element that failed and the device is suspected of having handling damage)/mi", sv, &value)) {
-				p.value_selftest_entry.status_str = value;
-				p.value_selftest_entry.status = StorageSelftestEntry::status_compl_handling_damage;
+				sse.status_str = value;
+				sse.status = StorageSelftestEntry::status_compl_handling_damage;
 
 			// samsung bug (?), as per smartctl sources.
 			} else if (app_pcre_match("/^(The previous self-test routine completed with unknown result or self-test .*)/mi", sv, &value)) {
-				p.value_selftest_entry.status_str = value;
-				p.value_selftest_entry.status = StorageSelftestEntry::status_compl_unknown_failure;  // we'll use this again (correct?)
+				sse.status_str = value;
+				sse.status = StorageSelftestEntry::status_compl_unknown_failure;  // we'll use this again (correct?)
 
 			} else if (app_pcre_match("/^(Self-test routine in progress)/mi", sv, &value)) {
-				p.value_selftest_entry.status_str = value;
-				p.value_selftest_entry.status = StorageSelftestEntry::status_in_progress;
+				sse.status_str = value;
+				sse.status = StorageSelftestEntry::status_in_progress;
 
 			} else if (app_pcre_match("/^(Reserved)/mi", sv, &value)) {
-				p.value_selftest_entry.status_str = value;
-				p.value_selftest_entry.status = StorageSelftestEntry::status_reserved;
+				sse.status_str = value;
+				sse.status = StorageSelftestEntry::status_reserved;
 			}
 		}
+
+		p.value = sse;  // StorageSelftestEntry-type value
 
 		add_property(p);
 
@@ -1275,19 +1234,19 @@ bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& c
 	// Check the time-related ones first.
 	// Note: We only modify the existing property here!
 	// Section is unmodified.
-	if (cap.value_type == StorageProperty::value_type_time_length) {
+	if (cap_prop.is_value_type<std::chrono::seconds>()) {
 
-		if (re_offline_time.PartialMatch(cap.reported_name)) {
-			cap.generic_name = "iodc_total_time_length";
+		if (re_offline_time.PartialMatch(cap_prop.reported_name)) {
+			cap_prop.generic_name = "iodc_total_time_length";
 
-		} else if (re_selftest_short_time.PartialMatch(cap.reported_name)) {
-			cap.generic_name = "short_total_time_length";
+		} else if (re_selftest_short_time.PartialMatch(cap_prop.reported_name)) {
+			cap_prop.generic_name = "short_total_time_length";
 
-		} else if (re_selftest_long_time.PartialMatch(cap.reported_name)) {
-			cap.generic_name = "long_total_time_length";
+		} else if (re_selftest_long_time.PartialMatch(cap_prop.reported_name)) {
+			cap_prop.generic_name = "long_total_time_length";
 
-		} else if (re_conv_selftest_time.PartialMatch(cap.reported_name)) {
-			cap.generic_name = "conveyance_total_time_length";
+		} else if (re_conv_selftest_time.PartialMatch(cap_prop.reported_name)) {
+			cap_prop.generic_name = "conveyance_total_time_length";
 		}
 
 		return true;
@@ -1295,10 +1254,10 @@ bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& c
 
 
 	// Extract subcapabilities from capability vectors and assign to "internal" section.
-	if (cap.value_type == StorageProperty::value_type_capability) {
+	if (cap_prop.is_value_type<StorageCapability>()) {
 
 		// check for lines in capability vector
-		for (auto&& sv : cap.value_capability.strvalues) {
+		for (const auto& sv : cap_prop.get_value<StorageCapability>().strvalues) {
 
 			// debug_out_dump("app", "Looking for internal capability in: \"" << sv << "\"\n");
 
@@ -1310,65 +1269,53 @@ bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& c
 
 			if (re_offline_status.PartialMatch(sv, &name, &value)) {
 				p.set_name(name, "odc_status");
-				p.value_type = StorageProperty::value_type_string;
-				p.value_string = hz::string_trim_copy(value);
+				p.value = hz::string_trim_copy(value);  // string-type value
 
 			} else if (re_offline_enabled.PartialMatch(sv, &name, &value)) {
 				p.set_name(name, "aodc_enabled");
-				p.value_type = StorageProperty::value_type_bool;
-				p.value_bool = (hz::string_trim_copy(value) == "Enabled");
+				p.value = (hz::string_trim_copy(value) == "Enabled");  // bool
 
 			} else if (re_offline_immediate.PartialMatch(sv, &name)) {
 				p.set_name(name, "iodc_support");
-				p.value_type = StorageProperty::value_type_bool;
-				p.value_bool = true;
+				p.value = true;  // bool
 
 			} else if (re_offline_auto.PartialMatch(sv, &value, &name) || re_offline_auto2.PartialMatch(sv, &value, &name)) {
 				p.set_name(name, "aodc_support", "Automatic Offline Data Collection toggle support");
-				p.value_type = StorageProperty::value_type_bool;
-				p.value_bool = (hz::string_trim_copy(value) != "No");
+				p.value = (hz::string_trim_copy(value) != "No");  // bool
 
 			} else if (re_offline_suspend.PartialMatch(sv, &value, &name)) {
 				p.set_name(name, "iodc_command_suspends", "Offline Data Collection suspends upon new command");
-				p.value_type = StorageProperty::value_type_bool;
-				p.value_bool = (hz::string_trim_copy(value) == "Suspend");
+				p.value = (hz::string_trim_copy(value) == "Suspend");  // bool
 
 			} else if (re_offline_surface.PartialMatch(sv, &value, &name)) {
 				p.set_name(name, "odc_surface_scan_support");
-				p.value_type = StorageProperty::value_type_bool;
-				p.value_bool = (hz::string_trim_copy(value) != "No");
+				p.value = (hz::string_trim_copy(value) != "No");  // bool
 
 
 			} else if (re_selftest_support.PartialMatch(sv, &value, &name)) {
 				p.set_name(name, "selftest_support");
-				p.value_type = StorageProperty::value_type_bool;
-				p.value_bool = (hz::string_trim_copy(value) != "No");
+				p.value = (hz::string_trim_copy(value) != "No");  // bool
 
 			} else if (re_conv_selftest_support.PartialMatch(sv, &value, &name)) {
 				p.set_name(name, "conveyance_support");
-				p.value_type = StorageProperty::value_type_bool;
-				p.value_bool = (hz::string_trim_copy(value) != "No");
+				p.value = (hz::string_trim_copy(value) != "No");  // bool
 
 			} else if (re_selective_selftest_support.PartialMatch(sv, &value, &name)) {
 				p.set_name(name, "selective_selftest_support");
-				p.value_type = StorageProperty::value_type_bool;
-				p.value_bool = (hz::string_trim_copy(value) != "No");
+				p.value = (hz::string_trim_copy(value) != "No");  // bool
 
 
 			} else if (re_sct_status.PartialMatch(sv, &name)) {
 				p.set_name(name, "sct_status_support");
-				p.value_type = StorageProperty::value_type_bool;
-				p.value_bool = true;
+				p.value = true;  // bool
 
 			} else if (re_sct_control.PartialMatch(sv, &name)) {
 				p.set_name(name, "sct_control_support");
-				p.value_type = StorageProperty::value_type_bool;
-				p.value_bool = true;
+				p.value = true;  // bool
 
 			} else if (re_sct_data.PartialMatch(sv, &name)) {
 				p.set_name(name, "sct_data_support");
-				p.value_type = StorageProperty::value_type_bool;
-				p.value_bool = true;
+				p.value = true;  // bool
 			}
 
 			if (!p.empty())
@@ -1378,8 +1325,7 @@ bool SmartctlParser::parse_section_data_internal_capabilities(StorageProperty& c
 		return true;
 	}
 
-	debug_out_error("app", DBG_FUNC_MSG << "Capability property has invalid type \""
-			<< StorageProperty::get_value_type_name(cap.value_type) << "\".\n");
+	debug_out_error("app", DBG_FUNC_MSG << "Capability-section property has invalid value type.\n");
 
 	return false;
 }
@@ -1449,8 +1395,8 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 	// We allow name with spaces only in the old format, not in brief.
 	// This has to do with the name end detection - it's either 0x (flag's start) in the old format,
 	// or a space in the brief format.
-	std::string old_base_re = "[ \\t]*([0-9]+) ([^ \\t\\n]+(?:[^0-9\\t\\n]+)*)" + space_re + old_flag_re + space_re;  // ID / name / flag
-	std::string brief_base_re = "[ \\t]*([0-9]+) ([^ \\t\\n]+)" + space_re + brief_flag_re + space_re;  // ID / name / flag
+	std::string old_base_re = R"([ \t]*([0-9]+) ([^ \t\n]+(?:[^0-9\t\n]+)*))" + space_re + old_flag_re + space_re;  // ID / name / flag
+	std::string brief_base_re = R"([ \t]*([0-9]+) ([^ \t\n]+))" + space_re + brief_flag_re + space_re;  // ID / name / flag
 	std::string vals_re = "([0-9-]+)" + space_re + "([0-9-]+)" + space_re + "([0-9-]+)" + space_re;  // value / worst / threshold
 	std::string type_re = "([^ \\t\\n]+)" + space_re;
 	std::string updated_re = "([^ \\t\\n]+)" + space_re;
@@ -1464,9 +1410,7 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 	pcrecpp::RE re_flag_descr = app_pcre_re("/^[\\t ]+\\|/mi");
 
 
-	for(std::size_t i = 0; i < lines.size(); ++i) {
-		const std::string& line = lines[i];
-
+	for (const auto& line : lines) {
 		// skip the non-informative lines
 		if (line.empty() || app_pcre_match("/SMART Attributes with Thresholds/mi", line))
 			continue;
@@ -1497,8 +1441,7 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 				StorageProperty p(pt);
 				p.set_name(name, "data_structure_version");
 				p.reported_value = value;
-				p.value_type = StorageProperty::value_type_integer;
-				p.value_integer = value_num;
+				p.value = value_num;  // integer-type value
 
 				add_property(p);
 				attr_found = true;
@@ -1542,63 +1485,62 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 			}
 
 
-			StorageAttribute a;
-			hz::string_is_numeric_nolocale(hz::string_trim_copy(id), a.id, true, 10);
-			a.flag = hz::string_trim_copy(flag);
+			StorageAttribute attr;
+			hz::string_is_numeric_nolocale(hz::string_trim_copy(id), attr.id, true, 10);
+			attr.flag = hz::string_trim_copy(flag);
 			uint8_t norm_value = 0, worst_value = 0, threshold_value = 0;
 
 			if (hz::string_is_numeric_nolocale(hz::string_trim_copy(value), norm_value, true, 10)) {
-				a.value = norm_value;
+				attr.value = norm_value;
 			}
 			if (hz::string_is_numeric_nolocale(hz::string_trim_copy(worst), worst_value, true, 10)) {
-				a.worst = worst_value;
+				attr.worst = worst_value;
 			}
 			if (hz::string_is_numeric_nolocale(hz::string_trim_copy(threshold), threshold_value, true, 10)) {
-				a.threshold = threshold_value;
+				attr.threshold = threshold_value;
 			}
 
 			if (attr_format_style == FormatStyleBrief) {
-				a.attr_type = app_pcre_match("/P/", a.flag) ? StorageAttribute::attr_type_prefail : StorageAttribute::attr_type_oldage;
+				attr.attr_type = app_pcre_match("/P/", attr.flag) ? StorageAttribute::attr_type_prefail : StorageAttribute::attr_type_oldage;
 			} else {
 				if (attr_type == "Pre-fail") {
-					a.attr_type = StorageAttribute::attr_type_prefail;
+					attr.attr_type = StorageAttribute::attr_type_prefail;
 				} else if (attr_type == "Old_age") {
-					a.attr_type = StorageAttribute::attr_type_oldage;
+					attr.attr_type = StorageAttribute::attr_type_oldage;
 				} else {
-					a.attr_type = StorageAttribute::attr_type_unknown;
+					attr.attr_type = StorageAttribute::attr_type_unknown;
 				}
 			}
 
 			if (attr_format_style == FormatStyleBrief) {
-				a.update_type = app_pcre_match("/O/", a.flag) ? StorageAttribute::update_type_always : StorageAttribute::update_type_offline;
+				attr.update_type = app_pcre_match("/O/", attr.flag) ? StorageAttribute::update_type_always : StorageAttribute::update_type_offline;
 			} else {
 				if (update_type == "Always") {
-					a.update_type = StorageAttribute::update_type_always;
+					attr.update_type = StorageAttribute::update_type_always;
 				} else if (update_type == "Offline") {
-					a.update_type = StorageAttribute::update_type_offline;
+					attr.update_type = StorageAttribute::update_type_offline;
 				} else {
-					a.update_type = StorageAttribute::update_type_unknown;
+					attr.update_type = StorageAttribute::update_type_unknown;
 				}
 			}
 
-			a.when_failed = StorageAttribute::fail_time_unknown;
+			attr.when_failed = StorageAttribute::fail_time_unknown;
 			hz::string_trim(when_failed);
 			if (when_failed == "-") {
-				a.when_failed = StorageAttribute::fail_time_none;
+				attr.when_failed = StorageAttribute::fail_time_none;
 			} else if (when_failed == "In_the_past" || when_failed == "Past") {  // the second one if from brief format
-				a.when_failed = StorageAttribute::fail_time_past;
+				attr.when_failed = StorageAttribute::fail_time_past;
 			} else if (when_failed == "FAILING_NOW" || when_failed == "NOW") {  // the second one if from brief format
-				a.when_failed = StorageAttribute::fail_time_now;
+				attr.when_failed = StorageAttribute::fail_time_now;
 			}
 
-			a.raw_value = hz::string_trim_copy(raw_value);
-			hz::string_is_numeric_nolocale(hz::string_trim_copy(raw_value), a.raw_value_int, false);  // same as raw_value, but parsed as int.
+			attr.raw_value = hz::string_trim_copy(raw_value);
+			hz::string_is_numeric_nolocale(hz::string_trim_copy(raw_value), attr.raw_value_int, false);  // same as raw_value, but parsed as int.
 
 			StorageProperty p(pt);
 			p.set_name(hz::string_trim_copy(name));
 			p.reported_value = line;  // use the whole line here
-			p.value_type = StorageProperty::value_type_attribute;
-			p.value_attribute = a;
+			p.value = attr;  // attribute-type value;
 
 			add_property(p);
 			attr_found = true;
@@ -1642,8 +1584,7 @@ Address    Access  R/W   Size  Description
 		StorageProperty p(pt);
 		p.set_name("General Purpose Log Directory", "directory_log");
 		p.reported_value = sub;
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 		add_property(p);
 //		data_found = true;
@@ -1655,8 +1596,7 @@ Address    Access  R/W   Size  Description
 		p.set_name("General Purpose Log Directory supported", "directory_log_supported");
 
 		// p.reported_value;  // nothing
-		p.value_type = StorageProperty::value_type_bool;
-		p.value_bool = !app_pcre_match("/General Purpose Log Directory not supported/mi", sub);
+		p.value = !app_pcre_match("/General Purpose Log Directory not supported/mi", sub);  // bool
 
 		add_property(p);
 //		data_found = true;
@@ -1731,11 +1671,10 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 			StorageProperty p(pt);
 			p.set_name(name, "error_log_version");
 			p.reported_value = value;
-			p.value_type = StorageProperty::value_type_integer;
 
 			int64_t value_num = 0;
 			hz::string_is_numeric_nolocale(value, value_num, false);
-			p.value_integer = value_num;
+			p.value = value_num;  // integer
 
 			add_property(p);
 			data_found = true;
@@ -1768,13 +1707,12 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 			StorageProperty p(pt);
 			p.set_name("ATA Error Count", "error_log_error_count");
 			p.reported_value = value;
-			p.value_type = StorageProperty::value_type_integer;
 
 			int64_t value_num = 0;
 			if (!re2.PartialMatch(sub)) {  // if no errors, when value should be zero. otherwise, this:
 				hz::string_is_numeric_nolocale(value, value_num, false);
 			}
-			p.value_integer = value_num;
+			p.value = value_num;  // integer
 
 			add_property(p);
 			data_found = true;
@@ -1786,15 +1724,16 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 		// split by blocks
 		// "Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)"
 		// "Error 25 occurred at disk power-on lifetime: 14799 hours"
-		pcrecpp::RE re_block = app_pcre_re("/^((Error[ \\t]*([0-9]+))[ \\t]*(?:\\[[0-9]+\\][ \\t])?occurred at disk power-on lifetime:[ \\t]*([0-9]+) hours(?:[^\\n]*)?.*(?:\\n(?:  |\\n  ).*)*)/mi");
+		pcrecpp::RE re_block = app_pcre_re(
+				R"(/^((Error[ \t]*([0-9]+))[ \t]*(?:\[[0-9]+\][ \t])?occurred at disk power-on lifetime:[ \t]*([0-9]+) hours(?:[^\n]*)?.*(?:\n(?:  |\n  ).*)*)/mi)");
 
 		// "  When the command that caused the error occurred, the device was active or idle."
 		// Note: For "in an unknown state" - remove first two words.
-		pcrecpp::RE re_state = app_pcre_re("/occurred, the device was[ \\t]*(?: in)?(?: an?)?[ \\t]+([^.\\n]*)\\.?/mi");
+		pcrecpp::RE re_state = app_pcre_re(R"(/occurred, the device was[ \t]*(?: in)?(?: an?)?[ \t]+([^.\n]*)\.?/mi)");
 		// "  84 51 2c 71 cd 3f e6  Error: ICRC, ABRT 44 sectors at LBA = 0x063fcd71 = 104844657"
 		// "  40 51 00 f5 41 61 e0  Error: UNC at LBA = 0x006141f5 = 6373877"
 		// "  02 -- 51 00 00 00 00 00 00 00 00 00 00  Error: TK0NF"
-		pcrecpp::RE re_type = app_pcre_re("/[ \\t]+Error:[ \\t]*([ ,a-z0-9]+)(?:[ \\t]+((?:[0-9]+|at )[ \\t]*.*))?$/mi");
+		pcrecpp::RE re_type = app_pcre_re(R"(/[ \t]+Error:[ \t]*([ ,a-z0-9]+)(?:[ \t]+((?:[0-9]+|at )[ \t]*.*))?$/mi)");
 
 		std::string block, name, value_num, value_time;
 		pcrecpp::StringPiece input(sub);  // position tracker
@@ -1812,10 +1751,10 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 			StorageProperty p(pt);
 			p.set_name(hz::string_trim_copy(name));  // "Error 6"
 			p.reported_value = block;
-			p.value_type = StorageProperty::value_type_error_block;
 
-			hz::string_is_numeric_nolocale(value_num, p.value_error_block.error_num, false);
-			hz::string_is_numeric_nolocale(value_time, p.value_error_block.lifetime_hours, false);
+			StorageErrorBlock eb;
+			hz::string_is_numeric_nolocale(value_num, eb.error_num, false);
+			hz::string_is_numeric_nolocale(value_time, eb.lifetime_hours, false);
 
 			std::vector<std::string> etypes;
 			hz::string_split(etypes_str, ",", etypes, true);
@@ -1823,9 +1762,11 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 				hz::string_trim(v);
 			}
 
-			p.value_error_block.device_state = hz::string_trim_copy(state);
-			p.value_error_block.reported_types = etypes;
-			p.value_error_block.type_more_info = hz::string_trim_copy(emore);
+			eb.device_state = hz::string_trim_copy(state);
+			eb.reported_types = etypes;
+			eb.type_more_info = hz::string_trim_copy(emore);
+
+			p.value = eb;  // Error block value
 
 			add_property(p);
 			data_found = true;
@@ -1839,8 +1780,7 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 		StorageProperty p(pt);
 		p.set_name("SMART Error Log", "error_log");
 		p.reported_value = sub;
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 		add_property(p);
 		// data_found = true;
@@ -1887,8 +1827,7 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 		StorageProperty p(pt);
 		p.set_name("SMART Self-Test Log", "selftest_log");
 		p.reported_value = sub;
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 		add_property(p);
 //		data_found = true;
@@ -1905,6 +1844,8 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 			p.readable_name = "Warning";
 			p.readable_value = "Device does not support self-test logging";
 			add_property(p);
+
+			data_found = true;
 		}
 	}
 
@@ -1912,10 +1853,10 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 	{
 		// SMART Self-test log structure revision number 1
 		// SMART Extended Self-test Log Version: 1 (1 sectors)
-		pcrecpp::RE re1 = app_pcre_re("/(SMART Self-test log structure[^\\n0-9]*)([^ \\n]+)[ \\t]*$/mi");
+		pcrecpp::RE re1 = app_pcre_re(R"(/(SMART Self-test log structure[^\n0-9]*)([^ \n]+)[ \t]*$/mi)");
 		pcrecpp::RE re1_ex = app_pcre_re("/(SMART Extended Self-test Log Version: ([0-9]+).*$/mi");
 		// older smartctl (pre 5.1-16)
-		pcrecpp::RE re2 = app_pcre_re("/(SMART Self-test log, version number[^\\n0-9]*)([^ \\n]+)[ \\t]*$/mi");
+		pcrecpp::RE re2 = app_pcre_re(R"(/(SMART Self-test log, version number[^\n0-9]*)([^ \n]+)[ \t]*$/mi)");
 
 		std::string name, value;
 		if (re1.PartialMatch(sub, &name, &value) || re1_ex.PartialMatch(sub, &name, &value) || re2.PartialMatch(sub, &name, &value)) {
@@ -1924,11 +1865,10 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 			StorageProperty p(pt);
 			p.set_name(hz::string_trim_copy(name), "selftest_log_version");
 			p.reported_value = value;
-			p.value_type = StorageProperty::value_type_integer;
 
 			int64_t value_num = 0;
 			hz::string_is_numeric_nolocale(value, value_num, false);
-			p.value_integer = value_num;
+			p.value = value_num;  // integer
 
 			add_property(p);
 			data_found = true;
@@ -1943,7 +1883,8 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 	{
 		// split by columns.
 		// num, type, status, remaining, hours, lba (optional).
-		pcrecpp::RE re = app_pcre_re("/^(#[ \\t]*([0-9]+)[ \\t]+(\\S+(?: \\S+)*)  [ \\t]*(\\S.*) [ \\t]*([0-9]+%)  [ \\t]*([0-9]+)[ \\t]*((?:  [ \\t]*\\S.*)?))$/mi");
+		pcrecpp::RE re = app_pcre_re(
+				R"(/^(#[ \t]*([0-9]+)[ \t]+(\S+(?: \S+)*)  [ \t]*(\S.*) [ \t]*([0-9]+%)  [ \t]*([0-9]+)[ \t]*((?:  [ \t]*\S.*)?))$/mi)");
 
 		std::string line, num, type, status_str, remaining, hours, lba;
 		pcrecpp::StringPiece input(sub);  // position tracker
@@ -1954,17 +1895,18 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 			StorageProperty p(pt);
 			p.set_name("Self-test entry " + num);
 			p.reported_value = hz::string_trim_copy(line);
-			p.value_type = StorageProperty::value_type_selftest_entry;
 
-			hz::string_is_numeric_nolocale(num, p.value_selftest_entry.test_num, false);
-			hz::string_is_numeric_nolocale(hz::string_trim_copy(remaining), p.value_selftest_entry.remaining_percent, false);
-			hz::string_is_numeric_nolocale(hz::string_trim_copy(hours), p.value_selftest_entry.lifetime_hours, false);
+			StorageSelftestEntry sse;
 
-			p.value_selftest_entry.type = hz::string_trim_copy(type);
-			p.value_selftest_entry.lba_of_first_error = hz::string_trim_copy(lba);
+			hz::string_is_numeric_nolocale(num, sse.test_num, false);
+			hz::string_is_numeric_nolocale(hz::string_trim_copy(remaining), sse.remaining_percent, false);
+			hz::string_is_numeric_nolocale(hz::string_trim_copy(hours), sse.lifetime_hours, false);
+
+			sse.type = hz::string_trim_copy(type);
+			sse.lba_of_first_error = hz::string_trim_copy(lba);
 			// old smartctls didn't print anything for lba if none, but newer ones print "-". normalize.
-			if (p.value_selftest_entry.lba_of_first_error == "")
-				p.value_selftest_entry.lba_of_first_error = "-";
+			if (sse.lba_of_first_error.empty())
+				sse.lba_of_first_error = "-";
 
 			hz::string_trim(status_str);
 			StorageSelftestEntry::status_t status = StorageSelftestEntry::status_unknown;
@@ -1994,8 +1936,10 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 				status = StorageSelftestEntry::status_reserved;
 			}
 
-			p.value_selftest_entry.status_str = status_str;
-			p.value_selftest_entry.status = status;
+			sse.status_str = status_str;
+			sse.status = status;
+
+			p.value = sse;  // StorageSelftestEntry value
 
 			add_property(p);
 			data_found = true;
@@ -2011,11 +1955,13 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 		StorageProperty p(pt);
 		p.set_name("Number of entries in self-test log", "selftest_num_entries");
 		// p.reported_value;  // nothing
-		p.value_type = StorageProperty::value_type_integer;
-		p.value_integer = test_count;
+		p.value = test_count;  // integer
 
 		add_property(p);
-		data_found = true;
+
+		if (test_count > 0) {
+			data_found = true;
+		}
 	}
 
 
@@ -2054,11 +2000,10 @@ If Selective self-test is pending on power-up, resume after 0 minute delay.
 		StorageProperty p(pt);
 		p.set_name("SMART Selective self-test log", "selective_selftest_log");
 		p.reported_value = sub;
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 		add_property(p);
-		data_found = true;
+		// data_found = true;
 	}
 
 	// supported / unsupported
@@ -2067,11 +2012,13 @@ If Selective self-test is pending on power-up, resume after 0 minute delay.
 		p.set_name("Selective self-tests supported", "selective_selftest_supported");
 
 		// p.reported_value;  // nothing
-		p.value_type = StorageProperty::value_type_bool;
-		p.value_bool = !app_pcre_match("/Device does not support Selective Self Tests\\/Logging/mi", sub);
+		p.value = !app_pcre_match("/Device does not support Selective Self Tests\\/Logging/mi", sub);  // bool
 
 		add_property(p);
-		data_found = true;
+
+		if (!p.get_value<bool>()) {
+			data_found = true;
+		}
 	}
 
 	return data_found;
@@ -2123,8 +2070,7 @@ Index    Estimated Time   Temperature Celsius
 		StorageProperty p(pt);
 		p.set_name("SCT temperature log", "scttemp_log");
 		p.reported_value = sub;
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 		add_property(p);
 //		data_found = true;
@@ -2136,12 +2082,11 @@ Index    Estimated Time   Temperature Celsius
 		p.set_name("SCT commands unsupported", "sct_unsupported");
 
 		// p.reported_value;  // nothing
-		p.value_type = StorageProperty::value_type_bool;
-		p.value_bool = app_pcre_match("/(SCT Commands not supported)|(SCT Data Table command not supported)/mi", sub);
+		p.value = app_pcre_match("/(SCT Commands not supported)|(SCT Data Table command not supported)/mi", sub);  // bool
 
 		add_property(p);
 
-		if (p.value_bool) {
+		if (p.get_value<bool>()) {
 			data_found = true;
 		}
 	}
@@ -2154,9 +2099,8 @@ Index    Estimated Time   Temperature Celsius
 			p.section = StorageProperty::section_data;
 			p.subsection = StorageProperty::subsection_temperature_log;
 			p.set_name("Current Temperature", "sct_temperature_celsius");
-			p.value_type = StorageProperty::value_type_integer;
 			p.reported_value = value;
-			hz::string_is_numeric_nolocale(value, p.value_integer);
+			p.value = hz::string_to_number_nolocale<int64_t>(value);  // integer
 			add_property(p);
 
 			data_found = true;
@@ -2187,8 +2131,7 @@ SCT Error Recovery Control:
 		StorageProperty p(pt);
 		p.set_name("SCT ERC log", "scterc_log");
 		p.reported_value = sub;
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 		add_property(p);
 		// data_found = true;
@@ -2200,12 +2143,11 @@ SCT Error Recovery Control:
 		p.set_name("SCT ERC supported", "sct_erc_supported");
 
 		// p.reported_value;  // nothing
-		p.value_type = StorageProperty::value_type_bool;
-		p.value_bool = !app_pcre_match("/SCT Error Recovery Control command not supported/mi", sub);
+		p.value = !app_pcre_match("/SCT Error Recovery Control command not supported/mi", sub);  // bool
 
 		add_property(p);
 
-		if (p.value_bool) {
+		if (p.get_value<bool>()) {
 			data_found = true;
 		}
 	}
@@ -2270,9 +2212,8 @@ Page Offset Size         Value  Description
 		p.set_name("Device statistics supported", "devstat_supported");
 
 		// p.reported_value;  // nothing
-		p.value_type = StorageProperty::value_type_bool;
-		p.value_bool = !app_pcre_match("/Device Statistics \\(GP\\/SMART Log 0x04\\) not supported/mi", sub);
-		supported = p.value_bool;
+		supported = !app_pcre_match(R"(/Device Statistics \(GP\/SMART Log 0x04\) not supported/mi)", sub);
+		p.value = supported;  // bool
 
 		add_property(p);
 	}
@@ -2302,9 +2243,7 @@ Page Offset Size         Value  Description
 
 	int devstat_format_style = FormatStyleCurrent;
 
-	for(std::size_t i = 0; i < lines.size(); ++i) {
-		const std::string& line = lines[i];
-
+	for (const auto& line : lines) {
 		// skip the non-informative lines
 		// "Device Statistics (GP Log 0x04)"
 		// "Device Statistics (SMART Log 0x04)"
@@ -2374,8 +2313,7 @@ Page Offset Size         Value  Description
 		StorageProperty p(pt);
 		p.set_name(hz::string_trim_copy(description));
 		p.reported_value = line;  // use the whole line here
-		p.value_type = StorageProperty::value_type_statistic;
-		p.value_statistic = st;
+		p.value = st;  // statistic-type value
 
 		add_property(p);
 		entries_found = true;
@@ -2416,11 +2354,10 @@ ID      Size     Value  Description
 		StorageProperty p(pt);
 		p.set_name("SATA Phy log", "sataphy_log");
 		p.reported_value = sub;
-		p.value_type = StorageProperty::value_type_string;
-		p.value_string = p.reported_value;
+		p.value = p.reported_value;  // string-type value
 
 		add_property(p);
-		data_found = true;
+		// data_found = true;
 	}
 
 	// supported / unsupported
@@ -2429,12 +2366,14 @@ ID      Size     Value  Description
 		p.set_name("SATA Phy log supported", "sataphy_supported");
 
 		// p.reported_value;  // nothing
-		p.value_type = StorageProperty::value_type_bool;
-		p.value_bool = !app_pcre_match("/SATA Phy Event Counters \\(GP Log 0x11\\) not supported/mi", sub)
-				&& !app_pcre_match("/SATA Phy Event Counters with [0-9-]+ sectors not supported/mi", sub);
+		p.value = !app_pcre_match("/SATA Phy Event Counters \\(GP Log 0x11\\) not supported/mi", sub)
+				&& !app_pcre_match("/SATA Phy Event Counters with [0-9-]+ sectors not supported/mi", sub);  // bool
 
 		add_property(p);
-		data_found = true;
+
+		if (p.get_value<bool>()) {
+			data_found = true;
+		}
 	}
 
 	return data_found;

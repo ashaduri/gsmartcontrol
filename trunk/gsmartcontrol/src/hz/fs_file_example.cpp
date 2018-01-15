@@ -32,7 +32,7 @@ int main()
 	files.push_back("/usr/bin/ar");
 	files.push_back("/proc/partitions");
 
-	for (unsigned int i = 0; i < files.size(); ++i) {
+	for (std::size_t i = 0; i < files.size(); ++i) {
 		hz::File file(files[i]);
 
 		hz::file_size_t size1 = 0, size2 = 0;

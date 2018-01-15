@@ -90,30 +90,29 @@ std::ostream& operator<<(std::ostream& os, const StorageStatistic& p)
 
 std::string StorageErrorBlock::get_readable_error_types(const std::vector<std::string>& types)
 {
-	static std::map<std::string, std::string> m;
-	if (m.empty()) {
-		m["ABRT"] = "Command aborted";
-		m["AMNF"] = "Address mark not found";
-		m["CCTO"] = "Command completion timed out";
-		m["EOM"] = "End of media";
-		m["ICRC"] = "Interface CRC error";
-		m["IDNF"] = "Identity not found";
-		m["ILI"] = "(Packet command-set specific)";
-		m["MC"] = "Media changed";
-		m["MCR"] = "Media change request";
-		m["NM"] = "No media";
-		m["obs"] = "Obsolete";
-		m["TK0NF"] = "Track 0 not found";
-		m["UNC"] = "Uncorrectable error in data";
-		m["WP"] = "Media is write protected";
-	}
+	static const std::map<std::string, std::string> m = {
+		{"ABRT", "Command aborted"},
+		{"AMNF", "Address mark not found"},
+		{"CCTO", "Command completion timed out"},
+		{"EOM", "End of media"},
+		{"ICRC", "Interface CRC error"},
+		{"IDNF", "Identity not found"},
+		{"ILI", "(Packet command-set specific)"},
+		{"MC", "Media changed"},
+		{"MCR", "Media change request"},
+		{"NM", "No media"},
+		{"obs", "Obsolete"},
+		{"TK0NF", "Track 0 not found"},
+		{"UNC", "Uncorrectable error in data"},
+		{"WP", "Media is write protected"},
+	};
 
 	std::vector<std::string> sv;
-	for (std::vector<std::string>::const_iterator iter = types.begin(); iter != types.end(); ++iter) {
-		if (m.find(*iter) != m.end()) {
-			sv.push_back(m[*iter]);
+	for (const auto& type : types) {
+		if (m.find(type) != m.end()) {
+			sv.push_back(m.at(type));
 		} else {
-			sv.push_back("[unknown type" + (iter->empty() ? "" : (": " + (*iter))) + "]");
+			sv.push_back("[unknown type" + (type.empty() ? "" : (": " + type)) + "]");
 		}
 	}
 
@@ -122,28 +121,27 @@ std::string StorageErrorBlock::get_readable_error_types(const std::vector<std::s
 
 
 
-int StorageErrorBlock::get_warning_level_for_error_type(std::string& type)
+int StorageErrorBlock::get_warning_level_for_error_type(const std::string& type)
 {
-	static std::map<std::string, StorageProperty::warning_t> m;
-	if (m.empty()) {
-		m["ABRT"] = StorageProperty::warning_none;
-		m["AMNF"] = StorageProperty::warning_alert;
-		m["CCTO"] = StorageProperty::warning_warn;
-		m["EOM"] = StorageProperty::warning_warn;
-		m["ICRC"] = StorageProperty::warning_warn;
-		m["IDNF"] = StorageProperty::warning_alert;
-		m["ILI"] = StorageProperty::warning_notice;
-		m["MC"] = StorageProperty::warning_none;
-		m["MCR"] = StorageProperty::warning_none;
-		m["NM"] = StorageProperty::warning_none;
-		m["obs"] = StorageProperty::warning_none;
-		m["TK0NF"] = StorageProperty::warning_alert;
-		m["UNC"] = StorageProperty::warning_alert;
-		m["WP"] = StorageProperty::warning_none;
-	}
+	static const std::map<std::string, StorageProperty::warning_t> m = {
+		{"ABRT", StorageProperty::warning_none},
+		{"AMNF", StorageProperty::warning_alert},
+		{"CCTO", StorageProperty::warning_warn},
+		{"EOM", StorageProperty::warning_warn},
+		{"ICRC", StorageProperty::warning_warn},
+		{"IDNF", StorageProperty::warning_alert},
+		{"ILI", StorageProperty::warning_notice},
+		{"MC", StorageProperty::warning_none},
+		{"MCR", StorageProperty::warning_none},
+		{"NM", StorageProperty::warning_none},
+		{"obs", StorageProperty::warning_none},
+		{"TK0NF", StorageProperty::warning_alert},
+		{"UNC", StorageProperty::warning_alert},
+		{"WP", StorageProperty::warning_none},
+	};
 
 	if (m.find(type) != m.end()) {
-		return int(m[type]);
+		return int(m.at(type));
 	}
 	return StorageProperty::warning_none;  // unknown error
 }
@@ -195,45 +193,34 @@ void StorageProperty::dump(std::ostream& os, std::size_t internal_offset) const
 	std::string offset(internal_offset, ' ');
 
 	os << offset << "[" << get_section_name(section)
-		<< (section == section_data ? (", " + get_subsection_name(subsection)) : "") << "]"
-		<< " " << generic_name
-		// << (generic_name == reported_name ? "" : (" (" + reported_name + ")"))
-		<< ": [" << get_value_type_name(value_type) << "] ";
+			<< (section == section_data ? (", " + get_subsection_name(subsection)) : "") << "]"
+			<< " " << generic_name
+			// << (generic_name == reported_name ? "" : (" (" + reported_name + ")"))
+			<< ": [" << get_value_type_name() << "] ";
 
 	// if (!readable_value.empty())
 	// 	os << readable_value;
 
-	switch(value_type) {
-		case StorageProperty::value_type_unknown:
-			os << "[empty]";
-			break;
-		case StorageProperty::value_type_string:
-			os << "\"" << value_string << "\"";
-			break;
-		case StorageProperty::value_type_integer:
-			os << value_integer << " [" << reported_value << "]";
-			break;
-		case StorageProperty::value_type_bool:
-			os << value_bool << " [" << reported_value << "]";
-			break;
-		case StorageProperty::value_type_time_length:
-			os << value_time_length.count() << " sec [" << reported_value << "]";
-			break;
-		case StorageProperty::value_type_capability:
-			os << value_capability;
-			break;
-		case StorageProperty::value_type_attribute:
-			os << value_attribute;
-			break;
-		case StorageProperty::value_type_statistic:
-			os << value_statistic;
-			break;
-		case StorageProperty::value_type_error_block:
-			os << value_error_block;
-			break;
-		case StorageProperty::value_type_selftest_entry:
-			os << value_selftest_entry;
-			break;
+	if (std::holds_alternative<std::monostate>(value)) {
+		os << "[empty]";
+	} else if (std::holds_alternative<std::string>(value)) {
+		os << std::get<std::string>(value);
+	} else if (std::holds_alternative<int64_t>(value)) {
+		os << std::get<int64_t>(value) << " [" << reported_value << "]";
+	} else if (std::holds_alternative<bool>(value)) {
+		os << std::string(std::get<bool>(value) ? "Yes" : "No") << " [" << reported_value << "]";
+	} else if (std::holds_alternative<std::chrono::seconds>(value)) {
+		os << std::get<std::chrono::seconds>(value).count() << " sec [" << reported_value << "]";
+	} else if (std::holds_alternative<StorageCapability>(value)) {
+		os << std::get<StorageCapability>(value);
+	} else if (std::holds_alternative<StorageAttribute>(value)) {
+		os << std::get<StorageAttribute>(value);
+	} else if (std::holds_alternative<StorageStatistic>(value)) {
+		os << std::get<StorageStatistic>(value);
+	} else if (std::holds_alternative<StorageErrorBlock>(value)) {
+		os << std::get<StorageErrorBlock>(value);
+	} else if (std::holds_alternative<StorageSelftestEntry>(value)) {
+		os << std::get<StorageSelftestEntry>(value);
 	}
 }
 
@@ -244,28 +231,26 @@ std::string StorageProperty::format_value(bool add_reported_too) const
 	if (!readable_value.empty())
 		return readable_value;
 
-	switch(value_type) {
-		case StorageProperty::value_type_unknown:
-			return "[unknown]";
-		case StorageProperty::value_type_string:
-			return value_string;
-		case StorageProperty::value_type_integer:
-			return hz::number_to_string_locale(value_integer) + (add_reported_too ? (" [" + reported_value + "]") : "");
-		case StorageProperty::value_type_bool:
-			return std::string(value_bool ? "Yes" : "No") + (add_reported_too ? (" [" + reported_value + "]") : "");
-		case StorageProperty::value_type_time_length:
-			return hz::format_time_length(value_time_length) + (add_reported_too ? (" [" + reported_value + "]") : "");
-		case StorageProperty::value_type_capability:
-			return hz::stream_cast<std::string>(value_capability);
-		case StorageProperty::value_type_attribute:
-			return hz::stream_cast<std::string>(value_attribute);
-		case StorageProperty::value_type_statistic:
-			return hz::stream_cast<std::string>(value_statistic);
-		case StorageProperty::value_type_error_block:
-			return hz::stream_cast<std::string>(value_error_block);
-		case StorageProperty::value_type_selftest_entry:
-			return hz::stream_cast<std::string>(value_selftest_entry);
-	}
+	if (std::holds_alternative<std::monostate>(value))
+		return "[unknown]";
+	if (std::holds_alternative<std::string>(value))
+		return std::get<std::string>(value);
+	if (std::holds_alternative<int64_t>(value))
+		return hz::number_to_string_locale(std::get<int64_t>(value)) + (add_reported_too ? (" [" + reported_value + "]") : "");
+	if (std::holds_alternative<bool>(value))
+		return std::string(std::get<bool>(value) ? "Yes" : "No") + (add_reported_too ? (" [" + reported_value + "]") : "");
+	if (std::holds_alternative<std::chrono::seconds>(value))
+		return hz::format_time_length(std::get<std::chrono::seconds>(value)) + (add_reported_too ? (" [" + reported_value + "]") : "");
+	if (std::holds_alternative<StorageCapability>(value))
+		return hz::stream_cast<std::string>(std::get<StorageCapability>(value));
+	if (std::holds_alternative<StorageAttribute>(value))
+		return hz::stream_cast<std::string>(std::get<StorageAttribute>(value));
+	if (std::holds_alternative<StorageStatistic>(value))
+		return hz::stream_cast<std::string>(std::get<StorageStatistic>(value));
+	if (std::holds_alternative<StorageErrorBlock>(value))
+		return hz::stream_cast<std::string>(std::get<StorageErrorBlock>(value));
+	if (std::holds_alternative<StorageSelftestEntry>(value))
+		return hz::stream_cast<std::string>(std::get<StorageSelftestEntry>(value));
 
 	return "[error]";
 }

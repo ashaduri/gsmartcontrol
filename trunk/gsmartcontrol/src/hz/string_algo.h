@@ -362,7 +362,7 @@ inline std::string string_erase_right_copy(const std::string& s, const std::stri
 /// remove adjacent duplicate chars inside s (modifying s).
 /// returns true if s was modified.
 /// useful for e.g. removing extra spaces inside the string.
-inline bool string_remove_adjacent_duplicates(std::string& s, char c, unsigned int max_out_adjacent = 1)
+inline bool string_remove_adjacent_duplicates(std::string& s, char c, std::size_t max_out_adjacent = 1)
 {
 	if (s.size() <= max_out_adjacent)
 		return false;
@@ -386,7 +386,7 @@ inline bool string_remove_adjacent_duplicates(std::string& s, char c, unsigned i
 
 
 /// remove adjacent duplicate chars inside s, not modifying s, returning the changed string.
-inline std::string string_remove_adjacent_duplicates_copy(const std::string& s, char c, unsigned int max_out_adjacent = 1)
+inline std::string string_remove_adjacent_duplicates_copy(const std::string& s, char c, std::size_t max_out_adjacent = 1)
 {
 	std::string ret(s);
 	string_remove_adjacent_duplicates(ret, c, max_out_adjacent);
@@ -564,7 +564,7 @@ inline std::string string_replace_chars_copy(const std::string& s,
 /// it appears that it was a gcc extension, removed in 4.1 (C1 cannot bind to std::vector,
 /// which has 2 (or more, implementation dependent) template parameters. gcc 4.1
 /// allowed this because vector's other parameters have defaults).
-template<class Container1, class Container2> inline
+template<class Container1, class Container2>
 std::string::size_type string_replace_array(std::string& s,
 		const Container1& from_strings, const Container2& to_strings, int max_replacements = -1)
 {
@@ -574,13 +574,11 @@ std::string::size_type string_replace_array(std::string& s,
 		return std::string::npos;
 	if (max_replacements == 0)
 		return 0;
-// 	if (from_strings == to_strings)  // don't check this, it's too expensive. it will work anyway.
-// 		return 0;
 
-	std::string::size_type cnt = 0, pos = 0;
+	std::string::size_type cnt = 0;
 
 	for(std::string::size_type i = 0; i < from_array_size; ++i) {
-		pos = 0;
+		std::string::size_type pos = 0;
 		while ((pos = s.find(from_strings[i], pos)) != std::string::npos) {
 			s.replace(pos, from_strings[i].size(), to_strings[i]);
 			pos += to_strings[i].size();
@@ -607,6 +605,45 @@ std::string string_replace_array_copy(const std::string& s,
 	string_replace_array(ret, from_strings, to_strings, max_replacements);
 	return ret;
 }
+
+
+/// A version with a hash
+template<class AssociativeContainer>
+std::string::size_type string_replace_array(std::string& s,
+		const AssociativeContainer& replacement_map, int max_replacements = -1)
+{
+	if (max_replacements == 0)
+		return 0;
+
+	std::string::size_type cnt = 0;
+
+	for(const auto& iter : replacement_map) {
+		std::string::size_type pos = 0;
+		while ((pos = s.find(iter.first, pos)) != std::string::npos) {
+			s.replace(pos, iter.first.size(), iter.second);
+			pos += iter.second.size();
+			if (static_cast<int>(++cnt) >= max_replacements && max_replacements != -1)
+				break;
+		}
+		if (max_replacements != -1 && static_cast<int>(cnt) > max_replacements)
+			break;
+	}
+
+	return cnt;
+}
+
+
+/// A version with a hash
+template<class AssociativeContainer>
+std::string string_replace_array_copy(const std::string& s,
+		const AssociativeContainer& replacement_map, int max_replacements = -1)
+{
+	std::string ret(s);
+	string_replace_array(ret, replacement_map, max_replacements);
+	return ret;
+}
+
+
 
 
 

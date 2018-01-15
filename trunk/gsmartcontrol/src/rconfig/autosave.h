@@ -20,6 +20,7 @@
 #endif
 
 #include <string>
+#include <chrono>
 #include <glib.h>
 
 #include "hz/debug.h"
@@ -59,7 +60,7 @@ extern "C" {
 		hz::FsPath p(impl::autosave_config_file);
 		if ((p.exists() && !p.is_regular()) || !p.is_writable()) {
 			debug_out_error("rconfig", "Autosave failed: Cannot write to file: " << p.get_error_locale() << "\n");
-			return (force ? false : true);  // if manual, return failure. else, don't stop the timeout.
+			return !force;  // if manual, return failure. else, don't stop the timeout.
 		}
 
 		bool status = rconfig::save_to_file(impl::autosave_config_file);
@@ -91,7 +92,7 @@ inline bool autosave_set_config_file(const std::string& file)
 
 
 /// Enable autosave every \c sec_interval seconds.
-inline bool autosave_start(unsigned int sec_interval)
+inline bool autosave_start(std::chrono::seconds sec_interval)
 {
 	if (impl::autosave_enabled) {  // already autosaving, you should stop it first.
 		debug_print_warn("rconfig", "Error while starting config autosave: Autosave is active already.\n");
@@ -99,9 +100,9 @@ inline bool autosave_start(unsigned int sec_interval)
 	}
 
 	impl::autosave_enabled = true;
-	debug_print_info("rconfig", "Starting config autosave with %u sec. interval.\n", sec_interval);
+	debug_print_info("rconfig", "Starting config autosave with %ld sec. interval.\n", sec_interval.count());
 
-	g_timeout_add_full(G_PRIORITY_DEFAULT_IDLE, sec_interval*1000,
+	g_timeout_add_full(G_PRIORITY_DEFAULT_IDLE, guint(std::chrono::milliseconds(sec_interval).count()),
 			&autosave_timeout_callback, nullptr, nullptr);
 
 	return true;
@@ -123,7 +124,7 @@ inline void autosave_stop()
 /// Forcibly save the config now.
 inline bool autosave_force_now()
 {
-	return autosave_timeout_callback((void*)true);  // anyone tell me what is the C++ variant of this?
+	return static_cast<bool>(autosave_timeout_callback((void*)true));  // anyone tell me what is the C++ variant of this?
 }
 
 

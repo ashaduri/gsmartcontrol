@@ -60,12 +60,7 @@ std::string StorageDevice::get_status_name(StorageDevice::status_t status, bool 
 
 StorageDevice::StorageDevice(const std::string& dev_or_vfile, bool is_virtual)
 {
-	detected_type_ = detected_type_unknown;
-	// force_type_ = false;
 	is_virtual_ = is_virtual;
-	is_manually_added_ = false;
-	parse_status_ = parse_status_none;
-	test_is_active_ = false;
 
 	if (is_virtual) {
 		virtual_file_ = dev_or_vfile;
@@ -78,55 +73,8 @@ StorageDevice::StorageDevice(const std::string& dev_or_vfile, bool is_virtual)
 
 StorageDevice::StorageDevice(const std::string& dev, const std::string& type_arg)
 {
-	detected_type_ = detected_type_unknown;
-	// force_type_ = false;
-	is_virtual_ = false;
-	is_manually_added_ = false;
-	parse_status_ = parse_status_none;
-	test_is_active_ = false;
-
 	device_ = dev;
 	type_arg_ = type_arg;
-}
-
-
-
-StorageDevice::StorageDevice(const StorageDevice& other)
-{
-	*this = other;
-}
-
-
-
-StorageDevice& StorageDevice::operator=(const StorageDevice& other)
-{
-	info_output_ = other.info_output_;
-	full_output_ = other.full_output_;
-
-	device_ = other.device_;
-	type_arg_ = other.type_arg_;
-	extra_args_ = other.extra_args_;
-
-	// force_type_ = other.force_type_;
-	is_virtual_ = other.is_virtual_;
-	virtual_file_ = other.virtual_file_;
-	is_manually_added_ = other.is_manually_added_;
-
-	parse_status_ = other.parse_status_;
-	test_is_active_ = other.test_is_active_;
-
-	detected_type_ = other.detected_type_;
-	smart_supported_ = other.smart_supported_;
-	smart_enabled_ = other.smart_enabled_;
-	aodc_status_ = other.aodc_status_;
-	model_name_ = other.model_name_;
-	family_name_ = other.family_name_;
-	size_ = other.size_;
-	health_property_ = other.health_property_;
-
-	properties_ = other.properties_;
-
-	return *this;
 }
 
 
@@ -278,7 +226,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	// Note: this property is present since 5.33.
 	std::string size;
 	if (app_pcre_match("/^User Capacity:[ \\t]*(.*)$/mi", info_output_, &size)) {
-		uint64_t bytes = 0;
+		int64_t bytes = 0;
 		size_ = SmartctlParser::parse_byte_size(size, bytes, false);
 	}
 
@@ -519,15 +467,15 @@ StorageDevice::status_t StorageDevice::get_aodc_status() const
 	bool aodc_supported = false;
 	int found = 0;
 
-	for (std::vector<StorageProperty>::const_iterator iter = properties_.begin(); iter != properties_.end(); ++iter) {
-		if (iter->section == StorageProperty::section_internal) {
-			if (iter->generic_name == "aodc_enabled") {  // if this is not present at all, we set the unknown status.
-				status = (iter->value_bool ? status_enabled : status_disabled);
+	for (const auto& p : properties_) {
+		if (p.section == StorageProperty::section_internal) {
+			if (p.generic_name == "aodc_enabled") {  // if this is not present at all, we set the unknown status.
+				status = (p.get_value<bool>() ? status_enabled : status_disabled);
 				//++found;
 				continue;
 			}
-			if (iter->generic_name == "aodc_support") {
-				aodc_supported = iter->value_bool;
+			if (p.generic_name == "aodc_support") {
+				aodc_supported = p.get_value<bool>();
 				++found;
 				continue;
 			}
@@ -667,10 +615,10 @@ const std::map<char, std::string>& StorageDevice::get_drive_letters() const
 std::string StorageDevice::format_drive_letters(bool with_volnames) const
 {
 	std::vector<std::string> drive_letters_decorated;
-	for (std::map<char, std::string>::const_iterator iter = drive_letters_.begin(); iter != drive_letters_.end(); ++iter) {
-		drive_letters_decorated.push_back(std::string() + (char)std::toupper(iter->first) + ":");
-		if (with_volnames && !iter->second.empty()) {
-			drive_letters_decorated.back() += std::string(" (") + iter->second + ")";
+	for (const auto& iter : drive_letters_) {
+		drive_letters_decorated.push_back(std::string() + (char)std::toupper(iter.first) + ":");
+		if (with_volnames && !iter.second.empty()) {
+			drive_letters_decorated.back() += std::string(" (") + iter.second + ")";
 		}
 	}
 	return hz::string_join(drive_letters_decorated, ", ");

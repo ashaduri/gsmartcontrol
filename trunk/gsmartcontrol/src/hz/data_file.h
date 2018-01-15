@@ -85,8 +85,7 @@ inline std::string data_file_find(const std::string& filename, bool allow_to_be_
 		return fp.str();  // return as is.
 	}
 
-	for (unsigned int i = 0; i < DataFileStaticHolder::search_directories.size(); i++) {
-		std::string dirpath = DataFileStaticHolder::search_directories.at(i);
+	for (const auto& dirpath : DataFileStaticHolder::search_directories) {
 		hz::FsPath dp(dirpath + hz::DIR_SEPARATOR_S + fp.str());
 
 		// debug_print_dump("app", "%s: Searching for data \"%s\" at \"%s\".\n", DBG_FUNC, fp.c_str(), dirpath.c_str());

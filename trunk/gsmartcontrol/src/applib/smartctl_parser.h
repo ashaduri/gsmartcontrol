@@ -43,7 +43,7 @@ class SmartctlParser {
 
 
 		/// Convert e.g. "1,000,204,886,016 bytes" to 1.00 TiB [931.51 GB, 1000204886016 bytes]
-		static std::string parse_byte_size(const std::string& str, uint64_t& bytes, bool extended);
+		static std::string parse_byte_size(const std::string& str, int64_t& bytes, bool extended);
 
 
 		// You don't really need to call these functions, use the ones above.
@@ -78,7 +78,7 @@ class SmartctlParser {
 		bool parse_section_data_subsection_sataphy(const std::string& sub);
 
 		/// Check the capabilities for internal properties we can use.
-		bool parse_section_data_internal_capabilities(StorageProperty& cap);
+		bool parse_section_data_internal_capabilities(StorageProperty& cap_prop);
 
 
 		/// Clear parsed data

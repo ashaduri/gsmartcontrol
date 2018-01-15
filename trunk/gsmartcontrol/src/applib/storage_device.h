@@ -64,10 +64,6 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 		static std::string get_status_name(status_t status, bool use_yesno = false);
 
 
-		/// Comparison function for sorting the devices
-		static bool order_less_than(const StorageDeviceRefPtr& a, const StorageDeviceRefPtr& b);
-
-
 		/// Statuses of various parse states
 		enum parse_status_t {
 			parse_status_full,  ///< Fully parsed
@@ -77,16 +73,10 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 
 
 		/// Constructor
-		StorageDevice(const std::string& dev_or_vfile, bool is_virtual = false);
+		explicit StorageDevice(const std::string& dev_or_vfile, bool is_virtual = false);
 
 		/// Constructor
 		StorageDevice(const std::string& dev, const std::string& type_arg);
-
-		/// Copy constructor
-		StorageDevice(const StorageDevice& other);
-
-		/// Assignment operator
-		StorageDevice& operator= (const StorageDevice& other);
 
 
 		// clear everything fetched before.
@@ -278,18 +268,18 @@ class StorageDevice : public hz::intrusive_ptr_referenced {
 
 		std::map<char, std::string> drive_letters_;  ///< Windows drive letters (if detected), with volume names
 
-		bool is_virtual_;  ///< If true, then this is not a real device - merely a loaded description of it.
+		bool is_virtual_ = false;  ///< If true, then this is not a real device - merely a loaded description of it.
 		std::string virtual_file_;  ///< A file (smartctl data) the virtual device was loaded from
-		bool is_manually_added_;  ///< StorageDevice doesn't use it, but it's useful for its users.
+		bool is_manually_added_ = false;  ///< StorageDevice doesn't use it, but it's useful for its users.
 
-		parse_status_t parse_status_;  ///< "Fully parsed" flag
+		parse_status_t parse_status_ = parse_status_none;  ///< "Fully parsed" flag
 
 		/// Sort of a "lock". If true, the device is not allowed to perform any commands
 		/// except "-l selftest" and maybe "--capabilities" and "--info" (not sure).
-		bool test_is_active_;
+		bool test_is_active_ = false;
 
 		// Note: These are detected through info output
-		detected_type_t detected_type_;  ///< e.g. type_unknown
+		detected_type_t detected_type_ = detected_type_unknown;  ///< e.g. type_unknown
 		std::optional<bool> smart_supported_;  ///< SMART support status
 		std::optional<bool> smart_enabled_;  ///< SMART enabled status
 		mutable std::optional<status_t> aodc_status_;  ///< Cached aodc status.

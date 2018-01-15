@@ -153,19 +153,19 @@ bool debug_set_enabled(const std::string& domain, const debug_level::type& level
 
 	if (domain == "all") {
 		bool status = true;
-		for (DebugState::domain_map_t::iterator iter = dm.begin(); iter != dm.end(); ++iter)
-			status = status && debug_set_enabled(iter->first, levels, enabled);
+		for (auto& iter : dm)
+			status = status && debug_set_enabled(iter.first, levels, enabled);
 		return status;
 	}
 
-	DebugState::domain_map_t::iterator found = dm.find(domain);
+	auto found = dm.find(domain);
 	if (found == dm.end())  // doesn't exists
 		return false;
 
 	std::vector<debug_level::flag> matched_levels;
 	debug_level::get_matched_levels_array(levels, matched_levels);
-	for (unsigned int i = 0; i < matched_levels.size(); ++i) {
-		found->second[matched_levels[i]]->set_enabled(enabled);
+	for (auto matched_level : matched_levels) {
+		found->second[matched_level]->set_enabled(enabled);
 	}
 
 	return true;
@@ -180,15 +180,15 @@ debug_level::type debug_get_enabled(const std::string& domain)
 
 	debug_level::type levels;
 
-	DebugState::domain_map_t::iterator found = dm.find(domain);
+	auto found = dm.find(domain);
 	if (found == dm.end())  // doesn't exists
 		return levels;
 
 	DebugState::level_map_t& level_map = found->second;
 
-	for (DebugState::level_map_t::const_iterator iter = level_map.begin(); iter != level_map.end(); ++iter) {
-		if (iter->second->get_enabled())
-			levels |= iter->first;
+	for (const auto& iter : level_map) {
+		if (iter.second->get_enabled())
+			levels |= iter.first;
 	}
 
 	return levels;
@@ -204,19 +204,19 @@ bool debug_set_format(const std::string& domain, const debug_level::type& levels
 
 	if (domain == "all") {
 		bool status = true;
-		for (DebugState::domain_map_t::iterator iter = dm.begin(); iter != dm.end(); ++iter)
-			status = status && debug_set_format(iter->first, levels, format);
+		for (const auto& iter : dm)
+			status = status && debug_set_format(iter.first, levels, format);
 		return status;
 	}
 
-	DebugState::domain_map_t::iterator found = dm.find(domain);
+	auto found = dm.find(domain);
 	if (found == dm.end())  // doesn't exists
 		return false;
 
 	std::vector<debug_level::flag> matched_levels;
 	debug_level::get_matched_levels_array(levels, matched_levels);
-	for (unsigned int i = 0; i < matched_levels.size(); ++i) {
-		found->second[matched_levels[i]]->set_format(format);
+	for (auto matched_level : matched_levels) {
+		found->second[matched_level]->set_format(format);
 	}
 
 	return true;
@@ -231,12 +231,12 @@ std::map<debug_level::flag, debug_format::type> debug_get_formats(const std::str
 
 	std::map<debug_level::flag, debug_format::type> formats;
 
-	DebugState::domain_map_t::iterator found = dm.find(domain);
+	auto found = dm.find(domain);
 	if (found == dm.end())  // doesn't exists
 		return formats;
 
-	for (DebugState::level_map_t::const_iterator iter = found->second.begin(); iter != found->second.end(); ++iter)
-		formats[iter->first] = iter->second->get_format();
+	for (const auto& iter : found->second)
+		formats[iter.first] = iter.second->get_format();
 
 	return formats;
 }
@@ -251,19 +251,19 @@ bool debug_add_channel(const std::string& domain, const debug_level::type& level
 
 	if (domain == "all") {
 		bool status = true;
-		for (DebugState::domain_map_t::iterator iter = dm.begin(); iter != dm.end(); ++iter)
-			status = status && debug_add_channel(iter->first, levels, channel);
+		for (const auto& iter : dm)
+			status = status && debug_add_channel(iter.first, levels, channel);
 		return status;
 	}
 
-	DebugState::domain_map_t::iterator found = dm.find(domain);
+	auto found = dm.find(domain);
 	if (found == dm.end())  // doesn't exists
 		return false;
 
 	std::vector<debug_level::flag> matched_levels;
 	debug_level::get_matched_levels_array(levels, matched_levels);
-	for (unsigned int i = 0; i < matched_levels.size(); ++i) {
-		found->second[matched_levels[i]]->add_channel(channel);
+	for (auto matched_level : matched_levels) {
+		found->second[matched_level]->add_channel(channel);
 	}
 
 	return true;
@@ -279,19 +279,19 @@ bool debug_clear_channels(const std::string& domain, const debug_level::type& le
 
 	if (domain == "all") {
 		bool status = true;
-		for (DebugState::domain_map_t::iterator iter = dm.begin(); iter != dm.end(); ++iter)
-			status = status && debug_clear_channels(iter->first, levels);
+		for (const auto& iter : dm)
+			status = status && debug_clear_channels(iter.first, levels);
 		return status;
 	}
 
-	DebugState::domain_map_t::iterator found = dm.find(domain);
+	auto found = dm.find(domain);
 	if (found == dm.end())  // doesn't exists
 		return false;
 
 	std::vector<debug_level::flag> matched_levels;
 	debug_level::get_matched_levels_array(levels, matched_levels);
-	for (unsigned int i = 0; i < matched_levels.size(); ++i) {
-		found->second[matched_levels[i]]->set_channels(std::vector<debug_channel_base_ptr>());
+	for (auto matched_level : matched_levels) {
+		found->second[matched_level]->set_channels(std::vector<debug_channel_base_ptr>());
 	}
 
 	return true;

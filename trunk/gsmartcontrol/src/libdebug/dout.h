@@ -111,7 +111,7 @@ namespace debug_internal {
 	struct DebugSourcePos {
 
 		/// Constructor
-		inline DebugSourcePos(const std::string& file_, unsigned int line_, const std::string& func_name_, const std::string& func_)
+		inline DebugSourcePos(const std::string& file_, int line_, const std::string& func_name_, const std::string& func_)
 				: func_name(func_name_), func(func_), line(line_), file(file_), enabled_types(debug_pos::def)
 		{ }
 
@@ -121,7 +121,7 @@ namespace debug_internal {
 
 		std::string func_name;  ///< Function name only
 		std::string func;  ///< Function name with namespaces and classes
-		unsigned int line;  ///< Source line
+		int line;  ///< Source line
 		std::string file;  ///< Source file
 
 		debug_pos::type enabled_types;  ///< Enabled formatting types
@@ -169,7 +169,7 @@ namespace debug_internal {
 /// Current file as const char*.
 #define DBG_FILE __FILE__
 
-/// Current line as unsigned int.
+/// Current line as integer constant.
 #define DBG_LINE __LINE__
 
 
@@ -189,14 +189,16 @@ namespace debug_internal {
 
 
 /// "class::function()", as const char*.
-#define DBG_FUNC (debug_internal::format_function_msg(DBG_FUNC_PRNAME, false).c_str())
+/// static_cast is needed to avoid clang-tidy errors about converting array to pointer.
+#define DBG_FUNC (debug_internal::format_function_msg(static_cast<const char*>(DBG_FUNC_PRNAME), false).c_str())
 
 /// "class::function(): ", as const char*.
-#define DBG_FUNC_MSG (debug_internal::format_function_msg(DBG_FUNC_PRNAME, true).c_str())
+/// static_cast is needed to avoid clang-tidy errors about converting array to pointer.
+#define DBG_FUNC_MSG (debug_internal::format_function_msg(static_cast<const char*>(DBG_FUNC_PRNAME), true).c_str())
 
 
 /// When sent into std::ostream, this object prints current source position.
-#define DBG_POS debug_internal::DebugSourcePos(DBG_FILE, DBG_LINE, DBG_FUNC_NAME, DBG_FUNC)
+#define DBG_POS debug_internal::DebugSourcePos(DBG_FILE, DBG_LINE, static_cast<const char*>(DBG_FUNC_NAME), DBG_FUNC)
 
 
 /// A standalone function-like macro, prints "Trace point "a" reached at (source position)"

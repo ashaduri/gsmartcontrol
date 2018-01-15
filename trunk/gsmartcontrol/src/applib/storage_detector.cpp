@@ -54,20 +54,17 @@ std::string StorageDetector::detect(std::vector<StorageDeviceRefPtr>& drives, Ex
 		return error_msg;  // last error message should be ok.
 	}
 
-
-	for (std::vector<StorageDeviceRefPtr>::iterator iter = all_detected.begin(); iter != all_detected.end(); ++iter) {
-		StorageDeviceRefPtr drive = *iter;
-
+	for (auto& drive : all_detected) {
 		// try to match against patterns
-// 		for (unsigned int i = 0; i < match_patterns_.size(); i++) {
+// 		for (std::size_t i = 0; i < match_patterns_.size(); i++) {
 			// try to match against general filter
 // 			if (!app_pcre_match(match_patterns_[i], dev))
 // 				continue;
 
 			// matched, check the blacklist
 			bool blacked = false;
-			for (unsigned int j = 0; j < blacklist_patterns_.size(); j++) {
-				if (app_pcre_match(blacklist_patterns_[j], drive->get_device())) {  // matched the blacklist too
+			for (const auto& blacklist_pattern : blacklist_patterns_) {
+				if (app_pcre_match(blacklist_pattern, drive->get_device())) {  // matched the blacklist too
 					blacked = true;
 					break;
 				}
@@ -104,8 +101,7 @@ std::string StorageDetector::fetch_basic_data(std::vector<StorageDeviceRefPtr>& 
 
 	hz::intrusive_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorSmartctl);
 
-	for (unsigned int i = 0; i < drives.size(); ++i) {
-		StorageDeviceRefPtr drive = drives[i];
+	for (auto& drive : drives) {
 		debug_out_info("app", "Retrieving basic information about the device...\n");
 
 		smartctl_ex->set_running_msg("Running %s on " + drive->get_device_with_type() + "...");

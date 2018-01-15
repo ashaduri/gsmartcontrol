@@ -171,7 +171,7 @@ class FsPath : public FsPathHolder, public FsErrorHolder {
 		inline FsPath& trim_trailing();
 
 		/// Go up \c steps steps. The current object is also modified.
-		inline FsPath& go_up(unsigned int steps = 1);
+		inline FsPath& go_up(int steps = 1);
 
 		/// Append a partial (e.g. relative) path. It doesn't matter if it starts with a
 		/// separator. The current object is also modified.
@@ -323,7 +323,7 @@ inline FsPath& FsPath::trim_trailing()
 
 
 
-inline FsPath& FsPath::go_up(unsigned int steps)
+inline FsPath& FsPath::go_up(int steps)
 {
 	std::string p = this->get_path();
 	while (steps--)

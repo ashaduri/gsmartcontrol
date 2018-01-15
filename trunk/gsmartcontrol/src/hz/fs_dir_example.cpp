@@ -75,7 +75,7 @@ int main()
 			std::vector<std::string> v;
 			dir.list(v, false);
 
-			for (unsigned int i = 0; i < v.size(); ++i) {
+			for (std::size_t i = 0; i < v.size(); ++i) {
 				std::cerr << v[i] << "\n";
 			}
 		}
@@ -85,7 +85,7 @@ int main()
 			std::vector<std::string> v;
 			dir.list(v, true, hz::DirSortMTime(DIR_SORT_MIXED));
 
-			for (unsigned int i = 0; i < v.size(); ++i) {
+			for (std::size_t i = 0; i < v.size(); ++i) {
 				std::cerr << v[i] << "\n";
 			}
 		}
@@ -95,7 +95,7 @@ int main()
 			std::vector<std::string> v;
 			dir.list_filtered(v, false, hz::DirFilterWc("*.o"));
 
-			for (unsigned int i = 0; i < v.size(); ++i) {
+			for (std::size_t i = 0; i < v.size(); ++i) {
 				std::cerr << v[i] << "\n";
 			}
 		}

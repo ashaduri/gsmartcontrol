@@ -237,6 +237,6 @@ extern const unsigned char app_ui_res_test_window_ui[] = {
 
  0x0 };
 
-extern const unsigned int app_ui_res_test_window_ui_size = 224;
+extern const unsigned long long int app_ui_res_test_window_ui_size = 224;
 
 

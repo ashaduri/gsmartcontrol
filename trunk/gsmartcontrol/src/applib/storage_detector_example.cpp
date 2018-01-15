@@ -37,9 +37,9 @@ int main()
 		std::cerr << error_msg << "\n";
 
 	} else {
-		for (unsigned int i = 0; i < drives.size(); ++i) {
-			std::cerr << drives[i]->get_device_with_type() <<
-					" (" << StorageDevice::get_type_readable_name(drives[i]->get_detected_type()) << ")\n";
+		for (const auto& drive : drives) {
+			std::cerr << drive->get_device_with_type() <<
+					" (" << StorageDevice::get_type_readable_name(drive->get_detected_type()) << ")\n";
 		}
 	}
 

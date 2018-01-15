@@ -33,6 +33,7 @@ GTKMM 4.
 	scoped_ptr (after we have GtkFileChooserNative in gtkmm)
 	GTK_CHECK_VERSION, GTK_CHECK_VERSION
 	port rconfig/autosave.h from glib to glibmm.
+	local_glibmm.h
 
 JSON.
 	Port the rest to std::regex, get rid of pcre requirement.
@@ -49,13 +50,10 @@ Use std::from_chars() in string_is_numeric_impl_classic_locale() (gcc 8)
 std::string setters -> no const&, use std::move.
 	same for std::vector
 enum class
-static std::map
+switch -> static std::map
 for iter -> for auto
 throw() -> noexcept
 { }  -> constructor/destructor = default
-_sec, _ms -> chrono
-0.5 -> round
-unsigned int -> std::size_t
 Should StorageProperty contain also value_uinteger?
 
 Check TODOs

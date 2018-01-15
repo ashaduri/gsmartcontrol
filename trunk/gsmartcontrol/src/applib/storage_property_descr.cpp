@@ -9,8 +9,10 @@
 /// \weakgroup applib
 /// @{
 
+#include <utility>
 #include <vector>
 #include <map>
+#include <unordered_map>
 
 #include "hz/string_algo.h"  // string_replace_copy
 #include "applib/app_pcrecpp.h"
@@ -22,7 +24,7 @@
 namespace {
 
 
-	static std::string s_unc_text = "When a drive encounters a surface error, it marks that sector as &quot;unstable&quot; (also known as &quot;pending reallocation&quot;). "
+	std::string s_unc_text = "When a drive encounters a surface error, it marks that sector as &quot;unstable&quot; (also known as &quot;pending reallocation&quot;). "
 			"If the sector is successfully read from or written to at some later point, it is unmarked. If the sector continues to be inaccessible, "
 			"the drive reallocates (remaps) it to a specially reserved area as soon as it has a chance (usually during write request or successful read), "
 			"transferring the data so that no changes are reported to the operating system. This is why you generally don't see &quot;bad blocks&quot; "
@@ -38,10 +40,10 @@ namespace {
 		{ }
 
 		/// Constructor
-		AttributeDescription(int32_t id_, StorageAttribute::DiskType type, const std::string& smartctl_name_,
-				const std::string& readable_name_, const std::string& generic_name_, const std::string& description_)
-				: id(id_), disk_type(type), smartctl_name(smartctl_name_), readable_name(readable_name_),
-				generic_name(generic_name_), description(description_)
+		AttributeDescription(int32_t id_, StorageAttribute::DiskType type, std::string smartctl_name_,
+				std::string readable_name_, std::string generic_name_, std::string description_)
+				: id(id_), disk_type(type), smartctl_name(std::move(smartctl_name_)), readable_name(std::move(readable_name_)),
+				generic_name(std::move(generic_name_)), description(std::move(description_))
 		{ }
 
 		int32_t id;  ///< e.g. 190
@@ -1061,7 +1063,7 @@ namespace {
 			/// different smartctl name (fill the other members from the previous attribute).
 			void add(int32_t id, StorageAttribute::DiskType type, const std::string& smartctl_name)
 			{
-				std::map<int32_t, std::vector< AttributeDescription> >::iterator iter = id_db.find(id);
+				auto iter = id_db.find(id);
 				DBG_ASSERT(iter != id_db.end() && !iter->second.empty());
 				if (iter != id_db.end() || iter->second.empty()) {
 					AttributeDescription attr = iter->second.front();
@@ -1081,7 +1083,7 @@ namespace {
 			AttributeDescription find(const std::string& smartctl_name, int32_t id, StorageAttribute::DiskType type) const
 			{
 				// search by ID first
-				std::map< int32_t, std::vector<AttributeDescription> >::const_iterator id_iter = id_db.find(id);
+				auto id_iter = id_db.find(id);
 				if (id_iter == id_db.end()) {
 					return AttributeDescription();  // not found
 				}
@@ -1091,9 +1093,9 @@ namespace {
 				}
 
 				std::vector<AttributeDescription> type_matched;
-				for (std::vector<AttributeDescription>::const_iterator attr_iter = id_iter->second.begin(); attr_iter != id_iter->second.end(); ++attr_iter) {
-					if (attr_iter->disk_type == type || attr_iter->disk_type == StorageAttribute::DiskAny || type == StorageAttribute::DiskAny) {
-						type_matched.push_back(*attr_iter);
+				for (const auto& attr_iter : id_iter->second) {
+					if (attr_iter.disk_type == type || attr_iter.disk_type == StorageAttribute::DiskAny || type == StorageAttribute::DiskAny) {
+						type_matched.push_back(attr_iter);
 					}
 				}
 				if (type_matched.empty()) {
@@ -1101,10 +1103,10 @@ namespace {
 				}
 
 				// search by smartctl name in ID-supplied vector
-				for (std::vector<AttributeDescription>::const_iterator attr_iter = type_matched.begin(); attr_iter != type_matched.end(); ++attr_iter) {
+				for (const auto& attr_iter : type_matched) {
 					// compare them case-insensitively, just in case
-					if ( hz::string_to_lower_copy(attr_iter->smartctl_name) == hz::string_to_lower_copy(smartctl_name)) {
-						return *attr_iter;  // found it
+					if ( hz::string_to_lower_copy(attr_iter.smartctl_name) == hz::string_to_lower_copy(smartctl_name)) {
+						return attr_iter;  // found it
 					}
 				}
 
@@ -1121,7 +1123,7 @@ namespace {
 
 
 	/// Program-wide attribute description database
-	static const AttributeDatabase s_attribute_db;
+	const AttributeDatabase s_attribute_db;
 
 
 
@@ -1129,14 +1131,13 @@ namespace {
 	/// Attribute description for attribute database
 	struct StatisticDescription {
 		/// Constructor
-		StatisticDescription()
-		{ }
+		StatisticDescription() = default;
 
 		/// Constructor
-		StatisticDescription(const std::string& smartctl_name_,
-				const std::string& readable_name_, const std::string& generic_name_, const std::string& description_)
-				: smartctl_name(smartctl_name_), readable_name(readable_name_),
-				generic_name(generic_name_), description(description_)
+		StatisticDescription(std::string smartctl_name_,
+				std::string readable_name_, std::string generic_name_, std::string description_)
+				: smartctl_name(std::move(smartctl_name_)), readable_name(std::move(readable_name_)),
+				generic_name(std::move(generic_name_)), description(std::move(description_))
 		{ }
 
 		std::string smartctl_name;  ///< e.g. Highest Temperature
@@ -1334,10 +1335,10 @@ namespace {
 
 
 			/// Find the description by smartctl name or id, merging them if they're partial.
-			StatisticDescription find(std::string smartctl_name) const
+			StatisticDescription find(const std::string& smartctl_name) const
 			{
 				// search by ID first
-				std::map<std::string, StatisticDescription>::const_iterator iter = devstat_db.find(smartctl_name);
+				auto iter = devstat_db.find(smartctl_name);
 				if (iter == devstat_db.end()) {
 					return StatisticDescription();  // not found
 				}
@@ -1353,7 +1354,7 @@ namespace {
 
 
 	/// Program-wide devstat description database
-	static const StatisticsDatabase s_devstat_db;
+	const StatisticsDatabase s_devstat_db;
 
 
 
@@ -1383,8 +1384,7 @@ namespace {
 	/// Check if a property is an attribute and matches a generic name
 	inline bool attr_match(StorageProperty& p, const std::string& generic_name)
 	{
-		return (p.value_type == StorageProperty::value_type_attribute &&
-				(p.generic_name == generic_name));
+		return (p.is_value_type<StorageAttribute>() && p.generic_name == generic_name);
 	}
 
 
@@ -1393,7 +1393,7 @@ namespace {
 	/// with all the readable information we can gather.
 	inline void auto_set_attr(StorageProperty& p, StorageAttribute::DiskType disk_type)
 	{
-		AttributeDescription attr = s_attribute_db.find(p.reported_name, p.value_attribute.id, disk_type);
+		AttributeDescription attr = s_attribute_db.find(p.reported_name, p.get_value<StorageAttribute>().id, disk_type);
 
 		std::string humanized_smartctl_name;
 		std::string ssd_hdd_str;
@@ -1401,43 +1401,27 @@ namespace {
 		if (known_by_smartctl) {
 			humanized_smartctl_name = " " + p.reported_name + " ";  // spaces are for easy replacements
 
-			std::vector<std::string> searches, replacements;
-			searches.push_back("_");
-			replacements.push_back(" ");
-			searches.push_back("/");
-			replacements.push_back(" / ");
-			searches.push_back(" Ct ");
-			replacements.push_back(" Count ");
-			searches.push_back(" Tot ");
-			replacements.push_back(" Total ");
-			searches.push_back(" Blk ");
-			replacements.push_back(" Block ");
-			searches.push_back(" Cel ");
-			replacements.push_back(" Celsius ");
-			searches.push_back(" Uncorrect ");
-			replacements.push_back(" Uncorrectable ");
-			searches.push_back(" Cnt ");
-			replacements.push_back(" Count ");
-			searches.push_back(" Offl ");
-			replacements.push_back(" Offline ");
-			searches.push_back(" UNC ");
-			replacements.push_back(" Uncorrectable ");
-			searches.push_back(" Err ");
-			replacements.push_back(" Error ");
-			searches.push_back(" Errs ");
-			replacements.push_back(" Errors ");
-			searches.push_back(" Perc ");
-			replacements.push_back(" Percent ");
-			searches.push_back(" Ct ");
-			replacements.push_back(" Count ");
-			searches.push_back(" Avg ");
-			replacements.push_back(" Average ");
-			searches.push_back(" Max ");
-			replacements.push_back(" Maximum ");
-			searches.push_back(" Min ");
-			replacements.push_back(" Minimum ");
+			static std::unordered_map<std::string, std::string> replacement_map = {
+					{"_", " "},
+					{"/", " / "},
+					{" Ct ", " Count "},
+					{" Tot ", " Total "},
+					{" Blk ", " Block "},
+					{" Cel ", " Celsius "},
+					{" Uncorrect ", " Uncorrectable "},
+					{" Cnt ", " Count "},
+					{" Offl ", " Offline "},
+					{" UNC ", " Uncorrectable "},
+					{" Err ", " Error "},
+					{" Errs ", " Errors "},
+					{" Perc ", " Percent "},
+					{" Ct ", " Count "},
+					{" Avg ", " Average "},
+					{" Max ", " Maximum "},
+					{" Min ", " Minimum "}
+			};
 
-			hz::string_replace_array(humanized_smartctl_name, searches, replacements);
+			hz::string_replace_array(humanized_smartctl_name, replacement_map);
 			hz::string_trim(humanized_smartctl_name);
 			hz::string_remove_adjacent_duplicates(humanized_smartctl_name, ' ');  // may happen with slashes
 		}
@@ -1471,19 +1455,15 @@ namespace {
 				std::string match = " " + humanized_smartctl_name + " ";
 				std::string against = " " + attr.readable_name + " ";
 
-				std::vector<std::string> searches, replacements;
-				searches.push_back(" Percent ");
-				replacements.push_back(" % ");
-				searches.push_back("-");
-				replacements.push_back("");
-				searches.push_back("(");
-				replacements.push_back("");
-				searches.push_back(")");
-				replacements.push_back("");
-				searches.push_back(" ");
-				replacements.push_back("");
-				hz::string_replace_array(match, searches, replacements);
-				hz::string_replace_array(against, searches, replacements);
+				static std::unordered_map<std::string, std::string> replacement_map = {
+						{" Percent ", " % "},
+						{"-", 	""},
+						{"(", 	""},
+						{")", 	""},
+						{" ", 	""},
+				};
+				hz::string_replace_array(match, replacement_map);
+				hz::string_replace_array(against, replacement_map);
 
 				same_names = app_pcre_match("/^" + app_pcre_escape(match) + "$/i", against);
 			}
@@ -1522,7 +1502,7 @@ namespace {
 			std::string descr =  std::string("<b>") + readable_name + "</b>\n";
 			descr += sd.description;
 
-			if (p.value_statistic.is_normalized()) {
+			if (p.get_value<StorageStatistic>().is_normalized()) {
 				descr += "\n\nNote: The value is normalized.";
 			}
 
@@ -1615,9 +1595,9 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 				|| auto_set(p, "error_log_error_count", "Number of errors in error log. Note: Some manufacturers may list completely harmless errors in this log "
 					"(e.g., command invalid, not implemented, etc...).");
 // 				|| auto_set(p, "error_log_unsupported", "This device does not support error logging.");  // the property text already says that
-				if (p.value_type == StorageProperty::value_type_error_block) {
-					for (size_t i = 0; i < p.value_error_block.reported_types.size(); ++i) {
-						p.set_description(StorageErrorBlock::get_readable_error_types(p.value_error_block.reported_types));
+				if (p.is_value_type<StorageErrorBlock>()) {
+					for (size_t i = 0; i < p.get_value<StorageErrorBlock>().reported_types.size(); ++i) {
+						p.set_description(StorageErrorBlock::get_readable_error_types(p.get_value<StorageErrorBlock>().reported_types));
 						found = true;
 					}
 				}
@@ -1674,11 +1654,11 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 
 	// Section Info
 	} else if (p.section == StorageProperty::section_info) {
-		if (name_match(p, "smart_supported") && !p.value_bool) {
+		if (name_match(p, "smart_supported") && !p.get_value<bool>()) {
 			w = StorageProperty::warning_notice;
 			reason = "SMART is not supported. You won't be able to read any SMART information from this drive.";
 
-		} else if (name_match(p, "smart_enabled") && !p.value_bool) {
+		} else if (name_match(p, "smart_enabled") && !p.get_value<bool>()) {
 			w = StorageProperty::warning_notice;
 			reason = "SMART is disabled. You shoud enable it to read any SMART information from this drive. "
 					"Additionally, some drives do not log useful data with SMART disabled, so it's advisable to keep it always enabled.";
@@ -1692,7 +1672,7 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 
 		switch(p.subsection) {
 			case StorageProperty::subsection_health:
-				if (name_match(p, "overall_health") && p.value_string != "PASSED") {
+				if (name_match(p, "overall_health") && p.get_value<std::string>() != "PASSED") {
 					w = StorageProperty::warning_alert;
 					reason = "The drive is reporting that it will FAIL very soon. Please back up as soon as possible!";
 				}
@@ -1703,72 +1683,75 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 				break;
 
 			case StorageProperty::subsection_attributes:
+			{
+				if (p.is_value_type<StorageAttribute>()) {
 
-				// Set notices for known pre-fail attributes. These are notices only, since the warnings
-				// and alerts are shown only in case of attribute failure.
+					const auto& attr = p.get_value<StorageAttribute>();
 
-				// Reallocated Sector Count
-				if (attr_match(p, "attr_reallocated_sector_count") && p.value_attribute.raw_value_int > 0) {
-					w = StorageProperty::warning_notice;
-					reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
+					// Set notices for known pre-fail attributes. These are notices only, since the warnings
+					// and alerts are shown only in case of attribute failure.
 
-				// Spin-up Retry Count
-				} else if (attr_match(p, "attr_spin_up_retry_count") && p.value_attribute.raw_value_int > 0) {
-					w = StorageProperty::warning_notice;
-					reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. Your drive may have problems spinning up, which could lead to a complete mechanical failure. Please back up.";
+					// Reallocated Sector Count
+					if (attr_match(p, "attr_reallocated_sector_count") && attr.raw_value_int > 0) {
+						w = StorageProperty::warning_notice;
+						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
-				// Soft Read Error Rate
-				} else if (attr_match(p, "attr_soft_read_error_rate") && p.value_attribute.raw_value_int > 0) {
-					w = StorageProperty::warning_notice;
-					reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
+					// Spin-up Retry Count
+					} else if (attr_match(p, "attr_spin_up_retry_count") && attr.raw_value_int > 0) {
+						w = StorageProperty::warning_notice;
+						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. Your drive may have problems spinning up, which could lead to a complete mechanical failure. Please back up.";
 
-				// Temperature (for some it may be 10xTemp, so limit the upper bound.)
-				} else if (attr_match(p, "attr_temperature_celsius")
-						&& p.value_attribute.raw_value_int > 50 && p.value_attribute.raw_value_int <= 120) {  // 50C
-					w = StorageProperty::warning_notice;
-					reason = "The temperature of the drive is higher than 50 degrees Celsius. This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
+					// Soft Read Error Rate
+					} else if (attr_match(p, "attr_soft_read_error_rate") && attr.raw_value_int > 0) {
+						w = StorageProperty::warning_notice;
+						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
-				// Temperature (for some it may be 10xTemp, so limit the upper bound.)
-				} else if (attr_match(p, "attr_temperature_celsius_x10") && p.value_attribute.raw_value_int > 500) {  // 50C
-					w = StorageProperty::warning_notice;
-					reason = "The temperature of the drive is higher than 50 degrees Celsius. This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
+					// Temperature (for some it may be 10xTemp, so limit the upper bound.)
+					} else if (attr_match(p, "attr_temperature_celsius")
+							&& attr.raw_value_int > 50 && attr.raw_value_int <= 120) {  // 50C
+						w = StorageProperty::warning_notice;
+						reason = "The temperature of the drive is higher than 50 degrees Celsius. This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 
-				// Reallocation Event Count
-				} else if (attr_match(p, "attr_reallocation_event_count") && p.value_attribute.raw_value_int > 0) {
-					w = StorageProperty::warning_notice;
-					reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
+					// Temperature (for some it may be 10xTemp, so limit the upper bound.)
+					} else if (attr_match(p, "attr_temperature_celsius_x10") && attr.raw_value_int > 500) {  // 50C
+						w = StorageProperty::warning_notice;
+						reason = "The temperature of the drive is higher than 50 degrees Celsius. This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 
-				// Current Pending Sector Count
-				} else if ((attr_match(p, "attr_current_pending_sector_count") || attr_match(p, "attr_total_pending_sectors"))
-							&& p.value_attribute.raw_value_int > 0) {
-					w = StorageProperty::warning_notice;
-					reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
+					// Reallocation Event Count
+					} else if (attr_match(p, "attr_reallocation_event_count") && attr.raw_value_int > 0) {
+						w = StorageProperty::warning_notice;
+						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
-				// Uncorrectable Sector Count
-				} else if ((attr_match(p, "attr_offline_uncorrectable") || attr_match(p, "attr_total_attr_offline_uncorrectable"))
-							&& p.value_attribute.raw_value_int > 0) {
-					w = StorageProperty::warning_notice;
-					reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
+					// Current Pending Sector Count
+					} else if ((attr_match(p, "attr_current_pending_sector_count") || attr_match(p, "attr_total_pending_sectors"))
+								&& attr.raw_value_int > 0) {
+						w = StorageProperty::warning_notice;
+						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
-				// SSD Life Left (%)
-				} else if ((attr_match(p, "attr_ssd_life_left"))
-							&& p.value_attribute.value.value() < 50) {
-					w = StorageProperty::warning_notice;
-					reason = "The drive has less than half of its estimated life left.";
+					// Uncorrectable Sector Count
+					} else if ((attr_match(p, "attr_offline_uncorrectable") || attr_match(p, "attr_total_attr_offline_uncorrectable"))
+								&& attr.raw_value_int > 0) {
+						w = StorageProperty::warning_notice;
+						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
-				// SSD Life Used (%)
-				} else if ((attr_match(p, "attr_ssd_life_used"))
-							&& p.value_attribute.raw_value_int >= 50) {
-					w = StorageProperty::warning_notice;
-					reason = "The drive has less than half of its estimated life left.";
-				}
+					// SSD Life Left (%)
+					} else if ((attr_match(p, "attr_ssd_life_left"))
+								&& attr.value.value() < 50) {
+						w = StorageProperty::warning_notice;
+						reason = "The drive has less than half of its estimated life left.";
 
-				// Now override this with reported SMART attribute failure warnings / errors
+					// SSD Life Used (%)
+					} else if ((attr_match(p, "attr_ssd_life_used"))
+								&& attr.raw_value_int >= 50) {
+						w = StorageProperty::warning_notice;
+						reason = "The drive has less than half of its estimated life left.";
+					}
 
-				if (p.value_type == StorageProperty::value_type_attribute) {
-					if (p.value_attribute.when_failed == StorageAttribute::fail_time_now) {  // NOW
+					// Now override this with reported SMART attribute failure warnings / errors
 
-						if (p.value_attribute.attr_type == StorageAttribute::attr_type_oldage) {  // old-age
+					if (attr.when_failed == StorageAttribute::fail_time_now) {  // NOW
+
+						if (attr.attr_type == StorageAttribute::attr_type_oldage) {  // old-age
 							w = StorageProperty::warning_warn;
 							reason = "The drive has a failing old-age attribute. Usually this indicates a wear-out. You should consider replacing the drive.";
 						} else {  // pre-fail
@@ -1776,9 +1759,9 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 							reason = "The drive has a failing pre-fail attribute. Usually this indicates a that the drive will FAIL soon. Please back up immediately!";
 						}
 
-					} else if (p.value_attribute.when_failed == StorageAttribute::fail_time_past) {  // PAST
+					} else if (attr.when_failed == StorageAttribute::fail_time_past) {  // PAST
 
-						if (p.value_attribute.attr_type == StorageAttribute::attr_type_oldage) {  // old-age
+						if (attr.attr_type == StorageAttribute::attr_type_oldage) {  // old-age
 							// nothing. we don't warn about e.g. temperature increase in the past
 						} else {  // pre-fail
 							w = StorageProperty::warning_warn;  // there was a problem, it got corrected (hopefully)
@@ -1787,84 +1770,89 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 					}
 				}
 				break;
+			}
 
 			case StorageProperty::subsection_devstat:
+			{
+				const auto& statistic = p.get_value<StorageStatistic>();
 
-				if (name_match(p, "Pending Error Count") && p.value_statistic.value_int > 0) {
+				if (name_match(p, "Pending Error Count") && statistic.value_int > 0) {
 					w = StorageProperty::warning_notice;
 					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 				// "Workload Utilization" is either normalized, or encodes several values, so we can't use it.
 /*
-				} else if (name_match(p, "Workload Utilization") && p.value_statistic.value_int >= 50) {
+				} else if (name_match(p, "Workload Utilization") && statistic.value_int >= 50) {
 					w = StorageProperty::warning_notice;
 					reason = "The drive has less than half of its estimated life left.";
 
-				} else if (name_match(p, "Workload Utilization") && p.value_statistic.value_int >= 100) {
+				} else if (name_match(p, "Workload Utilization") && statistic.value_int >= 100) {
 					w = StorageProperty::warning_warn;
 					reason = "The drive is past its estimated lifespan.";
 */
 
-				} else if (name_match(p, "Utilization Usage Rate") && p.value_statistic.value_int >= 50) {
+				} else if (name_match(p, "Utilization Usage Rate") && statistic.value_int >= 50) {
 					w = StorageProperty::warning_notice;
 					reason = "The drive has less than half of its estimated life left.";
 
-				} else if (name_match(p, "Utilization Usage Rate") && p.value_statistic.value_int >= 100) {
+				} else if (name_match(p, "Utilization Usage Rate") && statistic.value_int >= 100) {
 					w = StorageProperty::warning_warn;
 					reason = "The drive is past its estimated lifespan.";
 
-				} else if (name_match(p, "Number of Reallocated Logical Sectors") && !p.value_statistic.is_normalized() && p.value_statistic.value_int > 0) {
+				} else if (name_match(p, "Number of Reallocated Logical Sectors") && !statistic.is_normalized() && statistic.value_int > 0) {
 					w = StorageProperty::warning_notice;
 					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
-				} else if (name_match(p, "Number of Reallocated Logical Sectors") && p.value_statistic.is_normalized() && p.value_statistic.value_int <= 0) {
+				} else if (name_match(p, "Number of Reallocated Logical Sectors") && statistic.is_normalized() && statistic.value_int <= 0) {
 					w = StorageProperty::warning_warn;
 					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
-				} else if (name_match(p, "Number of Mechanical Start Failures") && p.value_statistic.value_int > 0) {
+				} else if (name_match(p, "Number of Mechanical Start Failures") && statistic.value_int > 0) {
 					w = StorageProperty::warning_notice;
 					reason = "The drive is reporting mechanical errors.";
 
-				} else if (name_match(p, "Number of Realloc. Candidate Logical Sectors") && p.value_statistic.value_int > 0) {
+				} else if (name_match(p, "Number of Realloc. Candidate Logical Sectors") && statistic.value_int > 0) {
 					w = StorageProperty::warning_notice;
 					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
-				} else if (name_match(p, "Number of Reported Uncorrectable Errors") && p.value_statistic.value_int > 0) {
+				} else if (name_match(p, "Number of Reported Uncorrectable Errors") && statistic.value_int > 0) {
 					w = StorageProperty::warning_notice;
 					reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
-				} else if (name_match(p, "Current Temperature") && p.value_statistic.value_int > 50) {
+				} else if (name_match(p, "Current Temperature") && statistic.value_int > 50) {
 					w = StorageProperty::warning_notice;
 					reason = "The temperature of the drive is higher than 50 degrees Celsius. "
 							"This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 
-				} else if (name_match(p, "Time in Over-Temperature") && p.value_statistic.value_int > 0) {
+				} else if (name_match(p, "Time in Over-Temperature") && statistic.value_int > 0) {
 					w = StorageProperty::warning_notice;
 					reason = "The temperature of the drive is or was over the manufacturer-specified maximum. "
 							"This may have shortened its lifespan and caused damage. Please install a cooling solution.";
 
-				} else if (name_match(p, "Time in Under-Temperature") && p.value_statistic.value_int > 0) {
+				} else if (name_match(p, "Time in Under-Temperature") && statistic.value_int > 0) {
 					w = StorageProperty::warning_notice;
 					reason = "The temperature of the drive is or was under the manufacturer-specified minimum. "
 							"This may have shortened its lifespan and caused damage. Please operate the drive within manufacturer-specified temperature range.";
 
-				} else if (name_match(p, "Percentage Used Endurance Indicator") && p.value_statistic.value_int >= 50) {
+				} else if (name_match(p, "Percentage Used Endurance Indicator") && statistic.value_int >= 50) {
 					w = StorageProperty::warning_notice;
 					reason = "The drive has less than half of its estimated life left.";
 
-				} else if (name_match(p, "Percentage Used Endurance Indicator") && p.value_statistic.value_int >= 100) {
+				} else if (name_match(p, "Percentage Used Endurance Indicator") && statistic.value_int >= 100) {
 					w = StorageProperty::warning_warn;
 					reason = "The drive is past its estimated lifespan.";
 				}
 
 				break;
+			}
 
 			case StorageProperty::subsection_error_log:
+			{
 				// Note: The error list table doesn't display any descriptions, so if any
 				// error-entry related descriptions are added here, don't forget to enable
 				// the tooltips.
 
-				if (name_match(p, "error_log_error_count") && p.value_integer > 0) {
+				if (name_match(p, "error_log_error_count") && p.get_value<int64_t>() > 0) {
 					w = StorageProperty::warning_notice;
 					reason = "The drive is reporting internal errors. Usually this means uncorrectable data loss and similar severe errors. "
 							"Check the actual errors for details.";
@@ -1875,23 +1863,28 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 				}
 
 				// Rate individual error log entries.
-				if (!p.value_error_block.reported_types.empty()) {
-					StorageProperty::warning_t error_block_warning = StorageProperty::warning_none;
-					for (size_t i = 0; i < p.value_error_block.reported_types.size(); ++i) {
-						int individual_warning = StorageErrorBlock::get_warning_level_for_error_type(p.value_error_block.reported_types[i]);
-						if (individual_warning > int(error_block_warning)) {
-							error_block_warning = StorageProperty::warning_t(individual_warning);
+				if (p.is_value_type<StorageErrorBlock>()) {
+					const auto& eb = p.get_value<StorageErrorBlock>();
+					if (!eb.reported_types.empty()) {
+						StorageProperty::warning_t error_block_warning = StorageProperty::warning_none;
+						for (const auto& reported_type : eb.reported_types) {
+							int individual_warning = StorageErrorBlock::get_warning_level_for_error_type(reported_type);
+							if (individual_warning > int(error_block_warning)) {
+								error_block_warning = StorageProperty::warning_t(individual_warning);
+							}
 						}
-					}
-					if (int(error_block_warning) > int(StorageProperty::warning_none)) {
-						w = error_block_warning;
-						reason = "The drive is reporting internal errors. Your data may be at risk depending on error severity.";
+						if (int(error_block_warning) > int(StorageProperty::warning_none)) {
+							w = error_block_warning;
+							reason = "The drive is reporting internal errors. Your data may be at risk depending on error severity.";
+						}
 					}
 				}
 
 				break;
+			}
 
 			case StorageProperty::subsection_selftest_log:
+			{
 				// Note: The error list table doesn't display any descriptions, so if any
 				// error-entry related descriptions are added here, don't forget to enable
 				// the tooltips.
@@ -1904,6 +1897,7 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 					reason = "The drive does not support self-test logging. This means that SMART test results won't be logged.";
 				}
 				break;
+			}
 
 			case StorageProperty::subsection_selective_selftest_log:
 				// nothing here
@@ -1916,7 +1910,7 @@ StorageProperty::warning_t storage_property_autoset_warning(StorageProperty& p)
 // 					reason = "The drive does not support SCT Temperature logging.";
 // 				}
 				// Current temperature
-				if (name_match(p, "sct_temperature_celsius") && p.value_integer > 50) {  // 50C
+				if (name_match(p, "sct_temperature_celsius") && p.get_value<int64_t>() > 50) {  // 50C
 					w = StorageProperty::warning_notice;
 					reason = "The temperature of the drive is higher than 50 degrees Celsius. This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 				}
