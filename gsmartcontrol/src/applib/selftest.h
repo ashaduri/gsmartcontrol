@@ -19,6 +19,7 @@
 #include <string>
 #include <cstdint>
 #include <chrono>
+#include <unordered_map>
 
 #include "hz/intrusive_ptr.h"
 
@@ -41,14 +42,18 @@ class SelfTest : public hz::intrusive_ptr_referenced {
 
 
 		/// Get displayable name for a test type
-		static std::string get_test_name(TestType t)
+		static std::string get_test_name(TestType type)
 		{
-			switch (t) {
-				case TestType::immediate_offline: return "Immediate Offline Test";
-				case TestType::short_test: return "Short Self-test";
-				case TestType::long_test: return "Extended Self-test";
-				case TestType::conveyance: return "Conveyance Self-test";
+			static const std::unordered_map<TestType, std::string> m {
+					{TestType::immediate_offline, "Immediate Offline Test"},
+					{TestType::short_test, "Short Self-Test"},
+					{TestType::long_test, "Extended Self-Test"},
+					{TestType::conveyance, "Conveyance Self-Test"},
 			};
+			if (auto iter = m.find(type); iter != m.end()) {
+				return iter->second;
+			}
+			return "[internal_error]";
 			return "[error]";
 		}
 

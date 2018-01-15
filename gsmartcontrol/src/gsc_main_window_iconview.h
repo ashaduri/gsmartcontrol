@@ -15,6 +15,7 @@
 #include <gtkmm.h>
 #include <vector>
 #include <cmath>  // std::floor
+#include <unordered_map>
 #include <cairomm/cairomm.h>
 
 #include "hz/string_algo.h"  // string_join
@@ -45,6 +46,24 @@ class GscMainWindowIconView : public Gtk::IconView {
 			no_smartctl,  ///< No smartctl installed
 			please_rescan,  ///< Re-scan to see the drives
 		};
+
+
+		/// Get message string
+		static std::string get_message_string(Message type)
+		{
+			static const std::unordered_map<Message, std::string> m {
+					{Message::none, "[error - invalid message]"},
+					{Message::scan_disabled, "Automatic scanning is disabled.\nPress Ctrl+R to scan manually."},
+					{Message::scanning, "Scanning system, please wait..."},
+					{Message::no_drives_found, "No drives found."},
+					{Message::no_smartctl, "Please specify the correct smartctl binary in\nPreferences and press Ctrl-R to re-scan."},
+					{Message::please_rescan, "Preferences changed.\nPress Ctrl-R to re-scan."},
+			};
+			if (auto iter = m.find(type); iter != m.end()) {
+				return iter->second;
+			}
+			return "[internal_error]";
+		}
 
 
 		/// Constructor, GtkBuilder needs this.
@@ -152,19 +171,9 @@ class GscMainWindowIconView : public Gtk::IconView {
 		bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr) override
 		{
 			if (empty_view_message != Message::none && this->num_icons == 0) {  // no icons
-				std::string msg;
-				switch(empty_view_message) {
-					case Message::scan_disabled: msg = "Automatic scanning is disabled.\nPress Ctrl+R to scan manually."; break;
-					case Message::scanning: msg = "Scanning system, please wait..."; break;
-					case Message::no_drives_found: msg = "No drives found."; break;
-					case Message::no_smartctl: msg = "Please specify the correct smartctl binary in\nPreferences and press Ctrl-R to re-scan."; break;
-					case Message::please_rescan: msg = "Preferences changed.\nPress Ctrl-R to re-scan."; break;
-					default: msg = "[error - invalid message]";
-				}
-
 				Glib::RefPtr<Pango::Layout> layout = this->create_pango_layout("");
 				layout->set_alignment(Pango::ALIGN_CENTER);
-				layout->set_markup(msg);
+				layout->set_markup(get_message_string(empty_view_message));
 
 				int layout_w = 0, layout_h = 0;
 				layout->get_pixel_size(layout_w, layout_h);
@@ -314,9 +323,9 @@ class GscMainWindowIconView : public Gtk::IconView {
 				tooltip_strs.push_back("Serial number: <b>" + Glib::Markup::escape_text(drive->get_serial_number()) + "</b>");
 			}
 			tooltip_strs.push_back("SMART status: <b>"
-					+ StorageDevice::get_status_name(drive->get_smart_status(), false) + "</b>");
+					+ StorageDevice::get_status_name(drive->get_smart_status()) + "</b>");
 			tooltip_strs.push_back("Automatic Offline Data Collection status: <b>"
-					+ StorageDevice::get_status_name(drive->get_aodc_status(), false) + "</b>");
+					+ StorageDevice::get_status_name(drive->get_aodc_status()) + "</b>");
 
 			std::string tooltip_str = hz::string_join(tooltip_strs, '\n');
 
