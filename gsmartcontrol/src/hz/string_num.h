@@ -376,7 +376,14 @@ namespace internal {
 			ss << std::setfill('0') << std::internal << std::setw(static_cast<int>((sizeof(T) * 2) + 2));
 		}
 
-		ss << std::showbase << std::setbase(base) << number;
+		ss << std::showbase << std::setbase(base);
+
+		if constexpr(std::is_same_v<char, T> || std::is_same_v<signed char, T> || std::is_same_v<unsigned char, T>
+				|| std::is_same_v<char16_t, T> || std::is_same_v<char32_t, T> || std::is_same_v<wchar_t, T>) {
+			ss << static_cast<int>(number);  // avoid printing them as characters
+		} else {
+			ss << number;
+		}
 		return ss.str();
 	}
 
