@@ -12,8 +12,6 @@
 #ifndef HZ_FS_PATH_H
 #define HZ_FS_PATH_H
 
-#include "hz_config.h"  // feature macros
-
 #include <string>
 #include <cerrno>  // errno (not std::errno, it may be a macro)
 #include <cstdio>  // for stdio.h; std::FILE, std::fclose, std::remove.
@@ -29,6 +27,10 @@
 	#include <cstddef>  // std::size_t
 	#include <unistd.h>  // access(), stat(), unlink(), readlink()
 	#include <utime.h>  // utime()
+#endif
+
+#if defined __MINGW32__
+	#include <_mingw.h>  // MINGW_HAS_SECURE_API
 #endif
 
 #include "fs_common.h"  // separator
@@ -148,7 +150,7 @@ class FsPath : public FsPathHolder, public FsErrorHolder {
 		FsPath() = default;
 
 		/// Constructor, sets current path
-		FsPath(const std::string& path) : FsPathHolder(path)
+		explicit FsPath(const std::string& path) : FsPathHolder(path)
 		{ }
 
 		/// Destructor
@@ -459,7 +461,7 @@ inline bool FsPath::is_readable()
 		return false;
 	}
 
-#if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
+#if defined MINGW_HAS_SECURE_API || defined _MSC_VER
 	if (_waccess_s(this->get_utf16().c_str(), 04))  // msvc uses integers instead (R_OK == 04 anyway).
 #elif defined _WIN32
 	if (_waccess(this->get_utf16().c_str(), 04) == -1)  // *access*() may not work with < win2k with directories.
@@ -506,7 +508,7 @@ inline bool FsPath::is_writable()
 
 	// pcheck either doesn't exist, or it's a file. try to open it.
 	std::FILE* f = 0;
-#if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
+#if defined MINGW_HAS_SECURE_API || defined _MSC_VER
 	errno = _wfopen_s(&f, path_to_check.get_utf16().c_str(), L"ab");
 #else
 	f = _wfopen(path_to_check.get_utf16().c_str(), L"ab");   // this creates a 0 size file if it doesn't exist!
@@ -565,7 +567,7 @@ inline bool FsPath::exists()
 		return false;
 	}
 
-#if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
+#if defined MINGW_HAS_SECURE_API || defined _MSC_VER
 	if (_waccess_s(this->get_utf16().c_str(), 00) != 0)  // msvc uses integers instead (F_OK == 00 anyway).
 #elif defined _WIN32
 	if (_waccess(this->get_utf16().c_str(), 00) != 0)  // msvc uses integers instead (F_OK == 00 anyway).

@@ -12,8 +12,6 @@
 #ifndef HZ_FS_ERROR_HOLDER_H
 #define HZ_FS_ERROR_HOLDER_H
 
-#include "hz_config.h"  // feature macros
-
 #include <string>
 // cerrno is not directly used here, but will be needed in children.
 #include <cerrno>  // errno (not std::errno, it may be a macro)
@@ -167,19 +165,19 @@ class FsErrorHolder {
 		// Note: Paths are in filesystem charset. On win32 it's always utf-8.
 		// Errno string is in libc locale charset or utf8 (if using glib).
 
-		gchar* loc_errno = g_locale_from_utf8(g_strerror(error_errno_), -1, NULL, NULL, NULL);
+		gchar* loc_errno = g_locale_from_utf8(g_strerror(error_errno_), -1, nullptr, nullptr, nullptr);
 		std::string loc_errno_str = (loc_errno ? loc_errno
 				: (HZ__("[charset conv error] ") + error_errno_ + std::string(g_strerror(error_errno_))));
 		g_free(loc_errno);
 
 		gchar* p1_utf8 = g_filename_display_name(error_path1_.c_str());  // fs -> utf8. always non-null.
-		gchar* p1_locale = g_locale_from_utf8(p1_utf8, -1, NULL, NULL, NULL);  // utf8 -> locale
+		gchar* p1_locale = g_locale_from_utf8(p1_utf8, -1, nullptr, nullptr, nullptr);  // utf8 -> locale
 		std::string p1 = (p1_locale ? p1_locale : (HZ__("[charset conv error] ") + error_path1_));
 		g_free(p1_utf8);
 		g_free(p1_locale);
 
 		gchar* p2_utf8 = g_filename_display_name(error_path2_.c_str());  // fs -> utf8. always non-null.
-		gchar* p2_locale = g_locale_from_utf8(p2_utf8, -1, NULL, NULL, NULL);  // utf8 -> locale
+		gchar* p2_locale = g_locale_from_utf8(p2_utf8, -1, nullptr, nullptr, nullptr);  // utf8 -> locale
 		std::string p2 = (p2_locale ? p2_locale : (HZ__("[charset conv error] ") + error_path2_));
 		g_free(p2_utf8);
 		g_free(p2_locale);
@@ -197,8 +195,8 @@ class FsErrorHolder {
 	inline std::string FsErrorHolder::get_error_utf8()
 	{
 		// Paths are in filesystem charset, convert to utf8.
-	// 	gchar* cp1utf8 = g_filename_to_utf8(error_path1_.c_str(), -1, NULL, NULL, NULL);
-	// 	gchar* cp2utf8 = g_filename_to_utf8(error_path2_.c_str(), -1, NULL, NULL, NULL);
+	// 	gchar* cp1utf8 = g_filename_to_utf8(error_path1_.c_str(), -1, nullptr, nullptr, nullptr);
+	// 	gchar* cp2utf8 = g_filename_to_utf8(error_path2_.c_str(), -1, nullptr, nullptr, nullptr);
 
 		// unlike g_filename_to_utf8, this always returns something. (available since glib 2.6).
 		gchar* p1_utf8 = g_filename_display_name(error_path1_.c_str());

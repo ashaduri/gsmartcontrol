@@ -9,7 +9,7 @@
 /// \weakgroup gsc
 /// @{
 
-#include "hz/hz_config.h"  // VERSION
+#include "config.h"  // VERSION
 
 #include <vector>
 
@@ -17,7 +17,6 @@
 #include "hz/string_algo.h"  // hz::string_*
 #include "hz/launch_url.h"
 #include "applib/app_gtkmm_features.h"
-#include "applib/gui_utils.h"  // gui_show_error_dialog
 
 #include "gsc_about_dialog.h"
 
@@ -50,24 +49,21 @@ GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::
 	// spammers go away
 	set_copyright("Copyright (C) 2008 - 2018  Alexander Shaduri " "<ashaduri" "" "@" "" "" "gmail.com>");
 
-
 	std::string authors_str = AuthorsTextResData().get_string();
 	hz::string_any_to_unix(authors_str);
 
 	std::vector<Glib::ustring> authors;
 	hz::string_split(authors_str, '\n', authors, true);
 
-	for (std::vector<Glib::ustring>::iterator iter = authors.begin(); iter != authors.end(); ++iter) {
-		std::string s = *iter;
+	for (auto& author : authors) {
+		std::string s = author;
 		hz::string_replace(s, " '@' ", "@");  // despammer
 		hz::string_replace(s, " 'at' ", "@");  // despammer
-		*iter = s;
+		author = s;
 	}
-
 	set_authors(authors);
 
 	set_documenters(authors);
-
 
 // 	run();  // don't use run - it's difficult to exit it manually.
 // 	show();  // shown by the caller to enable setting the parent window.

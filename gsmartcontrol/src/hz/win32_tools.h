@@ -12,8 +12,6 @@
 #ifndef HZ_WIN32_TOOLS_H
 #define HZ_WIN32_TOOLS_H
 
-#include "hz_config.h"  // feature macros
-
 #ifdef _WIN32  // Guards this header completely
 
 #include <windows.h>  // lots of stuff
@@ -28,6 +26,10 @@
 #include <stdio.h>  // _fdopen, _wfopen, _wremove
 #include <cstdlib>  // std::atexit
 #include <ios>  // std::ios::sync_with_stdio
+
+#if defined __MINGW32__
+	#include <_mingw.h>  // MINGW_HAS_SECURE_API
+#endif
 
 
 
@@ -425,7 +427,7 @@ namespace internal {
 		// See if the files have any output in them
 		if (!Win32RedirectHolder::stdout_file.empty()) {
 			std::FILE* file = 0;
-		#if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
+		#if defined MINGW_HAS_SECURE_API || defined _MSC_VER
 			errno = _wfopen_s(&file, Win32RedirectHolder::stdout_file.c_str(), L"rb");
 		#else
 			file = _wfopen(Win32RedirectHolder::stdout_file.c_str(), L"rb");
@@ -442,7 +444,7 @@ namespace internal {
 
 		if (!Win32RedirectHolder::stdout_file.empty()) {
 			std::FILE* file = 0;
-		#if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
+		#if defined MINGW_HAS_SECURE_API || defined _MSC_VER
 			errno = _wfopen_s(&file, Win32RedirectHolder::stderr_file.c_str(), L"rb");
 		#else
 			file = _wfopen(Win32RedirectHolder::stderr_file.c_str(), L"rb");
@@ -476,7 +478,7 @@ inline bool win32_redirect_stdio_to_files(std::string stdout_file, std::string s
 	}
 	std::FILE* fp_out = 0;
 	if (!wstdout_file.empty()) {
-#if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
+#if defined MINGW_HAS_SECURE_API || defined _MSC_VER
 		errno = _wfopen_s(&fp_out, wstdout_file.c_str(), L"wb");
 #else
 		fp_out = _wfopen(wstdout_file.c_str(), L"wb");
@@ -498,7 +500,7 @@ inline bool win32_redirect_stdio_to_files(std::string stdout_file, std::string s
 	}
 	std::FILE* fp_err = 0;
 	if (!wstderr_file.empty()) {
-#if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
+#if defined MINGW_HAS_SECURE_API || defined _MSC_VER
 		errno = _wfopen_s(&fp_err, wstderr_file.c_str(), L"wb");
 #else
 		fp_err = _wfopen(wstderr_file.c_str(), L"wb");

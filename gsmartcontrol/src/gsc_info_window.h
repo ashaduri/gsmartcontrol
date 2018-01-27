@@ -60,6 +60,42 @@ class GscInfoWindow : public AppUIResWidget<GscInfoWindow, true> {
 
 	protected:
 
+		/// fill_ui_with_info() helper
+		void fill_ui_general(const std::vector<StorageProperty>& props);
+
+		/// fill_ui_with_info() helper
+		void fill_ui_attributes(const std::vector<StorageProperty>& props);
+
+		/// fill_ui_with_info() helper
+		void fill_ui_statistics(const std::vector<StorageProperty>& props);
+
+		/// fill_ui_with_info() helper
+		void fill_ui_self_test_info();
+
+		/// fill_ui_with_info() helper
+		void fill_ui_self_test_log(const std::vector<StorageProperty>& props);
+
+		/// fill_ui_with_info() helper
+		void fill_ui_error_log(const std::vector<StorageProperty>& props);
+
+		/// fill_ui_with_info() helper
+		void fill_ui_temperature_log(const std::vector<StorageProperty>& props);
+
+		/// fill_ui_with_info() helper
+		WarningLevel fill_ui_capabilities(const std::vector<StorageProperty>& props);
+
+		/// fill_ui_with_info() helper
+		WarningLevel fill_ui_error_recovery(const std::vector<StorageProperty>& props);
+
+		/// fill_ui_with_info() helper
+		WarningLevel fill_ui_selective_self_test_log(const std::vector<StorageProperty>& props);
+
+		/// fill_ui_with_info() helper
+		WarningLevel fill_ui_physical(const std::vector<StorageProperty>& props);
+
+		/// fill_ui_with_info() helper
+		WarningLevel fill_ui_directory(const std::vector<StorageProperty>& props);
+
 
 		// -------------------- callbacks
 
@@ -140,7 +176,7 @@ class GscInfoWindow : public AppUIResWidget<GscInfoWindow, true> {
 		Glib::ustring tab_phy_name;  ///< Tab header name
 		Glib::ustring tab_directory_name;  ///< Tab header name
 
-		Gtk::Label* device_name_label;  ///< Top label
+		Gtk::Label* device_name_label = nullptr;  ///< Top label
 
 		StorageDevicePtr drive;  ///< The drive we're showing
 
@@ -150,7 +186,7 @@ class GscInfoWindow : public AppUIResWidget<GscInfoWindow, true> {
 		std::string test_error_msg;  ///< Our errors
 		Glib::Timer test_timer_poll;  ///< Timer for testing phase
 		Glib::Timer test_timer_bar;  ///< Timer for testing phase
-		bool test_force_bar_update;  ///< Helper for testing callback
+		bool test_force_bar_update = false;  ///< Helper for testing callback
 
 
 		// test type combobox stuff

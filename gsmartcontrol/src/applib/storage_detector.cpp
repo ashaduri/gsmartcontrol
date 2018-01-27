@@ -11,7 +11,7 @@
 
 #include <algorithm>
 
-#include "hz/hz_config.h"  // CONFIG_*
+#include "config.h"  // CONFIG_*
 
 #include "hz/debug.h"
 

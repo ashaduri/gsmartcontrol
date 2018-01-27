@@ -12,8 +12,6 @@
 #ifndef HZ_I18N_H
 #define HZ_I18N_H
 
-#include "hz_config.h"  // feature macros
-
 
 /**
 \file

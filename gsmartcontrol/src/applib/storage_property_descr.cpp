@@ -24,7 +24,7 @@
 namespace {
 
 
-	std::string s_unc_text = "When a drive encounters a surface error, it marks that sector as &quot;unstable&quot; (also known as &quot;pending reallocation&quot;). "
+	const std::string s_unc_text = "When a drive encounters a surface error, it marks that sector as &quot;unstable&quot; (also known as &quot;pending reallocation&quot;). "
 			"If the sector is successfully read from or written to at some later point, it is unmarked. If the sector continues to be inaccessible, "
 			"the drive reallocates (remaps) it to a specially reserved area as soon as it has a chance (usually during write request or successful read), "
 			"transferring the data so that no changes are reported to the operating system. This is why you generally don't see &quot;bad blocks&quot; "

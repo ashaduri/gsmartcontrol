@@ -12,8 +12,6 @@
 #ifndef HZ_FS_FILE_H
 #define HZ_FS_FILE_H
 
-#include "hz_config.h"  // feature macros
-
 /**
 \file
 This API accepts/gives utf-8 filenames/paths on win32,
@@ -85,6 +83,41 @@ All off_t-related functions use long on Windows. There is no fseeko() / ftello()
 One has to use _fseeki64() and friends explicitly.
 */
 
+
+/// \def HAVE_POSIX_OFF_T_FUNCS
+/// Defined to 0 or 1. If 1, compiler supports fseeko/ftello. See fs_file.h for details.
+#ifndef HAVE_POSIX_OFF_T_FUNCS
+// It's quite hard to detect, so we just enable for any non-win32.
+	#if defined _WIN32
+		#define HAVE_POSIX_OFF_T_FUNCS 0
+	#else
+		#define HAVE_POSIX_OFF_T_FUNCS 1
+	#endif
+#endif
+
+/// \def HAVE_WIN_LFS_FUNCS
+/// Defined to 0 or 1. If 1, compiler supports LFS (large file support) functions on win32.
+
+// Update: It seems that LFS functions are always defined in mingw-w64 and msvc >= 2005.
+#ifdef _WIN32
+	#define HAVE_WIN_LFS_FUNCS 1
+#endif
+
+//#ifndef HAVE_WIN_LFS_FUNCS
+//	#if defined _WIN32 && defined __GNUC__
+//		#include <_mingw.h>  // __MSVCRT_VERSION__
+//	#endif
+//
+//	// enable if it's msvc >= 2005, or we're linking to newer msvcrt with mingw.
+//	#if defined _WIN32 && ( (defined _MSC_VER >= 1400) || (defined __GNUC__ && defined __MSVCRT_VERSION__ && __MSVCRT_VERSION__ >= 0x800) )
+//		#define HAVE_WIN_LFS_FUNCS 1
+//	#else
+//		#define HAVE_WIN_LFS_FUNCS 0
+//	#endif
+//#endif
+
+
+
 #include <string>
 #include <cstddef>  // std::size_t
 #include <cstdio>  // std::FILE, std::fopen() and friends (this doesn't break LFS), std::rename()
@@ -97,6 +130,10 @@ One has to use _fseeki64() and friends explicitly.
 	#include <io.h>  // _fstat*(), _wunlink(), _wchmod()
 #else
 	#include <unistd.h>  // stat(), unlink()
+#endif
+
+#if defined __MINGW32__
+	#include <_mingw.h>  // MINGW_HAS_SECURE_API
 #endif
 
 #include "fs_path.h"  // FsPath
@@ -123,7 +160,7 @@ namespace hz {
 #if defined HAVE_POSIX_OFF_T_FUNCS && HAVE_POSIX_OFF_T_FUNCS
 	typedef off_t file_size_t;  // off_t is in stdio.h, available in all self-respecting unix systems.
 #elif defined HAVE_WIN_LFS_FUNCS && HAVE_WIN_LFS_FUNCS
-	typedef __int64 file_size_t;  // ms stuff, _fseeki64() and friends use it.
+	typedef long long file_size_t;  // ms stuff, _fseeki64() and friends use it.
 #else
 	typedef long file_size_t;  // fseek() and friends use long. win32 doesn't have off_t.
 #endif
@@ -166,20 +203,20 @@ class File : public FsPath {
 		File() = default;
 
 		/// Create a File object with path "path". This will NOT open the file.
-		File(const std::string& path) : file_(NULL)
+		explicit File(const std::string& path) : file_(nullptr)
 		{
 			this->set_path(path);
 		}
 
 		/// Create a File object with path "path". This will NOT open the file.
-		File(const FsPath& path) : file_(NULL)
+		explicit File(const FsPath& path) : file_(nullptr)
 		{
 			this->set_path(path.get_path());
 		}
 
 		/// Create a File object and open a file "path" points to.
 		/// You should check the success status with bad().
-		File(const std::string& path, const std::string& open_mode) : file_(NULL)
+		File(const std::string& path, const std::string& open_mode) : file_(nullptr)
 		{
 			this->set_path(path);
 			this->open(open_mode);
@@ -187,38 +224,18 @@ class File : public FsPath {
 
 		/// Create a File object and open a file "path" points to.
 		/// You should check the success status with bad().
-		File(const FsPath& path, const std::string& open_mode) : file_(NULL)
+		File(const FsPath& path, const std::string& open_mode) : file_(nullptr)
 		{
 			this->set_path(path.get_path());
 			this->open(open_mode);
 		}
 
 
-	private:
+		/// Deny copying
+		File(const File& other) = delete;
 
-		// Between move semantics (confusing and error-prone) and denying copying,
-		// I choose to deny.
-
-		/// Private copy constructor to deny copying
-		File(const File& other);
-
-		/// Private assignment operator to deny copying
-		File& operator= (const File& other);
-
-
-	public:
-
-/*
-		// Copy constructor. Move semantics are implemented - the ownership is transferred
-		// exclusively.
-		File(File& other) : file_(NULL)
-		{
-			*this = other;  // operator=
-		}
-
-		// move semantics, as with copy constructor.
-		inline File& operator= (File& other);
-*/
+		/// Deny copying
+		File& operator= (const File& other) = delete;
 
 
 		/// Destructor which invokes close() if needed.
@@ -318,13 +335,6 @@ class File : public FsPath {
 
 	private:
 
-		// for move semantics:
-
-// 		File(const File& other);  // don't allow it. allow only from non-const.
-
-// 		const File& operator=(const File& other);  // don't allow it. allow only from non-const.
-
-
 		handle_type file_ = nullptr;  ///< File handle (FILE*)
 
 };
@@ -334,22 +344,6 @@ class File : public FsPath {
 
 
 // ------------------------------------------- Implementation
-
-
-/*
-// move semantics, as with copy constructor.
-inline File& File::operator= (File& other)
-{
-	file_ = other.file_;
-
-	// clear other's members, so everything is clear.
-	other.file_ = NULL;
-	other.set_path("");
-	other.set_error(HZ__("The file handle ownership was transferred from this object."));
-
-	return *this;
-}
-*/
 
 
 
@@ -385,11 +379,11 @@ inline bool File::close()
 
 	if (file_ && std::fclose(file_) != 0) {  // error
 		set_error(HZ__("Error while closing file \"/path1/\": /errno/."), errno, this->get_path());
-		file_ = NULL;
+		file_ = nullptr;
 		return false;
 	}
 
-	file_ = NULL;
+	file_ = nullptr;
 	return true;  // even if already closed
 }
 
@@ -815,7 +809,7 @@ inline bool File::copy(const std::string& to)
 File::handle_type inline File::platform_fopen(const char* file, const char* open_mode)
 {
 	// Don't validate parameters, they will be validated by the called functions.
-#if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
+#if defined MINGW_HAS_SECURE_API || defined _MSC_VER
 	handle_type f = 0;
 	errno = _wfopen_s(&f, hz::win32_utf8_to_utf16(file).c_str(), hz::win32_utf8_to_utf16(open_mode).c_str());
 	return f;

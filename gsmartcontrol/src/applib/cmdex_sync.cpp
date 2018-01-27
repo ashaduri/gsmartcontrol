@@ -18,7 +18,7 @@
 namespace {
 
 	/// "Execution finished" signal
-	static sigc::signal<void, const CmdexSyncCommandInfo&> s_cmdex_sync_signal_execute_finish;
+	sigc::signal<void, const CmdexSyncCommandInfo&> s_cmdex_sync_signal_execute_finish;
 
 }
 
@@ -121,7 +121,7 @@ bool CmdexSync::execute()
 void CmdexSync::import_error()
 {
 	Cmdex::error_list_t errors = cmdex_.get_errors();  // these are not clones
-	hz::ErrorBase* e = 0;
+	hz::ErrorBase* e = nullptr;
 	if (!errors.empty())
 		e = errors.back()->clone();
 	cmdex_.clear_errors();  // and clear them

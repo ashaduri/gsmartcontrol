@@ -66,10 +66,9 @@ class TwCliExecutorGeneric : public ExecutorSync {
 			Cmdex& cmdex = this->get_command_executor();
 			Cmdex::error_list_t errors = cmdex.get_errors();  // these are not clones
 
-			hz::ErrorBase* e = 0;
+			hz::ErrorBase* e = nullptr;
 			// find the last relevant error.
-			// note: const_reverse_iterator doesn't work on gcc 3, so don't do it.
-			for (Cmdex::error_list_t::reverse_iterator iter = errors.rbegin(); iter != errors.rend(); ++iter) {
+			for (auto iter = errors.crbegin(); iter != errors.crend(); ++iter) {
 				// ignore iochannel errors, they may mask the real errors
 				if ((*iter)->get_type() != "giochannel" && (*iter)->get_type() != "custom") {
 					e = (*iter)->clone();
@@ -166,10 +165,9 @@ class ArecaCliExecutorGeneric : public ExecutorSync {
 			Cmdex& cmdex = this->get_command_executor();
 			Cmdex::error_list_t errors = cmdex.get_errors();  // these are not clones
 
-			hz::ErrorBase* e = 0;
+			hz::ErrorBase* e = nullptr;
 			// find the last relevant error.
-			// note: const_reverse_iterator doesn't work on gcc 3, so don't do it.
-			for (Cmdex::error_list_t::reverse_iterator iter = errors.rbegin(); iter != errors.rend(); ++iter) {
+			for (auto iter = errors.crbegin(); iter != errors.crend(); ++iter) {
 				// ignore iochannel errors, they may mask the real errors
 				if ((*iter)->get_type() != "giochannel" && (*iter)->get_type() != "custom") {
 					e = (*iter)->clone();

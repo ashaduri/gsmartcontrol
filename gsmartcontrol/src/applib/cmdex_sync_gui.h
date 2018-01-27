@@ -28,8 +28,7 @@ class CmdexSyncGui : public CmdexSync {
 
 		/// Constructor
 		CmdexSyncGui(const std::string& cmd, const std::string& cmdargs)
-				: CmdexSync(cmd, cmdargs), execution_running_(false), should_abort_(false),
-				running_dialog_(0), running_dialog_shown_(false), running_dialog_abort_mode_(false)
+				: CmdexSync(cmd, cmdargs)
 		{
 			signal_execute_tick.connect(sigc::mem_fun(*this, &CmdexSyncGui::execute_tick_func));
 		}
@@ -37,8 +36,6 @@ class CmdexSyncGui : public CmdexSync {
 
 		/// Constructor
 		CmdexSyncGui()
-				: execution_running_(false), should_abort_(false),
-				running_dialog_(0), running_dialog_shown_(false), running_dialog_abort_mode_(false)
 		{
 			signal_execute_tick.connect(sigc::mem_fun(*this, &CmdexSyncGui::execute_tick_func));
 		}
@@ -72,7 +69,7 @@ class CmdexSyncGui : public CmdexSync {
 		/// Create a "running" dialog or return already existing one.
 		/// The dialog will be auto-created and displayed on execute().
 		/// You need the function only if you intend to modify it before execute().
-		Gtk::MessageDialog* create_running_dialog(Gtk::Window* parent = 0, const Glib::ustring& msg = "");
+		Gtk::MessageDialog* create_running_dialog(Gtk::Window* parent = nullptr, const Glib::ustring& msg = Glib::ustring());
 
 
 		/// Return the "running" dialog
@@ -112,12 +109,12 @@ class CmdexSyncGui : public CmdexSync {
 		bool execute_tick_func(TickStatus status);
 
 
-		bool execution_running_;  ///< If true, the execution is still in progress
-		bool should_abort_;  ///< GUI callbacks may set this to abort the execution
+		bool execution_running_ = false;  ///< If true, the execution is still in progress
+		bool should_abort_ = false;  ///< GUI callbacks may set this to abort the execution
 
-		Gtk::MessageDialog* running_dialog_;  ///< "Running" dialog
-		bool running_dialog_shown_;  ///< If true, the "running" dialog is visible
-		bool running_dialog_abort_mode_;  ///< If true, the "running" dialog is in "aborting..." mode.
+		Gtk::MessageDialog* running_dialog_ = nullptr;  ///< "Running" dialog
+		bool running_dialog_shown_ = false;  ///< If true, the "running" dialog is visible
+		bool running_dialog_abort_mode_ = false;  ///< If true, the "running" dialog is in "aborting..." mode.
 		Glib::Timer running_dialog_timer_;  ///< "Running" dialog show timer.
 
 };

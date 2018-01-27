@@ -12,8 +12,6 @@
 #ifndef HZ_RES_DATA_H
 #define HZ_RES_DATA_H
 
-#include "hz_config.h"  // feature macros
-
 #include <string>
 #include <cstdint>
 

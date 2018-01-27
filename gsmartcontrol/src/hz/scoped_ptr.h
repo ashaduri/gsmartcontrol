@@ -16,8 +16,6 @@
 #ifndef HZ_SCOPED_PTR_H
 #define HZ_SCOPED_PTR_H
 
-#include "hz_config.h"  // feature macros
-
 /**
 \file
 Scoped non-reference-counting smart pointer with custom cleanup

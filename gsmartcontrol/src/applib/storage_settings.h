@@ -36,9 +36,9 @@ inline device_option_map_t app_unserialize_device_option_map(const std::string& 
 	hz::string_split(str, ";", pairs, true);
 
 	device_option_map_t option_map;
-	for (std::vector<std::string>::const_iterator iter = pairs.begin(); iter != pairs.end(); ++iter) {
+	for (const auto& p : pairs) {
 		std::vector<std::string> dev_entry;
-		hz::string_split(*iter, ":", dev_entry, true, 2);
+		hz::string_split(p, ":", dev_entry, true, 2);
 
 		std::string dev, opt;
 		if (dev_entry.size() == 2) {
@@ -46,7 +46,7 @@ inline device_option_map_t app_unserialize_device_option_map(const std::string& 
 			opt = dev_entry.at(1);
 		}
 
-		if (dev != "") {
+		if (!dev.empty()) {
 			dev = hz::string_trim_copy(enc.decode(dev));
 			opt = hz::string_trim_copy(enc.decode(opt));
 
@@ -70,9 +70,9 @@ inline std::string app_serialize_device_option_map(const device_option_map_t& op
 	hz::Bin2AsciiEncoder enc;
 	std::vector<std::string> pairs;
 
-	for (device_option_map_t::const_iterator iter = option_map.begin(); iter != option_map.end(); ++iter) {
-		if (!iter->first.empty() && !iter->second.empty())  // discard the ones with empty device name or options
-			pairs.push_back(enc.encode(iter->first) + ":" + enc.encode(iter->second));
+	for (const auto& iter : option_map) {
+		if (!iter.first.empty() && !iter.second.empty())  // discard the ones with empty device name or options
+			pairs.push_back(enc.encode(iter.first) + ":" + enc.encode(iter.second));
 	}
 
 	return hz::string_join(pairs, ";");
@@ -91,21 +91,19 @@ inline std::string app_get_device_option(const std::string& dev, const std::stri
 
 	// try the concrete type first
 	if (!type_arg.empty()) {
-		device_option_map_t::const_iterator iter = devmap.find(dev + "::" + type_arg);
+		auto iter = devmap.find(dev + "::" + type_arg);
 		if (iter != devmap.end()) {
 			return iter->second;
 		}
 	}
 
 	// in case there's a trailing delimiter
-	device_option_map_t::const_iterator iter = devmap.find(dev + "::" + type_arg);
-	if (iter != devmap.end()) {
+	if (auto iter = devmap.find(dev + "::" + type_arg); iter != devmap.end()) {
 		return iter->second;
 	}
 
 	// just the device name
-	iter = devmap.find(dev);
-	if (iter != devmap.end()) {
+	if (auto iter = devmap.find(dev); iter != devmap.end()) {
 		return iter->second;
 	}
 

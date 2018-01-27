@@ -12,8 +12,6 @@
 #ifndef HZ_PROCESS_SIGNAL_H
 #define HZ_PROCESS_SIGNAL_H
 
-#include "hz_config.h"  // feature macros
-
 #include <string>
 #include <cstdio>  // std::snprintf
 

@@ -29,7 +29,7 @@
 	#include <versionhelpers.h>
 #endif
 
-#include "hz/hz_config.h"  // ENABLE_GLIB, VERSION, DEBUG_BUILD
+#include "config.h"  // VERSION
 
 #include "libdebug/libdebug.h"  // include full libdebug here (to add domains, etc...)
 #include "rconfig/config.h"

@@ -13,10 +13,20 @@
 #include <exception>  // std::exception, std::set_terminate()
 #include <cstdlib>  // EXIT_*
 
-#include "hz/hz_config.h"  // HAVE_VERBOSE_TERMINATE_HANDLER
 #include "hz/win32_tools.h"  // hz::win32_*
 
 #include "gsc_init.h"  // app_init_and_loop()
+
+
+/// \def HAVE_VERBOSE_TERMINATE_HANDLER
+/// Defined to 0 or 1. If 1, compiler supports __gnu_cxx::__verbose_terminate_handler (libstdc++).
+#ifndef HAVE_VERBOSE_TERMINATE_HANDLER
+	#if defined __GLIBCXX__
+		#define HAVE_VERBOSE_TERMINATE_HANDLER 1
+	#else
+		#define HAVE_VERBOSE_TERMINATE_HANDLER 0
+	#endif
+#endif
 
 
 

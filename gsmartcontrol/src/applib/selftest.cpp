@@ -92,8 +92,6 @@ bool SelfTest::is_supported() const
 // start the test
 std::string SelfTest::start(const std::shared_ptr<CmdexSync>& smartctl_ex)
 {
-	this->clear();  // clear previous results
-
 	if (!drive_)
 		return "Invalid drive given.";
 	if (drive_->get_test_is_active())
@@ -230,7 +228,7 @@ std::string SelfTest::update(const std::shared_ptr<CmdexSync>& smartctl_ex)
 	// and in undetermined order (sorting by hours is too rough),
 	// we use the "self-test status" capability.
 	StorageProperty p;
-	for (auto&& e : ps.get_properties()) {
+	for (const auto& e : ps.get_properties()) {
 // 		if (e.section != StorageProperty::Section::data || e.subsection != StorageProperty::SubSection::selftest_log
 		if (e.section != StorageProperty::Section::internal
 				|| !e.is_value_type<StorageSelftestEntry>() || e.get_value<StorageSelftestEntry>().test_num != 0

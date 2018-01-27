@@ -12,8 +12,6 @@
 #ifndef HZ_BIN2ASCII_ENCODER_H
 #define HZ_BIN2ASCII_ENCODER_H
 
-#include "hz_config.h"  // feature macros
-
 #include <cstddef>  // std::size_t
 #include <string>
 #include <cstring>  // std::strchr
@@ -55,11 +53,27 @@ class Bin2AsciiEncoder {
 		bool char_is_encoded(char c) const
 		{
 			return std::strchr((url_mode_ ?
-					encoded_chars_url : encoded_chars), c);
+					encoded_chars_url : encoded_chars), c) != nullptr;
 		}
 
 
 	private:
+
+		/// Get a byte value of a hex digit
+		char char_from_hex_digit(char c) const
+		{
+			if (c >= '0' && c <= '9') {
+				return static_cast<char>(c - '0');
+			}
+			if (c >= 'A' && c <= 'F') {
+				return static_cast<char>(c - 'A' + 10);
+			}
+			if (c >= 'a' && c <= 'f') {
+				return static_cast<char>(c - 'a' + 10);
+			}
+			return 16;  // aka invalid
+		}
+
 
 		/// Characters which may appear in encoded string (no-url mode).
 		static constexpr auto encoded_chars =
@@ -77,22 +91,6 @@ class Bin2AsciiEncoder {
 
 
 		bool url_mode_ = false;  ///< URL encoding mode (or not)
-
-
-		/// Get a byte value of a hex digit
-		char char_from_hex_digit(char c) const
-		{
-			if (c >= '0' && c <= '9') {
-				return static_cast<char>(c - '0');
-			}
-			if (c >= 'A' && c <= 'F') {
-				return static_cast<char>(c - 'A' + 10);
-			}
-			if (c >= 'a' && c <= 'f') {
-				return static_cast<char>(c - 'a' + 10);
-			}
-			return 16;  // aka invalid
-		}
 
 };
 

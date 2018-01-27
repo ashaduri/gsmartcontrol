@@ -14,36 +14,30 @@
 #include <map>
 
 
-/// Debug level flags implementation
-struct DebugFlags {
+namespace {
 
-	/// Constructor (static)
-	DebugFlags()
-	{
-		level_names[debug_level::fatal] = "fatal";
-		level_names[debug_level::error] = "error";
-		level_names[debug_level::warn] = "warn";
-		level_names[debug_level::info] = "info";
-		level_names[debug_level::dump] = "dump";
-
-		level_colors[debug_level::fatal] = "\033[1;4;31m";  // red underlined
-		level_colors[debug_level::error] = "\033[1;31m";  // red
-		level_colors[debug_level::warn] = "\033[1;35m";  // magenta
-		level_colors[debug_level::info] = "\033[1;36m";  // cyan
-		level_colors[debug_level::dump] = "\033[1;32m";  // green
-	}
 
 	/// Debug level names
-	std::map<debug_level::flag, const char*> level_names;
+	const std::map<debug_level::flag, const char*> s_level_names = {
+		{debug_level::fatal, "fatal"},
+		{debug_level::error, "error"},
+		{debug_level::warn, "warn"},
+		{debug_level::info, "info"},
+		{debug_level::dump, "dump"}
+	};
+
 
 	/// Debug level color start sequences
-	std::map<debug_level::flag, const char*> level_colors;
-};
+	const std::map<debug_level::flag, const char*> s_level_colors = {
+		{debug_level::fatal, "\033[1;4;31m"},  // red underlined
+		{debug_level::error, "\033[1;4;31m"},  // red
+		{debug_level::warn, "\033[1;35m"},  // magenta
+		{debug_level::info, "\033[1;36m"},  // cyan
+		{debug_level::dump, "\033[1;32m"}  // green
+	};
 
 
-
-/// Global libdebug level flags
-static DebugFlags s_debug_flags;
+}
 
 
 
@@ -51,13 +45,13 @@ namespace debug_level {
 
 	const char* get_name(flag level)
 	{
-		return s_debug_flags.level_names[level];
+		return s_level_names.at(level);
 	}
 
 
 	const char* get_color_start(flag level)
 	{
-		return s_debug_flags.level_colors[level];
+		return s_level_colors.at(level);
 	}
 
 	const char* get_color_stop([[maybe_unused]] flag level)

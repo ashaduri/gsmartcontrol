@@ -12,65 +12,23 @@
 #ifndef LIBDEBUG_DEXCEPT_H
 #define LIBDEBUG_DEXCEPT_H
 
-#include <cstddef>  // std::size_t
-#include <cstring>  // std::strncpy / std::strlen
-#include <exception>  // std::exception
+#include <stdexcept>  // std::runtime_error
 
 
 
 /// Exception thrown on internal libdebug errors
-struct debug_internal_error : virtual public std::exception {
-
-	/// Constructor
-	debug_internal_error(const char* msg)
-	{
-		std::size_t buf_len = std::strlen(msg) + 1;
-		msg_ = std::strncpy(new char[buf_len], msg, buf_len);
-	}
-
-	/// Virtual destructor
-	virtual ~debug_internal_error()
-	{
-		delete[] msg_;
-	}
-
-	/// Reimplemented. Note: messages in exceptions are not newline-terminated.
- 	const char* what() const noexcept override
-	{
-		return msg_;
-	}
-
-	private:
-		char* msg_;  ///< The error message
+class debug_internal_error : public std::runtime_error {
+	public:
+		using runtime_error::runtime_error;
 };
 
 
 
 
 /// Exception thrown on libdebug API usage errors
-struct debug_usage_error : virtual public std::exception {  // from <exception>
-
-	/// Constructor
-	debug_usage_error(const char* msg)
-	{
-		std::size_t buf_len = std::strlen(msg) + 1;
-		msg_ = std::strncpy(new char[buf_len], msg, buf_len);
-	}
-
-	/// Virtual destructor
-	virtual ~debug_usage_error()
-	{
-		delete[] msg_;
-	}
-
-	/// Reimplemented. Note: messages in exceptions are not newline-terminated.
- 	const char* what() const noexcept override
-	{
-		return msg_;
-	}
-
-	private:
-		char* msg_;  ///< The error message
+class debug_usage_error : virtual public std::runtime_error {
+	public:
+		using runtime_error::runtime_error;
 };
 
 

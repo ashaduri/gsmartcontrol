@@ -9,7 +9,7 @@
 /// \weakgroup applib
 /// @{
 
-#include "hz/hz_config.h"  // CONFIG_*
+#include "config.h"  // CONFIG_*
 
 #if defined CONFIG_KERNEL_FAMILY_WINDOWS
 
@@ -261,7 +261,7 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDevicePtr>& drive
 inline std::string execute_areca_cli(const ExecutorFactoryPtr& ex_factory, const std::string& cli_binary,
 		const std::string& command_options, std::string& output)
 {
-	std::shared_ptr<CmdexSync> executor = ex_factory->create_executor(ExecutorFactory::ExecutorArecaCli);
+	std::shared_ptr<CmdexSync> executor = ex_factory->create_executor(ExecutorFactory::ExecutorType::ArecaCli);
 
 	executor->set_command(Glib::shell_quote(cli_binary), command_options);
 
@@ -393,20 +393,20 @@ inline std::string areca_cli_get_drives(const std::string& cli_binary, const std
 	pcrecpp::RE noenc2_header_re = app_pcre_re("/^\\s*#\\s+ModelName/mi");
 	pcrecpp::RE exp_header_re = app_pcre_re("/^\\s*#\\s+Enc#/mi");
 
-	FormatType format_type = Format::Unknown;
+	FormatType format_type = FormatType::Unknown;
 	for (std::size_t i = 0; i < lines.size(); ++i) {
 		if (noenc1_header_re.PartialMatch(lines.at(i))) {
-			format_type = Format::NoEnc1;
+			format_type = FormatType::NoEnc1;
 			break;
 		} else if (noenc2_header_re.PartialMatch(lines.at(i))) {
-			format_type = Format::NoEnc2;
+			format_type = FormatType::NoEnc2;
 			break;
 		} else if (exp_header_re.PartialMatch(lines.at(i))) {
-			format_type = Format::Enc;
+			format_type = FormatType::Enc;
 			break;
 		}
 	}
-	if (format_type == Format::Unknown) {
+	if (format_type == FormatType::Unknown) {
 		debug_out_warn("app", "Could not read Areca CLI output: No valid header found.\n");
 		return "Could not read Areca CLI output: No valid header found.";
 	}
@@ -416,7 +416,7 @@ inline std::string areca_cli_get_drives(const std::string& cli_binary, const std
 	pcrecpp::RE noexp2_port_re = app_pcre_re("/^\\s*([0-9]+)\\s+([^\\s]+)/mi");  // matches port, model.
 	pcrecpp::RE exp_port_re = app_pcre_re("/^\\s*[0-9]+\\s+([0-9]+)\\s+(?:Slot#|SLOT\\s+)([0-9]+)\\s+([^\\s]+)/mi");  // matches enclosure, port, model.
 
-	bool has_enclosure = (format_type == Format::Enc);
+	bool has_enclosure = (format_type == FormatType::Enc);
 	if (has_enclosure) {
 		debug_out_dump("app", "Areca controller seems to have enclosures.\n");
 	} else {
@@ -437,7 +437,7 @@ inline std::string areca_cli_get_drives(const std::string& cli_binary, const std
 				}
 			}
 		} else {  // no enclosures
-			pcrecpp::RE port_re = (format_type == Format::NoEnc1 ? noexp1_port_re : noexp2_port_re);
+			pcrecpp::RE port_re = (format_type == FormatType::NoEnc1 ? noexp1_port_re : noexp2_port_re);
 			if (port_re.PartialMatch(hz::string_trim_copy(lines.at(i)), &port_str, &model_str)) {
 				if (model_str != "N.A.") {
 					int port = hz::string_to_number_nolocale<int>(port_str);

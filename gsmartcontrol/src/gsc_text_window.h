@@ -27,7 +27,9 @@
 
 
 /// GscTextWindow InstanceSwitch parameter for smartctl output instance.
-struct SmartctlOutputInstance { static const bool multi_instance = true; };
+struct SmartctlOutputInstance {
+	static constexpr bool multi_instance = true;
+};
 
 
 
@@ -53,10 +55,10 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 
 			APP_GTKMM_CONNECT_VIRTUAL(delete_event);  // make sure the event handler is called
 
-			Gtk::Button* save_as_button = 0;
+			Gtk::Button* save_as_button = nullptr;
 			APP_UI_RES_AUTO_CONNECT(save_as_button, clicked);
 
-			Gtk::Button* close_window_button = 0;
+			Gtk::Button* close_window_button = nullptr;
 			APP_UI_RES_AUTO_CONNECT(close_window_button, clicked);
 
 
@@ -238,7 +240,6 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 		Glib::ustring default_title_;  ///< Window title
 		Glib::ustring contents_;  ///< The text to display
 		std::string save_filename_;  ///< Default filename for Save As
-
 
 };
 

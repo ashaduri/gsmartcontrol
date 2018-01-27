@@ -12,8 +12,6 @@
 #ifndef HZ_LOCALE_TOOLS_H
 #define HZ_LOCALE_TOOLS_H
 
-#include "hz_config.h"  // feature macros
-
 #include <string>
 #include <locale>
 #include <clocale>  // std::setlocale
@@ -54,7 +52,7 @@ inline bool locale_c_set(const std::string& loc, std::string& old_locale)
 /// \return false on failure
 inline bool locale_c_set(const std::string& loc)
 {
-	return std::setlocale(LC_ALL, loc.c_str());  // returns 0 if invalid
+	return (bool)std::setlocale(LC_ALL, loc.c_str());  // returns 0 if invalid
 }
 
 
@@ -62,7 +60,7 @@ inline bool locale_c_set(const std::string& loc)
 /// Get current C standard library locale.
 inline std::string locale_c_get()
 {
-	return std::setlocale(LC_ALL, 0);
+	return std::setlocale(LC_ALL, nullptr);
 }
 
 
@@ -197,7 +195,7 @@ class ScopedCLocale {
 	public:
 
 		/// Change to classic locale (aka "C")
-		ScopedCLocale(bool do_change = true) : do_change_(do_change), bad_(false)
+		explicit ScopedCLocale(bool do_change = true) : do_change_(do_change)
 		{
 			if (do_change_) {  // avoid unnecessary const char* -> string conversion overhead
 				bad_ = locale_c_set("C", old_locale_);
@@ -205,7 +203,7 @@ class ScopedCLocale {
 		}
 
 		/// Change to user-specified locale loc.
-		ScopedCLocale(const std::string& loc, bool do_change = true) : do_change_(do_change), bad_(false)
+		explicit ScopedCLocale(const std::string& loc, bool do_change = true) : do_change_(do_change)
 		{
 			if (do_change_) {
 				bad_ = locale_c_set(loc, old_locale_);
@@ -244,8 +242,8 @@ class ScopedCLocale {
 	private:
 
 		std::string old_locale_;  ///< Old locale
-		bool do_change_;  ///< Whether we changed something or not
-		bool bad_;  ///< If true, there was some error
+		bool do_change_ = true;  ///< Whether we changed something or not
+		bool bad_ = false;  ///< If true, there was some error
 
 };
 
@@ -257,7 +255,7 @@ class ScopedCppLocale {
 	public:
 
 		/// Change to classic locale (aka "C")
-		ScopedCppLocale(bool do_change = true) : do_change_(do_change), bad_(false)
+		explicit ScopedCppLocale(bool do_change = true) : do_change_(do_change)
 		{
 			if (do_change) {
 				bad_ = locale_cpp_set(std::locale::classic(), old_locale_);
@@ -265,7 +263,7 @@ class ScopedCppLocale {
 		}
 
 		/// Change to user-specified locale loc.
-		ScopedCppLocale(const std::string& loc, bool do_change = true) : do_change_(do_change), bad_(false)
+		explicit ScopedCppLocale(const std::string& loc, bool do_change = true) : do_change_(do_change)
 		{
 			if (do_change_) {
 				bad_ = locale_cpp_set(loc, old_locale_);
@@ -273,7 +271,7 @@ class ScopedCppLocale {
 		}
 
 		/// Change to user-specified locale loc.
-		ScopedCppLocale(const std::locale& loc, bool do_change = true) : do_change_(do_change), bad_(false)
+		explicit ScopedCppLocale(const std::locale& loc, bool do_change = true) : do_change_(do_change)
 		{
 			if (do_change_) {
 				bad_ = locale_cpp_set(loc, old_locale_);
@@ -312,8 +310,8 @@ class ScopedCppLocale {
 	private:
 
 		std::locale old_locale_;  ///< The old locale
-		bool do_change_;  ///< Whether we changed the locale or not
-		bool bad_;  ///< If true, there was an error setting the locale
+		bool do_change_ = true;  ///< Whether we changed the locale or not
+		bool bad_ = false;  ///< If true, there was an error setting the locale
 
 };
 

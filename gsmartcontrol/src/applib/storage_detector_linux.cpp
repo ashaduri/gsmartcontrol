@@ -9,7 +9,7 @@
 /// \weakgroup applib
 /// @{
 
-#include "hz/hz_config.h"  // CONFIG_*
+#include "config.h"  // CONFIG_*
 
 #if defined CONFIG_KERNEL_LINUX
 

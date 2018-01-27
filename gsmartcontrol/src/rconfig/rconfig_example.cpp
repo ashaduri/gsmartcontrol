@@ -16,7 +16,6 @@
 #undef HZ_EMULATE_LIBDEBUG
 #define HZ_EMULATE_LIBDEBUG 1
 
-#include "config.h"
 #include "loadsave.h"
 
 #if defined ENABLE_GLIB && ENABLE_GLIB
@@ -25,12 +24,15 @@
 
 #include <iostream>
 #include <cstdint>
+#include <chrono>
 
 
 
 /// Main function for the test
 int main()
 {
+	using namespace std::literals;
+
 	rconfig::load_from_file("test.config");
 
 	// populate /default:
@@ -53,7 +55,7 @@ int main()
 
 #if defined ENABLE_GLIB && ENABLE_GLIB
 	rconfig::autosave_set_config_file("test2.config");
-	rconfig::autosave_start(2);  // every 2 seconds
+	rconfig::autosave_start(2s);  // every 2 seconds
 	while(true) {
 		// without this the timeout function won't be called.
 		g_main_context_iteration(nullptr, false);

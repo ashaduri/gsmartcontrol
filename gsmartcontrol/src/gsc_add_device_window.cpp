@@ -28,19 +28,19 @@
 
 
 GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui)
-		: AppUIResWidget<GscAddDeviceWindow, true>(gtkcobj, ref_ui), main_window_(0)
+		: AppUIResWidget<GscAddDeviceWindow, true>(gtkcobj, ref_ui)
 {
 	// Connect callbacks
 
 	APP_GTKMM_CONNECT_VIRTUAL(delete_event);  // make sure the event handler is called
 
-	Gtk::Button* window_cancel_button = 0;
+	Gtk::Button* window_cancel_button = nullptr;
 	APP_UI_RES_AUTO_CONNECT(window_cancel_button, clicked);
 
-	Gtk::Button* window_ok_button = 0;
+	Gtk::Button* window_ok_button = nullptr;
 	APP_UI_RES_AUTO_CONNECT(window_ok_button, clicked);
 
-	Gtk::Button* device_name_browse_button = 0;
+	Gtk::Button* device_name_browse_button = nullptr;
 	APP_UI_RES_AUTO_CONNECT(device_name_browse_button, clicked);
 
 
@@ -50,11 +50,11 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, const Glib::RefP
 #elif defined CONFIG_KERNEL_LINUX
 	device_name_tooltip = "Device name (for example, /dev/sda or /dev/twa0)";
 #endif
-	if (Gtk::Label* device_name_label = lookup_widget<Gtk::Label*>("device_name_label")) {
+	if (auto* device_name_label = lookup_widget<Gtk::Label*>("device_name_label")) {
 		app_gtkmm_set_widget_tooltip(*device_name_label, device_name_tooltip);
 	}
 
-	Gtk::Entry* device_name_entry = 0;
+	Gtk::Entry* device_name_entry = nullptr;
 	APP_UI_RES_AUTO_CONNECT(device_name_entry, changed);
 	if (device_name_entry) {
 		app_gtkmm_set_widget_tooltip(*device_name_entry, device_name_tooltip);
@@ -65,10 +65,10 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, const Glib::RefP
 #if defined CONFIG_KERNEL_LINUX || defined CONFIG_KERNEL_FAMILY_WINDOWS
 	device_type_tooltip = "Smartctl -d option parameter. For example, use areca,1 for the first drive behind Areca RAID controller.";
 #endif
-	if (Gtk::Label* device_type_label = lookup_widget<Gtk::Label*>("device_type_label")) {
+	if (auto* device_type_label = lookup_widget<Gtk::Label*>("device_type_label")) {
 		app_gtkmm_set_widget_tooltip(*device_type_label, device_type_tooltip);
 	}
-	if (Gtk::ComboBoxText* type_combo = lookup_widget<Gtk::ComboBoxText*>("device_type_combo")) {
+	if (auto* type_combo = lookup_widget<Gtk::ComboBoxText*>("device_type_combo")) {
 		app_gtkmm_set_widget_tooltip(*type_combo, device_type_tooltip);
 	}
 
@@ -91,8 +91,7 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, const Glib::RefP
 
 
 	// Populate type combo with common types
-	Gtk::ComboBoxText* type_combo = lookup_widget<Gtk::ComboBoxText*>("device_type_combo");
-	if (type_combo) {
+	if (auto* type_combo = lookup_widget<Gtk::ComboBoxText*>("device_type_combo")) {
 		type_combo->append("sat,12");
 		type_combo->append("sat,16");
 		type_combo->append("usbcypress");
@@ -148,13 +147,13 @@ void GscAddDeviceWindow::on_window_cancel_button_clicked()
 void GscAddDeviceWindow::on_window_ok_button_clicked()
 {
 	std::string dev, type, params;
-	if (Gtk::Entry* entry = lookup_widget<Gtk::Entry*>("device_name_entry")) {
+	if (auto* entry = lookup_widget<Gtk::Entry*>("device_name_entry")) {
 		dev = entry->get_text();
 	}
-	if (Gtk::ComboBoxText* type_combo = lookup_widget<Gtk::ComboBoxText*>("device_type_combo")) {
+	if (auto* type_combo = lookup_widget<Gtk::ComboBoxText*>("device_type_combo")) {
 		type = type_combo->get_entry_text();
 	}
-	if (Gtk::Entry* entry = lookup_widget<Gtk::Entry*>("smartctl_params_entry")) {
+	if (auto* entry = lookup_widget<Gtk::Entry*>("smartctl_params_entry")) {
 		params = entry->get_text();
 	}
 	if (main_window_ && !dev.empty()) {
@@ -170,7 +169,7 @@ void GscAddDeviceWindow::on_device_name_browse_button_clicked()
 {
 	std::string default_file;
 
-	Gtk::Entry* entry = this->lookup_widget<Gtk::Entry*>("device_name_entry");
+	auto* entry = this->lookup_widget<Gtk::Entry*>("device_name_entry");
 	if (!entry)
 		return;
 
@@ -225,7 +224,6 @@ void GscAddDeviceWindow::on_device_name_browse_button_clicked()
 			debug_out_error("app", DBG_FUNC_MSG << "Unknown dialog response code: " << result << ".\n");
 			break;
 	}
-
 }
 
 
@@ -233,8 +231,8 @@ void GscAddDeviceWindow::on_device_name_browse_button_clicked()
 void GscAddDeviceWindow::on_device_name_entry_changed()
 {
 	// Allow OK only if name is not empty
-	Gtk::Entry* entry = lookup_widget<Gtk::Entry*>("device_name_entry");
-	Gtk::Button* ok_button = lookup_widget<Gtk::Button*>("window_ok_button");
+	auto* entry = lookup_widget<Gtk::Entry*>("device_name_entry");
+	auto* ok_button = lookup_widget<Gtk::Button*>("window_ok_button");
 	if (entry && ok_button) {
 		ok_button->set_sensitive(!entry->get_text().empty());
 	}

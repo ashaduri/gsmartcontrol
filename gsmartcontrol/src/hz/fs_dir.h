@@ -12,8 +12,6 @@
 #ifndef HZ_FS_DIR_H
 #define HZ_FS_DIR_H
 
-#include "hz_config.h"  // feature macros
-
 #include <string>
 #include <vector>
 #include <sys/types.h>  // dirent needs this
@@ -184,7 +182,7 @@ enum {  // flags
 struct DirFilterByFlags {
 
 	/// Constructor. Flags are OR-ed combinations of DIR_LEAVE_*.
-	DirFilterByFlags(int flags) : flags_(flags)
+	explicit DirFilterByFlags(int flags) : flags_(flags)
 	{ }
 
 	/// Whether to use operator() with FsPaths instead of strings.
@@ -227,7 +225,7 @@ struct DirFilterByFlags {
 struct DirFilterWc {
 
 	/// Constructor
-	DirFilterWc(const std::string& pattern) : pattern_(pattern)
+	explicit DirFilterWc(const std::string& pattern) : pattern_(pattern)
 	{ }
 
 	/// whether to use operator() with FsPaths instead of strings.
@@ -302,7 +300,7 @@ template<class Child>
 struct DirSortBase {
 
 	/// Constructor.
-	DirSortBase(dir_sort_flag_t flag) : flag_(flag)
+	explicit DirSortBase(dir_sort_flag_t flag) : flag_(flag)
 	{ }
 
 	/// This is called before the less function
@@ -349,7 +347,7 @@ struct DirSortBase {
 struct DirSortAlpha : public DirSortBase<DirSortAlpha> {
 
 	/// Constructor
-	DirSortAlpha(dir_sort_flag_t flag = DIR_SORT_DIRS_FIRST)
+	explicit DirSortAlpha(dir_sort_flag_t flag = DIR_SORT_DIRS_FIRST)
 			: DirSortBase<DirSortAlpha>(flag)
 	{ }
 
@@ -380,7 +378,7 @@ struct DirSortAlpha : public DirSortBase<DirSortAlpha> {
 struct DirSortMTime : public DirSortBase<DirSortMTime> {
 
 	/// Constructor
-	DirSortMTime(dir_sort_flag_t flag = DIR_SORT_DIRS_FIRST) : DirSortBase<DirSortMTime>(flag)
+	explicit DirSortMTime(dir_sort_flag_t flag = DIR_SORT_DIRS_FIRST) : DirSortBase<DirSortMTime>(flag)
 	{ }
 
 	/// Whether to use operator() with FsPaths instead of strings.
@@ -429,43 +427,24 @@ class Dir : public FsPath {
 		Dir() = default;
 
 		/// Create a Dir object. This will NOT open the directory.
-		Dir(const FsPath& path) : dir_(NULL), entry_(NULL)
+		explicit Dir(const FsPath& path)
 		{
 			set_path(path.get_path());
 		}
 
 		/// Create a Dir object. This will NOT open the directory.
-		Dir(const std::string& path) : dir_(NULL), entry_(NULL)
+		explicit Dir(const std::string& path)
 		{
 			set_path(path);
 		}
 
 
-	private:
+		/// Deny copying.
+		Dir(const Dir& other) = delete;
 
-		// Between move semantics (confusing and error-prone) and denying copying,
-		// I choose to deny.
+		/// Deny copying
+		Dir& operator= (const Dir& other) = delete;
 
-		/// Private copy constructor to deny copying.
-		Dir(const Dir& other);
-
-		/// Private assignment operator to deny copying
-		Dir& operator= (const Dir& other);
-
-
-	public:
-
-/*
-		// Copy constructor. Move semantics are implemented -
-		// the handle ownership is transferred exclusively.
-		Dir(Dir& other) : dir_(NULL), entry_(NULL)
-		{
-			*this = other;  // operator=
-		}
-
-		// Move semantics, as with copy constructor.
-		inline Dir& operator= (Dir& other);
-*/
 
 		/// Destructor which invokes close() if needed.
 		virtual ~Dir()
@@ -526,7 +505,7 @@ class Dir : public FsPath {
 		/// Returns an iterator pointing to the entry one past the last one.
 		iterator end()
 		{
-			return iterator(this, NULL);
+			return iterator(this, nullptr);
 		}
 
 
@@ -594,7 +573,7 @@ namespace internal {
 			dir_->entry_next();
 			entry_ = dir_->entry_get_handle();
 		} else {
-			entry_ = NULL;
+			entry_ = nullptr;
 		}
 		return *this;
 	}
@@ -638,7 +617,7 @@ namespace internal {
 	inline DirIterator::handle_type DirIterator::get_handle()
 	{
 		if (!entry_ || !dir_)
-			return NULL;
+			return nullptr;
 		return dir_->entry_get_handle();
 	}
 
@@ -657,8 +636,8 @@ inline Dir& Dir::operator= (Dir& other)
 	entry_ = other.entry_;
 
 	// clear other's members, so everything is clear.
-	other.dir_ = NULL;
-	other.entry_ = NULL;
+	other.dir_ = nullptr;
+	other.entry_ = nullptr;
 	other.set_path("");
 	other.set_error(HZ__("The directory handle ownership was transferred from this object."));
 
@@ -688,7 +667,7 @@ inline bool Dir::open()
 		return false;
 	}
 
-	entry_ = NULL;
+	entry_ = nullptr;
 
 	return true;
 }
@@ -709,12 +688,12 @@ inline bool Dir::close()
 
 	if (dir_ && directory_close(dir_) != 0) {  // error
 		set_error(HZ__("Error while closing directory \"/path1/\": /errno/."), errno, this->get_path());
-		dir_ = NULL;
-		entry_ = NULL;
+		dir_ = nullptr;
+		entry_ = nullptr;
 		return false;
 	}
-	dir_ = NULL;
-	entry_ = NULL;
+	dir_ = nullptr;
+	entry_ = nullptr;
 
 	return true;  // even if already closed
 }
@@ -731,7 +710,7 @@ inline Dir::handle_type Dir::get_handle()
 inline bool Dir::entry_next()
 {
 	clear_error();
-	entry_ = NULL;  // just in case
+	entry_ = nullptr;  // just in case
 
 	if (!dir_) {  // open if needed
 		if (!open())
@@ -761,7 +740,7 @@ inline bool Dir::entry_next()
 inline bool Dir::entry_reset()
 {
 	clear_error();
-	entry_ = NULL;  // since it's invalid anyway
+	entry_ = nullptr;  // since it's invalid anyway
 
 	if (!dir_) {  // open if needed
 		if (!open())

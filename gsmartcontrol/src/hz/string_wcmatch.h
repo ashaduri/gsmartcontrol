@@ -14,8 +14,6 @@
 #ifndef HZ_STRING_WCMATCH_H
 #define HZ_STRING_WCMATCH_H
 
-#include "hz_config.h"  // feature macros
-
 /**
 \file
 Shell-like pattern matching (wildcards).
@@ -162,7 +160,7 @@ namespace internal {
 	*/
 	inline int wc_fnmatch(const char* pattern, const char* str, int flags)
 	{
-		const char* strstart = 0;
+		const char* strstart = nullptr;
 		char c = 0, test = 0;
 
 		for (strstart = str;;) {
@@ -200,14 +198,14 @@ namespace internal {
 					/* Optimize for pattern with * at end or before /. */
 					if (c == '\0') {
 						if (HZ_WC_ISSET(flags, HZ_FNM_PATHNAME)) {
-							return (HZ_WC_ISSET(flags, HZ_FNM_LEADING_DIR) || std::strchr(str, '/') == NULL ?
+							return (HZ_WC_ISSET(flags, HZ_FNM_LEADING_DIR) || std::strchr(str, '/') == nullptr ?
 								0 : HZ_FNM_NOMATCH);
 						} else {
 							return (0);
 						}
 
 					} else if (c == '/' && HZ_WC_ISSET(flags, HZ_FNM_PATHNAME)) {
-						if ((str = std::strchr(str, '/')) == NULL)
+						if ((str = std::strchr(str, '/')) == nullptr)
 							return (HZ_FNM_NOMATCH);
 						break;
 					}
@@ -236,7 +234,7 @@ namespace internal {
 						return (HZ_FNM_NOMATCH);
 					}
 
-					const char* newp = 0;
+					const char* newp = nullptr;
 					switch (wc_rangematch(pattern, *str, flags, &newp)) {
 						case HZ_RANGE_ERROR:
 							/* not a good range, treat as normal text */

@@ -85,7 +85,6 @@ int main()
 		paths.push_back("..");  // dir: ., base: ..
 		paths.push_back("");  // dir: ., base: .
 
-
 #else
 		paths.push_back("C:\\22da\\a\\");
 		paths.push_back("/usr/local/bin//");  // dir: /usr/local, base: bin
@@ -106,11 +105,10 @@ int main()
 		paths.push_back("../a/./b/..");
 		paths.push_back("//.programrc");
 
-
 #endif
 
 		for (std::size_t i = 0; i < paths.size(); ++i) {
-			FsPath p = paths[i];
+			FsPath p(paths[i]);
 			std::cerr << p.str() << ":\n"
 				<< "\t" << "dir: " << p.get_dirname() << ", "
 				<< " " << "base: " << p.get_basename() << ", "
@@ -120,8 +118,6 @@ int main()
 				<< " " << "compress: " << path_compress(p.str()) << "\n";
 		}
 	}
-
-
 
 	return 0;
 }

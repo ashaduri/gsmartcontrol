@@ -39,18 +39,14 @@ int main(int argc, char** argv)
 
 	ex.execute();
 
-
-
 	std::string out_str = ex.get_stdout_str();
 // 	std::cout << "OUT:\n" << out_str << "\n\n";
 	std::cerr << "OUT SIZE: " << out_str.size() << "\n";
 
 	std::cerr << "STDERR:\n" << ex.get_stderr_str() << "\n";
 
-
 	std::cerr << "ERROR MSG:\n";
 	std::cerr << ex.get_error_msg();
-
 
 	// execute it second time
 	ex.execute();

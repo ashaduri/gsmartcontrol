@@ -12,10 +12,9 @@
 #ifndef HZ_STRING_ALGO_H
 #define HZ_STRING_ALGO_H
 
-#include "hz_config.h"  // feature macros
-
 #include <string>
 #include <cctype>  // std::tolower, std::toupper
+#include <string_view>
 
 
 
@@ -31,7 +30,7 @@ namespace hz {
 /// If skip_empty is true, then empty components will be omitted.
 /// If "limit" is more than 0, only put a maximum of "limit" number of
 /// elements into vector, with the last one containing the rest of the string.
-template<class Container> inline
+template<class Container>
 void string_split(const std::string& str, char delimiter,
 		Container& append_here, bool skip_empty = false, typename Container::difference_type limit = 0)
 {
@@ -71,7 +70,7 @@ void string_split(const std::string& str, char delimiter,
 /// If skip_empty is true, then empty components will be omitted.
 /// If "limit" is more than 0, only put a maximum of "limit" number of
 /// elements into vector, with the last one containing the rest of the string.
-template<class Container> inline
+template<class Container>
 void string_split(const std::string& str, const std::string& delimiter,
 		Container& append_here, bool skip_empty = false, typename Container::difference_type limit = 0)
 {
@@ -117,7 +116,7 @@ void string_split(const std::string& str, const std::string& delimiter,
 /// If skip_empty is true, then empty components will be omitted.
 /// If "limit" is more than 0, only put a maximum of "limit" number of
 /// elements into vector, with the last one containing the rest of the string.
-template<class Container> inline
+template<class Container>
 void string_split_by_chars(const std::string& str, const std::string& delimiter_chars,
 		Container& append_here, bool skip_empty = false, typename Container::difference_type limit = 0)
 {
@@ -157,38 +156,30 @@ void string_split_by_chars(const std::string& str, const std::string& delimiter_
 
 
 /// Join elements of container v into a string, using glue between them.
-template<class Container> inline
+template<class Container>
 std::string string_join(const Container& v, char glue)
 {
-	typename Container::const_iterator begin = v.begin();
-	typename Container::const_iterator iter = begin;
-
 	std::string ret;
-	for (; iter != v.end(); ++iter) {
+	for (auto begin = v.cbegin(), iter = begin; iter != v.cend(); ++iter) {
 		if (iter != begin)
 			ret += glue;
 		ret += (*iter);
 	}
-
 	return ret;
 }
 
 
 
 /// Join elements of container v into a string, using glue between them.
-template<class Container> inline
-std::string string_join(const Container& v, const std::string& glue)
+template<class Container>
+std::string string_join(const Container& v, const std::string_view& glue)
 {
-	typename Container::const_iterator begin = v.begin();
-	typename Container::const_iterator iter = begin;
-
 	std::string ret;
-	for (; iter != v.end(); ++iter) {
+	for (auto begin = v.cbegin(), iter = begin; iter != v.cend(); ++iter) {
 		if (iter != begin)
 			ret += glue;
 		ret += (*iter);
 	}
-
 	return ret;
 }
 
@@ -205,7 +196,7 @@ inline bool string_trim(std::string& s, const std::string& trim_chars = " \t\r\n
 	if (trim_chars.empty())
 		return false;
 
-	const std::string::size_type s_size = s.size();
+	const auto s_size = s.size();
 
 	std::string::size_type index = s.find_last_not_of(trim_chars);
 	if (index != std::string::npos)
@@ -240,7 +231,7 @@ inline bool string_trim_left(std::string& s, const std::string& trim_chars = " \
 	if (trim_chars.empty())
 		return false;
 
-	const std::string::size_type s_size = s.size();
+	const auto s_size = s.size();
 
 	std::string::size_type index = s.find_first_not_of(trim_chars);
 	if (index != std::string::npos)

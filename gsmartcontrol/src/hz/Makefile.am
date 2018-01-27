@@ -4,7 +4,7 @@ METASOURCES = AUTO
 noinst_HEADERS = bad_cast_exception.h bin2ascii_encoder.h \
 	data_file.h debug.h env_tools.h error.h error_holder.h \
 	format_unit.h fs_common.h fs_dir.h fs_dir_platform.h fs_error_holder.h \
-	fs_file.h fs_path.h fs_path_utils.h fs_tools.h hz_config.h i18n.h \
+	fs_file.h fs_path.h fs_path_utils.h fs_tools.h i18n.h \
 	instance_manager.h launch_url.h \
 	locale_tools.h process_signal.h \
 	res_data.h scoped_ptr.h stream_cast.h \

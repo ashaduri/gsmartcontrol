@@ -12,8 +12,6 @@
 #ifndef HZ_ERROR_HOLDER_H
 #define HZ_ERROR_HOLDER_H
 
-#include "hz_config.h"  // feature macros
-
 #include <vector>
 #include <memory>
 
