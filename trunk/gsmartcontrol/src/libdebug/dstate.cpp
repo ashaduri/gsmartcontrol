@@ -92,7 +92,7 @@ bool debug_register_domain(const std::string& domain)
 		return false;
 
 	// copy the "default" domain - use it as a template
-	DebugState::domain_map_t::iterator def_iter = dm.find("default");
+	auto def_iter = dm.find("default");
 	if (def_iter == dm.end()) {
 		throw debug_internal_error(("debug_register_domain(\"" + domain
 			+ "\"): Domain \"default\" doesn't exist.").c_str());
@@ -103,8 +103,8 @@ bool debug_register_domain(const std::string& domain)
 	dm[domain] = DebugState::level_map_t();
 	DebugState::level_map_t& level_map = dm.find(domain)->second;
 
-	for (DebugState::level_map_t::const_iterator iter = def_level_map.begin(); iter != def_level_map.end(); ++iter) {
-		level_map[iter->first] = std::make_shared<DebugOutStream>(*(iter->second), domain);
+	for (const auto& iter : def_level_map) {
+		level_map[iter.first] = std::make_shared<DebugOutStream>(*(iter.second), domain);
 	}
 
 	return true;
@@ -117,7 +117,7 @@ bool debug_unregister_domain(const std::string& domain)
 	using namespace debug_internal;
 	DebugState::domain_map_t& dm = get_debug_state().get_domain_map();
 
-	DebugState::domain_map_t::iterator found = dm.find(domain);
+	auto found = dm.find(domain);
 	if (found == dm.end())  // doesn't exists
 		return false;
 
@@ -134,8 +134,8 @@ std::vector<std::string> debug_get_registered_domains()
 
 	std::vector<std::string> domains;
 	domains.reserve(dm.size());
-	for (DebugState::domain_map_t::iterator iter = dm.begin(); iter != dm.end(); ++iter)
-		domains.push_back(iter->first);
+	for (const auto& iter : dm)
+		domains.push_back(iter.first);
 
 	return domains;
 }

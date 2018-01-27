@@ -102,9 +102,9 @@ namespace debug_internal {
 			/// Flush all the stream buffers. This will write prefixes too.
 			void force_output()
 			{
-				for(domain_map_t::iterator iter = domain_map.begin(); iter != domain_map.end(); ++iter) {
-					for(level_map_t::iterator iter2 = iter->second.begin(); iter2 != iter->second.end(); ++iter2)
-						iter2->second->force_output();
+				for (auto& iter : domain_map) {
+					for (auto& iter2 : iter.second)
+						iter2.second->force_output();
 				}
 			}
 

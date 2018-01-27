@@ -191,8 +191,8 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives, const Exe
 			continue;
 
 		bool matched = false;
-		for (std::vector<std::string>::const_iterator iter = whitelist.begin(); iter != whitelist.end(); ++iter) {
-			if (app_pcre_match(*iter, entry)) {
+		for (const auto& wl_pattern : whitelist) {
+			if (app_pcre_match(wl_pattern, entry)) {
 				matched = true;
 				break;
 			}

@@ -855,25 +855,25 @@ bool Dir::list(Container& put_here, bool put_with_path, SortFunctor sort_func, F
 	if (sort_using_paths) {
 		std::sort(path_results.begin(), path_results.end(), sort_func);
 
-		for (list_path_list_t::const_iterator iter = path_results.begin(); iter != path_results.end(); ++iter) {
+		for (const auto& path_result : path_results) {
 			if (put_with_path) {
-				put_here.push_back(iter->str());
+				put_here.push_back(path_result.str());
 			} else {
-				put_here.push_back(iter->get_basename());
+				put_here.push_back(path_result.get_basename());
 			}
 		}
 
 	} else {
 		std::sort(string_results.begin(), string_results.end(), sort_func);
 
-		for (list_string_list_t::const_iterator iter = string_results.begin(); iter != string_results.end(); ++iter) {
+		for (const auto& string_result : string_results) {
 			if (put_with_path) {
 				FsPath p(this->get_path());
-				p.append(*iter);
+				p.append(string_result);
 				put_here.push_back(p.str());
 
 			} else {
-				put_here.push_back(*iter);
+				put_here.push_back(string_result);
 			}
 		}
 	}

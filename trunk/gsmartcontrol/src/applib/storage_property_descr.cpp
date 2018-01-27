@@ -1042,7 +1042,7 @@ namespace {
 			/// different smartctl name (fill the other members from the previous attribute).
 // 			void add(int32_t id, const std::string& smartctl_name)
 // 			{
-// 				std::map<int32_t, std::vector< AttributeDescription> >::iterator iter = id_db.find(id);
+// 				auto iter = id_db.find(id);
 // 				DBG_ASSERT(iter != id_db.end() && !iter->second.empty());
 // 				if (iter != id_db.end() || iter->second.empty()) {
 // 					AttributeDescription attr = iter->second.front();

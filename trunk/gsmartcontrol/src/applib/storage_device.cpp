@@ -58,24 +58,22 @@ std::string StorageDevice::get_status_name(Status status)
 
 
 
-StorageDevice::StorageDevice(const std::string& dev_or_vfile, bool is_virtual)
+StorageDevice::StorageDevice(std::string dev_or_vfile, bool is_virtual)
 {
 	is_virtual_ = is_virtual;
 
 	if (is_virtual) {
-		virtual_file_ = dev_or_vfile;
+		virtual_file_ = std::move(dev_or_vfile);
 	} else {
-		device_ = dev_or_vfile;
+		device_ = std::move(dev_or_vfile);
 	}
 }
 
 
 
-StorageDevice::StorageDevice(const std::string& dev, const std::string& type_arg)
-{
-	device_ = dev;
-	type_arg_ = type_arg;
-}
+StorageDevice::StorageDevice(std::string dev, std::string type_arg)
+		: device_(std::move(dev)), type_arg_(std::move(type_arg))
+{ }
 
 
 
@@ -570,9 +568,9 @@ StorageDevice::DetectedType StorageDevice::get_detected_type() const
 
 
 
-void StorageDevice::set_type_argument(const std::string& arg)
+void StorageDevice::set_type_argument(std::string arg)
 {
-	type_arg_ = arg;
+	type_arg_ = std::move(arg);
 }
 
 
@@ -584,9 +582,9 @@ std::string StorageDevice::get_type_argument() const
 
 
 
-void StorageDevice::set_extra_arguments(const std::string& args)
+void StorageDevice::set_extra_arguments(std::string args)
 {
-	extra_args_ = args;
+	extra_args_ = std::move(args);
 }
 
 
@@ -598,9 +596,9 @@ std::string StorageDevice::get_extra_arguments() const
 
 
 
-void StorageDevice::set_drive_letters(const std::map<char, std::string>& letters)
+void StorageDevice::set_drive_letters(std::map<char, std::string> letters)
 {
-	drive_letters_ = letters;
+	drive_letters_ = std::move(letters);
 }
 
 
@@ -698,9 +696,9 @@ bool StorageDevice::get_is_hdd() const
 
 
 
-void StorageDevice::set_info_output(const std::string& s)
+void StorageDevice::set_info_output(std::string s)
 {
-	info_output_ = s;
+	info_output_ = std::move(s);
 }
 
 
@@ -712,9 +710,9 @@ std::string StorageDevice::get_info_output() const
 
 
 
-void StorageDevice::set_full_output(const std::string& s)
+void StorageDevice::set_full_output(std::string s)
 {
-	full_output_ = s;
+	full_output_ = std::move(s);
 }
 
 
@@ -847,9 +845,9 @@ void StorageDevice::set_parse_status(ParseStatus value)
 
 
 
-void StorageDevice::set_properties(const std::vector<StorageProperty>& props)
+void StorageDevice::set_properties(std::vector<StorageProperty> props)
 {
-	properties_ = props;
+	properties_ = std::move(props);
 }
 
 

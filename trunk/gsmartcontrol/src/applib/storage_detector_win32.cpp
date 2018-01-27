@@ -239,9 +239,9 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDevicePtr>& drive
 			auto drive = std::make_shared<StorageDevice>(full_dev, type);
 
 			std::map<char, std::string> letters_volnames;
-			for (std::map<char, DriveLetterInfo>::const_iterator iter = drive_letter_map.begin(); iter != drive_letter_map.end(); ++iter) {
-				if (iter->second.physical_drives.count(drive_num) > 0) {
-					letters_volnames[iter->first] = iter->second.volume_name;
+			for (const auto& iter : drive_letter_map) {
+				if (iter.second.physical_drives.count(drive_num) > 0) {
+					letters_volnames[iter.first] = iter.second.volume_name;
 				}
 			}
 			drive->set_drive_letters(letters_volnames);
@@ -733,9 +733,9 @@ std::string detect_drives_win32(std::vector<StorageDevicePtr>& drives, const Exe
 		auto drive = std::make_shared<StorageDevice>(hz::string_sprintf("pd%d", drive_num));
 
 		std::map<char, std::string> letters_volnames;
-		for (std::map<char, DriveLetterInfo>::const_iterator iter = drive_letter_map.begin(); iter != drive_letter_map.end(); ++iter) {
-			if (iter->second.physical_drives.count(drive_num) > 0) {
-				letters_volnames[iter->first] = iter->second.volume_name;
+		for (const auto& iter : drive_letter_map) {
+			if (iter.second.physical_drives.count(drive_num) > 0) {
+				letters_volnames[iter.first] = iter.second.volume_name;
 			}
 		}
 		drive->set_drive_letters(letters_volnames);
