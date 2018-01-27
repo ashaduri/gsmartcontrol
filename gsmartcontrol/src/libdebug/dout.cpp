@@ -27,9 +27,9 @@
 // This may throw for invalid domain or level.
 std::ostream& debug_out(debug_level::flag level, const std::string& domain)
 {
-	debug_internal::DebugState::domain_map_t& dm = debug_internal::get_debug_state().get_domain_map();
+	auto& dm = debug_internal::get_debug_state().get_domain_map();
 
-	debug_internal::DebugState::domain_map_t::iterator level_map = dm.find(domain);
+	auto level_map = dm.find(domain);
 	if (level_map == dm.end()) {  // no such domain
 		std::string msg = "debug_out(): Debug state doesn't contain the requested domain: \"" + domain + "\".";
 
@@ -45,7 +45,7 @@ std::ostream& debug_out(debug_level::flag level, const std::string& domain)
 		throw debug_internal_error(msg.c_str());
 	}
 
-	debug_internal::DebugState::level_map_t::iterator os = level_map->second.find(level);
+	auto os = level_map->second.find(level);
 	if (level_map == dm.end()) {
 		std::string msg = std::string("debug_out(): Debug state doesn't contain the requested level ") +
 				debug_level::get_name(level) + " in domain: \"" + domain + "\".";

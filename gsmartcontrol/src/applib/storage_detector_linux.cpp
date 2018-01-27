@@ -94,8 +94,8 @@ inline std::string detect_drives_linux_udev_byid(std::vector<std::string>& devic
 
 		// platform blacklist
 		bool blacked = false;
-		for (std::vector<std::string>::const_iterator iter = blacklist.begin(); iter != blacklist.end(); ++iter) {
-			if (app_pcre_match(*iter, entry)) {
+		for (const auto bl_pattern : blacklist) {
+			if (app_pcre_match(bl_pattern, entry)) {
 				blacked = true;
 				break;
 			}
@@ -414,8 +414,8 @@ inline std::string detect_drives_linux_proc_partitions(std::vector<StorageDevice
 
 		// platform blacklist
 		bool blacked = false;
-		for (std::vector<std::string>::const_iterator iter = blacklist.begin(); iter != blacklist.end(); ++iter) {
-			if (app_pcre_match(*iter, dev)) {
+		for (const auto& bl_pattern : blacklist) {
+			if (app_pcre_match(bl_pattern, dev)) {
 				blacked = true;
 				break;
 			}

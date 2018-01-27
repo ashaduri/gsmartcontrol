@@ -71,10 +71,10 @@ class StorageDevice {
 
 
 		/// Constructor
-		explicit StorageDevice(const std::string& dev_or_vfile, bool is_virtual = false);
+		explicit StorageDevice(std::string dev_or_vfile, bool is_virtual = false);
 
 		/// Constructor
-		StorageDevice(const std::string& dev, const std::string& type_arg);
+		StorageDevice(std::string dev, std::string type_arg);
 
 
 		// clear everything fetched before.
@@ -83,7 +83,7 @@ class StorageDevice {
 		/// Calls "smartctl -i -H -c" (info section, health, capabilities), then parse_basic_data().
 		/// Called during drive detection.
 		/// Note: this will clear the non-basic properties!
-		std::string fetch_basic_data_and_parse(const std::shared_ptr<CmdexSync>& smartctl_ex = 0);
+		std::string fetch_basic_data_and_parse(const std::shared_ptr<CmdexSync>& smartctl_ex = nullptr);
 
 		/// Detects type, smart support, smart status (on / off).
 		/// Note: this will clear the non-basic properties!
@@ -141,21 +141,21 @@ class StorageDevice {
 
 
 		/// Set argument for "-d" smartctl parameter
-		void set_type_argument(const std::string& arg);
+		void set_type_argument(std::string arg);
 
 		/// Get argument for "-d" smartctl parameter
 		std::string get_type_argument() const;
 
 
 		/// Set extra arguments smartctl
-		void set_extra_arguments(const std::string& args);
+		void set_extra_arguments(std::string args);
 
 		/// Get extra arguments smartctl
 		std::string get_extra_arguments() const;
 
 
 		/// Set windows drive letters for this drive
-		void set_drive_letters(const std::map<char, std::string>& letters_volnames);
+		void set_drive_letters(std::map<char, std::string> letters_volnames);
 
 		/// Get windows drive letters for this drive
 		const std::map<char, std::string>& get_drive_letters() const;
@@ -201,14 +201,14 @@ class StorageDevice {
 
 
 		/// Set "info" output to parse
-		void set_info_output(const std::string& s);
+		void set_info_output(std::string s);
 
 		/// Get "info" output to parse
 		std::string get_info_output() const;
 
 
 		/// Set "full" output to parse
-		void set_full_output(const std::string& s);
+		void set_full_output(std::string s);
 
 		/// Get "full" output to parse
 		std::string get_full_output() const;
@@ -252,7 +252,7 @@ class StorageDevice {
 		void set_parse_status(ParseStatus value);
 
 		/// Set parsed properties
-		void set_properties(const std::vector<StorageProperty>& props);
+		void set_properties(std::vector<StorageProperty> props);
 
 
 	private:

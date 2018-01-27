@@ -217,9 +217,9 @@ namespace debug_internal {
 
 
 			/// Set channel list to send the data to.
-			void set_channels(const std::vector<DebugChannelBasePtr>& channels)
+			void set_channels(std::vector<DebugChannelBasePtr> channels)
 			{
-				channels_ = channels;
+				channels_ = std::move(channels);
 			}
 
 			/// Get channel list
@@ -261,9 +261,9 @@ namespace debug_internal {
 
 		private:
 
-			debug_level::flag level_;  ///< Debug level of this stream
+			debug_level::flag level_ = debug_level::none;  ///< Debug level of this stream
 			std::string domain_;  ///< Domain of this stream
-			debug_format::type format_;  ///< Format flags
+			debug_format::type format_ = debug_format::none;  ///< Format flags
 
 			bool is_first_line_ = true;  ///< Whether it's the first line of output or not
 

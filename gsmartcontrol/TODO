@@ -53,12 +53,6 @@ Use std::from_chars() in string_is_numeric_impl_classic_locale() (gcc 8)
 Mark with gettext
 
 
-std::string setters -> no const&, use std::move.
-	same for std::vector
-for iter -> for auto
-push_back -> static vector
-
-
 Check TODOs
 
 
