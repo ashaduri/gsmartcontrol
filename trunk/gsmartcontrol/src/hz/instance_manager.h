@@ -12,8 +12,6 @@
 #ifndef HZ_INSTANCE_MANAGER_H
 #define HZ_INSTANCE_MANAGER_H
 
-#include "hz_config.h"  // feature macros
-
 
 
 namespace hz {
@@ -32,14 +30,15 @@ class InstanceManager {
 		/// Virtual destructor (protected, can't delete this directly, use destroy()).
 		virtual ~InstanceManager() = default;
 
+
+	public:
+
 		/// Non-construction-copyable
 		InstanceManager(const InstanceManager& other) = delete;
 
 		/// Non-copyable
 		InstanceManager& operator=(const InstanceManager&) = delete;
 
-
-	public:
 
 		/// Create a new instance or return an already created one if single-instance.
 		/// If single-instance, the call will be serialized.
@@ -112,14 +111,15 @@ class InstanceManager<Child, false> {
 
 		virtual ~InstanceManager() = default;
 
+
+	public:
+
 		/// Non-construction-copyable
 		InstanceManager(const InstanceManager& other) = delete;
 
 		/// Non-copyable
 		InstanceManager& operator=(const InstanceManager&) = delete;
 
-
-	public:
 
 		static Child* create()
 		{
@@ -153,7 +153,7 @@ class InstanceManager<Child, false> {
 
 		static bool has_single_instance()
 		{
-			return instance_;
+			return (bool)instance_;
 		}
 
 		static Child* get_single_instance()

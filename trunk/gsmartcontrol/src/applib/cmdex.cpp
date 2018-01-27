@@ -417,7 +417,7 @@ gboolean Cmdex::on_channel_io(GIOChannel* channel,
 	const gsize count = 1;
 	gchar buf[count] = {0};
 
-	std::string* output_str = 0;
+	std::string* output_str = nullptr;
 	if (channel_type == Channel::standard_output) {
 		output_str = &self->str_stdout_;
 	} else if (channel_type == Channel::standard_error) {
@@ -427,7 +427,7 @@ gboolean Cmdex::on_channel_io(GIOChannel* channel,
 
 	// while there's anything to read, read it
 	do {
-		GError* channel_error = 0;
+		GError* channel_error = nullptr;
 		gsize bytes_read = 0;
 		GIOStatus status = g_io_channel_read_chars(channel, buf, count, &bytes_read, &channel_error);
 		if (bytes_read)

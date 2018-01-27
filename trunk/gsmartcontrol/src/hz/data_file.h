@@ -12,8 +12,6 @@
 #ifndef HZ_DATA_FILE_H
 #define HZ_DATA_FILE_H
 
-#include "hz_config.h"  // feature macros
-
 #include <string>
 #include <vector>
 

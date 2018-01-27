@@ -12,12 +12,6 @@
 #ifndef HZ_FS_COMMON_H
 #define HZ_FS_COMMON_H
 
-#include "hz_config.h"  // feature macros
-
-// #if defined ENABLE_GLIB && ENABLE_GLIB
-// 	#include <glib.h>  // lotsa stuff...
-// #endif
-
 
 // This header is mainly internal.
 

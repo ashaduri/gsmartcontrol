@@ -218,8 +218,8 @@ class Cmdex : public hz::ErrorHolder {
 
 
 		// default command and its args. std::strings, not ustrings.
-		std::string command_exec_;  /// Binary name to execute. NOT affected by cleanup_members().
-		std::string command_args_;  /// Arguments that always go with the binary. NOT affected by cleanup_members().
+		std::string command_exec_{ };  /// Binary name to execute. NOT affected by cleanup_members().
+		std::string command_args_{ };  /// Arguments that always go with the binary. NOT affected by cleanup_members().
 
 
 		bool running_ = false;  ///< If true, the child process is running now. NOT affected by cleanup_members().
@@ -248,17 +248,17 @@ class Cmdex : public hz::ErrorHolder {
 		guint event_source_id_stdout_ = 0;  ///< IO watcher event source ID for stdout
 		guint event_source_id_stderr_ = 0;  ///< IO watcher event source ID for stderr
 
-		std::string str_stdout_;  ///< stdout data read during execution. NOT affected by cleanup_members().
-		std::string str_stderr_;  ///< stderr data read during execution. NOT affected by cleanup_members().
+		std::string str_stdout_{ };  ///< stdout data read during execution. NOT affected by cleanup_members().
+		std::string str_stderr_{ };  ///< stderr data read during execution. NOT affected by cleanup_members().
 
 
 		// signals
 
 		// convert command exit status to message string
-		exit_status_translator_func_t translator_func_;  ///< Exit status translator function. NOT affected by cleanup_members().
+		exit_status_translator_func_t translator_func_{ };  ///< Exit status translator function. NOT affected by cleanup_members().
 
 		// "command exited" signal callback.
-		exited_callback_func_t exited_callback_;  ///< Exit notifier function. NOT affected by cleanup_members().
+		exited_callback_func_t exited_callback_{ };  ///< Exit notifier function. NOT affected by cleanup_members().
 
 };
 

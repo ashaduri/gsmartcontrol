@@ -13,9 +13,8 @@
 #define APP_UI_RES_UTILS_H
 
 #include <string>
+#include <utility>
 #include <gtkmm.h>
-
-#include "hz/hz_config.h"  // feature test macros (ENABLE_*)
 
 #include "hz/debug.h"
 #include "hz/instance_manager.h"
@@ -72,10 +71,10 @@ inline bool app_ui_res_create_from(Glib::RefPtr<Gtk::Builder>& ref,
 /// \c ui_element, where \c ui_element is the widget's gtkbuilder name.
 #define APP_UI_RES_CONNECT(ui_element, signal_name, callback) \
 	if (true) { \
-		if (!ui_element) \
+		if (!(ui_element)) \
 			 this->lookup_object(#ui_element, ui_element); \
 		if (ui_element) { \
-			ui_element->signal_ ## signal_name ().connect(sigc::mem_fun(*this, &self_type::callback)); \
+			(ui_element)->signal_ ## signal_name ().connect(sigc::mem_fun(*this, &self_type::callback)); \
 		} \
 	} else (void)0
 
@@ -160,7 +159,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 		template<typename WidgetPtr>
 		WidgetPtr lookup_widget(const Glib::ustring& name)
 		{
-			WidgetPtr w = 0;
+			WidgetPtr w = nullptr;
 			return lookup_widget(name, w);
 		}
 
@@ -185,7 +184,7 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 		template<typename ObjectPtr>
 		ObjectPtr lookup_object(const Glib::ustring& name)
 		{
-			ObjectPtr obj = 0;
+			ObjectPtr obj = nullptr;
 			return lookup_object(name, obj);
 		}
 
@@ -209,8 +208,8 @@ class AppUIResWidget : public WidgetType, public hz::InstanceManager<Child, Mult
 
 		/// GtkBuilder needs this constructor in a child.
 		/// BaseObjectType is a C type, defined in specific Gtk:: widget class.
-		AppUIResWidget(typename WidgetType::BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui)
-				: WidgetType(gtkcobj), ref_ui_(ref_ui)
+		AppUIResWidget(typename WidgetType::BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ref_ui)
+				: WidgetType(gtkcobj), ref_ui_(std::move(ref_ui))
 		{
 			// manually connecting signals:
 			// this->signal_delete_event().connect(sigc::mem_fun(*this, &MainWindow::on_main_window_delete));

@@ -33,7 +33,7 @@ std::string debug_format_message(debug_level::flag level, const std::string& dom
 		}
 
 		if (format_flags.to_ulong() & debug_format::level) {  // print level name
-			bool use_color = (format_flags.to_ulong() & debug_format::color);
+			bool use_color = bool(format_flags.to_ulong() & debug_format::color);
 			if (use_color)
 				ret += debug_level::get_color_start(level);
 
@@ -53,7 +53,6 @@ std::string debug_format_message(debug_level::flag level, const std::string& dom
 
 	if (format_flags.to_ulong() & debug_format::indent) {
 		std::string spaces(static_cast<std::size_t>(indent_level * 4), ' ');  // indentation spaces
-// 		std::cerr << "MSG: " << msg;
 
 		// replace all newlines with \n(indent-spaces) except for the last one.
 		std::string::size_type oldpos = 0, pos = 0;
@@ -71,17 +70,11 @@ std::string debug_format_message(debug_level::flag level, const std::string& dom
 
 			ret.append(msg, oldpos, pos - oldpos);
 			oldpos = pos;
-
-// 			pos = std::string::npos;
-// 			ret.append(msg);
 		}
 
 	} else {
 		ret += msg;
 	}
-
-// 	std::cerr << "FINAL MSG: " << ret;
-
 
 	return ret;
 }

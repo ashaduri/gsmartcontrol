@@ -47,8 +47,8 @@ class ExecutorFactory {
 
 	private:
 
-		bool use_gui_;  ///< Whether to construct GUI executors or not.
-		Gtk::Window* parent_;  ///< Parent window for dialogs
+		bool use_gui_ = false;  ///< Whether to construct GUI executors or not.
+		Gtk::Window* parent_ = nullptr;  ///< Parent window for dialogs
 
 };
 

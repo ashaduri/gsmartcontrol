@@ -12,8 +12,6 @@
 #ifndef HZ_ERROR_H
 #define HZ_ERROR_H
 
-#include "hz_config.h"  // feature macros
-
 #include <string>
 #include <exception>  // for std::exception specialization
 #include <typeinfo>  // std::type_info
@@ -56,8 +54,15 @@ class Error;
 class ErrorBase {
 	public:
 
-		DEFINE_BAD_CAST_EXCEPTION(type_mismatch,
-				"Error type mismatch. Original type: \"%s\", requested type: \"%s\".", "Error type mismatch.");
+		// This is thrown in case of type conversion error
+		class type_mismatch : public hz::bad_cast_except {
+			public:
+				type_mismatch(const std::type_info& src, const std::type_info& dest)
+					: hz::bad_cast_except(src, dest, "type_mismatch",
+						"Error: type mismatch. Original type: \"%s\", requested type: \"%s\".")
+				{ }
+		};
+
 
 		/// Constructor
 		ErrorBase(const std::string& type_, ErrorLevel level_, const std::string& msg)

@@ -85,15 +85,12 @@ DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(noinst_HEADERS)
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps =  \
-	$(top_srcdir)/autoconf.m4/ac_cxx_verbose_terminate_handler.m4 \
 	$(top_srcdir)/autoconf.m4/app_auto_clear_flags.m4 \
 	$(top_srcdir)/autoconf.m4/app_compiler_options.m4 \
 	$(top_srcdir)/autoconf.m4/app_detect_os.m4 \
 	$(top_srcdir)/autoconf.m4/app_get_mt_flags.m4 \
-	$(top_srcdir)/autoconf.m4/app_use_system_extensions.m4 \
 	$(top_srcdir)/autoconf.m4/ax_compiler_vendor.m4 \
 	$(top_srcdir)/autoconf.m4/ax_cxx_compile_stdcxx.m4 \
-	$(top_srcdir)/autoconf.m4/ax_cxx_gcc_abi_demangle.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)

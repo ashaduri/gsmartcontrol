@@ -12,10 +12,19 @@
 #ifndef HZ_STRING_SPRINTF_H
 #define HZ_STRING_SPRINTF_H
 
-#include "hz_config.h"  // feature macros
-
 
 // Define ENABLE_GLIB to 1 to enable glib string functions (more portable?).
+
+
+/// \def HAVE_VASPRINTF
+/// Defined to 0 or 1. If 1, the compiler has vasprintf() (GNU/glibc extension).
+#ifndef HAVE_VASPRINTF
+#if defined _GNU_SOURCE
+		#define HAVE_VASPRINTF 1
+	#else
+		#define HAVE_VASPRINTF 0
+	#endif
+#endif
 
 
 #include <string>
@@ -50,8 +59,6 @@ format specifiers (see HZ_FUNC_PRINTF_CHECK).
 %I64d, %lld (long long int),
 %I64u, %llu (unsigned long long int),
 %f, %Lf (long double; needs casting to double under non-ANSI mingw if using %f).
-
-See string_sprintf_macros.h on how to test the feature availability.
 */
 
 

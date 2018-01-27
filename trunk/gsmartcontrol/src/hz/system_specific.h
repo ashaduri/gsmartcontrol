@@ -12,12 +12,23 @@
 #ifndef HZ_SYSTEM_SPECIFIC_H
 #define HZ_SYSTEM_SPECIFIC_H
 
-#include "hz_config.h"  // feature macros
-
 /**
 \file
 System/compiler-specific stuff goes here...
 */
+
+
+/// \def HAVE_GCC_ABI_DEMANGLE
+/// Defined to 0 or 1. If 1, compiler supports \::abi::__cxa_demangle.
+#ifndef HAVE_GCC_ABI_DEMANGLE
+// This also works with intel/linux (__GNUC__ is defined by default in it).
+	#if defined __GNUC__
+		#define HAVE_GCC_ABI_DEMANGLE 1
+	#else
+		#define HAVE_GCC_ABI_DEMANGLE 0
+	#endif
+#endif
+
 
 /// \def HZ_GCC_CHECK_VERSION(major, minor, micro)
 /// returns true if gcc version is greater or equal to specified.

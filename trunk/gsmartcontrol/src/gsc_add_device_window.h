@@ -66,7 +66,7 @@ class GscAddDeviceWindow : public AppUIResWidget<GscAddDeviceWindow, true> {
 
 	private:
 
-		GscMainWindow* main_window_;  ///< The main window that created us
+		GscMainWindow* main_window_ = nullptr;  ///< The main window that created us
 
 };
 

@@ -12,9 +12,7 @@
 #ifndef HZ_STRING_NUM_H
 #define HZ_STRING_NUM_H
 
-#include "hz_config.h"  // feature macros
 #include <string>
-
 #include <sstream>
 #include <iomanip>  // setbase, setprecision, setw
 #include <ios>  // std::fixed, std::internal

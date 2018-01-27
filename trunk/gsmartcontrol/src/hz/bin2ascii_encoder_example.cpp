@@ -27,9 +27,7 @@
 /// Main function for the test
 int main()
 {
-
-	std::string s = "adbeq 2dd +-23\nqqq#4 $";
-
+	const std::string s = "adbeq 2dd +-23\nqqq#4 $";
 
 	hz::Bin2AsciiEncoder enc;
 
@@ -39,9 +37,6 @@ int main()
 	std::cerr << "Original: \"" << s << "\"\n";
 	std::cerr << "Encoded:  \"" << e << "\"\n";
 	std::cerr << "Decoded:  \"" << d << "\"\n";
-
-
-
 
 	return 0;
 }

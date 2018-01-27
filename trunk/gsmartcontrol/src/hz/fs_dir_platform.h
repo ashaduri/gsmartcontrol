@@ -12,8 +12,6 @@
 #ifndef HZ_FS_DIR_PLATFORM_H
 #define HZ_FS_DIR_PLATFORM_H
 
-#include "hz_config.h"  // feature macros
-
 #include <string>
 
 #ifdef _WIN32
@@ -107,7 +105,7 @@ inline std::string directory_entry_name(directory_entry_handle_type entry)
 namespace internal {
 
 	struct DirectoryEntry {
-		const wchar_t* d_name = 0;  // this is owned by Directory's data field. utf-16.
+		const wchar_t* d_name = nullptr;  // this is owned by Directory's data field. utf-16.
 	};
 
 	struct Directory {

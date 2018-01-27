@@ -12,8 +12,6 @@
 #ifndef HZ_FS_PATH_UTILS_H
 #define HZ_FS_PATH_UTILS_H
 
-#include "hz_config.h"  // feature macros
-
 #include <string>
 
 #if !defined _WIN32

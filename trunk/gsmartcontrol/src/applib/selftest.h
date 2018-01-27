@@ -59,20 +59,7 @@ class SelfTest {
 		/// Constructor. \c drive must have the capabilities present in its properties.
 		SelfTest(StorageDevicePtr drive, TestType type)
 			: drive_(drive), type_(type)
-		{
-			clear();
-		}
-
-
-		/// Clear results of previous test
-		void clear()
-		{
-			status_ = StorageSelftestEntry::Status::unknown;
-			remaining_percent_ = -1;
-			last_seen_percent_ = -1;
-			total_duration_ = std::chrono::seconds(-1);
-			poll_in_seconds_ = std::chrono::seconds(-1);
-		}
+		{ }
 
 
 		/// Check if the test is currently active
@@ -124,7 +111,8 @@ class SelfTest {
 		bool is_supported() const;
 
 
-		/// Start the test.
+		/// Start the test. Note that this object is not reusable, start() must be called
+		/// only on newly constructed objects.
 		/// \return error message on error, empty string on success.
 		std::string start(const std::shared_ptr<CmdexSync>& smartctl_ex = nullptr);
 
@@ -142,14 +130,14 @@ class SelfTest {
 	private:
 
 		StorageDevicePtr drive_;  ///< Drive to run the tests on
-		TestType type_;  ///< Test type
+		TestType type_ = TestType::short_test;  ///< Test type
 
 		// status variables:
-		StorageSelftestEntry::Status status_;  ///< Current status of the test as reported by the drive
-		int8_t remaining_percent_;  ///< Remaining %. 0 means unknown, -1 means N/A. This is set to 100 on start.
-		int8_t last_seen_percent_;  ///< Last reported %, to detect changes in percentage (needed for timer update).
-		mutable std::chrono::seconds total_duration_;  ///< Total duration needed for the test, as reported by the drive. Constant. This variable acts as a cache.
-		std::chrono::seconds poll_in_seconds_;  ///< The user is asked to poll after this much seconds have passed.
+		StorageSelftestEntry::Status status_ = StorageSelftestEntry::Status::unknown;  ///< Current status of the test as reported by the drive
+		int8_t remaining_percent_ = -1;  ///< Remaining %. 0 means unknown, -1 means N/A. This is set to 100 on start.
+		int8_t last_seen_percent_ = -1;  ///< Last reported %, to detect changes in percentage (needed for timer update).
+		mutable std::chrono::seconds total_duration_ = std::chrono::seconds(-1);  ///< Total duration needed for the test, as reported by the drive. Constant. This variable acts as a cache.
+		std::chrono::seconds poll_in_seconds_ = std::chrono::seconds(-1);  ///< The user is asked to poll after this much seconds have passed.
 
 		Glib::Timer timer_;  ///< Counts time since the last percent change
 

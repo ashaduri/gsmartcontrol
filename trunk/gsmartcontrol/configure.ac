@@ -13,19 +13,15 @@ AM_INIT_AUTOMAKE([foreign no-dist-gzip dist-bzip2 -Wall])
 APP_AUTO_CLEAR_FLAGS()
 
 # C compiler, C preprocessor
-AC_PROG_CC
-#AM_PROG_CC_STDC
-#AC_PROG_CPP
+#AC_PROG_CC
 
 # C++ compiler
 AC_PROG_CXX
-#AC_PROG_CXXCPP
 
 #AM_PROG_LIBTOOL
 AM_PROG_AR
 
 # C++ support in checks
-#AC_LANG([C])
 AC_LANG([C++])
 
 # Needed for generating static libs
@@ -76,20 +72,44 @@ if test "$app_cv_target_os_env" != "mingw32" && test "$app_cv_target_os_env" != 
 	APP_GET_MT_FLAGS([])
 fi
 
-# Enable _GNU_SOURCE, etc...
-APP_USE_SYSTEM_EXTENSIONS([])
+# Enable system extensions. Somewhat follows AC_USE_SYSTEM_EXTENSIONS.
+case "$app_cv_target_os_env" in
+	gnu)
+		# glibc all-extensions macro: _GNU_SOURCE.
+		# Defined automatically when used with glibc, but not others.
+		CXXFLAGS="$CXXFLAGS -D_GNU_SOURCE"
+		;;
+	solaris)
+		# The problem with solaris is that it has too many incompatible
+		# feature test macros, and there is no enable-all macro. Autoconf
+		# assumes that __EXTENSIONS__ is the one, but it should be defined
+		# _in addition_ to feature test macros. Note that on its own, __EXTENSIONS__
+		# still enables some useful stuff like _LARGEFILE64_SOURCE.
+		# To support some posix macros, additional link objects are also required.
+		# Some *_SOURCE feature test macros may be incompatible with C++.
+		# http://docs.sun.com/app/docs/doc/816-5175/standards-5?a=view
+		CXXFLAGS="$CXXFLAGS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS"
+		;;
+	mingw*)
+		# This enables standards-compliant stdio behaviour (regarding printf and
+		# friends), as opposed to msvc-compatible one. This is usually enabled
+		# by default if one of the usual macros are encountered (_XOPEN_SOURCE,
+		# _GNU_SOURCE, etc...).
+		# See _mingw.h for details.
+		CXXFLAGS="$CXXFLAGS -D__USE_MINGW_ANSI_STDIO=1 -DWINVER=0x0600"  # Since Vista
+		;;
+	darwin*)
+		# Enable large file support.
+		CXXFLAGS="$CXXFLAGS -D_DARWIN_USE_64_BIT_INODE=1"
+esac
 
-# Arrange large file support (define _FILE_OFFSET_BITS 64, etc...)
+# In many environments this enables large file support
+CXXFLAGS="$CXXFLAGS -D_FILE_OFFSET_BITS=64"
+
+
+# Arrange large file support (define _FILE_OFFSET_BITS 64, etc...).
+# Adds the special flags to CC.
 AC_SYS_LARGEFILE
-
-
-# ------------- Language / Standard Library checks
-
-# detect abi::__cxa_demangle (defines HAVE_GCC_ABI_DEMANGLE)
-AX_CXX_GCC_ABI_DEMANGLE
-
-# detect __gnu_cxx::__verbose_terminate_handler (defines HAVE_VERBOSE_TERMINATE_HANDLER.)
-AC_CXX_VERBOSE_TERMINATE_HANDLER
 
 
 # -------------------------------------------------------------------------------------
@@ -98,7 +118,7 @@ AC_CXX_VERBOSE_TERMINATE_HANDLER
 # Non-standard feature checks
 
 # getrawpartition() for netbsd and openbsd in -lutil.
-AC_CHECK_LIB(util, getrawpartition, [ 	LIBS="$LIBS -lutil" ])
+AC_CHECK_LIB(util, getrawpartition, [ LIBS="$LIBS -lutil" ])
 
 
 # -------------------------------------------------------------------------------------
@@ -113,13 +133,6 @@ AM_CONDITIONAL([ENABLE_EXAMPLES], [test "$with_examples" = "yes"])
 
 # -------------------------------------------------------------------------------------
 
-
-AC_ARG_ENABLE(abort-if-no-gtkmm, AS_HELP_STRING([--disable-abort-if-no-gtkmm],
-		[disable abort if no gtkmm is found (default: configure aborts when gtkmm is not found)]),
-	[app_cv_abort_if_no_gtkmm=${enableval}], [app_cv_abort_if_no_gtkmm=yes])
-
-AC_MSG_NOTICE([Abort if no gtkmm is found: $app_cv_abort_if_no_gtkmm])
-
 pkg_modules="gtkmm-3.0 >= 3.4.0"
 
 # define ENABLE_GLIB and friends if it's found.
@@ -128,25 +141,11 @@ gtkmm_found="no"
 PKG_CHECK_MODULES([GTKMM], [$pkg_modules],
 		[gtkmm_found="yes"], [gtkmm_found="no"])
 
-if test "x$gtkmm_found" = "xyes"; then
-	AC_DEFINE([ENABLE_GLIB], [1], [Defined to 1 if GLib is installed, 0 otherwise])
-	AC_DEFINE([ENABLE_GLIBMM], [1], [Defined to 1 if glibmm is installed, 0 otherwise])
-else
-	AC_DEFINE([ENABLE_GLIB], [0], [Defined to 1 if GLib is installed, 0 otherwise])
-	AC_DEFINE([ENABLE_GLIBMM], [0], [Defined to 1 if glibmm is installed, 0 otherwise])
-fi
-
 if test "x$gtkmm_found" = "xno"; then
-	if test "x$app_cv_abort_if_no_gtkmm" = "xno"; then
-		AC_MSG_WARN([$GTKMM_PKG_ERRORS])
-		AC_MSG_WARN([The program will be unable to compile fully.])
-	else
-		AC_MSG_ERROR([$GTKMM_PKG_ERRORS])
-	fi
+	AC_MSG_ERROR([$GTKMM_PKG_ERRORS])
 fi
 
-#CFLAGS="$GTKMM_CFLAGS $CFLAGS"
-CXXFLAGS="$GTKMM_CFLAGS $CXXFLAGS"
+CXXFLAGS="$GTKMM_CFLAGS -DENABLE_GLIB=1 -DENABLE_GLIBMM=1 $CXXFLAGS"
 LIBS="$GTKMM_LIBS $LIBS"
 
 
@@ -171,7 +170,6 @@ if test "x$pcrecpp_found" = "xno"; then
 	fi
 fi
 
-CFLAGS="$CFLAGS $PCRECPP_CFLAGS"
 CXXFLAGS="$CXXFLAGS $PCRECPP_CFLAGS"
 LIBS="$LIBS $PCRECPP_LIBS"
 
@@ -323,12 +321,8 @@ ADDITIONAL_FLAGS="-DPACKAGE_PKGDATA_DIR=\"\\\"\$(pkgdatadir)\\\"\" \
 -DPACKAGE_SYSCONF_DIR=\"\\\"\$(sysconfdir)\\\"\" \
 -DTOP_SRC_DIR=\"\\\"\$(top_srcdir)\\\"\" \
 -DHZ_USE_LIBDEBUG=1 \
--DHZ_ENABLE_COMPILED_RES_DATA=1 \
--DPICOJSON_USE_INT64 \
--DPICOJSON_USE_RVALUE_REFERENCE \
--DPICOJSON_USE_LOCALE=0"
+-DHZ_ENABLE_COMPILED_RES_DATA=1"
 
-#CFLAGS="$CFLAGS $ADDITIONAL_FLAGS"
 CXXFLAGS="$CXXFLAGS $ADDITIONAL_FLAGS"
 
 
@@ -352,7 +346,6 @@ ADDITIONAL_INCLUDES="-I\$(top_builddir) -I\$(top_srcdir)/src"
 # fi
 
 # our flags must be before all the others
-#CFLAGS="$ADDITIONAL_INCLUDES $CFLAGS"
 CXXFLAGS="$ADDITIONAL_INCLUDES $CXXFLAGS"
 
 

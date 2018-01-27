@@ -9,8 +9,6 @@
 /// \weakgroup libdebug
 /// @{
 
-#include "hz/hz_config.h"  // ENABLE_GLIB, DEBUG_BUILD
-
 #if defined ENABLE_GLIB && ENABLE_GLIB
 
 #include <string>
@@ -94,7 +92,7 @@ static gboolean debug_internal_parse_levels([[maybe_unused]] const gchar* option
 {
 	if (!value)
 		return false;
-	debug_internal::DebugCmdArgs* args = static_cast<debug_internal::DebugCmdArgs*>(data);
+	auto* args = static_cast<debug_internal::DebugCmdArgs*>(data);
 	std::string levels = value;
 	hz::string_split(levels, ',', args->debug_levels, true);
 	// will filter out invalid ones later
@@ -107,7 +105,7 @@ static gboolean debug_internal_parse_levels([[maybe_unused]] const gchar* option
 static gboolean debug_internal_post_parse_func([[maybe_unused]] GOptionContext* context,
 		[[maybe_unused]] GOptionGroup *group, gpointer data, [[maybe_unused]] GError** error)
 {
-	debug_internal::DebugCmdArgs* args = static_cast<debug_internal::DebugCmdArgs*>(data);
+	auto* args = static_cast<debug_internal::DebugCmdArgs*>(data);
 
 	if (!args->debug_levels.empty()) {  // no string levels on command line given
 		args->levels_enabled = debug_level::none;  // reset
@@ -138,25 +136,23 @@ static gboolean debug_internal_post_parse_func([[maybe_unused]] GOptionContext* 
 		if (args->verbosity_level > 4) args->levels_enabled |= debug_level::dump;
 	}
 
-	bool color_enabled = args->debug_colorize;
+	bool color_enabled = static_cast<bool>(args->debug_colorize);
 
 
 	unsigned long levels_enabled_ulong = args->levels_enabled.to_ulong();
 	debug_internal::DebugState::domain_map_t& dm = debug_internal::get_debug_state().get_domain_map();
 
-	for (debug_internal::DebugState::domain_map_t::iterator iter = dm.begin(); iter != dm.end(); ++iter) {
-		for (debug_internal::DebugState::level_map_t::iterator iter2 = iter->second.begin(); iter2 != iter->second.end(); ++iter2) {
+	for (auto& iter : dm) {
+		for (auto& iter2 : iter.second) {
+			iter2.second->set_enabled(bool(levels_enabled_ulong & iter2.first));
 
-			iter2->second->set_enabled(levels_enabled_ulong & iter2->first);
-
-			debug_format::type format = iter2->second->get_format();
+			debug_format::type format = iter2.second->get_format();
 			if (color_enabled) {
 				format |= debug_format::color;
 			} else {
 				format &= ~(unsigned long)debug_format::color;
 			}
-			iter2->second->set_format(format);
-
+			iter2.second->set_format(format);
 		}
 	}
 

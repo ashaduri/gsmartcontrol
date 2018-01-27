@@ -12,7 +12,7 @@
 # flags_prefixCFLAGS, flags_prefixCXXFLAGS and flags_prefixLDFLAGS
 # will be initialized (or appended to) with the results.
 
-# DEBUG and DEBUG_BUILD will be exported to config.h in case of debug builds.
+# DEBUG and DEBUG_BUILD will be defined for debug builds.
 
 # You must call AX_COMPILER_VENDOR, APP_DETECT_OS_KERNEL([target], ...)
 # and APP_DETECT_OS_ENV([target], ...) before using this macro.
@@ -123,9 +123,9 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 
 	if test "x$app_cv_compiler_debug_options" != "xnone"; then
 
-		# Define DEBUG and DEBUG_BUILD for debug builds (through config.h).
-		AC_DEFINE([DEBUG], [1], [Defined for debug builds])
-		AC_DEFINE([DEBUG_BUILD], [1], [Defined for debug builds])
+		# Define DEBUG and DEBUG_BUILD for debug builds.
+		app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -DDEBUG=1 -DDEBUG_BUILD=1";
+        app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -DDEBUG=1 -DDEBUG_BUILD=1";
 
 		# gcc, mingw
 		if test "x$app_cv_compiler_debug_options" = "xgnu" || test "x$app_cv_compiler_debug_options" = "xclang"; then
@@ -148,7 +148,6 @@ AC_DEFUN([APP_COMPILER_OPTIONS], [
 			app_cv_compiler_options_cflags="$app_cv_compiler_options_cflags -xs -g";
 			app_cv_compiler_options_cxxflags="$app_cv_compiler_options_cxxflags -xs -g";
 			app_cv_compiler_options_ldflags="$app_cv_compiler_options_ldflags -xs -g";
-
 		fi
 
 	fi

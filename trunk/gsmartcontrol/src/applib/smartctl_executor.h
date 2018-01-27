@@ -98,8 +98,7 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 
 			hz::ErrorBase* e = nullptr;
 			// find the last relevant error.
-			// note: const_reverse_iterator doesn't work on gcc 3, so don't do it.
-			for (auto iter = errors.rbegin(); iter != errors.rend(); ++iter) {
+			for (auto iter = errors.crbegin(); iter != errors.crend(); ++iter) {
 				// ignore iochannel errors, they may mask the real errors
 				if ((*iter)->get_type() != "giochannel" && (*iter)->get_type() != "custom") {
 					e = (*iter)->clone();

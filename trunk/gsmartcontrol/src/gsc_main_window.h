@@ -157,20 +157,20 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 
 	private:
 
-		GscMainWindowIconView* iconview;  ///< The main icon view, as created by obj_create()
+		GscMainWindowIconView* iconview = nullptr;  ///< The main icon view, as created by obj_create()
 		std::vector<StorageDevicePtr> drives;  ///< Scanned drives
 
 		Glib::RefPtr<Gtk::UIManager> ui_manager;  ///< UI manager
 		Glib::RefPtr<Gtk::ActionGroup> actiongroup_main;  ///< Action group
 		Glib::RefPtr<Gtk::ActionGroup> actiongroup_device;  ///< Action group
-		bool action_handling_enabled_;  ///< Whether action handling is enabled or not
+		bool action_handling_enabled_ = true;  ///< Whether action handling is enabled or not
 		std::map<action_t, Glib::RefPtr<Gtk::Action> > action_map;  ///< Used by on_action_activated().
 
-		Gtk::Label* name_label;  ///< A UI label
-		Gtk::Label* health_label;  ///< A UI label
-		Gtk::Label* family_label;  ///< A UI label
+		Gtk::Label* name_label = nullptr;  ///< A UI label
+		Gtk::Label* health_label = nullptr;  ///< A UI label
+		Gtk::Label* family_label = nullptr;  ///< A UI label
 
-		bool scanning_;  ///< If the scanning is in process or not
+		bool scanning_ = false;  ///< If the scanning is in process or not
 
 };
 

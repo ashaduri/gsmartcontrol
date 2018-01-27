@@ -8,8 +8,6 @@
 #ifndef HZ_LEXICAL_CAST_H
 #define HZ_LEXICAL_CAST_H
 
-#include "hz_config.h"  // feature macros
-
 #include <cstddef>  // std::size_t
 #include <string>
 #include <sstream>
@@ -98,37 +96,27 @@ namespace internal {
 	};
 
 
-
-	// call-by-const reference version
-
-	template<class T>
-	struct array_to_pointer_decay {
-		typedef T type;
-	};
-
-	template<class T, std::size_t N>
-	struct array_to_pointer_decay<T[N]> {
-		typedef const T* type;
-	};
-
-
-
 }  // ns internal
 
 
 
 
 /// This is thrown in case of cast failure
-DEFINE_BAD_CAST_EXCEPTION(bad_stream_cast,
-		"Failed stream_cast from \"%s\" to \"%s\".", "Failed stream_cast.");
+class bad_stream_cast : public hz::bad_cast_except {
+	public:
+		bad_stream_cast(const std::type_info& src, const std::type_info& dest)
+				: hz::bad_cast_except(src, dest, "bad_stream_cast",
+				"Failed stream_cast from \"%s\" to \"%s\".")
+		{ }
+};
 
 
 
 /// Stream cast - cast Source to Target using stream operators.
-template<typename Target, typename Source> inline
+template<typename Target, typename Source>
 Target stream_cast(const Source& arg)
 {
-	typedef typename internal::array_to_pointer_decay<Source>::type NewSource;
+	using NewSource = std::decay_t<Source>;
 
 	internal::lexical_stream<Target, NewSource> interpreter;
 	Target result;

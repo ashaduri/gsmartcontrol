@@ -12,8 +12,6 @@
 #ifndef HZ_DEBUG_H
 #define HZ_DEBUG_H
 
-#include "hz_config.h"  // feature macros
-
 #include <cstdio>  // std::fprintf(), std::vfprintf()
 
 #ifndef __GNUC__

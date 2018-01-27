@@ -52,9 +52,7 @@
 
 
 GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui)
-		: AppUIResWidget<GscMainWindow, false>(gtkcobj, ref_ui), iconview(0),
-		action_handling_enabled_(true), name_label(0), health_label(0), family_label(0),
-		scanning_(false)
+		: AppUIResWidget<GscMainWindow, false>(gtkcobj, ref_ui)
 {
 	APP_GTKMM_CONNECT_VIRTUAL(delete_event);  // make sure the event handler is called
 
@@ -195,9 +193,9 @@ void GscMainWindow::populate_iconview(bool smartctl_valid)
 			if (!dev_with_type.empty()) {
 				std::vector<std::string> parts;
 				hz::string_split(dev_with_type, "::", parts, false);
-				std::string file = (parts.size() > 0 ? parts.at(0) : "");
-				std::string type_arg = (parts.size() > 1 ? parts.at(1) : "");
-				std::string extra_args = (parts.size() > 2 ? parts.at(2) : "");
+				std::string file = (!parts.empty() ? parts.at(0) : std::string());
+				std::string type_arg = (parts.size() > 1 ? parts.at(1) : std::string());
+				std::string extra_args = (parts.size() > 2 ? parts.at(2) : std::string());
 				if (!file.empty()) {
 					add_device(file, type_arg, extra_args);
 				}
@@ -442,33 +440,26 @@ bool GscMainWindow::create_widgets()
 	// ----------------------------------------- Labels
 
 	// create and add labels
-	Gtk::Box* name_label_box = lookup_widget<Gtk::Box*>("status_name_label_hbox");
-	if (name_label_box) {
-		name_label = Gtk::manage(new Gtk::Label("No drive selected", Gtk::ALIGN_START));
-		name_label->set_line_wrap(true);
-		name_label->set_selectable(true);
-		name_label->show();
-		name_label_box->pack_start(*name_label, true, true);
-	}
+	auto* name_label_box = lookup_widget<Gtk::Box*>("status_name_label_hbox");
+	name_label = Gtk::manage(new Gtk::Label("No drive selected", Gtk::ALIGN_START));
+	name_label->set_line_wrap(true);
+	name_label->set_selectable(true);
+	name_label->show();
+	name_label_box->pack_start(*name_label, true, true);
 
-	Gtk::Box* health_label_box = lookup_widget<Gtk::Box*>("status_health_label_hbox");
-	if (health_label_box) {
-		health_label = Gtk::manage(new Gtk::Label("No drive selected", Gtk::ALIGN_START));
-		health_label->set_line_wrap(true);
-		health_label->set_selectable(true);
-		health_label->show();
-		health_label_box->pack_start(*health_label, true, true);
-	}
+	auto* health_label_box = lookup_widget<Gtk::Box*>("status_health_label_hbox");
+	health_label = Gtk::manage(new Gtk::Label("No drive selected", Gtk::ALIGN_START));
+	health_label->set_line_wrap(true);
+	health_label->set_selectable(true);
+	health_label->show();
+	health_label_box->pack_start(*health_label, true, true);
 
-	Gtk::Box* family_label_box = lookup_widget<Gtk::Box*>("status_family_label_hbox");
-	if (family_label_box) {
-		family_label = Gtk::manage(new Gtk::Label("No drive selected", Gtk::ALIGN_START));
-		family_label->set_line_wrap(true);
-		family_label->set_selectable(true);
-		family_label->show();
-		family_label_box->pack_start(*family_label, true, true);
-	}
-
+	auto* family_label_box = lookup_widget<Gtk::Box*>("status_family_label_hbox");
+	family_label = Gtk::manage(new Gtk::Label("No drive selected", Gtk::ALIGN_START));
+	family_label->set_line_wrap(true);
+	family_label->set_selectable(true);
+	family_label->show();
+	family_label_box->pack_start(*family_label, true, true);
 
 	return true;
 }
@@ -629,12 +620,11 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 			break;
 		}
 
-		default:
-			debug_out_error("app", DBG_FUNC_MSG << "Unknown action: \"" << action_name << "\"\n");
-			break;
+//		default:
+//			debug_out_error("app", DBG_FUNC_MSG << "Unknown action: \"" << action_name << "\"\n");
+//			break;
 	}
 }
-
 
 
 
@@ -673,7 +663,6 @@ void GscMainWindow::on_action_enable_smart_toggled(Gtk::ToggleAction* action)
 		on_action_reread_device_data();  // reread if changed
 	}
 }
-
 
 
 
@@ -1204,7 +1193,7 @@ GscInfoWindow* GscMainWindow::show_device_info_window(const StorageDevicePtr& dr
 	// if a test is being run on it, disallow.
 	if (drive->get_test_is_active()) {
 		gui_show_warn_dialog("Please wait until the test is finished on this drive.", this);
-		return 0;
+		return nullptr;
 	}
 
 	// ask to enable SMART if it's supported but disabled
@@ -1245,7 +1234,7 @@ GscInfoWindow* GscMainWindow::show_device_info_window(const StorageDevicePtr& dr
 
 		if (!error_msg.empty()) {
 			gsc_executor_error_dialog_show("Cannot retrieve SMART data", error_msg, this);
-			return 0;
+			return nullptr;
 		}
 	}
 
@@ -1256,7 +1245,7 @@ GscInfoWindow* GscMainWindow::show_device_info_window(const StorageDevicePtr& dr
 	if (drive->get_parse_status() == StorageDevice::ParseStatus::none) {
 		gsc_no_info_dialog_show("No additional information is available for this drive.",
 				"", this, false, drive->get_info_output(), "Smartctl Output", drive->get_save_filename());
-		return 0;
+		return nullptr;
 	}
 
 
@@ -1366,9 +1355,9 @@ void GscMainWindow::show_load_virtual_file_chooser()
 				last_dir = hz::path_get_dirname(files.front());
 			}
 			rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
-			for (size_t i = 0; i < files.size(); ++i) {
-				if (hz::File(files[i]).is_file()) {  // file chooser returns selected directories as well, ignore them.
-					this->add_virtual_drive(files[i]);
+			for (const auto& file : files) {
+				if (hz::File(file).is_file()) {  // file chooser returns selected directories as well, ignore them.
+					this->add_virtual_drive(file);
 				}
 			}
 			break;

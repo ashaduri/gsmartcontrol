@@ -12,8 +12,6 @@
 #include <iostream>  // std::cerr, the default output stream
 #include <map>
 
-#include "hz/hz_config.h"  // DEBUG_BUILD
-
 #include "dstate.h"
 #include "dflags.h"
 #include "dchannel.h"

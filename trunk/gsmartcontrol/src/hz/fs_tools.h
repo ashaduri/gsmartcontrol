@@ -12,8 +12,6 @@
 #ifndef HZ_FS_TOOLS_H
 #define HZ_FS_TOOLS_H
 
-#include "hz_config.h"  // feature macros
-
 #include <string>
 #include <cstddef>  // std::size_t
 
@@ -133,7 +131,7 @@ inline std::string get_current_dir()
 
 #ifdef _WIN32
 	wchar_t* buf = 0;
-	if (!(buf = _wgetcwd(NULL, 0))) {  // allocates buf with malloc()
+	if (!(buf = _wgetcwd(nullptr, 0))) {  // allocates buf with malloc()
 		return std::string();  // error
 	}
 

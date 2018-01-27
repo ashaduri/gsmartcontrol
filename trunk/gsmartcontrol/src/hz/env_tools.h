@@ -12,9 +12,23 @@
 #ifndef HZ_ENV_TOOLS_H
 #define HZ_ENV_TOOLS_H
 
-#include "hz_config.h"  // feature macros
-
 #include <string>
+
+
+/// \def HAVE_SETENV
+/// Defined to 0 or 1. If 1, the compiler has setenv() and unsetenv().
+#ifndef HAVE_SETENV
+// setenv(), unsetenv() glibc feature test macros:
+// _BSD_SOURCE || _POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600.
+// However, since they are available almost anywhere except windows,
+// we just test for that.
+	#if defined _WIN32
+		#define HAVE_SETENV 0
+	#else
+		#define HAVE_SETENV 1
+	#endif
+#endif
+
 
 #if defined _WIN32
 	#include <windows.h>  // winapi stuff

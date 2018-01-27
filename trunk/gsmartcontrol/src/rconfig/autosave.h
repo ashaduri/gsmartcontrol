@@ -12,8 +12,6 @@
 #ifndef RCONFIG_AUTOSAVE_H
 #define RCONFIG_AUTOSAVE_H
 
-#include "hz/hz_config.h"  // ENABLE_GLIB
-
 // Autosave functions are only available if GLib is enabled.
 #if !defined ENABLE_GLIB || !(ENABLE_GLIB)
 	#error "Glib support must be enabled."

@@ -14,9 +14,10 @@
 
 #include <string>
 
-#include "config.h"
 #include "hz/debug.h"
 #include "hz/fs_file.h"
+
+#include "config.h"
 
 
 
@@ -48,7 +49,7 @@ inline bool load_from_file(const std::string& file)
 
 
 
-/// Save the "/config" branch to a file.
+/// Save the config branch to a file.
 inline bool save_to_file(const std::string& file)
 {
 	std::string json_str = get_config_branch().dump(4);

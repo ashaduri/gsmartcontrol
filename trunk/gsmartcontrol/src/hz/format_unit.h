@@ -12,26 +12,34 @@
 #ifndef HZ_FORMAT_UNIT_H
 #define HZ_FORMAT_UNIT_H
 
-#include "hz_config.h"  // feature macros
-
 #include <string>
 #include <cstddef>  // std::size_t
 #include <ctime>  // for time.h, std::time, std::localtime, ...
+#include <time.h>  // localtime_r, localtime_s
 #include <iomanip>  // std::put_time
 #include <cstdint>
 #include <sstream>
+#include <chrono>
+
+#if defined __MINGW32__
+	#include <_mingw.h>  // MINGW_HAS_SECURE_API
+#endif
 
 #include "string_num.h"  // hz::number_to_string_locale
 #include "i18n.h"  // HZ_NC_, HZ_C_
 
 
-// HAVE_WIN_SE_FUNCS means localtime_s
-#if (defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS) \
-		|| !(defined HAVE_REENTRANT_LOCALTIME && HAVE_REENTRANT_LOCALTIME)
-	#include <time.h>  // localtime_r, localtime_s
-	#include <chrono>
-
+/// \def HAVE_REENTRANT_LOCALTIME
+/// Defined to 0 or 1. If 1, localtime() is reentrant.
+#ifndef HAVE_REENTRANT_LOCALTIME
+// win32 and solaris localtime() is reentrant
+	#if defined _WIN32 || defined sun || defined __sun
+		#define HAVE_REENTRANT_LOCALTIME 1
+	#else
+		#define HAVE_REENTRANT_LOCALTIME 0
+	#endif
 #endif
+
 
 
 
@@ -216,7 +224,7 @@ inline std::string format_date(const std::string& format, const struct std::tm* 
 /// See strftime() documentation for format details.
 inline std::string format_date(const std::string& format, std::time_t timet, bool use_classic_locale)
 {
-#if defined HAVE_WIN_SE_FUNCS && HAVE_WIN_SE_FUNCS
+#if defined MINGW_HAS_SECURE_API || defined _MSC_VER
 	struct std::tm ltm;
 	if (localtime_s(&ltm, &timet) != 0)  // shut up msvc (it thinks std::localtime() is unsafe)
 		return std::string();
