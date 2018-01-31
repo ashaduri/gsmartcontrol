@@ -14,6 +14,7 @@
 
 #include "cmdex.h"
 #include "cmdex_sync.h"
+#include "hz/fs_ns.h"
 
 
 
@@ -157,7 +158,7 @@ using SmartctlExecutor = SmartctlExecutorGeneric<CmdexSync>;
 
 
 /// Get smartctl binary (from config, etc...). Returns an empty string if not found.
-std::string get_smartctl_binary();
+hz::fs::path get_smartctl_binary();
 
 
 /// Execute smartctl on device \c device.

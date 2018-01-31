@@ -15,7 +15,6 @@
 #include <glibmm.h>  // Glib::shell_quote()
 
 #include "smartctl_executor.h"
-#include "hz/fs_path.h"
 #include "hz/win32_tools.h"
 #include "rconfig/config.h"
 #include "app_pcrecpp.h"
@@ -23,9 +22,9 @@
 
 
 
-std::string get_smartctl_binary()
+hz::fs::path get_smartctl_binary()
 {
-	std::string smartctl_binary = rconfig::get_data<std::string>("system/smartctl_binary");
+	auto smartctl_binary = hz::fs::u8path(rconfig::get_data<std::string>("system/smartctl_binary"));
 
 #ifdef _WIN32
 	// look in smartmontools installation directory.
@@ -56,13 +55,12 @@ std::string get_smartctl_binary()
 		debug_out_info("app", DBG_FUNC_MSG << "Smartmontools installation found at \"" << smt_inst_dir
 				<< "\", using \"" << smt_smartctl << "\".\n");
 
-		hz::FsPath p(smt_inst_dir);
-		p.append(smt_smartctl);
+		auto p = hz::fs::u8path(smt_inst_dir) / hz::fs::u8path(smt_smartctl);
 
-		if (!p.exists() || !p.is_file())
+		if (!hz::fs::exists(p) || !hz::fs::is_regular_file(p))
 			break;
 
-		smartctl_binary = p.str();
+		smartctl_binary = p;
 
 	} while (false);
 
@@ -90,7 +88,7 @@ std::string execute_smartctl(const std::string& device, const std::string& devic
 	if (!smartctl_ex)  // if it doesn't exist, create a default one
 		smartctl_ex = std::make_shared<SmartctlExecutor>();
 
-	std::string smartctl_binary = get_smartctl_binary();
+	auto smartctl_binary = get_smartctl_binary();
 
 	if (smartctl_binary.empty()) {
 		debug_out_error("app", DBG_FUNC_MSG << "Smartctl binary is not set in config.\n");
@@ -108,7 +106,7 @@ std::string execute_smartctl(const std::string& device, const std::string& devic
 		device_specific_options += " ";
 
 
-	smartctl_ex->set_command(Glib::shell_quote(smartctl_binary),
+	smartctl_ex->set_command(Glib::shell_quote(smartctl_binary.u8string()),
 			smartctl_def_options + device_specific_options + command_options
 			+ " " + Glib::shell_quote(device));
 

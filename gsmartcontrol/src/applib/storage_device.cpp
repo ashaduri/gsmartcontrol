@@ -13,8 +13,7 @@ License: See LICENSE_gsmartcontrol.txt
 
 #include "rconfig/config.h"
 #include "hz/string_algo.h"  // string_trim_copy, string_any_to_unix_copy
-#include "hz/fs_path.h"  // FsPath
-#include "hz/fs_path_utils.h"  // hz::filename_make_safe
+#include "hz/fs.h"
 #include "hz/format_unit.h"  // hz::format_date
 
 #include "app_pcrecpp.h"
@@ -63,7 +62,7 @@ StorageDevice::StorageDevice(std::string dev_or_vfile, bool is_virtual)
 	is_virtual_ = is_virtual;
 
 	if (is_virtual) {
-		virtual_file_ = std::move(dev_or_vfile);
+		virtual_file_ = hz::fs::u8path(dev_or_vfile);
 	} else {
 		device_ = std::move(dev_or_vfile);
 	}
@@ -631,16 +630,16 @@ bool StorageDevice::get_is_virtual() const
 
 
 
-std::string StorageDevice::get_virtual_file() const
+hz::fs::path StorageDevice::get_virtual_file() const
 {
-	return (is_virtual_ ? virtual_file_ : std::string());
+	return (is_virtual_ ? virtual_file_ : hz::fs::path());
 }
 
 
 
 std::string StorageDevice::get_virtual_filename() const
 {
-	return (is_virtual_ ? hz::FsPath(virtual_file_).get_basename() : std::string());
+	return (is_virtual_ ? virtual_file_.filename().u8string() : std::string());
 }
 
 
@@ -767,7 +766,7 @@ std::string StorageDevice::get_save_filename() const
 	hz::string_replace(filename_format, "{model}", model);
 	hz::string_replace(filename_format, "{date}", date);
 
-	return hz::filename_make_safe(filename_format);
+	return hz::fs_filename_make_safe(filename_format);
 }
 
 

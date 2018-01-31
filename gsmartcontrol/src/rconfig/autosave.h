@@ -22,7 +22,7 @@
 #include <glib.h>
 
 #include "hz/debug.h"
-#include "hz/fs_path.h"
+#include "hz/fs.h"
 
 #include "loadsave.h"
 
@@ -36,7 +36,7 @@ namespace rconfig {
 
 namespace impl {
 	
-	inline std::string autosave_config_file;  ///< Config file to autosave to.
+	inline hz::fs::path autosave_config_file;  ///< Config file to autosave to.
 	inline bool autosave_enabled = false;  ///< Autosave enabled or not. This acts as a stopper flag for autosave callback.
 
 }
@@ -53,11 +53,12 @@ extern "C" {
 		if (!force && !impl::autosave_enabled)  // no more autosaves
 			return false;  // remove timeout, disable autosave for real.
 
-		debug_print_info("rconfig", "Autosaving config to \"%s\".\n", impl::autosave_config_file.c_str());
+		auto file = impl::autosave_config_file;
+		debug_print_info("rconfig", "Autosaving config to \"%s\".\n", file.u8string().c_str());
 
-		hz::FsPath p(impl::autosave_config_file);
-		if ((p.exists() && !p.is_regular()) || !p.is_writable()) {
-			debug_out_error("rconfig", "Autosave failed: Cannot write to file: " << p.get_error_locale() << "\n");
+		std::error_code ec;
+		if ((hz::fs::exists(file, ec) && !hz::fs::is_regular_file(file, ec)) || !hz::fs_path_is_writable(file, ec)) {
+			debug_out_error("rconfig", "Autosave failed: Cannot write to file: " << ec.message() << "\n");
 			return !force;  // if manual, return failure. else, don't stop the timeout.
 		}
 
@@ -74,7 +75,7 @@ extern "C" {
 
 
 /// Set config file to autosave to.
-inline bool autosave_set_config_file(const std::string& file)
+inline bool autosave_set_config_file(const hz::fs::path& file)
 {
 	if (file.empty()) {
 		debug_print_error("rconfig", "autosave_set_config_file(): Error: Filename is empty.\n");
@@ -83,7 +84,7 @@ inline bool autosave_set_config_file(const std::string& file)
 
 	impl::autosave_config_file = file;
 
-	debug_print_info("rconfig", "Setting autosave config file to \"%s\"\n", file.c_str());
+	debug_print_info("rconfig", "Setting autosave config file to \"%s\"\n", file.u8string().c_str());
 	return true;
 }
 

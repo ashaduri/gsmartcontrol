@@ -36,8 +36,7 @@
 #include "rconfig/loadsave.h"
 #include "rconfig/autosave.h"
 #include "hz/data_file.h"  // data_file_add_search_directory
-#include "hz/fs_tools.h"  // get_user_config_dir()
-#include "hz/fs_path.h"  // FsPath
+#include "hz/fs.h"
 #include "hz/locale_tools.h"  // locale_c*
 #include "hz/string_algo.h"  // string_join()
 #include "hz/win32_tools.h"  // win32_get_registry_value_string()
@@ -55,7 +54,7 @@
 namespace {
 
 	/// Config file in user's HOME
-	std::string s_home_config_file;
+	hz::fs::path s_home_config_file;
 
 
 	/// Libdebug channel buffer
@@ -104,37 +103,35 @@ namespace {
 	/// Find the configuration files and load them.
 	inline bool app_init_config()
 	{
-		s_home_config_file = hz::get_user_config_dir() + hz::DIR_SEPARATOR_S
-				+ "gsmartcontrol" + hz::DIR_SEPARATOR_S + "gsmartcontrol2.conf";
+		s_home_config_file = hz::fs_get_user_config_dir() / "gsmartcontrol" / "gsmartcontrol2.conf";
 
-		std::string global_config_file;
-
+		// Default system-wide settings. This file is empty by default.
+		hz::fs::path global_config_file;
 	#ifdef _WIN32
-		global_config_file = "gsmartcontrol2.conf";  // CWD, installation dir by default.
+		global_config_file = hz::fs::u8path("gsmartcontrol2.conf");  // CWD, installation dir by default.
 	#else
-		global_config_file = std::string(PACKAGE_SYSCONF_DIR)
-				+ hz::DIR_SEPARATOR_S + "gsmartcontrol2.conf";
+		global_config_file = hz::fs::u8path(PACKAGE_SYSCONF_DIR) / "gsmartcontrol2.conf";
 	#endif
 
-		debug_out_dump("app", DBG_FUNC_MSG << "Global config file: \"" << global_config_file << "\"\n");
-		debug_out_dump("app", DBG_FUNC_MSG << "Local config file: \"" << s_home_config_file << "\"\n");
+		debug_out_dump("app", DBG_FUNC_MSG << "Global config file: \"" << global_config_file.u8string() << "\"\n");
+		debug_out_dump("app", DBG_FUNC_MSG << "Local config file: \"" << s_home_config_file.u8string() << "\"\n");
 
-		hz::FsPath gp(global_config_file);  // Default system-wide settings. This file is empty by default.
-		hz::FsPath hp(s_home_config_file);  // Per-user settings.
-
-		if (gp.exists() && gp.is_readable()) {  // load global first
-			rconfig::load_from_file(gp.str());
+		// load global first
+		std::error_code ec;
+		if (hz::fs::exists(global_config_file, ec) && hz::fs_path_is_readable(global_config_file, ec)) {
+			rconfig::load_from_file(global_config_file);
 		}
 
-		if (hp.exists() && hp.is_readable()) {  // load local
-			rconfig::load_from_file(hp.str());
+		// load local
+		if (hz::fs::exists(s_home_config_file, ec) && hz::fs_path_is_readable(s_home_config_file, ec)) {
+			rconfig::load_from_file(s_home_config_file);
 
 		} else {
 			// create the parent directories of the config file
-			hz::FsPath config_loc(hp.get_dirname());
-
-			if (!config_loc.exists()) {
-				config_loc.make_dir(0700, true);  // with parents.
+			hz::fs::path config_loc = s_home_config_file.parent_path();
+			if (!hz::fs::exists(config_loc, ec)) {
+				hz::fs::create_directories(config_loc, ec);
+				hz::fs::permissions(config_loc, hz::fs::perms::owner_all, ec);
 			}
 		}
 
@@ -233,7 +230,7 @@ namespace {
 			{ nullptr }
 		};
 
-		GError* error = 0;
+		GError* error = nullptr;
 		GOptionContext* context = g_option_context_new("- A GTK+ GUI for smartmontools");
 
 		// our options

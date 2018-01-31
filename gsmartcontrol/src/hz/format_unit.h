@@ -26,7 +26,6 @@
 #endif
 
 #include "string_num.h"  // hz::number_to_string_locale
-#include "i18n.h"  // HZ_NC_, HZ_C_
 
 
 /// \def HAVE_REENTRANT_LOCALTIME
@@ -66,75 +65,75 @@ inline std::string format_size(uint64_t size, bool use_decimal = false, bool siz
 // 	const uint64_t yb_size = zb_size * multiplier;  // yotta
 
 	static const char* const names[] = {
-		HZ_NC_("filesize", " B"),  // bytes decimal
-		HZ_NC_("filesize", " B"),  // bytes binary
-		HZ_NC_("filesize", " bit"),  // bits decimal
-		HZ_NC_("filesize", " bit"),  // bits binary. note: 2 bit, not 2 bits.
+		" B",  // bytes decimal
+		" B",  // bytes binary
+		" bit",  // bits decimal
+		" bit",  // bits binary. note: 2 bit, not 2 bits.
 
-		HZ_NC_("filesize", " KB"),
-		HZ_NC_("filesize", " KiB"),
-		HZ_NC_("filesize", " Kbit"),
-		HZ_NC_("filesize", " Kibit"),
+		" KB",
+		" KiB",
+		" Kbit",
+		" Kibit",
 
-		HZ_NC_("filesize", " MB"),
-		HZ_NC_("filesize", " MiB"),
-		HZ_NC_("filesize", " Mbit"),
-		HZ_NC_("filesize", " Mibit"),
+		" MB",
+		" MiB",
+		" Mbit",
+		" Mibit",
 
-		HZ_NC_("filesize", " GB"),
-		HZ_NC_("filesize", " GiB"),
-		HZ_NC_("filesize", " Gbit"),
-		HZ_NC_("filesize", " Gibit"),
+		" GB",
+		" GiB",
+		" Gbit",
+		" Gibit",
 
-		HZ_NC_("filesize", " TB"),
-		HZ_NC_("filesize", " TiB"),
-		HZ_NC_("filesize", " Tbit"),
-		HZ_NC_("filesize", " Tibit"),
+		" TB",
+		" TiB",
+		" Tbit",
+		" Tibit",
 
-		HZ_NC_("filesize", " PB"),
-		HZ_NC_("filesize", " PiB"),
-		HZ_NC_("filesize", " Pbit"),
-		HZ_NC_("filesize", " Pibit"),
+		" PB",
+		" PiB",
+		" Pbit",
+		" Pibit",
 
-		HZ_NC_("filesize", " EB"),
-		HZ_NC_("filesize", " EiB"),
-		HZ_NC_("filesize", " Ebit"),
-		HZ_NC_("filesize", " Eibit")
+		" EB",
+		" EiB",
+		" Ebit",
+		" Eibit"
 	};
 
 	const int addn = static_cast<int>(!use_decimal) + (static_cast<int>(size_is_bits) * 2);
 
 	if (size >= eb_size) {  // exa
 		return hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(eb_size), 2, true)
-				+ HZ_RC_("filesize", names[(6 * 4) + addn]);
+				+ names[(6 * 4) + addn];
 	}
 
 	if (size >= pb_size) {  // peta
 		return hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(pb_size), 2, true)
-				+ HZ_RC_("filesize", names[(5 * 4) + addn]);
+				+ names[(5 * 4) + addn];
 	}
 
 	if (size >= tb_size) {  // tera
 		return hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(tb_size), 2, true)
-				+ HZ_RC_("filesize", names[(4 * 4) + addn]);
+				+ names[(4 * 4) + addn];
 	}
 
 	if (size >= gb_size) {  // giga
 		return hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(gb_size), 2, true)
-				+ HZ_RC_("filesize", names[(3 * 4) + addn]);
+				+ names[(3 * 4) + addn];
 	}
 
 	if (size >= mb_size) {  // mega
 		return hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(mb_size), 2, true)
-				+ HZ_RC_("filesize", names[(2 * 4) + addn]);
+				+ names[(2 * 4) + addn];
 	}
 
 	if (size >= kb_size) {  // kilo
 		return hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(kb_size), 2, true)
-				+ HZ_RC_("filesize", names[(1 * 4) + addn]);
+				+ names[(1 * 4) + addn];
 	}
 
-	return std::to_string(size) + HZ_RC_("filesize", names[(0 * 4) + addn]);
+	return std::to_string(size) + names[(0 * 4) + addn];
 }
 
 
@@ -164,11 +163,11 @@ inline std::string format_time_length(std::chrono::seconds secs)
 		    if (hours > 0 && sec_diff.count() < (-hour_size / 2))
 		       days--;
 
-			return std::to_string(days.count()) + " " + HZ_C_("time", "d")
-					+ " " + std::to_string(hours) + " " + HZ_C_("time", "h");
+			return std::to_string(days.count()) + " " + "d"
+					+ " " + std::to_string(hours) + " " + "h";
 
 		} else {  // display days only
-			return std::to_string(days.count()) + " " + HZ_C_("time", "d");
+			return std::to_string(days.count()) + " " + "d";
 		}
 
 	} else if (secs >= 100min) {
@@ -180,19 +179,19 @@ inline std::string format_time_length(std::chrono::seconds secs)
 			if (minutes > 0 && sec_diff.count() < (-min_size / 2))
 				hours--;
 
-			return std::to_string(hours.count()) + " " + HZ_C_("time", "h")
-					+ " " + std::to_string(minutes) + " " + HZ_C_("time", "min");
+			return std::to_string(hours.count()) + " " + "h"
+					+ " " + std::to_string(minutes) + " " + "min";
 
 		} else {  // display hours only
-			return std::to_string(hours.count()) + " " + HZ_C_("time", "h");
+			return std::to_string(hours.count()) + " " + "h";
 		}
 
 	} else if (secs >= 100s) {
 		auto minutes = std::chrono::round<std::chrono::minutes>(secs);
-		return std::to_string(minutes.count()) + " " + HZ_C_("time", "min");
+		return std::to_string(minutes.count()) + " " + "min";
 	}
 
-	return std::to_string(secs.count()) + " " + HZ_C_("time", "sec");
+	return std::to_string(secs.count()) + " " + "sec";
 }
 
 

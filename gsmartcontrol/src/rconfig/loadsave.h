@@ -15,7 +15,7 @@
 #include <string>
 
 #include "hz/debug.h"
-#include "hz/fs_file.h"
+#include "hz/fs.h"
 
 #include "config.h"
 
@@ -26,14 +26,13 @@ namespace rconfig {
 
 
 /// Load the config branch from file.
-inline bool load_from_file(const std::string& file)
+inline bool load_from_file(const hz::fs::path& file)
 {
-	// Don't use std::fstream, it's not safe with localized filenames on win32.
-	hz::File f(file);
-
 	std::string json_str;
-	if (!f.get_contents(json_str)) {  // this warns
-		debug_print_error("rconfig", "load_from_file(): Unable to read from file \"%s\".\n", file.c_str());
+	auto ec = hz::fs_file_get_contents(file, json_str, 10*1024*1024);  // 10M
+	if (ec) {
+		debug_print_error("rconfig", "load_from_file(): Unable to read from file \"%s\": %s\n",
+				file.u8string().c_str(), ec.message().c_str());
 		return false;
 	}
 
@@ -41,7 +40,7 @@ inline bool load_from_file(const std::string& file)
 		get_config_branch() = json::parse(json_str);
 	}
 	catch (json::parse_error& e) {
-		debug_out_warn("rconfig", "Cannot load config file \"" << file << "\": " << e.what() << "\n");
+		debug_out_warn("rconfig", "Cannot load config file \"" << file.u8string() << "\": " << e.what() << "\n");
 		return false;
 	}
 	return true;
@@ -50,16 +49,16 @@ inline bool load_from_file(const std::string& file)
 
 
 /// Save the config branch to a file.
-inline bool save_to_file(const std::string& file)
+inline bool save_to_file(const hz::fs::path& file)
 {
 	std::string json_str = get_config_branch().dump(4);
 
-	hz::File f(file);
-	if (!f.put_contents(json_str)) {
-		debug_print_error("rconfig", "save_to_file(): Unable to write to file \"%s\".\n", file.c_str());
+	auto ec = hz::fs_file_put_contents(file, json_str);
+	if (ec) {
+		debug_print_error("rconfig", "save_to_file(): Unable to write to file \"%s\": %s.\n",
+				file.u8string().c_str(), ec.message().c_str());
 		return false;
 	}
-
 	return true;
 }
 

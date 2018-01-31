@@ -24,12 +24,13 @@
 
 #include "hz/win32_tools.h"
 #include "hz/string_sprintf.h"
-#include "hz/fs_path.h"
+#include "hz/fs.h"
 #include "hz/string_num.h"
 #include "rconfig/config.h"
 #include "app_pcrecpp.h"
 #include "storage_detector_win32.h"
 #include "storage_detector_helpers.h"
+#include "smartctl_executor.h"  // get_smartctl_binary
 
 
 
@@ -179,7 +180,7 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDevicePtr>& drive
 
 	std::shared_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
 
-	std::string smartctl_binary = get_smartctl_binary();
+	auto smartctl_binary = get_smartctl_binary();
 
 	if (smartctl_binary.empty()) {
 		debug_out_error("app", DBG_FUNC_MSG << "Smartctl binary is not set in config.\n");
@@ -191,7 +192,7 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDevicePtr>& drive
 	if (!smartctl_def_options.empty())
 		smartctl_def_options += " ";
 
-	smartctl_ex->set_command(Glib::shell_quote(smartctl_binary),
+	smartctl_ex->set_command(Glib::shell_quote(smartctl_binary.u8string()),
 			smartctl_def_options + "--scan-open");
 
 	if (!smartctl_ex->execute() || !smartctl_ex->get_error_msg().empty()) {
@@ -540,13 +541,13 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDevicePtr>& driv
 
 	std::string cli_binary;
 	if (use_cli == 1) {
-		cli_binary = rconfig::get_data<std::string>("system/areca_cli_binary");
-		if (!hz::FsPath(cli_binary).is_absolute() && !cli_inst_path.empty()) {
-			cli_binary = hz::FsPath(cli_inst_path).append(cli_binary).str();
+		cli_binary = hz::fs::u8path(rconfig::get_data<std::string>("system/areca_cli_binary"));
+		if (!cli_binary.is_absolute() && !cli_inst_path.empty()) {
+			cli_binary = hz::fs::u8path(cli_inst_path) / cli_binary;
 		}
-		if (hz::FsPath(cli_binary).is_absolute() && !hz::FsPath(cli_binary).exists()) {
+		if (cli_binary.is_absolute() && !hz::fs::exists(cli_binary)) {
 			use_cli = 0;
-			debug_out_dump("app", "Areca CLI binary \"" << cli_binary << "\" not found.\n");
+			debug_out_dump("app", "Areca CLI binary \"" << cli_binary.string() << "\" not found.\n");
 		}
 	}
 

@@ -44,13 +44,19 @@ JSON.
 		Maybe make pcre optional (only for parsing the old format)
 
 Port to std::filesystem (gcc 8; mingw not yet supported).
-	remove wcmatch (once fs is gone) (and its LICENSE_bsd-ucb.txt)
 	remove i18n.h
 	Can use experimental/filesystem (no fstream support yet).
+
+res_data.h - port to static string_view, maybe simplify?
+	maybe remove compile-time support?
 
 Use std::from_chars() in string_is_numeric_impl_classic_locale() (gcc 8)
 
 Mark with gettext
+
+Fix win32 crash.
+
+Check if we need to distribute MIT license.
 
 
 Check TODOs

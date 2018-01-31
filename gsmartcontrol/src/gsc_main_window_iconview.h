@@ -112,10 +112,10 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 			if (!hd_icon) {
 				// Still no luck, use bundled ones.
-				std::string icon_file = hz::data_file_find("icon_hdd.png");
+				auto icon_file = hz::data_file_find("icon_hdd.png");
 				if (!icon_file.empty()) {
 					try {
-						hd_icon = Gdk::Pixbuf::create_from_file(icon_file);
+						hd_icon = Gdk::Pixbuf::create_from_file(icon_file.u8string());
 					} catch (...) { }  // ignore exceptions
 				}
 			}
@@ -127,10 +127,10 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 			if (!cddvd_icon) {
 				// Still no luck, use bundled ones.
-				std::string icon_file = hz::data_file_find("icon_cddvd.png");
+				auto icon_file = hz::data_file_find("icon_cddvd.png");
 				if (!icon_file.empty()) {
 					try {
-						cddvd_icon = Gdk::Pixbuf::create_from_file(icon_file);
+						cddvd_icon = Gdk::Pixbuf::create_from_file(icon_file.u8string());
 					} catch (...) { }  // ignore exceptions
 				}
 			}

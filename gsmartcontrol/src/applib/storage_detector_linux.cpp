@@ -24,8 +24,7 @@
 #include <string>
 
 #include "hz/debug.h"
-#include "hz/fs_path_utils.h"
-#include "hz/fs_file.h"
+#include "hz/fs.h"
 #include "hz/string_num.h"
 #include "rconfig/config.h"
 #include "app_pcrecpp.h"
@@ -64,38 +63,31 @@ inline std::string detect_drives_linux_udev_byid(std::vector<std::string>& devic
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting through device scan directory /dev/disk/by-id...\n");
 
 	// this defaults to "/dev/disk/by-id"
-	std::string dev_dir = rconfig::get_data<std::string>("system/linux_udev_byid_path");
-	if (dev_dir.empty()) {
-		debug_out_warn("app", DBG_FUNC_MSG << "Device scan directory path is not set.\n");
-		return "Device scan directory path is not set.";
+	auto dir = hz::fs::u8path(rconfig::get_data<std::string>("system/linux_udev_byid_path"));
+	if (dir.empty()) {
+		debug_out_warn("app", DBG_FUNC_MSG << "Device directory path is not set.\n");
+		return "Device directory path is not set.";
 	}
 
-	hz::Dir dir(dev_dir);
-
-	std::vector<std::string> all_devices;
-	if (!dir.list(all_devices, false)) {  // this outputs to debug too.
-		std::string error_msg = dir.get_error_utf8();
-		if (!dir.exists()) {
-			debug_out_warn("app", DBG_FUNC_MSG << "Device scan directory doesn't exist.\n");
-		} else {
-			debug_out_error("app", DBG_FUNC_MSG << "Cannot list directory entries.\n");
-		}
-		return error_msg;
+	std::error_code dummy_ec;
+	if (!hz::fs::exists(dir, dummy_ec)) {
+		debug_out_warn("app", DBG_FUNC_MSG << "Device directory doesn't exist.\n");
+		return "Device directory does not exist.";
 	}
-
-	std::vector<std::string> blacklist;
-	blacklist.push_back("/-part[0-9]+$/");
 
 	// filter-out the ones with "partN" in them
-	for (std::size_t i = 0; i < all_devices.size(); ++i) {
-		std::string entry = all_devices[i];
-		if (entry == "." || entry == "..")
-			continue;
+	static const std::vector<std::string> blacklist = {
+			"/-part[0-9]+$/"
+	};
+
+	std::error_code ec;
+	for (const auto& entry : hz::fs::directory_iterator(dir, ec)) {  // this outputs to debug too.
+		auto path = entry.path();
 
 		// platform blacklist
 		bool blacked = false;
-		for (const auto bl_pattern : blacklist) {
-			if (app_pcre_match(bl_pattern, entry)) {
+		for (const auto& bl_pattern : blacklist) {
+			if (app_pcre_match(bl_pattern, path.string())) {
 				blacked = true;
 				break;
 			}
@@ -103,22 +95,23 @@ inline std::string detect_drives_linux_udev_byid(std::vector<std::string>& devic
 		if (blacked)
 			continue;
 
-		hz::FsPath path = dev_dir + hz::DIR_SEPARATOR_S + all_devices[i];
-
 		// those are usually relative links, so find out where they are pointing to.
-		std::string link_dest;
-		if (path.get_link_destination(link_dest)) {
-			path = (hz::path_is_absolute(link_dest) ? link_dest : (dev_dir + hz::DIR_SEPARATOR_S + link_dest));
-			path.compress();  // compress in case there are ../-s.
+		if (hz::fs::is_symlink(path, dummy_ec)) {
+			if (!hz::fs::exists(path)) {  // broken symlink
+				continue;
+			}
+			path = hz::fs::read_symlink(path, dummy_ec);
+			if (path.is_relative()) {
+				path = hz::fs::canonical(entry.path() / path);  // remove ../-s
+			}
 		}
 
-		// skip number-ended devices, in case we couldn't filter out the scan directory correctly
-		// (it's user-settable after all).
-// 		if (app_pcre_match("/[0-9]+$/", path.str()))
-// 			continue;
-
-		if (std::find(devices.begin(), devices.end(), path.str()) == devices.end())  // there may be duplicates
-			devices.push_back(path.str());
+		if (std::find(devices.begin(), devices.end(), path.string()) == devices.end())  // there may be duplicates
+			devices.push_back(path.string());
+	}
+	if (ec) {
+		debug_out_error("app", DBG_FUNC_MSG << "Cannot list device directory entries.\n");
+		return hz::string_sprintf("Cannot list device directory entries: %s", ec.message().c_str());
 	}
 
 	return std::string();
@@ -128,7 +121,7 @@ inline std::string detect_drives_linux_udev_byid(std::vector<std::string>& devic
 
 
 /// Cache of file->contents, caches read files.
-std::map<std::string, std::string> s_read_file_cache;
+std::map<hz::fs::path, std::string> s_read_file_cache;
 
 
 
@@ -140,48 +133,39 @@ inline void clear_read_file_cache()
 
 
 
-/// Procfs files don't support SEEK_END or ftello() (I think). They can't
-/// be read through hz::File::get_contents, so use this function instead.
-inline bool read_proc_file(hz::File& file, std::string& contents)
+/// Read procfs file without using seeking.
+inline std::error_code read_proc_file(const hz::fs::path& file, std::string& contents)
 {
-	if (s_read_file_cache.find(file.get_path()) != s_read_file_cache.end()) {
-		contents = s_read_file_cache[file.get_path()];
-		return true;
+	if (auto iter = s_read_file_cache.find(file); iter != s_read_file_cache.end()) {
+		contents = iter->second;
+		return std::error_code();
 	}
 
-	if (!file.open("rb"))  // closed automatically
-		return false;  // the error message is in File itself.
-
-	std::FILE* fp = file.get_handle();
-	if (!fp)
-		return false;
-
-	char line[256];
-	while (std::fgets(line, static_cast<int>(sizeof(line)), fp) != nullptr) {
-		if (*line != '\0')
-			contents += line;  // line contains the terminating newline as well
+	auto ec = hz::fs_file_get_contents_unseekable(file, contents);
+	if (ec) {
+		return ec;
 	}
 
-	s_read_file_cache[file.get_path()] = contents;
+	s_read_file_cache[file] = contents;
 
 	debug_begin();  // avoiding printing prefix on every line
-	debug_out_dump("app", DBG_FUNC_MSG << "File contents (\"" << file.get_path() << "\"):\n" << contents << "\n");
+	debug_out_dump("app", DBG_FUNC_MSG << "File contents (\"" << file.string() << "\"):\n" << contents << "\n");
 	debug_end();
 
-	return true;
+	return std::error_code();
 }
 
 
 
 /// Same as read_proc_file(), but returns a vector of lines
-inline bool read_proc_file_lines(hz::File& file, std::vector<std::string>& lines)
+inline std::error_code read_proc_file_lines(const hz::fs::path& file, std::vector<std::string>& lines)
 {
 	std::string contents;
-	bool status = read_proc_file(file, contents);
-	if (status) {
+	auto ec = read_proc_file(file, contents);
+	if (!ec) {
 		hz::string_split(contents, '\n', lines, true);
 	}
-	return status;
+	return ec;
 }
 
 
@@ -190,21 +174,21 @@ inline bool read_proc_file_lines(hz::File& file, std::vector<std::string>& lines
 /// Read /proc/partitions file. Return error message on error.
 inline std::string read_proc_partitions_file(std::vector<std::string>& lines)
 {
-	auto path = rconfig::get_data<std::string>("system/linux_proc_partitions_path");
-	if (path.empty()) {
+	auto file = hz::fs::u8path(rconfig::get_data<std::string>("system/linux_proc_partitions_path"));
+	if (file.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Partitions file path is not set.\n");
 		return "Partitions file path is not set.";
 	}
 
-	hz::File file(path);
-	if (!read_proc_file_lines(file, lines)) {  // this outputs to debug too
-		std::string error_msg = file.get_error_utf8();  // save before calling other file functions
-		if (!file.exists()) {
+	auto ec = read_proc_file_lines(file, lines);
+	if (ec) {
+		std::error_code dummy_ec;
+		if (!hz::fs::exists(file, dummy_ec)) {
 			debug_out_warn("app", DBG_FUNC_MSG << "Partitions file doesn't exist.\n");
 		} else {
 			debug_out_error("app", DBG_FUNC_MSG << "Partitions file exists but cannot be read.\n");
 		}
-		return error_msg;
+		return ec.message();
 	}
 
 	return std::string();
@@ -215,21 +199,21 @@ inline std::string read_proc_partitions_file(std::vector<std::string>& lines)
 /// Read /proc/devices file. Return error message on error.
 inline std::string read_proc_devices_file(std::vector<std::string>& lines)
 {
-	std::string path = rconfig::get_data<std::string>("system/linux_proc_devices_path");
-	if (path.empty()) {
+	auto file = hz::fs::u8path(rconfig::get_data<std::string>("system/linux_proc_devices_path"));
+	if (file.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Devices file path is not set.\n");
 		return "Devices file path is not set.";
 	}
 
-	hz::File file(path);
-	if (!read_proc_file_lines(file, lines)) {  // this outputs to debug too
-		std::string error_msg = file.get_error_utf8();  // save before calling other file functions
-		if (!file.exists()) {
+	auto ec = read_proc_file_lines(file, lines);
+	if (ec) {
+		std::error_code dummy_ec;
+		if (!hz::fs::exists(file, dummy_ec)) {
 			debug_out_warn("app", DBG_FUNC_MSG << "Devices file doesn't exist.\n");
 		} else {
 			debug_out_error("app", DBG_FUNC_MSG << "Devices file exists but cannot be read.\n");
 		}
-		return error_msg;
+		return ec.message();
 	}
 
 	return std::string();
@@ -242,23 +226,22 @@ inline std::string read_proc_devices_file(std::vector<std::string>& lines)
 /// Note that scsi host # is not unique.
 inline std::string read_proc_scsi_scsi_file(std::vector< std::pair<int, std::string> >& vendors_models)
 {
-	std::string path = rconfig::get_data<std::string>("system/linux_proc_scsi_scsi_path");
-	if (path.empty()) {
+	auto file = hz::fs::u8path(rconfig::get_data<std::string>("system/linux_proc_scsi_scsi_path"));
+	if (file.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "SCSI file path is not set.\n");
 		return "SCSI file path is not set.";
 	}
 
-	hz::File file(path);
 	std::vector<std::string> lines;
-
-	if (!read_proc_file_lines(file, lines)) {  // this outputs to debug too
-		std::string error_msg = file.get_error_utf8();  // save before calling other file functions
-		if (!file.exists()) {
+	auto ec = read_proc_file_lines(file, lines);
+	if (ec) {
+		std::error_code dummy_ec;
+		if (!hz::fs::exists(file, dummy_ec)) {
 			debug_out_warn("app", DBG_FUNC_MSG << "SCSI file doesn't exist.\n");
 		} else {
 			debug_out_error("app", DBG_FUNC_MSG << "SCSI file exists but cannot be read.\n");
 		}
-		return error_msg;
+		return ec.message();
 	}
 
 	int last_scsi_host = -1;
@@ -275,7 +258,7 @@ inline std::string read_proc_scsi_scsi_file(std::vector< std::pair<int, std::str
 			hz::string_is_numeric_nolocale(scsi_host_str, last_scsi_host);
 
 		} else if (last_scsi_host != -1 && app_pcre_match("/Vendor: /i", line)) {
-			vendors_models.push_back(std::make_pair(last_scsi_host, line));
+			vendors_models.emplace_back(last_scsi_host, line);
 		}
 	}
 
@@ -290,23 +273,22 @@ inline std::string read_proc_scsi_scsi_file(std::vector< std::pair<int, std::str
 /// Each line index corresponds to N in /dev/sgN.
 inline std::string read_proc_scsi_sg_devices_file(std::vector<std::vector<int>>& sg_entries)
 {
-	auto path = rconfig::get_data<std::string>("system/linux_proc_scsi_sg_devices_path");
-	if (path.empty()) {
+	auto file = hz::fs::u8path(rconfig::get_data<std::string>("system/linux_proc_scsi_sg_devices_path"));
+	if (file.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Sg devices file path is not set.\n");
-		return "Sg devices path is not set.";
+		return "Sg devices file path is not set.";
 	}
 
-	hz::File file(path);
 	std::vector<std::string> lines;
-
-	if (!read_proc_file_lines(file, lines)) {  // this outputs to debug too
-		std::string error_msg = file.get_error_utf8();  // save before calling other file functions
-		if (!file.exists()) {
+	auto ec = read_proc_file_lines(file, lines);
+	if (ec) {
+		std::error_code dummy_ec;
+		if (!hz::fs::exists(file, dummy_ec)) {
 			debug_out_warn("app", DBG_FUNC_MSG << "Sg devices file doesn't exist.\n");
 		} else {
 			debug_out_error("app", DBG_FUNC_MSG << "Sg devices file exists but cannot be read.\n");
 		}
-		return error_msg;
+		return ec.message();
 	}
 
 	pcrecpp::RE parse_re = app_pcre_re(
@@ -390,14 +372,15 @@ inline std::string detect_drives_linux_proc_partitions(std::vector<StorageDevice
 		return error_msg;
 	}
 
-	std::vector<std::string> blacklist;
-	blacklist.push_back("/d[a-z][0-9]+$/");  // sda1, hdb2 - partitions. twa0 and twe1 are drives, not partitions.
-	blacklist.push_back("/ram[0-9]+$/");  // ramdisks?
-	blacklist.push_back("/loop[0-9]*$/");  // not sure if loop devices go there, but anyway...
-	blacklist.push_back("/part[0-9]+$/");  // devfs had them
-	blacklist.push_back("/p[0-9]+$/");  // partitions are usually marked this way
-	blacklist.push_back("/md[0-9]*$/");  // linux software raid
-	blacklist.push_back("/dm-[0-9]*$/");  // linux device mapper
+	static const std::vector<std::string> blacklist = {
+		"/d[a-z][0-9]+$/",  // sda1, hdb2 - partitions. twa0 and twe1 are drives, not partitions.
+		"/ram[0-9]+$/",  // ramdisks?
+		"/loop[0-9]*$/",  // not sure if loop devices go there, but anyway...
+		"/part[0-9]+$/",  // devfs had them
+		"/p[0-9]+$/",  // partitions are usually marked this way
+		"/md[0-9]*$/",  // linux software raid
+		"/dm-[0-9]*$/",  // linux device mapper
+	};
 
 	std::vector<std::string> devices;
 
@@ -655,11 +638,11 @@ inline std::string detect_drives_linux_adaptec(std::vector<StorageDevicePtr>& dr
 
 	std::set<int> controller_hosts;
 
-	for (std::size_t i = 0; i < vendors_models.size(); ++i) {
-		if (!app_pcre_match("/Vendor: Adaptec /i", vendors_models[i].second)) {
+	for (const auto& vendors_model : vendors_models) {
+		if (!app_pcre_match("/Vendor: Adaptec /i", vendors_model.second)) {
 			continue;  // not a supported controller
 		}
-		int host_num = vendors_models[i].first;
+		int host_num = vendors_model.first;
 		debug_out_dump("app", "Found Adaptec controller in SCSI file, SCSI host " << host_num << ".\n");
 
 		// Skip additional adapters with the same host, since they are the same adapters
@@ -829,15 +812,15 @@ inline std::string detect_drives_linux_areca(std::vector<StorageDevicePtr>& driv
 				int max_ports = 0;
 
 				// Read the number of ports.
-				std::string ports_path = hz::string_sprintf("/sys/bus/scsi/devices/host%d/scsi_host/host%d/host_fw_hd_channels", host_num, host_num);
-				hz::File ports_file(ports_path);
+				auto ports_file = hz::fs::u8path(hz::string_sprintf("/sys/bus/scsi/devices/host%d/scsi_host/host%d/host_fw_hd_channels", host_num, host_num));
 				std::string ports_file_contents;
-				if (!read_proc_file(ports_file, ports_file_contents)) {
-					debug_out_warn("app", DBG_FUNC_MSG << "Couldn't read the number of ports on Areca controller (\"" << ports_path << "\"): "
-							<< ports_file.get_error_utf8() << ", trying manually.\n");
+				auto ec = read_proc_file(ports_file, ports_file_contents);
+				if (ec) {
+					debug_out_warn("app", DBG_FUNC_MSG << "Couldn't read the number of ports on Areca controller (\"" << ports_file.string() << "\"): "
+							<< ec.message() << ", trying manually.\n");
 				} else {
 					hz::string_is_numeric_nolocale(hz::string_trim_copy(ports_file_contents), max_ports);
-					debug_out_dump("app", DBG_FUNC_MSG << "Detected " << max_ports << " ports, through \"" << ports_path << "\".\n");
+					debug_out_dump("app", DBG_FUNC_MSG << "Detected " << max_ports << " ports, through \"" << ports_file.string() << "\".\n");
 				}
 				if (max_ports == 0) {
 					max_ports = rconfig::get_data<int>("system/linux_areca_noenc_max_scan_port");

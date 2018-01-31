@@ -21,7 +21,7 @@
 #include "hz/string_num.h"  // number_to_string
 #include "hz/string_sprintf.h"  // string_sprintf
 #include "hz/string_algo.h"  // string_join
-#include "hz/fs_file.h"  // hz::File
+#include "hz/fs.h"
 #include "hz/format_unit.h"  // format_time_length
 #include "rconfig/config.h"  // rconfig::*
 
@@ -803,7 +803,7 @@ void GscInfoWindow::on_save_info_button_clicked()
 			std::string file;
 #if GTK_CHECK_VERSION(3, 20, 0)
 			file = app_ustring_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get())));
-			last_dir = hz::path_get_dirname(file);
+			last_dir = hz::fs::u8path(file).parent_path().u8string();
 #else
 			file = dialog.get_filename();  // in fs encoding
 			last_dir = dialog.get_current_folder();  // save for the future
@@ -814,13 +814,13 @@ void GscInfoWindow::on_save_info_button_clicked()
 				file += ".txt";
 			}
 
-			hz::File f(file);
 			std::string data = this->drive->get_full_output();
 			if (data.empty()) {
 				data = this->drive->get_info_output();
 			}
-			if (!f.put_contents(data)) {  // this will send to debug_ too.
-				gui_show_error_dialog("Cannot save SMART data to file", f.get_error_utf8(), this);
+			std::error_code ec = hz::fs_file_put_contents(hz::fs::u8path(file), data);
+			if (ec) {
+				gui_show_error_dialog("Cannot save SMART data to file", ec.message(), this);
 			}
 			break;
 		}

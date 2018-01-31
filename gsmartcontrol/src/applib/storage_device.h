@@ -18,6 +18,7 @@
 #include <memory>
 #include <sigc++/sigc++.h>
 
+#include "hz/fs_ns.h"
 #include "storage_property.h"
 #include "smartctl_parser.h"  // prop_list_t
 #include "smartctl_executor.h"
@@ -168,7 +169,7 @@ class StorageDevice {
 		bool get_is_virtual() const;
 
 		/// If the device is virtual, return its file
-		std::string get_virtual_file() const;
+		hz::fs::path get_virtual_file() const;
 
 		/// Get only the filename portion of a virtual file
 		std::string get_virtual_filename() const;
@@ -267,7 +268,7 @@ class StorageDevice {
 		std::map<char, std::string> drive_letters_;  ///< Windows drive letters (if detected), with volume names
 
 		bool is_virtual_ = false;  ///< If true, then this is not a real device - merely a loaded description of it.
-		std::string virtual_file_;  ///< A file (smartctl data) the virtual device was loaded from
+		hz::fs::path virtual_file_;  ///< A file (smartctl data) the virtual device was loaded from
 		bool is_manually_added_ = false;  ///< StorageDevice doesn't use it, but it's useful for its users.
 
 		ParseStatus parse_status_ = ParseStatus::none;  ///< "Fully parsed" flag

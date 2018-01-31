@@ -14,9 +14,8 @@
 
 #include <gtkmm.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
-#include <gtk/gtk.h>
 
-#include "hz/fs_path.h"
+#include "hz/fs_ns.h"
 #include "hz/string_sprintf.h"
 #include "hz/scoped_ptr.h"
 #include "applib/app_gtkmm_utils.h"
@@ -173,7 +172,7 @@ void GscAddDeviceWindow::on_device_name_browse_button_clicked()
 	if (!entry)
 		return;
 
-	hz::FsPath path(entry->get_text());
+	auto path = hz::fs::u8path(entry->get_text());
 
 	int result = 0;
 
@@ -182,7 +181,7 @@ void GscAddDeviceWindow::on_device_name_browse_button_clicked()
 			"Choose Device...", this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, nullptr, nullptr), g_object_unref);
 
 	if (path.is_absolute())
-		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog.get()), path.c_str());
+		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog.get()), path.u8string().c_str());
 
 	result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
 
@@ -196,7 +195,7 @@ void GscAddDeviceWindow::on_device_name_browse_button_clicked()
 
 	// Note: This works on absolute paths only (otherwise it's gtk warning).
 	if (path.is_absolute())
-		dialog.set_filename(path.str());  // change to its dir and select it if exists.
+		dialog.set_filename(path.u8string());  // change to its dir and select it if exists.
 
 	// Show the dialog and wait for a user response
 	result = dialog.run();  // the main cycle blocks here
