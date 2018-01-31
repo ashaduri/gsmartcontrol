@@ -20,6 +20,7 @@
 #include "applib/app_gtkmm_utils.h"  // app_gtkmm_create_tree_view_column
 #include "applib/app_gtkmm_features.h"
 #include "hz/scoped_ptr.h"
+#include "hz/fs.h"
 #include "rconfig/config.h"
 
 #include "gsc_executor_log_window.h"
@@ -35,17 +36,17 @@ GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, const Glib::
 
 	APP_GTKMM_CONNECT_VIRTUAL(delete_event);  // make sure the event handler is called
 
-	Gtk::Button* window_close_button = 0;
+	Gtk::Button* window_close_button = nullptr;
 	APP_UI_RES_AUTO_CONNECT(window_close_button, clicked);
 
-	Gtk::Button* window_save_current_button = 0;
+	Gtk::Button* window_save_current_button = nullptr;
 	APP_UI_RES_AUTO_CONNECT(window_save_current_button, clicked);
 
-	Gtk::Button* window_save_all_button = 0;
+	Gtk::Button* window_save_all_button = nullptr;
 	APP_UI_RES_AUTO_CONNECT(window_save_all_button, clicked);
 
 
-	Gtk::Button* clear_command_list_button = 0;
+	Gtk::Button* clear_command_list_button = nullptr;
 	APP_UI_RES_AUTO_CONNECT(clear_command_list_button, clicked);
 
 
@@ -61,7 +62,7 @@ GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, const Glib::
 
 	// --------------- Make a treeview
 
-	Gtk::TreeView* treeview = this->lookup_widget<Gtk::TreeView*>("command_list_treeview");
+	auto* treeview = this->lookup_widget<Gtk::TreeView*>("command_list_treeview");
 	if (treeview) {
 		Gtk::TreeModelColumnRecord model_columns;
 
@@ -117,7 +118,7 @@ GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, const Glib::
 
 void GscExecutorLogWindow::show_last()
 {
-	Gtk::TreeView* treeview = this->lookup_widget<Gtk::TreeView*>("command_list_treeview");
+	auto* treeview = this->lookup_widget<Gtk::TreeView*>("command_list_treeview");
 
 	if (treeview && !list_store->children().empty()) {
 // 		Gtk::TreeRow row = *(list_store->children().rbegin());  // this causes invalid read error in valgrind
@@ -134,17 +135,17 @@ void GscExecutorLogWindow::show_last()
 
 void GscExecutorLogWindow::clear_view_widgets()
 {
-	Gtk::Button* window_save_current_button = this->lookup_widget<Gtk::Button*>("window_save_current_button");
+	auto* window_save_current_button = this->lookup_widget<Gtk::Button*>("window_save_current_button");
 	if (window_save_current_button)
 		window_save_current_button->set_sensitive(false);
 
-	Gtk::TextView* output_textview = this->lookup_widget<Gtk::TextView*>("output_textview");
+	auto* output_textview = this->lookup_widget<Gtk::TextView*>("output_textview");
 	if (output_textview) {
 		Glib::RefPtr<Gtk::TextBuffer> buffer = output_textview->get_buffer();
 		buffer->set_text("");
 	}
 
-	Gtk::Entry* command_entry = this->lookup_widget<Gtk::Entry*>("command_entry");
+	auto* command_entry = this->lookup_widget<Gtk::Entry*>("command_entry");
 	if (command_entry)
 		command_entry->set_text("");
 }
@@ -253,7 +254,7 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 			std::string file;
 #if GTK_CHECK_VERSION(3, 20, 0)
 			file = app_ustring_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get())));
-			last_dir = hz::path_get_dirname(file);
+			last_dir = hz::fs::u8path(file).parent_path().u8string();
 #else
 			file = dialog.get_filename();  // in fs encoding
 			last_dir = dialog.get_current_folder();  // save for the future
@@ -264,9 +265,9 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 				file += ".txt";
 			}
 
-			hz::File f(file);
-			if (!f.put_contents(entry->std_output)) {
-				gui_show_error_dialog("Cannot save data to file", f.get_error_utf8(), this);
+			auto ec = hz::fs_file_put_contents(hz::fs::u8path(file), entry->std_output);
+			if (ec) {
+				gui_show_error_dialog("Cannot save data to file", ec.message(), this);
 			}
 			break;
 		}
@@ -370,7 +371,7 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 			std::string file;
 #if GTK_CHECK_VERSION(3, 20, 0)
 			file = app_ustring_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get())));
-			last_dir = hz::path_get_dirname(file);
+			last_dir = hz::fs::u8path(file).parent_path().u8string();
 #else
 			file = dialog.get_filename();  // in fs encoding
 			last_dir = dialog.get_current_folder();  // save for the future
@@ -381,9 +382,9 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 				file += ".txt";
 			}
 
-			hz::File f(file);
-			if (!f.put_contents(exss.str())) {
-				gui_show_error_dialog("Cannot save data to file", f.get_error_utf8(), this);
+			auto ec = hz::fs_file_put_contents(hz::fs::u8path(file), exss.str());
+			if (ec) {
+				gui_show_error_dialog("Cannot save data to file", ec.message(), this);
 			}
 			break;
 		}

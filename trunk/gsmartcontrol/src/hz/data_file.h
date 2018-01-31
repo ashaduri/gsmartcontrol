@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-#include "fs_path.h"
+#include "fs_ns.h"
 #include "debug.h"
 
 
@@ -60,48 +60,45 @@ inline void data_file_set_search_directories(const std::vector<std::string>& dir
 
 /// Find a data file (using a file name) in a search directory list.
 /// \return A full path to filename, or empty string on "not found".
-inline std::string data_file_find(const std::string& filename, bool allow_to_be_directory = false)
+inline fs::path data_file_find(const std::string& filename, bool allow_to_be_directory = false)
 {
 	if (filename.empty())
-		return std::string();
+		return fs::path();
 
-	hz::FsPath fp(filename);
-	// convert to native if it contains separators. this allows us
-	// to use subdirectories in filenames while always using slashes.
-	fp.to_native();
+	auto file_path = fs::u8path(filename);
+	std::error_code ec;
 
-	if (fp.is_absolute()) {  // shouldn't happen, but still...
-		if (!fp.exists()) {
-			debug_print_error("app", "%s: Data file \"%s\" not found: File doesn't exist.\n", DBG_FUNC, fp.c_str());
-			return std::string();
+	if (file_path.is_absolute()) {  // shouldn't happen, but still...
+		if (!fs::exists(file_path, ec)) {
+			debug_print_error("app", "%s: Data file \"%s\" not found: %s\n",
+					DBG_FUNC, file_path.u8string().c_str(), ec.message().c_str());
+			return fs::path();
 
-		} else if (!allow_to_be_directory && fp.is_dir()) {
-			debug_print_error("app", "%s: Data file \"%s\" is a directory (which is not allowed).\n", DBG_FUNC, fp.c_str());
-			return std::string();
+		} else if (!allow_to_be_directory && fs::is_directory(file_path, ec)) {
+			debug_print_error("app", "%s: Data file \"%s\" is a directory (which is not allowed).\n",
+					DBG_FUNC, file_path.u8string().c_str());
+			return fs::path();
 		}
-
-		return fp.str();  // return as is.
+		return file_path;  // return as is.
 	}
 
-	for (const auto& dirpath : DataFileStaticHolder::search_directories) {
-		hz::FsPath dp(dirpath + hz::DIR_SEPARATOR_S + fp.str());
+	for (const auto& dir : DataFileStaticHolder::search_directories) {
+		auto dir_path = fs::u8path(dir) / file_path;
 
 		// debug_print_dump("app", "%s: Searching for data \"%s\" at \"%s\".\n", DBG_FUNC, fp.c_str(), dirpath.c_str());
-
-		if (dp.exists()) {
-			if (!allow_to_be_directory && dp.is_dir()) {
+		if (fs::exists(dir_path, ec)) {
+			if (!allow_to_be_directory && fs::is_directory(dir_path, ec)) {
 				debug_print_error("app", "%s: Data file \"%s\" file found at \"%s\", but it is a directory.\n",
-						DBG_FUNC, fp.c_str(), dirpath.c_str());
-				return std::string();
+						DBG_FUNC, file_path.u8string().c_str(), dir.c_str());
+				return fs::path();
 			}
-
-			debug_print_info("app", "%s: Data file \"%s\" found at \"%s\".\n", DBG_FUNC, fp.c_str(), dirpath.c_str());
-			return dp.str();
+			debug_print_info("app", "%s: Data file \"%s\" found at \"%s\".\n", DBG_FUNC, file_path.u8string().c_str(), dir.c_str());
+			return dir_path;
 		}
 	}
 
-	debug_print_error("app", "%s: Data file \"%s\" not found.\n", DBG_FUNC, fp.c_str());
-	return std::string();
+	debug_print_error("app", "%s: Data file \"%s\" not found.\n", DBG_FUNC, file_path.u8string().c_str());
+	return fs::path();
 }
 
 

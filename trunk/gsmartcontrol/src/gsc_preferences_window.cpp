@@ -17,7 +17,7 @@
 #include <gtkmm.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
 
-#include "hz/fs_path.h"
+#include "hz/fs_ns.h"
 #include "hz/string_sprintf.h"
 #include "hz/scoped_ptr.h"
 #include "rconfig/config.h"
@@ -155,9 +155,9 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 			clear_all();
 			for (const auto& value : devmap) {
 				std::vector<std::string> parts;
-				hz::string_split(value.first, "::", parts, 2);
-				std::string dev = (!parts.empty() ? parts.at(0) : "");
-				std::string type = (parts.size() > 1 ? parts.at(1) : "");
+				hz::string_split(value.first, "::", parts, false, 2);
+				std::string dev = (!parts.empty() ? parts.at(0) : std::string());
+				std::string type = (parts.size() > 1 ? parts.at(1) : std::string());
 				std::string params = value.second;
 				this->add_new_row(dev, type, params, false);
 			}
@@ -407,12 +407,12 @@ void GscPreferencesWindow::import_config()
 
 	// ------- Drives tab
 
-	std::string device_blacklist_patterns = rconfig::get_data<std::string>("system/device_blacklist_patterns");
+	auto device_blacklist_patterns = rconfig::get_data<std::string>("system/device_blacklist_patterns");
 	if (auto* entry = this->lookup_widget<Gtk::Entry*>("device_blacklist_patterns_entry"))
 		entry->set_text(device_blacklist_patterns);
 
 	if (device_options_treeview) {
-		std::string devmap_str = rconfig::get_data<std::string>("system/smartctl_device_options");
+		auto devmap_str = rconfig::get_data<std::string>("system/smartctl_device_options");
 		device_option_map_t devmap = app_unserialize_device_option_map(devmap_str);
 		device_options_treeview->set_device_map(devmap);
 	}
@@ -528,7 +528,7 @@ void GscPreferencesWindow::on_window_reset_all_button_clicked()
 void GscPreferencesWindow::on_smartctl_binary_browse_button_clicked()
 {
 	auto* entry = this->lookup_widget<Gtk::Entry*>("smartctl_binary_entry");
-	hz::FsPath path(entry->get_text());
+	auto path = hz::fs::u8path(entry->get_text());
 
 	int result = 0;
 
@@ -547,7 +547,7 @@ void GscPreferencesWindow::on_smartctl_binary_browse_button_clicked()
 			"Choose Smartctl Binary...", this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, nullptr, nullptr), g_object_unref);
 
 	if (path.is_absolute())
-		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog.get()), path.c_str());
+		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog.get()), path.u8string().c_str());
 
 #ifdef _WIN32
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), specific_filter->gobj());
@@ -571,7 +571,7 @@ void GscPreferencesWindow::on_smartctl_binary_browse_button_clicked()
 
 	// Note: This works on absolute paths only (otherwise it's gtk warning).
 	if (path.is_absolute())
-		dialog.set_filename(path.str());  // change to its dir and select it if exists.
+		dialog.set_filename(path.u8string());  // change to its dir and select it if exists.
 
 	// Show the dialog and wait for a user response
 	result = dialog.run();  // the main cycle blocks here

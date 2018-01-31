@@ -19,7 +19,7 @@
 #include <cstdlib>
 
 #include "libdebug/libdebug.h"
-#include "hz/fs_file.h"
+#include "hz/fs.h"
 #include "storage_property.h"
 #include "smartctl_parser.h"
 
@@ -32,56 +32,29 @@ int main(int argc, char** argv)
 		std::cout << "Usage: " << argv[0] << " <file_to_parse>\n";
 		return EXIT_FAILURE;
 	}
-
 	debug_register_domain("app");
 
-	std::string file_str = argv[1];
-	hz::File file(file_str);
-
+	hz::fs::path file(argv[1]);  // native encoding
 	std::string contents;
-	if (!file.get_contents(contents)) {
-		debug_out_error("app", file.get_error_locale() << "\n");
+	auto ec = hz::fs_file_get_contents(file, contents, 10*1024*1024);  // 10M
+	if (ec) {
+		debug_out_error("app", ec.message() << "\n");
 		return EXIT_FAILURE;
 	}
 
-
 	SmartctlParser sp;
-
 	if (!sp.parse_full(contents, StorageAttribute::DiskType::Any)) {
 		debug_out_error("app", "Cannot parse file contents: " << sp.get_error_msg() << "\n");
 		return EXIT_FAILURE;
 	}
 
-
 	const std::vector<StorageProperty>& props = sp.get_properties();
-
 	for(const auto& prop : props) {
 		debug_out_dump("app", prop << "\n");
 	}
 
-
 	return EXIT_SUCCESS;
 }
-
-
-
-/*
-#include "app_pcrecpp.h"
-
-int main()
-{
-	pcrecpp::RE re("^ab\\/c?de$");
-
-	std::cerr << re.PartialMatch("ab/de") << "\n";
-
-
-	std::cerr << app_pcre_match("^abcd", "abcde") << "\n";
-	std::cerr << app_pcre_match("/^abcd/", "abcde") << "\n";
-	std::cerr << app_pcre_match("/^abcd/i", "Abcde") << "\n";
-	std::cerr << app_pcre_match("/^ab.*de$/mis", "abc\\nDe") << "\n";
-
-}
-*/
 
 
 

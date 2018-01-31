@@ -16,7 +16,7 @@
 #include <cstdint>
 
 #include "data_file.h"
-#include "fs_file.h"
+#include "fs.h"
 
 /**
 \file
@@ -70,12 +70,13 @@ Configuration macros: HZ_ENABLE_COMPILED_RES_DATA (0 | 1).
 	struct class_name { \
 		class_name() \
 		{ \
-			std::string path = hz::data_file_find(data_file); \
+			auto path = hz::data_file_find(data_file); \
 			if (path.empty()) \
 				return; \
-			hz::File file(path); \
-			hz::file_size_t file_size = 0, loaded_size = 0; \
-			if (!file.get_size(file_size)) \
+			std::uintmax_t loaded_size = 0; \
+			std::error_code ec; \
+			std::uintmax_t file_size = hz::fs::file_size(path, ec); \
+			if (ec) \
 				return; \
 			unsigned char* tmpbuf = new unsigned char[file_size + 1]; \
 			if (!file.get_contents_noalloc(tmpbuf, file_size + 1, loaded_size)) { \

@@ -21,10 +21,7 @@
 #endif
 
 #include "hz/debug.h"
-#include "hz/fs_path_utils.h"
-#include "hz/fs_path.h"
-#include "hz/fs_file.h"
-#include "hz/fs_dir.h"
+#include "hz/fs.h"
 #include "rconfig/config.h"
 #include "app_pcrecpp.h"
 #include "storage_detector_other.h"
@@ -46,28 +43,18 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives, const Exe
 	#endif
 
 	// defaults to /dev for freebsd, /dev/rdsk for solaris.
-	std::string dev_dir = rconfig::get_data<std::string>(sdev_config_path);
+	auto dev_dir = rconfig::get_data<std::string>(sdev_config_path);
 	if (dev_dir.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Device directory path is not set.\n");
 		return "Device directory path is not set.";
 	}
 
-	hz::Dir dir(dev_dir);
-
-	std::vector<std::string> all_devices;
-	if (!dir.list(all_devices, false, hz::DirSortNone())) {  // this outputs to debug too.
-		std::string error_msg = dir.get_error_utf8();
-		if (!dir.exists()) {
-			debug_out_warn("app", DBG_FUNC_MSG << "Device directory doesn't exist.\n");
-		} else {
-			debug_out_error("app", DBG_FUNC_MSG << "Cannot list directory entries.\n");
-		}
-		return error_msg;
+	auto dir = hz::fs::u8path(dev_dir);
+	std::error_code dummy_ec;
+	if (!hz::fs::exists(dir, dummy_ec)) {
+		debug_out_warn("app", DBG_FUNC_MSG << "Device directory doesn't exist.\n");
+		return "Device directory does not exist.";
 	}
-
-
-	// platform whitelist
-	std::vector<std::string> whitelist;
 
 
 #if defined CONFIG_KERNEL_FREEBSD || defined CONFIG_KERNEL_DRAGONFLY
@@ -81,19 +68,21 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives, const Exe
 	// Of two machines I had access to, freebsd 6.3 had only real devices,
 	// while freebsd 4.10 had lots of dummy ones (ad1, ad2, ad3, da0, da1, da2, da3, sa0, ...).
 
-	whitelist.push_back("/^ad[0-9]+$/");  // adN without suffix - fbsd ide
-	whitelist.push_back("/^da[0-9]+$/");  // daN without suffix - fbsd scsi, usb
-	whitelist.push_back("/^ada[0-9]+$/");  // adaN without suffix - fbsd ata cam
-// 	whitelist.push_back("/	^sa[0-9]+$/");  // saN without suffix - fbsd scsi tape
-// 	whitelist.push_back("/^ast[0-9]+$/");  // astN without suffix - fbsd ide tape
-	whitelist.push_back("/^aacd[0-9]+$/");  // fbsd adaptec raid
-	whitelist.push_back("/^mlxd[0-9]+$/");  // fbsd mylex raid
-	whitelist.push_back("/^mlyd[0-9]+$/");  // fbsd mylex raid
-	whitelist.push_back("/^amrd[0-9]+$/");  // fbsd AMI raid
-	whitelist.push_back("/^idad[0-9]+$/");  // fbsd compaq raid
-	whitelist.push_back("/^twed[0-9]+$/");  // fbsd 3ware raid
-	// these are checked by smartctl, but they are not mentioned in freebsd docs:
-	whitelist.push_back("/^tw[ae][0-9]+$/");  // fbsd 3ware raid
+	static const std::vector<std::string> whitelist = {
+		"/^ad[0-9]+$/",  // adN without suffix - fbsd ide
+		"/^da[0-9]+$/",  // daN without suffix - fbsd scsi, usb
+		"/^ada[0-9]+$/",  // adaN without suffix - fbsd ata cam
+	// 	"/	^sa[0-9]+$/",  // saN without suffix - fbsd scsi tape
+	// 	"/^ast[0-9]+$/",  // astN without suffix - fbsd ide tape
+		"/^aacd[0-9]+$/",  // fbsd adaptec raid
+		"/^mlxd[0-9]+$/",  // fbsd mylex raid
+		"/^mlyd[0-9]+$/",  // fbsd mylex raid
+		"/^amrd[0-9]+$/",  // fbsd AMI raid
+		"/^idad[0-9]+$/",  // fbsd compaq raid
+		"/^twed[0-9]+$/",  // fbsd 3ware raid
+		// these are checked by smartctl, but they are not mentioned in freebsd docs:
+		"/^tw[ae][0-9]+$/",  // fbsd 3ware raid
+	};
 	// unused: acd - ide cdrom, cd - scsi cdrom, mcd - mitsumi cdrom, scd - sony cdrom,
 	// fd - floppy, fla - diskonchip flash.
 
@@ -135,7 +124,9 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives, const Exe
 	// TODO: No idea how to implement /dev/rmt (scsi tape devices),
 	// I have no files in that directory.
 
-	whitelist.push_back("/^c[0-9]+(?:t[0-9]+)?d[0-9]+s0$/");
+	static const std::vector<std::string> whitelist = {
+		"/^c[0-9]+(?:t[0-9]+)?d[0-9]+s0$/"
+	};
 
 
 
@@ -155,9 +146,11 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives, const Exe
 
 	char whole_part = 'a' + getrawpartition();  // from bsd's util.h
 
-	whitelist.push_back(hz::string_sprintf("/^wd[0-9]+%c$/", whole_part));
-	whitelist.push_back(hz::string_sprintf("/^sd[0-9]+%c$/", whole_part));
-	whitelist.push_back(hz::string_sprintf("/^st[0-9]+%c$/", whole_part));
+	static const std::vector<std::string> whitelist = {
+		hz::string_sprintf("/^wd[0-9]+%c$/", whole_part),
+		hz::string_sprintf("/^sd[0-9]+%c$/", whole_part),
+		hz::string_sprintf("/^st[0-9]+%c$/", whole_part),
+	};
 
 
 
@@ -166,8 +159,9 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives, const Exe
 	// Darwin has /dev/disk0, /dev/disk0s1, etc...
 	// Only real devices are present, so no need for additional checks.
 
-	whitelist.push_back("/^disk[0-9]+$/");
-
+	static const std::vector<std::string> whitelist = {
+		"/^disk[0-9]+$/"
+	};
 
 
 #elif defined CONFIG_KERNEL_QNX
@@ -177,22 +171,25 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives, const Exe
 	// Not sure about the tapes.
 	// Only real devices are present, so no need for additional checks.
 
-	whitelist.push_back("/^hd[0-9]+$/");
+	static const std::vector<std::string> whitelist = {
+		"/^hd[0-9]+$/",
+	}
 
+#else  // unsupported OS
+
+	static const std::vector<std::string> whitelist;
 
 #endif  // unix platforms
 
 
-	std::vector<std::string> matched_devices;
-
-	for (std::size_t i = 0; i < all_devices.size(); ++i) {
-		std::string entry = all_devices[i];
-		if (entry == "." || entry == "..")
-			continue;
+	std::vector<hz::fs::path> matched_devices;
+	std::error_code ec;
+	for(const auto& entry : hz::fs::directory_iterator(dir, ec)) {
+		const auto& path = entry.path();
 
 		bool matched = false;
 		for (const auto& wl_pattern : whitelist) {
-			if (app_pcre_match(wl_pattern, entry)) {
+			if (app_pcre_match(wl_pattern, path.filename())) {
 				matched = true;
 				break;
 			}
@@ -200,22 +197,16 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives, const Exe
 		if (!matched)
 			continue;
 
-		hz::FsPath path = dev_dir + hz::DIR_SEPARATOR_S + all_devices[i];
-
-		// In case these are links, trace them to originals.
+		// In case these are links, check if the originals exists (solaris has dangling links, filter them out).
 		// We don't replace /dev files with real devices - it leads to really bad paths (pci ids for solaris, etc...).
-		std::string link_dest;
-		hz::FsPath real_dev_path;
-		if (path.get_link_destination(link_dest)) {
-			real_dev_path = (hz::path_is_absolute(link_dest) ? link_dest : (dev_dir + hz::DIR_SEPARATOR_S + link_dest));
-			real_dev_path.compress();  // compress in case there are ../-s.
-
-			// solaris has dangling links for non-existant devices, so filter them out.
-			if (!real_dev_path.exists())
-				continue;
+		if (!hz::fs::exists(path)) {
+			continue;
 		}
-
-		matched_devices.push_back(path.str());
+		matched_devices.push_back(path);
+	}
+	if (ec) {
+		debug_out_error("app", DBG_FUNC_MSG << "Cannot list device directory entries.\n");
+		return hz::string_sprintf("Cannot list device directory entries: %s", ec.message().c_str());
 	}
 
 
@@ -241,25 +232,25 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives, const Exe
 					<< matched_devices.size() << ", no need for filtering them out.\n");
 		}
 
-		for (std::size_t i = 0; i < matched_devices.size(); ++i) {
-			hz::File dev_file(matched_devices[i]);
-
-			// we check errno because OS may deny us for some other reason on valid devices.
-			if (open_needed && !dev_file.open("rb") && dev_file.get_errno() == ENXIO) {
-				debug_out_dump("app", DBG_FUNC_MSG << "Device \"" << dev_file.str() << "\" failed to open, ignoring.\n");
-				continue;
+		for (const auto& dev : matched_devices.size()) {
+			if (open_needed) {
+				std::FILE* fp = hz::fs_platform_fopen(dev, "rb");
+				if (!fp && errno = ENXIO) {
+					debug_out_dump("app", DBG_FUNC_MSG << "Device \"" << dev.string() << "\" failed to open, ignoring.\n");
+					continue;
+				}
+				if (fp) {
+					std::fclose(fp);
+				}
+				debug_out_info("app", DBG_FUNC_MSG << "Device \"" << dev.string() << "\" opened successfully, adding to device list.\n");
 			}
-
-			if (open_needed)
-				debug_out_info("app", DBG_FUNC_MSG << "Device \"" << dev_file.str() << "\" opened successfully, adding to device list.\n");
-
-			devices.push_back(dev_file.str());
+			devices.push_back(dev.string());
 		}
 
 	#else  // not *BSD
-		for (std::size_t i = 0; i < matched_devices.size(); ++i) {
-			debug_out_info("app", DBG_FUNC_MSG << "Device \"" << matched_devices[i] << "\" matched the whitelist, adding to device list.\n");
-			devices.push_back(matched_devices[i]);
+		for (const auto& dev : matched_devices) {
+			debug_out_info("app", DBG_FUNC_MSG << "Device \"" << dev << "\" matched the whitelist, adding to device list.\n");
+			devices.push_back(dev);
 		}
 
 	#endif
@@ -267,8 +258,8 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives, const Exe
 	// TODO Sort using natural sort
 	std::sort(devices.begin(), devices.end());
 
-	for (std::size_t i = 0; i < devices.size(); ++i) {
-		drives.emplace_back(std::make_shared<StorageDevice>(devices.at(i)));
+	for (auto& device : devices) {
+		drives.emplace_back(std::make_shared<StorageDevice>(device));
 	}
 
 	return std::string();

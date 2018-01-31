@@ -10,9 +10,6 @@ See LICENSE_zlib.txt for details.
 All tests and examples are covered under the Unlicense. See
 LICENSE_unlicense.txt for details.
 
-Portions of this software are copyright Regents of the University of
-California, see LICENSE_bsd-ucb.txt for details.
-
 Portions of this software are licensed under Boost Software License, see
 LICENSE_boost_1_0.txt and individual source files for copyright information.
 
@@ -23,7 +20,6 @@ these licenses somewhere in your distribution (simply redistributing the
 license files or reproducing their texts in documentation and/or other
 supplied materials is OK):
 * LICENSE_zlib.txt (source distributions only);
-* LICENSE_bsd-ucb.txt (source and binary distributions);
 * LICENSE_boost_1_0.txt (source distributions only).
 
 If you use only portions of HZ, you may ignore this requirement for files you

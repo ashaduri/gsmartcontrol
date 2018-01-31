@@ -17,10 +17,10 @@
 
 #include "hz/string_algo.h"  // string_split
 #include "hz/string_num.h"
-#include "hz/fs_file.h"  // hz::File
 #include "hz/debug.h"
 #include "hz/scoped_ptr.h"
 #include "hz/launch_url.h"
+#include "hz/fs.h"
 #include "rconfig/config.h"
 #include "applib/storage_detector.h"
 #include "applib/smartctl_parser.h"
@@ -90,7 +90,7 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Bu
 	bool show_output_button = true;
 
 	do {
-		std::string smartctl_binary = get_smartctl_binary();
+		std::string smartctl_binary = get_smartctl_binary().u8string();
 
 		// Don't use default options here - they are used when invoked
 		// with a device option.
@@ -1077,20 +1077,19 @@ void GscMainWindow::rescan_devices()
 
 void GscMainWindow::run_update_drivedb()
 {
-	std::string smartctl_binary = get_smartctl_binary();
+	auto smartctl_binary = get_smartctl_binary();
 
 	if (smartctl_binary.empty()) {
 		gui_show_error_dialog("Error Updating Drive Database", "Smartctl binary is not specified in configuration.", this);
 		return;
 	}
 
-	std::string update_binary;
-	hz::FsPath path(smartctl_binary);
-	if (path.is_absolute()) {
-		update_binary = path.get_dirname() + "/";
+	hz::fs::path update_binary_path = hz::fs::u8path("update-smart-drivedb");
+	auto smartctl_path = smartctl_binary;
+	if (smartctl_path.is_absolute()) {
+		update_binary_path = smartctl_path.parent_path() / update_binary_path;
 	}
-	update_binary += "update-smart-drivedb";
-	update_binary = Glib::shell_quote(update_binary);
+	std::string update_binary = Glib::shell_quote(update_binary_path.u8string());
 
 #ifndef _WIN32
 	update_binary = "xterm -hold -e " + update_binary;
@@ -1109,11 +1108,10 @@ void GscMainWindow::run_update_drivedb()
 bool GscMainWindow::add_device(const std::string& file, const std::string& type_arg, const std::string& extra_args)
 {
 #ifndef _WIN32  	// win32 doesn't have device files, so skip the check
-	hz::File f(file);
-	if (!f.exists()) {
-		std::string msg = f.get_error_utf8();  // only errors are reported
+	std::error_code ec;
+	if (!hz::fs::exists(hz::fs::u8path(file), ec)) {
 		gui_show_error_dialog("Cannot add device",
-				(msg.empty() ? ("Device \"" + file + "\" doesn't exist.") : msg), this);
+				(ec.message().empty() ? std::string("Device \"" + file + "\" doesn't exist.") : ec.message()), this);
 		return false;
 	}
 #endif
@@ -1145,11 +1143,12 @@ bool GscMainWindow::add_device(const std::string& file, const std::string& type_
 
 bool GscMainWindow::add_virtual_drive(const std::string& file)
 {
-	hz::File f(file);
-
 	std::string output;
-	if (!f.get_contents(output)) {  // this will send to debug_ too.
-		gui_show_error_dialog("Cannot load data file", f.get_error_utf8(), this);
+	const int max_size = 10*1024*1024;  // 10M
+	auto ec = hz::fs_file_get_contents(hz::fs::u8path(file), output, max_size);
+	if (ec) {
+		debug_out_warn("app", "Cannot open virtual drive file \"" << file << "\": " << ec.message() << "\n");
+		gui_show_error_dialog("Cannot load data file", ec.message(), this);
 		return false;
 	}
 
@@ -1352,11 +1351,12 @@ void GscMainWindow::show_load_virtual_file_chooser()
 			files = dialog.get_filenames();  // in fs encoding
 #endif
 			if (!files.empty()) {
-				last_dir = hz::path_get_dirname(files.front());
+				last_dir = hz::fs::u8path(files.front()).parent_path().u8string();
 			}
 			rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
 			for (const auto& file : files) {
-				if (hz::File(file).is_file()) {  // file chooser returns selected directories as well, ignore them.
+				std::error_code ec;
+				if (!hz::fs::is_directory(hz::fs::u8path(file), ec)) {  // file chooser returns selected directories as well, ignore them.
 					this->add_virtual_drive(file);
 				}
 			}

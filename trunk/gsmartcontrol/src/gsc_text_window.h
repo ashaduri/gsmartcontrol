@@ -16,7 +16,7 @@
 #include <gdk/gdk.h>  // GDK_KEY_Escape
 
 #include "hz/debug.h"
-#include "hz/fs_file.h"
+#include "hz/fs.h"
 #include "hz/scoped_ptr.h"
 #include "rconfig/config.h"
 
@@ -199,7 +199,7 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 					std::string file;
 #if GTK_CHECK_VERSION(3, 20, 0)
 					file = app_ustring_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get())));
-					last_dir = hz::path_get_dirname(file);
+					last_dir = hz::fs::u8path(file).parent_path().u8string();
 #else
 					file = dialog.get_filename();  // in fs encoding
 					last_dir = dialog.get_current_folder();  // save for the future
@@ -210,9 +210,9 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 						file += ".txt";
 					}
 
-					hz::File f(file);
-					if (!f.put_contents(this->contents_)) {  // this will send to debug_ too.
-						gui_show_error_dialog("Cannot save data to file", f.get_error_utf8(), this);
+					auto ec = hz::fs_file_put_contents(hz::fs::u8path(file), this->contents_.c_str());
+					if (ec) {
+						gui_show_error_dialog("Cannot save data to file", ec.message(), this);
 					}
 					break;
 				}
