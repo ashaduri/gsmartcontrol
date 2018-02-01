@@ -2,25 +2,7 @@
 # Add autoconf.m4 directory to local macro search path
 ACLOCAL_AMFLAGS = -I autoconf.m4
 
-SUBDIRS = data debian.dist src
-
-
-# These files are actually needed for compilation.
-noinst_DATA = AUTHORS.txt LICENSE_gsmartcontrol.txt
-
-
-# For the files to be bundled with the distribution, specify them in
-# one of the following.
-
-# These will be installed into docdir.
-# Some of these files are actually needed for compilation (see src/res/Makefile.am).
-dist_doc_DATA = AUTHORS.txt ChangeLog NEWS README.txt \
-	LICENSE_boost_1_0.txt \
-	LICENSE_gpl3.txt \
-	LICENSE_gsmartcontrol.txt \
-	LICENSE_hz.txt \
-	LICENSE_unlicense.txt \
-	LICENSE_zlib.txt
+SUBDIRS = data debian.dist doc src
 
 
 # nobase_ preserves their directory names.
@@ -31,16 +13,12 @@ nobase_dist_doc_DATA = contrib/cron-based_noadmin/README \
 
 
 # Extra files bundled with distribution.
-# file2csource.sh is needed for building but not installed.
-EXTRA_DIST = COPYING INSTALL configure autogen.sh \
+EXTRA_DIST = COPYING ChangeLog Doxyfile INSTALL configure autogen.sh \
 	gsmartcontrol.kdev4 \
-	file2csource.sh \
 	gsmartcontrol.spec
 
 
-
 # rpm support
-
 src-rpm: dist
 	rpmbuild -ts $(distdir).tar.bz2
 
@@ -122,10 +100,12 @@ win-dist-prepare: all
 	$(MKDIR_P) win-dist
 	cp $(top_srcdir)/data/icon_*.png win-dist/
 
+	$(MKDIR_P) win-dist/ui
+	cp $(top_srcdir)/src/ui/* win-dist/ui/
+
 	$(MKDIR_P) win-dist/doc
 	cp data/nsis/distribution.txt win-dist/doc/
-	cp $(top_srcdir)/AUTHORS.txt $(top_srcdir)/LICENSE_* $(top_srcdir)/README.txt win-dist/doc/
-	cp $(top_srcdir)/NEWS win-dist/doc/NEWS.txt
+	cp $(top_srcdir)/doc/* win-dist/doc/
 
 	cp src/gsmartcontrol.exe src/gsmartcontrol.exe.manifest win-dist/
 

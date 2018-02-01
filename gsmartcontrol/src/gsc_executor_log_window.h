@@ -17,7 +17,7 @@
 #include <gtkmm.h>
 #include <memory>
 
-#include "applib/app_ui_res_utils.h"
+#include "applib/app_builder_widget.h"
 #include "applib/cmdex_sync.h"
 
 
@@ -25,15 +25,15 @@
 
 /// The "Execution Log" window.
 /// Use create() / destroy() with this class instead of new / delete!
-class GscExecutorLogWindow : public AppUIResWidget<GscExecutorLogWindow, false> {
+class GscExecutorLogWindow : public AppBuilderWidget<GscExecutorLogWindow, false> {
 	public:
 
-		// name of ui file without a .ui extension and quotes
-		APP_UI_RES_DATA_INIT(gsc_executor_log_window);
+		// name of ui file (without .ui extension) for AppBuilderWidget
+		static inline std::string ui_name = "gsc_executor_log_window";
 
 
 		/// Constructor, GtkBuilder needs this.
-		GscExecutorLogWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui);
+		GscExecutorLogWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui);
 
 
 		/// Show this window and select the last entry
@@ -59,7 +59,7 @@ class GscExecutorLogWindow : public AppUIResWidget<GscExecutorLogWindow, false> 
 
 		/// Hide the window, don't destroy.
 		/// Reimplemented from Gtk::Window.
-		bool on_delete_event_before(GdkEventAny* e);
+		bool on_delete_event(GdkEventAny* e) override;
 
 
 		// ---------- other callbacks

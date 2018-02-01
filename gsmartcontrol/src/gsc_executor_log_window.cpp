@@ -29,25 +29,23 @@
 
 
 
-GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui)
-		: AppUIResWidget<GscExecutorLogWindow, false>(gtkcobj, ref_ui)
+GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui)
+		: AppBuilderWidget<GscExecutorLogWindow, false>(gtkcobj, std::move(ui))
 {
 	// Connect callbacks
 
-	APP_GTKMM_CONNECT_VIRTUAL(delete_event);  // make sure the event handler is called
-
 	Gtk::Button* window_close_button = nullptr;
-	APP_UI_RES_AUTO_CONNECT(window_close_button, clicked);
+	APP_BUILDER_AUTO_CONNECT(window_close_button, clicked);
 
 	Gtk::Button* window_save_current_button = nullptr;
-	APP_UI_RES_AUTO_CONNECT(window_save_current_button, clicked);
+	APP_BUILDER_AUTO_CONNECT(window_save_current_button, clicked);
 
 	Gtk::Button* window_save_all_button = nullptr;
-	APP_UI_RES_AUTO_CONNECT(window_save_all_button, clicked);
+	APP_BUILDER_AUTO_CONNECT(window_save_all_button, clicked);
 
 
 	Gtk::Button* clear_command_list_button = nullptr;
-	APP_UI_RES_AUTO_CONNECT(clear_command_list_button, clicked);
+	APP_BUILDER_AUTO_CONNECT(clear_command_list_button, clicked);
 
 
 
@@ -87,7 +85,7 @@ GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, const Glib::
 
 		selection = treeview->get_selection();
 		selection->signal_changed().connect(sigc::mem_fun(*this,
-				&self_type::on_tree_selection_changed) );
+				&GscExecutorLogWindow::on_tree_selection_changed) );
 
 	}
 
@@ -108,8 +106,8 @@ GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, const Glib::
 	// ---------------
 
 	// Connect to CmdexSync signal
-	cmdex_sync_signal_execute_finish().connect(sigc::mem_fun(*this, &self_type::on_command_output_received));
-
+	cmdex_sync_signal_execute_finish().connect(sigc::mem_fun(*this,
+			&GscExecutorLogWindow::on_command_output_received));
 
 	// show();
 }
@@ -172,10 +170,10 @@ void GscExecutorLogWindow::on_command_output_received(const CmdexSyncCommandInfo
 
 
 
-bool GscExecutorLogWindow::on_delete_event_before([[maybe_unused]] GdkEventAny* e)
+bool GscExecutorLogWindow::on_delete_event([[maybe_unused]] GdkEventAny* e)
 {
-	this->hide();
-	return true;  // event handled, don't call default virtual handler
+	on_window_close_button_clicked();
+	return true;  // event handled
 }
 
 

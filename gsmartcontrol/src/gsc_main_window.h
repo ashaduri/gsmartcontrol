@@ -15,9 +15,8 @@
 #include <map>
 #include <gtkmm.h>
 
-#include "applib/app_ui_res_utils.h"
+#include "applib/app_builder_widget.h"
 #include "applib/storage_device.h"
-#include "applib/app_gtkmm_features.h"  // APP_GTKMM_CONNECT_VIRTUAL
 
 
 
@@ -29,21 +28,20 @@ class GscInfoWindow;  // declared in gsc_info_window.h
 
 /// The main window.
 /// Use create() / destroy() with this class instead of new / delete!
-class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
+class GscMainWindow : public AppBuilderWidget<GscMainWindow, false> {
 	public:
 
 		friend class GscMainWindowIconView;  // It needs our privates
 
-		// name of ui file without a .ui extension and quotes
-		APP_UI_RES_DATA_INIT(gsc_main_window);
+		// name of ui file (without .ui extension) for AppBuilderWidget
+		static inline std::string ui_name = "gsc_main_window";
 
 
 		/// Constructor, GtkBuilder needs this.
-		GscMainWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui);
+		GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui);
 
-
-		// Overridden from InstanceManager
-		void obj_destroy() override;
+		/// Destructor.
+		virtual ~GscMainWindow();
 
 
 		/// Scan for devices and fill the iconview
@@ -124,7 +122,7 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 
 
 		/// Called when quit has been requested (by delete event or Quit action)
-		bool quit_requested();
+		void quit_requested();
 
 
 		// -------------------- callbacks
@@ -134,7 +132,7 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 		/// Quit the application on delete event (by default it calls hide()).
 		/// If some test is running, show a question dialog first.
 		/// Reimplemented from Gtk::Window.
-		bool on_delete_event_before(GdkEventAny* e);
+		bool on_delete_event(GdkEventAny* e) override;
 
 
 		// ---------- other callbacks
@@ -157,7 +155,7 @@ class GscMainWindow : public AppUIResWidget<GscMainWindow, false> {
 
 	private:
 
-		GscMainWindowIconView* iconview = nullptr;  ///< The main icon view, as created by obj_create()
+		GscMainWindowIconView* iconview = nullptr;  ///< The main icon view
 		std::vector<StorageDevicePtr> drives;  ///< Scanned drives
 
 		Glib::RefPtr<Gtk::UIManager> ui_manager;  ///< UI manager

@@ -51,11 +51,9 @@
 
 
 
-GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui)
-		: AppUIResWidget<GscMainWindow, false>(gtkcobj, ref_ui)
+GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui)
+		: AppBuilderWidget<GscMainWindow, false>(gtkcobj, std::move(ui))
 {
-	APP_GTKMM_CONNECT_VIRTUAL(delete_event);  // make sure the event handler is called
-
 	// iconview, gtkuimanager stuff (menus), custom labels
 	create_widgets();
 
@@ -152,12 +150,11 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Bu
 
 	// Scan
 	populate_iconview(smartctl_valid);
-
 }
 
 
 
-void GscMainWindow::obj_destroy()
+GscMainWindow::~GscMainWindow()
 {
 	// This is needed because for some reason, if any icon is selected,
 	// on_iconview_selection_changed() is called even after the window is deleted,
@@ -299,90 +296,90 @@ bool GscMainWindow::create_widgets()
 
 		action = Gtk::Action::create(APP_ACTION_NAME(action_quit), Gtk::Stock::QUIT);
 		actiongroup_main->add((action_map[action_quit] = action), Gtk::AccelKey("<control>Q"),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_quit));
+				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_quit));
 
 	actiongroup_main->add(Gtk::Action::create("device_menu", "_Device"));
 
 		action = Gtk::Action::create(APP_ACTION_NAME(action_view_details), Gtk::Stock::INFO, "_View details",
 				"View detailed information");
 		actiongroup_device->add((action_map[action_view_details] = action), Gtk::AccelKey("<control>V"),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_view_details));
+				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_view_details));
 
 		action = Gtk::ToggleAction::create(APP_ACTION_NAME(action_enable_smart), "Enable S_MART",
 				"Toggle SMART status. The status will be preserved at least until reboot (unless you toggle it again).");
 		lookup_widget<Gtk::CheckButton*>("status_smart_enabled_check")->set_related_action(action);
 		actiongroup_device->add((action_map[action_enable_smart] = action), Gtk::AccelKey("<control>M"),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_enable_smart));
+				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_enable_smart));
 
 		action = Gtk::ToggleAction::create(APP_ACTION_NAME(action_enable_aodc), "Enable Auto O_ffline Data Collection",
 				"Toggle Automatic Offline Data Collection which will update \"offline\" SMART attributes every four hours");
 		lookup_widget<Gtk::CheckButton*>("status_aodc_enabled_check")->set_related_action(action);
 		actiongroup_device->add((action_map[action_enable_aodc] = action), Gtk::AccelKey("<control>F"),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_enable_aodc));
+				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_enable_aodc));
 
 		action = Gtk::Action::create(APP_ACTION_NAME(action_reread_device_data), Gtk::Stock::REFRESH, "R_e-read Data",
 				"Re-read basic SMART data");
 		actiongroup_device->add((action_map[action_reread_device_data] = action), Gtk::AccelKey("<control>E"),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_reread_device_data));
+				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_reread_device_data));
 
 		action = Gtk::Action::create(APP_ACTION_NAME(action_perform_tests), "Perform _Tests...",
 				"Perform various self-tests on the drive");
 		actiongroup_device->add((action_map[action_perform_tests] = action), Gtk::AccelKey("<control>T"),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_perform_tests));
+				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_perform_tests));
 
 		action = Gtk::Action::create(APP_ACTION_NAME(action_remove_device), Gtk::Stock::REMOVE, "Re_move Added Device",
 				"Remove previously added device");
 		actiongroup_device->add((action_map[action_remove_device] = action), Gtk::AccelKey("<control>W"),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_remove_device));
+				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_remove_device));
 
 		action = Gtk::Action::create(APP_ACTION_NAME(action_remove_virtual_device), Gtk::Stock::REMOVE, "Re_move Virtual Device",
 				"Remove previously loaded virtual device");
 		actiongroup_device->add((action_map[action_remove_virtual_device] = action), Gtk::AccelKey("Delete"),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_remove_virtual_device));
+				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_remove_virtual_device));
 
 		// ---
 		action = Gtk::Action::create(APP_ACTION_NAME(action_add_device), Gtk::Stock::OPEN, "_Add Device...",
 				"Manually add device to device list");
 		actiongroup_main->add((action_map[action_add_device] = action), Gtk::AccelKey("<control>D"),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_add_device));
+				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_add_device));
 
 		action = Gtk::Action::create(APP_ACTION_NAME(action_load_virtual), Gtk::Stock::OPEN, "L_oad Smartctl Output as Virtual Device...",
 				"Load smartctl output from a text file as a read-only virtual device");
 		actiongroup_main->add((action_map[action_load_virtual] = action), Gtk::AccelKey("<control>O"),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_load_virtual));
+				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_load_virtual));
 
 		action = Gtk::Action::create(APP_ACTION_NAME(action_rescan_devices), Gtk::Stock::REFRESH, "_Re-scan Device List",
 				"Re-scan device list");
 		actiongroup_main->add((action_map[action_rescan_devices] = action), Gtk::AccelKey("<control>R"),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_rescan_devices));
+				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_rescan_devices));
 
 	actiongroup_main->add(Gtk::Action::create("options_menu", "_Options"));
 
 		action = Gtk::Action::create(APP_ACTION_NAME(action_executor_log), "View Execution Log");
 		actiongroup_main->add((action_map[action_executor_log] = action),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_executor_log));
+				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_executor_log));
 
 		action = Gtk::Action::create(APP_ACTION_NAME(action_update_drivedb), "Update Drive Database");
 		actiongroup_main->add((action_map[action_update_drivedb] = action),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_update_drivedb));
+				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_update_drivedb));
 
 		action = Gtk::Action::create(APP_ACTION_NAME(action_preferences), Gtk::Stock::PREFERENCES);
 		actiongroup_main->add((action_map[action_preferences] = action), Gtk::AccelKey("<alt>P"),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_preferences));
+				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_preferences));
 
 	actiongroup_main->add(Gtk::Action::create("help_menu", "_Help"));
 
 		action = Gtk::Action::create(APP_ACTION_NAME(action_online_documentation), Gtk::Stock::HELP);
 		actiongroup_main->add((action_map[action_online_documentation] = action), Gtk::AccelKey("F1"),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_online_documentation));
+				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_online_documentation));
 
 		action = Gtk::Action::create(APP_ACTION_NAME(action_support), "Support");
 		actiongroup_main->add((action_map[action_support] = action),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_support));
+				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_support));
 
 		action = Gtk::Action::create(APP_ACTION_NAME(action_about), Gtk::Stock::ABOUT);
 		actiongroup_main->add((action_map[action_about] = action),
-				sigc::bind(sigc::mem_fun(*this, &self_type::on_action_activated), action_about));
+				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_about));
 
 
 
@@ -1375,12 +1372,12 @@ void GscMainWindow::show_load_virtual_file_chooser()
 
 
 
-bool GscMainWindow::quit_requested()
+void GscMainWindow::quit_requested()
 {
 	// if at least one drive is having a test performed, disallow.
 	if (this->testing_active()) {
 		if (!ask_about_quit_on_test(*this)) {
-			return true;  // handled
+			return;
 		}
 	}
 
@@ -1398,16 +1395,15 @@ bool GscMainWindow::quit_requested()
 	}
 
 	app_quit();  // ends the main loop
-
-	return true;  // event handled, don't call default virtual handler
 }
 
 
 
 // by default, delete_event calls hide().
-bool GscMainWindow::on_delete_event_before([[maybe_unused]] GdkEventAny* e)
+bool GscMainWindow::on_delete_event([[maybe_unused]] GdkEventAny* e)
 {
-	return quit_requested();
+	quit_requested();
+	return true;  // event handled
 }
 
 

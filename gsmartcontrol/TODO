@@ -35,7 +35,6 @@ GTKMM 4.
 	GTK_CHECK_VERSION, GTKMM_CHECK_VERSION
 	port rconfig/autosave.h from glib to glibmm.
 	local_glibmm.h
-	APP_GTKMM_CONNECT_VIRTUAL ?
 	make dpi-aware?
 
 JSON.
@@ -43,23 +42,23 @@ JSON.
 		Not sure, we still want to support old-format files.
 		Maybe make pcre optional (only for parsing the old format)
 
-Port to std::filesystem (gcc 8; mingw not yet supported).
-	remove i18n.h
-	Can use experimental/filesystem (no fstream support yet).
+Use header-only formatting library:
+	For libdebug.
+	Instead of string_sprintf.
 
-res_data.h - port to static string_view, maybe simplify?
-	maybe remove compile-time support?
+Remove bin2ascii_encoder.h.
 
 Use std::from_chars() in string_is_numeric_impl_classic_locale() (gcc 8)
-
-Mark with gettext
 
 Fix win32 crash.
 
 Check if we need to distribute MIT license.
 
+Detect and link with clang's / gcc's experimental lib, if needed.
 
 Check TODOs
+
+Mark with gettext
 
 
 

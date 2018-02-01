@@ -257,73 +257,13 @@ AC_SUBST(WINDOWS_ARCH)
 # -------------------------------------------------------------------------------------
 
 
-RES_FILES="src/res/gsc_about_dialog.ui \
-	src/res/gsc_add_device_window.ui \
-	src/res/gsc_executor_log_window.ui \
-	src/res/gsc_info_window.ui \
-	src/res/gsc_main_window.ui \
-	src/res/gsc_preferences_window.ui \
-	src/res/gsc_text_window.ui \
-	AUTHORS.txt  LICENSE_gsmartcontrol.txt"
-
-# Unfortunately, _SOURCES can't contain substitutions, so we use LIBADD.
-RES_LIBADD=""  # .o file to put into .a, libres_a_LIBADD, libres_a_DEPENDENCIES.
-RES_DIST=""  # only files in "res" directory, EXTRA_DIST
-RES_TARGETS=""  # entry for each file in makefile
-
-for RES_FILE in $RES_FILES;
-do  # on separate line for portability
-	RES_BASE=`echo "$RES_FILE" | sed 's/.*\///'`  # "a/b/c" -> "c", "c" -> "c"
-	RES_DIR=`AS_DIRNAME(["$RES_FILE"])`  # "a/b/c" -> "a/b"
-	RES_BASE_NOEXT=`expr "$RES_BASE" : '\(.*\)\..*'`  # "a.b.c" -> "a.b"
-	RES_BASE_EXT=`expr "$RES_BASE" : '.*\.\(.*\)'`  # "a.b.c" -> "c"
-
-	# Add to EXTRA_DIST only if it's in the same directory. Other files should
-	# be added in their own directories.
-	RES_FILE_CANON="\$(top_srcdir)/$RES_FILE"
-	if test "$RES_DIR" = "src/res"; then
-		RES_DIST="$RES_DIST $RES_BASE"
-		RES_FILE_CANON="\$(srcdir)/$RES_BASE"  # shorter path, better make behaviour
-	fi
-
-	if test "$RES_BASE_EXT" = "ui"; then
-		RES_LIBADD="$RES_LIBADD $RES_BASE_NOEXT.ui.$ac_objext"  # file.ui.o
-		RES_TARGETS="$RES_TARGETS
-$RES_BASE_NOEXT.ui.cpp: $RES_FILE_CANON
-	\"\$(top_srcdir)/file2csource.sh\" \"$RES_FILE_CANON\" \"$RES_BASE_NOEXT.ui.cpp\" \"$RES_BASE_NOEXT\"_ui
-"
-
-	else  # txt, etc...
-		SRC_FILE="$RES_BASE.cpp"
-		RES_LIBADD="$RES_LIBADD $RES_BASE.$ac_objext"  # file.txt.o
-
-		RES_TARGETS="$RES_TARGETS
-$SRC_FILE: $RES_FILE_CANON
-	\"\$(top_srcdir)/file2csource.sh\" \"$RES_FILE_CANON\" \"$SRC_FILE\" \"$RES_BASE_NOEXT\"_$RES_BASE_EXT
-"
-	fi
-
-done
-
-
-# export to makefile.am
-AC_SUBST(RES_LIBADD)
-AC_SUBST(RES_DIST)
-AC_SUBST(RES_TARGETS)
-
-# Don't put this one into Makefile.in by default - it's multiline and causes havoc.
-_AM_SUBST_NOTMAKE([RES_TARGETS])
-
-
-# -------------------------------------------------------------------------------------
-
-
 # Export some configure variables as defines for the source code.
 # Note: Autoconf manual says that AC_DEFINE won't work here.
 
 ADDITIONAL_FLAGS="-DPACKAGE_PKGDATA_DIR=\"\\\"\$(pkgdatadir)\\\"\" \
 -DPACKAGE_SYSCONF_DIR=\"\\\"\$(sysconfdir)\\\"\" \
--DTOP_SRC_DIR=\"\\\"\$(top_srcdir)\\\"\" \
+-DPACKAGE_DOC_DIR=\"\\\"\$(docdir)\\\"\" \
+-DTOP_SOURCE_DIR=\"\\\"\$(top_srcdir)\\\"\" \
 -DHZ_USE_LIBDEBUG=1 \
 -DHZ_ENABLE_COMPILED_RES_DATA=1"
 

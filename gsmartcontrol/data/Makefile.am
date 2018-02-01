@@ -28,13 +28,9 @@ update-icon-cache:
 	fi
 
 
-# Application data, installs to /usr/share/appname
-appdatadir = $(pkgdatadir)
-appdata_DATA = icon_cddvd.png icon_hdd.png
-
-
-# pkgdatadir = $(datadir)/gsmartcontrol
-# pkgdata_DATA =
+# Icons
+icondir = $(pkgdatadir)/icons
+icon_DATA = icon_cddvd.png icon_hdd.png
 
 # Desktop files
 desktopdir = $(datadir)/applications
@@ -57,7 +53,7 @@ pixmaps_DATA = 48/gsmartcontrol.png gsmartcontrol.xpm
 
 
 # Put everything inside the distribution
-EXTRA_DIST = $(appdata_DATA) $(polkit_DATA) gsmartcontrol.ico gsmartcontrol.xpm
+EXTRA_DIST = $(icon_DATA) $(polkit_DATA) gsmartcontrol.ico gsmartcontrol.xpm
 
 
 bin_SCRIPTS = gsmartcontrol-root

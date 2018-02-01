@@ -14,7 +14,7 @@
 
 #include <gtkmm.h>
 
-#include "applib/app_ui_res_utils.h"
+#include "applib/app_builder_widget.h"
 
 
 
@@ -26,15 +26,15 @@ class GscMainWindow;  // declared in gsc_main_window.h
 
 /// The Preferences window.
 /// Use create() / destroy() with this class instead of new / delete!
-class GscPreferencesWindow : public AppUIResWidget<GscPreferencesWindow, true> {
+class GscPreferencesWindow : public AppBuilderWidget<GscPreferencesWindow, true> {
 	public:
 
-		// name of ui file without a .ui extension and quotes
-		APP_UI_RES_DATA_INIT(gsc_preferences_window);
+		// name of ui file (without .ui extension) for AppBuilderWidget
+		static inline std::string ui_name = "gsc_preferences_window";
 
 
 		/// Constructor, GtkBuilder needs this.
-		GscPreferencesWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui);
+		GscPreferencesWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui);
 
 
 		/// Set main window so that we can manipulate it
@@ -63,7 +63,7 @@ class GscPreferencesWindow : public AppUIResWidget<GscPreferencesWindow, true> {
 
 		/// Destroy this object on delete event (by default it calls hide()).
 		/// Reimplemented from Gtk::Window.
-		bool on_delete_event_before(GdkEventAny* e);
+		bool on_delete_event(GdkEventAny* e) override;
 
 
 		// ---------- other callbacks

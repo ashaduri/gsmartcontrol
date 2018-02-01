@@ -142,6 +142,9 @@ SectionIn 1 RO
 	; Include the "doc" directory completely.
 	File /r doc
 
+	; Include the "ui" directory completely.
+	File /r ui
+
 	; GTK and stuff
 	File /r etc
 	File /r share
@@ -235,6 +238,8 @@ Section Uninstall
 	Delete "$INSTDIR\drivedb.h.*"
 
 	RMDir /r "$INSTDIR\doc"
+
+	RMDir /r "$INSTDIR\ui"
 
 	; GTK and stuff
 	RMDir /r "$INSTDIR\etc"

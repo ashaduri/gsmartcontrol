@@ -34,9 +34,6 @@
 class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 	public:
 
-		using self_type = GscPreferencesDeviceOptionsTreeView;  ///< Self type, needed for CONNECT_VIRTUAL
-
-
 		/// Constructor, GtkBuilder needs this.
 		GscPreferencesDeviceOptionsTreeView(BaseObjectType* gtkcobj, [[maybe_unused]] const Glib::RefPtr<Gtk::Builder>& ref_ui)
 				: Gtk::TreeView(gtkcobj)
@@ -67,7 +64,7 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 			Glib::RefPtr<Gtk::TreeSelection> selection = this->get_selection();
 
 			selection->signal_changed().connect(sigc::mem_fun(*this,
-					&self_type::on_selection_changed) );
+					&GscPreferencesDeviceOptionsTreeView::on_selection_changed) );
 		}
 
 
@@ -227,21 +224,19 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 
 
 
-GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui)
-		: AppUIResWidget<GscPreferencesWindow, true>(gtkcobj, ref_ui), device_options_treeview(0)
+GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui)
+		: AppBuilderWidget<GscPreferencesWindow, true>(gtkcobj, std::move(ui))
 {
 	// Connect callbacks
 
-	APP_GTKMM_CONNECT_VIRTUAL(delete_event);  // make sure the event handler is called
-
 	Gtk::Button* window_cancel_button = nullptr;
-	APP_UI_RES_AUTO_CONNECT(window_cancel_button, clicked);
+	APP_BUILDER_AUTO_CONNECT(window_cancel_button, clicked);
 
 	Gtk::Button* window_ok_button = nullptr;
-	APP_UI_RES_AUTO_CONNECT(window_ok_button, clicked);
+	APP_BUILDER_AUTO_CONNECT(window_ok_button, clicked);
 
 	Gtk::Button* window_reset_all_button = nullptr;
-	APP_UI_RES_AUTO_CONNECT(window_reset_all_button, clicked);
+	APP_BUILDER_AUTO_CONNECT(window_reset_all_button, clicked);
 
 
 	Glib::ustring smartctl_binary_tooltip = "A path to smartctl binary. If the path is not absolute, the binary will be looked for in user's PATH.";
@@ -256,18 +251,18 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const Glib::
 	}
 
 	Gtk::Button* smartctl_binary_browse_button = nullptr;
-	APP_UI_RES_AUTO_CONNECT(smartctl_binary_browse_button, clicked);
+	APP_BUILDER_AUTO_CONNECT(smartctl_binary_browse_button, clicked);
 
 
 	Gtk::Button* device_options_add_device_button = nullptr;
-	APP_UI_RES_AUTO_CONNECT(device_options_add_device_button, clicked);
+	APP_BUILDER_AUTO_CONNECT(device_options_add_device_button, clicked);
 
 	Gtk::Button* device_options_remove_device_button = nullptr;
-	APP_UI_RES_AUTO_CONNECT(device_options_remove_device_button, clicked);
+	APP_BUILDER_AUTO_CONNECT(device_options_remove_device_button, clicked);
 
 
 	Gtk::Entry* device_options_device_entry = nullptr;
-	APP_UI_RES_AUTO_CONNECT(device_options_device_entry, changed);
+	APP_BUILDER_AUTO_CONNECT(device_options_device_entry, changed);
 
 	Glib::ustring device_options_tooltip = "A device name to match";
 #if defined CONFIG_KERNEL_FAMILY_WINDOWS
@@ -284,10 +279,10 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, const Glib::
 
 
 	Gtk::Entry* device_options_type_entry = nullptr;
-	APP_UI_RES_AUTO_CONNECT(device_options_type_entry, changed);
+	APP_BUILDER_AUTO_CONNECT(device_options_type_entry, changed);
 
 	Gtk::Entry* device_options_parameter_entry = nullptr;
-	APP_UI_RES_AUTO_CONNECT(device_options_parameter_entry, changed);
+	APP_BUILDER_AUTO_CONNECT(device_options_parameter_entry, changed);
 
 
 	// Accelerators
@@ -461,10 +456,10 @@ void GscPreferencesWindow::export_config()
 
 
 
-bool GscPreferencesWindow::on_delete_event_before([[maybe_unused]] GdkEventAny* e)
+bool GscPreferencesWindow::on_delete_event([[maybe_unused]] GdkEventAny* e)
 {
-	destroy(this);  // deletes this object and nullifies instance
-	return true;  // event handled, don't call default virtual handler
+	on_window_cancel_button_clicked();
+	return true;  // event handled
 }
 
 

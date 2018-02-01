@@ -15,7 +15,7 @@
 #include <gtkmm.h>
 #include <map>
 
-#include "applib/app_ui_res_utils.h"
+#include "applib/app_builder_widget.h"
 #include "applib/storage_device.h"
 #include "applib/selftest.h"
 
@@ -24,21 +24,18 @@
 
 /// The "Drive Information" window.
 /// Use create() / destroy() with this class instead of new / delete!
-class GscInfoWindow : public AppUIResWidget<GscInfoWindow, true> {
+class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 	public:
 
-		// name of ui file without a .ui extension and quotes
-		APP_UI_RES_DATA_INIT(gsc_info_window);
+		// name of ui file (without .ui extension) for AppBuilderWidget
+		static inline std::string ui_name = "gsc_info_window";
 
 
 		/// Constructor, GtkBuilder needs this.
-		GscInfoWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui);
+		GscInfoWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui);
 
 		/// Virtual destructor
 		virtual ~GscInfoWindow();
-
-		// Overridden from InstanceManager
-		void obj_destroy() override;
 
 
 		/// Set the drive to show
@@ -108,7 +105,7 @@ class GscInfoWindow : public AppUIResWidget<GscInfoWindow, true> {
 		/// Destroy this object on delete event (by default it calls hide()).
 		/// If a test is running, show a question dialog first.
 		/// Reimplemented from Gtk::Window.
-		bool on_delete_event_before(GdkEventAny* e);
+		bool on_delete_event(GdkEventAny* e) override;
 
 
 		// ---------- other callbacks
