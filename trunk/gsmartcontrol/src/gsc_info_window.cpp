@@ -178,8 +178,8 @@ namespace {
 
 
 
-GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui)
-		: AppUIResWidget<GscInfoWindow, true>(gtkcobj, ref_ui)
+GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui)
+		: AppBuilderWidget<GscInfoWindow, true>(gtkcobj, std::move(ui))
 {
 	// Size
 	{
@@ -202,28 +202,26 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Bu
 
 	// Connect callbacks
 
-	APP_GTKMM_CONNECT_VIRTUAL(delete_event);  // make sure the event handler is called
-
 	Gtk::Button* refresh_info_button = nullptr;
-	APP_UI_RES_AUTO_CONNECT(refresh_info_button, clicked);
+	APP_BUILDER_AUTO_CONNECT(refresh_info_button, clicked);
 
 	Gtk::Button* view_output_button = nullptr;
-	APP_UI_RES_AUTO_CONNECT(view_output_button, clicked);
+	APP_BUILDER_AUTO_CONNECT(view_output_button, clicked);
 
 	Gtk::Button* save_info_button = nullptr;
-	APP_UI_RES_AUTO_CONNECT(save_info_button, clicked);
+	APP_BUILDER_AUTO_CONNECT(save_info_button, clicked);
 
 	Gtk::Button* close_window_button = nullptr;
-	APP_UI_RES_AUTO_CONNECT(close_window_button, clicked);
+	APP_BUILDER_AUTO_CONNECT(close_window_button, clicked);
 
 	Gtk::ComboBox* test_type_combo = nullptr;
-	APP_UI_RES_AUTO_CONNECT(test_type_combo, changed);
+	APP_BUILDER_AUTO_CONNECT(test_type_combo, changed);
 
 	Gtk::Button* test_execute_button = nullptr;
-	APP_UI_RES_AUTO_CONNECT(test_execute_button, clicked);
+	APP_BUILDER_AUTO_CONNECT(test_execute_button, clicked);
 
 	Gtk::Button* test_stop_button = nullptr;
-	APP_UI_RES_AUTO_CONNECT(test_stop_button, clicked);
+	APP_BUILDER_AUTO_CONNECT(test_stop_button, clicked);
 
 
 	// Accelerators
@@ -334,16 +332,7 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Bu
 
 GscInfoWindow::~GscInfoWindow()
 {
-	for (auto& iter : treeview_menus) {
-		delete iter.second;
-	}
-}
-
-
-
-void GscInfoWindow::obj_destroy()
-{
-	// Main window size. We don't store position to avoid overlaps
+	// Store window size. We don't store position to avoid overlaps.
 	{
 		int window_w = 0, window_h = 0;
 		get_size(window_w, window_h);
@@ -351,6 +340,9 @@ void GscInfoWindow::obj_destroy()
 		rconfig::set_data("gui/info_window/default_size_h", window_h);
 	}
 
+	for (auto& iter : treeview_menus) {
+		delete iter.second;
+	}
 }
 
 
@@ -698,14 +690,10 @@ void GscInfoWindow::show_tests()
 
 
 
-bool GscInfoWindow::on_delete_event_before([[maybe_unused]] GdkEventAny* e)
+bool GscInfoWindow::on_delete_event([[maybe_unused]] GdkEventAny* e)
 {
-	if (drive && drive->get_test_is_active()) {  // disallow close if test is active.
-		gui_show_warn_dialog("Please wait until all tests are finished.", this);
-		return true;  // handled
-	}
-	destroy(this);  // deletes this object and nullifies instance
-	return true;  // event handled, don't call default virtual handler
+	on_close_window_button_clicked();
+	return true;  // event handled
 }
 
 
@@ -837,12 +825,14 @@ void GscInfoWindow::on_save_info_button_clicked()
 
 
 
-
 void GscInfoWindow::on_close_window_button_clicked()
 {
-	on_delete_event_before(nullptr);
+	if (drive && drive->get_test_is_active()) {  // disallow close if test is active.
+		gui_show_warn_dialog("Please wait until all tests are finished.", this);
+	} else {
+		destroy(this);  // deletes this object and nullifies instance
+	}
 }
-
 
 
 

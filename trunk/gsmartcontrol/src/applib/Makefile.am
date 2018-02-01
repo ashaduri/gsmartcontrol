@@ -6,8 +6,8 @@ libapplib_a_SOURCES = app_gtkmm_utils.cpp cmdex.cpp \
 	smartctl_parser.cpp storage_detector.cpp storage_detector_linux.cpp storage_detector_other.cpp \
 	storage_detector_win32.cpp storage_device.cpp storage_property.cpp \
 	storage_property_descr.cpp
-noinst_HEADERS = app_gtkmm_features.h app_gtkmm_utils.h \
-	app_pcrecpp.h app_ui_res_utils.h cli_executors.h cmdex.h cmdex_sync.h cmdex_sync_gui.h executor_factory.h gui_utils.h \
+noinst_HEADERS = app_builder_widget.h app_gtkmm_features.h app_gtkmm_utils.h \
+	app_pcrecpp.h cli_executors.h cmdex.h cmdex_sync.h cmdex_sync_gui.h executor_factory.h gui_utils.h \
 	selftest.h smartctl_executor.h smartctl_executor_gui.h smartctl_parser.h \
 	storage_detector.h storage_detector_helpers.h storage_detector_linux.h storage_detector_other.h \
 	storage_detector_win32.h storage_device.h storage_property.h storage_property_colors.h \
@@ -15,10 +15,6 @@ noinst_HEADERS = app_gtkmm_features.h app_gtkmm_utils.h \
 
 # don't use absolute path for the current dir's .a, because the make
 # dependency resolver won't get it (needed for parallel builds)
-
-app_ui_res_utils_example_SOURCES = app_ui_res_utils_example.cpp app_ui_res_utils_example_data.cpp
-app_ui_res_utils_example_LDADD = libapplib.a \
-	$(top_builddir)/src/libdebug/libdebug.a
 
 smartctl_executor_example_SOURCES = smartctl_executor_example.cpp
 smartctl_executor_example_LDADD = libapplib.a \
@@ -41,7 +37,7 @@ SUBDIRS=../libdebug
 # we don't list them in a separate variable because otherwise kdevelop won't see them.
 noinst_PROGRAMS =
 if ENABLE_EXAMPLES
-noinst_PROGRAMS += app_ui_res_utils_example smartctl_executor_example smartctl_parser_example \
+noinst_PROGRAMS += smartctl_executor_example smartctl_parser_example \
 	storage_detector_example spawn_example
 endif
 

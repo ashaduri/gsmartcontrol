@@ -6,7 +6,7 @@ noinst_HEADERS = bad_cast_exception.h bin2ascii_encoder.h \
 	format_unit.h fs.h fs_ns.h \
 	instance_manager.h launch_url.h \
 	locale_tools.h process_signal.h \
-	res_data.h scoped_ptr.h stream_cast.h \
+	scoped_ptr.h stream_cast.h \
 	string_algo.h string_num.h string_sprintf.h \
 	system_specific.h win32_tools.h
 

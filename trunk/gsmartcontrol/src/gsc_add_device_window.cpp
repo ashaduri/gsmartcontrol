@@ -26,21 +26,19 @@
 
 
 
-GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui)
-		: AppUIResWidget<GscAddDeviceWindow, true>(gtkcobj, ref_ui)
+GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui)
+		: AppBuilderWidget<GscAddDeviceWindow, true>(gtkcobj, std::move(ui))
 {
 	// Connect callbacks
 
-	APP_GTKMM_CONNECT_VIRTUAL(delete_event);  // make sure the event handler is called
-
 	Gtk::Button* window_cancel_button = nullptr;
-	APP_UI_RES_AUTO_CONNECT(window_cancel_button, clicked);
+	APP_BUILDER_AUTO_CONNECT(window_cancel_button, clicked);
 
 	Gtk::Button* window_ok_button = nullptr;
-	APP_UI_RES_AUTO_CONNECT(window_ok_button, clicked);
+	APP_BUILDER_AUTO_CONNECT(window_ok_button, clicked);
 
 	Gtk::Button* device_name_browse_button = nullptr;
-	APP_UI_RES_AUTO_CONNECT(device_name_browse_button, clicked);
+	APP_BUILDER_AUTO_CONNECT(device_name_browse_button, clicked);
 
 
 	Glib::ustring device_name_tooltip = "Device name";
@@ -54,7 +52,7 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, const Glib::RefP
 	}
 
 	Gtk::Entry* device_name_entry = nullptr;
-	APP_UI_RES_AUTO_CONNECT(device_name_entry, changed);
+	APP_BUILDER_AUTO_CONNECT(device_name_entry, changed);
 	if (device_name_entry) {
 		app_gtkmm_set_widget_tooltip(*device_name_entry, device_name_tooltip);
 	}
@@ -128,10 +126,10 @@ void GscAddDeviceWindow::set_main_window(GscMainWindow* main_window)
 
 
 
-bool GscAddDeviceWindow::on_delete_event_before([[maybe_unused]] GdkEventAny* e)
+bool GscAddDeviceWindow::on_delete_event([[maybe_unused]] GdkEventAny* e)
 {
-	destroy(this);  // deletes this object and nullifies instance
-	return true;  // event handled, don't call default virtual handler
+	on_window_cancel_button_clicked();
+	return true;  // event handled
 }
 
 

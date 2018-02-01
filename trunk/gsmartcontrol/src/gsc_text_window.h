@@ -21,7 +21,7 @@
 #include "rconfig/config.h"
 
 #include "applib/app_gtkmm_features.h"
-#include "applib/app_ui_res_utils.h"
+#include "applib/app_builder_widget.h"
 #include "applib/app_gtkmm_utils.h"
 
 
@@ -37,29 +37,24 @@ struct SmartctlOutputInstance {
 /// Use create() / destroy() with this class instead of new / delete!
 /// \tparam InstanceSwitch e.g. supply 3 different classes to use 3 different single-instance windows.
 template<class InstanceSwitch>
-class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, InstanceSwitch::multi_instance> {
+class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, InstanceSwitch::multi_instance> {
 	public:
 
-		// name of ui file without a .ui extension and quotes
-		APP_UI_RES_DATA_INIT(gsc_text_window);
-
-		/// Self type, needed for GtkBuilder, not inherited from parent because of templates
-		using self_type = GscTextWindow<InstanceSwitch>;
+		// name of ui file (without .ui extension) for AppBuilderWidget
+		static inline std::string ui_name = "gsc_text_window";
 
 
 		/// Constructor, GtkBuilder needs this.
-		GscTextWindow(typename Gtk::Window::BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui)
-				: AppUIResWidget<GscTextWindow<InstanceSwitch>, InstanceSwitch::multi_instance>(gtkcobj, ref_ui)
+		GscTextWindow(typename Gtk::Window::BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui)
+				: AppBuilderWidget<GscTextWindow<InstanceSwitch>, InstanceSwitch::multi_instance>(gtkcobj, std::move(ui))
 		{
 			// Connect callbacks
 
-			APP_GTKMM_CONNECT_VIRTUAL(delete_event);  // make sure the event handler is called
-
 			Gtk::Button* save_as_button = nullptr;
-			APP_UI_RES_AUTO_CONNECT(save_as_button, clicked);
+			APP_BUILDER_AUTO_CONNECT(save_as_button, clicked);
 
 			Gtk::Button* close_window_button = nullptr;
-			APP_UI_RES_AUTO_CONNECT(close_window_button, clicked);
+			APP_BUILDER_AUTO_CONNECT(close_window_button, clicked);
 
 
 			// Accelerators
@@ -126,10 +121,10 @@ class GscTextWindow : public AppUIResWidget<GscTextWindow<InstanceSwitch>, Insta
 
 		/// Destroy this object on delete event (by default it calls hide()).
 		/// Reimplemented from Gtk::Window.
-		bool on_delete_event_before([[maybe_unused]] GdkEventAny* e)
+		bool on_delete_event([[maybe_unused]] GdkEventAny* e) override
 		{
-			this->destroy(this);  // deletes this object and nullifies instance
-			return true;  // event handled, don't call default virtual handler
+			on_close_window_button_clicked();
+			return true;  // event handled
 		}
 
 

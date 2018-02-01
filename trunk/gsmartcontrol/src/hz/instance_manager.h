@@ -19,6 +19,7 @@ namespace hz {
 
 /**
 Inherit this class to have a single- or multi-instance objects, e.g. windows.
+This is a multi-instance specialization.
 */
 template<class Child, bool MultiInstance>
 class InstanceManager {
@@ -27,13 +28,13 @@ class InstanceManager {
 		/// Can't construct / delete this directly! use create() and destroy()
 		InstanceManager() = default;
 
-		/// Virtual destructor (protected, can't delete this directly, use destroy()).
-		virtual ~InstanceManager() = default;
+		/// Can't construct / delete this directly! use create() and destroy()
+		~InstanceManager() = default;
 
 
 	public:
 
-		/// Non-construction-copyable
+		/// Non-copyable
 		InstanceManager(const InstanceManager& other) = delete;
 
 		/// Non-copyable
@@ -44,58 +45,32 @@ class InstanceManager {
 		/// If single-instance, the call will be serialized.
 		static Child* create()
 		{
-			Child* o = new Child;
-			o->obj_create();
-			return o;
+			return new Child();
 		}
 
 
 		/// Destroy an instance. \c instance must be passed if using
 		/// multi-instance object. If single-instance, \c instance has no effect.
 		/// If single-instance, the call will be serialized.
-		static void destroy(Child* instance = 0)
+		static void destroy(Child* instance)
 		{
 			if (instance) {
-				instance->obj_destroy();
 				delete instance;
-				// zeroify yourself
 			}
 		}
 
 
 	protected:
 
-		// These functions are called when the object instance is
-		// created or destroyed through ::create() and ::destroy().
-
-		/// Called from create(), right after constructor.
-		virtual void obj_create() { }
-
-		/// Called from destroy(), right before destructor.
-		virtual void obj_destroy() { }
-
-
 		// We have these functions for multi-instance variant too to
 		// support transparently switching between them.
 
 		/// Returns true if there is a valid single-instance object.
 		/// In multi-instance version this always returns false.
-		static bool has_single_instance()
+		static constexpr bool has_single_instance()
 		{
 			return false;
 		}
-
-		/// Returns the instance if there is a valid single-instance one.
-		/// In multi-instance version this always returns 0.
-		static Child* get_single_instance()
-		{
-			return 0;
-		}
-
-		/// Set single-instance object.
-		/// This function has no effect in multi-instance version.
-		static void set_single_instance([[maybe_unused]] Child* instance)
-		{ }
 
 };
 
@@ -109,7 +84,7 @@ class InstanceManager<Child, false> {
 
 		InstanceManager() = default;
 
-		virtual ~InstanceManager() = default;
+		~InstanceManager() = default;
 
 
 	public:
@@ -126,32 +101,23 @@ class InstanceManager<Child, false> {
 			if (instance_)  // for single-instance objects
 				return instance_;
 
-			Child* o = new Child;
-			o->obj_create();
-
-			instance_ = o;  // for single-instance objects
-			return o;
+			instance_ = new Child();
+			return instance_;
 		}
 
 
 		static void destroy()
 		{
 			if (instance_) {
-				instance_->obj_destroy();
 				delete instance_;
-				instance_ = 0;
+				instance_ = nullptr;
 			}
 		}
 
 
 	protected:
 
-		virtual void obj_create() { }
-
-		virtual void obj_destroy() { }
-
-
-		static bool has_single_instance()
+		static constexpr bool has_single_instance()
 		{
 			return (bool)instance_;
 		}
@@ -168,24 +134,9 @@ class InstanceManager<Child, false> {
 
 
 		// if an object is allowed to have a single instance only, these are needed.
-		static Child* instance_;  ///< Single instance pointer
-
-// 		static const bool multi_instance_ = false;
+		static inline Child* instance_ = nullptr;  ///< Single instance pointer
 
 };
-
-
-
-
-/// Single instance pointer.
-/// This is a definition of class template's static member variable
-/// (it can be in a header (as opposed to cpp) if it's class template member).
-/// This will generate different instances as long as the class type is different.
-/// By passing the child's class type as template parameter we guarantee that.
-template<class Child>
-Child* InstanceManager<Child, false>::instance_ = 0;
-
-
 
 
 

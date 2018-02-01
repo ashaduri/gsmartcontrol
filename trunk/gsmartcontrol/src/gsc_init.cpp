@@ -436,16 +436,22 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 	// Add data file search paths
 #ifdef _WIN32
-	// In windows the program is distributed with all the data files in the same directory.
-	hz::data_file_add_search_directory(".");
+	hz::data_file_add_search_directory("icons", hz::fs::u8path("."));  // current dir, since shortcuts also use this icon.
+	hz::data_file_add_search_directory("ui", hz::fs::u8path("ui"));
+	hz::data_file_add_search_directory("doc", hz::fs::u8path("doc"));
 #else
-	#ifdef DEBUG_BUILD
-		hz::data_file_add_search_directory(std::string(TOP_SRC_DIR) + "/src/res");  // application data resources
-		hz::data_file_add_search_directory(std::string(TOP_SRC_DIR) + "/data");  // application data resources
-	#else
-		hz::data_file_add_search_directory(PACKAGE_PKGDATA_DIR);  // /usr/share/program_name
-	#endif
+	hz::data_file_add_search_directory("icons", hz::fs::u8path(PACKAGE_PKGDATA_DIR) / "icons");  // /usr/share/program_name/icons
+	hz::data_file_add_search_directory("ui", hz::fs::u8path(PACKAGE_PKGDATA_DIR) / "ui");  // /usr/share/program_name/ui
+	hz::data_file_add_search_directory("doc", hz::fs::u8path(PACKAGE_DOC_DIR));  // /usr/share/doc/[packages/]gsmartcontrol
 #endif
+
+	// Paths in source tree
+#ifdef DEBUG_BUILD
+	hz::data_file_add_search_directory("icons", hz::fs::u8path(TOP_SOURCE_DIR) / "data");
+	hz::data_file_add_search_directory("ui", hz::fs::u8path(TOP_SOURCE_DIR) / "src/ui");
+	hz::data_file_add_search_directory("doc", hz::fs::u8path(TOP_SOURCE_DIR) / "doc");
+#endif
+
 
 #ifdef _WIN32
 	// Windows "Classic" theme is broken under GTK+3's "win32" theme.

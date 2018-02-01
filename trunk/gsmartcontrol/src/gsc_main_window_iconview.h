@@ -35,8 +35,6 @@
 class GscMainWindowIconView : public Gtk::IconView {
 	public:
 
-		using self_type = GscMainWindowIconView;  ///< Self type, needed for CONNECT_VIRTUAL
-
 		/// Message type to show
 		enum class Message {
 			none,  ///< No message
@@ -112,7 +110,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 			if (!hd_icon) {
 				// Still no luck, use bundled ones.
-				auto icon_file = hz::data_file_find("icon_hdd.png");
+				auto icon_file = hz::data_file_find("icons", "icon_hdd.png");
 				if (!icon_file.empty()) {
 					try {
 						hd_icon = Gdk::Pixbuf::create_from_file(icon_file.u8string());
@@ -127,7 +125,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 			if (!cddvd_icon) {
 				// Still no luck, use bundled ones.
-				auto icon_file = hz::data_file_find("icon_cddvd.png");
+				auto icon_file = hz::data_file_find("icons", "icon_cddvd.png");
 				if (!icon_file.empty()) {
 					try {
 						cddvd_icon = Gdk::Pixbuf::create_from_file(icon_file.u8string());
@@ -136,13 +134,13 @@ class GscMainWindowIconView : public Gtk::IconView {
 			}
 
 			this->signal_item_activated().connect(sigc::mem_fun(*this,
-					&self_type::on_iconview_item_activated) );
+					&GscMainWindowIconView::on_iconview_item_activated) );
 
 			this->signal_selection_changed().connect(sigc::mem_fun(*this,
-					&self_type::on_iconview_selection_changed) );
+					&GscMainWindowIconView::on_iconview_selection_changed) );
 
 			this->signal_button_press_event().connect(sigc::mem_fun(*this,
-					&self_type::on_iconview_button_press_event) );
+					&GscMainWindowIconView::on_iconview_button_press_event) );
 		}
 
 

@@ -14,7 +14,7 @@
 
 #include <gtkmm.h>
 
-#include "applib/app_ui_res_utils.h"
+#include "applib/app_builder_widget.h"
 
 
 
@@ -23,15 +23,15 @@ class GscMainWindow;
 
 /// The "Add Device" window.
 /// Use create() / destroy() with this class instead of new / delete!
-class GscAddDeviceWindow : public AppUIResWidget<GscAddDeviceWindow, true> {
+class GscAddDeviceWindow : public AppBuilderWidget<GscAddDeviceWindow, true> {
 	public:
 
-		// name of ui file without a .ui extension and quotes
-		APP_UI_RES_DATA_INIT(gsc_add_device_window);
+		// name of ui file (without .ui extension) for AppBuilderWidget
+		static inline std::string ui_name = "gsc_add_device_window";
 
 
 		/// Constructor, GtkBuilder needs this.
-		GscAddDeviceWindow(BaseObjectType* gtkcobj, const Glib::RefPtr<Gtk::Builder>& ref_ui);
+		GscAddDeviceWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui);
 
 
 		/// Set the main window.
@@ -46,7 +46,7 @@ class GscAddDeviceWindow : public AppUIResWidget<GscAddDeviceWindow, true> {
 
 		/// Destroy this object on delete event (by default it calls hide()).
 		/// Reimplemented from Gtk::Window.
-		bool on_delete_event_before(GdkEventAny* e);
+		bool on_delete_event(GdkEventAny* e) override;
 
 
 		// ---------- other callbacks
