@@ -264,8 +264,7 @@ ADDITIONAL_FLAGS="-DPACKAGE_PKGDATA_DIR=\"\\\"\$(pkgdatadir)\\\"\" \
 -DPACKAGE_SYSCONF_DIR=\"\\\"\$(sysconfdir)\\\"\" \
 -DPACKAGE_DOC_DIR=\"\\\"\$(docdir)\\\"\" \
 -DTOP_SOURCE_DIR=\"\\\"\$(top_srcdir)\\\"\" \
--DHZ_USE_LIBDEBUG=1 \
--DHZ_ENABLE_COMPILED_RES_DATA=1"
+-DHZ_USE_LIBDEBUG=1
 
 CXXFLAGS="$CXXFLAGS $ADDITIONAL_FLAGS"
 
