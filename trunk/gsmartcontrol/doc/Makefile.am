@@ -8,6 +8,7 @@ dist_doc_DATA = AUTHORS.txt NEWS.txt README.txt \
 	LICENSE_gsmartcontrol.txt \
 	LICENSE_hz.txt \
 	LICENSE_lgpl3.txt \
+	LICENSE_mit.txt \
 	LICENSE_unlicense.txt \
 	LICENSE_zlib.txt
 

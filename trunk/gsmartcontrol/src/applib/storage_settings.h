@@ -13,69 +13,70 @@
 #define STORAGE_SETTINGS_H
 
 #include <string>
-#include <vector>
 #include <map>
+#include <utility>
 
 #include "rconfig/config.h"
-#include "hz/string_algo.h"
-#include "hz/bin2ascii_encoder.h"
 
 
+/// Device name, device type (optional)
+using AppDeviceWithType = std::pair<std::string, std::string>;
 
-/// A map of Device =\> Options
-using device_option_map_t = std::map<std::string, std::string>;
+/// Device name + type -> options.
+/// We need a separate struct for this, to work with json (otherwise it gives errors with std::map).
+struct AppDeviceOptionMap {
+	std::map<AppDeviceWithType, std::string> value;
 
-
-
-/// Unserialize device option map from a string
-inline device_option_map_t app_unserialize_device_option_map(const std::string& str)
-{
-	hz::Bin2AsciiEncoder enc;
-
-	std::vector<std::string> pairs;
-	hz::string_split(str, ";", pairs, true);
-
-	device_option_map_t option_map;
-	for (const auto& p : pairs) {
-		std::vector<std::string> dev_entry;
-		hz::string_split(p, ":", dev_entry, true, 2);
-
-		std::string dev, opt;
-		if (dev_entry.size() == 2) {
-			dev = dev_entry.at(0);  // includes type (separated by encoded "::")
-			opt = dev_entry.at(1);
-		}
-
-		if (!dev.empty()) {
-			dev = hz::string_trim_copy(enc.decode(dev));
-			opt = hz::string_trim_copy(enc.decode(opt));
-
-			// ignore potentially harmful chars
-			if (!dev.empty() && !opt.empty()  // this discards the entries with empty options
-					&& dev.find_first_of(";><|&") == std::string::npos
-					&& opt.find_first_of(";><|&") == std::string::npos) {
-				option_map[dev] = opt;
-			}
-		}
+	bool operator==(const AppDeviceOptionMap& other) const
+	{
+		return value == other.value;
 	}
 
-	return option_map;
+	bool operator!=(const AppDeviceOptionMap& other) const
+	{
+		return !(*this == other);
+	}
+};
+
+
+/// json serializer for rconfig
+inline void to_json(rconfig::json& j, const AppDeviceOptionMap& devmap)
+{
+	for (const auto& iter : devmap.value) {
+		std::string dev = iter.first.first, type = iter.first.second, options = iter.second;
+		if (!dev.empty() && !options.empty()) {
+			j.push_back(rconfig::json {
+				{"device", dev},
+				{"type", type},
+				{"options", options}
+			});
+		}
+	}
+}
+
+
+/// json deserializer for rconfig
+inline void from_json(const rconfig::json& j, AppDeviceOptionMap& devmap)
+{
+	for (const auto& obj : j) {
+		try {
+			devmap.value.insert_or_assign(
+				{obj.at("device").get<std::string>(), obj.at("type").get<std::string>()},
+				obj.at("options").get<std::string>()
+			);
+		}
+		catch(std::exception& e) {
+			// ignore "not found"
+		}
+	}
 }
 
 
 
-/// Serialize device option map from a string (to store it in config file, for example)
-inline std::string app_serialize_device_option_map(const device_option_map_t& option_map)
+/// Get device option map from config
+inline AppDeviceOptionMap app_config_get_device_option_map()
 {
-	hz::Bin2AsciiEncoder enc;
-	std::vector<std::string> pairs;
-
-	for (const auto& iter : option_map) {
-		if (!iter.first.empty() && !iter.second.empty())  // discard the ones with empty device name or options
-			pairs.push_back(enc.encode(iter.first) + ":" + enc.encode(iter.second));
-	}
-
-	return hz::string_join(pairs, ";");
+	return rconfig::get_data<AppDeviceOptionMap>("system/smartctl_device_options");
 }
 
 
@@ -86,27 +87,10 @@ inline std::string app_get_device_option(const std::string& dev, const std::stri
 	if (dev.empty())
 		return std::string();
 
-	std::string devmap_str = rconfig::get_data<std::string>("system/smartctl_device_options");
-	device_option_map_t devmap = app_unserialize_device_option_map(devmap_str);
-
-	// try the concrete type first
-	if (!type_arg.empty()) {
-		auto iter = devmap.find(dev + "::" + type_arg);
-		if (iter != devmap.end()) {
-			return iter->second;
-		}
-	}
-
-	// in case there's a trailing delimiter
-	if (auto iter = devmap.find(dev + "::" + type_arg); iter != devmap.end()) {
+	auto devmap = app_config_get_device_option_map().value;
+	if (auto iter = devmap.find(std::pair(dev, type_arg)); iter != devmap.end()) {
 		return iter->second;
 	}
-
-	// just the device name
-	if (auto iter = devmap.find(dev); iter != devmap.end()) {
-		return iter->second;
-	}
-
 	return std::string();
 }
 

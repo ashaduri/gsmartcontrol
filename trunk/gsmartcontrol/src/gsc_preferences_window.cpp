@@ -147,14 +147,12 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 
 
 		/// Set the device map (as loaded from config)
-		void set_device_map(const device_option_map_t& devmap)
+		void set_device_map(const AppDeviceOptionMap& devmap)
 		{
 			clear_all();
-			for (const auto& value : devmap) {
-				std::vector<std::string> parts;
-				hz::string_split(value.first, "::", parts, false, 2);
-				std::string dev = (!parts.empty() ? parts.at(0) : std::string());
-				std::string type = (parts.size() > 1 ? parts.at(1) : std::string());
+			for (const auto& value : devmap.value) {
+				std::string dev = value.first.first;
+				std::string type = value.first.second;
 				std::string params = value.second;
 				this->add_new_row(dev, type, params, false);
 			}
@@ -162,21 +160,17 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 
 
 		/// Get the device map (to be saved to config)
-		device_option_map_t get_device_map()
+		AppDeviceOptionMap get_device_map()
 		{
-			device_option_map_t devmap;
+			AppDeviceOptionMap devmap;
 
 			Gtk::TreeNodeChildren children = model->children();
 			for (const auto& row : children) {
 				std::string dev = row.get_value(col_device_real);
 				if (!dev.empty()) {
 					std::string type = row.get_value(col_type_real);
-					if (!type.empty()) {
-						dev += "::" + type;
-					}
-					if (devmap.find(dev) == devmap.end()) {
-						devmap[dev] = row.get_value(col_parameters);
-					}
+					std::string params = row.get_value(col_parameters);
+					devmap.value[std::pair(dev, type)] = params;
 				}
 			}
 
@@ -407,9 +401,7 @@ void GscPreferencesWindow::import_config()
 		entry->set_text(device_blacklist_patterns);
 
 	if (device_options_treeview) {
-		auto devmap_str = rconfig::get_data<std::string>("system/smartctl_device_options");
-		device_option_map_t devmap = app_unserialize_device_option_map(devmap_str);
-		device_options_treeview->set_device_map(devmap);
+		device_options_treeview->set_device_map(app_config_get_device_option_map());
 	}
 
 }
@@ -449,9 +441,8 @@ void GscPreferencesWindow::export_config()
 	if (auto* entry = this->lookup_widget<Gtk::Entry*>("device_blacklist_patterns_entry"))
 		prefs_config_set("system/device_blacklist_patterns", std::string(entry->get_text()));
 
-	device_option_map_t devmap = device_options_treeview->get_device_map();
-	std::string devmap_str = app_serialize_device_option_map(devmap);
-	prefs_config_set("system/smartctl_device_options", devmap_str);
+	auto devmap = device_options_treeview->get_device_map();
+	prefs_config_set("system/smartctl_device_options", devmap);
 }
 
 
@@ -474,10 +465,10 @@ void GscPreferencesWindow::on_window_cancel_button_clicked()
 void GscPreferencesWindow::on_window_ok_button_clicked()
 {
 	// Check if device map contains drives with empty device names or parameters.
-	device_option_map_t devmap = device_options_treeview->get_device_map();
+	auto devmap = device_options_treeview->get_device_map();
 	bool contains_empty = false;
-	for (const auto& iter : devmap) {
-		if (iter.first.empty() || iter.second.empty()) {
+	for (const auto& iter : devmap.value) {
+		if (iter.first.first.empty() || iter.second.empty()) {
 			contains_empty = true;
 		}
 	}

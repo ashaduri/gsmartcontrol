@@ -46,8 +46,6 @@ Use header-only formatting library:
 	For libdebug.
 	Instead of string_sprintf.
 
-Remove bin2ascii_encoder.h.
-
 Use std::from_chars() in string_is_numeric_impl_classic_locale() (gcc 8)
 
 Fix win32 crash.
@@ -69,6 +67,7 @@ Testing:
 		ETA 0 is displayed. Fix.
 	Detect running tests on launch (maybe ask the user too? some tests
 		may be stuck due to bad firmware, e.g. 3ware/windows).
+		This is useful because if an extended test is running, short test will abort.
 	If smartctl outputs gibberish while testing, the GUI hangs.
 
 
