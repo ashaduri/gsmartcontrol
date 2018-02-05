@@ -2,7 +2,7 @@
 
 # These will be installed into docdir.
 # Some of these files are actually needed at runtime.
-dist_doc_DATA = AUTHORS.txt NEWS.txt README.txt \
+dist_doc_DATA = AUTHORS.txt NEWS.txt README.txt TRANSLATORS.txt \
 	LICENSE_boost_1_0.txt \
 	LICENSE_gpl3.txt \
 	LICENSE_gsmartcontrol.txt \

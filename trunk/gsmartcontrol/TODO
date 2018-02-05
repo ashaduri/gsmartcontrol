@@ -41,6 +41,7 @@ JSON.
 	Port the rest to std::regex, get rid of pcre requirement.
 		Not sure, we still want to support old-format files.
 		Maybe make pcre optional (only for parsing the old format)
+		Add TESTS!
 
 Use header-only formatting library:
 	For libdebug.
@@ -50,15 +51,20 @@ Use std::from_chars() in string_is_numeric_impl_classic_locale() (gcc 8)
 
 Fix win32 crash.
 
-Check if we need to distribute MIT license.
-
 Detect and link with clang's / gcc's experimental lib, if needed.
 
 Check TODOs
 
 Mark with gettext
+	Make sure desktop file is translated.
+		Add french translation?
+	Win32: Bundle intl.dll and translations with windows distribution.
+	Add translations to .spec and .deb
+	Win32: Bundle gtk/glib/... translations for languages we support.
 
 
+Before releasing 2.0.0:
+	Test with freebsd and macOS.
 
 
 

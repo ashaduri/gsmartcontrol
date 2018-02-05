@@ -15,7 +15,7 @@
 #include <gtkmm.h>  // Gtk::Main
 #include <gdkmm.h>
 
-#include "hz/string_sprintf.h"
+#include "hz/string_algo.h"
 #include "hz/fs_ns.h"
 #include "cmdex_sync_gui.h"
 
@@ -133,8 +133,8 @@ void CmdexSyncGui::set_running_dialog_abort_mode(bool aborting)
 
 
 	} else if (!aborting) {
-		std::string msg = hz::string_sprintf(get_running_msg().c_str(),
-				hz::fs::u8path(this->get_command_name()).filename().u8string().c_str());
+		std::string msg = hz::string_replace_copy(get_running_msg(), "{command}",
+				hz::fs::u8path(this->get_command_name()).filename().u8string());
 		running_dialog_->set_message("\n     " + msg + "     ");
 		// running_dialog_->set_response_sensitive(Gtk::RESPONSE_CANCEL, true);
 

@@ -13,6 +13,7 @@
 #include "local_glibmm.h"
 
 #include <gtkmm.h>
+#include <glibmm/i18n.h>
 
 #include "gsc_executor_log_window.h"
 #include "gsc_executor_error_dialog.h"
@@ -49,7 +50,7 @@ namespace {
 		dialog.add_action_widget(ok_button, Gtk::RESPONSE_OK);
 
 
-		Gtk::Button output_button("_Show Output", true);  // don't put this inside if, it needs to live beyond it.
+		Gtk::Button output_button(_("_Show Output"), true);  // don't put this inside if, it needs to live beyond it.
 		if (show_output_button) {
 			output_button.show_all();
 			dialog.add_action_widget(output_button, Gtk::RESPONSE_HELP);

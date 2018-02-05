@@ -1,23 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.20.0 -->
+<!-- Generated with glade 3.20.0 
+
+Copyright (C) Alexander Shaduri
+
+This file is part of GSmartControl.
+
+GSmartControl is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+GSmartControl is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
+
+-->
 <interface>
-  <requires lib="gtk+" version="3.4"/>
+  <requires lib="gtk+" version="3.20"/>
+  <!-- interface-license-type gplv3 -->
+  <!-- interface-name GSmartControl -->
+  <!-- interface-copyright Alexander Shaduri -->
   <object class="GtkAboutDialog" id="gsc_about_dialog">
     <property name="can_focus">False</property>
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="border_width">6</property>
-    <property name="title" translatable="yes">About GSmartControl</property>
     <property name="resizable">False</property>
     <property name="window_position">center-on-parent</property>
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">dialog</property>
-    <property name="copyright" translatable="yes">here be copyrights</property>
-    <property name="comments" translatable="yes">Control and monitor hard disk SMART data</property>
-    <property name="license" translatable="yes">here be license</property>
-    <property name="authors">here be authors</property>
+    <property name="copyright">[here be copyrights]</property>
+    <property name="comments" translatable="yes">Hard disk drive and SSD health inspection tool</property>
+    <property name="authors">[here be authors]</property>
     <property name="documenters">here be documentors</property>
-    <property name="translator_credits" translatable="yes">translator-credits</property>
+    <property name="translator_credits">translator-credits</property>
     <property name="logo_icon_name"/>
+    <property name="license_type">gpl-3-0-only</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox1">
         <property name="visible">True</property>

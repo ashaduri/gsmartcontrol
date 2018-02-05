@@ -13,6 +13,7 @@
 #define GSC_MAIN_WINDOW_ICONVIEW_H
 
 #include <gtkmm.h>
+#include <glibmm/i18n.h>
 #include <vector>
 #include <cmath>  // std::floor
 #include <unordered_map>
@@ -50,12 +51,12 @@ class GscMainWindowIconView : public Gtk::IconView {
 		static std::string get_message_string(Message type)
 		{
 			static const std::unordered_map<Message, std::string> m {
-					{Message::none, "[error - invalid message]"},
-					{Message::scan_disabled, "Automatic scanning is disabled.\nPress Ctrl+R to scan manually."},
-					{Message::scanning, "Scanning system, please wait..."},
-					{Message::no_drives_found, "No drives found."},
-					{Message::no_smartctl, "Please specify the correct smartctl binary in\nPreferences and press Ctrl-R to re-scan."},
-					{Message::please_rescan, "Preferences changed.\nPress Ctrl-R to re-scan."},
+					{Message::none, _("[error - invalid message]")},
+					{Message::scan_disabled, _("Automatic scanning is disabled.\nPress Ctrl+R to scan manually.")},
+					{Message::scanning, _("Scanning system, please wait...")},
+					{Message::no_drives_found, _("No drives found.")},
+					{Message::no_smartctl, _("Please specify the correct smartctl binary in\nPreferences and press Ctrl-R to re-scan.")},
+					{Message::please_rescan, _("Preferences changed.\nPress Ctrl-R to re-scan.")},
 			};
 			if (auto iter = m.find(type); iter != m.end()) {
 				return iter->second;
@@ -271,11 +272,11 @@ class GscMainWindowIconView : public Gtk::IconView {
 			std::string name;  // = "<big>" + drive->get_device_with_type() + " </big>\n";
 			Glib::ustring drive_letters = Glib::Markup::escape_text(drive->format_drive_letters(false));
 			if (drive_letters.empty()) {
-				drive_letters = "not mounted";
+				drive_letters = C_("media", "not mounted");
 			}
 			Glib::ustring drive_letters_with_volname = Glib::Markup::escape_text(drive->format_drive_letters(true));
 			if (drive_letters_with_volname.empty()) {
-				drive_letters_with_volname = "not mounted";
+				drive_letters_with_volname = C_("media", "not mounted");
 			}
 
 			// note: if this wraps, it becomes left-aligned in gtk <= 2.10.
@@ -305,25 +306,25 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 			if (drive->get_is_virtual()) {
 				std::string vfile = drive->get_virtual_filename();
-				tooltip_strs.push_back("Loaded from: " + (vfile.empty() ? "[empty]" : Glib::Markup::escape_text(vfile)));
+				tooltip_strs.push_back(Glib::ustring::compose(_("Loaded from: %1"), (vfile.empty() ? (Glib::ustring("[") + C_("name", "empty") + "]") : Glib::Markup::escape_text(vfile))));
 				if (!scan_time_prop.empty() && !scan_time_prop.get_value<std::string>().empty()) {
-					tooltip_strs.push_back("Scanned on: " + Glib::Markup::escape_text(scan_time_prop.get_value<std::string>()));
+					tooltip_strs.push_back(Glib::ustring::compose(_("Scanned on: "), Glib::Markup::escape_text(scan_time_prop.get_value<std::string>())));
 				}
 			} else {
-				tooltip_strs.push_back("Device: <b>" + Glib::Markup::escape_text(drive->get_device_with_type()) + "</b>");
+				tooltip_strs.push_back(Glib::ustring::compose(_("Device: %1"), "<b>" + Glib::Markup::escape_text(drive->get_device_with_type()) + "</b>"));
 			}
 
 		#ifdef _WIN32
-			tooltip_strs.push_back("Drive letters: <b>" + drive_letters_with_volname + "</b>");
+			tooltip_strs.push_back(Glib::ustring::compose(_("Drive letters: %1"), "<b>" + drive_letters_with_volname + "</b>"));
 		#endif
 
 			if (!drive->get_serial_number().empty()) {
-				tooltip_strs.push_back("Serial number: <b>" + Glib::Markup::escape_text(drive->get_serial_number()) + "</b>");
+				tooltip_strs.push_back(Glib::ustring::compose(_("Serial number: %1"), "<b>" + Glib::Markup::escape_text(drive->get_serial_number()) + "</b>"));
 			}
-			tooltip_strs.push_back("SMART status: <b>"
-					+ StorageDevice::get_status_name(drive->get_smart_status()) + "</b>");
-			tooltip_strs.push_back("Automatic Offline Data Collection status: <b>"
-					+ StorageDevice::get_status_name(drive->get_aodc_status()) + "</b>");
+			tooltip_strs.push_back(Glib::ustring::compose(_("SMART status: %1"),
+					"<b>" + StorageDevice::get_status_name(drive->get_smart_status()) + "</b>"));
+			tooltip_strs.push_back(Glib::ustring::compose(_("Automatic Offline Data Collection status: %1"),
+					"<b>" + StorageDevice::get_status_name(drive->get_aodc_status()) + "</b>"));
 
 			std::string tooltip_str = hz::string_join(tooltip_strs, '\n');
 
@@ -365,7 +366,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 				}
 
 				tooltip_str += "\n\n" + storage_property_get_warning_reason(health_prop)
-						+ "\n\nView details for more information.";
+						+ "\n\n" + _("View details for more information.");
 			}
 
 
@@ -396,8 +397,9 @@ class GscMainWindowIconView : public Gtk::IconView {
 		/// Remove selected drive entry
 		void remove_selected_drive()
 		{
-			if (this->get_selected_items().size()) {
-				Gtk::TreePath model_path = *(this->get_selected_items().begin());
+			const auto& selected_items = this->get_selected_items();
+			if (!selected_items.empty()) {
+				Gtk::TreePath model_path = *(selected_items.begin());
 				this->remove_entry(model_path);
 			}
 		}
@@ -424,9 +426,10 @@ class GscMainWindowIconView : public Gtk::IconView {
 		/// Get selected drive
 		StorageDevicePtr get_selected_drive()
 		{
-			StorageDevicePtr drive = 0;
-			if (this->get_selected_items().size()) {
-				Gtk::TreePath model_path = *(this->get_selected_items().begin());
+			StorageDevicePtr drive;
+			const auto& selected_items = this->get_selected_items();
+			if (!selected_items.empty()) {
+				Gtk::TreePath model_path = *(selected_items.begin());
 				Gtk::TreeModel::Row row = *(ref_list_model->get_iter(model_path));
 				drive = row[col_drive_ptr];
 			}
@@ -439,7 +442,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 		Gtk::TreePath get_path_by_drive(StorageDevice* drive)
 		{
 			Gtk::TreeNodeChildren children = ref_list_model->children();
-			for (auto row : children) {
+			for (const auto& row : children) {
 				// convert iter to row (iter is row's base, but can we cast it?)
 				if (drive == row.get_value(col_drive_ptr).get())
 					return ref_list_model->get_path(row);
@@ -506,7 +509,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 				if (tpath.gobj() && !tpath.empty()) {  // without gobj() check gtkmm 2.6 (but not 2.12) prints lots of errors
 					// move keyboard focus to the icon (just as left-click does)
 
-					Gtk::CellRenderer* cell = 0;
+					Gtk::CellRenderer* cell = nullptr;
 					if (this->get_cursor(cell) && cell) {
 						// gtkmm's set_cursor() is undefined (but declared) in 2.8, so use gtk variant.
 						gtk_icon_view_set_cursor(GTK_ICON_VIEW(this->gobj()), tpath.gobj(), cell->gobj(), false);

@@ -1,7 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.20.0 -->
+<!-- Generated with glade 3.20.0 
+
+Copyright (C) Alexander Shaduri
+
+This file is part of GSmartControl.
+
+GSmartControl is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+GSmartControl is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
+
+-->
 <interface>
-  <requires lib="gtk+" version="3.4"/>
+  <requires lib="gtk+" version="3.20"/>
+  <!-- interface-license-type gplv3 -->
+  <!-- interface-name GSmartControl -->
+  <!-- interface-copyright Alexander Shaduri -->
   <object class="GtkWindow" id="gsc_add_device_window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Add Device - GSmartControl</property>
@@ -19,12 +41,12 @@
             <property name="can_focus">False</property>
             <property name="orientation">vertical</property>
             <child>
-              <object class="GtkLabel" id="label1">
+              <object class="GtkLabel" id="top_info_link_label">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">start</property>
-                <property name="label" translatable="yes">The Smartctl Options section in the All Help Topics
-menu contains information on what you can enter here.</property>
+                <property name="label" translatable="yes">The &lt;a href="%1"&gt;smartctl man page&lt;/a&gt; contains information on what you can enter here.</property>
+                <property name="use_markup">True</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -61,7 +83,7 @@ menu contains information on what you can enter here.</property>
                     </child>
                     <child>
                       <object class="GtkButton" id="device_name_browse_button">
-                        <property name="label" translatable="yes">_Browse...</property>
+                        <property name="label" translatable="yes">Browse...</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
@@ -84,7 +106,7 @@ menu contains information on what you can enter here.</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="halign">start</property>
-                    <property name="label" translatable="yes">Device _type:</property>
+                    <property name="label" translatable="yes">Device type:</property>
                     <property name="use_underline">True</property>
                   </object>
                   <packing>
@@ -141,7 +163,7 @@ menu contains information on what you can enter here.</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="halign">start</property>
-                    <property name="label" translatable="yes">Device _name:</property>
+                    <property name="label" translatable="yes">Device name:</property>
                     <property name="use_underline">True</property>
                   </object>
                   <packing>
@@ -162,8 +184,8 @@ menu contains information on what you can enter here.</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">start</property>
-                <property name="label" translatable="yes">Note: To permanently add a device, you'll have to use
-the gsmartcontrol --add-device command line option.</property>
+                <property name="label" translatable="yes">Note: To make this change permanent, you'll have to add the gsmartcontrol --add-device command line option to its shortcut.</property>
+                <property name="wrap">True</property>
               </object>
               <packing>
                 <property name="expand">True</property>

@@ -3,5 +3,5 @@ METASOURCES = AUTO
 
 noinst_HEADERS = json.hpp
 
-noinst_DATA = LICENSE.MIT json_version.txt
+noinst_DATA = json_version.txt
 

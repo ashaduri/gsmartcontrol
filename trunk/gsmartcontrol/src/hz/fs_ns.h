@@ -29,9 +29,14 @@ namespace hz {
 
 
 #ifdef __cpp_lib_filesystem
+
 	namespace fs = std::filesystem;
+
 #else  // __cpp_lib_experimental_filesystem
+
+	// Note: This requires -lstdc++fs with gcc's libstdc++, -lc++experimental with clang's libc++.
 	namespace fs = std::experimental::filesystem;
+
 #endif
 
 

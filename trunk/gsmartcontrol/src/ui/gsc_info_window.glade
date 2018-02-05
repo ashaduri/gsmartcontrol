@@ -1,7 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.20.0 -->
+<!-- Generated with glade 3.20.0 
+
+Copyright (C) Alexander Shaduri
+
+This file is part of GSmartControl.
+
+GSmartControl is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+GSmartControl is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
+
+-->
 <interface>
-  <requires lib="gtk+" version="3.4"/>
+  <requires lib="gtk+" version="3.20"/>
+  <!-- interface-license-type gplv3 -->
+  <!-- interface-name GSmartControl -->
+  <!-- interface-copyright Alexander Shaduri -->
   <object class="GtkListStore" id="model1">
     <columns>
       <!-- column-name gchararray -->
@@ -310,7 +332,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="halign">start</property>
-                            <property name="label" translatable="yes">Self-tests are built-in tests within the drive designed to recognize drive fault conditions. All self-tests are safe to user data. The tests can be performed during normal system operation, but will take longer to complete if the drive is not idle. You will not be able to access the drive's SMART data while a test is in progress.</property>
+                            <property name="label" translatable="yes">Self-tests are built-in tests within the drive designed to recognize drive fault conditions. All self-tests are safe to user data. The tests can be performed during normal system operation, but will take longer to complete if the drive is not idle.</property>
                             <property name="wrap">True</property>
                             <property name="width_chars">70</property>
                           </object>
@@ -347,7 +369,7 @@
                                   <object class="GtkLabel" id="test_result_label">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">Test result text</property>
+                                    <property name="label">[Test result text placeholder]</property>
                                     <property name="use_markup">True</property>
                                     <property name="width_chars">70</property>
                                   </object>
@@ -370,7 +392,7 @@
                                 <property name="can_focus">False</property>
                                 <property name="tooltip_text" translatable="yes">Test progress</property>
                                 <property name="hexpand">True</property>
-                                <property name="text" translatable="yes">Test completion: 90%; ETA: 12 minutes</property>
+                                <property name="text">[test completion % and ETA placeholder text]</property>
                                 <property name="show_text">True</property>
                                 <property name="ellipsize">end</property>
                               </object>
@@ -449,8 +471,10 @@
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
                                         <property name="halign">start</property>
-                                        <property name="label" translatable="yes">&lt;b&gt;Test type:&lt;/b&gt;</property>
-                                        <property name="use_markup">True</property>
+                                        <property name="label" translatable="yes">Test type:</property>
+                                        <attributes>
+                                          <attribute name="weight" value="bold"/>
+                                        </attributes>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
@@ -488,8 +512,10 @@
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
                                         <property name="tooltip_text" translatable="yes">Estimated test duration on idle drive</property>
-                                        <property name="label" translatable="yes">&lt;b&gt;Estimated duration:&lt;/b&gt;</property>
-                                        <property name="use_markup">True</property>
+                                        <property name="label" translatable="yes">Estimated duration:</property>
+                                        <attributes>
+                                          <attribute name="weight" value="bold"/>
+                                        </attributes>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
@@ -1055,8 +1081,8 @@ Self-test log contains information about the most recent manually performed SMAR
                 <property name="receives_default">True</property>
                 <property name="tooltip_text" translatable="yes">Re-read all the information</property>
                 <property name="use_stock">True</property>
-                <accelerator key="F5" signal="clicked"/>
                 <accelerator key="R" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                <accelerator key="F5" signal="clicked"/>
               </object>
               <packing>
                 <property name="expand">True</property>

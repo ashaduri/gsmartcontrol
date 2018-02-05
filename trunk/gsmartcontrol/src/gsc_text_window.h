@@ -13,6 +13,7 @@
 #define GSC_TEXT_WINDOW_H
 
 #include <gtkmm.h>
+#include <glibmm/i18n.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
 
 #include "hz/debug.h"
@@ -140,16 +141,16 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 			int result = 0;
 
 			Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
-			specific_filter->set_name("Text Files");
+			specific_filter->set_name(_("Text Files"));
 			specific_filter->add_pattern("*.txt");
 
 			Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
-			all_filter->set_name("All Files");
+			all_filter->set_name(_("All Files"));
 			all_filter->add_pattern("*");
 
 #if GTK_CHECK_VERSION(3, 20, 0)
 			hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-					"Save Data As...", this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr), g_object_unref);
+					_("Save Data As..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr), g_object_unref);
 
 			gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
 
@@ -165,7 +166,7 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 			result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
 
 #else
-			Gtk::FileChooserDialog dialog(*this, "Save Data As...",
+			Gtk::FileChooserDialog dialog(*this, _("Save Data As..."),
 					Gtk::FILE_CHOOSER_ACTION_SAVE);
 
 			// Add response buttons the the dialog
@@ -207,7 +208,7 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 
 					auto ec = hz::fs_file_put_contents(hz::fs::u8path(file), this->contents_.c_str());
 					if (ec) {
-						gui_show_error_dialog("Cannot save data to file", ec.message(), this);
+						gui_show_error_dialog(_("Cannot save data to file"), ec.message(), this);
 					}
 					break;
 				}

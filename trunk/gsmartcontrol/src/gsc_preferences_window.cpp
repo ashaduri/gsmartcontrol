@@ -15,6 +15,7 @@
 #include <map>
 #include <type_traits>  // std::decay_t
 #include <gtkmm.h>
+#include <glibmm/i18n.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
 
 #include "hz/fs_ns.h"
@@ -28,6 +29,8 @@
 #include "gsc_preferences_window.h"
 
 
+
+using namespace std::literals;
 
 
 /// Device Options tree view of the Preferences window
@@ -45,11 +48,11 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 			// Type may hold "<all>", while Type Real is "".
 
 			model_columns.add(col_device);
-			this->append_column("Device", col_device);
+			this->append_column(_("Device"), col_device);
 			this->set_search_column(col_device.index());
 
 			model_columns.add(col_type);
-			this->append_column("Type", col_type);
+			this->append_column(_("Type"), col_type);
 
 			model_columns.add(col_parameters);
 			model_columns.add(col_device_real);
@@ -89,8 +92,8 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		void add_new_row(const std::string& device, const std::string& type, const std::string& params, bool select = true)
 		{
 			Gtk::TreeRow row = *(model->append());
-			row[col_device] = (device.empty() ? "<empty>" : device);
-			row[col_type] = (type.empty() ? "<all>" : type);
+			row[col_device] = (device.empty() ? "<"s + C_("name", "empty") + ">" : device);
+			row[col_type] = (type.empty() ? "<"s + C_("types", "all") + ">" : type);
 			row[col_parameters] = params;
 			row[col_device_real] = device;
 			row[col_type_real] = type;
@@ -105,7 +108,7 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		{
 			if (this->get_selection()->count_selected_rows()) {
 				Gtk::TreeRow row = *(this->get_selection()->get_selected());
-				row[col_device] = (device.empty() ? "<empty>" : device);
+				row[col_device] = (device.empty() ? "<"s + C_("name", "empty") + ">" : device);
 				row[col_device_real] = device;
 			}
 		}
@@ -116,7 +119,7 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		{
 			if (this->get_selection()->count_selected_rows()) {
 				Gtk::TreeRow row = *(this->get_selection()->get_selected());
-				row[col_type] = (type.empty() ? "<all>" : type);
+				row[col_type] = (type.empty() ? "<"s + C_("types", "all") + ">" : type);
 				row[col_type_real] = type;
 			}
 		}
@@ -233,9 +236,9 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, Glib::RefPtr
 	APP_BUILDER_AUTO_CONNECT(window_reset_all_button, clicked);
 
 
-	Glib::ustring smartctl_binary_tooltip = "A path to smartctl binary. If the path is not absolute, the binary will be looked for in user's PATH.";
+	Glib::ustring smartctl_binary_tooltip = _("A path to smartctl binary. If the path is not absolute, the binary will be looked for in user's PATH.");
 #if defined CONFIG_KERNEL_FAMILY_WINDOWS
-	smartctl_binary_tooltip += Glib::ustring("\n") + "Note: smartctl.exe shows a console during execution, while smartctl-nc.exe (default) doesn't (nc means no-console).";
+	smartctl_binary_tooltip += Glib::ustring("\n") + _("Note: smartctl.exe shows a console during execution, while smartctl-nc.exe (default) doesn't (nc means no-console).");
 #endif
 	if (auto* smartctl_binary_label = lookup_widget<Gtk::Label*>("smartctl_binary_label")) {
 		app_gtkmm_set_widget_tooltip(*smartctl_binary_label, smartctl_binary_tooltip);
@@ -258,11 +261,11 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, Glib::RefPtr
 	Gtk::Entry* device_options_device_entry = nullptr;
 	APP_BUILDER_AUTO_CONNECT(device_options_device_entry, changed);
 
-	Glib::ustring device_options_tooltip = "A device name to match";
+	Glib::ustring device_options_tooltip = _("A device name to match");
 #if defined CONFIG_KERNEL_FAMILY_WINDOWS
-	device_options_tooltip = "A device name to match (for example, use \"pd0\" for the first physical drive)";
+	device_options_tooltip = _("A device name to match (for example, use \"pd0\" for the first physical drive)");
 #elif defined CONFIG_KERNEL_LINUX
-	device_options_tooltip = "A device name to match (for example, /dev/sda or /dev/twa0)";
+	device_options_tooltip = _("A device name to match (for example, /dev/sda or /dev/twa0)");
 #endif
 	if (auto* device_options_device_label = lookup_widget<Gtk::Label*>("device_options_device_label")) {
 		app_gtkmm_set_widget_tooltip(*device_options_device_label, device_options_tooltip);
@@ -475,9 +478,9 @@ void GscPreferencesWindow::on_window_ok_button_clicked()
 
 	if (contains_empty) {
 		Gtk::MessageDialog dialog(*this,
-				"You have specified an empty Parameters field for one or more entries"
+				_("You have specified an empty Parameters field for one or more entries"
 				" in Per-Drive Smartctl Parameters section. Such entries will be discarded.\n"
-				"\nDo you want to continue?",
+				"\nDo you want to continue?"),
 				true, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO, true);
 		if (dialog.run() != Gtk::RESPONSE_YES) {
 			return;
@@ -498,7 +501,7 @@ void GscPreferencesWindow::on_window_ok_button_clicked()
 void GscPreferencesWindow::on_window_reset_all_button_clicked()
 {
 	Gtk::MessageDialog dialog(*this,
-			"\nAre you sure you want to reset all program settings to their defaults?\n",
+			"\n"s + _("Are you sure you want to reset all program settings to their defaults?") + "\n",
 			true, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO, true);
 
 	if (dialog.run() == Gtk::RESPONSE_YES) {
@@ -520,17 +523,17 @@ void GscPreferencesWindow::on_smartctl_binary_browse_button_clicked()
 
 #ifdef _WIN32
 	Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
-	specific_filter->set_name("Executable Files");
+	specific_filter->set_name(_("Executable Files"));
 	specific_filter->add_pattern("*.exe");
 
 	Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
-	all_filter->set_name("All Files");
+	all_filter->set_name(_("All Files"));
 	all_filter->add_pattern("*");
 #endif
 
 #if GTK_CHECK_VERSION(3, 20, 0)
 	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-			"Choose Smartctl Binary...", this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, nullptr, nullptr), g_object_unref);
+			_("Choose Smartctl Binary..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, nullptr, nullptr), g_object_unref);
 
 	if (path.is_absolute())
 		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog.get()), path.u8string().c_str());
@@ -543,7 +546,7 @@ void GscPreferencesWindow::on_smartctl_binary_browse_button_clicked()
 	result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
 
 #else
-	Gtk::FileChooserDialog dialog(*this, "Choose Smartctl Binary...",
+	Gtk::FileChooserDialog dialog(*this, _("Choose Smartctl Binary..."),
 			Gtk::FILE_CHOOSER_ACTION_OPEN);
 
 	// Add response buttons the the dialog
