@@ -39,6 +39,15 @@ AC_PROG_LN_S
 
 # -------------------------------------------------------------------------------------
 
+# ------------- gettext support
+
+AM_GNU_GETTEXT([external])
+AM_GNU_GETTEXT_VERSION([0.19.2])
+
+APP_LOCALEDIR=[${localedir}]
+AC_SUBST(APP_LOCALEDIR)
+
+
 
 # ------------- Detect compiler, OS, environment. Enable system features.
 
@@ -105,11 +114,6 @@ esac
 
 # In many environments this enables large file support
 CXXFLAGS="$CXXFLAGS -D_FILE_OFFSET_BITS=64"
-
-
-# Arrange large file support (define _FILE_OFFSET_BITS 64, etc...).
-# Adds the special flags to CC.
-AC_SYS_LARGEFILE
 
 
 # -------------------------------------------------------------------------------------
@@ -264,7 +268,8 @@ ADDITIONAL_FLAGS="-DPACKAGE_PKGDATA_DIR=\"\\\"\$(pkgdatadir)\\\"\" \
 -DPACKAGE_SYSCONF_DIR=\"\\\"\$(sysconfdir)\\\"\" \
 -DPACKAGE_DOC_DIR=\"\\\"\$(docdir)\\\"\" \
 -DTOP_SOURCE_DIR=\"\\\"\$(top_srcdir)\\\"\" \
--DHZ_USE_LIBDEBUG=1
+-DPACKAGE_LOCALE_DIR=\"\\\"\$(localedir)\\\"\" \
+-DHZ_USE_LIBDEBUG=1"
 
 CXXFLAGS="$CXXFLAGS $ADDITIONAL_FLAGS"
 
@@ -334,11 +339,11 @@ AC_CONFIG_FILES([data/gsmartcontrol-root], [chmod +x data/gsmartcontrol-root])
 
 # these are all the makefiles to generate
 
-AC_CONFIG_FILES([Makefile src/Makefile src/applib/Makefile src/res/Makefile src/hz/Makefile \
+AC_CONFIG_FILES([Makefile src/Makefile src/applib/Makefile src/ui/Makefile src/hz/Makefile \
 	src/libdebug/Makefile src/rconfig/Makefile src/json/Makefile \
 	data/Makefile data/16/Makefile data/22/Makefile data/24/Makefile data/32/Makefile \
 	data/48/Makefile data/64/Makefile data/128/Makefile data/256/Makefile data/nsis/Makefile \
-	debian.dist/Makefile])
+	debian.dist/Makefile doc/Makefile po/Makefile.in])
 
 
 AC_OUTPUT

@@ -16,6 +16,8 @@
 #include <string>
 #include <chrono>
 #include <utility>
+#include <glibmm/i18n.h>
+
 #include "hz/error.h"
 #include "hz/process_signal.h"  // hz::SIGNAL_*
 
@@ -66,7 +68,8 @@ class CmdexSync : public sigc::trackable {
 		/// Constructor
 		CmdexSync()
 		{
-			running_msg_ = "Running %s...";  // %s will be replaced by command basename
+			/// Translators: {command} will be replaced by command name.
+			running_msg_ = _("Running {command}...");
 			set_error_header("An error occurred while executing the command:\n\n");
 		}
 
@@ -189,7 +192,7 @@ class CmdexSync : public sigc::trackable {
 		}
 
 
-		/// Set a message to display when running. %s in \c msg will be replaced by the command.
+		/// Set a message to display when running. "{command}" in \c msg will be replaced by the command.
 		void set_running_msg(const std::string& msg)
 		{
 			running_msg_ = msg;

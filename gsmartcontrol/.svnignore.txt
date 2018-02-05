@@ -1,4 +1,5 @@
 0*
+cmake-build-*
 *.pcs
 autom4te.cache
 Makefile.in
@@ -6,13 +7,12 @@ configure
 depcomp
 config.guess
 config.sub
+config.rpath
 aclocal.m4
 config.h.in
 compile
 ar-lib
 missing
 install-sh
-*.glade.cpp
-*.ui.cpp
-*.txt.cpp
 .kdev4
+.idea

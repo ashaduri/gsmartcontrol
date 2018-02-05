@@ -15,6 +15,7 @@
 #include <sstream>
 #include <cstddef>  // std::size_t
 #include <gtkmm.h>
+#include <glibmm/i18n.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
 
 #include "applib/app_gtkmm_utils.h"  // app_gtkmm_create_tree_view_column
@@ -68,11 +69,11 @@ GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, Glib::RefPtr
 
 		model_columns.add(col_num);
 		app_gtkmm_create_tree_view_column(col_num, *treeview,
-				"#", "# of executed command", true);  // sortable
+				"#", _("# of executed command"), true);  // sortable
 
 		model_columns.add(col_command);
 		app_gtkmm_create_tree_view_column(col_command, *treeview,
-				"Command", "Command with parameters", true);  // sortable
+				_("Command"), _("Command with parameters"), true);  // sortable
 
 		model_columns.add(col_entry);
 
@@ -200,16 +201,16 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 	int result = 0;
 
 	Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
-	specific_filter->set_name("Text Files");
+	specific_filter->set_name(_("Text Files"));
 	specific_filter->add_pattern("*.txt");
 
 	Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
-	all_filter->set_name("All Files");
+	all_filter->set_name(_("All Files"));
 	all_filter->add_pattern("*");
 
 #if GTK_CHECK_VERSION(3, 20, 0)
 	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-			"Save Data As...", this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr), g_object_unref);
+			_("Save Data As..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr), g_object_unref);
 
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
 
@@ -224,7 +225,7 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 	result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
 
 #else
-	Gtk::FileChooserDialog dialog(*this, "Save Data As...",
+	Gtk::FileChooserDialog dialog(*this, _("Save Data As..."),
 			Gtk::FILE_CHOOSER_ACTION_SAVE);
 
 	// Add response buttons the the dialog
@@ -265,7 +266,7 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 
 			auto ec = hz::fs_file_put_contents(hz::fs::u8path(file), entry->std_output);
 			if (ec) {
-				gui_show_error_dialog("Cannot save data to file", ec.message(), this);
+				gui_show_error_dialog(_("Cannot save data to file"), ec.message(), this);
 			}
 			break;
 		}
@@ -317,16 +318,16 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 	int result = 0;
 
 	Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
-	specific_filter->set_name("Text Files");
+	specific_filter->set_name(_("Text Files"));
 	specific_filter->add_pattern("*.txt");
 
 	Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
-	all_filter->set_name("All Files");
+	all_filter->set_name(_("All Files"));
 	all_filter->add_pattern("*");
 
 #if GTK_CHECK_VERSION(3, 20, 0)
 	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-			"Save Data As...", this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr), g_object_unref);
+			_("Save Data As..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr), g_object_unref);
 
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
 
@@ -341,7 +342,7 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 	result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
 
 #else
-	Gtk::FileChooserDialog dialog(*this, "Save Data As...",
+	Gtk::FileChooserDialog dialog(*this, _("Save Data As..."),
 			Gtk::FILE_CHOOSER_ACTION_SAVE);
 
 	// Add response buttons the the dialog
@@ -382,7 +383,7 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 
 			auto ec = hz::fs_file_put_contents(hz::fs::u8path(file), exss.str());
 			if (ec) {
-				gui_show_error_dialog("Cannot save data to file", ec.message(), this);
+				gui_show_error_dialog(_("Cannot save data to file"), ec.message(), this);
 			}
 			break;
 		}

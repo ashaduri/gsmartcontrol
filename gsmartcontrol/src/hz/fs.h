@@ -551,28 +551,6 @@ inline std::string fs_filename_make_safe(const std::string_view& filename)
 
 
 
-/// Change the supplied path so that it's safe to create it
-/// (remove any potentially harmful characters from it).
-inline std::string fs_path_make_safe(const std::string_view& path)
-{
-	std::string s(path);
-	std::string::size_type pos = 0;
-	while ((pos = s.find_first_not_of(
-			"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890._-",
-			pos)) != std::string::npos) {
-		if (s[pos] != fs_preferred_separator)
-			s[pos] = '_';
-		++pos;
-	}
-	// win32 kernel (heh) has trouble with space and dot-ending files
-	if (!s.empty() && (s[s.size() - 1] == '.' || s[s.size() - 1] == ' ')) {
-		s[s.size() - 1] = '_';
-	}
-	return s;
-}
-
-
-
 
 }  // ns hz
 

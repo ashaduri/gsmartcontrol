@@ -2,7 +2,7 @@
 # Add autoconf.m4 directory to local macro search path
 ACLOCAL_AMFLAGS = -I autoconf.m4
 
-SUBDIRS = data debian.dist doc src
+SUBDIRS = po data debian.dist doc src
 
 
 # nobase_ preserves their directory names.
@@ -13,7 +13,7 @@ nobase_dist_doc_DATA = contrib/cron-based_noadmin/README \
 
 
 # Extra files bundled with distribution.
-EXTRA_DIST = COPYING ChangeLog Doxyfile INSTALL configure autogen.sh \
+EXTRA_DIST = config.rpath  COPYING ChangeLog Doxyfile INSTALL configure autogen.sh \
 	gsmartcontrol.kdev4 \
 	gsmartcontrol.spec
 

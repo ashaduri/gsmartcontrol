@@ -1,7 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.20.0 -->
+<!-- Generated with glade 3.20.0 
+
+Copyright (C) Alexander Shaduri
+
+This file is part of GSmartControl.
+
+GSmartControl is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+GSmartControl is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
+
+-->
 <interface>
-  <requires lib="gtk+" version="3.4"/>
+  <requires lib="gtk+" version="3.20"/>
+  <!-- interface-license-type gplv3 -->
+  <!-- interface-name GSmartControl -->
+  <!-- interface-copyright Alexander Shaduri -->
   <object class="GtkWindow" id="gsc_preferences_window">
     <property name="can_focus">False</property>
     <child>
@@ -52,10 +74,11 @@
                                     <property name="spacing">6</property>
                                     <child>
                                       <object class="GtkCheckButton" id="scan_on_startup_check">
-                                        <property name="label" translatable="yes">_Scan system for drives on startup</property>
+                                        <property name="label" translatable="yes">Scan system for drives on startup</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">False</property>
+                                        <property name="halign">start</property>
                                         <property name="use_underline">True</property>
                                         <property name="draw_indicator">True</property>
                                       </object>
@@ -71,6 +94,7 @@
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">False</property>
+                                        <property name="halign">start</property>
                                         <property name="use_underline">True</property>
                                         <property name="draw_indicator">True</property>
                                       </object>
@@ -86,6 +110,7 @@
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">False</property>
+                                        <property name="halign">start</property>
                                         <property name="use_underline">True</property>
                                         <property name="draw_indicator">True</property>
                                       </object>
@@ -101,6 +126,7 @@
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">False</property>
+                                        <property name="halign">start</property>
                                         <property name="use_underline">True</property>
                                         <property name="draw_indicator">True</property>
                                       </object>
@@ -162,11 +188,12 @@
                                     <property name="spacing">7</property>
                                     <child>
                                       <object class="GtkCheckButton" id="search_in_smartmontools_first_check">
-                                        <property name="label" translatable="yes">Loo_k for smartctl in smartmontools installation directory first</property>
+                                        <property name="label" translatable="yes">Look for smartctl in smartmontools installation directory first</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">False</property>
                                         <property name="tooltip_text" translatable="yes">If smartmontools is installed, use its smartctl by default</property>
+                                        <property name="halign">start</property>
                                         <property name="use_underline">True</property>
                                         <property name="draw_indicator">True</property>
                                       </object>
@@ -203,7 +230,7 @@
                                             </child>
                                             <child>
                                               <object class="GtkButton" id="smartctl_binary_browse_button">
-                                                <property name="label" translatable="yes">_Browse...</property>
+                                                <property name="label" translatable="yes">Browse...</property>
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">True</property>
                                                 <property name="receives_default">True</property>
@@ -254,7 +281,7 @@
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="halign">start</property>
-                                            <property name="label" translatable="yes">S_martctl binary:</property>
+                                            <property name="label" translatable="yes">Smartctl binary:</property>
                                             <property name="use_underline">True</property>
                                           </object>
                                           <packing>
@@ -387,8 +414,10 @@
                           <object class="GtkLabel" id="label10">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">&lt;b&gt;Drive Search&lt;/b&gt;</property>
-                            <property name="use_markup">True</property>
+                            <property name="label" translatable="yes">Drive Search</property>
+                            <attributes>
+                              <attribute name="weight" value="bold"/>
+                            </attributes>
                           </object>
                         </child>
                       </object>
@@ -537,7 +566,7 @@
                                                 <property name="can_focus">False</property>
                                                 <property name="tooltip_text" translatable="yes">Smartctl parameters to add (for example, "-T permissive" or "-d usbsunplus")</property>
                                                 <property name="halign">start</property>
-                                                <property name="label" translatable="yes">_Parameters:</property>
+                                                <property name="label" translatable="yes">Parameters:</property>
                                                 <property name="use_underline">True</property>
                                               </object>
                                               <packing>
@@ -551,7 +580,7 @@
                                                 <property name="can_focus">False</property>
                                                 <property name="tooltip_text" translatable="yes">Match only this type of device (as used by the -d smartctl parameter). Leave empty for all types. This can be used to match a drive behind a RAID device, e.g. "areca,2".</property>
                                                 <property name="halign">start</property>
-                                                <property name="label" translatable="yes">_Type:</property>
+                                                <property name="label" translatable="yes">Type:</property>
                                                 <property name="use_underline">True</property>
                                               </object>
                                               <packing>
@@ -564,7 +593,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">False</property>
                                                 <property name="halign">start</property>
-                                                <property name="label" translatable="yes">De_vice:</property>
+                                                <property name="label" translatable="yes">Device:</property>
                                                 <property name="use_underline">True</property>
                                               </object>
                                               <packing>
@@ -615,8 +644,10 @@
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">False</property>
                                                 <property name="halign">start</property>
-                                                <property name="label" translatable="yes">&lt;b&gt;Drive Properties:&lt;/b&gt;</property>
-                                                <property name="use_markup">True</property>
+                                                <property name="label" translatable="yes">Drive Properties:</property>
+                                                <attributes>
+                                                  <attribute name="weight" value="bold"/>
+                                                </attributes>
                                               </object>
                                               <packing>
                                                 <property name="left_attach">0</property>
@@ -654,8 +685,10 @@
                           <object class="GtkLabel" id="label11">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">&lt;b&gt;Per-drive Smartctl Parameters&lt;/b&gt;</property>
-                            <property name="use_markup">True</property>
+                            <property name="label" translatable="yes">Per-drive Smartctl Parameters</property>
+                            <attributes>
+                              <attribute name="weight" value="bold"/>
+                            </attributes>
                           </object>
                         </child>
                       </object>
@@ -709,7 +742,7 @@
             <property name="homogeneous">True</property>
             <child>
               <object class="GtkButton" id="window_reset_all_button">
-                <property name="label" translatable="yes">Reset a_ll</property>
+                <property name="label" translatable="yes">_Reset all</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>

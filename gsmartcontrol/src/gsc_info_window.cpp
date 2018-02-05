@@ -13,6 +13,7 @@
 #include "local_glibmm.h"
 
 #include <gtkmm.h>
+#include <glibmm/i18n.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
 #include <vector>  // better use vector, it's needed by others too
 #include <algorithm>  // std::min, std::max
@@ -34,6 +35,11 @@
 #include "gsc_info_window.h"
 #include "gsc_executor_error_dialog.h"
 #include "gsc_startup_settings.h"
+
+
+
+using namespace std::literals;
+
 
 
 /// A label for StorageProperty
@@ -193,7 +199,7 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 	// Create missing widgets
 	auto* device_name_hbox = lookup_widget<Gtk::Box*>("device_name_label_hbox");
 	if (device_name_hbox) {
-		device_name_label = Gtk::manage(new Gtk::Label("No data available", Gtk::ALIGN_START));
+		device_name_label = Gtk::manage(new Gtk::Label(_("No data available"), Gtk::ALIGN_START));
 		device_name_label->set_selectable(true);
 		device_name_label->show();
 		device_name_hbox->pack_start(*device_name_label, true, true);
@@ -245,7 +251,7 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 			treeview->signal_button_press_event().connect(
 					sigc::bind(sigc::bind(sigc::mem_fun(*this, &GscInfoWindow::on_treeview_button_press_event), treeview), treeview_menus[treeview_name]), false);  // before
 
-			Gtk::MenuItem* item = Gtk::manage(new Gtk::MenuItem("Copy Selected Data", true));
+			Gtk::MenuItem* item = Gtk::manage(new Gtk::MenuItem(_("Copy Selected Data"), true));
 			item->signal_activate().connect(
 					sigc::bind(sigc::mem_fun(*this, &GscInfoWindow::on_treeview_menu_copy_clicked), treeview) );
 			treeview_menus[treeview_name]->append(*item);
@@ -262,27 +268,27 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 	// on them in gtkbuilder.
 	if (auto* textview = lookup_widget<Gtk::TextView*>("error_log_textview")) {
 		Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-		buffer->set_text("\nNo data available");
+		buffer->set_text("\n"s + _("No data available"));
 	}
 	if (auto* textview = lookup_widget<Gtk::TextView*>("selective_selftest_log_textview")) {
 		Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-		buffer->set_text("\nNo data available");
+		buffer->set_text("\n"s + _("No data available"));
 	}
 	if (auto* textview = lookup_widget<Gtk::TextView*>("temperature_log_textview")) {
 		Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-		buffer->set_text("\nNo data available");
+		buffer->set_text("\n"s + _("No data available"));
 	}
 	if (auto* textview = lookup_widget<Gtk::TextView*>("erc_log_textview")) {
 		Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-		buffer->set_text("\nNo data available");
+		buffer->set_text("\n"s + _("No data available"));
 	}
 	if (auto* textview = lookup_widget<Gtk::TextView*>("phy_log_textview")) {
 		Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-		buffer->set_text("\nNo data available");
+		buffer->set_text("\n"s + _("No data available"));
 	}
 	if (auto* textview = lookup_widget<Gtk::TextView*>("directory_log_textview")) {
 		Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-		buffer->set_text("\nNo data available");
+		buffer->set_text("\n"s + _("No data available"));
 	}
 
 
@@ -369,11 +375,11 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		// fetch all smartctl info, even if it already has it (to refresh it).
 		if (scan) {
 			std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
-			ex->create_running_dialog(this, "Running %s on " + drive->get_device_with_type() + "...");
+			ex->create_running_dialog(this, Glib::ustring::compose(_("Running {command} on %1..."), drive->get_device_with_type()));
 			std::string error_msg = drive->fetch_data_and_parse(ex);  // run it with GUI support
 
 			if (!error_msg.empty()) {
-				gsc_executor_error_dialog_show("Cannot retrieve SMART data", error_msg, this);
+				gsc_executor_error_dialog_show(_("Cannot retrieve SMART data"), error_msg, this);
 				return;
 			}
 		}
@@ -384,7 +390,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		auto* b = lookup_widget<Gtk::Button*>("refresh_info_button");
 		if (b) {
 			b->set_sensitive(false);
-			app_gtkmm_set_widget_tooltip(*b, "Cannot re-read information from virtual drive");
+			app_gtkmm_set_widget_tooltip(*b, _("Cannot re-read information from virtual drive"));
 		}
 	}
 
@@ -421,16 +427,17 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 	// Top label - short device information
 	{
 		std::string device = Glib::Markup::escape_text(drive->get_device_with_type());
-		std::string model = Glib::Markup::escape_text(drive->get_model_name().empty() ? "Unknown model" : drive->get_model_name());
+		std::string model = Glib::Markup::escape_text(drive->get_model_name().empty() ? _("Unknown model") : drive->get_model_name());
 		std::string drive_letters = Glib::Markup::escape_text(drive->format_drive_letters(false));
 
-		this->set_title("Device Information - " + device + ": " + model + " - GSmartControl");
+		/// Translators: %1 is device name, %2 is device model.
+		this->set_title(Glib::ustring::compose(_("Device Information - %1: %2 - GSmartControl"), device, model));
 
 		// Gtk::Label* device_name_label = lookup_widget<Gtk::Label*>("device_name_label");
 		if (device_name_label) {
-			device_name_label->set_markup(
-					"<b>Device: </b>" + device + (drive_letters.empty() ? "" : (" (<b>" + drive_letters + "</b>)"))
-					+ "  <b>Model: </b>" + model);
+			/// Translators: %1 is device name, %2 is drive letters (if not empty), %3 is device model.
+			device_name_label->set_markup(Glib::ustring::compose(_("<b>Device:</b> %1%2  <b>Model:</b> %3"),
+					device, (drive_letters.empty() ? "" : (" (<b>" + drive_letters + "</b>)")), model));
 		}
 	}
 
@@ -477,11 +484,11 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 	// fill_ui_with_info() will do it all by itself.
 
 	{
-		this->set_title("Device Information - GSmartControl");
+		this->set_title(_("Device Information - GSmartControl"));
 
 		// Gtk::Label* device_name_label = lookup_widget<Gtk::Label*>("device_name_label");
 		if (device_name_label)
-			device_name_label->set_text("No data available");
+			device_name_label->set_text(_("No data available"));
 	}
 
 	{
@@ -595,7 +602,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		if (textview) {
 			// we re-create the buffer to get rid of all the Marks
 			textview->set_buffer(Gtk::TextBuffer::create());
-			textview->get_buffer()->set_text("\nNo data available");
+			textview->get_buffer()->set_text("\n"s + _("No data available"));
 		}
 
 		// tab label
@@ -606,7 +613,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		auto* textview = lookup_widget<Gtk::TextView*>("temperature_log_textview");
 		if (textview) {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-			buffer->set_text("\nNo data available");
+			buffer->set_text("\n"s + _("No data available"));
 		}
 
 		// tab label
@@ -633,7 +640,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 
 	{
 		if (auto* textview = lookup_widget<Gtk::TextView*>("erc_log_textview")) {
-			textview->get_buffer()->set_text("\nNo data available");
+			textview->get_buffer()->set_text("\n"s + _("No data available"));
 		}
 
 		// tab label
@@ -642,7 +649,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 
 	{
 		if (auto* textview = lookup_widget<Gtk::TextView*>("selective_selftest_log_textview")) {
-			textview->get_buffer()->set_text("\nNo data available");
+			textview->get_buffer()->set_text("\n"s + _("No data available"));
 		}
 
 		// tab label
@@ -651,7 +658,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 
 	{
 		if (auto* textview = lookup_widget<Gtk::TextView*>("phy_log_textview")) {
-			textview->get_buffer()->set_text("\nNo data available");
+			textview->get_buffer()->set_text("\n"s + _("No data available"));
 		}
 
 		// tab label
@@ -660,7 +667,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 
 	{
 		if (auto* textview = lookup_widget<Gtk::TextView*>("directory_log_textview")) {
-			textview->get_buffer()->set_text("\nNo data available");
+			textview->get_buffer()->set_text("\n"s + _("No data available"));
 		}
 
 		// tab label
@@ -715,7 +722,7 @@ void GscInfoWindow::on_view_output_button_clicked()
 		output = this->drive->get_info_output();
 	}
 
-	win->set_text("Smartctl Output", output, true, true);
+	win->set_text(_("Smartctl Output"), output, true, true);
 
 	std::string filename = drive->get_save_filename();
 	if (!filename.empty())
@@ -737,16 +744,16 @@ void GscInfoWindow::on_save_info_button_clicked()
 	std::string filename = drive->get_save_filename();
 
 	Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
-	specific_filter->set_name("Text Files");
+	specific_filter->set_name(_("Text Files"));
 	specific_filter->add_pattern("*.txt");
 
 	Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
-	all_filter->set_name("All Files");
+	all_filter->set_name(_("All Files"));
 	all_filter->add_pattern("*");
 
 #if GTK_CHECK_VERSION(3, 20, 0)
 	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-			"Save Data As...", this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr), g_object_unref);
+			_("Save Data As..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr), g_object_unref);
 
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
 
@@ -762,7 +769,7 @@ void GscInfoWindow::on_save_info_button_clicked()
 	result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
 
 #else
-	Gtk::FileChooserDialog dialog(*this, "Save Data As...",
+	Gtk::FileChooserDialog dialog(*this, _("Save Data As..."),
 			Gtk::FILE_CHOOSER_ACTION_SAVE);
 
 	// Add response buttons the the dialog
@@ -808,7 +815,7 @@ void GscInfoWindow::on_save_info_button_clicked()
 			}
 			std::error_code ec = hz::fs_file_put_contents(hz::fs::u8path(file), data);
 			if (ec) {
-				gui_show_error_dialog("Cannot save SMART data to file", ec.message(), this);
+				gui_show_error_dialog(_("Cannot save SMART data to file"), ec.message(), this);
 			}
 			break;
 		}
@@ -828,7 +835,7 @@ void GscInfoWindow::on_save_info_button_clicked()
 void GscInfoWindow::on_close_window_button_clicked()
 {
 	if (drive && drive->get_test_is_active()) {  // disallow close if test is active.
-		gui_show_warn_dialog("Please wait until all tests are finished.", this);
+		gui_show_warn_dialog(_("Please wait until all tests are finished."), this);
 	} else {
 		destroy(this);  // deletes this object and nullifies instance
 	}
@@ -847,8 +854,8 @@ void GscInfoWindow::on_test_type_combo_changed()
 		//debug_out_error("app", test->get_min_duration_seconds() << "\n");
 		if (auto* min_duration_label = lookup_widget<Gtk::Label*>("min_duration_label")) {
 			auto duration = test->get_min_duration_seconds();
-			min_duration_label->set_text(duration == std::chrono::seconds(-1) ? "N/A"
-					: (duration.count() == 0 ? "Unknown" : hz::format_time_length(duration)));
+			min_duration_label->set_text(duration == std::chrono::seconds(-1) ? C_("duration", "N/A")
+					: (duration.count() == 0 ? C_("duration", "Unknown") : hz::format_time_length(duration)));
 		}
 
 		auto* test_description_textview = lookup_widget<Gtk::TextView*>("test_description_textview");
@@ -962,12 +969,12 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<StorageProperty>& props
 
 	Gtk::TreeModelColumn<int32_t> col_id;
 	model_columns.add(col_id);  // we can use the column variable by value after this.
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_id, *treeview, "ID", "Attribute ID", true);
+	num_tree_cols = app_gtkmm_create_tree_view_column(col_id, *treeview, _("ID"), _("Attribute ID"), true);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_name;
 	model_columns.add(col_name);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_name, *treeview,
-			"Name", "Attribute name (this is deduced from ID by smartctl and may be incorrect, as it's highly vendor-specific)", true);
+			_("Name"), _("Attribute name (this is deduced from ID by smartctl and may be incorrect, as it's highly vendor-specific)"), true);
 	treeview->set_search_column(col_name.index());
 	auto* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
 	if (cr_name)
@@ -976,32 +983,32 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<StorageProperty>& props
 	Gtk::TreeModelColumn<Glib::ustring> col_failed;
 	model_columns.add(col_failed);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_failed, *treeview,
-			"Failed", "When failed (that is, the normalized value became equal to or less than threshold)", true, true);
+			_("Failed"), _("When failed (that is, the normalized value became equal to or less than threshold)"), true, true);
 
 	Gtk::TreeModelColumn<std::string> col_value;
 	model_columns.add(col_value);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_value, *treeview,
-			"Norm-ed value", "Normalized value (highly vendor-specific; converted from Raw value by the drive's firmware)", false);
+			C_("value", "Normalized"), _("Normalized value (highly vendor-specific; converted from Raw value by the drive's firmware)"), false);
 
 	Gtk::TreeModelColumn<std::string> col_worst;
 	model_columns.add(col_worst);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_worst, *treeview,
-			"Worst", "The worst normalized value recorded for this attribute during the drive's lifetime (with SMART enabled)", false);
+			C_("value", "Worst"), _("The worst normalized value recorded for this attribute during the drive's lifetime (with SMART enabled)"), false);
 
 	Gtk::TreeModelColumn<std::string> col_threshold;
 	model_columns.add(col_threshold);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_threshold, *treeview,
-			"Threshold", "Threshold for normalized value. Normalized value should be greater than threshold (unless vendor thinks otherwise).", false);
+			C_("value", "Threshold"), _("Threshold for normalized value. Normalized value should be greater than threshold (unless vendor thinks otherwise)."), false);
 
 	Gtk::TreeModelColumn<std::string> col_raw;
 	model_columns.add(col_raw);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_raw, *treeview,
-			"Raw value", "Raw value as reported by drive. May or may not be sensible.", false);
+			_("Raw value"), _("Raw value as reported by drive. May or may not be sensible."), false);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_type;
 	model_columns.add(col_type);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_type, *treeview,
-			"Type", "Alarm condition is reached when if normalized value becomes less than or equal to threshold. Type indicates whether it's a signal of drive's pre-failure time or just an old age.", false, true);
+			_("Type"), _("Alarm condition is reached when normalized value becomes less than or equal to threshold. Type indicates whether it's a signal of drive's pre-failure time or just an old age."), false, true);
 
 	// Doesn't carry that much info. Advanced users can look at the flags.
 // 		Gtk::TreeModelColumn<Glib::ustring> col_updated;
@@ -1012,15 +1019,15 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<StorageProperty>& props
 	Gtk::TreeModelColumn<std::string> col_flag_value;
 	model_columns.add(col_flag_value);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_flag_value, *treeview,
-			"Flags", "Flags\n\n"
-					"If given in POSRCK+ format, the presence of each letter indicates that the flag is on.\n"
-					"P: pre-failure attribute (if the attribute failed, the drive is failing)\n"
-					"O: updated continuously (as opposed to updated on offline data collection)\n"
-					"S: speed / performance attribute\n"
-					"R: error rate\n"
-					"C: event count\n"
-					"K: auto-keep\n"
-					"+: undocumented bits present", false);
+			_("Flags"), _("Flags") + "\n\n"s
+					+ Glib::ustring::compose(_("If given in %1 format, the presence of each letter indicates that the flag is on."), "POSRCK+") + "\n"
+					+ _("P: pre-failure attribute (if the attribute failed, the drive is failing)") + "\n"
+					+ _("O: updated continuously (as opposed to updated on offline data collection)") + "\n"
+					+ _("S: speed / performance attribute") + "\n"
+					+ _("R: error rate") + "\n"
+					+ _("C: event count") + "\n"
+					+ _("K: auto-keep") + "\n"
+					+ _("+: undocumented bits present"), false);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
 	model_columns.add(col_tooltip);
@@ -1108,7 +1115,7 @@ void GscInfoWindow::fill_ui_statistics(const std::vector<StorageProperty>& props
 	Gtk::TreeModelColumn<Glib::ustring> col_description;
 	model_columns.add(col_description);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_description, *treeview,
-			"Description", "Entry description", true);
+			_("Description"), _("Entry description"), true);
 	treeview->set_search_column(col_description.index());
 // 		Gtk::CellRendererText* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
 // 		if (cr_name)
@@ -1117,21 +1124,21 @@ void GscInfoWindow::fill_ui_statistics(const std::vector<StorageProperty>& props
 	Gtk::TreeModelColumn<std::string> col_value;
 	model_columns.add(col_value);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_value, *treeview,
-			"Value", "Value (can be normalized if 'N' flag is present)", false);
+			_("Value"), Glib::ustring::compose(_("Value (can be normalized if '%1' flag is present)"), "N"), false);
 
 	Gtk::TreeModelColumn<std::string> col_flags;
 	model_columns.add(col_flags);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_flags, *treeview,
-			"Flags", "Flags\n\n"
-					"N: value is normalized\n"
-					"D: supports Device Statistics Notification (DSN)\n"
-					"C: monitored condition met\n"  // Related to DSN? From the specification, it looks like something user-controllable.
-					"+: undocumented bits present", false);
+			_("Flags"), _("Flags") + "\n\n"s
+					+ _("N: value is normalized") + "\n"
+					+ _("D: supports Device Statistics Notification (DSN)") + "\n"
+					+ _("C: monitored condition met") + "\n"  // Related to DSN? From the specification, it looks like something user-controllable.
+					+ _("+: undocumented bits present"), false);
 
 	Gtk::TreeModelColumn<std::string> col_page_offset;
 	model_columns.add(col_page_offset);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_page_offset, *treeview,
-			"Page, Offset", "Page and offset of the entry", false);
+			_("Page, Offset"), _("Page and offset of the entry"), false);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
 	model_columns.add(col_tooltip);
@@ -1223,10 +1230,10 @@ void GscInfoWindow::fill_ui_self_test_info()
 		row = *(test_combo_model->append());
 		row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::TestType::immediate_offline);
 		row[test_combo_col_description] =
-				"Immediate Offline Test (also known as Immediate Offline Data Collection)"
-						" is the manual version of Automatic Offline Data Collection, which, if enabled, is automatically run"
-						" every four hours. If an error occurs during this test, it will be reported in Error Log. Besides that,"
-						" its effects are visible only in that it updates the \"Offline\" Attribute values.";
+				_("Immediate Offline Test (also known as Immediate Offline Data Collection)"
+				" is the manual version of Automatic Offline Data Collection, which, if enabled, is automatically run"
+				" every four hours. If an error occurs during this test, it will be reported in Error Log. Besides that,"
+				" its effects are visible only in that it updates the \"Offline\" Attribute values.");
 		row[test_combo_col_self_test] = test_ioffline;
 	}
 
@@ -1235,12 +1242,12 @@ void GscInfoWindow::fill_ui_self_test_info()
 		row = *(test_combo_model->append());
 		row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::TestType::short_test);
 		row[test_combo_col_description] =
-				"Short self-test consists of a collection of test routines that have the highest chance"
-						" of detecting drive problems. Its result is reported in the Self-Test Log."
-						" Note that this test is in no way comprehensive. Its main purpose is to detect totally damaged"
-						" drives without running the full surface scan."
-						"\nNote: On some drives this actually runs several consequent tests, which may"
-						" cause the program to display the test progress incorrectly.";  // seagate multi-pass test on 7200.11.
+				_("Short self-test consists of a collection of test routines that have the highest chance"
+				" of detecting drive problems. Its result is reported in the Self-Test Log."
+				" Note that this test is in no way comprehensive. Its main purpose is to detect totally damaged"
+				" drives without running a full surface scan."
+				"\nNote: On some drives this actually runs several consequent tests, which may"
+				" cause the program to display the test progress incorrectly.");  // seagate multi-pass test on 7200.11.
 		row[test_combo_col_self_test] = test_short;
 	}
 
@@ -1249,8 +1256,8 @@ void GscInfoWindow::fill_ui_self_test_info()
 		row = *(test_combo_model->append());
 		row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::TestType::long_test);
 		row[test_combo_col_description] =
-				"Extended self-test examines complete disk surface and performs various test routines"
-						" built into the drive. Its result is reported in the Self-Test Log.";
+				_("Extended self-test examines complete disk surface and performs various test routines"
+				" built into the drive. Its result is reported in the Self-Test Log.");
 		row[test_combo_col_self_test] = test_long;
 	}
 
@@ -1259,7 +1266,7 @@ void GscInfoWindow::fill_ui_self_test_info()
 		row = *(test_combo_model->append());
 		row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::TestType::conveyance);
 		row[test_combo_col_description] =
-				"Conveyance self-test is intended to identify damage incurred during transporting of the drive.";
+				_("Conveyance self-test is intended to identify damage incurred during transporting of the drive.");
 		row[test_combo_col_self_test] = test_conveyance;
 	}
 
@@ -1290,7 +1297,7 @@ void GscInfoWindow::fill_ui_self_test_log(const std::vector<StorageProperty>& pr
 	Gtk::TreeModelColumn<uint32_t> col_num;
 	model_columns.add(col_num);  // we can use the column variable by value after this.
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_num, *treeview,
-			"Test #", "Test # (greater may mean newer or older depending on drive model)", true);
+			_("Test #"), _("Test # (greater may mean newer or older depending on drive model)"), true);
 	auto* cr_test_num = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
 	if (cr_test_num)
 		cr_test_num->property_weight() = Pango::WEIGHT_BOLD ;
@@ -1298,28 +1305,28 @@ void GscInfoWindow::fill_ui_self_test_log(const std::vector<StorageProperty>& pr
 	Gtk::TreeModelColumn<std::string> col_type;
 	model_columns.add(col_type);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_type, *treeview,
-			"Type", "Type of the test performed", true);
+			_("Type"), _("Type of the test performed"), true);
 	treeview->set_search_column(col_type.index());
 
 	Gtk::TreeModelColumn<std::string> col_status;
 	model_columns.add(col_status);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_status, *treeview,
-			"Status", "Test completion status", true);
+			_("Status"), _("Test completion status"), true);
 
 	Gtk::TreeModelColumn<std::string> col_percent;
 	model_columns.add(col_percent);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_percent, *treeview,
-			"% Completed", "Percentage of the test completed. Instantly-aborted tests have 10%, while unsupported ones _may_ have 100%.", true);
+			_("% Completed"), _("Percentage of the test completed. Instantly-aborted tests have 10%, while unsupported ones <i>may</i> have 100%."), true, false, true);
 
 	Gtk::TreeModelColumn<std::string> col_hours;
 	model_columns.add(col_hours);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_hours, *treeview,
-			"Lifetime hours", "During which hour of the drive's (powered on) lifetime did the test complete (or abort)", true);
+			_("Lifetime hours"), _("During which hour of the drive's (powered on) lifetime did the test complete (or abort)"), true);
 
 	Gtk::TreeModelColumn<std::string> col_lba;
 	model_columns.add(col_lba);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_lba, *treeview,
-			"LBA of the first error", "LBA of the first error (if an LBA-related error happened)", true);
+			_("LBA of the first error"), _("LBA of the first error (if an LBA-related error happened)"), true);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
 	model_columns.add(col_tooltip);
@@ -1401,29 +1408,29 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
 	Gtk::TreeModelColumn<uint32_t> col_num;
 	model_columns.add(col_num);  // we can use the column variable by value after this.
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_num, *treeview,
-			"Error #", "Error # in the error log (greater means newer)", true);
+			_("Error #"), _("Error # in the error log (greater means newer)"), true);
 	if (auto* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1)))
 		cr_name->property_weight() = Pango::WEIGHT_BOLD ;
 
 	Gtk::TreeModelColumn<std::string> col_hours;
 	model_columns.add(col_hours);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_hours, *treeview,
-			"Lifetime hours", "During which hour of the drive's (powered on) lifetime did the error happen.", true);
+			_("Lifetime hours"), _("During which hour of the drive's (powered on) lifetime did the error happen."), true);
 
 	Gtk::TreeModelColumn<std::string> col_state;
 	model_columns.add(col_state);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_state, *treeview,
-			"State", "Power state of the drive when the error occurred", false);
+			C_("power", "State"), _("Power state of the drive when the error occurred"), false);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_type;
 	model_columns.add(col_type);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_type, *treeview,
-			"Type", "Type of error", true);
+			_("Type"), _("Type of error"), true);
 
 	Gtk::TreeModelColumn<std::string> col_details;
 	model_columns.add(col_details);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_details, *treeview,
-			"Details", "Additional details (e.g. LBA where the error occurred, etc...)", true);
+			_("Details"), _("Additional details (e.g. LBA where the error occurred, etc...)"), true);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
 	model_columns.add(col_tooltip);
@@ -1461,7 +1468,7 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
 				// Add complete error log to textview window.
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 				if (buffer) {
-					buffer->set_text("\nComplete error log:\n\n" + p.get_value<std::string>());
+					buffer->set_text("\n" + Glib::ustring::compose(_("Complete error log: %1"), "\n\n" + p.get_value<std::string>()));
 
 					// set marks so we can scroll to them
 
@@ -1472,6 +1479,7 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
 
 					Gtk::TextIter titer = buffer->begin();
 					Gtk::TextIter match_start, match_end;
+					// TODO Change this for json
 					while (titer.forward_search("\nError ", Gtk::TEXT_SEARCH_TEXT_ONLY, match_start, match_end)) {
 						match_start.forward_char();  // place after newline
 						match_end.forward_word_end();  // include error number
@@ -1488,7 +1496,7 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
 		} else if (!p.is_value_type<StorageErrorBlock>()) {
 			label_strings.emplace_back(p.readable_name + ": " + p.format_value(), &p);
 			if (p.generic_name == "error_log_error_count")
-				label_strings.back().label += " (Note: The number of entries may be limited to the newest ones)";
+				label_strings.back().label += " "s + _("(Note: The number of entries may be limited to the newest ones)");
 
 		} else {
 			const auto& eb = p.get_value<StorageErrorBlock>();
@@ -1505,7 +1513,7 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
 			// "No description available" for all of them.
 			row[col_tooltip] = p.get_description();
 			row[col_storage] = &p;
-			row[col_mark_name] = "Error " + hz::number_to_string_locale(eb.error_num);
+			row[col_mark_name] = Glib::ustring::compose(_("Error %1"), eb.error_num);
 		}
 
 		if (int(p.warning) > int(max_tab_warning))
@@ -1560,7 +1568,7 @@ void GscInfoWindow::fill_ui_temperature_log(const std::vector<StorageProperty>& 
 			continue;
 
 		if (p.generic_name == "sct_unsupported" && p.get_value<bool>()) {  // only show if unsupported
-			label_strings.emplace_back("SCT temperature commands not supported.", &p);
+			label_strings.emplace_back(_("SCT temperature commands not supported."), &p);
 			if (int(p.warning) > int(max_tab_warning))
 				max_tab_warning = p.warning;
 			continue;
@@ -1569,17 +1577,17 @@ void GscInfoWindow::fill_ui_temperature_log(const std::vector<StorageProperty>& 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
 		if (p.generic_name == "scttemp_log") {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-			buffer->set_text("\nComplete SCT temperature log:\n\n" + p.get_value<std::string>());
+			buffer->set_text("\n" + Glib::ustring::compose(_("Complete SCT temperature log: %1"), "\n\n" + p.get_value<std::string>()));
 		}
 	}
 
 	if (temperature.empty()) {
-		temperature = "Unknown";
+		temperature = C_("value", "Unknown");
 	} else {
-		temperature += " C";
+		temperature = Glib::ustring::compose(C_("temperature", "%1 C"), temperature);
 	}
-	temp_property.set_description("Current drive temperature in Celsius.");  // overrides attribute description
-	label_strings.emplace_back("Current temperature: <b>" + temperature + "</b>", &temp_property, true);
+	temp_property.set_description(_("Current drive temperature in Celsius."));  // overrides attribute description
+	label_strings.emplace_back(Glib::ustring::compose(_("Current temperature: %1"), "<b>" + temperature + "</b>"), &temp_property, true);
 	if (int(temp_property.warning) > int(max_tab_warning))
 		max_tab_warning = temp_property.warning;
 
@@ -1604,11 +1612,11 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<StorageProper
 
 	Gtk::TreeModelColumn<int> col_index;
 	model_columns.add(col_index);  // we can use the column variable by value after this.
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_index, *treeview, "#", "Entry #", true);
+	num_tree_cols = app_gtkmm_create_tree_view_column(col_index, *treeview, _("#"), _("Entry #"), true);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_name;
 	model_columns.add(col_name);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_name, *treeview, "Name", "Name", true);
+	num_tree_cols = app_gtkmm_create_tree_view_column(col_name, *treeview, _("Name"), _("Name"), true);
 	treeview->set_search_column(col_name.index());
 	auto cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
 	if (cr_name)
@@ -1616,11 +1624,11 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<StorageProper
 
 	Gtk::TreeModelColumn<std::string> col_flag_value;
 	model_columns.add(col_flag_value);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_flag_value, *treeview, "Flags", "Flags", false);
+	num_tree_cols = app_gtkmm_create_tree_view_column(col_flag_value, *treeview, _("Flags"), _("Flags"), false);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_str_values;
 	model_columns.add(col_str_values);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_str_values, *treeview, "Capabilities", "Capabilities", false);
+	num_tree_cols = app_gtkmm_create_tree_view_column(col_str_values, *treeview, _("Capabilities"), _("Capabilities"), false);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
 	model_columns.add(col_tooltip);
@@ -1696,7 +1704,7 @@ WarningLevel GscInfoWindow::fill_ui_error_recovery(const std::vector<StorageProp
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
 		if (p.generic_name == "scterc_log") {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-			buffer->set_text("\nComplete SCT Error Recovery Control settings:\n\n" + p.get_value<std::string>());
+			buffer->set_text("\n" + Glib::ustring::compose(_("Complete SCT Error Recovery Control settings: %1"), "\n\n" + p.get_value<std::string>()));
 		}
 	}
 
@@ -1721,7 +1729,7 @@ WarningLevel GscInfoWindow::fill_ui_selective_self_test_log(const std::vector<St
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
 		if (p.generic_name == "SubSection::selective_selftest_log") {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-			buffer->set_text("\nComplete selective self-test log:\n\n" + p.get_value<std::string>());
+			buffer->set_text("\n" + Glib::ustring::compose(_("Complete selective self-test log: %1"), "\n\n" + p.get_value<std::string>()));
 		}
 	}
 
@@ -1746,7 +1754,7 @@ WarningLevel GscInfoWindow::fill_ui_physical(const std::vector<StorageProperty>&
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
 		if (p.generic_name == "sataphy_log") {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-			buffer->set_text("\nComplete phy log:\n\n" + p.get_value<std::string>());
+			buffer->set_text("\n" + Glib::ustring::compose(_("Complete phy log: %1"), "\n\n" + p.get_value<std::string>()));
 		}
 	}
 
@@ -1771,7 +1779,7 @@ WarningLevel GscInfoWindow::fill_ui_directory(const std::vector<StorageProperty>
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
 		if (p.generic_name == "directory_log") {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-			buffer->set_text("\nComplete directory log:\n\n" + p.get_value<std::string>());
+			buffer->set_text("\n" + Glib::ustring::compose(_("Complete directory log: %1"), "\n\n" + p.get_value<std::string>()));
 		}
 	}
 
@@ -1805,7 +1813,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 		}
 
 		int8_t rem_percent = self->current_test->get_remaining_percent();
-		std::string rem_percent_str = (rem_percent == -1 ? "Unknown" : hz::number_to_string_locale(100 - rem_percent));
+		std::string rem_percent_str = (rem_percent == -1 ? C_("value", "Unknown") : hz::number_to_string_locale(100 - rem_percent));
 
 		auto poll_in = self->current_test->get_poll_in_seconds();  // sec
 
@@ -1822,13 +1830,12 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 				auto rem_seconds = self->current_test->get_remaining_seconds();
 
 				if (test_completion_progressbar) {
-					std::string rem_seconds_str = (rem_seconds == std::chrono::seconds(-1) ? "Unknown" : hz::format_time_length(rem_seconds));
+					std::string rem_seconds_str = (rem_seconds == std::chrono::seconds(-1) ? C_("duration", "Unknown") : hz::format_time_length(rem_seconds));
 
 					Glib::ustring bar_str;
 
 					if (self->test_error_msg.empty()) {
-						bar_str = hz::string_sprintf("Test completion: %s%%; ETA: %s",
-								rem_percent_str.c_str(), rem_seconds_str.c_str());
+						bar_str = Glib::ustring::compose(_("Test completion: %1%%; ETA: %2"), rem_percent_str, rem_seconds_str);
 					} else {
 						bar_str = self->test_error_msg;  // better than popup every few seconds
 					}
@@ -1892,16 +1899,16 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 	if (!self->test_error_msg.empty()) {
 		aborted = true;
 		severity = StorageSelftestEntry::StatusSeverity::error;
-		result_msg = "<b>Test aborted: </b>" + self->test_error_msg;
+		result_msg = Glib::ustring::compose(_("<b>Test aborted:</b> %1"), self->test_error_msg);
 
 	} else {
 		severity = StorageSelftestEntry::get_status_severity(status);
 		if (status == StorageSelftestEntry::Status::aborted_by_host) {
 			aborted = true;
-			result_msg = "<b>Test was manually aborted.</b>";  // it's a StatusSeverity::none message
+			result_msg = "<b>"s + _("Test was manually aborted.") + "</b>";  // it's a StatusSeverity::none message
 
 		} else {
-			result_msg = "<b>Test result: </b>" + StorageSelftestEntry::get_status_name(status) + ".";
+			result_msg = Glib::ustring::compose(_("<b>Test result:</b> %1."), StorageSelftestEntry::get_status_name(status));
 
 			// It may not reach 100% somehow, so do it manually.
 			if (test_completion_progressbar)
@@ -1910,7 +1917,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 	}
 
 	if (severity != StorageSelftestEntry::StatusSeverity::none) {
-		result_msg += "\nCheck the Self-Test Log for more information.";
+		result_msg += "\n"s + _("Check the Self-Test Log for more information.");
 	}
 
 
@@ -1921,7 +1928,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 		test_execute_button->set_sensitive(true);
 
 	if (test_completion_progressbar)
-		test_completion_progressbar->set_text(aborted ? "Test aborted" : "Test completed");
+		test_completion_progressbar->set_text(aborted ? _("Test aborted") : _("Test completed"));
 
 	if (auto* test_stop_button = self->lookup_widget<Gtk::Button*>("test_stop_button"))
 		test_stop_button->set_sensitive(false);
@@ -1977,7 +1984,8 @@ void GscInfoWindow::on_test_execute_button_clicked()
 
 	std::string error_msg = test->start(ex);  // this runs update() too.
 	if (!error_msg.empty()) {
-		gui_show_error_dialog("Cannot run " + SelfTest::get_test_name(test->get_test_type()), error_msg, this);
+		/// Translators: %1 is test name
+		gui_show_error_dialog(Glib::ustring::compose(_("Cannot run %1"), SelfTest::get_test_name(test->get_test_type())), error_msg, this);
 		return;
 	}
 
@@ -2038,7 +2046,8 @@ void GscInfoWindow::on_test_stop_button_clicked()
 
 	std::string error_msg = current_test->force_stop(ex);
 	if (!error_msg.empty()) {
-		gui_show_error_dialog("Cannot stop " + SelfTest::get_test_name(current_test->get_test_type()), error_msg, this);
+		/// Translators: %1 is test name
+		gui_show_error_dialog(Glib::ustring::compose(_("Cannot stop %1"), SelfTest::get_test_name(current_test->get_test_type())), error_msg, this);
 		return;
 	}
 

@@ -36,13 +36,11 @@ GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builde
 	// set these properties here (after setting hooks) to make the links work.
 	set_website("https://gsmartcontrol.sourceforge.io/");
 
-	set_license(hz::data_file_get_contents("doc", "LICENSE_gsmartcontrol.txt", 1*1024*1024));  // 1M
-
-	// This overrides set_license(), so don't do it.
-// 	set_license_type(Gtk::LICENSE_GPL_3_0_ONLY);
+//	set_license_type(Gtk::LICENSE_GPL_3_0_ONLY);  // this overrides set_license()
+//	set_license(hz::data_file_get_contents("doc", "LICENSE_gsmartcontrol.txt", 1*1024*1024));  // 1M
 
 	// spammers go away
-	set_copyright("Copyright (C) 2008 - 2018  Alexander Shaduri " "<ashaduri" "" "@" "" "" "gmail.com>");
+	set_copyright(Glib::ustring::compose("Copyright (C) %1", "2008 - 2018  Alexander Shaduri " "<ashaduri" "" "@" "" "" "gmail.com>"));
 
 	std::string authors_str = hz::data_file_get_contents("doc", "AUTHORS.txt", 1*1024*1024);  // 1M
 	hz::string_any_to_unix(authors_str);
@@ -59,6 +57,9 @@ GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builde
 	set_authors(authors);
 
 	set_documenters(authors);
+
+	std::string translators_str = hz::data_file_get_contents("doc", "TRANSLATORS.txt", 10*1024*1024);  // 10M
+	set_translator_credits(translators_str);
 
 // 	run();  // don't use run - it's difficult to exit it manually.
 // 	show();  // shown by the caller to enable setting the parent window.

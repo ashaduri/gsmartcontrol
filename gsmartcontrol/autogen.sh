@@ -15,9 +15,7 @@
 # echo "Running autoconf..."
 # autoconf
 
-
-autoreconf --verbose --install -W all --force
-
+autoreconf --verbose --install --warnings=all --force
 
 rm -f config.cache
 

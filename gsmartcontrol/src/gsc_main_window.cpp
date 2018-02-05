@@ -13,6 +13,7 @@
 #include "local_glibmm.h"
 
 #include <gtkmm.h>
+#include <glibmm/i18n.h>
 #include <vector>
 
 #include "hz/string_algo.h"  // string_split
@@ -46,9 +47,7 @@
 
 
 
-
-// Compiled-in resources
-
+using namespace std::literals;
 
 
 GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui)
@@ -95,7 +94,7 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 // 		std::string smartctl_def_options = rconfig::get_data<std::string>("system/smartctl_options");
 
 		if (smartctl_binary.empty()) {
-			error_msg = "Smartctl binary is not specified in configuration.";
+			error_msg = _("Smartctl binary is not specified in configuration.");
 			show_output_button = false;
 			break;
 		}
@@ -105,7 +104,7 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 
 		SmartctlExecutorGui ex;
 		ex.create_running_dialog(this);
-		ex.set_running_msg("Checking if smartctl is executable...");
+		ex.set_running_msg(_("Checking if smartctl is executable..."));
 
 // 		ex.set_command(Glib::shell_quote(smartctl_binary), smartctl_def_options + "-V");  // --version
 		ex.set_command(Glib::shell_quote(smartctl_binary), "-V");  // --version
@@ -117,13 +116,13 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 
 		std::string output = ex.get_stdout_str();
 		if (output.empty()) {
-			error_msg = "Smartctl returned an empty output.";
+			error_msg = _("Smartctl returned an empty output.");
 			break;
 		}
 
 		std::string version, version_full;
 		if (!SmartctlParser::parse_version(output, version, version_full)) {
-			error_msg = "Smartctl returned invalid output.";
+			error_msg = _("Smartctl returned invalid output.");
 			break;
 		}
 
@@ -133,7 +132,7 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 			double version_double = 0;
 			if (hz::string_is_numeric_nolocale<double>(version, version_double, false)) {
 				if (version_double < minimum_req_version) {
-					error_msg = "Smartctl version " + version + " found, " + hz::number_to_string_nolocale(minimum_req_version) + " required.";
+					error_msg = Glib::ustring::compose(_("Smartctl version %1 found, %2 required."), version, hz::number_to_string_nolocale(minimum_req_version));
 					break;
 				}
 			}
@@ -143,8 +142,8 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 
 	bool smartctl_valid = error_msg.empty();
 	if (!smartctl_valid) {
-		gsc_executor_error_dialog_show("There was an error while executing smartctl",
-				error_msg + "\n\n<i>Please specify the correct smartctl binary in Preferences.</i>",
+		gsc_executor_error_dialog_show(_("There was an error while executing smartctl"),
+				error_msg + "\n\n<i>" + _("Please specify the correct smartctl binary in Preferences.") + "</i>",
 				this, true, show_output_button);
 	}
 
@@ -292,74 +291,74 @@ bool GscMainWindow::create_widgets()
 
 
 	// Add actions
-	actiongroup_main->add(Gtk::Action::create("file_menu", "_File"));
+	actiongroup_main->add(Gtk::Action::create("file_menu", _("_File")));
 
 		action = Gtk::Action::create(APP_ACTION_NAME(action_quit), Gtk::Stock::QUIT);
 		actiongroup_main->add((action_map[action_quit] = action), Gtk::AccelKey("<control>Q"),
 				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_quit));
 
-	actiongroup_main->add(Gtk::Action::create("device_menu", "_Device"));
+	actiongroup_main->add(Gtk::Action::create("device_menu", _("_Device")));
 
-		action = Gtk::Action::create(APP_ACTION_NAME(action_view_details), Gtk::Stock::INFO, "_View details",
-				"View detailed information");
+		action = Gtk::Action::create(APP_ACTION_NAME(action_view_details), Gtk::Stock::INFO, _("_View details"),
+				_("View detailed information"));
 		actiongroup_device->add((action_map[action_view_details] = action), Gtk::AccelKey("<control>V"),
 				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_view_details));
 
-		action = Gtk::ToggleAction::create(APP_ACTION_NAME(action_enable_smart), "Enable S_MART",
-				"Toggle SMART status. The status will be preserved at least until reboot (unless you toggle it again).");
+		action = Gtk::ToggleAction::create(APP_ACTION_NAME(action_enable_smart), _("Enable SMART"),
+				_("Toggle SMART status. The status will be preserved at least until reboot (unless you toggle it again)."));
 		lookup_widget<Gtk::CheckButton*>("status_smart_enabled_check")->set_related_action(action);
 		actiongroup_device->add((action_map[action_enable_smart] = action), Gtk::AccelKey("<control>M"),
 				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_enable_smart));
 
-		action = Gtk::ToggleAction::create(APP_ACTION_NAME(action_enable_aodc), "Enable Auto O_ffline Data Collection",
-				"Toggle Automatic Offline Data Collection which will update \"offline\" SMART attributes every four hours");
+		action = Gtk::ToggleAction::create(APP_ACTION_NAME(action_enable_aodc), _("Enable Auto Offline Data Collection"),
+				_("Toggle Automatic Offline Data Collection which will update \"offline\" SMART attributes every four hours"));
 		lookup_widget<Gtk::CheckButton*>("status_aodc_enabled_check")->set_related_action(action);
 		actiongroup_device->add((action_map[action_enable_aodc] = action), Gtk::AccelKey("<control>F"),
 				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_enable_aodc));
 
-		action = Gtk::Action::create(APP_ACTION_NAME(action_reread_device_data), Gtk::Stock::REFRESH, "R_e-read Data",
-				"Re-read basic SMART data");
+		action = Gtk::Action::create(APP_ACTION_NAME(action_reread_device_data), Gtk::Stock::REFRESH, _("Re-read Data"),
+				_("Re-read basic SMART data"));
 		actiongroup_device->add((action_map[action_reread_device_data] = action), Gtk::AccelKey("<control>E"),
 				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_reread_device_data));
 
-		action = Gtk::Action::create(APP_ACTION_NAME(action_perform_tests), "Perform _Tests...",
-				"Perform various self-tests on the drive");
+		action = Gtk::Action::create(APP_ACTION_NAME(action_perform_tests), _("Perform _Tests..."),
+				_("Perform various self-tests on the drive"));
 		actiongroup_device->add((action_map[action_perform_tests] = action), Gtk::AccelKey("<control>T"),
 				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_perform_tests));
 
-		action = Gtk::Action::create(APP_ACTION_NAME(action_remove_device), Gtk::Stock::REMOVE, "Re_move Added Device",
-				"Remove previously added device");
+		action = Gtk::Action::create(APP_ACTION_NAME(action_remove_device), Gtk::Stock::REMOVE, _("Re_move Added Device"),
+				_("Remove previously added device"));
 		actiongroup_device->add((action_map[action_remove_device] = action), Gtk::AccelKey("<control>W"),
 				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_remove_device));
 
-		action = Gtk::Action::create(APP_ACTION_NAME(action_remove_virtual_device), Gtk::Stock::REMOVE, "Re_move Virtual Device",
-				"Remove previously loaded virtual device");
+		action = Gtk::Action::create(APP_ACTION_NAME(action_remove_virtual_device), Gtk::Stock::REMOVE, _("Re_move Virtual Device"),
+				_("Remove previously loaded virtual device"));
 		actiongroup_device->add((action_map[action_remove_virtual_device] = action), Gtk::AccelKey("Delete"),
 				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_remove_virtual_device));
 
 		// ---
-		action = Gtk::Action::create(APP_ACTION_NAME(action_add_device), Gtk::Stock::OPEN, "_Add Device...",
-				"Manually add device to device list");
+		action = Gtk::Action::create(APP_ACTION_NAME(action_add_device), Gtk::Stock::OPEN, _("_Add Device..."),
+				_("Manually add device to device list"));
 		actiongroup_main->add((action_map[action_add_device] = action), Gtk::AccelKey("<control>D"),
 				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_add_device));
 
-		action = Gtk::Action::create(APP_ACTION_NAME(action_load_virtual), Gtk::Stock::OPEN, "L_oad Smartctl Output as Virtual Device...",
-				"Load smartctl output from a text file as a read-only virtual device");
+		action = Gtk::Action::create(APP_ACTION_NAME(action_load_virtual), Gtk::Stock::OPEN, _("_Load Smartctl Output as Virtual Device..."),
+				_("Load smartctl output from a text file as a read-only virtual device"));
 		actiongroup_main->add((action_map[action_load_virtual] = action), Gtk::AccelKey("<control>O"),
 				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_load_virtual));
 
-		action = Gtk::Action::create(APP_ACTION_NAME(action_rescan_devices), Gtk::Stock::REFRESH, "_Re-scan Device List",
-				"Re-scan device list");
+		action = Gtk::Action::create(APP_ACTION_NAME(action_rescan_devices), Gtk::Stock::REFRESH, _("_Re-scan Device List"),
+				_("Re-scan device list"));
 		actiongroup_main->add((action_map[action_rescan_devices] = action), Gtk::AccelKey("<control>R"),
 				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_rescan_devices));
 
-	actiongroup_main->add(Gtk::Action::create("options_menu", "_Options"));
+	actiongroup_main->add(Gtk::Action::create("options_menu", _("_Options")));
 
-		action = Gtk::Action::create(APP_ACTION_NAME(action_executor_log), "View Execution Log");
+		action = Gtk::Action::create(APP_ACTION_NAME(action_executor_log), _("View Execution Log"));
 		actiongroup_main->add((action_map[action_executor_log] = action),
 				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_executor_log));
 
-		action = Gtk::Action::create(APP_ACTION_NAME(action_update_drivedb), "Update Drive Database");
+		action = Gtk::Action::create(APP_ACTION_NAME(action_update_drivedb), _("Update Drive Database"));
 		actiongroup_main->add((action_map[action_update_drivedb] = action),
 				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_update_drivedb));
 
@@ -367,13 +366,13 @@ bool GscMainWindow::create_widgets()
 		actiongroup_main->add((action_map[action_preferences] = action), Gtk::AccelKey("<alt>P"),
 				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_preferences));
 
-	actiongroup_main->add(Gtk::Action::create("help_menu", "_Help"));
+	actiongroup_main->add(Gtk::Action::create("help_menu", _("_Help")));
 
 		action = Gtk::Action::create(APP_ACTION_NAME(action_online_documentation), Gtk::Stock::HELP);
 		actiongroup_main->add((action_map[action_online_documentation] = action), Gtk::AccelKey("F1"),
 				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_online_documentation));
 
-		action = Gtk::Action::create(APP_ACTION_NAME(action_support), "Support");
+		action = Gtk::Action::create(APP_ACTION_NAME(action_support), _("Support"));
 		actiongroup_main->add((action_map[action_support] = action),
 				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_support));
 
@@ -438,21 +437,21 @@ bool GscMainWindow::create_widgets()
 
 	// create and add labels
 	auto* name_label_box = lookup_widget<Gtk::Box*>("status_name_label_hbox");
-	name_label = Gtk::manage(new Gtk::Label("No drive selected", Gtk::ALIGN_START));
+	name_label = Gtk::manage(new Gtk::Label(_("No drive selected"), Gtk::ALIGN_START));
 	name_label->set_line_wrap(true);
 	name_label->set_selectable(true);
 	name_label->show();
 	name_label_box->pack_start(*name_label, true, true);
 
 	auto* health_label_box = lookup_widget<Gtk::Box*>("status_health_label_hbox");
-	health_label = Gtk::manage(new Gtk::Label("No drive selected", Gtk::ALIGN_START));
+	health_label = Gtk::manage(new Gtk::Label(_("No drive selected"), Gtk::ALIGN_START));
 	health_label->set_line_wrap(true);
 	health_label->set_selectable(true);
 	health_label->show();
 	health_label_box->pack_start(*health_label, true, true);
 
 	auto* family_label_box = lookup_widget<Gtk::Box*>("status_family_label_hbox");
-	family_label = Gtk::manage(new Gtk::Label("No drive selected", Gtk::ALIGN_START));
+	family_label = Gtk::manage(new Gtk::Label(_("No drive selected"), Gtk::ALIGN_START));
 	family_label->set_line_wrap(true);
 	family_label->set_selectable(true);
 	family_label->show();
@@ -471,9 +470,9 @@ namespace {
 		int status = 0;
 		{
 			Gtk::MessageDialog dialog(parent,
-					"\nOne of the drives is performing a test. Do you really want to quit?\n\n"
-					"<small>The test will continue to run in the background, but you won't be"
-					" able to monitor it using GSmartControl.</small>",
+					"\n"s + _("One of the drives is performing a test. Do you really want to quit?")
+					+ "\n\n<small>" + _("The test will continue to run in the background, but you won't be"
+					" able to monitor it using GSmartControl.") + "</small>",
 					true, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO, true);
 			status = dialog.run();
 		}
@@ -653,7 +652,7 @@ void GscMainWindow::on_action_enable_smart_toggled(Gtk::ToggleAction* action)
 		std::string error_msg = drive->set_smart_enabled(toggle_active, ex);  // run it with GUI support
 
 		if (!error_msg.empty()) {
-			std::string error_header = (toggle_active ? "Cannot enable SMART" : "Cannot disable SMART");
+			std::string error_header = (toggle_active ? _("Cannot enable SMART") : _("Cannot disable SMART"));
 			gsc_executor_error_dialog_show(error_header, error_msg, this);
 		}
 
@@ -685,21 +684,21 @@ void GscMainWindow::on_action_enable_aodc_toggled(Gtk::ToggleAction* action)
 
 		int response = 0;
 		{  // the dialog hides at the end of scope
-			Gtk::MessageDialog dialog(*this, "\nAutomatic Offline Data Collection status could not be determined.\n"
-					"\n<big>Do you want to enable or disable it?</big>\n",
+			Gtk::MessageDialog dialog(*this, "\n"s + _("Automatic Offline Data Collection status could not be determined.\n"
+					"\n<big>Do you want to enable or disable it?</big>") + "\n",
 					true, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_NONE, true);  // markup, modal
 
-			Gtk::Button dismiss_button("Dis_miss", true);
+			Gtk::Button dismiss_button(_("Dis_miss"), true);
 			dismiss_button.set_image(*Gtk::manage(new Gtk::Image(Gtk::Stock::CANCEL, Gtk::ICON_SIZE_BUTTON)));
 			dismiss_button.show_all();
 			dialog.add_action_widget(dismiss_button, Gtk::RESPONSE_CANCEL);
 
-			Gtk::Button disable_button("_Disable", true);
+			Gtk::Button disable_button(_("_Disable"), true);
 			disable_button.set_image(*Gtk::manage(new Gtk::Image(Gtk::Stock::NO, Gtk::ICON_SIZE_BUTTON)));
 			disable_button.show_all();
 			dialog.add_action_widget(disable_button, Gtk::RESPONSE_NO);
 
-			Gtk::Button enable_button("_Enable", true);
+			Gtk::Button enable_button(_("_Enable"), true);
 			enable_button.set_image(*Gtk::manage(new Gtk::Image(Gtk::Stock::YES, Gtk::ICON_SIZE_BUTTON)));
 			enable_button.set_can_default(true);
 			enable_button.show_all();
@@ -734,13 +733,13 @@ void GscMainWindow::on_action_enable_aodc_toggled(Gtk::ToggleAction* action)
 		std::string error_msg = drive->set_aodc_enabled(enable_aodc, ex);  // run it with GUI support
 
 		if (!error_msg.empty()) {
-			std::string error_header = (enable_aodc ? "Cannot enable Automatic Offline Data Collection"
-					: "Cannot disable Automatic Offline Data Collection");
+			std::string error_header = (enable_aodc ? _("Cannot enable Automatic Offline Data Collection")
+					: _("Cannot disable Automatic Offline Data Collection"));
 			gsc_executor_error_dialog_show(error_header, error_msg, this);
 
 		} else {  // tell the user, because there's no other feedback
-			gui_show_info_dialog((enable_aodc ? "Automatic Offline Data Collection enabled."
-					: "Automatic Offline Data Collection disabled."), this);
+			gui_show_info_dialog((enable_aodc ? _("Automatic Offline Data Collection enabled.")
+					: _("Automatic Offline Data Collection disabled.")), this);
 		}
 
 		return;
@@ -758,8 +757,8 @@ void GscMainWindow::on_action_enable_aodc_toggled(Gtk::ToggleAction* action)
 		std::string error_msg = drive->set_aodc_enabled(toggle_active, ex);  // run it with GUI support
 
 		if (!error_msg.empty()) {
-			std::string error_header = (toggle_active ? "Cannot enable Automatic Offline Data Collection"
-					: "Cannot disable Automatic Offline Data Collection");
+			std::string error_header = (toggle_active ? _("Cannot enable Automatic Offline Data Collection")
+					: _("Cannot disable Automatic Offline Data Collection"));
 			gsc_executor_error_dialog_show(error_header, error_msg, this);
 		}
 
@@ -785,7 +784,7 @@ void GscMainWindow::on_action_reread_device_data()
 
 		// the icon will be updated through drive's signal_changed callback.
 		if (!error_msg.empty()) {
-			gsc_executor_error_dialog_show("Cannot retrieve SMART data", error_msg, this);
+			gsc_executor_error_dialog_show(_("Cannot retrieve SMART data"), error_msg, this);
 		}
 	}
 }
@@ -913,20 +912,24 @@ void GscMainWindow::update_status_widgets()
 	StorageDevicePtr drive = iconview->get_selected_drive();
 	if (!drive) {
 		if (name_label)
-			name_label->set_text("No drive selected");
+			name_label->set_text(_("No drive selected"));
 		if (health_label)
-			health_label->set_text("No drive selected");
+			health_label->set_text(_("No drive selected"));
 		if (family_label)
-			family_label->set_text("No drive selected");
+			family_label->set_text(_("No drive selected"));
 // 		if (statusbar)
 // 			statusbar->pop();
 		return;
 	}
 
-	std::string device = Glib::Markup::escape_text(drive->get_is_virtual() ? ("Virtual: " + drive->get_virtual_filename()) : drive->get_device_with_type());
+	/// Translators: %1 is filename
+	std::string device = Glib::Markup::escape_text(drive->get_is_virtual()
+			? Glib::ustring::compose(_("Virtual: %1"), drive->get_virtual_filename()) : Glib::ustring(drive->get_device_with_type()));
 	std::string size = Glib::Markup::escape_text(drive->get_device_size_str());
-	std::string model = Glib::Markup::escape_text(drive->get_model_name().empty() ? std::string("Unknown model") : drive->get_model_name());
-	std::string family = Glib::Markup::escape_text(drive->get_family_name().empty() ? "Unknown" : drive->get_family_name());
+	std::string model = Glib::Markup::escape_text(drive->get_model_name().empty()
+			? std::string(_("Unknown model")) : drive->get_model_name());
+	std::string family = Glib::Markup::escape_text(drive->get_family_name().empty()
+			? C_("model_family", "Unknown") : drive->get_family_name());
 	std::string family_fallback = Glib::Markup::escape_text(drive->get_family_name().empty() ? model : drive->get_family_name());
 	std::string drive_letters_str = Glib::Markup::escape_text(drive->format_drive_letters(false));
 
@@ -954,12 +957,12 @@ void GscMainWindow::update_status_widgets()
 
 			if (health_prop.warning != WarningLevel::none) {
 				std::string tooltip_str = storage_property_get_warning_reason(health_prop)
-						+ "\n\nView details for more information.";
+						+ "\n\n" + _("View details for more information.");
 				app_gtkmm_set_widget_tooltip(*health_label, tooltip_str, true);
 			}
 
 		} else {
-			health_label->set_text("Unknown");
+			health_label->set_text(C_("health_status", "Unknown"));
 		}
 	}
 
@@ -991,7 +994,7 @@ void GscMainWindow::rescan_devices()
 		int status = 0;
 		{
 			Gtk::MessageDialog dialog(*this,
-					"\nThis operation may abort any running tests. Do you wish to continue?",
+					"\n"s + _("This operation may abort any running tests. Do you wish to continue?"),
 					true, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO, true);
 			status = dialog.run();
 		}
@@ -1036,9 +1039,9 @@ void GscMainWindow::rescan_devices()
 	for (const auto& fetch_output : fetch_outputs) {
 		// debug_out_error("app", DBG_FUNC_MSG << fetch_outputs[i] << "\n");
 		if (app_pcre_match("/Smartctl open device.+Permission denied/mi", fetch_output)) {
-			gsc_executor_error_dialog_show("An error occurred while scanning the system",
-					"It seems that smartctl doesn't have enough permissions to access devices.\n"
-					"<small>See \"Resolving Permission Problems\" in Help menu for possible solutions.</small>", this, true, true);
+			gsc_executor_error_dialog_show(_("An error occurred while scanning the system"),
+					_("It seems that smartctl doesn't have enough permissions to access devices.\n"
+					"<small>See \"Permission Problems\" section of the documentation, accessible through the Help menu.</small>"), this, true, true);
 			error = true;
 			break;
 		}
@@ -1046,7 +1049,7 @@ void GscMainWindow::rescan_devices()
 
 	if (!error && !error_msg.empty()) {  // generic scan error. smartctl errors are not reported during scan at all.
 		// we don't show output button here
-		gsc_executor_error_dialog_show("An error occurred while scanning the system",
+		gsc_executor_error_dialog_show(_("An error occurred while scanning the system"),
 				error_msg, this, false, false);
 		// error = true;
 
@@ -1077,7 +1080,7 @@ void GscMainWindow::run_update_drivedb()
 	auto smartctl_binary = get_smartctl_binary();
 
 	if (smartctl_binary.empty()) {
-		gui_show_error_dialog("Error Updating Drive Database", "Smartctl binary is not specified in configuration.", this);
+		gui_show_error_dialog(_("Error Updating Drive Database"), _("Smartctl binary is not specified in configuration."), this);
 		return;
 	}
 
@@ -1096,7 +1099,7 @@ void GscMainWindow::run_update_drivedb()
 		Glib::spawn_command_line_async(update_binary);
 	}
 	catch(Glib::Error& e) {
-		gui_show_error_dialog("Error Updating Drive Database", e.what(), this);
+		gui_show_error_dialog(_("Error Updating Drive Database"), e.what(), this);
 	}
 }
 
@@ -1107,8 +1110,8 @@ bool GscMainWindow::add_device(const std::string& file, const std::string& type_
 #ifndef _WIN32  	// win32 doesn't have device files, so skip the check
 	std::error_code ec;
 	if (!hz::fs::exists(hz::fs::u8path(file), ec)) {
-		gui_show_error_dialog("Cannot add device",
-				(ec.message().empty() ? std::string("Device \"" + file + "\" doesn't exist.") : ec.message()), this);
+		gui_show_error_dialog(_("Cannot add device"),
+				(ec.message().empty() ? Glib::ustring::compose(_("Device \"%1\" doesn't exist."), file).raw() : ec.message()), this);
 		return false;
 	}
 #endif
@@ -1126,7 +1129,7 @@ bool GscMainWindow::add_device(const std::string& file, const std::string& type_
 	StorageDetector sd;
 	std::string error_msg = sd.fetch_basic_data(tmp_drives, ex_factory, true);  // return its first error
 	if (!error_msg.empty()) {
-		gsc_executor_error_dialog_show("An error occurred while adding the device", error_msg, this);
+		gsc_executor_error_dialog_show(_("An error occurred while adding the device"), error_msg, this);
 
 	} else {
 		this->drives.push_back(drive);
@@ -1145,7 +1148,7 @@ bool GscMainWindow::add_virtual_drive(const std::string& file)
 	auto ec = hz::fs_file_get_contents(hz::fs::u8path(file), output, max_size);
 	if (ec) {
 		debug_out_warn("app", "Cannot open virtual drive file \"" << file << "\": " << ec.message() << "\n");
-		gui_show_error_dialog("Cannot load data file", ec.message(), this);
+		gui_show_error_dialog(_("Cannot load data file"), ec.message(), this);
 		return false;
 	}
 
@@ -1158,7 +1161,7 @@ bool GscMainWindow::add_virtual_drive(const std::string& file)
 
 	std::string error_msg = drive->parse_data();  // this will set the type and add the properties
 	if (!error_msg.empty()) {
-		gui_show_error_dialog("Cannot interpret SMART data", error_msg, this);
+		gui_show_error_dialog(_("Cannot interpret SMART data"), error_msg, this);
 		return false;
 	}
 
@@ -1188,7 +1191,7 @@ GscInfoWindow* GscMainWindow::show_device_info_window(const StorageDevicePtr& dr
 {
 	// if a test is being run on it, disallow.
 	if (drive->get_test_is_active()) {
-		gui_show_warn_dialog("Please wait until the test is finished on this drive.", this);
+		gui_show_warn_dialog(_("Please wait until the test is finished on this drive."), this);
 		return nullptr;
 	}
 
@@ -1201,9 +1204,9 @@ GscInfoWindow* GscMainWindow::show_device_info_window(const StorageDevicePtr& dr
 		// the error one, and we don't want that.
 		{
 			Gtk::MessageDialog dialog(*this,
-					"\nThis drive has SMART disabled. Do you want to enable it?\n\n"
-					"<small>SMART will stay enabled at least until you reboot your computer.\n"
-					"See \"How to Enable SMART Permanently\" in Help menu for more information.</small>",
+					"\n"s + _("This drive has SMART disabled. Do you want to enable it?") + "\n\n"
+					+ "<small>" + _("SMART will stay enabled at least until you reboot your computer.") + "\n"
+					+ _("See \"Enable SMART Permanently\" section of the documentation, accessible through the Help menu.") + "</small>",
 					true, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO, true);
 
 			status = dialog.run();
@@ -1211,11 +1214,11 @@ GscInfoWindow* GscMainWindow::show_device_info_window(const StorageDevicePtr& dr
 
 		if (status == Gtk::RESPONSE_YES) {
 			std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
-			ex->create_running_dialog(this, "Running %s on " + drive->get_device_with_type() + "...");
+			ex->create_running_dialog(this, Glib::ustring::compose(_("Running {command} on %1..."), drive->get_device_with_type()));
 			std::string error_msg = drive->set_smart_enabled(true, ex);  // run it with GUI support
 
 			if (!error_msg.empty()) {
-				gsc_executor_error_dialog_show("Cannot enable SMART", error_msg, this);
+				gsc_executor_error_dialog_show(_("Cannot enable SMART"), error_msg, this);
 			}
 		}
 	}
@@ -1225,11 +1228,11 @@ GscInfoWindow* GscMainWindow::show_device_info_window(const StorageDevicePtr& dr
 	// Parse non-virtual, smart-supporting drives here.
 	if (!drive->get_is_virtual() && drive->get_smart_status() != StorageDevice::Status::unsupported) {
 		std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
-		ex->create_running_dialog(this, "Running %s on " + drive->get_device_with_type() + "...");
+		ex->create_running_dialog(this, Glib::ustring::compose(_("Running {command} on %1..."), drive->get_device_with_type()));
 		std::string error_msg = drive->fetch_data_and_parse(ex);  // run it with GUI support
 
 		if (!error_msg.empty()) {
-			gsc_executor_error_dialog_show("Cannot retrieve SMART data", error_msg, this);
+			gsc_executor_error_dialog_show(_("Cannot retrieve SMART data"), error_msg, this);
 			return nullptr;
 		}
 	}
@@ -1239,8 +1242,8 @@ GscInfoWindow* GscMainWindow::show_device_info_window(const StorageDevicePtr& dr
 	// usb devices), only very basic info is available and there's no point
 	// in showing this window. - for both virtual and non-virtual.
 	if (drive->get_parse_status() == StorageDevice::ParseStatus::none) {
-		gsc_no_info_dialog_show("No additional information is available for this drive.",
-				"", this, false, drive->get_info_output(), "Smartctl Output", drive->get_save_filename());
+		gsc_no_info_dialog_show(_("No additional information is available for this drive."),
+				"", this, false, drive->get_info_output(), _("Smartctl Output"), drive->get_save_filename());
 		return nullptr;
 	}
 
@@ -1289,16 +1292,16 @@ void GscMainWindow::show_load_virtual_file_chooser()
 	int result = 0;
 
 	Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
-	specific_filter->set_name("Text Files");
+	specific_filter->set_name(_("Text Files"));
 	specific_filter->add_pattern("*.txt");
 
 	Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
-	all_filter->set_name("All Files");
+	all_filter->set_name(_("All Files"));
 	all_filter->add_pattern("*");
 
 #if GTK_CHECK_VERSION(3, 20, 0)
 	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-			"Load Data From...", this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, nullptr, nullptr), g_object_unref);
+			_("Load Data From..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, nullptr, nullptr), g_object_unref);
 
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), specific_filter->gobj());
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), all_filter->gobj());
@@ -1312,7 +1315,7 @@ void GscMainWindow::show_load_virtual_file_chooser()
 	result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
 
 #else
-	Gtk::FileChooserDialog dialog(*this, "Load Data From...",
+	Gtk::FileChooserDialog dialog(*this, _("Load Data From..."),
 			Gtk::FILE_CHOOSER_ACTION_OPEN);
 
 	// Add response buttons the the dialog

@@ -36,7 +36,7 @@ void app_gtkmm_set_widget_tooltip(Gtk::Widget& widget,
 /// Convenience function for creating a TreeViewColumn .
 template<typename T>
 int app_gtkmm_create_tree_view_column(Gtk::TreeModelColumn<T>& mcol, Gtk::TreeView& treeview,
-		const Glib::ustring& title, const Glib::ustring& tooltip_text, bool sortable = false, bool cell_markup = false)
+		const Glib::ustring& title, const Glib::ustring& tooltip_text, bool sortable = false, bool cell_markup = false, bool tooltip_markup = false)
 {
 	int num_tree_cols = treeview.append_column(title, mcol);
 	Gtk::TreeViewColumn* tcol = treeview.get_column(num_tree_cols - 1);
@@ -50,7 +50,7 @@ int app_gtkmm_create_tree_view_column(Gtk::TreeModelColumn<T>& mcol, Gtk::TreeVi
 
 		Gtk::Widget* header = app_gtkmm_get_column_header(*tcol);
 		if (header)
-			app_gtkmm_set_widget_tooltip(*header, tooltip_text);
+			app_gtkmm_set_widget_tooltip(*header, tooltip_text, tooltip_markup);
 	}
 
 	if (cell_markup) {

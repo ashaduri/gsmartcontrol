@@ -22,6 +22,7 @@
 #include <memory>
 #include <cmath>
 #include <gtkmm.h>
+#include <glibmm/i18n.h>
 #include <glib.h>  // g_, G*
 
 #ifdef _WIN32
@@ -29,7 +30,7 @@
 	#include <versionhelpers.h>
 #endif
 
-#include "config.h"  // VERSION
+#include "config.h"  // VERSION, PACKAGE
 
 #include "libdebug/libdebug.h"  // include full libdebug here (to add domains, etc...)
 #include "rconfig/config.h"
@@ -207,25 +208,25 @@ namespace {
 		static const GOptionEntry arg_entries[] =
 		{
 			{ "no-locale", 'l', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_locale),
-					"Don't use system locale", nullptr },
+					N_("Don't use system locale"), nullptr },
 			{ "version", 'V', 0, G_OPTION_ARG_NONE, &(args.arg_version),
-					"Display version information", nullptr },
+					N_("Display version information"), nullptr },
 			{ "no-scan", '\0', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_scan),
-					"Don't scan devices on startup", nullptr },
+					N_("Don't scan devices on startup"), nullptr },
 			{ "no-hide-tabs", '\0', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_hide_tabs),
-					"Don't hide non-identity tabs when SMART is disabled. Useful for debugging.", nullptr },
+					N_("Don't hide non-identity tabs when SMART is disabled. Useful for debugging."), nullptr },
 			{ "add-virtual", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &(args.arg_add_virtual),
-					"Load smartctl data from file, creating a virtual drive. You can specify this option multiple times.", nullptr },
+					N_("Load smartctl data from file, creating a virtual drive. You can specify this option multiple times."), nullptr },
 			{ "add-device", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &(args.arg_add_device),
-					"Add this device to device list. The format of the device is \"<device>::<type>::<extra_args>\", where type and extra_args are optional."
+					N_("Add this device to device list. The format of the device is \"<device>::<type>::<extra_args>\", where type and extra_args are optional."
 					" This option is useful with --no-scan to list certain drives only. You can specify this option multiple times."
-					" Example: --add-device /dev/sda --add-device /dev/twa0::3ware,2 --add-device '/dev/sdb::::-T permissive'", nullptr },
+					" Example: --add-device /dev/sda --add-device /dev/twa0::3ware,2 --add-device '/dev/sdb::::-T permissive'"), nullptr },
 #ifndef _WIN32
 			// X11-specific
 			{ "gdk-scale", 'l', 0, G_OPTION_ARG_DOUBLE, &(args.arg_gdk_scale),
-					"The value of GDK_SCALE environment variable (useful when executing with pkexec)", nullptr },
+					N_("The value of GDK_SCALE environment variable (useful when executing with pkexec)"), nullptr },
 			{ "gdk-dpi-scale", 'l', 0, G_OPTION_ARG_DOUBLE, &(args.arg_gdk_dpi_scale),
-					"The value of GDK_DPI_SCALE environment variable (useful when executing with pkexec)", nullptr },
+					N_("The value of GDK_DPI_SCALE environment variable (useful when executing with pkexec)"), nullptr },
 #endif
 			{ nullptr }
 		};
@@ -247,20 +248,15 @@ namespace {
 		bool parsed = static_cast<bool>(g_option_context_parse(context, &argc, &argv, &error));
 
 		if (error) {
-			std::string error_text = "\n" + std::string("Error parsing command-line options: ");
-			error_text += (error->message ? error->message : "invalid error");
+			std::string error_text = "\n" + Glib::ustring::compose(_("Error parsing command-line options: %1"), (error->message ? error->message : "invalid error"));
 			error_text += "\n\n";
 			g_error_free(error);
 
-	#if (GLIB_CHECK_VERSION(2,14,0))
 			gchar* help_text = g_option_context_get_help(context, true, nullptr);
 			if (help_text) {
 				error_text += help_text;
 				g_free(help_text);
 			}
-	#else
-			error_text += "Exiting.\n";
-	#endif
 
 			std::fprintf(stderr, "%s", error_text.c_str());
 		}
@@ -274,12 +270,12 @@ namespace {
 	/// Print application version information
 	inline void app_print_version_info()
 	{
-		std::string versiontext = std::string("\nGSmartControl version ") + VERSION + "\n";
+		std::string versiontext = "\n" + Glib::ustring::compose(_("GSmartControl version %1"), VERSION) + "\n";
 
-		std::string warningtext = std::string("\nWarning: GSmartControl");
-		warningtext += " comes with ABSOLUTELY NO WARRANTY.\n";
-		warningtext += "See LICENSE_gsmartcontrol.txt file for details.\n";
-		warningtext += "\nCopyright (C) 2008 - 2018  Alexander Shaduri <ashaduri" "" "@" "" "" "gmail.com>\n\n";
+		std::string warningtext = std::string("\n") + _("Warning: GSmartControl comes with ABSOLUTELY NO WARRANTY.\n"
+				"See LICENSE_gsmartcontrol.txt file for details.") + "\n\n";
+		/// %1 is years, %2 is email address
+		warningtext += Glib::ustring::compose(_("Copyright (C) %1 Alexander Shaduri %2"), "2008 - 2018", "<ashaduri\" \"\" \"@\" \"\" \"\" \"gmail.com>") + "\n\n";
 
 		std::fprintf(stdout, "%s%s", versiontext.c_str(), warningtext.c_str());
 	}
@@ -295,6 +291,11 @@ bool app_init_and_loop(int& argc, char**& argv)
 	// Disable client-side decorations (enable native windows decorations) under Windows.
 	hz::env_set_value("GTK_CSD", "0");
 #endif
+
+	// Set up gettext. This has to be before gtk is initialized.
+	bindtextdomain(PACKAGE, PACKAGE_LOCALE_DIR);
+	bind_textdomain_codeset(PACKAGE, "UTF-8");
+	textdomain(PACKAGE);
 
 	// Glib needs the C locale set to system locale for command line args.
 	// We will reset it later if needed.
@@ -431,7 +432,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 
 	// This shows up in About dialog gtk.
-	Glib::set_application_name("GSmartControl");  // should be localized
+	Glib::set_application_name(_("GSmartControl"));
 
 
 	// Add data file search paths

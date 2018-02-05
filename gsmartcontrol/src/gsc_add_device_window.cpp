@@ -13,6 +13,7 @@
 #include "local_glibmm.h"
 
 #include <gtkmm.h>
+#include <glibmm/i18n.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
 
 #include "hz/fs_ns.h"
@@ -41,11 +42,15 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk
 	APP_BUILDER_AUTO_CONNECT(device_name_browse_button, clicked);
 
 
-	Glib::ustring device_name_tooltip = "Device name";
+	auto top_info_link_label = lookup_widget<Gtk::Label*>("top_info_link_label");
+	std::string man_url = "https://gsmartcontrol.sourceforge.io/smartctl_man.html";
+	top_info_link_label->set_text(Glib::ustring::compose(top_info_link_label->get_text(), man_url));
+
+	Glib::ustring device_name_tooltip = _("Device name");
 #if defined CONFIG_KERNEL_FAMILY_WINDOWS
-	device_name_tooltip = "Device name (for example, use \"pd0\" for the first physical drive)";
+	device_name_tooltip = _("Device name (for example, use \"pd0\" for the first physical drive)");
 #elif defined CONFIG_KERNEL_LINUX
-	device_name_tooltip = "Device name (for example, /dev/sda or /dev/twa0)";
+	device_name_tooltip = _("Device name (for example, /dev/sda or /dev/twa0)");
 #endif
 	if (auto* device_name_label = lookup_widget<Gtk::Label*>("device_name_label")) {
 		app_gtkmm_set_widget_tooltip(*device_name_label, device_name_tooltip);
@@ -58,9 +63,9 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk
 	}
 
 
-	Glib::ustring device_type_tooltip = "Smartctl -d option parameter";
+	Glib::ustring device_type_tooltip = _("Smartctl -d option parameter");
 #if defined CONFIG_KERNEL_LINUX || defined CONFIG_KERNEL_FAMILY_WINDOWS
-	device_type_tooltip = "Smartctl -d option parameter. For example, use areca,1 for the first drive behind Areca RAID controller.";
+	device_type_tooltip = _("Smartctl -d option parameter. For example, use areca,1 for the first drive behind Areca RAID controller.");
 #endif
 	if (auto* device_type_label = lookup_widget<Gtk::Label*>("device_type_label")) {
 		app_gtkmm_set_widget_tooltip(*device_type_label, device_type_tooltip);
@@ -176,7 +181,7 @@ void GscAddDeviceWindow::on_device_name_browse_button_clicked()
 
 #if GTK_CHECK_VERSION(3, 20, 0)
 	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-			"Choose Device...", this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, nullptr, nullptr), g_object_unref);
+			_("Choose Device..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, nullptr, nullptr), g_object_unref);
 
 	if (path.is_absolute())
 		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog.get()), path.u8string().c_str());
@@ -184,7 +189,7 @@ void GscAddDeviceWindow::on_device_name_browse_button_clicked()
 	result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
 
 #else
-	Gtk::FileChooserDialog dialog(*this, "Choose Device...",
+	Gtk::FileChooserDialog dialog(*this, _("Choose Device..."),
 			Gtk::FILE_CHOOSER_ACTION_OPEN);
 
 	// Add response buttons the the dialog
