@@ -9,11 +9,16 @@
 /// \weakgroup applib
 /// @{
 
+// TODO Remove this in gtkmm4.
+#include "local_glibmm.h"
+
 #include <map>
 #include <ostream>  // not iosfwd - it doesn't work
 #include <sstream>
 #include <iomanip>
 #include <locale>
+#include <glibmm.h>  // compose
+#include <glibmm/i18n.h>
 
 #include "hz/string_num.h"  // number_to_string
 #include "hz/stream_cast.h"  // stream_cast<>
@@ -88,23 +93,23 @@ std::ostream& operator<<(std::ostream& os, const StorageStatistic& p)
 
 
 
-std::string StorageErrorBlock::get_readable_error_types(const std::vector<std::string>& types)
+std::string StorageErrorBlock::get_displayable_error_types(const std::vector<std::string>& types)
 {
 	static const std::map<std::string, std::string> m = {
-		{"ABRT", "Command aborted"},
-		{"AMNF", "Address mark not found"},
-		{"CCTO", "Command completion timed out"},
-		{"EOM", "End of media"},
-		{"ICRC", "Interface CRC error"},
-		{"IDNF", "Identity not found"},
-		{"ILI", "(Packet command-set specific)"},
-		{"MC", "Media changed"},
-		{"MCR", "Media change request"},
-		{"NM", "No media"},
-		{"obs", "Obsolete"},
-		{"TK0NF", "Track 0 not found"},
-		{"UNC", "Uncorrectable error in data"},
-		{"WP", "Media is write protected"},
+		{"ABRT", _("Command aborted")},
+		{"AMNF", _("Address mark not found")},
+		{"CCTO", _("Command completion timed out")},
+		{"EOM", _("End of media")},
+		{"ICRC", _("Interface CRC error")},
+		{"IDNF", _("Identity not found")},
+		{"ILI", _("(Packet command-set specific)")},
+		{"MC", _("Media changed")},
+		{"MCR", _("Media change request")},
+		{"NM", _("No media")},
+		{"obs", _("Obsolete")},
+		{"TK0NF", _("Track 0 not found")},
+		{"UNC", _("Uncorrectable error in data")},
+		{"WP", _("Media is write protected")},
 	};
 
 	std::vector<std::string> sv;
@@ -112,11 +117,15 @@ std::string StorageErrorBlock::get_readable_error_types(const std::vector<std::s
 		if (m.find(type) != m.end()) {
 			sv.push_back(m.at(type));
 		} else {
-			sv.push_back("[unknown type" + (type.empty() ? "" : (": " + type)) + "]");
+			std::string name = _("Uknown type");
+			if (!type.empty()) {
+				name = Glib::ustring::compose(_("Uknown type: %1"), type);
+			}
+			sv.push_back(name);
 		}
 	}
 
-	return hz::string_join(sv, ", ");
+	return hz::string_join(sv, _(", "));
 }
 
 
@@ -162,7 +171,7 @@ std::ostream& operator<< (std::ostream& os, const StorageErrorBlock& b)
 {
 	os << "Error number " << b.error_num << ": "
 		<< hz::string_join(b.reported_types, ", ")
-		<< " [" << StorageErrorBlock::get_readable_error_types(b.reported_types) << "]";
+		<< " [" << StorageErrorBlock::get_displayable_error_types(b.reported_types) << "]";
 	return os;
 }
 
@@ -252,7 +261,7 @@ std::string StorageProperty::format_value(bool add_reported_too) const
 	if (std::holds_alternative<StorageSelftestEntry>(value))
 		return hz::stream_cast<std::string>(std::get<StorageSelftestEntry>(value));
 
-	return "[error]";
+	return "[internal_error]";
 }
 
 

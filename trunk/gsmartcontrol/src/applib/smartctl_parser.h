@@ -89,10 +89,7 @@ class SmartctlParser {
 
 
 		/// Get "full" data, as passed to parse_full().
-		std::string get_data_full() const
-		{
-			return data_full_;
-		}
+		std::string get_data_full() const;
 
 /*
 		std::string get_data_section_info() const
@@ -108,17 +105,11 @@ class SmartctlParser {
 
 		/// Get parse error message. Call this only if parsing doesn't succeed,
 		/// to get a friendly error message.
-		std::string get_error_msg() const
-		{
-			return "Cannot parse smartctl output: " + error_msg_;
-		}
+		std::string get_error_msg() const;
 
 
 		/// Get parse result properties
-		const std::vector<StorageProperty>& get_properties() const
-		{
-			return properties_;
-		}
+		const std::vector<StorageProperty>& get_properties() const;
 
 
 
@@ -130,31 +121,19 @@ class SmartctlParser {
 
 
 		/// Set "full" data ("smartctl -x" output)
-		void set_data_full(const std::string& s)
-		{
-			data_full_ = s;
-		}
+		void set_data_full(const std::string& s);
 
 
 		/// Set "info" section data ("smartctl -i" output, or the first part of "smartctl -x" output)
-		void set_data_section_info(const std::string& s)
-		{
-			data_section_info_ = s;
-		}
+		void set_data_section_info(const std::string& s);
 
 
 		/// Parse "data" section data (the second part of "smartctl -x" output).
-		void set_data_section_data(const std::string& s)
-		{
-			data_section_data_ = s;
-		}
+		void set_data_section_data(const std::string& s);
 
 
 		/// Set error message
-		void set_error_msg(const std::string& s)
-		{
-			error_msg_ = s;
-		}
+		void set_error_msg(const std::string& s);
 
 
 

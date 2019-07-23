@@ -48,7 +48,7 @@ class StorageDevice {
 
 
 		/// This gives a string which can be displayed in outputs
-		static std::string get_type_readable_name(DetectedType type);
+		static std::string get_type_storable_name(DetectedType type);
 
 
 		/// Statuses of various states
@@ -60,7 +60,7 @@ class StorageDevice {
 		};
 
 		/// Get displayable name for Status.
-		static std::string get_status_name(Status status);
+		static std::string get_status_displayable_name(Status status);
 
 
 		/// Statuses of various parse states

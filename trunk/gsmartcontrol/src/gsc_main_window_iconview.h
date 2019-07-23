@@ -283,9 +283,11 @@ class GscMainWindowIconView : public Gtk::IconView {
 			name += (drive->get_model_name().empty() ? Glib::ustring("Unknown model") : Glib::Markup::escape_text(drive->get_model_name()));
 			if (rconfig::get_data<bool>("gui/icons_show_device_name")) {
 				if (!drive->get_is_virtual()) {
-					name += "\n" + Glib::Markup::escape_text(drive->get_device_with_type());
-				#ifdef _WIN32
-					name += " (" + drive_letters + ")";
+				#ifndef _WIN32
+					std::string dev = Glib::Markup::escape_text(drive->get_device_with_type());
+					name += "\n" + dev;
+				#else
+					name += "\n" + Glib::ustring::compose(_("%1 (%2)"), dev, drive_letters);
 				#endif
 				} else if (!drive->get_virtual_filename().empty()) {
 					name += "\n" + Glib::Markup::escape_text(drive->get_virtual_filename());
@@ -322,9 +324,9 @@ class GscMainWindowIconView : public Gtk::IconView {
 				tooltip_strs.push_back(Glib::ustring::compose(_("Serial number: %1"), "<b>" + Glib::Markup::escape_text(drive->get_serial_number()) + "</b>"));
 			}
 			tooltip_strs.push_back(Glib::ustring::compose(_("SMART status: %1"),
-					"<b>" + StorageDevice::get_status_name(drive->get_smart_status()) + "</b>"));
+					"<b>" + StorageDevice::get_status_displayable_name(drive->get_smart_status()) + "</b>"));
 			tooltip_strs.push_back(Glib::ustring::compose(_("Automatic Offline Data Collection status: %1"),
-					"<b>" + StorageDevice::get_status_name(drive->get_aodc_status()) + "</b>"));
+					"<b>" + StorageDevice::get_status_displayable_name(drive->get_aodc_status()) + "</b>"));
 
 			std::string tooltip_str = hz::string_join(tooltip_strs, '\n');
 

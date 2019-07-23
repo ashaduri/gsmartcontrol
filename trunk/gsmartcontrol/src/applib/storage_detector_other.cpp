@@ -13,7 +13,8 @@
 
 #if !defined CONFIG_KERNEL_LINUX && !defined CONFIG_KERNEL_FAMILY_WINDOWS
 
-
+#include <glibmm.h>  // compose
+#include <glibmm/i18n.h>
 #include <algorithm>  // std::sort
 
 #if defined CONFIG_KERNEL_OPENBSD || defined CONFIG_KERNEL_NETBSD
@@ -46,14 +47,14 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives, const Exe
 	auto dev_dir = rconfig::get_data<std::string>(sdev_config_path);
 	if (dev_dir.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Device directory path is not set.\n");
-		return "Device directory path is not set.";
+		return _("Device directory path is not set.");
 	}
 
 	auto dir = hz::fs::u8path(dev_dir);
 	std::error_code dummy_ec;
 	if (!hz::fs::exists(dir, dummy_ec)) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Device directory doesn't exist.\n");
-		return "Device directory does not exist.";
+		return _("Device directory does not exist.");
 	}
 
 
@@ -206,7 +207,7 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives, const Exe
 	}
 	if (ec) {
 		debug_out_error("app", DBG_FUNC_MSG << "Cannot list device directory entries.\n");
-		return hz::string_sprintf("Cannot list device directory entries: %s", ec.message().c_str());
+		return Glib::ustring::compose(_("Cannot list device directory entries: %1"), ec.message());
 	}
 
 
@@ -254,9 +255,6 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives, const Exe
 		}
 
 	#endif
-
-	// TODO Sort using natural sort
-	std::sort(devices.begin(), devices.end());
 
 	for (auto& device : devices) {
 		drives.emplace_back(std::make_shared<StorageDevice>(device));

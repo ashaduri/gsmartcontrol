@@ -68,9 +68,6 @@ Filesystem utilities
 namespace hz {
 
 
-// TODO Change with gcc8.
-namespace fs = std::experimental::filesystem;
-
 
 #ifdef _WIN32
 	// Unlike std::filesystem::path::preferred_separator, this is always char.

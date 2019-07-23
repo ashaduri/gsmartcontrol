@@ -18,9 +18,6 @@
 #include <stdexcept>  // std::runtime_error
 
 
-namespace hz {
-
-
 /**
 \file
 Locale manipulation facilities
@@ -31,6 +28,18 @@ This may have rather serious implications for thread-safety.
 However, for glibc, libstdc++ uses the "uselocale" extension, which
 sets locale on per-thread basis.
 */
+
+
+// Remove setlocale macro from mingw's libintl.h
+// TODO mingw's gettext implementation should use libintl_setlocale():
+// extern char* libintl_setlocale(int, const char*);
+#ifdef setlocale
+	#undef setlocale
+#endif
+
+
+
+namespace hz {
 
 
 /// Set the C standard library locale, storing the previous one into \c old_locale.

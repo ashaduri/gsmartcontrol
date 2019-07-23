@@ -12,6 +12,12 @@
 #ifndef STORAGE_PROPERTY_COLORS_H
 #define STORAGE_PROPERTY_COLORS_H
 
+// TODO Remove this in gtkmm4.
+#include "local_glibmm.h"
+
+#include <glibmm.h>  // compose()
+#include <glibmm/i18n.h>
+
 #include "storage_property.h"
 
 
@@ -62,23 +68,26 @@ inline bool app_property_get_label_highlight_color(WarningLevel warning, std::st
 /// Format warning text, but without description
 inline std::string storage_property_get_warning_reason(const StorageProperty& p)
 {
-	std::string fg, start, stop;
+	std::string fg, start = "<b>", stop = "</b>";
 	if (app_property_get_label_highlight_color(p.warning, fg)) {
-		start = "<span color=\"" + fg + "\">";
-		stop = "</span>";
+		start += "<span color=\"" + fg + "\">";
+		stop = "</span>" + stop;
 	}
 
 	if (p.warning == WarningLevel::notice) {
-		return "<b>" + start + "Notice:" + stop + "</b> " + p.warning_reason;
+		/// Translators: %1 and %2 are HTML tags, %3 is a message.
+		return Glib::ustring::compose(_("%1Notice:%2 %3"), start, stop, p.warning_reason);
 
 	} else if (p.warning == WarningLevel::warning) {
-		return "<b>" + start + "Warning:" + stop + "</b> " + p.warning_reason;
+		/// Translators: %1 and %2 are HTML tags, %3 is a message.
+		return Glib::ustring::compose(_("%1Warning:%2 %3"), start, stop, p.warning_reason);
 
 	} else if (p.warning == WarningLevel::alert) {
-		return "<b>" + start + "ALERT:" + stop + "</b> " + p.warning_reason;
+		/// Translators: %1 and %2 are HTML tags, %3 is a message.
+		return Glib::ustring::compose(_("%1ALERT:%2 %3"), start, stop, p.warning_reason);
 	}
 
-	return "";
+	return std::string();
 }
 
 

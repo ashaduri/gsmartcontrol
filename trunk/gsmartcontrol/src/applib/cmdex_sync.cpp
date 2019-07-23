@@ -10,6 +10,7 @@
 /// @{
 
 #include <glib.h>  // g_usleep()
+#include <glibmm/i18n.h>
 
 #include "cmdex_sync.h"
 
@@ -31,6 +32,44 @@ cmdex_signal_execute_finish_type& cmdex_sync_signal_execute_finish()
 
 
 
+CmdexSync::CmdexSync(std::string command_name, std::string command_args)
+		: CmdexSync()
+{
+	this->set_command(std::move(command_name), std::move(command_args));
+}
+
+
+
+CmdexSync::CmdexSync()
+{
+	/// Translators: {command} will be replaced by command name.
+	running_msg_ = _("Running {command}...");
+	set_error_header(std::string(_("An error occurred while executing command:")) + "\n\n");
+}
+
+
+
+void CmdexSync::set_command(std::string command_name, std::string command_args)
+{
+	cmdex_.set_command(command_name, command_args);
+	// keep a copy locally to avoid locking on get() every time
+	command_name_ = std::move(command_name);
+	command_args_ = std::move(command_args);
+}
+
+
+
+std::string CmdexSync::get_command_name() const
+{
+	return command_name_;
+}
+
+
+
+std::string CmdexSync::get_command_args() const
+{
+	return command_args_;
+}
 
 
 
@@ -118,6 +157,43 @@ bool CmdexSync::execute()
 
 
 
+void CmdexSync::set_forced_kill_timeout(std::chrono::milliseconds timeout_msec)
+{
+	forced_kill_timeout_msec_ = timeout_msec;
+}
+
+
+
+std::string CmdexSync::get_error_msg(bool with_header) const
+{
+	if (with_header)
+		return error_header_ + error_msg_;
+	return error_msg_;
+}
+
+
+
+void CmdexSync::set_running_msg(const std::string& msg)
+{
+	running_msg_ = msg;
+}
+
+
+
+void CmdexSync::set_error_header(const std::string& msg)
+{
+	error_header_ = msg;
+}
+
+
+
+std::string CmdexSync::get_error_header()
+{
+	return error_header_;
+}
+
+
+
 void CmdexSync::import_error()
 {
 	Cmdex::error_list_t errors = cmdex_.get_errors();  // these are not clones
@@ -131,6 +207,35 @@ void CmdexSync::import_error()
 	}
 }
 
+
+
+void CmdexSync::on_error_warn(hz::ErrorBase* e)
+{
+	if (e) {
+		set_error_msg(e->get_message());  // this message will be displayed
+	}
+}
+
+
+
+void CmdexSync::set_error_msg(const std::string& error_msg)
+{
+	error_msg_ = error_msg;
+}
+
+
+
+std::string CmdexSync::get_running_msg() const
+{
+	return running_msg_;
+}
+
+
+
+Cmdex& CmdexSync::get_command_executor()
+{
+	return cmdex_;
+}
 
 
 

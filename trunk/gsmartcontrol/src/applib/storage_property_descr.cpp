@@ -9,10 +9,15 @@
 /// \weakgroup applib
 /// @{
 
+// TODO Remove this in gtkmm4.
+#include "local_glibmm.h"
+
 #include <utility>
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include <glibmm.h>
+#include <glibmm/i18n.h>
 
 #include "hz/string_algo.h"  // string_replace_copy
 #include "applib/app_pcrecpp.h"
@@ -24,12 +29,13 @@
 namespace {
 
 
-	const std::string s_unc_text = "When a drive encounters a surface error, it marks that sector as &quot;unstable&quot; (also known as &quot;pending reallocation&quot;). "
+	const std::string s_unc_text = Glib::Markup::escape_text(
+			_("When a drive encounters a surface error, it marks that sector as \"unstable\" (also known as \"pending reallocation\"). "
 			"If the sector is successfully read from or written to at some later point, it is unmarked. If the sector continues to be inaccessible, "
 			"the drive reallocates (remaps) it to a specially reserved area as soon as it has a chance (usually during write request or successful read), "
-			"transferring the data so that no changes are reported to the operating system. This is why you generally don't see &quot;bad blocks&quot; "
+			"transferring the data so that no changes are reported to the operating system. This is why you generally don't see \"bad blocks\" "
 			"on modern drives - if you do, it means that either they have not been remapped yet, or the drive is out of reserved area."
-			"\n\nNote: SSDs reallocate blocks as part of their normal operation, so low reallocation counts are not critical for them.";
+			"\n\nNote: SSDs reallocate blocks as part of their normal operation, so low reallocation counts are not critical for them."));
 
 
 
@@ -39,18 +45,18 @@ namespace {
 		AttributeDescription() = default;
 
 		/// Constructor
-		AttributeDescription(int32_t id_, StorageAttribute::DiskType type, std::string smartctl_name_,
-				std::string readable_name_, std::string generic_name_, std::string description_)
-				: id(id_), disk_type(type), smartctl_name(std::move(smartctl_name_)), readable_name(std::move(readable_name_)),
+		AttributeDescription(int32_t id_, StorageAttribute::DiskType type, std::string reported_name_,
+				std::string displayable_name_, std::string generic_name_, std::string description_)
+				: id(id_), disk_type(type), reported_name(std::move(reported_name_)), displayable_name(std::move(displayable_name_)),
 				generic_name(std::move(generic_name_)), description(std::move(description_))
 		{ }
 
 		int32_t id = -1;  ///< e.g. 190
 		StorageAttribute::DiskType disk_type = StorageAttribute::DiskType::Any;  ///< HDD-only, SSD-only or universal attribute
-		std::string smartctl_name;  ///< e.g. Airflow_Temperature_Cel
-		std::string readable_name;  ///< e.g. Airflow Temperature (C)
-		std::string generic_name;  ///< Generic name to be set on the property.
-		std::string description;  ///< Attribute description, can be "".
+		std::string reported_name;  ///< e.g. Airflow_Temperature_Cel
+		std::string displayable_name;  ///< e.g. Airflow Temperature (C). This is a translatable string.
+		std::string generic_name;  ///< Generic name to be set on the property, e.g. "airflow_temperature". For lookups.
+		std::string description;  ///< Attribute description, can be empty.
 	};
 
 
@@ -87,7 +93,8 @@ namespace {
 						"Average efficiency of a drive. Reduction of this attribute value can signal various internal problems.");
 				// Spin Up Time (smartctl) (some say it can also happen due to bad PSU or power connection (?))
 				add(3, "Spin_Up_Time", "Spin-Up Time", "",
-						"Average time of spindle spin-up time (from stopped to fully operational). Raw value may show this in milliseconds or seconds. Changes in spin-up time can reflect problems with the spindle motor or power.");
+						"Average time of spindle spin-up time (from stopped to fully operational). Raw value may show this in milliseconds or seconds. "
+						"Changes in spin-up time can reflect problems with the spindle motor or power.");
 				// Start/Stop Count (smartctl)
 				add(4, "Start_Stop_Count", "Start / Stop Count", "",
 						"Number of start/stop cycles of a spindle (Raw value). That is, number of drive spin-ups.");
@@ -100,7 +107,8 @@ namespace {
 						"Number of reallocated sectors (Raw value). High Raw value indicates an old age for an SSD.");
 				// SandForce SSD: Retired_Block_Count (smartctl)
 				add(5, StorageAttribute::DiskType::Ssd, "Retired_Block_Count", "Retired Block Rate", "attr_ssd_life_left",
-						"Indicates estimated remaining life of the drive. Normalized value is (100-100*RBC/MRB) where RBC is the number of retired blocks and MRB is the minimum required blocks.");
+						"Indicates estimated remaining life of the drive. Normalized value is (100-100*RBC/MRB) where RBC is the number of retired blocks "
+						"and MRB is the minimum required blocks.");
 				// Crucial/Micron SSD: Reallocate_NAND_Blk_Cnt (smartctl)
 				add(5, StorageAttribute::DiskType::Ssd, "Reallocate_NAND_Blk_Cnt", "Reallocated NAND Block Count", "",
 						"Number of reallocated blocks (Raw value). High Raw value indicates an old age for an SSD.");
@@ -118,7 +126,9 @@ namespace {
 						"Margin of a channel while reading data. The function of this attribute is not specified.");
 				// Seek Error Rate (smartctl)
 				add(7, StorageAttribute::DiskType::Hdd, "Seek_Error_Rate", "Seek Error Rate", "",
-						"Frequency of errors appearance while positioning. When a drive reads data, it positions heads in the needed place. If there is a failure in the mechanical positioning system, a seek error arises. More seek errors indicate worse condition of a disk surface and disk mechanical subsystem. The exact meaning of the Raw value is manufacturer-dependent.");
+						"Frequency of errors appearance while positioning. When a drive reads data, it positions heads in the needed place. "
+						"If there is a failure in the mechanical positioning system, a seek error arises. More seek errors indicate worse condition "
+						"of a disk surface and disk mechanical subsystem. The exact meaning of the Raw value is manufacturer-dependent.");
 				// Seek Time Performance (smartctl)
 				add(8, StorageAttribute::DiskType::Hdd, "Seek_Time_Performance", "Seek Time Performance", "",
 						"Average efficiency of seek operations of the magnetic heads. If this value is decreasing, it is a sign of problems in the hard disk drive mechanical subsystem.");
@@ -135,7 +145,8 @@ namespace {
 						"Number of retries of spin start attempts (Raw value). An increase of this attribute value is a sign of problems in the hard disk mechanical subsystem.");
 				// Calibration Retry Count (smartctl)
 				add(11, StorageAttribute::DiskType::Hdd, "Calibration_Retry_Count", "Calibration Retry Count", "",
-						"Number of times recalibration was requested, under the condition that the first attempt was unsuccessful (Raw value). A decrease is a sign of problems in the hard disk mechanical subsystem.");
+						"Number of times recalibration was requested, under the condition that the first attempt was unsuccessful (Raw value). "
+								"A decrease is a sign of problems in the hard disk mechanical subsystem.");
 				// Power Cycle Count (smartctl)
 				add(12, "Power_Cycle_Count", "Power Cycle Count", "",
 						"Number of complete power start / stop cycles of a drive.");
@@ -478,13 +489,15 @@ namespace {
 						"Number of load / unload cycles into Landing Zone position.");
 				// Temperature Celsius (smartctl) (same as 231). This is the most common one. Some Samsungs: 10xTemp.
 				add(194, "Temperature_Celsius", "Temperature (Celsius)", "attr_temperature_celsius",
-						"Drive temperature. The Raw value shows built-in heat sensor registrations (in Celsius). Increases in average drive temperature often signal spindle motor problems (unless the increases are caused by environmental factors).");
+						"Drive temperature. The Raw value shows built-in heat sensor registrations (in Celsius). "
+						"Increases in average drive temperature often signal spindle motor problems (unless the increases are caused by environmental factors).");
 				// Samsung SSD: Temperature Celsius (smartctl) (not sure about the value)
 				add(194, StorageAttribute::DiskType::Ssd, "Airflow_Temperature", "Airflow Temperature (Celsius)", "attr_temperature_celsius",
 						"Drive temperature (Celsius)");
 				// Temperature Celsius x 10 (smartctl)
 				add(194, "Temperature_Celsius_x10", "Temperature (Celsius) x 10", "attr_temperature_celsius_x10",
-						"Drive temperature. The Raw value shows built-in heat sensor registrations (in Celsius * 10). Increases in average drive temperature often signal spindle motor problems (unless the increases are caused by environmental factors).");
+						"Drive temperature. The Raw value shows built-in heat sensor registrations (in Celsius * 10). "
+						"Increases in average drive temperature often signal spindle motor problems (unless the increases are caused by environmental factors).");
 				// Smart Storage Systems SSD (smartctl)
 				add(194, StorageAttribute::DiskType::Ssd, "Proprietary_194", "Internal Attribute", "",
 						"This attribute has been reserved by vendor as internal.");
@@ -513,7 +526,8 @@ namespace {
 						"");
 				// Reallocation Event Count (smartctl)
 				add(196, StorageAttribute::DiskType::Any, "Reallocated_Event_Count", "Reallocation Event Count", "attr_reallocation_event_count",
-						"Number of reallocation (remap) operations. Raw value <i>should</i> show the total number of attempts (both successful and unsuccessful) to reallocate sectors. An increase in Raw value indicates a disk surface failure."
+						"Number of reallocation (remap) operations. Raw value <i>should</i> show the total number of attempts "
+						"(both successful and unsuccessful) to reallocate sectors. An increase in Raw value indicates a disk surface failure."
 						"\n\n" + s_unc_text);
 				// Indilinx Barefoot SSD: Erase_Failure_Blk_Ct (smartctl) (description?)
 				add(196, StorageAttribute::DiskType::Ssd, "Erase_Failure_Blk_Ct", "Erase Failure Block Count", "",
@@ -523,7 +537,9 @@ namespace {
 						"");
 				// Current Pending Sector Count (smartctl)
 				add(197, "Current_Pending_Sector", "Current Pending Sector Count", "attr_current_pending_sector_count",
-						"Number of &quot;unstable&quot; (waiting to be remapped) sectors (Raw value). If the unstable sector is subsequently read from or written to successfully, this value is decreased and the sector is not remapped. An increase in Raw value indicates a disk surface failure."
+						"Number of &quot;unstable&quot; (waiting to be remapped) sectors (Raw value). "
+						"If the unstable sector is subsequently read from or written to successfully, this value is decreased and the sector is not remapped. "
+						"An increase in Raw value indicates a disk surface failure."
 						"\n\n" + s_unc_text);
 				// Indilinx Barefoot SSD: Read_Failure_Blk_Ct (smartctl) (description?)
 				add(197, StorageAttribute::DiskType::Ssd, "Read_Failure_Blk_Ct", "Read Failure Block Count", "",
@@ -531,20 +547,24 @@ namespace {
 				// Samsung: Total_Pending_Sectors (smartctl). From smartctl man page:
 				// unlike Current_Pending_Sector, this won't decrease on reallocation.
 				add(197, "Total_Pending_Sectors", "Total Pending Sectors", "attr_total_pending_sectors",
-						"Number of &quot;unstable&quot; (waiting to be remapped) sectors and already remapped sectors (Raw value). An increase in Raw value indicates a disk surface failure."
+						"Number of &quot;unstable&quot; (waiting to be remapped) sectors and already remapped sectors (Raw value). "
+						"An increase in Raw value indicates a disk surface failure."
 						"\n\n" + s_unc_text);
 				// OCZ SSD (smartctl)
 				add(197, StorageAttribute::DiskType::Ssd, "Total_Unc_Read_Failures", "Total Uncorrectable Read Failures", "",
 						"");
 				// Offline Uncorrectable (smartctl)
 				add(198, "Offline_Uncorrectable", "Offline Uncorrectable", "attr_offline_uncorrectable",
-						"Number of sectors which couldn't be corrected during Offline Data Collection (Raw value). An increase in Raw value indicates a disk surface failure. "
-						"The value may be decreased automatically when the errors are corrected (e.g., when an unreadable sector is reallocated and the next Offline test is run to see the change)."
+						"Number of sectors which couldn't be corrected during Offline Data Collection (Raw value). "
+						"An increase in Raw value indicates a disk surface failure. "
+						"The value may be decreased automatically when the errors are corrected (e.g., when an unreadable sector is "
+						"reallocated and the next Offline test is run to see the change)."
 						"\n\n" + s_unc_text);
 				// Samsung: Offline Uncorrectable (smartctl). From smartctl man page:
 				// unlike Current_Pending_Sector, this won't decrease on reallocation.
 				add(198, "Total_Offl_Uncorrectabl", "Total Offline Uncorrectable", "attr_total_attr_offline_uncorrectable",
-						"Number of sectors which couldn't be corrected during Offline Data Collection (Raw value), currently and in the past. An increase in Raw value indicates a disk surface failure."
+						"Number of sectors which couldn't be corrected during Offline Data Collection (Raw value), currently and in the past. "
+						"An increase in Raw value indicates a disk surface failure."
 						"\n\n" + s_unc_text);
 				// Sandforce SSD: Uncorrectable_Sector_Ct (smartctl) (same description?)
 				add(198, StorageAttribute::DiskType::Ssd, "Uncorrectable_Sector_Ct");
@@ -560,7 +580,8 @@ namespace {
 				add(198, StorageAttribute::DiskType::Hdd, "Off-line_Scan_UNC_Sector_Ct");
 				// UDMA CRC Error Count (smartctl)
 				add(199, "UDMA_CRC_Error_Count", "UDMA CRC Error Count", "",
-						"Number of errors in data transfer via the interface cable in UDMA mode, as determined by ICRC (Interface Cyclic Redundancy Check) (Raw value).");
+						"Number of errors in data transfer via the interface cable in UDMA mode, as determined by ICRC "
+						"(Interface Cyclic Redundancy Check) (Raw value).");
 				// Sandforce SSD: SATA_CRC_Error_Count (smartctl) (description?)
 				add(199, "SATA_CRC_Error_Count", "SATA CRC Error Count", "",
 						"Number of errors in data transfer via the SATA interface cable (Raw value).");
@@ -763,7 +784,8 @@ namespace {
 						"Number of times the head armature entered / left the data zone.");
 				// Load Friction (smartctl)
 				add(224, StorageAttribute::DiskType::Hdd, "Load_Friction", "Load Friction", "",
-						"Resistance caused by friction in mechanical parts while operating. An increase of Raw value may mean that there is a problem with the mechanical subsystem of the drive.");
+						"Resistance caused by friction in mechanical parts while operating. An increase of Raw value may mean that there is "
+						"a problem with the mechanical subsystem of the drive.");
 				// OCZ SSD (smartctl) (description?)
 				add(224, StorageAttribute::DiskType::Ssd, "In_Warranty", "In Warranty", "",
 						"");
@@ -781,7 +803,8 @@ namespace {
 						"");
 				// Load-in Time (smartctl)
 				add(226, StorageAttribute::DiskType::Hdd, "Load-in_Time", "Load-in Time", "",
-						"Total time of loading on the magnetic heads actuator. Indicates total time in which the drive was under load (on the assumption that the magnetic heads were in operating mode and out of the parking area).");
+						"Total time of loading on the magnetic heads actuator. Indicates total time in which the drive was under load "
+						"(on the assumption that the magnetic heads were in operating mode and out of the parking area).");
 				// Intel SSD: Intel_Internal (smartctl)
 				add(226, StorageAttribute::DiskType::Ssd, "Intel_Internal", "Internal Attribute", "",
 						"This attribute has been reserved by vendor as internal.");
@@ -832,7 +855,8 @@ namespace {
 						"");
 				// Temperature (Some drives) (smartctl)
 				add(231, "Temperature_Celsius", "Temperature", "attr_temperature_celsius",
-						"Drive temperature. The Raw value shows built-in heat sensor registrations (in Celsius). Increases in average drive temperature often signal spindle motor problems (unless the increases are caused by environmental factors).");
+						"Drive temperature. The Raw value shows built-in heat sensor registrations (in Celsius). "
+						"Increases in average drive temperature often signal spindle motor problems (unless the increases are caused by environmental factors).");
 				// Sandforce SSD: SSD_Life_Left
 				add(231, StorageAttribute::DiskType::Ssd, "SSD_Life_Left", "SSD Life Left", "attr_ssd_life_left",
 						"A measure of drive's estimated life left. A Normalized value of 100 indicates a new drive. "
@@ -1031,55 +1055,57 @@ namespace {
 
 
 			/// Add an attribute description to the attribute database
-			void add(int32_t id, const std::string& smartctl_name, const std::string& readable_name,
-					const std::string& generic_name, const std::string& description)
+			void add(AttributeDescription descr)
 			{
-				add(AttributeDescription(id, StorageAttribute::DiskType::Any, smartctl_name, readable_name, generic_name, description));
+				id_db[descr.id].emplace_back(std::move(descr));
+			}
+
+
+			/// Add an attribute description to the attribute database
+			void add(int32_t id, std::string reported_name, std::string displayable_name,
+					std::string generic_name, std::string description)
+			{
+				add(AttributeDescription(id, StorageAttribute::DiskType::Any,
+						std::move(reported_name), std::move(displayable_name), std::move(generic_name), std::move(description)));
 			}
 
 
 			/// Add a previously added description to the attribute database under a
 			/// different smartctl name (fill the other members from the previous attribute).
-// 			void add(int32_t id, const std::string& smartctl_name)
+// 			void add(int32_t id, const std::string& reported_name)
 // 			{
 // 				auto iter = id_db.find(id);
 // 				DBG_ASSERT(iter != id_db.end() && !iter->second.empty());
 // 				if (iter != id_db.end() || iter->second.empty()) {
 // 					AttributeDescription attr = iter->second.front();
-// 					add(AttributeDescription(id, StorageAttribute::DiskType::Any, smartctl_name, attr.readable_name, attr.generic_name, attr.description));
+// 					add(AttributeDescription(id, StorageAttribute::DiskType::Any, reported_name, attr.displayable_name, attr.generic_name, attr.description));
 // 				}
 // 			}
 
 			/// Add an attribute description to the attribute database
-			void add(int32_t id, StorageAttribute::DiskType type, const std::string& smartctl_name, const std::string& readable_name,
-					const std::string& generic_name, const std::string& description)
+			void add(int32_t id, StorageAttribute::DiskType type, std::string reported_name, std::string displayable_name,
+					std::string generic_name, std::string description)
 			{
-				add(AttributeDescription(id, type, smartctl_name, readable_name, generic_name, description));
+				add(AttributeDescription(id, type, std::move(reported_name), std::move(displayable_name), std::move(generic_name), std::move(description)));
 			}
 
 
 			/// Add a previously added description to the attribute database under a
 			/// different smartctl name (fill the other members from the previous attribute).
-			void add(int32_t id, StorageAttribute::DiskType type, const std::string& smartctl_name)
+			void add(int32_t id, StorageAttribute::DiskType type, std::string reported_name)
 			{
 				auto iter = id_db.find(id);
 				DBG_ASSERT(iter != id_db.end() && !iter->second.empty());
 				if (iter != id_db.end() || iter->second.empty()) {
 					AttributeDescription attr = iter->second.front();
-					add(AttributeDescription(id, type, smartctl_name, attr.readable_name, attr.generic_name, attr.description));
+					add(AttributeDescription(id, type,
+							std::move(reported_name), std::move(attr.displayable_name), std::move(attr.generic_name), std::move(attr.description)));
 				}
 			}
 
 
-			/// Add an attribute description to the attribute database
-			void add(const AttributeDescription& descr)
-			{
-				id_db[descr.id].push_back(descr);
-			}
-
-
 			/// Find the description by smartctl name or id, merging them if they're partial.
-			AttributeDescription find(const std::string& smartctl_name, int32_t id, StorageAttribute::DiskType type) const
+			AttributeDescription find(const std::string& reported_name, int32_t id, StorageAttribute::DiskType type) const
 			{
 				// search by ID first
 				auto id_iter = id_db.find(id);
@@ -1104,7 +1130,7 @@ namespace {
 				// search by smartctl name in ID-supplied vector
 				for (const auto& attr_iter : type_matched) {
 					// compare them case-insensitively, just in case
-					if ( hz::string_to_lower_copy(attr_iter.smartctl_name) == hz::string_to_lower_copy(smartctl_name)) {
+					if ( hz::string_to_lower_copy(attr_iter.reported_name) == hz::string_to_lower_copy(reported_name)) {
 						return attr_iter;  // found it
 					}
 				}
@@ -1133,14 +1159,14 @@ namespace {
 		StatisticDescription() = default;
 
 		/// Constructor
-		StatisticDescription(std::string smartctl_name_,
-				std::string readable_name_, std::string generic_name_, std::string description_)
-				: smartctl_name(std::move(smartctl_name_)), readable_name(std::move(readable_name_)),
+		StatisticDescription(std::string reported_name_,
+				std::string displayable_name_, std::string generic_name_, std::string description_)
+				: reported_name(std::move(reported_name_)), displayable_name(std::move(displayable_name_)),
 				generic_name(std::move(generic_name_)), description(std::move(description_))
 		{ }
 
-		std::string smartctl_name;  ///< e.g. Highest Temperature
-		std::string readable_name;  ///< e.g. Highest Temperature (C)
+		std::string reported_name;  ///< e.g. Highest Temperature
+		std::string displayable_name;  ///< e.g. Highest Temperature (C)
 		std::string generic_name;  ///< Generic name to be set on the property.
 		std::string description;  ///< Attribute description, can be "".
 	};
@@ -1319,25 +1345,25 @@ namespace {
 
 
 			/// Add an attribute description to the attribute database
-			void add(const std::string& smartctl_name, const std::string& readable_name,
+			void add(const std::string& reported_name, const std::string& displayable_name,
 					const std::string& generic_name, const std::string& description)
 			{
-				add(StatisticDescription(smartctl_name, readable_name, generic_name, description));
+				add(StatisticDescription(reported_name, displayable_name, generic_name, description));
 			}
 
 
 			/// Add an devstat entry description to the devstat database
 			void add(const StatisticDescription& descr)
 			{
-				devstat_db[descr.smartctl_name] = descr;
+				devstat_db[descr.reported_name] = descr;
 			}
 
 
 			/// Find the description by smartctl name or id, merging them if they're partial.
-			StatisticDescription find(const std::string& smartctl_name) const
+			StatisticDescription find(const std::string& reported_name) const
 			{
 				// search by ID first
-				auto iter = devstat_db.find(smartctl_name);
+				auto iter = devstat_db.find(reported_name);
 				if (iter == devstat_db.end()) {
 					return StatisticDescription();  // not found
 				}
@@ -1347,7 +1373,7 @@ namespace {
 
 		private:
 
-			std::map<std::string, StatisticDescription> devstat_db;  ///< smartctl_name => devstat entry description
+			std::map<std::string, StatisticDescription> devstat_db;  ///< reported_name => devstat entry description
 
 	};
 
@@ -1394,11 +1420,11 @@ namespace {
 	{
 		AttributeDescription attr = s_attribute_db.find(p.reported_name, p.get_value<StorageAttribute>().id, disk_type);
 
-		std::string humanized_smartctl_name;
+		std::string humanized_reported_name;
 		std::string ssd_hdd_str;
 		bool known_by_smartctl = !app_pcre_match("/Unknown_(HDD|SSD)_?Attr.*/i", p.reported_name, &ssd_hdd_str);
 		if (known_by_smartctl) {
-			humanized_smartctl_name = " " + p.reported_name + " ";  // spaces are for easy replacements
+			humanized_reported_name = " " + p.reported_name + " ";  // spaces are for easy replacements
 
 			static std::unordered_map<std::string, std::string> replacement_map = {
 					{"_", " "},
@@ -1420,23 +1446,23 @@ namespace {
 					{" Min ", " Minimum "}
 			};
 
-			hz::string_replace_array(humanized_smartctl_name, replacement_map);
-			hz::string_trim(humanized_smartctl_name);
-			hz::string_remove_adjacent_duplicates(humanized_smartctl_name, ' ');  // may happen with slashes
+			hz::string_replace_array(humanized_reported_name, replacement_map);
+			hz::string_trim(humanized_reported_name);
+			hz::string_remove_adjacent_duplicates(humanized_reported_name, ' ');  // may happen with slashes
 		}
 
-		if (attr.readable_name.empty()) {
+		if (attr.displayable_name.empty()) {
 			// try to display something sensible (use humanized form of smartctl name)
-			if (!humanized_smartctl_name.empty()) {
-				attr.readable_name = humanized_smartctl_name;
+			if (!humanized_reported_name.empty()) {
+				attr.displayable_name = humanized_reported_name;
 
 			} else {  // unknown to smartctl
 				if (hz::string_to_upper_copy(ssd_hdd_str) == "SSD") {
-					attr.readable_name = "Unknown SSD Attribute";
+					attr.displayable_name = "Unknown SSD Attribute";
 				} else if (hz::string_to_upper_copy(ssd_hdd_str) == "HDD") {
-					attr.readable_name = "Unknown HDD Attribute";
+					attr.displayable_name = "Unknown HDD Attribute";
 				} else {
-					attr.readable_name = "Unknown Attribute";
+					attr.displayable_name = "Unknown Attribute";
 				}
 			}
 		}
@@ -1451,8 +1477,8 @@ namespace {
 			if (known_by_smartctl) {
 				// See if humanized smartctl-reported name looks like our found name.
 				// If not, show it in description.
-				std::string match = " " + humanized_smartctl_name + " ";
-				std::string against = " " + attr.readable_name + " ";
+				std::string match = " " + humanized_reported_name + " ";
+				std::string against = " " + attr.displayable_name + " ";
 
 				static std::unordered_map<std::string, std::string> replacement_map = {
 						{" Percent ", " % "},
@@ -1467,10 +1493,10 @@ namespace {
 				same_names = app_pcre_match("/^" + app_pcre_escape(match) + "$/i", against);
 			}
 
-			std::string descr =  std::string("<b>") + attr.readable_name + "</b>";
+			std::string descr =  std::string("<b>") + attr.displayable_name + "</b>";
 			if (!same_names) {
-				std::string smartctl_name_for_descr = hz::string_replace_copy(p.reported_name, '_', ' ');
-				descr += "\n<small>Reported by smartctl as <b>\"" + smartctl_name_for_descr + "\"</b></small>\n";
+				std::string reported_name_for_descr = hz::string_replace_copy(p.reported_name, '_', ' ');
+				descr += "\n<small>Reported by smartctl as <b>\"" + reported_name_for_descr + "\"</b></small>\n";
 			}
 			descr += "\n";
 			descr += attr.description;
@@ -1478,7 +1504,7 @@ namespace {
 			attr.description = descr;
 		}
 
-		p.readable_name = attr.readable_name;
+		p.displayable_name = attr.displayable_name;
 		p.set_description(attr.description);
 		p.generic_name = attr.generic_name;
 	}
@@ -1491,14 +1517,14 @@ namespace {
 	{
 		StatisticDescription sd = s_devstat_db.find(p.reported_name);
 
-		std::string readable_name = (sd.readable_name.empty() ? sd.smartctl_name : sd.readable_name);
+		std::string displayable_name = (sd.displayable_name.empty() ? sd.reported_name : sd.displayable_name);
 
 		bool found = !sd.description.empty();
 		if (!found) {
 			sd.description = "No description is available for this attribute.";
 
 		} else {
-			std::string descr =  std::string("<b>") + readable_name + "</b>\n";
+			std::string descr =  std::string("<b>") + displayable_name + "</b>\n";
 			descr += sd.description;
 
 			if (p.get_value<StorageStatistic>().is_normalized()) {
@@ -1508,8 +1534,8 @@ namespace {
 			sd.description = descr;
 		}
 
-		if (!readable_name.empty()) {
-			p.readable_name = readable_name;
+		if (!displayable_name.empty()) {
+			p.displayable_name = displayable_name;
 		}
 		p.set_description(sd.description);
 		p.generic_name = sd.generic_name;
@@ -1538,7 +1564,8 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 		|| auto_set(p, "device_model", "Device model")
 		|| auto_set(p, "serial_number", "Serial number, unique to each physical drive")
 		|| auto_set(p, "capacity", "User-serviceable drive capacity as reported to an operating system")
-		|| auto_set(p, "in_smartctl_db", "Whether the device is in smartctl database or not. If it is, additional information may be provided; otherwise, Raw values of some attributes may be incorrectly formatted.")
+		|| auto_set(p, "in_smartctl_db", "Whether the device is in smartctl database or not. "
+				"If it is, additional information may be provided; otherwise, Raw values of some attributes may be incorrectly formatted.")
 		|| auto_set(p, "smart_supported", "Whether the device supports SMART. If not, then only very limited information will be available.")
 		|| auto_set(p, "smart_enabled", "Whether the device has SMART enabled. If not, most of the reported values will be incorrect.")
 		|| auto_set(p, "aam_feature", "Automatic Acoustic Management (AAM) feature")
@@ -1550,7 +1577,7 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 
 		// set just its name as a tooltip
 		if (!found) {
-			p.set_description(p.readable_name);
+			p.set_description(p.displayable_name);
 			found = true;
 		}
 
@@ -1569,7 +1596,8 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 						"This value shows the estimated time required to perform this operation in idle conditions. A value of 0 means unsupported.")
 				|| auto_set(p, "short_total_time_length", "This value shows the estimated time required to perform a short self-test in idle conditions. A value of 0 means unsupported.")
 				|| auto_set(p, "long_total_time_length", "This value shows the estimated time required to perform a long self-test in idle conditions. A value of 0 means unsupported.")
-				|| auto_set(p, "conveyance_total_time_length", "This value shows the estimated time required to perform a conveyance self-test in idle conditions. A value of 0 means unsupported.")
+				|| auto_set(p, "conveyance_total_time_length", "This value shows the estimated time required to perform a conveyance self-test in idle conditions. "
+						"A value of 0 means unsupported.")
 				|| auto_set(p, "last_selftest_cap_group", "Status of the last self-test run.")
 				|| auto_set(p, "offline_cap_group", "Drive properties related to Offline Data Collection and self-tests.")
 				|| auto_set(p, "smart_cap_group", "Drive properties related to SMART handling.")
@@ -1578,7 +1606,7 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 				break;
 
 			case StorageProperty::SubSection::attributes:
-				found = auto_set(p, "data_structure_version", p.readable_name.c_str());
+				found = auto_set(p, "data_structure_version", p.displayable_name.c_str());
 				if (!found) {
 					auto_set_attr(p, disk_type);
 					found = true;  // true, because auto_set_attr() may set "Unknown attribute", which is still "found".
@@ -1590,20 +1618,20 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 				break;
 
 			case StorageProperty::SubSection::error_log:
-				found = auto_set(p, "error_log_version", p.readable_name.c_str())
+				found = auto_set(p, "error_log_version", p.displayable_name.c_str())
 				|| auto_set(p, "error_log_error_count", "Number of errors in error log. Note: Some manufacturers may list completely harmless errors in this log "
 					"(e.g., command invalid, not implemented, etc...).");
 // 				|| auto_set(p, "error_log_unsupported", "This device does not support error logging.");  // the property text already says that
 				if (p.is_value_type<StorageErrorBlock>()) {
 					for (size_t i = 0; i < p.get_value<StorageErrorBlock>().reported_types.size(); ++i) {
-						p.set_description(StorageErrorBlock::get_readable_error_types(p.get_value<StorageErrorBlock>().reported_types));
+						p.set_description(StorageErrorBlock::get_displayable_error_types(p.get_value<StorageErrorBlock>().reported_types));
 						found = true;
 					}
 				}
 				break;
 
 			case StorageProperty::SubSection::selftest_log:
-				found = auto_set(p, "selftest_log_version", p.readable_name.c_str())
+				found = auto_set(p, "selftest_log_version", p.displayable_name.c_str())
 				|| auto_set(p, "selftest_num_entries", "Number of tests in selftest log. Note: The number of entries may be limited to the newest manual tests.");
 		// 		|| auto_set(p, "selftest_log_unsupported", "This device does not support self-test logging.");  // the property text already says that
 				break;
@@ -1693,45 +1721,53 @@ WarningLevel storage_property_autoset_warning(StorageProperty& p)
 					// Reallocated Sector Count
 					if (attr_match(p, "attr_reallocated_sector_count") && attr.raw_value_int > 0) {
 						w = WarningLevel::notice;
-						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
+						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. "
+								"This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					// Spin-up Retry Count
 					} else if (attr_match(p, "attr_spin_up_retry_count") && attr.raw_value_int > 0) {
 						w = WarningLevel::notice;
-						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. Your drive may have problems spinning up, which could lead to a complete mechanical failure. Please back up.";
+						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. "
+								"Your drive may have problems spinning up, which could lead to a complete mechanical failure. Please back up.";
 
 					// Soft Read Error Rate
 					} else if (attr_match(p, "attr_soft_read_error_rate") && attr.raw_value_int > 0) {
 						w = WarningLevel::notice;
-						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
+						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. "
+								"This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					// Temperature (for some it may be 10xTemp, so limit the upper bound.)
 					} else if (attr_match(p, "attr_temperature_celsius")
 							&& attr.raw_value_int > 50 && attr.raw_value_int <= 120) {  // 50C
 						w = WarningLevel::notice;
-						reason = "The temperature of the drive is higher than 50 degrees Celsius. This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
+						reason = "The temperature of the drive is higher than 50 degrees Celsius. "
+								"This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 
 					// Temperature (for some it may be 10xTemp, so limit the upper bound.)
 					} else if (attr_match(p, "attr_temperature_celsius_x10") && attr.raw_value_int > 500) {  // 50C
 						w = WarningLevel::notice;
-						reason = "The temperature of the drive is higher than 50 degrees Celsius. This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
+						reason = "The temperature of the drive is higher than 50 degrees Celsius. "
+								"This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 
 					// Reallocation Event Count
 					} else if (attr_match(p, "attr_reallocation_event_count") && attr.raw_value_int > 0) {
 						w = WarningLevel::notice;
-						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
+						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. "
+								"This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					// Current Pending Sector Count
 					} else if ((attr_match(p, "attr_current_pending_sector_count") || attr_match(p, "attr_total_pending_sectors"))
 								&& attr.raw_value_int > 0) {
 						w = WarningLevel::notice;
-						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
+						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. "
+								"This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					// Uncorrectable Sector Count
 					} else if ((attr_match(p, "attr_offline_uncorrectable") || attr_match(p, "attr_total_attr_offline_uncorrectable"))
 								&& attr.raw_value_int > 0) {
 						w = WarningLevel::notice;
-						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. This could be an indication of future failures and/or potential data loss in bad sectors.";
+						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. "
+								"This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					// SSD Life Left (%)
 					} else if ((attr_match(p, "attr_ssd_life_left"))
@@ -1764,7 +1800,8 @@ WarningLevel storage_property_autoset_warning(StorageProperty& p)
 							// nothing. we don't warn about e.g. temperature increase in the past
 						} else {  // pre-fail
 							w = WarningLevel::warning;  // there was a problem, it got corrected (hopefully)
-							reason = "The drive had a failing pre-fail attribute, but it has been restored to a normal value. This may be a serious problem, you should consider replacing the drive.";
+							reason = "The drive had a failing pre-fail attribute, but it has been restored to a normal value. "
+									"This may be a serious problem, you should consider replacing the drive.";
 						}
 					}
 				}
@@ -1913,7 +1950,8 @@ WarningLevel storage_property_autoset_warning(StorageProperty& p)
 				// Current temperature
 				if (name_match(p, "sct_temperature_celsius") && p.get_value<int64_t>() > 50) {  // 50C
 					w = WarningLevel::notice;
-					reason = "The temperature of the drive is higher than 50 degrees Celsius. This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
+					reason = "The temperature of the drive is higher than 50 degrees Celsius. "
+							"This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 				}
 				break;
 

@@ -9,8 +9,13 @@
 /// \weakgroup applib
 /// @{
 
+// TODO Remove this in gtkmm4.
+#include "local_glibmm.h"
+
 #include <clocale>  // localeconv
 #include <cstdint>
+#include <glibmm.h>  // compose()
+#include <glibmm/i18n.h>
 
 #include "hz/locale_tools.h"  // ScopedCLocale, locale_c_get().
 #include "hz/string_algo.h"  // string_*
@@ -52,7 +57,7 @@ namespace {
 			p.set_name(name, "selftest_log_checksum_error");
 		}
 
-		p.readable_name = "Error in " + name + " structure";
+		p.displayable_name = "Error in " + name + " structure";
 
 		p.reported_value = "checksum error";
 		p.value = p.reported_value;  // string-type value
@@ -330,7 +335,7 @@ std::string SmartctlParser::parse_byte_size(const std::string& str, int64_t& byt
 
 // 	debug_out_dump("app", "Size reported as: " << str << "\n");
 
-	std::vector<std::string> to_replace = {" ", "'", ",", ".", std::string(1, 0xa0)};
+	std::vector<std::string> to_replace = {" ", "'", ",", ".", std::string(1, static_cast<char>(0xa0))};
 
 #ifdef _WIN32
 	// if current locale is C, then probably we didn't change it at application
@@ -1682,7 +1687,7 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 		if (re.PartialMatch(sub)) {
 			StorageProperty p(pt);
 			p.set_name("error_log_unsupported");
-			p.readable_name = "Warning";
+			p.displayable_name = "Warning";
 			p.readable_value = "Device does not support error logging";
 			add_property(p);
 		}
@@ -1835,7 +1840,7 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 		if (re.PartialMatch(sub)) {
 			StorageProperty p(pt);
 			p.set_name("selftest_log_unsupported");
-			p.readable_name = "Warning";
+			p.displayable_name = "Warning";
 			p.readable_value = "Device does not support self-test logging";
 			add_property(p);
 
@@ -2375,6 +2380,26 @@ ID      Size     Value  Description
 
 
 
+std::string SmartctlParser::get_data_full() const
+{
+	return data_full_;
+}
+
+
+
+std::string SmartctlParser::get_error_msg() const
+{
+	return Glib::ustring::compose(_("Cannot parse smartctl output: %1"), error_msg_);
+}
+
+
+
+const std::vector<StorageProperty>& SmartctlParser::get_properties() const
+{
+	return properties_;
+}
+
+
 
 // adds a property into property list, looks up and sets its description.
 // Yes, there's no place for this in the Parser, but whatever...
@@ -2385,6 +2410,34 @@ void SmartctlParser::add_property(StorageProperty p)
 	storage_property_autoset_warning_descr(p);  // append warning to description
 
 	properties_.push_back(p);
+}
+
+
+
+void SmartctlParser::set_data_full(const std::string& s)
+{
+	data_full_ = s;
+}
+
+
+
+void SmartctlParser::set_data_section_info(const std::string& s)
+{
+	data_section_info_ = s;
+}
+
+
+
+void SmartctlParser::set_data_section_data(const std::string& s)
+{
+	data_section_data_ = s;
+}
+
+
+
+void SmartctlParser::set_error_msg(const std::string& s)
+{
+	error_msg_ = s;
 }
 
 

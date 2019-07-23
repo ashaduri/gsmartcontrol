@@ -10,6 +10,8 @@ License: See LICENSE_gsmartcontrol.txt
 /// @{
 
 #include <unordered_map>
+#include <glibmm.h>  // compose()
+#include <glibmm/i18n.h>
 
 #include "rconfig/config.h"
 #include "hz/string_algo.h"  // string_trim_copy, string_any_to_unix_copy
@@ -25,7 +27,7 @@ License: See LICENSE_gsmartcontrol.txt
 
 
 
-std::string StorageDevice::get_type_readable_name(DetectedType type)
+std::string StorageDevice::get_type_storable_name(DetectedType type)
 {
 	static const std::unordered_map<DetectedType, std::string> m {
 			{DetectedType::unknown, "unknown"},
@@ -41,13 +43,13 @@ std::string StorageDevice::get_type_readable_name(DetectedType type)
 
 
 
-std::string StorageDevice::get_status_name(Status status)
+std::string StorageDevice::get_status_displayable_name(Status status)
 {
 	static const std::unordered_map<Status, std::string> m {
-			{Status::enabled, "Enabled"},
-			{Status::disabled, "Disabled"},
-			{Status::unsupported, "Unsupported"},
-			{Status::unknown, "Unknown"},
+			{Status::enabled, C_("status", "Enabled")},
+			{Status::disabled, C_("status", "Disabled")},
+			{Status::unsupported, C_("status", "Unsupported")},
+			{Status::unknown, C_("status", "Unknown")},
 	};
 	if (auto iter = m.find(status); iter != m.end()) {
 		return iter->second;
@@ -101,7 +103,7 @@ void StorageDevice::clear_fetched(bool including_outputs) {
 std::string StorageDevice::fetch_basic_data_and_parse(const std::shared_ptr<CmdexSync>& smartctl_ex)
 {
 	if (this->test_is_active_)
-		return "A test is currently being performed on this drive.";
+		return _("A test is currently being performed on this drive.");
 
 	this->clear_fetched();  // clear everything fetched before, including outputs
 
@@ -140,12 +142,12 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 
 	if (this->info_output_.empty()) {
 		debug_out_error("app", DBG_FUNC_MSG << "String to parse is empty.\n");
-		return "Cannot read information from an empty string.";
+		return _("Cannot read information from an empty string.");
 	}
 
 	std::string version, version_full;
 	if (!SmartctlParser::parse_version(this->info_output_, version, version_full))  // is this smartctl data at all?
-		return "Cannot get smartctl version information.";
+		return _("Cannot get smartctl version information.");
 
 	// Detect type. note: we can't distinguish between sata and scsi (on linux, for -d ata switch).
 	// Sample output line 1 (encountered on a CDRW drive):
@@ -256,7 +258,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 std::string StorageDevice::fetch_data_and_parse(const std::shared_ptr<CmdexSync>& smartctl_ex)
 {
 	if (this->test_is_active_)
-		return "A test is currently being performed on this drive.";
+		return _("A test is currently being performed on this drive.");
 
 	this->clear_fetched();  // clear everything fetched before, including outputs
 
@@ -348,7 +350,7 @@ StorageDevice::ParseStatus StorageDevice::get_parse_status() const
 std::string StorageDevice::set_smart_enabled(bool b, const std::shared_ptr<CmdexSync>& smartctl_ex)
 {
 	if (this->test_is_active_)
-		return "A test is currently being performed on this drive.";
+		return _("A test is currently being performed on this drive.");
 
 	// execute smartctl --smart=on|off /dev/...
 	// --saveauto=on is also executed when enabling smart.
@@ -375,10 +377,10 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 		return std::string();  // success
 
 	} else if (app_pcre_match("/^A mandatory SMART command failed/mi", output)) {
-		return "Mandatory SMART command failed.";
+		return _("Mandatory SMART command failed.");
 	}
 
-	return "Unknown error occurred.";
+	return _("Unknown error occurred.");
 }
 
 
@@ -386,7 +388,7 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 std::string StorageDevice::set_aodc_enabled(bool b, const std::shared_ptr<CmdexSync>& smartctl_ex)
 {
 	if (this->test_is_active_)
-		return "A test is currently being performed on this drive.";
+		return _("A test is currently being performed on this drive.");
 
 	// execute smartctl --offlineauto=on|off /dev/...
 	// Output:
@@ -408,10 +410,10 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 		return std::string();  // success
 
 	} else if (app_pcre_match("/^A mandatory SMART command failed/mi", output)) {
-		return "Mandatory SMART command failed.";
+		return _("Mandatory SMART command failed.");
 	}
 
-	return "Unknown error occurred.";
+	return _("Unknown error occurred.");
 }
 
 
@@ -487,7 +489,7 @@ StorageDevice::Status StorageDevice::get_aodc_status() const
 
 	aodc_status_ = status;  // store to cache
 
-	debug_out_info("app", DBG_FUNC_MSG << "AODC status: " << get_status_name(status) << "\n");
+	debug_out_info("app", DBG_FUNC_MSG << "AODC status: " << get_status_displayable_name(status) << "\n");
 
 	return status;
 }
@@ -539,14 +541,14 @@ std::string StorageDevice::get_device_base() const
 std::string StorageDevice::get_device_with_type() const
 {
 	if (this->get_is_virtual()) {
-		std::string ret = "Virtual";
 		std::string vf = this->get_virtual_filename();
-		ret += (" (" + (vf.empty() ? "[empty]" : vf) + ")");
+		/// Translators: %1 is filename
+		std::string ret = Glib::ustring::compose(C_("filename", "Virtual (%1)"), (vf.empty() ? (std::string("[") + C_("filename", "empty") + "]") : vf));
 		return ret;
 	}
 	std::string device = get_device();
 	if (!get_type_argument().empty()) {
-		device += " (" + get_type_argument() + ")";
+		device = Glib::ustring::compose(_("%1 (%2)"), device, get_type_argument());
 	}
 	return device;
 }
@@ -615,7 +617,8 @@ std::string StorageDevice::format_drive_letters(bool with_volnames) const
 	for (const auto& iter : drive_letters_) {
 		drive_letters_decorated.push_back(std::string() + (char)std::toupper(iter.first) + ":");
 		if (with_volnames && !iter.second.empty()) {
-			drive_letters_decorated.back() += std::string(" (") + iter.second + ")";
+			// e.g. "C: (Local Drive)"
+			drive_letters_decorated.back() = Glib::ustring::compose(_("%1 (%2)"), drive_letters_decorated.back(), iter.second);
 		}
 	}
 	return hz::string_join(drive_letters_decorated, ", ");
@@ -809,7 +812,7 @@ std::string StorageDevice::execute_device_smartctl(const std::string& command_op
 
 	if (is_virtual_) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Cannot execute smartctl on a virtual device.\n");
-		return "Cannot execute smartctl on a virtual device.";
+		return _("Cannot execute smartctl on a virtual device.");
 	}
 
 	std::string device = get_device();

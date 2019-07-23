@@ -15,7 +15,7 @@
 // TODO Remove this in gtkmm4.
 #include "local_glibmm.h"
 
-#include <glibmm.h>
+#include <glibmm.h>  // Timer
 #include <string>
 #include <cstdint>
 #include <chrono>
@@ -40,25 +40,12 @@ class SelfTest {
 
 
 		/// Get displayable name for a test type
-		static std::string get_test_name(TestType type)
-		{
-			static const std::unordered_map<TestType, std::string> m {
-					{TestType::immediate_offline, "Immediate Offline Test"},
-					{TestType::short_test, "Short Self-Test"},
-					{TestType::long_test, "Extended Self-Test"},
-					{TestType::conveyance, "Conveyance Self-Test"},
-			};
-			if (auto iter = m.find(type); iter != m.end()) {
-				return iter->second;
-			}
-			return "[internal_error]";
-			return "[error]";
-		}
+		static std::string get_test_displayable_name(TestType type);
 
 
 		/// Constructor. \c drive must have the capabilities present in its properties.
 		SelfTest(StorageDevicePtr drive, TestType type)
-			: drive_(drive), type_(type)
+			: drive_(std::move(drive)), type_(type)
 		{ }
 
 

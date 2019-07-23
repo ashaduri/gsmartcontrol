@@ -12,11 +12,29 @@
 #include <algorithm>  // std::max, std::min
 #include <cmath>  // std::floor
 #include <chrono>
+#include <glibmm/i18n.h>
 
 #include "app_pcrecpp.h"
 #include "storage_property.h"
 #include "smartctl_parser.h"
 #include "selftest.h"
+
+
+
+
+std::string SelfTest::get_test_displayable_name(SelfTest::TestType type)
+{
+	static const std::unordered_map<TestType, std::string> m {
+			{TestType::immediate_offline, _("Immediate Offline Test")},
+			{TestType::short_test, _("Short Self-Test")},
+			{TestType::long_test, _("Extended Self-Test")},
+			{TestType::conveyance, _("Conveyance Self-Test")},
+	};
+	if (auto iter = m.find(type); iter != m.end()) {
+		return iter->second;
+	}
+	return "[internal_error]";
+}
 
 
 
@@ -93,11 +111,13 @@ bool SelfTest::is_supported() const
 std::string SelfTest::start(const std::shared_ptr<CmdexSync>& smartctl_ex)
 {
 	if (!drive_)
-		return "Invalid drive given.";
+		return "[internal error: drive must not be NULL]";
 	if (drive_->get_test_is_active())
-		return "A test is already running on this drive.";
-	if (!this->is_supported())
-		return get_test_name(type_) + " is unsupported by this drive.";
+		return _("A test is already running on this drive.");
+	if (!this->is_supported()) {
+		/// Translators: %1 is test name - Short test, etc...
+		return Glib::ustring::compose(_("%1 is unsupported by this drive."), get_test_displayable_name(type_));
+	}
 
 	std::string test_param;
 	switch(type_) {
@@ -108,7 +128,7 @@ std::string SelfTest::start(const std::shared_ptr<CmdexSync>& smartctl_ex)
 		// no default - this way we get warned by compiler if we're not listing all of them.
 	}
 	if (test_param.empty())
-		return "Invalid test specified";
+		return _("Invalid test specified");
 
 	std::string output;
 	std::string error_msg = drive_->execute_device_smartctl("--test=" + test_param, smartctl_ex, output);
@@ -117,7 +137,7 @@ std::string SelfTest::start(const std::shared_ptr<CmdexSync>& smartctl_ex)
 		return error_msg;
 
 	if (!app_pcre_match(R"(/^Drive command .* successful\.\nTesting has begun\.$/mi)", output)) {
-		return "Sending command failed.";
+		return _("Sending command to drive failed.");
 	}
 
 
@@ -153,9 +173,9 @@ std::string SelfTest::start(const std::shared_ptr<CmdexSync>& smartctl_ex)
 std::string SelfTest::force_stop(const std::shared_ptr<CmdexSync>& smartctl_ex)
 {
 	if (!drive_)
-		return "Invalid drive given.";
+		return "[internal error: drive must not be NULL]";
 	if (!drive_->get_test_is_active())
-		return "No test is currently running on this drive.";
+		return _("No test is currently running on this drive.");
 
 	// To abort immediate offline test, the device MUST have
 	// "Abort Offline collection upon new command" capability,
@@ -164,7 +184,7 @@ std::string SelfTest::force_stop(const std::shared_ptr<CmdexSync>& smartctl_ex)
 	if (type_ == TestType::immediate_offline) {
 		StorageProperty p = drive_->lookup_property("iodc_command_suspends", StorageProperty::Section::internal);
 		if (!p.empty() && p.get_value<bool>()) {  // if empty, give a chance to abort anyway.
-			return "Aborting this test is unsupported by the drive.";
+			return _("Aborting this test is unsupported by the drive.");
 		}
 		// else, proceed as any other test
 	}
@@ -178,7 +198,7 @@ std::string SelfTest::force_stop(const std::shared_ptr<CmdexSync>& smartctl_ex)
 
 	// this command prints success even if no test was running.
 	if (!app_pcre_match("/^Self-testing aborted!$/mi", output)) {
-		return "Sending command failed.";
+		return _("Sending command to drive failed.");
 	}
 
 	// update our members
@@ -209,7 +229,7 @@ std::string SelfTest::update(const std::shared_ptr<CmdexSync>& smartctl_ex)
 	using namespace std::literals;
 
 	if (!drive_)
-		return "Invalid drive given.";
+		return "[internal error: drive must not be NULL]";
 
 	std::string output;
 // 	std::string error_msg = drive_->execute_device_smartctl("--log=selftest", smartctl_ex, output);
@@ -238,7 +258,7 @@ std::string SelfTest::update(const std::shared_ptr<CmdexSync>& smartctl_ex)
 	}
 
 	if (p.empty())
-		return "The drive doesn't report the test status.";
+		return _("The drive doesn't report the test status.");
 
 	status_ = p.get_value<StorageSelftestEntry>().status;
 	bool active = (status_ == StorageSelftestEntry::Status::in_progress);

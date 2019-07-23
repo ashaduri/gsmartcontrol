@@ -14,6 +14,7 @@
 
 #include <gtkmm.h>  // Gtk::Main
 #include <gdkmm.h>
+#include <glibmm/i18n.h>
 
 #include "hz/string_algo.h"
 #include "hz/fs_ns.h"
@@ -123,7 +124,7 @@ void CmdexSyncGui::set_running_dialog_abort_mode(bool aborting)
 
 		show_hide_dialog(false);
 
-		running_dialog_->set_message("\n     Aborting...     ");
+		running_dialog_->set_message(std::string("\n     ") + _("Aborting...") + "     ");
 		// the sensitive button switching is done after show(), to avoid some visual
 		// defects - cursor in label, selected label.
 

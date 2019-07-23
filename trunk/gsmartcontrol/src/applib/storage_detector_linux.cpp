@@ -13,7 +13,7 @@
 
 #if defined CONFIG_KERNEL_LINUX
 
-
+#include <glibmm/i18n.h>
 #include <algorithm>  // std::find
 #include <cstdio>  // std::fgets(), std::FILE
 #include <cerrno>  // ENXIO
@@ -177,7 +177,7 @@ inline std::string read_proc_partitions_file(std::vector<std::string>& lines)
 	auto file = hz::fs::u8path(rconfig::get_data<std::string>("system/linux_proc_partitions_path"));
 	if (file.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Partitions file path is not set.\n");
-		return "Partitions file path is not set.";
+		return _("Partitions file path is not set.");
 	}
 
 	auto ec = read_proc_file_lines(file, lines);
@@ -202,7 +202,7 @@ inline std::string read_proc_devices_file(std::vector<std::string>& lines)
 	auto file = hz::fs::u8path(rconfig::get_data<std::string>("system/linux_proc_devices_path"));
 	if (file.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Devices file path is not set.\n");
-		return "Devices file path is not set.";
+		return _("Devices file path is not set.");
 	}
 
 	auto ec = read_proc_file_lines(file, lines);
@@ -229,7 +229,7 @@ inline std::string read_proc_scsi_scsi_file(std::vector< std::pair<int, std::str
 	auto file = hz::fs::u8path(rconfig::get_data<std::string>("system/linux_proc_scsi_scsi_path"));
 	if (file.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "SCSI file path is not set.\n");
-		return "SCSI file path is not set.";
+		return _("SCSI file path is not set.");
 	}
 
 	std::vector<std::string> lines;
@@ -276,7 +276,7 @@ inline std::string read_proc_scsi_sg_devices_file(std::vector<std::vector<int>>&
 	auto file = hz::fs::u8path(rconfig::get_data<std::string>("system/linux_proc_scsi_sg_devices_path"));
 	if (file.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Sg devices file path is not set.\n");
-		return "Sg devices file path is not set.";
+		return _("SCSI sg devices file path is not set.");
 	}
 
 	std::vector<std::string> lines;

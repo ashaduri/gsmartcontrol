@@ -13,6 +13,7 @@
 #include "local_glibmm.h"
 
 #include <glibmm.h>  // Glib::shell_quote()
+#include <glibmm/i18n.h>
 
 #include "smartctl_executor.h"
 #include "hz/win32_tools.h"
@@ -80,7 +81,7 @@ std::string execute_smartctl(const std::string& device, const std::string& devic
 		std::string::size_type pos = device.rfind('/');  // find basename
 		if (pos == std::string::npos) {
 			debug_out_error("app", DBG_FUNC_MSG << "Invalid device name \"" << device << "\".\n");
-			return "Invalid device name specified.";
+			return _("Invalid device name specified.");
 		}
 	}
 #endif
@@ -92,7 +93,7 @@ std::string execute_smartctl(const std::string& device, const std::string& devic
 
 	if (smartctl_binary.empty()) {
 		debug_out_error("app", DBG_FUNC_MSG << "Smartctl binary is not set in config.\n");
-		return "Smartctl binary is not specified in configuration.";
+		return _("Smartctl binary is not specified in configuration.");
 	}
 
 	auto smartctl_def_options = rconfig::get_data<std::string>("system/smartctl_options");
@@ -118,7 +119,7 @@ std::string execute_smartctl(const std::string& device, const std::string& devic
 		// check if it's a device permission error.
 		// Smartctl open device: /dev/sdb failed: Permission denied
 		if (app_pcre_match("/Smartctl open device.+Permission denied/mi", smartctl_output)) {
-			return "Permission denied while opening device.";
+			return _("Permission denied while opening device.");
 		}
 
 		// smartctl_output = smartctl_ex->get_stdout_str();
@@ -129,7 +130,7 @@ std::string execute_smartctl(const std::string& device, const std::string& devic
 	smartctl_output = hz::string_trim_copy(hz::string_any_to_unix_copy(smartctl_ex->get_stdout_str()));
 	if (smartctl_output.empty()) {
 		debug_out_error("app", DBG_FUNC_MSG << "Smartctl returned an empty output.\n");
-		return "Smartctl returned an empty output.";
+		return _("Smartctl returned an empty output.");
 	}
 
 	return std::string();
