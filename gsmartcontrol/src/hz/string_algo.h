@@ -396,7 +396,7 @@ inline std::string string_remove_adjacent_duplicates_copy(const std::string& s, 
 
 /// Replace from with to inside s (modifying s). Return number of replacements made.
 inline std::string::size_type string_replace(std::string& s,
-		const std::string& from, const std::string& to, int max_replacements = -1)
+		const std::string_view& from, const std::string_view& to, int max_replacements = -1)
 {
 	if (from.empty())
 		return std::string::npos;
@@ -422,7 +422,7 @@ inline std::string::size_type string_replace(std::string& s,
 
 /// Replace from with to inside s, not modifying s, returning the changed string.
 inline std::string string_replace_copy(const std::string& s,
-		const std::string& from, const std::string& to, int max_replacements = -1)
+		const std::string_view& from, const std::string_view& to, int max_replacements = -1)
 {
 	std::string ret(s);
 	string_replace(ret, from, to, max_replacements);
@@ -469,7 +469,7 @@ inline std::string string_replace_copy(const std::string& s,
 /// from_chars.size() must be equal to to_chars.size().
 /// Note: This is a multi-pass algorithm (there are from_chars.size() iterations).
 inline std::string::size_type string_replace_chars(std::string& s,
-		const std::string& from_chars, const std::string& to_chars, int max_replacements = -1)
+		const std::string_view& from_chars, const std::string_view& to_chars, int max_replacements = -1)
 {
 	const std::string::size_type from_size = from_chars.size();
 	if (from_size != to_chars.size())
@@ -501,7 +501,7 @@ inline std::string::size_type string_replace_chars(std::string& s,
 /// from_chars.size() must be equal to to_chars.size().
 /// Note: This is a multi-pass algorithm (there are from_chars.size() iterations).
 inline std::string string_replace_chars_copy(const std::string& s,
-		const std::string& from_chars, const std::string& to_chars, int max_replacements = -1)
+		const std::string_view& from_chars, const std::string_view& to_chars, int max_replacements = -1)
 {
 	std::string ret(s);
 	string_replace_chars(ret, from_chars, to_chars, max_replacements);
@@ -514,7 +514,7 @@ inline std::string string_replace_chars_copy(const std::string& s,
 
 /// Replace all chars from from_chars with to_char (modifying s).
 inline std::string::size_type string_replace_chars(std::string& s,
-		const std::string& from_chars, char to_char, int max_replacements = -1)
+		const std::string_view& from_chars, char to_char, int max_replacements = -1)
 {
 	if (from_chars.empty())
 		return std::string::npos;
@@ -535,7 +535,7 @@ inline std::string::size_type string_replace_chars(std::string& s,
 
 /// Replace all chars from from_chars with to_char, not modifying s, returning the changed string.
 inline std::string string_replace_chars_copy(const std::string& s,
-		const std::string& from_chars, char to_char, int max_replacements = -1)
+		const std::string_view& from_chars, char to_char, int max_replacements = -1)
 {
 	std::string ret(s);
 	string_replace_chars(ret, from_chars, to_char, max_replacements);
@@ -645,7 +645,7 @@ std::string string_replace_array_copy(const std::string& s,
 /// Note: This is a one-pass algorithm.
 template<class Container> inline
 std::string::size_type string_replace_array(std::string& s,
-		const Container& from_strings, const std::string& to_string, int max_replacements = -1)
+		const Container& from_strings, const std::string_view& to_string, int max_replacements = -1)
 {
 	const std::string::size_type from_array_size = from_strings.size();
 	const std::string::size_type to_str_size = to_string.size();
@@ -676,7 +676,7 @@ std::string::size_type string_replace_array(std::string& s,
 /// Note: This is a one-pass algorithm.
 template<class Container> inline
 std::string string_replace_array_copy(const std::string& s,
-		const Container& from_strings, const std::string& to_string, int max_replacements = -1)
+		const Container& from_strings, const std::string_view& to_string, int max_replacements = -1)
 {
 	std::string ret(s);
 	string_replace_array(ret, from_strings, to_string, max_replacements);
@@ -689,9 +689,29 @@ std::string string_replace_array_copy(const std::string& s,
 /// Same as the other overloads, but needed to avoid conflict with all-template version
 template<class Container> inline
 std::string::size_type string_replace_array(std::string& s,
+		const Container& from_strings, const std::string& to_string, int max_replacements = -1)
+{
+	return string_replace_array<Container>(s, from_strings, std::string_view(to_string), max_replacements);
+}
+
+
+// Same as the other overloads, but needed to avoid conflict with all-template version
+template<class Container> inline
+std::string string_replace_array_copy(const std::string& s,
+		const Container& from_strings, const std::string& to_string, int max_replacements = -1)
+{
+	return string_replace_array_copy<Container>(s, from_strings, std::string_view(to_string), max_replacements);
+}
+
+
+
+
+/// Same as the other overloads, but needed to avoid conflict with all-template version
+template<class Container> inline
+std::string::size_type string_replace_array(std::string& s,
 		const Container& from_strings, const char* to_string, int max_replacements = -1)
 {
-	return string_replace_array<Container>(s, from_strings, std::string(to_string), max_replacements);
+	return string_replace_array<Container>(s, from_strings, std::string_view(to_string), max_replacements);
 }
 
 
@@ -700,7 +720,7 @@ template<class Container> inline
 std::string string_replace_array_copy(const std::string& s,
 		const Container& from_strings, const char* to_string, int max_replacements = -1)
 {
-	return string_replace_array_copy<Container>(s, from_strings, std::string(to_string), max_replacements);
+	return string_replace_array_copy<Container>(s, from_strings, std::string_view(to_string), max_replacements);
 }
 
 

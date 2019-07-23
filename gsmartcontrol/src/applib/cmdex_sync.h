@@ -16,7 +16,6 @@
 #include <string>
 #include <chrono>
 #include <utility>
-#include <glibmm/i18n.h>
 
 #include "hz/error.h"
 #include "hz/process_signal.h"  // hz::SIGNAL_*
@@ -58,48 +57,25 @@ class CmdexSync : public sigc::trackable {
 	public:
 
 		/// Constructor
-		CmdexSync(std::string command_name, std::string command_args)
-			: CmdexSync()
-		{
-			this->set_command(std::move(command_name), std::move(command_args));
-		}
-
+		CmdexSync();
 
 		/// Constructor
-		CmdexSync()
-		{
-			/// Translators: {command} will be replaced by command name.
-			running_msg_ = _("Running {command}...");
-			set_error_header("An error occurred while executing the command:\n\n");
-		}
-
+		CmdexSync(std::string command_name, std::string command_args);
 
 		/// Virtual destructor
 		virtual ~CmdexSync() = default;
 
 
 		/// Set command to execute and its parameters
-		void set_command(std::string command_name, std::string command_args)
-		{
-			cmdex_.set_command(command_name, command_args);
-			// keep a copy locally to avoid locking on get() every time
-			command_name_ = std::move(command_name);
-			command_args_ = std::move(command_args);
-		}
+		void set_command(std::string command_name, std::string command_args);
 
 
 		/// Get command to execute
-		std::string get_command_name() const
-		{
-			return command_name_;
-		}
+		std::string get_command_name() const;
 
 
 		/// Get command arguments
-		std::string get_command_args() const
-		{
-			return command_args_;
-		}
+		std::string get_command_args() const;
 
 
 		/// Execute the command. The function will return only after the command exits.
@@ -112,10 +88,7 @@ class CmdexSync : public sigc::trackable {
 
 		/// Set timeout (in ms) to send SIGKILL after sending SIGTERM.
 		/// Used if manual stop was requested through ticker.
-		void set_forced_kill_timeout(std::chrono::milliseconds timeout_msec)
-		{
-			forced_kill_timeout_msec_ = timeout_msec;
-		}
+		void set_forced_kill_timeout(std::chrono::milliseconds timeout_msec);
 
 
 		/// Try to stop the process. Call this from ticker slot while executing.
@@ -184,33 +157,19 @@ class CmdexSync : public sigc::trackable {
 
 		/// Get command execution error message. If \c with_header
 		/// is true, a header set using set_error_header() will be displayed first.
-		std::string get_error_msg(bool with_header = false) const
-		{
-			if (with_header)
-				return error_header_ + error_msg_;
-			return error_msg_;
-		}
+		std::string get_error_msg(bool with_header = false) const;
 
 
 		/// Set a message to display when running. "{command}" in \c msg will be replaced by the command.
-		void set_running_msg(const std::string& msg)
-		{
-			running_msg_ = msg;
-		}
+		void set_running_msg(const std::string& msg);
 
 
 		/// Set error header string. See get_error_msg()
-		void set_error_header(const std::string& msg)
-		{
-			error_header_ = msg;
-		}
+		void set_error_header(const std::string& msg);
 
 
 		/// Get error header string. See get_error_msg()
-		std::string get_error_header()
-		{
-			return error_header_;
-		}
+		std::string get_error_header();
 
 
 		// ----------------- Signals
@@ -240,33 +199,19 @@ class CmdexSync : public sigc::trackable {
 
 		/// The warnings are already printed via debug_* in cmdex.
 		/// Override if needed.
-		virtual void on_error_warn(hz::ErrorBase* e)
-		{
-			if (e) {
-				set_error_msg(e->get_message());  // this message will be displayed
-			}
-		}
+		virtual void on_error_warn(hz::ErrorBase* e);
 
 
 		/// Set error message
-		void set_error_msg(const std::string& error_msg)
-		{
-			error_msg_ = error_msg;
-		}
+		void set_error_msg(const std::string& error_msg);
 
 
 		/// Get "running" message
-		std::string get_running_msg() const
-		{
-			return running_msg_;
-		}
+		std::string get_running_msg() const;
 
 
 		/// Get command executor object
-		Cmdex& get_command_executor()
-		{
-			return cmdex_;
-		}
+		Cmdex& get_command_executor();
 
 
 	private:

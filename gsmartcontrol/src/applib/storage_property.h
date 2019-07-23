@@ -178,7 +178,7 @@ class StorageErrorBlock {
 	public:
 
 		/// Get readable error types from reported types
-		static std::string get_readable_error_types(const std::vector<std::string>& types);
+		static std::string get_displayable_error_types(const std::vector<std::string>& types);
 
 		/// Get warning level (Warning) for an error type
 		static WarningLevel get_warning_level_for_error_type(const std::string& type);
@@ -229,7 +229,7 @@ class StorageSelftestEntry {
 		};
 
 		/// Get log entry status displayable name
-		static std::string get_status_name(Status s)
+		static std::string get_status_displayable_name(Status s)
 		{
 			static const std::unordered_map<Status, std::string> m {
 					{Status::unknown, "[unknown]"},
@@ -278,7 +278,7 @@ class StorageSelftestEntry {
 		/// Get error status as a string
 		std::string get_status_str() const
 		{
-			return (status == Status::unknown ? status_str : get_status_name(status));
+			return (status == Status::unknown ? status_str : get_status_displayable_name(status));
 		}
 
 
@@ -393,7 +393,7 @@ class StorageProperty {
 				return "error_block";
 			if (std::holds_alternative<StorageSelftestEntry>(value))
 				return "selftest_entry";
-			return "[error]";
+			return "[internal_error]";
 		}
 
 
@@ -449,13 +449,13 @@ class StorageProperty {
 		{
 			this->reported_name = rep_name;
 			this->generic_name = (gen_name.empty() ? this->reported_name : gen_name);
-			this->readable_name = (read_name.empty() ? this->reported_name : read_name);
+			this->displayable_name = (read_name.empty() ? this->reported_name : read_name);
 		}
 
 
 		std::string reported_name;  ///< Property name as reported by smartctl.
 		std::string generic_name;  ///< Generic (internal) name. May be same as reported_name, or something more program-identifiable.
-		std::string readable_name;  ///< Readable property name. May be same as reported_name, or something more user-readable. Possibly translatable.
+		std::string displayable_name;  ///< Readable property name. May be same as reported_name, or something more user-readable. Possibly translatable.
 
 		std::string description;  ///< Property description (for tooltips, etc...)
 

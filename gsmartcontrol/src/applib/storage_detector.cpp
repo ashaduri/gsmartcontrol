@@ -9,6 +9,11 @@
 /// \weakgroup applib
 /// @{
 
+// TODO Remove this in gtkmm4.
+#include "local_glibmm.h"
+
+#include <gtkmm.h>  // compose()
+#include <glibmm/i18n.h>
 #include <algorithm>
 
 #include "config.h"  // CONFIG_*
@@ -104,7 +109,7 @@ std::string StorageDetector::fetch_basic_data(std::vector<StorageDevicePtr>& dri
 	for (auto& drive : drives) {
 		debug_out_info("app", "Retrieving basic information about the device...\n");
 
-		smartctl_ex->set_running_msg("Running %s on " + drive->get_device_with_type() + "...");
+		smartctl_ex->set_running_msg(Glib::ustring::compose(_("Running {command} on %1..."), drive->get_device_with_type()));
 
 		// don't show any errors here - we don't want a screen flood.
 		// no need for gui-based executors here, we already show the message in
@@ -130,8 +135,8 @@ std::string StorageDetector::fetch_basic_data(std::vector<StorageDevicePtr>& dri
 		debug_out_dump("app", "Device information for " << drive->get_device()
 				<< " (type: \"" << drive->get_type_argument() << "\"):\n"
 				<< "\tModel: " << drive->get_model_name() << "\n"
-				<< "\tDetected type: " << StorageDevice::get_type_readable_name(drive->get_detected_type()) << "\n"
-				<< "\tSMART status: " << StorageDevice::get_status_name(drive->get_smart_status()) << "\n"
+				<< "\tDetected type: " << StorageDevice::get_type_storable_name(drive->get_detected_type()) << "\n"
+				<< "\tSMART status: " << StorageDevice::get_status_displayable_name(drive->get_smart_status()) << "\n"
 				);
 
 	}

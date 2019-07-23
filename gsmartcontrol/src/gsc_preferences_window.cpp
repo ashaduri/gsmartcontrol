@@ -517,7 +517,7 @@ void GscPreferencesWindow::on_window_reset_all_button_clicked()
 void GscPreferencesWindow::on_smartctl_binary_browse_button_clicked()
 {
 	auto* entry = this->lookup_widget<Gtk::Entry*>("smartctl_binary_entry");
-	auto path = hz::fs::u8path(entry->get_text());
+	auto path = hz::fs::u8path(std::string(entry->get_text()));
 
 	int result = 0;
 

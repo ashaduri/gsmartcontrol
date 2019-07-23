@@ -16,6 +16,7 @@
 
 #include <windows.h>  // CreateFileA(), CloseHandle(), etc...
 #include <glibmm.h>
+#include <glibmm/i18n.h>
 #include <set>
 #include <bitset>
 #include <map>
@@ -184,7 +185,7 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDevicePtr>& drive
 
 	if (smartctl_binary.empty()) {
 		debug_out_error("app", DBG_FUNC_MSG << "Smartctl binary is not set in config.\n");
-		return "Smartctl binary is not specified in configuration.";
+		return _("Smartctl binary is not specified in configuration.");
 	}
 
 	std::string smartctl_def_options = rconfig::get_data<std::string>("system/smartctl_options");
@@ -204,12 +205,13 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDevicePtr>& drive
 	std::string output = hz::string_trim_copy(hz::string_any_to_unix_copy(smartctl_ex->get_stdout_str()));
 	if (output.empty()) {
 		debug_out_error("app", DBG_FUNC_MSG << "Smartctl returned an empty output.\n");
-		return "Smartctl returned an empty output.";
+		return _("Smartctl returned an empty output.");
 	}
 
-	// if we've reached smartctl port limit (older versions may have smaller limits), abort.
 	if (app_pcre_match("/UNRECOGNIZED OPTION/mi", output)) {
-		return "Smartctl doesn't support --scan-open switch.";
+		// Our requirements list smartctl with --scan-open support, so this should never happen.
+		// Therefore, we don't translate it.
+		return "Unsupported smartctl version: Smartctl doesn't support --scan-open switch.";
 	}
 
 
@@ -274,7 +276,7 @@ inline std::string execute_areca_cli(const ExecutorFactoryPtr& ex_factory, const
 	output = hz::string_trim_copy(hz::string_any_to_unix_copy(executor->get_stdout_str()));
 	if (output.empty()) {
 		debug_out_error("app", DBG_FUNC_MSG << "Areca cli returned an empty output.\n");
-		return "Areca CLI returned an empty output.";
+		return _("Areca CLI returned an empty output.");
 	}
 
 	return std::string();
@@ -409,7 +411,7 @@ inline std::string areca_cli_get_drives(const std::string& cli_binary, const std
 	}
 	if (format_type == FormatType::Unknown) {
 		debug_out_warn("app", "Could not read Areca CLI output: No valid header found.\n");
-		return "Could not read Areca CLI output: No valid header found.";
+		return _("Could not read Areca CLI output: No valid header found.");
 	}
 
 	// Note: These may not match the full model, but just the first part is sufficient for comparison with "N.A.".

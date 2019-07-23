@@ -28,6 +28,15 @@ Don't rely on smartctl return code (2), parse the output instead.
 	Need usage cases.
 	JSON may fix this.
 
+Fix:
+	Compilation under centos7 (compiler flags?) - see OBS.
+	
+	<warn>  [app] SmartctlParser::parse_section_info(): Unknown Info line encountered.
+	<dump>  [app] ---------------- Begin unknown Info line ----------------
+	<dump>  [app] NO MEDIUM present in device
+	<dump>  [app] ----------------- End unknown Info line -----------------
+
+convert to STL algorithms.
 
 GTKMM 4.
 	GtkFileChooserNative
@@ -37,11 +46,51 @@ GTKMM 4.
 	local_glibmm.h
 	make dpi-aware?
 
+
+Port to cmake
+	For external targets, list them in a separate cmakelists, set
+		IMPORTED_GLOBAL TRUE on them.
+	Create targets without sources first.
+	Use target_sources() with all files listed as PRIVATE.
+	Use IMPORTED targets for external libs (or find_package()).
+
+	We can use OBJECT libraries instead of statics (not sure of the benefit).
+		OBJECT libs have strange propagation, better not use them.
+	Make zip/exe installer creation as a separate target.
+	Require 3.12+ (or 3.13+).
+
+	http://cliutils.gitlab.io/modern-cmake/
+
+	Maybe add external deps (json, catch2) through some C++ package manager?
+		Conan?
+
+
+Add Catch2 tests
+	Use Data Generators for testing the parser(s)
+		https://github.com/catchorg/Catch2/blob/master/docs/generators.md
+	Maybe use doctest for writing tests along the production code?
+		https://blog.jetbrains.com/rscpp/better-ways-testing-with-doctest/
+		No generators, but those can be done using catch.
+		Take care of tests in static libs - they need special registration.
+	Write multiple tests so that they can be executed in parallel with ctest.
+		https://a4z.bitbucket.io/blog/2018/05/17/Speed-up-your-test-cycles-with-CMake.html
+
+
+?Implement Mocking
+	Trompeloeil
+		https://machinekoder.com/qt-unit-testing-catch-trompeloeil/
+		Can mock free an non-virtual member functions as well.
+			https://github.com/rollbear/trompeloeil/blob/master/docs/CookBook.md#-mocking-non-virtual-member-functions
+
 JSON.
 	Port the rest to std::regex, get rid of pcre requirement.
 		Not sure, we still want to support old-format files.
 		Maybe make pcre optional (only for parsing the old format)
 		Add TESTS!
+
+Fix gdk_pixbuf_from_pixdata() warning
+	gdk_pixdata_from_pixbuf() has been deprecated, but we don't use it.
+	Probably gtk uses it in iconview.
 
 Use header-only formatting library:
 	For libdebug.
@@ -50,8 +99,19 @@ Use header-only formatting library:
 Use std::from_chars() in string_is_numeric_impl_classic_locale() (gcc 8)
 
 Fix win32 crash.
+	Waiting for filesystem to be included in mingw, otherwise can't compile.
+
+Use std::visit for variant instead of if(holds_alternative...)
+
+[[gnu::format]] attribute (replace all __attribute__'s)
 
 Detect and link with clang's / gcc's experimental lib, if needed.
+
+Support different @sbindir@ (see email by Jan Tojnar)
+
+smartmontools 7.0 feature:
+	smartctl '-x': Now includes '-l defects'.
+
 
 Check TODOs
 
@@ -59,14 +119,26 @@ Mark with gettext
 	Make sure desktop file is translated.
 		Add french translation?
 	Win32: Bundle intl.dll and translations with windows distribution.
-	Add translations to .spec and .deb
+	Add translation files to .spec and .deb
 	Win32: Bundle gtk/glib/... translations for languages we support.
+
+Convert template<typename Container> to this:
+	https://stackoverflow.com/questions/50231612/a-function-template-that-accepts-both-stdvector-and-qvector
+
+
+Self-tests:
+	For "Abort" button, add a confirmation (default: No), to avoid accidental abortions by pressing
+		space key.
+	Win7 reported bug: During extended test, while doing other things, at random times
+		the program window pops up on top (I guess it's smartctl execution window).
 
 
 Before releasing 2.0.0:
 	Test with freebsd and macOS.
 
+Make "Add Device" persistent.
 
+Automatically print backtrace on crash.
 
 Testing:
 	If ETA time has elapsed, but it's still only at 10% completion,

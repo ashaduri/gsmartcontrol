@@ -13,8 +13,8 @@
 #define APP_BUILDER_WIDGET_H
 
 #include <string>
-#include <type_traits>
 #include <gtkmm.h>
+#include <glibmm/i18n.h>
 
 #include "hz/debug.h"
 #include "hz/instance_manager.h"
@@ -33,7 +33,7 @@
 		if (!(ui_element)) \
 			 this->lookup_widget(#ui_element, ui_element); \
 		if (ui_element) { \
-			(ui_element)->signal_ ## signal_name ().connect(sigc::mem_fun(*this, &std::remove_pointer_t<decltype(this)>::callback)); \
+			(ui_element)->signal_ ## signal_name ().connect(sigc::mem_fun(*this, &std::remove_reference_t<decltype(*this)>::callback)); \
 		} \
 	} else (void)0
 
@@ -78,9 +78,8 @@ class AppBuilderWidget : public WidgetType, public hz::InstanceManager<Child, Mu
 				ui->get_widget_derived(Child::ui_name, o);  // Calls Child's constructor
 
 				if (!o) {
-					std::string msg = "Fatal error: Cannot get root widget from UI-resource-created hierarchy.";
-					debug_out_fatal("app", msg << "\n");
-					gui_show_error_dialog(msg);
+					debug_out_fatal("app", "Fatal error: Cannot get root widget from UI-resource-created hierarchy.\n");
+					gui_show_error_dialog(_("Fatal error: Cannot get root widget from UI-resource-created hierarchy."));
 					return nullptr;
 				}
 
@@ -94,9 +93,8 @@ class AppBuilderWidget : public WidgetType, public hz::InstanceManager<Child, Mu
 			}
 
 			if (!error_msg.empty()) {
-				std::string msg = "Fatal error: Cannot create UI-resource widgets: " + error_msg;
-				debug_out_fatal("app", msg << "\n");
-				gui_show_error_dialog(msg);
+				debug_out_fatal("app", "Fatal error: Cannot create UI-resource widgets: " << error_msg << "\n");
+				gui_show_error_dialog(Glib::ustring::compose(_("Fatal error: Cannot create UI-resource widgets: %1"), error_msg));
 			}
 			return nullptr;
 		}

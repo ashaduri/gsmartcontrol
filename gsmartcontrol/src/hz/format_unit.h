@@ -20,12 +20,20 @@
 #include <cstdint>
 #include <sstream>
 #include <chrono>
+#include <vector>
 
 #if defined __MINGW32__
 	#include <_mingw.h>  // MINGW_HAS_SECURE_API
 #endif
 
+#ifdef ENABLE_GLIB
+	#include <glib/gi18n.h>
+#else
+	#define C_(Str) (Str)
+#endif
+
 #include "string_num.h"  // hz::number_to_string_locale
+#include "string_algo.h"
 
 
 /// \def HAVE_REENTRANT_LOCALTIME
@@ -64,76 +72,77 @@ inline std::string format_size(uint64_t size, bool use_decimal = false, bool siz
 // 	const uint64_t zb_size = eb_size * multiplier;  // zetta
 // 	const uint64_t yb_size = zb_size * multiplier;  // yotta
 
-	static const char* const names[] = {
-		" B",  // bytes decimal
-		" B",  // bytes binary
-		" bit",  // bits decimal
-		" bit",  // bits binary. note: 2 bit, not 2 bits.
+	// Note: This won't work with runtime language change.
+	static const std::vector<std::string> names = {
+		C_("file_size", "%s B"),  // bytes decimal
+		C_("file_size", "%s B"),  // bytes binary
+		C_("file_size", "%s bit"),  // bits decimal
+		C_("file_size", "%s bit"),  // bits binary. note: 2 bit, not 2 bits.
 
-		" KB",
-		" KiB",
-		" Kbit",
-		" Kibit",
+		C_("file_size", "%s KB"),
+		C_("file_size", "%s KiB"),
+		C_("file_size", "%s Kbit"),
+		C_("file_size", "%s Kibit"),
 
-		" MB",
-		" MiB",
-		" Mbit",
-		" Mibit",
+		C_("file_size", "%s MB"),
+		C_("file_size", "%s MiB"),
+		C_("file_size", "%s Mbit"),
+		C_("file_size", "%s Mibit"),
 
-		" GB",
-		" GiB",
-		" Gbit",
-		" Gibit",
+		C_("file_size", "%s GB"),
+		C_("file_size", "%s GiB"),
+		C_("file_size", "%s Gbit"),
+		C_("file_size", "%s Gibit"),
 
-		" TB",
-		" TiB",
-		" Tbit",
-		" Tibit",
+		C_("file_size", "%s TB"),
+		C_("file_size", "%s TiB"),
+		C_("file_size", "%s Tbit"),
+		C_("file_size", "%s Tibit"),
 
-		" PB",
-		" PiB",
-		" Pbit",
-		" Pibit",
+		C_("file_size", "%s PB"),
+		C_("file_size", "%s PiB"),
+		C_("file_size", "%s Pbit"),
+		C_("file_size", "%s Pibit"),
 
-		" EB",
-		" EiB",
-		" Ebit",
-		" Eibit"
+		C_("file_size", "%s EB"),
+		C_("file_size", "%s EiB"),
+		C_("file_size", "%s Ebit"),
+		C_("file_size", "%s Eibit")
 	};
 
 	const int addn = static_cast<int>(!use_decimal) + (static_cast<int>(size_is_bits) * 2);
 
 	if (size >= eb_size) {  // exa
-		return hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(eb_size), 2, true)
-				+ names[(6 * 4) + addn];
+		return hz::string_replace_copy(names[(6 * 4) + addn], "%s",
+				hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(eb_size), 2, true), 1);
 	}
 
 	if (size >= pb_size) {  // peta
-		return hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(pb_size), 2, true)
-				+ names[(5 * 4) + addn];
+		return hz::string_replace_copy(names[(5 * 4) + addn], "%s",
+				hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(pb_size), 2, true), 1);
 	}
 
 	if (size >= tb_size) {  // tera
-		return hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(tb_size), 2, true)
-				+ names[(4 * 4) + addn];
+		return hz::string_replace_copy(names[(4 * 4) + addn], "%s",
+				hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(tb_size), 2, true), 1);
 	}
 
 	if (size >= gb_size) {  // giga
-		return hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(gb_size), 2, true)
-				+ names[(3 * 4) + addn];
+		return hz::string_replace_copy(names[(3 * 4) + addn], "%s",
+				hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(gb_size), 2, true), 1);
 	}
 
 	if (size >= mb_size) {  // mega
-		return hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(mb_size), 2, true)
-				+ names[(2 * 4) + addn];
+		return hz::string_replace_copy(names[(2 * 4) + addn], "%s",
+				hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(mb_size), 2, true), 1);
 	}
 
 	if (size >= kb_size) {  // kilo
-		return hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(kb_size), 2, true)
-				+ names[(1 * 4) + addn];
+		return hz::string_replace_copy(names[(1 * 4) + addn], "%s",
+				hz::number_to_string_locale(static_cast<long double>(size) / static_cast<long double>(kb_size), 2, true), 1);
 	}
 
-	return std::to_string(size) + names[(0 * 4) + addn];
+	return hz::string_replace_copy(names[(0 * 4) + addn], "%s", std::to_string(size));
 }
 
 
@@ -163,11 +172,13 @@ inline std::string format_time_length(std::chrono::seconds secs)
 		    if (hours > 0 && sec_diff.count() < (-hour_size / 2))
 		       days--;
 
-			return std::to_string(days.count()) + " " + "d"
-					+ " " + std::to_string(hours) + " " + "h";
+			return hz::string_replace_array_copy(C_("time", "{days} d {hours} h"),
+					std::vector<std::string>{"{days}", "{hours}"},
+					std::vector<std::string>{std::to_string(days.count()), std::to_string(hours)});
 
 		} else {  // display days only
-			return std::to_string(days.count()) + " " + "d";
+			return hz::string_replace_copy(C_("time", "{days} d"),
+					"{days}", std::to_string(days.count()));
 		}
 
 	} else if (secs >= 100min) {
@@ -179,8 +190,9 @@ inline std::string format_time_length(std::chrono::seconds secs)
 			if (minutes > 0 && sec_diff.count() < (-min_size / 2))
 				hours--;
 
-			return std::to_string(hours.count()) + " " + "h"
-					+ " " + std::to_string(minutes) + " " + "min";
+			return hz::string_replace_array_copy(C_("time", "{hours} h {minutes} min"),
+					std::vector<std::string>{"{hours}", "{minutes}"},
+					std::vector<std::string>{std::to_string(hours.count()), std::to_string(minutes)});
 
 		} else {  // display hours only
 			return std::to_string(hours.count()) + " " + "h";
@@ -188,10 +200,12 @@ inline std::string format_time_length(std::chrono::seconds secs)
 
 	} else if (secs >= 100s) {
 		auto minutes = std::chrono::round<std::chrono::minutes>(secs);
-		return std::to_string(minutes.count()) + " " + "min";
+		return hz::string_replace_copy(C_("time", "{minutes} min"),
+				"{minutes}", std::to_string(minutes.count()));
 	}
 
-	return std::to_string(secs.count()) + " " + "sec";
+	return hz::string_replace_copy(C_("time", "{seconds} sec"),
+			"{seconds}", std::to_string(secs.count()));
 }
 
 

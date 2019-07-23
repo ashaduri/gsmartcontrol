@@ -918,7 +918,7 @@ void GscInfoWindow::fill_ui_general(const std::vector<StorageProperty>& props)
 		name->set_alignment(Gtk::ALIGN_END);  // right-align
 		name->set_selectable(true);
 		name->set_can_focus(false);
-		name->set_markup("<b>" + Glib::Markup::escape_text(p.readable_name) + "</b>");
+		name->set_markup("<b>" + Glib::Markup::escape_text(p.displayable_name) + "</b>");
 
 		// If the above is Label, then this has to be Label too, else it will shrink
 		// and "name" will take most of the horizontal space. If "name" is set to shrink,
@@ -1059,7 +1059,7 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<StorageProperty>& props
 
 		// add non-attribute-type properties to label above
 		if (!p.is_value_type<StorageAttribute>()) {
-			label_strings.emplace_back(p.readable_name + ": " + p.format_value(), &p);
+			label_strings.emplace_back(p.displayable_name + ": " + p.format_value(), &p);
 
 			if (int(p.warning) > int(max_tab_warning))
 				max_tab_warning = p.warning;
@@ -1079,7 +1079,7 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<StorageProperty>& props
 		Gtk::TreeRow row = *(list_store->append());
 
 		row[col_id] = attr.id;
-		row[col_name] = p.readable_name;
+		row[col_name] = p.displayable_name;
 		row[col_flag_value] = attr.flag;  // it's a string, not int.
 		row[col_value] = (attr.value.has_value() ? hz::number_to_string_locale(attr.value.value()) : "-");
 		row[col_worst] = (attr.worst.has_value() ? hz::number_to_string_locale(attr.worst.value()) : "-");
@@ -1168,7 +1168,7 @@ void GscInfoWindow::fill_ui_statistics(const std::vector<StorageProperty>& props
 
 		// add non-entry-type properties to label above
 		if (!p.is_value_type<StorageStatistic>()) {
-			label_strings.emplace_back(p.readable_name + ": " + p.format_value(), &p);
+			label_strings.emplace_back(p.displayable_name + ": " + p.format_value(), &p);
 
 			if (int(p.warning) > int(max_tab_warning))
 				max_tab_warning = p.warning;
@@ -1178,7 +1178,7 @@ void GscInfoWindow::fill_ui_statistics(const std::vector<StorageProperty>& props
 		Gtk::TreeRow row = *(list_store->append());
 
 		const auto& st = p.get_value<StorageStatistic>();
-		row[col_description] = (st.is_header ? p.readable_name : ("    " + p.readable_name));
+		row[col_description] = (st.is_header ? p.displayable_name : ("    " + p.displayable_name));
 		row[col_value] = st.format_value();
 		row[col_flags] = st.flags;  // it's a string, not int.
 		row[col_page_offset] = (st.is_header ? std::string()
@@ -1228,7 +1228,7 @@ void GscInfoWindow::fill_ui_self_test_info()
 	auto test_ioffline = std::make_shared<SelfTest>(drive, SelfTest::TestType::immediate_offline);
 	if (test_ioffline->is_supported()) {
 		row = *(test_combo_model->append());
-		row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::TestType::immediate_offline);
+		row[test_combo_col_name] = SelfTest::get_test_displayable_name(SelfTest::TestType::immediate_offline);
 		row[test_combo_col_description] =
 				_("Immediate Offline Test (also known as Immediate Offline Data Collection)"
 				" is the manual version of Automatic Offline Data Collection, which, if enabled, is automatically run"
@@ -1240,7 +1240,7 @@ void GscInfoWindow::fill_ui_self_test_info()
 	auto test_short = std::make_shared<SelfTest>(drive, SelfTest::TestType::short_test);
 	if (test_short->is_supported()) {
 		row = *(test_combo_model->append());
-		row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::TestType::short_test);
+		row[test_combo_col_name] = SelfTest::get_test_displayable_name(SelfTest::TestType::short_test);
 		row[test_combo_col_description] =
 				_("Short self-test consists of a collection of test routines that have the highest chance"
 				" of detecting drive problems. Its result is reported in the Self-Test Log."
@@ -1254,7 +1254,7 @@ void GscInfoWindow::fill_ui_self_test_info()
 	auto test_long = std::make_shared<SelfTest>(drive, SelfTest::TestType::long_test);
 	if (test_long->is_supported()) {
 		row = *(test_combo_model->append());
-		row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::TestType::long_test);
+		row[test_combo_col_name] = SelfTest::get_test_displayable_name(SelfTest::TestType::long_test);
 		row[test_combo_col_description] =
 				_("Extended self-test examines complete disk surface and performs various test routines"
 				" built into the drive. Its result is reported in the Self-Test Log.");
@@ -1264,7 +1264,7 @@ void GscInfoWindow::fill_ui_self_test_info()
 	auto test_conveyance = std::make_shared<SelfTest>(drive, SelfTest::TestType::conveyance);
 	if (test_conveyance->is_supported()) {
 		row = *(test_combo_model->append());
-		row[test_combo_col_name] = SelfTest::get_test_name(SelfTest::TestType::conveyance);
+		row[test_combo_col_name] = SelfTest::get_test_displayable_name(SelfTest::TestType::conveyance);
 		row[test_combo_col_description] =
 				_("Conveyance self-test is intended to identify damage incurred during transporting of the drive.");
 		row[test_combo_col_self_test] = test_conveyance;
@@ -1360,7 +1360,7 @@ void GscInfoWindow::fill_ui_self_test_log(const std::vector<StorageProperty>& pr
 
 		// add non-entry properties to label above
 		if (!p.is_value_type<StorageSelftestEntry>()) {
-			label_strings.emplace_back(p.readable_name + ": " + p.format_value(), &p);
+			label_strings.emplace_back(p.displayable_name + ": " + p.format_value(), &p);
 
 			if (int(p.warning) > int(max_tab_warning))
 				max_tab_warning = p.warning;
@@ -1494,7 +1494,7 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
 
 			// add non-tree properties to label above
 		} else if (!p.is_value_type<StorageErrorBlock>()) {
-			label_strings.emplace_back(p.readable_name + ": " + p.format_value(), &p);
+			label_strings.emplace_back(p.displayable_name + ": " + p.format_value(), &p);
 			if (p.generic_name == "error_log_error_count")
 				label_strings.back().label += " "s + _("(Note: The number of entries may be limited to the newest ones)");
 
@@ -1507,7 +1507,7 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
 			row[col_num] = eb.error_num;
 			row[col_hours] = eb.format_lifetime_hours();
 			row[col_state] = eb.device_state;
-			row[col_type] = StorageErrorBlock::get_readable_error_types(eb.reported_types);
+			row[col_type] = StorageErrorBlock::get_displayable_error_types(eb.reported_types);
 			row[col_details] = (type_details.empty() ? "-" : type_details);  // e.g. OBS has no details
 			// There are no descriptions in self-test log entries, so don't display
 			// "No description available" for all of them.
@@ -1657,7 +1657,7 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<StorageProper
 		if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::capabilities)
 			continue;
 
-		Glib::ustring name = p.readable_name;
+		Glib::ustring name = p.displayable_name;
 		std::string flag_value;
 		Glib::ustring str_value;
 
@@ -1908,7 +1908,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 			result_msg = "<b>"s + _("Test was manually aborted.") + "</b>";  // it's a StatusSeverity::none message
 
 		} else {
-			result_msg = Glib::ustring::compose(_("<b>Test result:</b> %1."), StorageSelftestEntry::get_status_name(status));
+			result_msg = Glib::ustring::compose(_("<b>Test result:</b> %1."), StorageSelftestEntry::get_status_displayable_name(status));
 
 			// It may not reach 100% somehow, so do it manually.
 			if (test_completion_progressbar)
@@ -1985,7 +1985,7 @@ void GscInfoWindow::on_test_execute_button_clicked()
 	std::string error_msg = test->start(ex);  // this runs update() too.
 	if (!error_msg.empty()) {
 		/// Translators: %1 is test name
-		gui_show_error_dialog(Glib::ustring::compose(_("Cannot run %1"), SelfTest::get_test_name(test->get_test_type())), error_msg, this);
+		gui_show_error_dialog(Glib::ustring::compose(_("Cannot run %1"), SelfTest::get_test_displayable_name(test->get_test_type())), error_msg, this);
 		return;
 	}
 
@@ -2047,7 +2047,7 @@ void GscInfoWindow::on_test_stop_button_clicked()
 	std::string error_msg = current_test->force_stop(ex);
 	if (!error_msg.empty()) {
 		/// Translators: %1 is test name
-		gui_show_error_dialog(Glib::ustring::compose(_("Cannot stop %1"), SelfTest::get_test_name(current_test->get_test_type())), error_msg, this);
+		gui_show_error_dialog(Glib::ustring::compose(_("Cannot stop %1"), SelfTest::get_test_displayable_name(current_test->get_test_type())), error_msg, this);
 		return;
 	}
 

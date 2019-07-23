@@ -2,21 +2,10 @@
 # This cmake file is only for IDE integration, it should not be used
 # to compile this program.
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.13)
 project(gsmartcontrol)
 
 set(CMAKE_CXX_STANDARD 17)
-
-find_package(PkgConfig)
-
-pkg_check_modules(GTKMM gtkmm-3.0)
-pkg_check_modules(PCRECPP libpcrecpp)
-
-include_directories(SYSTEM
-	${GTKMM_INCLUDE_DIRS}
-)
-link_directories(${GTKMM_LIBRARY_DIRS})
-
 
 
 # Clang5 doesn't understand libstdc++'s std::get(variant), so use libc++.

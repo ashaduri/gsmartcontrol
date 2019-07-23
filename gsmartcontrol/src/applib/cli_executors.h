@@ -12,7 +12,7 @@
 #ifndef CLI_EXECUTORS_H
 #define CLI_EXECUTORS_H
 
-#include <memory>  // shared_ptr
+#include <glibmm/i18n.h>
 
 #include "cmdex.h"
 #include "cmdex_sync.h"
@@ -49,7 +49,7 @@ class TwCliExecutorGeneric : public ExecutorSync {
 		void construct()
 		{
 			ExecutorSync::get_command_executor().set_exit_status_translator(&TwCliExecutorGeneric::translate_exit_status);
-			this->set_error_header("An error occurred while executing tw_cli:\n\n");
+			this->set_error_header(std::string(_("An error occurred while executing tw_cli:")) + "\n\n");
 		}
 
 
@@ -148,7 +148,7 @@ class ArecaCliExecutorGeneric : public ExecutorSync {
 		void construct()
 		{
 			ExecutorSync::get_command_executor().set_exit_status_translator(&ArecaCliExecutorGeneric::translate_exit_status);
-			this->set_error_header("An error occurred while executing Areca cli:\n\n");
+			this->set_error_header(std::string(_("An error occurred while executing Areca cli:")) + "\n\n");
 		}
 
 

@@ -12,6 +12,9 @@
 #ifndef SMARTCTL_EXECUTOR_H
 #define SMARTCTL_EXECUTOR_H
 
+#include <vector>
+#include <glibmm/i18n.h>
+
 #include "cmdex.h"
 #include "cmdex_sync.h"
 #include "hz/fs_ns.h"
@@ -45,7 +48,7 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 		void construct()
 		{
 			ExecutorSync::get_command_executor().set_exit_status_translator(&SmartctlExecutorGeneric::translate_exit_status);
-			this->set_error_header("An error occurred while executing smartctl:\n\n");
+			this->set_error_header(std::string(_("An error occurred while executing smartctl:")) + "\n\n");
 		}
 
 
@@ -64,15 +67,15 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 		/// Translate smartctl error code to a readable message
 		static std::string translate_exit_status(int status)
 		{
-			static const char* const table[] = {
-				"Command line did not parse.",
-				"Device open failed, or device did not return an IDENTIFY DEVICE structure.",
-				"Some SMART command to the disk failed, or there was a checksum error in a SMART data structure",
-				"SMART status check returned \"DISK FAILING\"",
-				"SMART status check returned \"DISK OK\" but some prefail Attributes are less than threshold.",
-				"SMART status check returned \"DISK OK\" but we found that some (usage or prefail) Attributes have been less than threshold at some time in the past.",
-				"The device error log contains records of errors.",
-				"The device self-test log contains records of errors."
+			static const std::vector<std::string> table = {
+				_("Command line did not parse."),
+				_("Device open failed, or device did not return an IDENTIFY DEVICE structure."),
+				_("Some SMART command to the disk failed, or there was a checksum error in a SMART data structure"),
+				_("SMART status check returned \"DISK FAILING\""),
+				_("SMART status check returned \"DISK OK\" but some prefail Attributes are less than threshold."),
+				_("SMART status check returned \"DISK OK\" but we found that some (usage or prefail) Attributes have been less than threshold at some time in the past."),
+				_("The device error log contains records of errors."),
+				_("The device self-test log contains records of errors.")
 			};
 
 			std::string str;

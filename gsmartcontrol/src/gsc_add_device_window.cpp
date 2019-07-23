@@ -175,7 +175,7 @@ void GscAddDeviceWindow::on_device_name_browse_button_clicked()
 	if (!entry)
 		return;
 
-	auto path = hz::fs::u8path(entry->get_text());
+	auto path = hz::fs::u8path(std::string(entry->get_text()));
 
 	int result = 0;
 

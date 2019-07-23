@@ -18,7 +18,8 @@
 // TODO Remove this in gtkmm4.
 #include "local_glibmm.h"
 
-#include <glibmm.h>  // Glib::shell_quote()
+#include <glibmm.h>  // Glib::shell_quote(), compose
+#include <glibmm/i18n.h>
 
 #include "executor_factory.h"
 #include "storage_device.h"
@@ -38,7 +39,7 @@ inline std::string execute_tw_cli(const ExecutorFactoryPtr& ex_factory, const st
 
 	if (binary.empty()) {
 		debug_out_error("app", DBG_FUNC_MSG << "tw_cli binary is not set in config.\n");
-		return "tw_cli binary is not specified in configuration.";
+		return Glib::ustring::compose(_("%1 binary is not specified in configuration."), "tw_cli");
 	}
 
 	std::vector<std::string> binaries;  // binaries to try
@@ -50,8 +51,8 @@ inline std::string execute_tw_cli(const ExecutorFactoryPtr& ex_factory, const st
 	binaries.push_back(binary + ".x86");
 #endif
 
-	for (std::size_t i = 0; i < binaries.size(); ++i) {
-		executor->set_command(Glib::shell_quote(binaries.at(i)), command_options);
+	for (const auto& bin : binaries) {
+		executor->set_command(Glib::shell_quote(bin), command_options);
 
 		if (!executor->execute() || !executor->get_error_msg().empty()) {
 			debug_out_warn("app", DBG_FUNC_MSG << "Error while executing tw_cli binary.\n");
@@ -64,7 +65,7 @@ inline std::string execute_tw_cli(const ExecutorFactoryPtr& ex_factory, const st
 	output = hz::string_trim_copy(hz::string_any_to_unix_copy(executor->get_stdout_str()));
 	if (output.empty()) {
 		debug_out_error("app", DBG_FUNC_MSG << "tw_cli returned an empty output.\n");
-		return "tw_cli returned an empty output.";
+		return _("tw_cli returned an empty output.");
 	}
 
 	return std::string();

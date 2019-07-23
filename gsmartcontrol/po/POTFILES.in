@@ -1,3 +1,5 @@
+src/hz/format_unit.h
+
 src/ui/gsc_about_dialog.glade
 src/ui/gsc_add_device_window.glade
 src/ui/gsc_executor_log_window.glade
@@ -6,7 +8,7 @@ src/ui/gsc_main_window.glade
 src/ui/gsc_preferences_window.glade
 src/ui/gsc_text_window.glade
 
-src/add_device_window.cpp
+src/gsc_add_device_window.cpp
 src/gsc_main_window.cpp
 src/gsc_executor_error_dialog.cpp
 src/gsc_executor_log_window.cpp
@@ -17,4 +19,19 @@ src/gsc_main_window_iconview.h
 src/gsc_preferences_window.cpp
 src/gsc_text_window.h
 
-hz/format_unit.h
+src/applib/app_builder_widget.h
+src/applib/cli_executors.h
+src/applib/cmdex_sync_gui.cpp
+src/applib/selftest.cpp
+src/applib/smartctl_executor.cpp
+src/applib/smartctl_executor.h
+src/applib/smartctl_parser.cpp
+src/applib/storage_detector.cpp
+src/applib/storage_detector_helpers.h
+src/applib/storage_detector_linux.cpp
+src/applib/storage_detector_other.cpp
+src/applib/storage_detector_win32.cpp
+src/applib/storage_device.cpp
+src/applib/storage_property.cpp
+src/applib/storage_property_colors.h
+src/applib/storage_property_descr.h
