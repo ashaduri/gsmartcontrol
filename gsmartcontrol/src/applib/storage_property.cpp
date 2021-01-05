@@ -48,7 +48,12 @@ std::string StorageAttribute::format_raw_value() const
 	// If it's fully a number, format it with commas
 	if (hz::number_to_string_nolocale(raw_value_int) == raw_value) {
 		std::stringstream ss;
-		ss.imbue(std::locale(""));
+		try {
+			ss.imbue(std::locale(""));
+		}
+		catch (const std::runtime_error& e) {
+			// something is wrong with system locale, can't do anything here.
+		}
 		ss << std::fixed << raw_value_int;
 		return ss.str();
 	}
@@ -76,7 +81,12 @@ std::string StorageStatistic::format_value() const
 	// If it's fully a number, format it with commas
 	if (hz::number_to_string_nolocale(value_int) == value) {
 		std::stringstream ss;
-		ss.imbue(std::locale(""));
+		try {
+			ss.imbue(std::locale(""));
+		}
+		catch (const std::runtime_error& e) {
+			// something is wrong with system locale, can't do anything here.
+		}
 		ss << std::fixed << value_int;
 		return ss.str();
 	}
@@ -160,7 +170,12 @@ WarningLevel StorageErrorBlock::get_warning_level_for_error_type(const std::stri
 std::string StorageErrorBlock::format_lifetime_hours() const
 {
 	std::stringstream ss;
-	ss.imbue(std::locale(""));
+	try {
+		ss.imbue(std::locale(""));
+	}
+	catch (const std::runtime_error& e) {
+		// something is wrong with system locale, can't do anything here.
+	}
 	ss << std::fixed << lifetime_hours;
 	return ss.str();
 }
@@ -180,7 +195,12 @@ std::ostream& operator<< (std::ostream& os, const StorageErrorBlock& b)
 std::string StorageSelftestEntry::format_lifetime_hours() const
 {
 	std::stringstream ss;
-	ss.imbue(std::locale(""));
+	try {
+		ss.imbue(std::locale(""));
+	}
+	catch (const std::runtime_error& e) {
+		// something is wrong with system locale, can't do anything here.
+	}
 	ss << std::fixed << lifetime_hours;
 	return ss.str();
 }
