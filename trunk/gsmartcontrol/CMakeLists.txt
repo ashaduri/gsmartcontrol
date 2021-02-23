@@ -1,70 +1,36 @@
 
-# This cmake file is only for IDE integration, it should not be used
-# to compile this program.
-
 cmake_minimum_required(VERSION 3.13)
+
 project(gsmartcontrol)
 
+
+# Set the default C++ standard
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+# We may make use of the OS/compiler extensions, if available
+set(CMAKE_CXX_EXTENSIONS ON)
+
+# Add various OS/compiler-specific options that should always be there
+# regardless of the machine.
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+	add_compile_definitions(_GNU_SOURCE)
+endif()
 
 
 # Clang5 doesn't understand libstdc++'s std::get(variant), so use libc++.
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-	option(APP_COMPILER_CLANG_USE_LIBCXX "Use LLVM libc++ instead of gcc's libstdc++ (clang)" ON)
-	if (APP_COMPILER_CLANG_USE_LIBCXX)
-		add_compile_options(-stdlib=libc++)
-	endif()
-endif()
+#if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+#	option(APP_COMPILER_CLANG_USE_LIBCXX "Use LLVM libc++ instead of gcc's libstdc++ (clang)" ON)
+#	if (APP_COMPILER_CLANG_USE_LIBCXX)
+#		add_compile_options(-stdlib=libc++)
+#	endif()
+#endif()
 
+add_executable(gsmartcontrol)
 
-set(_enable_clang_tidy OFF)
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-	set(_enable_clang_tidy ON)
-endif()
-
-option(APP_COMPILER_ANALYZE_CLANG_TIDY "Use clang-tidy in Analysis build type" ${_enable_clang_tidy})
-set(APP_COMPILER_ANALYZE_CLANG_TIDY_CMDLINE "clang-tidy"  # reads configuration from root-level .clang-tidy file
-	CACHE STRING "Command-line for clang-tidy.")
-if (APP_COMPILER_ANALYZE_CLANG_TIDY)
-	set (CMAKE_CXX_CLANG_TIDY "${APP_COMPILER_ANALYZE_CLANG_TIDY_CMDLINE}")
-endif()
-
-
-add_compile_options(-Wall -Wextra -Wpedantic
-	-Wshadow -Wpointer-arith
-	-Wundef -Wunused-macros -Wcast-qual -Wcast-align -Wconversion
-	-Wmissing-declarations -Wpacked -Wredundant-decls -Wvla -Woverlength-strings
-	-Wnon-virtual-dtor -Woverloaded-virtual
-	-Wno-missing-field-initializers
-	)
-
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-	add_compile_options(
-		-Wdocumentation
-		-Wheader-guard
-		-Wloop-analysis
-		-Wno-keyword-macro
-	)
-
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-	add_compile_options(
-		-Wnoexcept
-#		-Wsuggest-attribute=const
-		-Wsuggest-attribute=noreturn
-		-Wsuggest-attribute=format
-#		-Wsuggest-final-types  # works better with LTO
-#		-Wsuggest-final-methods
-		-Wsuggest-override
-		-Wno-virtual-move-assign
-		-Wdate-time
-	)
-endif()
-
-# Some warnings are only triggered at higher optimization levels
-add_compile_options(-O2)
-
-
-add_executable(gsmartcontrol
+target_sources(gsmartcontrol PRIVATE
 	src/applib/app_builder_widget.h
 	src/applib/app_gtkmm_features.h
 	src/applib/app_gtkmm_utils.cpp
@@ -174,19 +140,17 @@ add_executable(gsmartcontrol
 	src/gsc_preferences_window.cpp
 	src/gsc_preferences_window.h
 	src/gsc_settings.h
-	src/gsc_text_window.h)
+	src/gsc_text_window.h
+)
 
 target_include_directories(gsmartcontrol
 	PRIVATE
 		src
-		${CMAKE_BINARY_DIR}  # for config.h
+#		${CMAKE_BINARY_DIR}  # for config.h
 )
 
 target_compile_definitions(gsmartcontrol
 	PRIVATE
-		-DENABLE_GLIB=1
-		-DENABLE_GLIBMM=1
-		-D_GNU_SOURCE
 		-DPACKAGE_PKGDATA_DIR=\"/usr/local/share/gsmartcontrol\"
 		-DPACKAGE_SYSCONF_DIR=\"/usr/local/etc\"
 		-DPACKAGE_LOCALE_DIR=\"/usr/local/share/locale/gsmartcontrol\"
@@ -199,11 +163,12 @@ target_compile_definitions(gsmartcontrol
 
 target_link_libraries(gsmartcontrol
 	PRIVATE
-		${GTKMM_LDFLAGS}
-		${PCRECPP_LDFLAGS})
+		app_pcrecpp_interface
+		app_gtkmm_interface
+)
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-	target_link_libraries(gsmartcontrol PRIVATE c++experimental)
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-	target_link_libraries(gsmartcontrol PRIVATE stdc++fs)
-endif()
+#if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+#	target_link_libraries(gsmartcontrol PRIVATE c++experimental)
+#elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+#	target_link_libraries(gsmartcontrol PRIVATE stdc++fs)
+#endif()
