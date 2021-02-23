@@ -36,6 +36,10 @@ Fix:
 	<dump>  [app] NO MEDIUM present in device
 	<dump>  [app] ----------------- End unknown Info line -----------------
 
+Port libdebug to the new cpp20 format library.
+
+"Current pending sector count" > 0 should be a warning.
+
 convert to STL algorithms.
 
 GTKMM 4.
@@ -65,6 +69,16 @@ Port to cmake
 		Conan?
 
 
+Fix Windows 10 issue (Gunnar Haslinger):
+	We use GSmartControl on Windows 10 and there seems to be an issue with
+	Konsole-Output. Wenn running GSmartControl.exe from Explorer everything
+	works fine, but when Starting GSmartControl.exe from an cmd.exe Console
+	it says "There was an error while executing smartctl. Smartctl returned
+	an empty output." => A workaround is to start the Application and
+	redirect StdOut to "nul" by this commandline: "GSmartControl.exe >nul"
+	=> This works.
+
+
 Add Catch2 tests
 	Use Data Generators for testing the parser(s)
 		https://github.com/catchorg/Catch2/blob/master/docs/generators.md
@@ -87,6 +101,7 @@ JSON.
 		Not sure, we still want to support old-format files.
 		Maybe make pcre optional (only for parsing the old format)
 		Add TESTS!
+		Maybe use C++20-based compile-time regex libraries.
 
 Fix gdk_pixbuf_from_pixdata() warning
 	gdk_pixdata_from_pixbuf() has been deprecated, but we don't use it.
