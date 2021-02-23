@@ -2,7 +2,7 @@
  Copyright:
       (C) 2000 - 2010  Kevlin Henney
       (C) 2008 - 2018  Alexander Shaduri <ashaduri 'at' gmail.com>
- License: See LICENSE_boost_1_0.txt file
+ License: Boost Software License 1.0
 ***************************************************************************/
 
 #ifndef HZ_LEXICAL_CAST_H

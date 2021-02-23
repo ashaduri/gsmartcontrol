@@ -3,7 +3,7 @@
       (C) 1998 - 2010  Greg Colvin and Beman Dawes
       (C) 2001 - 2010  Peter Dimov
       (C) 2008 - 2018  Alexander Shaduri <ashaduri 'at' gmail.com>
- License: See LICENSE_boost_1_0.txt file
+ License: Boost Software License 1.0
 ***************************************************************************/
 /// \file
 /// \author Greg Colvin and Beman Dawes

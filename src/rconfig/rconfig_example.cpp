@@ -1,7 +1,7 @@
 /**************************************************************************
  Copyright:
       (C) 2008 - 2018  Alexander Shaduri <ashaduri 'at' gmail.com>
- License: See LICENSE_unlicense.txt
+License: BSD Zero Clause License
 ***************************************************************************/
 /// \file
 /// \author Alexander Shaduri
