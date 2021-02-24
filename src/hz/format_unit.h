@@ -29,7 +29,7 @@ License: Zlib
 #ifdef ENABLE_GLIB
 	#include <glib/gi18n.h>
 #else
-	#define C_(Str) (Str)
+	#define C_(Context,String) (String)
 #endif
 
 #include "string_num.h"  // hz::number_to_string_locale

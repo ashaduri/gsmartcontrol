@@ -1,0 +1,69 @@
+
+add_library(applib STATIC)
+
+target_sources(applib PRIVATE
+	app_builder_widget.h
+	app_gtkmm_features.h
+	app_gtkmm_utils.cpp
+	app_gtkmm_utils.h
+	app_pcrecpp.h
+	cli_executors.h
+	cmdex.cpp
+	cmdex.h
+	cmdex_sync.cpp
+	cmdex_sync_gui.cpp
+	cmdex_sync_gui.h
+	cmdex_sync.h
+	executor_factory.cpp
+	executor_factory.h
+	gui_utils.cpp
+	gui_utils.h
+	selftest.cpp
+	selftest.h
+	smartctl_executor.cpp
+	smartctl_executor_gui.h
+	smartctl_executor.h
+	smartctl_parser.cpp
+	smartctl_parser.h
+	spawn_example.cpp
+	storage_detector.cpp
+	storage_detector.h
+	storage_detector_helpers.h
+	storage_detector_linux.cpp
+	storage_detector_linux.h
+	storage_detector_other.cpp
+	storage_detector_other.h
+	storage_detector_win32.cpp
+	storage_detector_win32.h
+	storage_device.cpp
+	storage_device.h
+	storage_property_colors.h
+	storage_property.cpp
+	storage_property_descr.cpp
+	storage_property_descr.h
+	storage_property.h
+	storage_settings.h
+	warning_level.h
+)
+
+target_link_libraries(applib
+	PUBLIC
+		libdebug
+		hz
+		rconfig
+		app_gtkmm_interface
+		app_pcrecpp_interface
+		app_gettext_interface
+    PRIVATE
+		compiler_warnings
+		build_config
+)
+
+target_include_directories(applib
+	PUBLIC
+		"${CMAKE_SOURCE_DIR}/src"
+)
+
+
+add_subdirectory(examples)
+

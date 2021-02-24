@@ -19,7 +19,7 @@
 #include "hz/debug.h"
 #include "hz/fs.h"
 #include "hz/scoped_ptr.h"
-#include "rconfig/config.h"
+#include "rconfig/rconfig.h"
 
 #include "applib/app_gtkmm_features.h"
 #include "applib/app_builder_widget.h"

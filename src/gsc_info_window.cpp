@@ -24,7 +24,7 @@
 #include "hz/string_algo.h"  // string_join
 #include "hz/fs.h"
 #include "hz/format_unit.h"  // format_time_length
-#include "rconfig/config.h"  // rconfig::*
+#include "rconfig/rconfig.h"  // rconfig::*
 
 #include "applib/app_gtkmm_utils.h"  // app_gtkmm_*
 #include "applib/storage_property_colors.h"

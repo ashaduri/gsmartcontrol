@@ -22,7 +22,7 @@
 #include "hz/scoped_ptr.h"
 #include "hz/launch_url.h"
 #include "hz/fs.h"
-#include "rconfig/config.h"
+#include "rconfig/rconfig.h"
 #include "applib/storage_detector.h"
 #include "applib/smartctl_parser.h"
 #include "applib/gui_utils.h"  // gui_show_error_dialog

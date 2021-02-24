@@ -1,174 +1,237 @@
 
+# 3.12 for CMAKE_PROJECT_VERSION
+# 3.13 for interface sources
 cmake_minimum_required(VERSION 3.13)
 
-project(gsmartcontrol)
+include(${CMAKE_SOURCE_DIR}/version.txt)
+
+project(gsmartcontrol VERSION ${CMAKE_PROJECT_VERSION})
+
+# Provide DATADIR, etc...
+include(GNUInstallDirs)
+
+include(src/build_config/compiler_options.cmake)
+
+option(APP_BUILD_EXAMPLES "Build examples" ON)
+
+configure_file(gsmartcontrol.in.spec gsmartcontrol.spec)
+
+add_subdirectory(contrib)
+add_subdirectory(data)
+add_subdirectory(debian.dist)
+add_subdirectory(dependencies)
+add_subdirectory(src)
+
+include(data/cpack_options.cmake)
 
 
-# Set the default C++ standard
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+# TODO
 
-# We may make use of the OS/compiler extensions, if available
-set(CMAKE_CXX_EXTENSIONS ON)
+## NSIS installer support.
+## Requires installed NSIS, smartctl-nc.exe, smartctl.exe, update-smart-drivedb.exe.
+## Gtkmm and pcre dlls are required if linking against them.
+## dos2unix on build machine.
+## Execute only with win32 build present.
+#
+#WIN_ZIP_NAME = $(PACKAGE)-$(VERSION)-@WINDOWS_SUFFIX@
+#
+#
+#win-dist: win-dist-nocleanup win-dist-cleanup
+#
+#win-dist-nocleanup: win-dist-prepare nsis-dist-nocleanup win-zip-dist-nocleanup
+#
+#win-dist-cleanup: win-zip-dist-cleanup nsis-dist-cleanup
+#	rm -rf win-dist
+#
+#win-dist-clean: win-dist-cleanup
+#	rm -f gsmartcontrol-*.exe gsmartcontrol-*.zip
+#
+#
+#win-dist-prepare-all: nsis-dist-prepare win-zip-dist-prepare
+#
+#
+##	All of GTK+
+#GTK_BIN_FILES = gdk-pixbuf-query-loaders.exe \
+#	gspawn-win32-helper-console.exe \
+#	gspawn-win32-helper.exe \
+#	gspawn-win64-helper-console.exe \
+#	gspawn-win64-helper.exe \
+#	gtk-query-immodules-3.0.exe \
+#	gtk-update-icon-cache-3.0.exe \
+#	libatk-1.*.dll \
+#	libatkmm-1.*.dll \
+#	libbz2-*.dll \
+#	libcairo-*.dll \
+#	libcairomm-1*.dll \
+#	libepoxy-*.dll \
+#	libffi-*.dll \
+#	libexpat-*.dll \
+#	libfontconfig-*.dll \
+#	libfreetype-*.dll \
+#	libgdk-3*.dll \
+#	libgdk_pixbuf-2.*.dll \
+#	libgdkmm-3.*.dll \
+#	libgio-2.*.dll \
+#	libgiomm-2.*.dll \
+#	libglib-2.*.dll \
+#	libglibmm*2.*.dll \
+#	libgmodule-2.*.dll \
+#	libgobject-2.*.dll \
+#	libgraphite*.dll \
+#	libgthread-2.*.dll \
+#	libgtk-3*.dll \
+#	libgtkmm-3*.dll \
+#	libharfbuzz*.dll \
+#	libiconv*.dll \
+#	libintl*.dll \
+#	libjasper*.dll \
+#	libjpeg*.dll \
+#	liblzma*.dll \
+#	libpango*-1.*.dll \
+#	libpixman*.dll \
+#	libpng16-*.dll \
+#	libsigc-2.*.dll \
+#	libstdc++-*.dll \
+#	libtiff-*.dll \
+#	libwinpthread-*.dll \
+#	libxml2-*.dll \
+#	zlib1.dll
+#
+#
+## Don't strip smartctl (it will only change the header), and
+## don't strip update-smart-drivedb (it will break its CRC check).
+#win-dist-prepare: all
+#	$(MKDIR_P) win-dist
+#	cp $(top_srcdir)/data/icon_*.png win-dist/
+#
+#	$(MKDIR_P) win-dist/ui
+#	cp $(top_srcdir)/src/ui/* win-dist/ui/
+#
+#	$(MKDIR_P) win-dist/doc
+#	cp data/nsis/distribution.txt win-dist/doc/
+#	cp $(top_srcdir)/doc/* win-dist/doc/
+#
+#	cp src/gsmartcontrol.exe src/gsmartcontrol.exe.manifest win-dist/
+#
+#	unix2dos win-dist/doc/*.txt
+#
+#	cp -p "@WINDOWS_SYSROOT@"/bin/drivedb.h win-dist/
+#	cp -p "@WINDOWS_SYSROOT@"/bin/smartctl-nc.exe win-dist/
+#	cp -p "@WINDOWS_SYSROOT@"/bin/smartctl.exe win-dist/
+#	cp -p "@WINDOWS_SYSROOT@"/bin/update-smart-drivedb.exe win-dist/
+#
+#	for file in $(GTK_BIN_FILES); do for f in "@WINDOWS_SYSROOT@/bin/"$$file; do if test -f "$${f}"; then cp -p "$${f}" win-dist/; fi; done; done
+#
+##	<prefix>/etc/gtk-3.0/ should contain settings.ini with a win32 theme.
+#	$(MKDIR_P) win-dist/etc
+#	$(MKDIR_P) win-dist/etc/fonts
+#	$(MKDIR_P) win-dist/etc/gtk-3.0
+#	cp -p "@WINDOWS_SYSROOT@"/etc/fonts/fonts.conf win-dist/etc/fonts/
+##	cp -p "@WINDOWS_SYSROOT@"/etc/gtk-3.0/im-multipress.conf win-dist/etc/gtk-3.0/
+#	cp -p "@WINDOWS_SYSROOT@"/etc/gtk-3.0/settings.ini win-dist/etc/gtk-3.0/
+#
+#	$(MKDIR_P) win-dist/share
+#	cp -p -r "@WINDOWS_SYSROOT@"/share/themes win-dist/share
+#
+##	needed for file chooser
+#	$(MKDIR_P) win-dist/share/glib-2.0
+#	cp -p -r "@WINDOWS_SYSROOT@"/share/glib-2.0/schemas win-dist/share/glib-2.0
+#
+## 	$(MKDIR_P) win-dist/share/icons
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/hicolor win-dist/share/icons
+#
+##	needed for window titlebar (if using client-side decorations),
+##	tree sorting indicators, GUI icons.
+#	$(MKDIR_P) win-dist/share/icons/Adwaita/16x16/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/16x16/actions/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/16x16/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/16x16/actions/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/16x16/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/16x16/actions/window-minimize-symbolic.symbolic.png win-dist/share/icons/Adwaita/16x16/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/16x16/actions/window-restore-symbolic.symbolic.png win-dist/share/icons/Adwaita/16x16/actions
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/16x16/actions/pan-down-symbolic.symbolic.png win-dist/share/icons/Adwaita/16x16/actions
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/16x16/actions/pan-up-symbolic.symbolic.png win-dist/share/icons/Adwaita/16x16/actions
+#	$(MKDIR_P) win-dist/share/icons/Adwaita/16x16/status
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/16x16/status/dialog-information.png win-dist/share/icons/Adwaita/16x16/status
+#	$(MKDIR_P) win-dist/share/icons/Adwaita/22x22/status
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/22x22/status/dialog-information.png win-dist/share/icons/Adwaita/22x22/status
+#	$(MKDIR_P) win-dist/share/icons/Adwaita/24x24/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/24x24/actions/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/24x24/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/24x24/actions/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/24x24/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/24x24/actions/window-minimize-symbolic.symbolic.png win-dist/share/icons/Adwaita/24x24/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/24x24/actions/window-restore-symbolic.symbolic.png win-dist/share/icons/Adwaita/24x24/actions
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/24x24/actions/pan-down-symbolic.symbolic.png win-dist/share/icons/Adwaita/24x24/actions
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/24x24/actions/pan-up-symbolic.symbolic.png win-dist/share/icons/Adwaita/24x24/actions
+#	$(MKDIR_P) win-dist/share/icons/Adwaita/24x24/status
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/24x24/status/dialog-information.png win-dist/share/icons/Adwaita/24x24/status
+#	$(MKDIR_P) win-dist/share/icons/Adwaita/32x32/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/32x32/actions/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/32x32/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/32x32/actions/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/32x32/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/32x32/actions/window-minimize-symbolic.symbolic.png win-dist/share/icons/Adwaita/32x32/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/32x32/actions/window-restore-symbolic.symbolic.png win-dist/share/icons/Adwaita/32x32/actions
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/32x32/actions/pan-down-symbolic.symbolic.png win-dist/share/icons/Adwaita/32x32/actions
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/32x32/actions/pan-up-symbolic.symbolic.png win-dist/share/icons/Adwaita/32x32/actions
+#	$(MKDIR_P) win-dist/share/icons/Adwaita/32x32/status
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/32x32/status/dialog-information.png win-dist/share/icons/Adwaita/32x32/status
+#	$(MKDIR_P) win-dist/share/icons/Adwaita/48x48/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/48x48/actions/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/48x48/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/48x48/actions/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/48x48/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/48x48/actions/window-minimize-symbolic.symbolic.png win-dist/share/icons/Adwaita/48x48/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/48x48/actions/window-restore-symbolic.symbolic.png win-dist/share/icons/Adwaita/48x48/actions
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/48x48/actions/pan-down-symbolic.symbolic.png win-dist/share/icons/Adwaita/48x48/actions
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/48x48/actions/pan-up-symbolic.symbolic.png win-dist/share/icons/Adwaita/48x48/actions
+#	$(MKDIR_P) win-dist/share/icons/Adwaita/48x48/status
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/48x48/status/dialog-information.png win-dist/share/icons/Adwaita/48x48/status
+#	$(MKDIR_P) win-dist/share/icons/Adwaita/64x64/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/64x64/actions/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/64x64/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/64x64/actions/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/64x64/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/64x64/actions/window-minimize-symbolic.symbolic.png win-dist/share/icons/Adwaita/64x64/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/64x64/actions/window-restore-symbolic.symbolic.png win-dist/share/icons/Adwaita/64x64/actions
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/64x64/actions/pan-down-symbolic.symbolic.png win-dist/share/icons/Adwaita/64x64/actions
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/64x64/actions/pan-up-symbolic.symbolic.png win-dist/share/icons/Adwaita/64x64/actions
+## 	$(MKDIR_P) win-dist/share/icons/Adwaita/64x64/status
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/64x64/status/dialog-information.png win-dist/share/icons/Adwaita/64x64/status
+#	$(MKDIR_P) win-dist/share/icons/Adwaita/96x96/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/96x96/actions/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/96x96/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/96x96/actions/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/96x96/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/96x96/actions/window-minimize-symbolic.symbolic.png win-dist/share/icons/Adwaita/96x96/actions
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/96x96/actions/window-restore-symbolic.symbolic.png win-dist/share/icons/Adwaita/96x96/actions
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/96x96/actions/pan-down-symbolic.symbolic.png win-dist/share/icons/Adwaita/96x96/actions
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/96x96/actions/pan-up-symbolic.symbolic.png win-dist/share/icons/Adwaita/96x96/actions
+## 	$(MKDIR_P) win-dist/share/icons/Adwaita/96x96/status
+## 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/96x96/status/dialog-information.png win-dist/share/icons/Adwaita/96x96/status
+#	$(MKDIR_P) win-dist/share/icons/Adwaita/256x256/status
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/256x256/status/dialog-information.png win-dist/share/icons/Adwaita/256x256/status
+#
+##	other
+#	cp -p "@WINDOWS_SYSROOT@"/bin/libgcc_s_*.dll win-dist/
+#	cp -p "@WINDOWS_SYSROOT@"/bin/libpcre-1.dll win-dist/
+#	cp -p "@WINDOWS_SYSROOT@"/bin/libpcrecpp-0.dll win-dist/
+#
+#
+#nsis-dist-prepare: win-dist-prepare
+#	cp -a win-dist nsis-dist
+#	cp $(top_srcdir)/data/gsmartcontrol.ico nsis-dist/
+#	cp data/nsis/*.nsi $(top_srcdir)/data/nsis/nsi_* nsis-dist/
+#	unix2dos nsis-dist/*.nsi
+#
+#nsis-dist-nocleanup: nsis-dist-prepare
+#	cd nsis-dist && @NSIS_EXEC@ gsmartcontrol.nsi
+#	mv nsis-dist/$(PACKAGE)-$(VERSION)-@WINDOWS_SUFFIX@.exe .
+#
+#nsis-dist-cleanup:
+#	rm -rf nsis-dist
+#
+#nsis-dist: nsis-dist-prepare nsis-dist-nocleanup nsis-dist-cleanup
+#
+#
+#win-zip-dist-prepare: win-dist-prepare
+#	cp -a win-dist $(WIN_ZIP_NAME)
+#
+#win-zip-dist-nocleanup: win-zip-dist-prepare
+#	zip -K -9r $(WIN_ZIP_NAME).zip $(WIN_ZIP_NAME)
+#
+#win-zip-dist-cleanup:
+#	rm -rf $(WIN_ZIP_NAME)
+#
+#win-zip-dist: win-zip-dist-prepare win-zip-dist-nocleanup win-zip-dist-cleanup
 
-# Add various OS/compiler-specific options that should always be there
-# regardless of the machine.
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-	add_compile_definitions(_GNU_SOURCE)
-endif()
-
-
-# Clang5 doesn't understand libstdc++'s std::get(variant), so use libc++.
-#if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-#	option(APP_COMPILER_CLANG_USE_LIBCXX "Use LLVM libc++ instead of gcc's libstdc++ (clang)" ON)
-#	if (APP_COMPILER_CLANG_USE_LIBCXX)
-#		add_compile_options(-stdlib=libc++)
-#	endif()
-#endif()
-
-add_executable(gsmartcontrol)
-
-target_sources(gsmartcontrol PRIVATE
-	src/applib/app_builder_widget.h
-	src/applib/app_gtkmm_features.h
-	src/applib/app_gtkmm_utils.cpp
-	src/applib/app_gtkmm_utils.h
-	src/applib/app_pcrecpp.h
-	src/applib/cli_executors.h
-	src/applib/cmdex.cpp
-	src/applib/cmdex.h
-	src/applib/cmdex_sync.cpp
-	src/applib/cmdex_sync.h
-	src/applib/cmdex_sync_gui.cpp
-	src/applib/cmdex_sync_gui.h
-	src/applib/executor_factory.cpp
-	src/applib/executor_factory.h
-	src/applib/gui_utils.cpp
-	src/applib/gui_utils.h
-	src/applib/selftest.cpp
-	src/applib/selftest.h
-	src/applib/smartctl_executor.cpp
-	src/applib/smartctl_executor.h
-	src/applib/smartctl_executor_gui.h
-#	src/applib/smartctl_executor_example.cpp
-	src/applib/smartctl_parser.cpp
-	src/applib/smartctl_parser.h
-#	src/applib/smartctl_parser_example.cpp
-#	src/applib/spawn_example.cpp
-	src/applib/storage_detector.cpp
-	src/applib/storage_detector.h
-	src/applib/storage_detector_helpers.h
-	src/applib/storage_detector_linux.cpp
-	src/applib/storage_detector_linux.h
-	src/applib/storage_detector_other.cpp
-	src/applib/storage_detector_other.h
-#	src/applib/storage_detector_example.cpp
-	src/applib/storage_detector_win32.cpp
-	src/applib/storage_detector_win32.h
-	src/applib/storage_device.cpp
-	src/applib/storage_device.h
-	src/applib/storage_property.cpp
-	src/applib/storage_property.h
-	src/applib/storage_property_colors.h
-	src/applib/storage_property_descr.cpp
-	src/applib/storage_property_descr.h
-	src/applib/storage_settings.h
-	src/applib/warning_level.h
-	src/hz/bad_cast_exception.h
-	src/hz/data_file.h
-	src/hz/debug.h
-	src/hz/env_tools.h
-	src/hz/error.h
-	src/hz/error_holder.h
-	src/hz/format_unit.h
-#	src/hz/format_unit_example.cpp
-	src/hz/fs.h
-	src/hz/fs_ns.h
-	src/hz/instance_manager.h
-	src/hz/launch_url.h
-	src/hz/locale_tools.h
-	src/hz/process_signal.h
-	src/hz/scoped_ptr.h
-	src/hz/stream_cast.h
-	src/hz/string_algo.h
-#	src/hz/string_algo_example.cpp
-	src/hz/string_num.h
-#	src/hz/string_num_example.cpp
-	src/hz/string_sprintf.h
-	src/hz/system_specific.h
-	src/hz/win32_tools.h
-	src/libdebug/dchannel.cpp
-	src/libdebug/dchannel.h
-	src/libdebug/dcmdarg.cpp
-	src/libdebug/dcmdarg.h
-	src/libdebug/dexcept.h
-	src/libdebug/dflags.cpp
-	src/libdebug/dflags.h
-	src/libdebug/dout.cpp
-	src/libdebug/dout.h
-	src/libdebug/dstate.cpp
-	src/libdebug/dstate.h
-	src/libdebug/dstate_pub.h
-	src/libdebug/dstream.cpp
-	src/libdebug/dstream.h
-	src/libdebug/libdebug.h
-	src/libdebug/libdebug_mini.h
-#	src/libdebug/libdebug_example.cpp
-	src/rconfig/autosave.h
-	src/rconfig/loadsave.h
-	src/rconfig/config.h
-#	src/rconfig/rconfig_example.cpp
-	src/json/json.hpp
-	src/gsc_about_dialog.cpp
-	src/gsc_about_dialog.h
-	src/gsc_add_device_window.cpp
-	src/gsc_add_device_window.h
-	src/gsc_executor_error_dialog.cpp
-	src/gsc_executor_error_dialog.h
-	src/gsc_executor_log_window.cpp
-	src/gsc_executor_log_window.h
-	src/gsc_info_window.cpp
-	src/gsc_info_window.h
-	src/gsc_init.cpp
-	src/gsc_init.h
-	src/gsc_main.cpp
-	src/gsc_main_window.cpp
-	src/gsc_main_window.h
-	src/gsc_main_window_iconview.h
-	src/gsc_preferences_window.cpp
-	src/gsc_preferences_window.h
-	src/gsc_settings.h
-	src/gsc_text_window.h
-)
-
-target_include_directories(gsmartcontrol
-	PRIVATE
-		src
-#		${CMAKE_BINARY_DIR}  # for config.h
-)
-
-target_compile_definitions(gsmartcontrol
-	PRIVATE
-		-DPACKAGE_PKGDATA_DIR=\"/usr/local/share/gsmartcontrol\"
-		-DPACKAGE_SYSCONF_DIR=\"/usr/local/etc\"
-		-DPACKAGE_LOCALE_DIR=\"/usr/local/share/locale/gsmartcontrol\"
-		-DPACKAGE_DOC_DIR=\"/usr/share/doc/packages/gsmartcontrol\"
-		-DTOP_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
-		-DHZ_USE_LIBDEBUG=1
-		-DHZ_ENABLE_COMPILED_RES_DATA
-		-DDEBUG_BUILD
-)
-
-target_link_libraries(gsmartcontrol
-	PRIVATE
-		app_pcrecpp_interface
-		app_gtkmm_interface
-)
-
-#if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-#	target_link_libraries(gsmartcontrol PRIVATE c++experimental)
-#elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-#	target_link_libraries(gsmartcontrol PRIVATE stdc++fs)
-#endif()

@@ -23,7 +23,7 @@
 
 #include "hz/debug.h"
 #include "hz/fs.h"
-#include "rconfig/config.h"
+#include "rconfig/rconfig.h"
 #include "app_pcrecpp.h"
 #include "storage_detector_other.h"
 
@@ -190,7 +190,7 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives, const Exe
 
 		bool matched = false;
 		for (const auto& wl_pattern : whitelist) {
-			if (app_pcre_match(wl_pattern, path.filename())) {
+			if (app_pcre_match(wl_pattern, path.filename().string())) {
 				matched = true;
 				break;
 			}

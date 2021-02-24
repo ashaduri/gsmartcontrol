@@ -23,7 +23,7 @@
 
 #include "executor_factory.h"
 #include "storage_device.h"
-#include "rconfig/config.h"
+#include "rconfig/rconfig.h"
 #include "app_pcrecpp.h"
 #include "hz/string_num.h"
 

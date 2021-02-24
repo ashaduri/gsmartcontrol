@@ -12,7 +12,7 @@
 #ifndef GSC_SETTINGS_H
 #define GSC_SETTINGS_H
 
-#include "rconfig/config.h"
+#include "rconfig/rconfig.h"
 
 
 

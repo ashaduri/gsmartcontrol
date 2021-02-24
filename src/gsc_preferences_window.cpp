@@ -21,7 +21,7 @@
 #include "hz/fs_ns.h"
 #include "hz/string_sprintf.h"
 #include "hz/scoped_ptr.h"
-#include "rconfig/config.h"
+#include "rconfig/rconfig.h"
 #include "applib/storage_settings.h"
 #include "applib/app_gtkmm_utils.h"
 #include "gsc_main_window.h"

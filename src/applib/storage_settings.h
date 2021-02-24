@@ -16,7 +16,7 @@
 #include <map>
 #include <utility>
 
-#include "rconfig/config.h"
+#include "rconfig/rconfig.h"
 
 
 /// Device name, device type (optional)

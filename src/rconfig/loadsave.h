@@ -17,7 +17,7 @@ License: Zlib
 #include "hz/debug.h"
 #include "hz/fs.h"
 
-#include "config.h"
+#include "rconfig.h"
 
 
 

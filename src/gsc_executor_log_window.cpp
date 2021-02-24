@@ -22,7 +22,7 @@
 #include "applib/app_gtkmm_features.h"
 #include "hz/scoped_ptr.h"
 #include "hz/fs.h"
-#include "rconfig/config.h"
+#include "rconfig/rconfig.h"
 
 #include "gsc_executor_log_window.h"
 #include "gsc_init.h"  // app_get_debug_buffer_str()

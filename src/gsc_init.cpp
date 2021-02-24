@@ -30,10 +30,10 @@
 	#include <versionhelpers.h>
 #endif
 
-#include "config.h"  // VERSION, PACKAGE
+#include "config.h"  // VERSION, *PACKAGE*
 
 #include "libdebug/libdebug.h"  // include full libdebug here (to add domains, etc...)
-#include "rconfig/config.h"
+#include "rconfig/rconfig.h"
 #include "rconfig/loadsave.h"
 #include "rconfig/autosave.h"
 #include "hz/data_file.h"  // data_file_add_search_directory

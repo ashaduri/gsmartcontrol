@@ -17,7 +17,7 @@
 
 #include "smartctl_executor.h"
 #include "hz/win32_tools.h"
-#include "rconfig/config.h"
+#include "rconfig/rconfig.h"
 #include "app_pcrecpp.h"
 
 
