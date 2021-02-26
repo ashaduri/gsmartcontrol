@@ -1,6 +1,11 @@
 
 # Manifest file
 if (WIN32)
+	set(WINDOWS_ARCH "x86")
+	if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+		set(WINDOWS_ARCH "amd64")
+	endif()
+
 	configure_file("gsmartcontrol.exe.in.manifest" "${CMAKE_CURRENT_BINARY_DIR}/gsmartcontrol.exe.manifest" ESCAPE_QUOTES @ONLY)
 	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/gsmartcontrol.exe.manifest" DESTINATION "${CMAKE_INSTALL_SBINDIR}/")
 endif()
@@ -51,19 +56,6 @@ target_link_libraries(gsmartcontrol
 )
 
 install(TARGETS gsmartcontrol DESTINATION "${CMAKE_INSTALL_SBINDIR}/")
-
-# TODO
-#target_compile_definitions(gsmartcontrol
-#	PRIVATE
-#		-DPACKAGE_PKGDATA_DIR=\"/usr/local/share/gsmartcontrol\"
-#		-DPACKAGE_SYSCONF_DIR=\"/usr/local/etc\"
-#		-DPACKAGE_LOCALE_DIR=\"/usr/local/share/locale/gsmartcontrol\"
-#		-DPACKAGE_DOC_DIR=\"/usr/share/doc/packages/gsmartcontrol\"
-#		-DTOP_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
-#		-DHZ_USE_LIBDEBUG=1
-#		-DHZ_ENABLE_COMPILED_RES_DATA
-#		-DDEBUG_BUILD
-#)
 
 
 add_subdirectory(build_config)

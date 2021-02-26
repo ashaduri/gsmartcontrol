@@ -14,6 +14,9 @@ target_compile_definitions(app_gtkmm_interface
 	INTERFACE
 		ENABLE_GLIB=1
 		ENABLE_GLIBMM=1
+		# For porting to GTK4
+		GDK_DISABLE_DEPRECATED=1
+		GTK_DISABLE_DEPRECATED=1
 )
 
 

@@ -26,4 +26,4 @@ Icon=gsmartcontrol
 #X-KDE-RootOnly=true
 
 # Run with root permissions.
-Exec="@prefix@/bin/gsmartcontrol-root"
+Exec="@CMAKE_INSTALL_BINDIR@/bin/gsmartcontrol-root"

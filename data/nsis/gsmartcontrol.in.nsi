@@ -4,11 +4,11 @@
 ; Compatible with NSIS Unicode 2.45.
 ; Public Domain
 
-!define PRODUCT_VERSION "@VERSION@"
+!define PRODUCT_VERSION "@CMAKE_PROJECT_VERSION@"
 !define PRODUCT_NAME "GSmartControl"
 !define PRODUCT_NAME_SMALL "gsmartcontrol"
 !define PRODUCT_PUBLISHER "Alexander Shaduri"
-!define PRODUCT_WEB_SITE "https://gsmartcontrol.sourceforge.io"
+!define PRODUCT_WEB_SITE "https://gsmartcontrol.shaduri.dev"
 
 ;!define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\AppMainExe.exe"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"

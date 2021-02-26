@@ -3,7 +3,7 @@
 # Supported distributions: openSUSE, Fedora, CentOS, RHEL.
 
 Name:		gsmartcontrol
-Version: 	@VERSION@
+Version: 	@CMAKE_PROJECT_VERSION@
 Release:	0
 License:	GPL-3.0
 Url:		https://gsmartcontrol.sourceforge.io/

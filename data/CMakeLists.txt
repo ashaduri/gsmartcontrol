@@ -1,11 +1,19 @@
 
 # Generate files
+
+# Variables for .in files
+set(WINDOWS_SUFFIX "win32")
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+	set(WINDOWS_SUFFIX "win64")
+endif()
+
 configure_file("nsis/distribution.in.txt" "nsis/distribution.txt" ESCAPE_QUOTES @ONLY)
 configure_file("nsis/gsmartcontrol.in.nsi" "nsis/gsmartcontrol.nsi" ESCAPE_QUOTES @ONLY)
 
 configure_file("gsmartcontrol.appdata.in.xml" "gsmartcontrol.appdata.xml" ESCAPE_QUOTES @ONLY)
 configure_file("gsmartcontrol.in.desktop" "gsmartcontrol.desktop" ESCAPE_QUOTES @ONLY)
 configure_file("gsmartcontrol-root.in.sh" "gsmartcontrol-root.sh" ESCAPE_QUOTES @ONLY)
+configure_file("org.gsmartcontrol.in.policy" "gsmartcontrol.policy" ESCAPE_QUOTES @ONLY)
 
 configure_file("debian-postinst.in.sh" "${CMAKE_BINARY_DIR}/postinst" ESCAPE_QUOTES @ONLY)
 configure_file("debian-postrm.in.sh" "${CMAKE_BINARY_DIR}/postrm" ESCAPE_QUOTES @ONLY)
@@ -41,7 +49,7 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/gsmartcontrol.appdata.xml"
 	DESTINATION "${CMAKE_INSTALL_DATADIR}/metainfo/")
 
 # PolKit file
-install(FILES "org.gsmartcontrol.policy"
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/org.gsmartcontrol.policy"
 	DESTINATION "${CMAKE_INSTALL_DATADIR}/polkit-1/actions/")
 
 # Man pages

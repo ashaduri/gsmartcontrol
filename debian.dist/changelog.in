@@ -1,5 +1,5 @@
-gsmartcontrol (@VERSION@+nmu1) unstable; urgency=low
+gsmartcontrol (@CMAKE_PROJECT_VERSION@+nmu1) unstable; urgency=low
 
   * Permanently Initial Release.
 
- -- Alexander Shaduri <ashaduriREMOVETHIS@gmail.com>  Sat, 15 Nov 2008 00:12:04 +0400
+ -- Alexander Shaduri <ashaduri@gmail.com>  Sat, 15 Nov 2008 00:12:04 +0400

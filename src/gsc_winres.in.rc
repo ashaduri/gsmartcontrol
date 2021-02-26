@@ -12,12 +12,12 @@ BEGIN
         BLOCK "04090025"
         BEGIN
             VALUE "FileDescription", "GSmartControl - Hard disk drive and SSD health inspection tool"
-            VALUE "FileVersion", "@VERSION@"
+            VALUE "FileVersion", "@CMAKE_PROJECT_VERSION@"
             VALUE "InternalName", "gsmartcontrol.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2008 - 2018  Alexander Shaduri"
+            VALUE "LegalCopyright", "Copyright (C) 2008 - 2021  Alexander Shaduri"
             VALUE "OriginalFilename", "gsmartcontrol.exe"
             VALUE "ProductName", "GSmartControl"
-            VALUE "ProductVersion", "@VERSION@"
+            VALUE "ProductVersion", "@CMAKE_PROJECT_VERSION@"
         END
     END
     BLOCK "VarFileInfo"
