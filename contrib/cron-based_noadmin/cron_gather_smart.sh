@@ -1,10 +1,10 @@
 #!/bin/bash
-############################################################################
+###############################################################################
+# License: BSD Zero Clause License file
 # Copyright:
-#      (C) 2008 - 2018  Alex Butcher <alex dot butcher 'at' assursys.co.uk>
-#      (C) 2008 - 2018  Alexander Shaduri <ashaduri 'at' gmail.com>
-#License: BSD Zero Clause License file
-############################################################################
+#   (C) 2008 - 2021 Alex Butcher <alex dot butcher 'at' assursys.co.uk>
+#   (C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+###############################################################################
 
 device="$1";
 

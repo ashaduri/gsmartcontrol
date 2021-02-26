@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2017 GSmartControl developers -->
+<!--
+License: BSD Zero Clause License file
+Copyright:
+	(C) 2008 - 2021 GSmartControl developers
+-->
 <component type="desktop">
 	<id>gsmartcontrol</id>
 	<metadata_license>CC0-1.0</metadata_license>

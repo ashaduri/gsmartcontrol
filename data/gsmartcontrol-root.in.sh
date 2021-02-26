@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-############################################################################
+###############################################################################
+# License: Zlib
 # Copyright:
-#      (C) 2008 - 2014  Alexander Shaduri <ashaduri 'at' gmail.com>
-#License: Zlib
-############################################################################
+#   (C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+###############################################################################
 
 # Run gsmartcontrol with root, asking for root password first.
 # export GSMARTCONTROL_SU to override a su command (e.g. "kdesu -c").

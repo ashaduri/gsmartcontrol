@@ -1,9 +1,8 @@
-
-############################################################################
+###############################################################################
+# License: BSD Zero Clause License file
 # Copyright:
-#	Written in 2021 by Alexander Shaduri <ashaduri 'at' gmail.com>
-# License: BSD Zero Clause License
-############################################################################
+#   (C) 2021 Alexander Shaduri <ashaduri@gmail.com>
+###############################################################################
 
 # CPack options for this project
 

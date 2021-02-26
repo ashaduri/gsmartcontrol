@@ -1,10 +1,10 @@
-/**************************************************************************
- Copyright:
-      (C) 1998 - 2010  Greg Colvin and Beman Dawes
-      (C) 2001 - 2010  Peter Dimov
-      (C) 2008 - 2018  Alexander Shaduri <ashaduri 'at' gmail.com>
- License: Boost Software License 1.0
-***************************************************************************/
+/******************************************************************************
+License: Boost Software License 1.0
+Copyright:
+	(C) 1998 - 2010 Greg Colvin and Beman Dawes
+	(C) 2001 - 2010 Peter Dimov
+	(C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+******************************************************************************/
 /// \file
 /// \author Greg Colvin and Beman Dawes
 /// \author Peter Dimov

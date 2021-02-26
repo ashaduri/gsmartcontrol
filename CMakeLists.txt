@@ -1,3 +1,8 @@
+###############################################################################
+# License: BSD Zero Clause License file
+# Copyright:
+#   (C) 2021 Alexander Shaduri <ashaduri@gmail.com>
+###############################################################################
 
 # 3.12 for CMAKE_PROJECT_VERSION
 # 3.13 for interface sources

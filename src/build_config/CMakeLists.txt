@@ -1,3 +1,8 @@
+###############################################################################
+# License: BSD Zero Clause License file
+# Copyright:
+#   (C) 2021 Alexander Shaduri <ashaduri@gmail.com>
+###############################################################################
 
 # Host system
 message(STATUS "CMAKE_HOST_SYSTEM_NAME: ${CMAKE_HOST_SYSTEM_NAME}")

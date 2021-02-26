@@ -1,8 +1,8 @@
-/**************************************************************************
- Copyright:
-      (C) 2011 - 2018  Alexander Shaduri <ashaduri 'at' gmail.com>
- License: See LICENSE_gsmartcontrol.txt
-***************************************************************************/
+/******************************************************************************
+License: GNU General Public License v3.0 only
+Copyright:
+	(C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+******************************************************************************/
 /// \file
 /// \author Alexander Shaduri
 /// \ingroup gsc

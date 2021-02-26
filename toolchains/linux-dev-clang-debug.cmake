@@ -1,3 +1,8 @@
+###############################################################################
+# License: BSD Zero Clause License file
+# Copyright:
+#   (C) 2021 Alexander Shaduri <ashaduri@gmail.com>
+###############################################################################
 
 # Linux development version with clang, debug mode.
 # Use with:

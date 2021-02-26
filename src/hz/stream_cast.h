@@ -1,10 +1,9 @@
-/**************************************************************************
- Copyright:
-      (C) 2000 - 2010  Kevlin Henney
-      (C) 2008 - 2018  Alexander Shaduri <ashaduri 'at' gmail.com>
- License: Boost Software License 1.0
-***************************************************************************/
-
+/******************************************************************************
+License: Boost Software License 1.0
+Copyright:
+	(C) 2000 - 2010 Kevlin Henney
+	(C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+******************************************************************************/
 #ifndef HZ_LEXICAL_CAST_H
 #define HZ_LEXICAL_CAST_H
 

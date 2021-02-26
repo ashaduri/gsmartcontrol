@@ -1,5 +1,5 @@
 # Georgian translations for gsmartcontrol package.
-# Copyright (C) 2018 Alexander Shaduri
+# Copyright (C) 2018 - 21 Alexander Shaduri
 # This file is distributed under the same license as the gsmartcontrol package.
 # Alexander Shaduri <ashaduri@gmail.com>, 2018.
 #

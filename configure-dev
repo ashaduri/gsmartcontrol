@@ -1,4 +1,9 @@
 #!/bin/bash
+###############################################################################
+# License: BSD Zero Clause License file
+# Copyright:
+#   (C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+###############################################################################
 
 # Configure a build directory according to developer flags
 

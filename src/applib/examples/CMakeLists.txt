@@ -1,3 +1,8 @@
+###############################################################################
+# License: BSD Zero Clause License file
+# Copyright:
+#   (C) 2021 Alexander Shaduri <ashaduri@gmail.com>
+###############################################################################
 
 if (NOT APP_BUILD_EXAMPLES)
     set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL true)
@@ -21,6 +26,16 @@ target_sources(smartctl_parser_example PRIVATE
 	smartctl_parser_example.cpp
 )
 target_link_libraries(smartctl_parser_example PRIVATE
+	applib
+	compiler_warnings
+)
+
+
+add_executable(spawn_example)
+target_sources(spawn_example PRIVATE
+	spawn_example.cpp
+)
+target_link_libraries(spawn_example PRIVATE
 	applib
 	compiler_warnings
 )

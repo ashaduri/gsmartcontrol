@@ -1,10 +1,10 @@
 #!/bin/bash
-############################################################################
-# Copyright:
-#      (C) 2008 - 2021  Alex Butcher <alex dot butcher 'at' assursys.co.uk>
-#      (C) 2008 - 2021  Alexander Shaduri <ashaduri 'at' gmail.com>
+###############################################################################
 # License: BSD Zero Clause License file
-############################################################################
+# Copyright:
+#   (C) 2008 - 2021 Alex Butcher <alex dot butcher 'at' assursys.co.uk>
+#   (C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+###############################################################################
 
 if [ "$1" = "-V" ]; then
 	smartctl -V 2>&1

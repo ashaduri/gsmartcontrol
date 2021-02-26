@@ -1,8 +1,9 @@
+; License: BSD Zero Clause License file
+; Copyright:
+;   (C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
 
 ; NSIS2 Script
-; by Alexander Shaduri <ashaduri 'at' gmail.com>.
 ; Compatible with NSIS Unicode 2.45.
-; Public Domain
 
 !define PRODUCT_VERSION "@CMAKE_PROJECT_VERSION@"
 !define PRODUCT_NAME "GSmartControl"

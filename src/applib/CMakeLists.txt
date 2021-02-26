@@ -1,3 +1,8 @@
+###############################################################################
+# License: BSD Zero Clause License file
+# Copyright:
+#   (C) 2021 Alexander Shaduri <ashaduri@gmail.com>
+###############################################################################
 
 add_library(applib STATIC)
 
@@ -25,7 +30,6 @@ target_sources(applib PRIVATE
 	smartctl_executor.h
 	smartctl_parser.cpp
 	smartctl_parser.h
-	spawn_example.cpp
 	storage_detector.cpp
 	storage_detector.h
 	storage_detector_helpers.h

@@ -2,6 +2,13 @@
 <!DOCTYPE policyconfig PUBLIC
  "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
  "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+
+<!--
+License: BSD Zero Clause License file
+Copyright:
+	(C) 2008 - 2021 GSmartControl developers
+-->
+
 <policyconfig>
 
   <action id="org.gsmartcontrol">
