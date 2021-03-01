@@ -57,7 +57,7 @@ namespace debug_level {
 
 /// Debug formatting option (how to format the message) enum and related functions
 namespace debug_format {
-	enum flag {  ///< Format flag. Some of these flags can be ORed for some functions.
+	enum flag : std::size_t {  ///< Format flag. Some of these flags can be ORed for some functions.
 		none = 0,  ///< No flags
 		datetime = 1 << 0,  ///< Show datetime
 		level = 1 << 1,  ///< Show debug level name
