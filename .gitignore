@@ -6,6 +6,9 @@
 /win64*
 /cmake-build-*
 
+# Non-project files
+TODO
+
 # OS-generated files
 .DS_Store
 .DS_Store?
