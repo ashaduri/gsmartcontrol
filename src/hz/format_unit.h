@@ -110,7 +110,7 @@ inline std::string format_size(uint64_t size, bool use_decimal = false, bool siz
 		C_("file_size", "%s Eibit")
 	};
 
-	const int addn = static_cast<int>(!use_decimal) + (static_cast<int>(size_is_bits) * 2);
+	const std::size_t addn = static_cast<std::size_t>(!use_decimal) + (static_cast<std::size_t>(size_is_bits) * 2);
 
 	if (size >= eb_size) {  // exa
 		return hz::string_replace_copy(names[(6 * 4) + addn], "%s",
