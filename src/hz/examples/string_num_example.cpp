@@ -18,7 +18,7 @@ Copyright:
 
 // The first header should be then one we're testing, to avoid missing
 // header pitfalls.
-#include "string_num.h"
+#include "hz/string_num.h"
 
 #include <limits>
 #include <iostream>

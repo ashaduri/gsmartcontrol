@@ -18,7 +18,7 @@ Copyright:
 
 // The first header should be then one we're testing, to avoid missing
 // header pitfalls.
-#include "format_unit.h"
+#include "hz/format_unit.h"
 
 #include <iostream>
 #include <cstdint>

@@ -16,10 +16,10 @@ Copyright:
 #undef HZ_EMULATE_LIBDEBUG
 #define HZ_EMULATE_LIBDEBUG 1
 
-#include "loadsave.h"
+#include "rconfig/loadsave.h"
 
 #if defined ENABLE_GLIB && ENABLE_GLIB
-	#include "autosave.h"
+	#include "rconfig/autosave.h"
 #endif
 
 #include <iostream>

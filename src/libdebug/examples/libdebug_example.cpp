@@ -11,7 +11,7 @@ Copyright:
 
 // The first header should be then one we're testing, to avoid missing
 // header pitfalls.
-#include "libdebug.h"
+#include "libdebug/libdebug.h"
 
 #include <iostream>
 
@@ -21,7 +21,7 @@ namespace libdebug_example {
 
 	/// Libdebug test class
 	struct TestClassA {
-		bool func(int a = 2)
+		bool func([[maybe_unused]] int a = 2)
 		{
 			// this prints "func"
 			debug_out_info("default", DBG_FUNC_NAME << "\n");
@@ -46,7 +46,7 @@ namespace {
 	template<typename U>
 	struct TestClassB {
 		template<typename V>
-		U func2(V v, int)
+		U func2([[maybe_unused]] V v, int)
 		{
 			debug_out_info("default", DBG_FUNC_PRNAME << "\n");
 			debug_out_info("default", DBG_FUNC_MSG << "function called.\n");
@@ -63,7 +63,7 @@ namespace {
 
 
 /// Main function for the test
-int main(int argc, char *argv[])
+int main()
 {
 	debug_register_domain("dom");
 

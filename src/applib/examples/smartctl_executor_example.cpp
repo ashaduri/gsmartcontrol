@@ -18,8 +18,8 @@ Copyright:
 #include <iostream>
 #include <gtkmm.h>
 
-// #include "smartctl_executor_gui.h"
-#include "smartctl_executor.h"
+// #include "applib/smartctl_executor_gui.h"
+#include "applib/smartctl_executor.h"
 
 
 

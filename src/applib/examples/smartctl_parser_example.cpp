@@ -20,8 +20,8 @@ Copyright:
 
 #include "libdebug/libdebug.h"
 #include "hz/fs.h"
-#include "storage_property.h"
-#include "smartctl_parser.h"
+#include "applib/storage_property.h"
+#include "applib/smartctl_parser.h"
 
 
 

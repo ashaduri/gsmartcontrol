@@ -18,7 +18,7 @@ Copyright:
 
 // The first header should be then one we're testing, to avoid missing
 // header pitfalls.
-#include "string_algo.h"
+#include "hz/string_algo.h"
 
 #include <vector>
 #include <iostream>
