@@ -9,8 +9,6 @@ Copyright:
 /// \weakgroup gsc
 /// @{
 
-#include "config.h"  // VERSION
-
 #include <vector>
 
 #include "hz/debug.h"
@@ -20,6 +18,8 @@ Copyright:
 #include "applib/app_gtkmm_features.h"
 
 #include "gsc_about_dialog.h"
+
+#include "build_config.h"  // VERSION
 
 
 
@@ -31,35 +31,36 @@ GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builde
 
 	// Note: The dialogs have ESC accelerator attached by default.
 
-	set_version(VERSION);
+	set_version(PACKAGE_VERSION);
 
 	// set these properties here (after setting hooks) to make the links work.
 	set_website("https://gsmartcontrol.sourceforge.io/");
 
 //	set_license_type(Gtk::LICENSE_GPL_3_0_ONLY);  // this overrides set_license()
-//	set_license(hz::data_file_get_contents("doc", "LICENSE_gsmartcontrol.txt", 1*1024*1024));  // 1M
+//	set_license(hz::data_file_get_contents("doc", "LICENSE.txt", 1*1024*1024));  // 1M
 
 	// spammers go away
-	set_copyright(Glib::ustring::compose("Copyright (C) %1", "2008 - 2018  Alexander Shaduri " "<ashaduri" "" "@" "" "" "gmail.com>"));
+	set_copyright(Glib::ustring::compose("Copyright (C) %1",
+			"2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>"));
 
-	std::string authors_str = hz::data_file_get_contents("doc", "AUTHORS.txt", 1*1024*1024);  // 1M
-	hz::string_any_to_unix(authors_str);
+	// std::string authors_str = hz::data_file_get_contents("doc", "AUTHORS.txt", 1*1024*1024);  // 1M
+	// hz::string_any_to_unix(authors_str);
 
-	std::vector<Glib::ustring> authors;
-	hz::string_split(authors_str, '\n', authors, true);
+	// std::vector<Glib::ustring> authors;
+	// hz::string_split(authors_str, '\n', authors, true);
+	//
+	// for (auto& author : authors) {
+	// 	std::string s = author;
+	// 	hz::string_replace(s, " '@' ", "@");  // despammer
+	// 	hz::string_replace(s, " 'at' ", "@");  // despammer
+	// 	author = s;
+	// }
+	// set_authors(authors);
 
-	for (auto& author : authors) {
-		std::string s = author;
-		hz::string_replace(s, " '@' ", "@");  // despammer
-		hz::string_replace(s, " 'at' ", "@");  // despammer
-		author = s;
-	}
-	set_authors(authors);
+	// set_documenters(authors);
 
-	set_documenters(authors);
-
-	std::string translators_str = hz::data_file_get_contents("doc", "TRANSLATORS.txt", 10*1024*1024);  // 10M
-	set_translator_credits(translators_str);
+	// std::string translators_str = hz::data_file_get_contents("doc", "TRANSLATORS.txt", 10*1024*1024);  // 10M
+	// set_translator_credits(translators_str);
 
 // 	run();  // don't use run - it's difficult to exit it manually.
 // 	show();  // shown by the caller to enable setting the parent window.

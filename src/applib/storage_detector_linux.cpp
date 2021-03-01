@@ -9,7 +9,7 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#include "config.h"  // CONFIG_*
+#include "build_config.h"  // CONFIG_*
 
 #if defined CONFIG_KERNEL_LINUX
 
@@ -26,7 +26,7 @@ Copyright:
 #include "hz/debug.h"
 #include "hz/fs.h"
 #include "hz/string_num.h"
-#include "rconfig/config.h"
+#include "rconfig/rconfig.h"
 #include "app_pcrecpp.h"
 #include "storage_detector_linux.h"
 #include "storage_detector_helpers.h"

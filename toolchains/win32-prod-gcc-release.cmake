@@ -8,6 +8,15 @@
 # Use with:
 # cmake -DCMAKE_TOOLCHAIN_FILE=...
 
+# TODO
+# # optimized builds (target mingw32):
+## -g0 -O3 -s -march=i686
+#
+## optimized builds (target mingw64, cygwin):
+## -g0 -O3 -s
+
+# -mtune=generic
+
 set(CMAKE_SYSTEM_NAME Windows)
 
 # Specify the compiler

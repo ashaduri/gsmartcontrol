@@ -25,10 +25,12 @@ target_sources(libdebug PRIVATE
 	libdebug_mini.h
 )
 
+target_include_directories(libdebug INTERFACE "${CMAKE_SOURCE_DIR}/src")
+
 target_link_libraries(libdebug
     PRIVATE
 		hz
-		compiler_warnings
+		app_gtkmm_interface  # .cpp only
 )
 
 

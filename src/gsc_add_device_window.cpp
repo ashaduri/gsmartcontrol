@@ -23,6 +23,7 @@ Copyright:
 
 #include "gsc_add_device_window.h"
 #include "gsc_main_window.h"
+#include "build_config.h"
 
 
 

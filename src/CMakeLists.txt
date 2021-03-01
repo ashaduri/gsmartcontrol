@@ -51,12 +51,12 @@ if (WIN32)
 	target_sources(gsmartcontrol PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/gsc_winres.rc")
 endif()
 
+
 target_link_libraries(gsmartcontrol
 	PRIVATE
 		applib
 		app_pcrecpp_interface
 		app_gtkmm_interface
-		compiler_warnings
 		build_config
 )
 

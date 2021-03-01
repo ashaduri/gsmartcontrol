@@ -17,6 +17,5 @@ target_sources(rconfig_example PRIVATE
 )
 target_link_libraries(rconfig_example PRIVATE
 	rconfig
-	compiler_warnings
 )
 

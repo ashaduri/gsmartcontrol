@@ -12,7 +12,7 @@ Copyright:
 #ifndef STORAGE_DETECTOR_LINUX_H
 #define STORAGE_DETECTOR_LINUX_H
 
-#include "config.h"  // CONFIG_*
+#include "build_config.h"  // CONFIG_*
 
 #if defined CONFIG_KERNEL_LINUX
 

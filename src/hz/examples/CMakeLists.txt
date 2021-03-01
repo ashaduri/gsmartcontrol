@@ -17,7 +17,6 @@ target_sources(format_unit_example PRIVATE
 )
 target_link_libraries(format_unit_example PRIVATE
 	hz
-	compiler_warnings
 )
 
 
@@ -27,7 +26,6 @@ target_sources(string_algo_example PRIVATE
 )
 target_link_libraries(string_algo_example PRIVATE
 	hz
-	compiler_warnings
 )
 
 
@@ -37,5 +35,4 @@ target_sources(string_num_example PRIVATE
 )
 target_link_libraries(string_num_example PRIVATE
 	hz
-	compiler_warnings
 )

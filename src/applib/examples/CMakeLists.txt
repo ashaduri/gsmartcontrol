@@ -17,7 +17,6 @@ target_sources(smartctl_executor_example PRIVATE
 )
 target_link_libraries(smartctl_executor_example PRIVATE
 	applib
-	compiler_warnings
 )
 
 
@@ -27,7 +26,6 @@ target_sources(smartctl_parser_example PRIVATE
 )
 target_link_libraries(smartctl_parser_example PRIVATE
 	applib
-	compiler_warnings
 )
 
 
@@ -37,7 +35,6 @@ target_sources(spawn_example PRIVATE
 )
 target_link_libraries(spawn_example PRIVATE
 	applib
-	compiler_warnings
 )
 
 
@@ -47,5 +44,4 @@ target_sources(storage_detector_example PRIVATE
 )
 target_link_libraries(storage_detector_example PRIVATE
 	applib
-	compiler_warnings
 )

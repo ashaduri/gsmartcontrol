@@ -17,6 +17,5 @@ target_sources(libdebug_example PRIVATE
 )
 target_link_libraries(libdebug_example PRIVATE
 	libdebug
-	compiler_warnings
 )
 

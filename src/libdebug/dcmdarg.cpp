@@ -206,7 +206,7 @@ GOptionGroup* debug_get_option_group()
 				&(args->debug_colorize), "Enable colored output", nullptr },
 		{ "debug-no-colorize", '\0', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE,
 				&(args->debug_colorize), "Disable colored output", nullptr },
-		{ nullptr }
+		{ nullptr, '\0', 0, G_OPTION_ARG_NONE, nullptr, nullptr, nullptr }
 	};
 
 	g_option_group_add_entries(group, entries);

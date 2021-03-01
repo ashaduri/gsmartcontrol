@@ -30,8 +30,6 @@ Copyright:
 	#include <versionhelpers.h>
 #endif
 
-#include "config.h"  // VERSION, *PACKAGE*
-
 #include "libdebug/libdebug.h"  // include full libdebug here (to add domains, etc...)
 #include "rconfig/rconfig.h"
 #include "rconfig/loadsave.h"
@@ -43,6 +41,7 @@ Copyright:
 #include "hz/win32_tools.h"  // win32_get_registry_value_string()
 #include "hz/env_tools.h"
 #include "hz/string_num.h"
+#include "build_config.h"  // VERSION, *PACKAGE*, ...
 
 #include "gsc_main_window.h"
 #include "gsc_executor_log_window.h"
@@ -228,7 +227,7 @@ namespace {
 			{ "gdk-dpi-scale", 'l', 0, G_OPTION_ARG_DOUBLE, &(args.arg_gdk_dpi_scale),
 					N_("The value of GDK_DPI_SCALE environment variable (useful when executing with pkexec)"), nullptr },
 #endif
-			{ nullptr }
+			{ nullptr, '\0', 0, G_OPTION_ARG_NONE, nullptr, nullptr, nullptr }
 		};
 
 		GError* error = nullptr;
@@ -270,12 +269,13 @@ namespace {
 	/// Print application version information
 	inline void app_print_version_info()
 	{
-		std::string versiontext = "\n" + Glib::ustring::compose(_("GSmartControl version %1"), VERSION) + "\n";
+		std::string versiontext = "\n" + Glib::ustring::compose(_("GSmartControl version %1"), PACKAGE_VERSION) + "\n";
 
 		std::string warningtext = std::string("\n") + _("Warning: GSmartControl comes with ABSOLUTELY NO WARRANTY.\n"
-				"See LICENSE_gsmartcontrol.txt file for details.") + "\n\n";
+				"See LICENSE.txt file for details.") + "\n\n";
 		/// %1 is years, %2 is email address
-		warningtext += Glib::ustring::compose(_("Copyright (C) %1 Alexander Shaduri %2"), "2008 - 2018", "<ashaduri\" \"\" \"@\" \"\" \"\" \"gmail.com>") + "\n\n";
+		warningtext += Glib::ustring::compose(_("Copyright (C) %1 Alexander Shaduri %2"), "2008 - 2021",
+				"<ashaduri@gmail.com>") + "\n\n";
 
 		std::fprintf(stdout, "%s%s", versiontext.c_str(), warningtext.c_str());
 	}
@@ -293,9 +293,9 @@ bool app_init_and_loop(int& argc, char**& argv)
 #endif
 
 	// Set up gettext. This has to be before gtk is initialized.
-	bindtextdomain(PACKAGE, PACKAGE_LOCALE_DIR);
-	bind_textdomain_codeset(PACKAGE, "UTF-8");
-	textdomain(PACKAGE);
+	bindtextdomain(PACKAGE_NAME, PACKAGE_LOCALE_DIR);
+	bind_textdomain_codeset(PACKAGE_NAME, "UTF-8");
+	textdomain(PACKAGE_NAME);
 
 	// Glib needs the C locale set to system locale for command line args.
 	// We will reset it later if needed.
@@ -448,9 +448,9 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 	// Paths in source tree
 #ifdef DEBUG_BUILD
-	hz::data_file_add_search_directory("icons", hz::fs::u8path(TOP_SOURCE_DIR) / "data");
-	hz::data_file_add_search_directory("ui", hz::fs::u8path(TOP_SOURCE_DIR) / "src/ui");
-	hz::data_file_add_search_directory("doc", hz::fs::u8path(TOP_SOURCE_DIR) / "doc");
+	hz::data_file_add_search_directory("icons", hz::fs::u8path(PACKAGE_TOP_SOURCE_DIR) / "data");
+	hz::data_file_add_search_directory("ui", hz::fs::u8path(PACKAGE_TOP_SOURCE_DIR) / "src/ui");
+	hz::data_file_add_search_directory("doc", hz::fs::u8path(PACKAGE_TOP_SOURCE_DIR) / "doc");
 #endif
 
 

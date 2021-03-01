@@ -18,6 +18,7 @@ Copyright:
 #include <glibmm/i18n.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
 
+#include "build_config.h"
 #include "hz/fs_ns.h"
 #include "hz/string_sprintf.h"
 #include "hz/scoped_ptr.h"

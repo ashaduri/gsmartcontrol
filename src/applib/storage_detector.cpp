@@ -16,7 +16,7 @@ Copyright:
 #include <glibmm/i18n.h>
 #include <algorithm>
 
-#include "config.h"  // CONFIG_*
+#include "build_config.h"  // CONFIG_*
 
 #include "hz/debug.h"
 

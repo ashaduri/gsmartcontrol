@@ -21,6 +21,7 @@ Copyright:
 #include <glibmm.h>  // Glib::shell_quote(), compose
 #include <glibmm/i18n.h>
 
+#include "build_config.h"
 #include "executor_factory.h"
 #include "storage_device.h"
 #include "rconfig/rconfig.h"

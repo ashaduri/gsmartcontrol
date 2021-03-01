@@ -59,7 +59,6 @@ target_link_libraries(applib
 		app_pcrecpp_interface
 		app_gettext_interface
     PRIVATE
-		compiler_warnings
 		build_config
 )
 

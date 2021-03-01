@@ -12,14 +12,24 @@ include(${CMAKE_SOURCE_DIR}/version.txt)
 
 project(gsmartcontrol VERSION ${CMAKE_PROJECT_VERSION})
 
+
 # Provide DATADIR, etc...
 include(GNUInstallDirs)
 
 include(src/build_config/compiler_options.cmake)
 
+
+# Disable RPATH manipulation, we don't have shared libraries
+set(CMAKE_SKIP_BUILD_RPATH TRUE)
+set(CMAKE_SKIP_INSTALL_RPATH TRUE)
+
+
 option(APP_BUILD_EXAMPLES "Build examples" ON)
 
+
 configure_file(gsmartcontrol.in.spec gsmartcontrol.spec)
+
+
 
 add_subdirectory(contrib)
 add_subdirectory(data)
