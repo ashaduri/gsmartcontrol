@@ -16,7 +16,7 @@ jobs:
         - os: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v2
+#    - uses: actions/checkout@v2
 
     - name: Install Dependencies
       run: sudo apt-get install libpcre3-dev libgtkmm-3.0-dev gettext
