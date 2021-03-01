@@ -15,11 +15,11 @@ Copyright:
 #include <gtkmm.h>
 #include <glibmm/i18n.h>
 #include <vector>
+#include <memory>
 
 #include "hz/string_algo.h"  // string_split
 #include "hz/string_num.h"
 #include "hz/debug.h"
-#include "hz/scoped_ptr.h"
 #include "hz/launch_url.h"
 #include "hz/fs.h"
 #include "rconfig/rconfig.h"
@@ -1300,8 +1300,9 @@ void GscMainWindow::show_load_virtual_file_chooser()
 	all_filter->add_pattern("*");
 
 #if GTK_CHECK_VERSION(3, 20, 0)
-	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-			_("Load Data From..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, nullptr, nullptr), g_object_unref);
+	std::unique_ptr<GtkFileChooserNative, decltype(&g_object_unref)> dialog(gtk_file_chooser_native_new(
+			_("Load Data From..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, nullptr, nullptr),
+			&g_object_unref);
 
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), specific_filter->gobj());
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), all_filter->gobj());
@@ -1341,7 +1342,8 @@ void GscMainWindow::show_load_virtual_file_chooser()
 			std::vector<std::string> files;
 
 #if GTK_CHECK_VERSION(3, 20, 0)
-			hz::scoped_ptr<GSList> file_slist(gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog.get())), g_slist_free);
+			std::unique_ptr<GSList, decltype(&g_slist_free)> file_slist(gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog.get())),
+					&g_slist_free);
 			GSList* iterator = file_slist.get();
 			while(iterator) {
 				files.push_back(app_ustring_from_gchar((gchar*)iterator->data));

@@ -17,10 +17,10 @@ Copyright:
 #include <gtkmm.h>
 #include <glibmm/i18n.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
+#include <memory>
 
 #include "applib/app_gtkmm_utils.h"  // app_gtkmm_create_tree_view_column
 #include "applib/app_gtkmm_features.h"
-#include "hz/scoped_ptr.h"
 #include "hz/fs.h"
 #include "rconfig/rconfig.h"
 
@@ -209,8 +209,9 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 	all_filter->add_pattern("*");
 
 #if GTK_CHECK_VERSION(3, 20, 0)
-	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-			_("Save Data As..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr), g_object_unref);
+	std::unique_ptr<GtkFileChooserNative, decltype(&g_object_unref)> dialog(gtk_file_chooser_native_new(
+			_("Save Data As..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr),
+			&g_object_unref);
 
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
 
@@ -326,8 +327,9 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 	all_filter->add_pattern("*");
 
 #if GTK_CHECK_VERSION(3, 20, 0)
-	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-			_("Save Data As..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr), g_object_unref);
+	std::unique_ptr<GtkFileChooserNative, decltype(&g_object_unref)> dialog(gtk_file_chooser_native_new(
+			_("Save Data As..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr),
+			&g_object_unref);
 
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
 

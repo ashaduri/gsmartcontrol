@@ -17,8 +17,8 @@ Copyright:
 #include <gdk/gdk.h>  // GDK_KEY_Escape
 #include <vector>  // better use vector, it's needed by others too
 #include <algorithm>  // std::min, std::max
+#include <memory>
 
-#include "hz/scoped_ptr.h"
 #include "hz/string_num.h"  // number_to_string
 #include "hz/string_sprintf.h"  // string_sprintf
 #include "hz/string_algo.h"  // string_join
@@ -752,8 +752,9 @@ void GscInfoWindow::on_save_info_button_clicked()
 	all_filter->add_pattern("*");
 
 #if GTK_CHECK_VERSION(3, 20, 0)
-	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-			_("Save Data As..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr), g_object_unref);
+	std::unique_ptr<GtkFileChooserNative, decltype(&g_object_unref)> dialog(gtk_file_chooser_native_new(
+			_("Save Data As..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr),
+			&g_object_unref);
 
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
 

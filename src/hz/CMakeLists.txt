@@ -20,7 +20,6 @@ target_sources(hz INTERFACE
 	launch_url.h
 	locale_tools.h
 	process_signal.h
-	scoped_ptr.h
 	stream_cast.h
 	string_algo.h
 	string_num.h

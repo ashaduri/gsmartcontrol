@@ -15,10 +15,10 @@ Copyright:
 #include <gtkmm.h>
 #include <glibmm/i18n.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
+#include <memory>
 
 #include "hz/debug.h"
 #include "hz/fs.h"
-#include "hz/scoped_ptr.h"
 #include "rconfig/rconfig.h"
 
 #include "applib/app_gtkmm_features.h"
@@ -149,8 +149,9 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 			all_filter->add_pattern("*");
 
 #if GTK_CHECK_VERSION(3, 20, 0)
-			hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-					_("Save Data As..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr), g_object_unref);
+			std::unique_ptr<GtkFileChooserNative, decltype(&g_object_unref)> dialog(gtk_file_chooser_native_new(
+					_("Save Data As..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr),
+					&g_object_unref);
 
 			gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
 

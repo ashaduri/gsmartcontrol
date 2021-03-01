@@ -20,7 +20,7 @@ Copyright:
 	#include <shellapi.h>  // ShellExecuteW()
 	#include "win32_tools.h"  // hz::win32_utf8_to_utf16
 #else
-	#include "scoped_ptr.h"
+	#include <memory>
 #endif
 
 
@@ -49,13 +49,14 @@ inline std::string launch_url(GtkWindow* window, const std::string& link)
 
 #else
 
-	hz::scoped_ptr<GError> error(0, g_error_free);
+	GError* error = nullptr;
 #if GTK_CHECK_VERSION(3, 22, 0)
-	bool status = gtk_show_uri_on_window(window, link.c_str(), GDK_CURRENT_TIME, &error.get_ref());
+	bool status = gtk_show_uri_on_window(window, link.c_str(), GDK_CURRENT_TIME, &error);
 #else
 	GdkScreen* screen = (window ? gtk_window_get_screen(window) : nullptr);
-	bool status = (bool)gtk_show_uri(screen, link.c_str(), GDK_CURRENT_TIME, &error.get_ref());
+	bool status = (bool)gtk_show_uri(screen, link.c_str(), GDK_CURRENT_TIME, &error);
 #endif
+	std::unique_ptr<GError, decltype(&g_error_free)> uerror(error, &g_error_free);
 
 	if (!status) {
 		return std::string("Cannot open URL: ")

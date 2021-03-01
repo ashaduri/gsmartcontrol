@@ -15,10 +15,10 @@ Copyright:
 #include <gtkmm.h>
 #include <glibmm/i18n.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
+#include <memory>
 
 #include "hz/fs_ns.h"
 #include "hz/string_sprintf.h"
-#include "hz/scoped_ptr.h"
 #include "applib/app_gtkmm_utils.h"
 
 #include "gsc_add_device_window.h"
@@ -181,8 +181,9 @@ void GscAddDeviceWindow::on_device_name_browse_button_clicked()
 	int result = 0;
 
 #if GTK_CHECK_VERSION(3, 20, 0)
-	hz::scoped_ptr<GtkFileChooserNative> dialog(gtk_file_chooser_native_new(
-			_("Choose Device..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, nullptr, nullptr), g_object_unref);
+	std::unique_ptr<GtkFileChooserNative, decltype(&g_object_unref)> dialog(gtk_file_chooser_native_new(
+			_("Choose Device..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, nullptr, nullptr),
+			&g_object_unref);
 
 	if (path.is_absolute())
 		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog.get()), path.u8string().c_str());
