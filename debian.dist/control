@@ -4,7 +4,7 @@ Priority: extra
 Homepage: https://gsmartcontrol.shaduri.dev/
 Maintainer: Alexander Shaduri <ashaduriREMOVETHIS@gmail.com>
 Build-Depends: debhelper (>= 5), autotools-dev,
- libpcre3-dev, libgtkmm-3.0-dev (>= 3.4.0)
+ libpcre3-dev, libgtkmm-3.0-dev (>= 3.4.0), gettext
 Standards-Version: 3.7.3
 
 Package: gsmartcontrol
