@@ -6,9 +6,9 @@ Name:		gsmartcontrol
 Version: 	@CMAKE_PROJECT_VERSION@
 Release:	0
 License:	GPL-3.0
-Url:		https://gsmartcontrol.sourceforge.io/
-Vendor:		Alexander Shaduri <ashaduri 'at' gmail.com>
-# Packager:	Alexander Shaduri <ashaduri 'at' gmail.com>
+Url:		https://gsmartcontrol.shaduri.dev/
+Vendor:		Alexander Shaduri <ashaduri@gmail.com>
+# Packager:	Alexander Shaduri <ashaduri@gmail.com>
 Source:		http://sourceforge.net/projects/gsmartcontrol/files/%{version}/%{name}-%{version}.tar.bz2
 BuildRoot:	%{_tmppath}/%{name}-%{version}-build
 Summary:	GSmartControl - Hard Disk Drive and SSD Health Inspection Tool

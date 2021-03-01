@@ -20,7 +20,7 @@ Copyright:
 		</p>
 	</description>
 	<launchable type="desktop-id">gsmartcontrol.desktop</launchable>
-	<url type="homepage">https://gsmartcontrol.sourceforge.io</url>
+	<url type="homepage">https://gsmartcontrol.shaduri.dev</url>
 	<screenshots>
 		<screenshot type="default">
 			<caption>Main window</caption>

@@ -34,7 +34,7 @@ GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builde
 	set_version(PACKAGE_VERSION);
 
 	// set these properties here (after setting hooks) to make the links work.
-	set_website("https://gsmartcontrol.sourceforge.io/");
+	set_website("https://gsmartcontrol.shaduri.dev/");
 
 //	set_license_type(Gtk::LICENSE_GPL_3_0_ONLY);  // this overrides set_license()
 //	set_license(hz::data_file_get_contents("doc", "LICENSE.txt", 1*1024*1024));  // 1M
@@ -42,6 +42,10 @@ GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builde
 	// spammers go away
 	set_copyright(Glib::ustring::compose("Copyright (C) %1",
 			"2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>"));
+
+	// set_authors({"Alexander Shaduri <ashaduri@gmail.com>"});
+	// set_documenters({"Alexander Shaduri <ashaduri@gmail.com>"});
+	// set_translator_credits({"Alexander Shaduri <ashaduri@gmail.com>"});
 
 	// std::string authors_str = hz::data_file_get_contents("doc", "AUTHORS.txt", 1*1024*1024);  // 1M
 	// hz::string_any_to_unix(authors_str);

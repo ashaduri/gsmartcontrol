@@ -32,11 +32,6 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
     <property name="window_position">center-on-parent</property>
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">dialog</property>
-    <property name="copyright">[here be copyrights]</property>
-    <property name="comments" translatable="yes"></property>
-    <property name="authors">[here be authors]</property>
-    <property name="documenters">here be documentors</property>
-    <property name="translator_credits">translator-credits</property>
     <property name="logo_icon_name"/>
     <property name="license_type">gpl-3-0-only</property>
     <child>
