@@ -77,15 +77,20 @@ add_compile_definitions(_FILE_OFFSET_BITS=64)
 
 
 # Enable compiler warnings
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang
-		OR ${CMAKE_CXX_COMPILER_ID} STREQUAL GNU
-		OR ${CMAKE_CXX_COMPILER_ID} STREQUAL AppleClang)
-	add_compile_options(-Wall -Wextra
-		-Wcast-qual -Wconversion -Wfloat-equal -Wnon-virtual-dtor -Woverloaded-virtual
-		-Wpointer-arith -Wshadow -Wsign-compare -Wsign-promo -Wundef -Wwrite-strings
-	)
-elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
-	add_compile_options(/W4)
+option(APP_COMPILER_ENABLE_WARNINGS "Enable compiler warnings" OFF)
+
+# Warnings are for latest versions of compilers, for developers only.
+if (APP_COMPILER_ENABLE_WARNINGS)
+	if (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang
+			OR ${CMAKE_CXX_COMPILER_ID} STREQUAL GNU
+			OR ${CMAKE_CXX_COMPILER_ID} STREQUAL AppleClang)
+		add_compile_options(-Wall -Wextra
+			-Wcast-qual -Wconversion -Wfloat-equal -Wnon-virtual-dtor -Woverloaded-virtual
+			-Wpointer-arith -Wshadow -Wsign-compare -Wsign-promo -Wundef -Wwrite-strings
+		)
+	elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
+		add_compile_options(/W4)
+	endif()
 endif()
 
 
