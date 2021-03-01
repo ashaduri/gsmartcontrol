@@ -24,6 +24,13 @@ target_compile_definitions(app_gtkmm_interface
 		GTK_DISABLE_DEPRECATED=1
 )
 
+# Support pre-C++17 glibmm with throw(...) exception specifications
+pkg_check_modules(Glibmm "glibmm-2.4")
+if ("${Glibmm_VERSION}" VERSION_LESS "2.50.1")
+	target_compile_definitions(app_gtkmm_interface INTERFACE "APP_GLIBMM_USES_THROW")
+	message(STATUS "Enabling old glibmm throw(...) workaround")
+endif()
+
 
 # pcrecpp from pcre1
 pkg_check_modules(Pcrecpp REQUIRED IMPORTED_TARGET GLOBAL libpcrecpp)
