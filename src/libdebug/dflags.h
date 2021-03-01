@@ -17,7 +17,7 @@ Copyright:
 
 /// Debug level enum and related functions
 namespace debug_level {
-	enum flag {  ///< Debug level (seriousness). Some of these flags can be ORed for some functions.
+	enum flag : std::size_t {  ///< Debug level (seriousness). Some of these flags can be ORed for some functions.
 		none = 0,  ///< No flags
 		dump = 1 << 0,  ///< Dump level (structure dumps, additional verbosity, etc...)
 		info = 1 << 1,  ///< Information level (what the application is doing)
@@ -76,7 +76,7 @@ namespace debug_format {
 
 /// Debug position output flags (how to format the current source line information)
 namespace debug_pos {
-	enum flag {  ///< Position output flags
+	enum flag : std::size_t {  ///< Position output flags
 		none = 0,  ///< No flags
 		func_name = 1 << 0,  ///< Print function name (only)
 		func = 1 << 1,  ///< Print function name with namespaces, etc... (off by default).
