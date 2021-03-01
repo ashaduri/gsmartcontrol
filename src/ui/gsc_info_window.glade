@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.20.0 
+<!-- Generated with glade 3.22.1 
 
-Copyright (C) Alexander Shaduri
+Copyright (C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
 
 This file is part of GSmartControl.
 
@@ -23,7 +23,7 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
   <requires lib="gtk+" version="3.20"/>
   <!-- interface-license-type gplv3 -->
   <!-- interface-name GSmartControl -->
-  <!-- interface-copyright Alexander Shaduri -->
+  <!-- interface-copyright 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com> -->
   <object class="GtkListStore" id="model1">
     <columns>
       <!-- column-name gchararray -->
@@ -54,6 +54,9 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
     <property name="default_width">850</property>
     <property name="default_height">600</property>
     <property name="destroy_with_parent">True</property>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="vbox1">
         <property name="visible">True</property>
@@ -1081,8 +1084,8 @@ Self-test log contains information about the most recent manually performed SMAR
                 <property name="receives_default">True</property>
                 <property name="tooltip_text" translatable="yes">Re-read all the information</property>
                 <property name="use_stock">True</property>
-                <accelerator key="R" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                 <accelerator key="F5" signal="clicked"/>
+                <accelerator key="R" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
               </object>
               <packing>
                 <property name="expand">True</property>

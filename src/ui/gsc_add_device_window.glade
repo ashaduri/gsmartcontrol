@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.20.0 
+<!-- Generated with glade 3.22.1 
 
-Copyright (C) Alexander Shaduri
+Copyright (C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
 
 This file is part of GSmartControl.
 
@@ -23,11 +23,14 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
   <requires lib="gtk+" version="3.20"/>
   <!-- interface-license-type gplv3 -->
   <!-- interface-name GSmartControl -->
-  <!-- interface-copyright Alexander Shaduri -->
+  <!-- interface-copyright 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com> -->
   <object class="GtkWindow" id="gsc_add_device_window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Add Device - GSmartControl</property>
     <property name="modal">True</property>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="vbox1">
         <property name="visible">True</property>
