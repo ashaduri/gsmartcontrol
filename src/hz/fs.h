@@ -473,7 +473,7 @@ inline bool fs_path_is_writable(const fs::path& path, std::error_code& ec)
 	fs::path path_to_check = path;
 	if (path_exists && is_directory) {
 		path_to_check /= "__test.txt";
-		path_exists = fs::exists(path_to_check.exists(), ignored_ec);
+		path_exists = fs::exists(path_to_check, ignored_ec);
 	}
 
 	// path_to_check either doesn't exist, or it's a file. try to open it.

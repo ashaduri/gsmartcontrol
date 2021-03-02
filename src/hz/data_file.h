@@ -90,7 +90,7 @@ inline fs::path data_file_find(const std::string& domain, const std::string& fil
 		if (fs::exists(file_path, ec)) {
 			if (!allow_to_be_directory && fs::is_directory(file_path, ec)) {
 				debug_print_error("app", "%s: Data file \"[%s:]%s\" file found at \"%s\", but it is a directory.\n",
-						DBG_FUNC, domain.c_str(), file_path.string().c_str(), dir.c_str());
+						DBG_FUNC, domain.c_str(), file_path.string().c_str(), dir.string().c_str());
 				return fs::path();
 			}
 			debug_print_info("app", "%s: Data file \"[%s:]%s\" found at \"%s\".\n",
