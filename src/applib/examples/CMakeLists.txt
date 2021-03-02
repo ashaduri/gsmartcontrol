@@ -11,37 +11,37 @@ else()
 endif()
 
 
-add_executable(smartctl_executor_example)
-target_sources(smartctl_executor_example PRIVATE
-	smartctl_executor_example.cpp
+add_executable(example_smartctl_executor)
+target_sources(example_smartctl_executor PRIVATE
+	example_smartctl_executor.cpp
 )
-target_link_libraries(smartctl_executor_example PRIVATE
+target_link_libraries(example_smartctl_executor PRIVATE
 	applib
 )
 
 
-add_executable(smartctl_parser_example)
-target_sources(smartctl_parser_example PRIVATE
-	smartctl_parser_example.cpp
+add_executable(example_smartctl_parser)
+target_sources(example_smartctl_parser PRIVATE
+	example_smartctl_parser.cpp
 )
-target_link_libraries(smartctl_parser_example PRIVATE
+target_link_libraries(example_smartctl_parser PRIVATE
 	applib
 )
 
 
-add_executable(spawn_example)
-target_sources(spawn_example PRIVATE
-	spawn_example.cpp
+add_executable(example_spawn)
+target_sources(example_spawn PRIVATE
+	example_spawn.cpp
 )
-target_link_libraries(spawn_example PRIVATE
+target_link_libraries(example_spawn PRIVATE
 	applib
 )
 
 
-add_executable(storage_detector_example)
-target_sources(storage_detector_example PRIVATE
-	storage_detector_example.cpp
+add_executable(example_storage_detector)
+target_sources(example_storage_detector PRIVATE
+	example_storage_detector.cpp
 )
-target_link_libraries(storage_detector_example PRIVATE
+target_link_libraries(example_storage_detector PRIVATE
 	applib
 )

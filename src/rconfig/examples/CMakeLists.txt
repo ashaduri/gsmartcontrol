@@ -11,11 +11,11 @@ else()
 endif()
 
 
-add_executable(rconfig_example)
-target_sources(rconfig_example PRIVATE
-	rconfig_example.cpp
+add_executable(example_rconfig)
+target_sources(example_rconfig PRIVATE
+	example_rconfig.cpp
 )
-target_link_libraries(rconfig_example PRIVATE
+target_link_libraries(example_rconfig PRIVATE
 	rconfig
 )
 

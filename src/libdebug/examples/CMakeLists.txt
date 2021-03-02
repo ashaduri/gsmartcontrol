@@ -11,11 +11,11 @@ else()
 endif()
 
 
-add_executable(libdebug_example)
-target_sources(libdebug_example PRIVATE
-	libdebug_example.cpp
+add_executable(example_libdebug)
+target_sources(example_libdebug PRIVATE
+	example_libdebug.cpp
 )
-target_link_libraries(libdebug_example PRIVATE
+target_link_libraries(example_libdebug PRIVATE
 	libdebug
 )
 

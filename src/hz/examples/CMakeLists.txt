@@ -11,28 +11,28 @@ else()
 endif()
 
 
-add_executable(format_unit_example)
-target_sources(format_unit_example PRIVATE
-	format_unit_example.cpp
+add_executable(example_format_unit)
+target_sources(example_format_unit PRIVATE
+	example_format_unit.cpp
 )
-target_link_libraries(format_unit_example PRIVATE
+target_link_libraries(example_format_unit PRIVATE
 	hz
 )
 
 
-add_executable(string_algo_example)
-target_sources(string_algo_example PRIVATE
-	string_algo_example.cpp
+add_executable(example_string_algo)
+target_sources(example_string_algo PRIVATE
+	example_string_algo.cpp
 )
-target_link_libraries(string_algo_example PRIVATE
+target_link_libraries(example_string_algo PRIVATE
 	hz
 )
 
 
-add_executable(string_num_example)
-target_sources(string_num_example PRIVATE
-	string_num_example.cpp
+add_executable(example_string_num)
+target_sources(example_string_num PRIVATE
+	example_string_num.cpp
 )
-target_link_libraries(string_num_example PRIVATE
+target_link_libraries(example_string_num PRIVATE
 	hz
 )
