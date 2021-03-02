@@ -36,7 +36,7 @@ target_sources(gsmartcontrol PRIVATE
 # Win32 resource file
 if (WIN32)
 	configure_file("gsc_winres.in.rc" "${CMAKE_CURRENT_BINARY_DIR}/gsc_winres.rc" ESCAPE_QUOTES @ONLY)
-	file(COPY "${CMAKE_SOURCE_DIR}/data/gsmartcontrol.ico" "${CMAKE_CURRENT_BINARY_DIR}")  # required by winres
+	file(COPY "${CMAKE_SOURCE_DIR}/data/gsmartcontrol.ico" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")  # required by winres
 	target_sources(gsmartcontrol PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/gsc_winres.rc")
 endif()
 
