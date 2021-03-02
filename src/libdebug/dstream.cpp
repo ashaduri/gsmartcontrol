@@ -25,28 +25,23 @@ namespace debug_internal {
 	class NullStreamBuf : public std::streambuf {
 
 		protected:
-			int overflow(int) override { return 0; }
+			int overflow([[maybe_unused]] int unused) override { return 0; }
 			int sync() override { return 0; }
 	};
 
 
 
-	/// Null streambuffer object
-	static NullStreamBuf s_null_streambuf;
-
-	/// Null ostream - discards anything that is sent to it.
-	static std::ostream s_null_stream(&s_null_streambuf);
-
-
 	/// Get null streambuf, see s_null_streambuf.
 	std::streambuf& get_null_streambuf()
 	{
+		static NullStreamBuf s_null_streambuf;
 		return s_null_streambuf;
 	}
 
-	/// Get null ostream, see s_null_stream.
+	/// Null ostream - discards anything that is sent to it.
 	std::ostream& get_null_stream()
 	{
+		static std::ostream s_null_stream(&get_null_streambuf());
 		return s_null_stream;
 	}
 
@@ -67,9 +62,9 @@ namespace debug_internal {
 			is_first_line = true;
 		}
 
-		for (auto iter = dos_->channels_.begin(); iter != dos_->channels_.end(); ++iter) {
+		for (auto & channel : dos_->channels_) {
 			// send() locks the channel if needed
-			(*iter)->send(dos_->level_, dos_->domain_, flags,
+			channel->send(dos_->level_, dos_->domain_, flags,
 					get_debug_state().get_indent_level(), is_first_line, oss_.str());
 		}
 		oss_.str("");  // clear the buffer

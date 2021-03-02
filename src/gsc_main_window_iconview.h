@@ -358,7 +358,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 						for (int y = 0; y < icon_height; ++y) {
 							for (int x = 0; x < icon_width; ++x) {
 								p = pixels + y * rowstride + x * n_channels;
-								uint8_t avg = static_cast<uint8_t>(std::floor((p[0] * 0.30) + (p[1] * 0.59) + (p[2] * 0.11) + 0.001 + 0.5));
+								auto avg = static_cast<uint8_t>(std::floor((p[0] * 0.30) + (p[1] * 0.59) + (p[2] * 0.11) + 0.001 + 0.5));
 								p[0] = avg;  // R
 								p[1] = 0;  // G
 								p[2] = 0;  // B

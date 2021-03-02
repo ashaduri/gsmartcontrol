@@ -1068,11 +1068,11 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<StorageProperty>& props
 
 		std::string attr_type = StorageAttribute::get_attr_type_name(attr.attr_type);
 		if (attr.attr_type == StorageAttribute::AttributeType::prefail)
-			attr_type = "<b>" + attr_type + "</b>";
+			attr_type.append("<b>").append(attr_type).append("</b>");
 
 		std::string fail_time = StorageAttribute::get_fail_time_name(attr.when_failed);
 		if (attr.when_failed != StorageAttribute::FailTime::none)
-			fail_time = "<b>" + fail_time + "</b>";
+			fail_time.append("<b>").append(fail_time).append("</b>");
 
 		Gtk::TreeRow row = *(list_store->append());
 

@@ -547,7 +547,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 	// The Main Loop (tm)
 	debug_out_info("app", "Entering main loop.\n");
-	m.run();
+	Gtk::Main::run();
 	debug_out_info("app", "Main loop exited.\n");
 
 	// close the main window and delete its object

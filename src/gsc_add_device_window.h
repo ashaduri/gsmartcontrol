@@ -27,7 +27,7 @@ class GscAddDeviceWindow : public AppBuilderWidget<GscAddDeviceWindow, true> {
 	public:
 
 		// name of ui file (without .ui extension) for AppBuilderWidget
-		static inline std::string ui_name = "gsc_add_device_window";
+		static inline const std::string_view ui_name = "gsc_add_device_window";
 
 
 		/// Constructor, GtkBuilder needs this.

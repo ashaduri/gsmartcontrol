@@ -25,7 +25,7 @@ class GscAboutDialog : public AppBuilderWidget<GscAboutDialog, false, Gtk::About
 	public:
 
 		// name of ui file (without .ui extension) for AppBuilderWidget
-		static inline std::string ui_name = "gsc_about_dialog";
+		static inline const std::string_view ui_name = "gsc_about_dialog";
 
 
 		/// Constructor, GtkBuilder needs this.

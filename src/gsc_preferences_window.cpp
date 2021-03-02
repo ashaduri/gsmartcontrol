@@ -386,11 +386,11 @@ void GscPreferencesWindow::import_config()
 	if (auto* check = this->lookup_widget<Gtk::CheckButton*>("search_in_smartmontools_first_check"))
 		check->set_active(win32_search_smartctl_in_smartmontools);
 
-	std::string smartctl_binary = rconfig::get_data<std::string>("system/smartctl_binary");
+	auto smartctl_binary = rconfig::get_data<std::string>("system/smartctl_binary");
 	if (auto* entry = this->lookup_widget<Gtk::Entry*>("smartctl_binary_entry"))
 		entry->set_text(smartctl_binary);
 
-	std::string smartctl_options = rconfig::get_data<std::string>("system/smartctl_options");
+	auto smartctl_options = rconfig::get_data<std::string>("system/smartctl_options");
 	if (auto* entry = this->lookup_widget<Gtk::Entry*>("smartctl_options_entry"))
 		entry->set_text(smartctl_options);
 

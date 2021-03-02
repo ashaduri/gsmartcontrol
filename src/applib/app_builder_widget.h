@@ -70,12 +70,12 @@ class AppBuilderWidget : public WidgetType, public hz::InstanceManager<Child, Mu
 
 			std::string error_msg;
 
-			auto ui_path = hz::data_file_find("ui", Child::ui_name + ".glade");
+			auto ui_path = hz::data_file_find("ui", std::string(Child::ui_name) + ".glade");
 			try {
 				auto ui = Gtk::Builder::create_from_file(ui_path.u8string());  // may throw
 
 				Child* o = nullptr;
-				ui->get_widget_derived(Child::ui_name, o);  // Calls Child's constructor
+				ui->get_widget_derived({Child::ui_name.data(), Child::ui_name.size()}, o);  // Calls Child's constructor
 
 				if (!o) {
 					debug_out_fatal("app", "Fatal error: Cannot get root widget from UI-resource-created hierarchy.\n");

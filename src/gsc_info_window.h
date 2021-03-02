@@ -28,14 +28,14 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 	public:
 
 		// name of ui file (without .ui extension) for AppBuilderWidget
-		static inline std::string ui_name = "gsc_info_window";
+		static inline const std::string_view ui_name = "gsc_info_window";
 
 
 		/// Constructor, GtkBuilder needs this.
 		GscInfoWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui);
 
 		/// Virtual destructor
-		virtual ~GscInfoWindow();
+		~GscInfoWindow() override;
 
 
 		/// Set the drive to show

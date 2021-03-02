@@ -39,7 +39,7 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk
 	APP_BUILDER_AUTO_CONNECT(device_name_browse_button, clicked);
 
 
-	auto top_info_link_label = lookup_widget<Gtk::Label*>("top_info_link_label");
+	auto* top_info_link_label = lookup_widget<Gtk::Label*>("top_info_link_label");
 	std::string man_url = "https://gsmartcontrol.sourceforge.io/smartctl_man.html";
 	top_info_link_label->set_text(Glib::ustring::compose(top_info_link_label->get_text(), man_url));
 

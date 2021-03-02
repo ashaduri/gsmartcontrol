@@ -34,7 +34,7 @@ class GscMainWindow : public AppBuilderWidget<GscMainWindow, false> {
 		friend class GscMainWindowIconView;  // It needs our privates
 
 		// name of ui file (without .ui extension) for AppBuilderWidget
-		static inline std::string ui_name = "gsc_main_window";
+		static inline const std::string_view ui_name = "gsc_main_window";
 
 
 		/// Constructor, GtkBuilder needs this.

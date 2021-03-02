@@ -42,7 +42,7 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 	public:
 
 		// name of ui file (without .ui extension) for AppBuilderWidget
-		static inline std::string ui_name = "gsc_text_window";
+		static inline const std::string_view ui_name = "gsc_text_window";
 
 
 		/// Constructor, GtkBuilder needs this.

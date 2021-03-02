@@ -29,7 +29,7 @@ class GscExecutorLogWindow : public AppBuilderWidget<GscExecutorLogWindow, false
 	public:
 
 		// name of ui file (without .ui extension) for AppBuilderWidget
-		static inline std::string ui_name = "gsc_executor_log_window";
+		static inline const std::string_view ui_name = "gsc_executor_log_window";
 
 
 		/// Constructor, GtkBuilder needs this.
