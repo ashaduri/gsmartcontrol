@@ -13,10 +13,8 @@ Copyright:
 
 #if defined CONFIG_KERNEL_FAMILY_WINDOWS
 
-
+#include "local_glibmm.h"
 #include <windows.h>  // CreateFileA(), CloseHandle(), etc...
-#include <glibmm.h>
-#include <glibmm/i18n.h>
 #include <set>
 #include <bitset>
 #include <map>
@@ -27,7 +25,7 @@ Copyright:
 #include "hz/string_sprintf.h"
 #include "hz/fs.h"
 #include "hz/string_num.h"
-#include "rconfig/config.h"
+#include "rconfig/rconfig.h"
 #include "app_pcrecpp.h"
 #include "storage_detector_win32.h"
 #include "storage_detector_helpers.h"
@@ -541,7 +539,7 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDevicePtr>& driv
 		use_cli = cli_found;
 	}
 
-	std::string cli_binary;
+	hz::fs::path cli_binary;
 	if (use_cli == 1) {
 		cli_binary = hz::fs::u8path(rconfig::get_data<std::string>("system/areca_cli_binary"));
 		if (!cli_binary.is_absolute() && !cli_inst_path.empty()) {
@@ -578,7 +576,8 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDevicePtr>& driv
 		debug_out_info("app", "Scanning Areca drives using CLI...\n");
 		int cli_max_controllers = 1;  // TODO controller # with CLI.
 		for (int controller_no = 0; controller_no < cli_max_controllers; ++controller_no) {
-			std::string error_msg = areca_cli_get_drives(cli_binary, "/dev/arcmsr" + hz::number_to_string_nolocale(controller_no), controller_no, drives, ex_factory);
+			std::string error_msg = areca_cli_get_drives(cli_binary.string(),
+					"/dev/arcmsr" + hz::number_to_string_nolocale(controller_no), controller_no, drives, ex_factory);
 			// If we get an error on controller 0, fall back to no-cli detection.
 			if (!error_msg.empty() && controller_no == 0) {
 				use_cli = 0;

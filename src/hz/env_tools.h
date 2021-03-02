@@ -13,6 +13,7 @@ Copyright:
 #define HZ_ENV_TOOLS_H
 
 #include <string>
+#include <memory>
 
 
 /// \def HAVE_SETENV

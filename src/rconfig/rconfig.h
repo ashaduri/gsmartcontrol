@@ -12,6 +12,8 @@ Copyright:
 #ifndef RCONFIG_CONFIG_H
 #define RCONFIG_CONFIG_H
 
+#include "json/json.hpp"
+
 #include <string>
 #include <memory>
 #include <vector>
@@ -19,7 +21,6 @@ Copyright:
 
 #include "hz/debug.h"
 #include "hz/string_algo.h"
-#include "json/json.hpp"
 
 
 

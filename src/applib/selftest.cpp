@@ -9,10 +9,10 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
+#include "local_glibmm.h"
 #include <algorithm>  // std::max, std::min
 #include <cmath>  // std::floor
 #include <chrono>
-#include <glibmm/i18n.h>
 
 #include "app_pcrecpp.h"
 #include "storage_property.h"

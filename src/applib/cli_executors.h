@@ -12,7 +12,7 @@ Copyright:
 #ifndef CLI_EXECUTORS_H
 #define CLI_EXECUTORS_H
 
-#include <glibmm/i18n.h>
+#include "local_glibmm.h"
 
 #include "cmdex.h"
 #include "cmdex_sync.h"

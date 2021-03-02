@@ -12,8 +12,8 @@ Copyright:
 #ifndef GSC_TEXT_WINDOW_H
 #define GSC_TEXT_WINDOW_H
 
+#include "local_glibmm.h"
 #include <gtkmm.h>
-#include <glibmm/i18n.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
 #include <memory>
 

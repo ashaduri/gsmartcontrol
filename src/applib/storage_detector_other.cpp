@@ -13,8 +13,7 @@ Copyright:
 
 #if !defined CONFIG_KERNEL_LINUX && !defined CONFIG_KERNEL_FAMILY_WINDOWS
 
-#include <glibmm.h>  // compose
-#include <glibmm/i18n.h>
+#include "local_glibmm.h"
 #include <algorithm>  // std::sort
 
 #if defined CONFIG_KERNEL_OPENBSD || defined CONFIG_KERNEL_NETBSD

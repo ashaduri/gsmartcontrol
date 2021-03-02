@@ -15,11 +15,7 @@ Copyright:
 #include <string>
 #include <vector>
 
-// TODO Remove this in gtkmm4.
-#include "local_glibmm.h"
-
-#include <glibmm.h>  // Glib::shell_quote(), compose
-#include <glibmm/i18n.h>
+#include "local_glibmm.h"  // Glib::shell_quote(), compose
 
 #include "build_config.h"
 #include "executor_factory.h"

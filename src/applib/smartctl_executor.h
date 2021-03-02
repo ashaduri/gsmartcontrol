@@ -12,8 +12,8 @@ Copyright:
 #ifndef SMARTCTL_EXECUTOR_H
 #define SMARTCTL_EXECUTOR_H
 
+#include "local_glibmm.h"
 #include <vector>
-#include <glibmm/i18n.h>
 
 #include "cmdex.h"
 #include "cmdex_sync.h"

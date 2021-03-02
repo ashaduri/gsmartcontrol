@@ -9,15 +9,11 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-// TODO Remove this in gtkmm4.
 #include "local_glibmm.h"
-
 #include <utility>
 #include <vector>
 #include <map>
 #include <unordered_map>
-#include <glibmm.h>
-#include <glibmm/i18n.h>
 
 #include "hz/string_algo.h"  // string_replace_copy
 #include "applib/app_pcrecpp.h"

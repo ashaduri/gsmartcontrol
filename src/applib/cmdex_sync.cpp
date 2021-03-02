@@ -9,8 +9,8 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
+#include "local_glibmm.h"
 #include <glib.h>  // g_usleep()
-#include <glibmm/i18n.h>
 
 #include "cmdex_sync.h"
 

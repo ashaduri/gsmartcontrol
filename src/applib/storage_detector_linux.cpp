@@ -13,7 +13,7 @@ Copyright:
 
 #if defined CONFIG_KERNEL_LINUX
 
-#include <glibmm/i18n.h>
+#include "local_glibmm.h"
 #include <algorithm>  // std::find
 #include <cstdio>  // std::fgets(), std::FILE
 #include <cerrno>  // ENXIO

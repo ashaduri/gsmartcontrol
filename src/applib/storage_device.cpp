@@ -9,9 +9,8 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
+#include "local_glibmm.h"
 #include <unordered_map>
-#include <glibmm.h>  // compose()
-#include <glibmm/i18n.h>
 
 #include "rconfig/rconfig.h"
 #include "hz/string_algo.h"  // string_trim_copy, string_any_to_unix_copy

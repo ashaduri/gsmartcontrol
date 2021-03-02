@@ -12,10 +12,7 @@ Copyright:
 #ifndef SELFTEST_H
 #define SELFTEST_H
 
-// TODO Remove this in gtkmm4.
 #include "local_glibmm.h"
-
-#include <glibmm.h>  // Timer
 #include <string>
 #include <cstdint>
 #include <chrono>

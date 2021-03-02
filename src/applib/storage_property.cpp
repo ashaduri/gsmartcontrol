@@ -9,16 +9,12 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-// TODO Remove this in gtkmm4.
 #include "local_glibmm.h"
-
 #include <map>
 #include <ostream>  // not iosfwd - it doesn't work
 #include <sstream>
 #include <iomanip>
 #include <locale>
-#include <glibmm.h>  // compose
-#include <glibmm/i18n.h>
 
 #include "hz/string_num.h"  // number_to_string
 #include "hz/stream_cast.h"  // stream_cast<>

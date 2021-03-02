@@ -9,11 +9,7 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-// TODO Remove this in gtkmm4.
-#include "local_glibmm.h"
-
-#include <glibmm.h>  // Glib::shell_quote()
-#include <glibmm/i18n.h>
+#include "local_glibmm.h"  // Glib::shell_quote()
 
 #include "smartctl_executor.h"
 #include "hz/win32_tools.h"

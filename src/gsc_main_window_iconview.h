@@ -12,8 +12,8 @@ Copyright:
 #ifndef GSC_MAIN_WINDOW_ICONVIEW_H
 #define GSC_MAIN_WINDOW_ICONVIEW_H
 
+#include "local_glibmm.h"
 #include <gtkmm.h>
-#include <glibmm/i18n.h>
 #include <vector>
 #include <cmath>  // std::floor
 #include <unordered_map>
@@ -283,8 +283,8 @@ class GscMainWindowIconView : public Gtk::IconView {
 			name += (drive->get_model_name().empty() ? Glib::ustring("Unknown model") : Glib::Markup::escape_text(drive->get_model_name()));
 			if (rconfig::get_data<bool>("gui/icons_show_device_name")) {
 				if (!drive->get_is_virtual()) {
-				#ifndef _WIN32
 					std::string dev = Glib::Markup::escape_text(drive->get_device_with_type());
+				#ifndef _WIN32
 					name += "\n" + dev;
 				#else
 					name += "\n" + Glib::ustring::compose(_("%1 (%2)"), dev, drive_letters);

@@ -1,5 +1,17 @@
+/******************************************************************************
+License: GNU General Public License v3.0 only
+Copyright:
+	(C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+******************************************************************************/
+/// \file
+/// \author Alexander Shaduri
+/// \ingroup gsc
+/// \weakgroup gsc
+/// @{
 
-// TODO Remove this in gtkmm4.
+#ifndef LOCAL_GLIBMM_H
+#define LOCAL_GLIBMM_H
+
 
 // Glibmm before 2.50.1 uses throw(...) exception specifications which are invalid in C++17.
 // Try to work around that.
@@ -37,3 +49,37 @@
 #else
 	#include <glibmm.h>
 #endif
+
+#include <glibmm/i18n.h>
+
+// Undo the macros declared by libintl.h (included by glibmm/i18n.h),
+// they conflict with C++ std:: versions.
+#undef fprintf
+#undef vfprintf
+#undef printf
+#undef vprintf
+#undef sprintf
+#undef vsprintf
+#undef snprintf
+#undef vsnprintf
+#undef asprintf
+#undef vasprintf
+#undef fwprintf
+#undef vfwprintf
+#undef wprintf
+#undef vfwprintf
+#undef swprintf
+#undef vswprintf
+#undef fwprintf
+#undef vfwprintf
+#undef wprintf
+#undef vwprintf
+#undef swprintf
+#undef vswprintf
+#undef setlocale
+
+
+
+#endif
+
+/// @}

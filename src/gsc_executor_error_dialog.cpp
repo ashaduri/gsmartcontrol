@@ -9,11 +9,8 @@ Copyright:
 /// \weakgroup gsc
 /// @{
 
-// TODO Remove this in gtkmm4.
 #include "local_glibmm.h"
-
 #include <gtkmm.h>
-#include <glibmm/i18n.h>
 
 #include "gsc_executor_log_window.h"
 #include "gsc_executor_error_dialog.h"

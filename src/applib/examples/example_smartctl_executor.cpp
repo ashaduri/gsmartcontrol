@@ -9,14 +9,10 @@ Copyright:
 /// \weakgroup applib_examples
 /// @{
 
-// TODO Remove this in gtkmm4.
-#include <bits/stdc++.h>  // to avoid throw() macro errors.
-#define throw(a)  // glibmm uses dynamic exception specifications, remove them.
-#include <glibmm.h>  // NOT NEEDED
-#undef throw
-
-#include <iostream>
+#include "local_glibmm.h"
 #include <gtkmm.h>
+#include <bits/stdc++.h>  // to avoid throw() macro errors.
+#include <iostream>
 
 // #include "applib/smartctl_executor_gui.h"
 #include "applib/smartctl_executor.h"

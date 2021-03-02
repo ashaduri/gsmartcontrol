@@ -12,11 +12,7 @@ Copyright:
 #ifndef STORAGE_PROPERTY_COLORS_H
 #define STORAGE_PROPERTY_COLORS_H
 
-// TODO Remove this in gtkmm4.
 #include "local_glibmm.h"
-
-#include <glibmm.h>  // compose()
-#include <glibmm/i18n.h>
 
 #include "storage_property.h"
 

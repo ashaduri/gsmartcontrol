@@ -12,9 +12,9 @@ Copyright:
 #ifndef APP_BUILDER_WIDGET_H
 #define APP_BUILDER_WIDGET_H
 
+#include "local_glibmm.h"
 #include <string>
 #include <gtkmm.h>
-#include <glibmm/i18n.h>
 
 #include "hz/debug.h"
 #include "hz/instance_manager.h"

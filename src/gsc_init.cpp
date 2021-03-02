@@ -9,8 +9,9 @@ Copyright:
 /// \weakgroup gsc
 /// @{
 
-// TODO Remove this in gtkmm4.
 #include "local_glibmm.h"
+#include <gtkmm.h>
+#include <glib.h>  // g_, G*
 
 #include <string>
 // #include <locale.h>  // _configthreadlocale (win32)
@@ -21,9 +22,6 @@ Copyright:
 #include <limits>
 #include <memory>
 #include <cmath>
-#include <gtkmm.h>
-#include <glibmm/i18n.h>
-#include <glib.h>  // g_, G*
 
 #ifdef _WIN32
 	#include <windows.h>

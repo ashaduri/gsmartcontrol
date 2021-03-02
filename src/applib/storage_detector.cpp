@@ -9,11 +9,8 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-// TODO Remove this in gtkmm4.
 #include "local_glibmm.h"
-
 #include <gtkmm.h>  // compose()
-#include <glibmm/i18n.h>
 #include <algorithm>
 
 #include "build_config.h"  // CONFIG_*

@@ -9,12 +9,9 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-// TODO Remove this in gtkmm4.
 #include "local_glibmm.h"
-
 #include <gtkmm.h>  // Gtk::Main
 #include <gdkmm.h>
-#include <glibmm/i18n.h>
 
 #include "hz/string_algo.h"
 #include "hz/fs_ns.h"

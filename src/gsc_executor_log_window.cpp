@@ -9,14 +9,11 @@ Copyright:
 /// \weakgroup gsc
 /// @{
 
-// TODO Remove this in gtkmm4.
 #include "local_glibmm.h"
-
+#include <gtkmm.h>
+#include <gdk/gdk.h>  // GDK_KEY_Escape
 #include <sstream>
 #include <cstddef>  // std::size_t
-#include <gtkmm.h>
-#include <glibmm/i18n.h>
-#include <gdk/gdk.h>  // GDK_KEY_Escape
 #include <memory>
 
 #include "applib/app_gtkmm_utils.h"  // app_gtkmm_create_tree_view_column

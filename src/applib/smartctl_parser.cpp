@@ -9,13 +9,9 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-// TODO Remove this in gtkmm4.
 #include "local_glibmm.h"
-
 #include <clocale>  // localeconv
 #include <cstdint>
-#include <glibmm.h>  // compose()
-#include <glibmm/i18n.h>
 
 #include "hz/locale_tools.h"  // ScopedCLocale, locale_c_get().
 #include "hz/string_algo.h"  // string_*

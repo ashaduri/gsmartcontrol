@@ -9,11 +9,8 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-// TODO Remove this in gtkmm4.
 #include "local_glibmm.h"
-
 #include <gtkmm.h>
-#include <glibmm.h>
 #include <glib.h>
 #include <cstring>  // std::strlen
 #include <vector>
