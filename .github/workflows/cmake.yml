@@ -20,7 +20,12 @@ jobs:
       run: sudo apt-get install libpcre3-dev libgtkmm-3.0-dev gettext
 
     - name: Create Build Environment
-      run: cmake -E make_directory ${{runner.workspace}}/build
+      run: >-
+        cmake -E make_directory
+        -DAPP_BUILD_EXAMPLES=ON
+        -DAPP_BUILD_TESTS=ON
+        -DAPP_COMPILER_ENABLE_WARNINGS=ON
+        ${{runner.workspace}}/build
 
     - name: Configure CMake
       # Use a bash shell so we can use the same syntax for environment variable

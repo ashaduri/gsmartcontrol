@@ -23,8 +23,13 @@ include(src/build_config/compiler_options.cmake)
 set(CMAKE_SKIP_BUILD_RPATH TRUE)
 set(CMAKE_SKIP_INSTALL_RPATH TRUE)
 
+# Write the binaries to project root (avoids conflicts with manifests, also it's more convenient this way)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 
-option(APP_BUILD_EXAMPLES "Build examples" ON)
+
+# User-controlled build options
+option(APP_BUILD_EXAMPLES "Build examples" OFF)
+option(APP_BUILD_TESTS "Build tests" OFF)
 
 
 configure_file(gsmartcontrol.in.spec gsmartcontrol.spec)
