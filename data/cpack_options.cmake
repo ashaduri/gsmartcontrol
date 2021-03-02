@@ -141,8 +141,8 @@ endif()
 #configure_file("${CMAKE_SOURCE_DIR}/data/package_data/rpm-post-uninstall.in.sh" "${CMAKE_BINARY_DIR}/rpm-post-uninstall
 #.sh" ESCAPE_QUOTES @ONLY)
 #
-#set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/rpm-post-install.sh")
-#set(CPACK_RPM_POST_UNINSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/rpm-post-uninstall.sh")
+#set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/data/rpm-post-install.sh")
+#set(CPACK_RPM_POST_UNINSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/data/rpm-post-uninstall.sh")
 
 
 
@@ -163,7 +163,7 @@ endif()
 #configure_file("${CMAKE_SOURCE_DIR}/data/package_data/debian-postrm.in.sh"
 #	"${CMAKE_BINARY_DIR}/postrm" ESCAPE_QUOTES @ONLY)
 #
-#set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/postinst;${CMAKE_BINARY_DIR}/postrm")
+#set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/data/postinst;${CMAKE_BINARY_DIR}/data/postrm")
 
 
 # All CPack variables must be set before this

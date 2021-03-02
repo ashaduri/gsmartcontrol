@@ -21,11 +21,11 @@ configure_file("gsmartcontrol.in.desktop" "gsmartcontrol.desktop" ESCAPE_QUOTES 
 configure_file("gsmartcontrol-root.in.sh" "gsmartcontrol-root.sh" ESCAPE_QUOTES @ONLY)
 configure_file("org.gsmartcontrol.in.policy" "gsmartcontrol.policy" ESCAPE_QUOTES @ONLY)
 
-configure_file("debian-postinst.in.sh" "${CMAKE_BINARY_DIR}/postinst" ESCAPE_QUOTES @ONLY)
-configure_file("debian-postrm.in.sh" "${CMAKE_BINARY_DIR}/postrm" ESCAPE_QUOTES @ONLY)
+configure_file("debian-postinst.in.sh" "${CMAKE_CURRENT_BINARY_DIR}/postinst" ESCAPE_QUOTES @ONLY)
+configure_file("debian-postrm.in.sh" "${CMAKE_CURRENT_BINARY_DIR}/postrm" ESCAPE_QUOTES @ONLY)
 
-configure_file("rpm-post-install.in.sh" "${CMAKE_BINARY_DIR}/rpm-post-install.sh" ESCAPE_QUOTES @ONLY)
-configure_file("rpm-post-uninstall.in.sh" "${CMAKE_BINARY_DIR}/rpm-post-uninstall.sh" ESCAPE_QUOTES @ONLY)
+configure_file("rpm-post-install.in.sh" "${CMAKE_CURRENT_BINARY_DIR}/rpm-post-install.sh" ESCAPE_QUOTES @ONLY)
+configure_file("rpm-post-uninstall.in.sh" "${CMAKE_CURRENT_BINARY_DIR}/rpm-post-uninstall.sh" ESCAPE_QUOTES @ONLY)
 
 # Install app icons
 foreach(dir 16 22 24 32 48 64 128 256)
