@@ -317,7 +317,9 @@ inline bool win32_set_registry_value_string(HKEY base,
 
 	if (status) {
 		status = (RegSetValueExW(reg_key, wkey.c_str(), 0, REG_SZ,
-				reinterpret_cast<const BYTE*>(wvalue.data()), wvalue.size() + 1*sizeof(wchar_t)) == ERROR_SUCCESS);
+					reinterpret_cast<const BYTE*>(wvalue.data()),
+					DWORD(wvalue.size() + 1*sizeof(wchar_t))
+				) == ERROR_SUCCESS);
 	}
 
 	if (reg_key)
@@ -389,8 +391,8 @@ namespace internal {
 
 
 	struct Win32RedirectHolder {
-		static inline std::wstring stdout_file = 0;
-		static inline std::wstring stderr_file = 0;
+		static inline std::wstring stdout_file;
+		static inline std::wstring stderr_file;
 	};
 
 
@@ -541,7 +543,8 @@ inline std::wstring win32_user_to_utf16(UINT from_cp, std::string_view from_str,
 		return std::wstring();
 	}
 
-	int wide_bufsize = MultiByteToWideChar(from_cp, 0, from_str.data(), from_str.size(), nullptr, 0);  // excluding terminating 0
+	// excluding terminating 0
+	int wide_bufsize = MultiByteToWideChar(from_cp, 0, from_str.data(), DWORD(from_str.size()), nullptr, 0);
 	if (wide_bufsize == ERROR_NO_UNICODE_TRANSLATION) {
 		if (ok) {
 			*ok = false;
@@ -558,11 +561,13 @@ inline std::wstring win32_user_to_utf16(UINT from_cp, std::string_view from_str,
 	wchar_t* res = new wchar_t[wide_bufsize + 1];
 	MultiByteToWideChar(from_cp, 0, from_str.data(), from_str.size(), res, wide_bufsize + 1);
 	res[wide_bufsize] = L'\0';
+	std::wstring wres(res);
+	delete[] res;
 
 	if (ok) {
 		*ok = true;
 	}
-	return res;
+	return wres;
 }
 
 
