@@ -10,7 +10,11 @@ cmake_minimum_required(VERSION 3.13)
 
 include(${CMAKE_SOURCE_DIR}/version.txt)
 
-project(gsmartcontrol VERSION ${CMAKE_PROJECT_VERSION})
+project(gsmartcontrol
+	VERSION ${CMAKE_PROJECT_VERSION}
+	HOMEPAGE_URL "https://gsmartcontrol.shaduri.dev"
+	LANGUAGES CXX
+)
 
 
 # Provide DATADIR, etc...
