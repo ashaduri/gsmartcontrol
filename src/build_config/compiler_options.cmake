@@ -88,6 +88,10 @@ if (APP_COMPILER_ENABLE_WARNINGS)
 			-Wcast-qual -Wconversion -Wfloat-equal -Wnon-virtual-dtor -Woverloaded-virtual
 			-Wpointer-arith -Wshadow -Wsign-compare -Wsign-promo -Wundef -Wwrite-strings
 		)
+		if (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
+			# libdebug needs custom format strings
+			add_compile_options(-Wno-format-security)
+		endif()
 	elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
 		add_compile_options(/W4)
 	endif()
