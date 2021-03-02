@@ -14,6 +14,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Enable PIC, required on many systems
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+# Hide symbols by default
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
+
 
 # --- OS / compiler extensions
 
