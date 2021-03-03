@@ -52,32 +52,27 @@ Copyright:
 namespace {
 
 	/// Config file in user's HOME
-	hz::fs::path s_home_config_file;
+	inline const hz::fs::path& get_home_config_file()
+	{
+		static hz::fs::path home_config_file = hz::fs_get_user_config_dir() / "gsmartcontrol" / "gsmartcontrol2.conf";
+		return home_config_file;
+	}
 
 
-	/// Libdebug channel buffer
-	DebugChannelBasePtr s_debug_buf_channel;
 
 	/// Libdebug channel buffer stream
-	std::unique_ptr<std::ostringstream> s_debug_buf_channel_stream;
-
-
-	inline void app_get_debug_buf_channel_stream()
+	inline std::ostringstream& get_debug_buf_channel_stream()
 	{
-		if (!s_debug_buf_channel_stream) {
-			s_debug_buf_channel_stream = std::make_unique<std::ostringstream>();
-		}
+		static std::ostringstream stream;
+		return stream;
 	}
 
 
 	/// Get libdebug buffer channel (create new one if unavailable).
-	inline DebugChannelBasePtr app_get_debug_buf_channel()
+	inline DebugChannelBasePtr get_debug_buf_channel()
 	{
-		if (!s_debug_buf_channel) {
-			app_get_debug_buf_channel_stream();
-			s_debug_buf_channel = std::make_shared<DebugChannelOStream>(*s_debug_buf_channel_stream);
-		}
-		return s_debug_buf_channel;
+		static DebugChannelBasePtr channel = std::make_shared<DebugChannelOStream>(get_debug_buf_channel_stream());
+		return channel;
 	}
 
 }
@@ -86,9 +81,7 @@ namespace {
 
 std::string app_get_debug_buffer_str()
 {
-	app_get_debug_buf_channel_stream();
-	DebugChannelBasePtr channel = app_get_debug_buf_channel();
-	return s_debug_buf_channel_stream->str();
+	return get_debug_buf_channel_stream().str();
 }
 
 
@@ -101,8 +94,6 @@ namespace {
 	/// Find the configuration files and load them.
 	inline bool app_init_config()
 	{
-		s_home_config_file = hz::fs_get_user_config_dir() / "gsmartcontrol" / "gsmartcontrol2.conf";
-
 		// Default system-wide settings. This file is empty by default.
 		hz::fs::path global_config_file;
 	#ifdef _WIN32
@@ -112,7 +103,8 @@ namespace {
 	#endif
 
 		debug_out_dump("app", DBG_FUNC_MSG << "Global config file: \"" << global_config_file.u8string() << "\"\n");
-		debug_out_dump("app", DBG_FUNC_MSG << "Local config file: \"" << s_home_config_file.u8string() << "\"\n");
+		debug_out_dump("app",
+				DBG_FUNC_MSG << "Local config file: \"" << get_home_config_file().u8string() << "\"\n");
 
 		// load global first
 		std::error_code ec;
@@ -121,12 +113,12 @@ namespace {
 		}
 
 		// load local
-		if (hz::fs::exists(s_home_config_file, ec) && hz::fs_path_is_readable(s_home_config_file, ec)) {
-			rconfig::load_from_file(s_home_config_file);
+		if (hz::fs::exists(get_home_config_file(), ec) && hz::fs_path_is_readable(get_home_config_file(), ec)) {
+			rconfig::load_from_file(get_home_config_file());
 
 		} else {
 			// create the parent directories of the config file
-			hz::fs::path config_loc = s_home_config_file.parent_path();
+			hz::fs::path config_loc = get_home_config_file().parent_path();
 			if (!hz::fs::exists(config_loc, ec)) {
 				hz::fs::create_directories(config_loc, ec);
 				hz::fs::permissions(config_loc, hz::fs::perms::owner_all, ec);
@@ -137,7 +129,7 @@ namespace {
 
 		rconfig::dump_config();
 
-		rconfig::autosave_set_config_file(s_home_config_file);
+		rconfig::autosave_set_config_file(get_home_config_file());
 		int autosave_timeout_sec = rconfig::get_data<int>("system/config_autosave_timeout_sec");
 		if (autosave_timeout_sec > 0) {
 			rconfig::autosave_start(std::chrono::seconds(autosave_timeout_sec));
@@ -206,10 +198,10 @@ namespace {
 	/// Command-line argument values
 	struct CmdArgs {
 		// Note: Use GLib types here:
-		gboolean arg_locale = true;  ///< if false, disable using system locale
-		gboolean arg_version = false;  ///< if true, show version and exit
-		gboolean arg_scan = true;  ///< if false, don't scan the system for drives on startup
-		gboolean arg_hide_tabs = true;  ///< if true, hide additional info tabs when smart is disabled. false may help debugging.
+		gboolean arg_locale = TRUE;  ///< if false, disable using system locale
+		gboolean arg_version = FALSE;  ///< if true, show version and exit
+		gboolean arg_scan = TRUE;  ///< if false, don't scan the system for drives on startup
+		gboolean arg_hide_tabs = TRUE;  ///< if true, hide additional info tabs when smart is disabled. false may help debugging.
 		gchar** arg_add_virtual = nullptr;  ///< load smartctl data from these files as virtual drives
 		gchar** arg_add_device = nullptr;  ///< add these device files manually
 		double arg_gdk_scale = std::numeric_limits<double>::quiet_NaN();  ///< The value of GDK_SCALE environment variable
@@ -221,8 +213,7 @@ namespace {
 	/// Parse command-line arguments (fills \c args)
 	inline bool parse_cmdline_args(CmdArgs& args, int& argc, char**& argv)
 	{
-		static const GOptionEntry arg_entries[] =
-		{
+		static const std::vector<GOptionEntry> arg_entries = {
 			{ "no-locale", 'l', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_locale),
 					N_("Don't use system locale"), nullptr },
 			{ "version", 'V', 0, G_OPTION_ARG_NONE, &(args.arg_version),
@@ -251,10 +242,10 @@ namespace {
 		GOptionContext* context = g_option_context_new("- A GTK+ GUI for smartmontools");
 
 		// our options
-		g_option_context_add_main_entries(context, arg_entries, nullptr);
+		g_option_context_add_main_entries(context, arg_entries.data(), nullptr);
 
 		// gtk options
-		g_option_context_add_group(context, gtk_get_option_group(false));
+		g_option_context_add_group(context, gtk_get_option_group(FALSE));
 
 		// libdebug options; this will also automatically apply them
 		g_option_context_add_group(context, debug_get_option_group());
@@ -268,7 +259,7 @@ namespace {
 			error_text += "\n\n";
 			g_error_free(error);
 
-			gchar* help_text = g_option_context_get_help(context, true, nullptr);
+			gchar* help_text = g_option_context_get_help(context, TRUE, nullptr);
 			if (help_text) {
 				error_text += help_text;
 				g_free(help_text);
@@ -331,7 +322,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 	// Note that changing GTK locale after it's inited isn't really supported by GTK,
 	// but we have no other choice - glib needs system locale when parsing the
 	// arguments, and gtk is inited while the parsing is performed.
-	if (!args.arg_locale) {
+	if (args.arg_locale == FALSE) {
 		hz::locale_c_set("C");
 	} else {
 		// change the C++ locale to match the C one.
@@ -339,7 +330,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 	}
 
 
-	if (args.arg_version) {
+	if (args.arg_version == TRUE) {
 		// show version information and exit
 		app_print_version_info();
 		return true;
@@ -355,7 +346,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 
 	// Add special debug channel to collect all libdebug output into a buffer.
-	debug_add_channel("all", debug_level::all, app_get_debug_buf_channel());
+	debug_add_channel("all", debug_level::all, get_debug_buf_channel());
 
 
 
@@ -407,14 +398,15 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 	// Redirect all GTK+/Glib and related messages to libdebug.
 	// Do this before GTK+ init, to capture its possible warnings as well.
-	static const char* const gtkdomains[] = {
+	const std::vector<const char*> gtkdomains = {
 			// no atk or cairo, they don't log. libgnomevfs may be loaded by gtk file chooser.
 			"GLib", "GModule", "GLib-GObject", "GLib-GRegex", "GLib-GIO", "GThread",
 			"Pango", "Gtk", "Gdk", "GdkPixbuf", "libgnomevfs",
-			"glibmm", "giomm", "atkmm", "pangomm", "gdkmm", "gtkmm" };
+			"glibmm", "giomm", "atkmm", "pangomm", "gdkmm", "gtkmm"
+	};
 
-	for (std::size_t i = 0, m = G_N_ELEMENTS(gtkdomains); i < m; ++i) {
-		g_log_set_handler(gtkdomains[i], GLogLevelFlags(G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
+	for (const auto* domain : gtkdomains) {
+		g_log_set_handler(domain, GLogLevelFlags(G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL
 				| G_LOG_FLAG_RECURSION), glib_message_handler, nullptr);
 	}
 
@@ -573,7 +565,7 @@ void app_quit()
 #if defined ENABLE_GLIB && ENABLE_GLIB
 	rconfig::autosave_force_now();
 #else
-	rconfig::save_to_file(s_home_config_file);
+	rconfig::save_to_file(get_home_config_file());
 #endif
 
 	// exit the main loop

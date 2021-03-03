@@ -116,7 +116,7 @@ void GscExecutorLogWindow::show_last()
 {
 	auto* treeview = this->lookup_widget<Gtk::TreeView*>("command_list_treeview");
 
-	if (treeview && !list_store->children().empty()) {
+	if (treeview != nullptr && !list_store->children().empty()) {
 // 		Gtk::TreeRow row = *(list_store->children().rbegin());  // this causes invalid read error in valgrind
 		Gtk::TreeRow row = *(--(list_store->children().end()));
 		selection->select(row);
@@ -185,7 +185,7 @@ void GscExecutorLogWindow::on_window_close_button_clicked()
 
 void GscExecutorLogWindow::on_window_save_current_button_clicked()
 {
-	if (!selection->count_selected_rows())
+	if (selection->count_selected_rows() == 0)
 		return;
 
 	Gtk::TreeIter iter = selection->get_selected();
@@ -210,7 +210,7 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 			_("Save Data As..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr),
 			&g_object_unref);
 
-	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
+	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), TRUE);
 
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), specific_filter->gobj());
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), all_filter->gobj());
@@ -328,7 +328,7 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 			_("Save Data As..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr),
 			&g_object_unref);
 
-	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
+	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), TRUE);
 
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), specific_filter->gobj());
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), all_filter->gobj());
@@ -412,7 +412,7 @@ void GscExecutorLogWindow::on_tree_selection_changed()
 {
 	this->clear_view_widgets();
 
-	if (selection->count_selected_rows()) {
+	if (selection->count_selected_rows() > 0) {
 		Gtk::TreeIter iter = selection->get_selected();
 		Gtk::TreeRow row = *iter;
 
@@ -435,12 +435,12 @@ void GscExecutorLogWindow::on_tree_selection_changed()
 			}
 		}
 
-		if (auto command_entry = this->lookup_widget<Gtk::Entry*>("command_entry")) {
+		if (auto* command_entry = this->lookup_widget<Gtk::Entry*>("command_entry")) {
 			std::string cmd_text = entry->command + " " + entry->parameters;
 			command_entry->set_text(app_output_make_valid(cmd_text));
 		}
 
-		if (auto window_save_current_button = this->lookup_widget<Gtk::Button*>("window_save_current_button"))
+		if (auto* window_save_current_button = this->lookup_widget<Gtk::Button*>("window_save_current_button"))
 			window_save_current_button->set_sensitive(true);
 	}
 

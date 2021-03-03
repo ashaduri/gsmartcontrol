@@ -79,7 +79,7 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		/// Remove selected row
 		void remove_selected_row()
 		{
-			if (this->get_selection()->count_selected_rows()) {
+			if (this->get_selection()->count_selected_rows() > 0) {
 				Gtk::TreeIter iter = this->get_selection()->get_selected();
 				model->erase(iter);
 			}
@@ -104,7 +104,7 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		/// Update selected row device entry
 		void update_selected_row_device(const std::string& device)
 		{
-			if (this->get_selection()->count_selected_rows()) {
+			if (this->get_selection()->count_selected_rows() > 0) {
 				Gtk::TreeRow row = *(this->get_selection()->get_selected());
 				row[col_device] = (device.empty() ? "<"s + C_("name", "empty") + ">" : device);
 				row[col_device_real] = device;
@@ -115,7 +115,7 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		/// Update selected row type entry
 		void update_selected_row_type(const std::string& type)
 		{
-			if (this->get_selection()->count_selected_rows()) {
+			if (this->get_selection()->count_selected_rows() > 0) {
 				Gtk::TreeRow row = *(this->get_selection()->get_selected());
 				row[col_type] = (type.empty() ? "<"s + C_("types", "all") + ">" : type);
 				row[col_type_real] = type;
@@ -126,7 +126,7 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		/// Update selected row parameters entry
 		void update_selected_row_params(const std::string& params)
 		{
-			if (this->get_selection()->count_selected_rows()) {
+			if (this->get_selection()->count_selected_rows() > 0) {
 				Gtk::TreeRow row = *(this->get_selection()->get_selected());
 				row[col_parameters] = params;
 			}
@@ -184,7 +184,7 @@ class GscPreferencesDeviceOptionsTreeView : public Gtk::TreeView {
 		void on_selection_changed()
 		{
 			std::string dev, type, par;
-			if (this->get_selection()->count_selected_rows()) {
+			if (this->get_selection()->count_selected_rows() > 0) {
 				Gtk::TreeRow row = *(this->get_selection()->get_selected());
 				dev = row[col_device_real];
 				type = row[col_type_real];

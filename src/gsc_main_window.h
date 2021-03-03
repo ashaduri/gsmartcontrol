@@ -155,18 +155,18 @@ class GscMainWindow : public AppBuilderWidget<GscMainWindow, false> {
 
 	private:
 
-		GscMainWindowIconView* iconview = nullptr;  ///< The main icon view
-		std::vector<StorageDevicePtr> drives;  ///< Scanned drives
+		GscMainWindowIconView* iconview_ = nullptr;  ///< The main icon view
+		std::vector<StorageDevicePtr> drives_;  ///< Scanned drives
 
-		Glib::RefPtr<Gtk::UIManager> ui_manager;  ///< UI manager
-		Glib::RefPtr<Gtk::ActionGroup> actiongroup_main;  ///< Action group
-		Glib::RefPtr<Gtk::ActionGroup> actiongroup_device;  ///< Action group
+		Glib::RefPtr<Gtk::UIManager> ui_manager_;  ///< UI manager
+		Glib::RefPtr<Gtk::ActionGroup> actiongroup_main_;  ///< Action group
+		Glib::RefPtr<Gtk::ActionGroup> actiongroup_device_;  ///< Action group
 		bool action_handling_enabled_ = true;  ///< Whether action handling is enabled or not
-		std::map<action_t, Glib::RefPtr<Gtk::Action> > action_map;  ///< Used by on_action_activated().
+		std::map<action_t, Glib::RefPtr<Gtk::Action> > action_map_;  ///< Used by on_action_activated().
 
-		Gtk::Label* name_label = nullptr;  ///< A UI label
-		Gtk::Label* health_label = nullptr;  ///< A UI label
-		Gtk::Label* family_label = nullptr;  ///< A UI label
+		Gtk::Label* name_label_ = nullptr;  ///< A UI label
+		Gtk::Label* health_label_ = nullptr;  ///< A UI label
+		Gtk::Label* family_label_ = nullptr;  ///< A UI label
 
 		bool scanning_ = false;  ///< If the scanning is in process or not
 

@@ -92,8 +92,11 @@ namespace {
 				label->set_can_focus(false);
 
 				std::string fg;
-				if (app_property_get_label_highlight_color(label_string.property->warning, fg))
-					label->set_markup("<span color=\"" + fg + "\">" + label_text + "</span>");
+				if (app_property_get_label_highlight_color(label_string.property->warning, fg)) {
+					label->set_markup(
+							std::string("<span color=\"").append(fg).append("\">")
+							.append(label_text).append("</span>") );
+				}
 				vbox->pack_start(*label, false, false);
 
 				// set it after packing, else the old tooltips api won't have anything to attach them to.
@@ -164,7 +167,7 @@ namespace {
 		auto* treeview = window->lookup_widget<Gtk::TreeView*>("error_log_treeview");
 		auto* textview = window->lookup_widget<Gtk::TextView*>("error_log_textview");
 		Glib::RefPtr<Gtk::TextBuffer> buffer;
-		if (treeview && textview && (buffer = textview->get_buffer())) {
+		if (treeview != nullptr && textview != nullptr && (buffer = textview->get_buffer())) {
 			Gtk::TreeModel::iterator iter = treeview->get_selection()->get_selected();
 			if (iter) {
 				Glib::RefPtr<Gtk::TextMark> mark = buffer->get_mark((*iter)[mark_name_column]);
@@ -522,7 +525,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		auto* label_vbox = lookup_widget<Gtk::Box*>("statistics_label_vbox");
 		app_set_top_labels(label_vbox, std::vector<PropertyLabel>());
 
-		if (auto treeview = lookup_widget<Gtk::TreeView*>("statistics_treeview")) {
+		if (auto* treeview = lookup_widget<Gtk::TreeView*>("statistics_treeview")) {
 			treeview->remove_all_columns();
 			treeview->unset_model();
 		}
@@ -560,7 +563,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 
 
 			auto* test_description_textview = lookup_widget<Gtk::TextView*>("test_description_textview");
-			if (test_description_textview && test_description_textview->get_buffer())
+			if (test_description_textview != nullptr && test_description_textview->get_buffer())
 				test_description_textview->get_buffer()->set_text("");  // set on test selection
 
 			if (auto* test_completion_progressbar = lookup_widget<Gtk::ProgressBar*>("test_completion_progressbar")) {
@@ -753,7 +756,7 @@ void GscInfoWindow::on_save_info_button_clicked()
 			_("Save Data As..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr),
 			&g_object_unref);
 
-	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), true);
+	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), TRUE);
 
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), specific_filter->gobj());
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), all_filter->gobj());
@@ -857,7 +860,7 @@ void GscInfoWindow::on_test_type_combo_changed()
 		}
 
 		auto* test_description_textview = lookup_widget<Gtk::TextView*>("test_description_textview");
-		if (test_description_textview && test_description_textview->get_buffer())
+		if (test_description_textview != nullptr && test_description_textview->get_buffer())
 			test_description_textview->get_buffer()->set_text(row[test_combo_col_description]);
 	}
 }
@@ -1616,7 +1619,7 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<StorageProper
 	model_columns.add(col_name);
 	num_tree_cols = app_gtkmm_create_tree_view_column(col_name, *treeview, _("Name"), _("Name"), true);
 	treeview->set_search_column(col_name.index());
-	auto cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
+	auto* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
 	if (cr_name)
 		cr_name->property_weight() = Pango::WEIGHT_BOLD ;
 
@@ -1796,7 +1799,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 	DBG_ASSERT(self);
 
 	if (!self->current_test)  // shouldn't happen
-		return false;  // stop
+		return FALSE;  // stop
 
 	auto* test_completion_progressbar =
 			self->lookup_widget<Gtk::ProgressBar*>("test_completion_progressbar");
@@ -1879,7 +1882,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 
 
 	if (active) {
-		return true;  // continue the idle callback
+		return TRUE;  // continue the idle callback
 	}
 
 
@@ -1953,7 +1956,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 
 	self->refresh_info(false);  // don't clear the tests tab
 
-	return false;  // stop idle callback
+	return FALSE;  // stop idle callback
 }
 
 

@@ -25,14 +25,18 @@ Copyright:
 namespace {
 
 
-	const std::string s_unc_text = Glib::Markup::escape_text(
-			_("When a drive encounters a surface error, it marks that sector as \"unstable\" (also known as \"pending reallocation\"). "
-			"If the sector is successfully read from or written to at some later point, it is unmarked. If the sector continues to be inaccessible, "
-			"the drive reallocates (remaps) it to a specially reserved area as soon as it has a chance (usually during write request or successful read), "
-			"transferring the data so that no changes are reported to the operating system. This is why you generally don't see \"bad blocks\" "
-			"on modern drives - if you do, it means that either they have not been remapped yet, or the drive is out of reserved area."
-			"\n\nNote: SSDs reallocate blocks as part of their normal operation, so low reallocation counts are not critical for them."));
-
+	/// Get text related to "uncorrectable sectors"
+	const std::string& get_uncorrectable_text()
+	{
+		static const std::string text = Glib::Markup::escape_text(
+				_("When a drive encounters a surface error, it marks that sector as \"unstable\" (also known as \"pending reallocation\"). "
+				"If the sector is successfully read from or written to at some later point, it is unmarked. If the sector continues to be inaccessible, "
+				"the drive reallocates (remaps) it to a specially reserved area as soon as it has a chance (usually during write request or successful read), "
+				"transferring the data so that no changes are reported to the operating system. This is why you generally don't see \"bad blocks\" "
+				"on modern drives - if you do, it means that either they have not been remapped yet, or the drive is out of reserved area."
+				"\n\nNote: SSDs reallocate blocks as part of their normal operation, so low reallocation counts are not critical for them."));
+		return text;
+	}
 
 
 	/// Attribute description for attribute database
@@ -97,7 +101,7 @@ namespace {
 				// Reallocated Sector Count (smartctl)
 				add(5, StorageAttribute::DiskType::Hdd, "Reallocated_Sector_Ct", "Reallocated Sector Count", "attr_reallocated_sector_count",
 						"Number of reallocated sectors (Raw value). Non-zero Raw value indicates a disk surface failure."
-						"\n\n" + s_unc_text);
+						"\n\n" + get_uncorrectable_text());
 				// SSD: Reallocated Sector Count (smartctl)
 				add(5, StorageAttribute::DiskType::Ssd, "Reallocated_Sector_Ct", "Reallocated Sector Count", "attr_reallocated_sector_count",
 						"Number of reallocated sectors (Raw value). High Raw value indicates an old age for an SSD.");
@@ -524,7 +528,7 @@ namespace {
 				add(196, StorageAttribute::DiskType::Any, "Reallocated_Event_Count", "Reallocation Event Count", "attr_reallocation_event_count",
 						"Number of reallocation (remap) operations. Raw value <i>should</i> show the total number of attempts "
 						"(both successful and unsuccessful) to reallocate sectors. An increase in Raw value indicates a disk surface failure."
-						"\n\n" + s_unc_text);
+						"\n\n" + get_uncorrectable_text());
 				// Indilinx Barefoot SSD: Erase_Failure_Blk_Ct (smartctl) (description?)
 				add(196, StorageAttribute::DiskType::Ssd, "Erase_Failure_Blk_Ct", "Erase Failure Block Count", "",
 						"Number of flash erase failures.");
@@ -536,7 +540,7 @@ namespace {
 						"Number of &quot;unstable&quot; (waiting to be remapped) sectors (Raw value). "
 						"If the unstable sector is subsequently read from or written to successfully, this value is decreased and the sector is not remapped. "
 						"An increase in Raw value indicates a disk surface failure."
-						"\n\n" + s_unc_text);
+						"\n\n" + get_uncorrectable_text());
 				// Indilinx Barefoot SSD: Read_Failure_Blk_Ct (smartctl) (description?)
 				add(197, StorageAttribute::DiskType::Ssd, "Read_Failure_Blk_Ct", "Read Failure Block Count", "",
 						"Number of blocks that failed to be read.");
@@ -545,7 +549,7 @@ namespace {
 				add(197, "Total_Pending_Sectors", "Total Pending Sectors", "attr_total_pending_sectors",
 						"Number of &quot;unstable&quot; (waiting to be remapped) sectors and already remapped sectors (Raw value). "
 						"An increase in Raw value indicates a disk surface failure."
-						"\n\n" + s_unc_text);
+						"\n\n" + get_uncorrectable_text());
 				// OCZ SSD (smartctl)
 				add(197, StorageAttribute::DiskType::Ssd, "Total_Unc_Read_Failures", "Total Uncorrectable Read Failures", "",
 						"");
@@ -555,13 +559,13 @@ namespace {
 						"An increase in Raw value indicates a disk surface failure. "
 						"The value may be decreased automatically when the errors are corrected (e.g., when an unreadable sector is "
 						"reallocated and the next Offline test is run to see the change)."
-						"\n\n" + s_unc_text);
+						"\n\n" + get_uncorrectable_text());
 				// Samsung: Offline Uncorrectable (smartctl). From smartctl man page:
 				// unlike Current_Pending_Sector, this won't decrease on reallocation.
 				add(198, "Total_Offl_Uncorrectabl", "Total Offline Uncorrectable", "attr_total_attr_offline_uncorrectable",
 						"Number of sectors which couldn't be corrected during Offline Data Collection (Raw value), currently and in the past. "
 						"An increase in Raw value indicates a disk surface failure."
-						"\n\n" + s_unc_text);
+						"\n\n" + get_uncorrectable_text());
 				// Sandforce SSD: Uncorrectable_Sector_Ct (smartctl) (same description?)
 				add(198, StorageAttribute::DiskType::Ssd, "Uncorrectable_Sector_Ct");
 				// Indilinx Barefoot SSD: Read_Sectors_Tot_Ct (smartctl) (description?)
@@ -1252,7 +1256,7 @@ namespace {
 						"The number of logical sectors that have been reallocated after device manufacture.\n\n"
 						"If the value is normalized, this is the whole number percentage of the available logical sector reallocation "
 						"resources that have been used (i.e., 0-100)."
-						"\n\n" + s_unc_text);
+						"\n\n" + get_uncorrectable_text());
 
 				add("Read Recovery Attempts", "", "",
 						"The number of logical sectors that require three or more attempts to read the data from the media for each read command. "
@@ -1266,7 +1270,7 @@ namespace {
 				add("Number of Realloc. Candidate Logical Sectors", "Number of Reallocation Candidate Logical Sectors", "",
 						"The number of logical sectors that are candidates for reallocation. "
 						"A reallocation candidate sector is a logical sector that the device has determined may need to be reallocated."
-						"\n\n" + s_unc_text);
+						"\n\n" + get_uncorrectable_text());
 
 				add("Number of High Priority Unload Events", "", "",
 						"The number of emergency head unload events.");
@@ -1277,7 +1281,7 @@ namespace {
 						"The number of errors that are reported as an Uncorrectable Error. "
 						"Uncorrectable errors that occur during background activity shall not be counted. "
 						"Uncorrectable errors reported by reads to flagged uncorrectable logical blocks should not be counted"
-						"\n\n" + s_unc_text);
+						"\n\n" + get_uncorrectable_text());
 
 				add("Resets Between Cmd Acceptance and Completion", "", "",
 						"The number of software reset or hardware reset events that occur while one or more commands have "

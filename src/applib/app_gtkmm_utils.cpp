@@ -69,9 +69,10 @@ namespace {
 	/// the potentially invalid utf-8 data.
 	inline gchar* gsc_g_utf8_make_valid (const gchar* name)
 	{
-		GString* str;
-		const gchar* remainder, *invalid;
-		gint remaining_bytes, valid_bytes;
+		GString* str = nullptr;
+		const gchar* remainder = nullptr;
+		const gchar* invalid = nullptr;
+		gint remaining_bytes = 0, valid_bytes = 0;
 
 		g_return_val_if_fail (name != nullptr, nullptr);
 
@@ -80,7 +81,7 @@ namespace {
 		remaining_bytes = gint(std::strlen(name));
 
 		while (remaining_bytes != 0) {
-			if (g_utf8_validate (remainder, remaining_bytes, &invalid))
+			if (g_utf8_validate (remainder, remaining_bytes, &invalid) == TRUE)
 				break;
 
 			valid_bytes = gint(invalid - remainder);
