@@ -16,17 +16,10 @@ Copyright:
 
 
 
-namespace {
-
-	/// "Execution finished" signal
-	sigc::signal<void, const CmdexSyncCommandInfo&> s_cmdex_sync_signal_execute_finish;
-
-}
-
-
-
 cmdex_signal_execute_finish_type& cmdex_sync_signal_execute_finish()
 {
+	/// "Execution finished" signal
+	static sigc::signal<void, const CmdexSyncCommandInfo&> s_cmdex_sync_signal_execute_finish;
 	return s_cmdex_sync_signal_execute_finish;
 }
 
@@ -134,11 +127,12 @@ bool CmdexSync::execute()
 		// hang waiting for the child to exit (the watch handler won't be called).
 		// Note: If you have an idle callback, g_main_context_pending() will
 		// always return true (until the idle callback returns false and unregisters itself).
-		while(g_main_context_pending(nullptr)) {
-			g_main_context_iteration(nullptr, false);
+		while(g_main_context_pending(nullptr) != FALSE) {
+			g_main_context_iteration(nullptr, FALSE);
 		}
 
-		g_usleep(50*1000);  // 50 msec. avoids 100% CPU usage.
+		const gulong sleep_us = 50*1000;  // 50 msec. avoids 100% CPU usage.
+		g_usleep(sleep_us);
 	}
 
 	// command exited, do a cleanup.

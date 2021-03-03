@@ -13,6 +13,8 @@ Copyright:
 #include <gtkmm.h>  // Gtk::Main
 #include <gdkmm.h>
 
+#include <memory>
+
 #include "hz/string_algo.h"
 #include "hz/fs_ns.h"
 #include "cmdex_sync_gui.h"
@@ -36,17 +38,17 @@ bool CmdexSyncGui::execute()
 Gtk::MessageDialog* CmdexSyncGui::create_running_dialog(Gtk::Window* parent, const Glib::ustring& msg)
 {
 	if (running_dialog_)
-		return running_dialog_;
+		return running_dialog_.get();
 
 	if (!msg.empty())
 		set_running_msg(msg);
 
 	// Construct the dialog so we can manipulate it before execution
 	if (parent) {
-		running_dialog_ = new Gtk::MessageDialog(*parent, "", false,
+		running_dialog_ = std::make_unique<Gtk::MessageDialog>(*parent, "", false,
 				CMDEX_DIALOG_MESSAGE_TYPE, Gtk::BUTTONS_CANCEL);
 	} else {
-		running_dialog_ = new Gtk::MessageDialog("", false,
+		running_dialog_ = std::make_unique<Gtk::MessageDialog>("", false,
 				CMDEX_DIALOG_MESSAGE_TYPE, Gtk::BUTTONS_CANCEL);
 	}
 
@@ -63,7 +65,7 @@ Gtk::MessageDialog* CmdexSyncGui::create_running_dialog(Gtk::Window* parent, con
 	// this won't harm the tests - they don't involve long-running commands.
 	running_dialog_->set_modal(true);
 
-	return running_dialog_;
+	return running_dialog_.get();
 }
 
 

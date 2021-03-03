@@ -12,10 +12,9 @@ Copyright:
 #ifndef APP_CMDEX_SYNC_GUI_H
 #define APP_CMDEX_SYNC_GUI_H
 
-// TODO Remove this in gtkmm4.
 #include "local_glibmm.h"
-
 #include <gtkmm.h>
+#include <memory>
 
 #include "cmdex_sync.h"
 
@@ -41,19 +40,6 @@ class CmdexSyncGui : public CmdexSync {
 		}
 
 
-		/// Non-construction-copyable
-		CmdexSyncGui(const CmdexSyncGui& other) = delete;
-
-		/// Non-copyable
-		CmdexSyncGui& operator=(const CmdexSyncGui&) = delete;
-
-
-		/// Destructor
-		~CmdexSyncGui()
-		{
-			delete running_dialog_;
-		}
-
 
 		// Reimplemented from CmdexSync
 		bool execute() override;
@@ -73,9 +59,9 @@ class CmdexSyncGui : public CmdexSync {
 
 
 		/// Return the "running" dialog
-		Gtk::MessageDialog* get_running_dialog()
+		[[nodiscard]] Gtk::MessageDialog* get_running_dialog()
 		{
-			return running_dialog_;
+			return running_dialog_.get();
 		}
 
 
@@ -112,7 +98,7 @@ class CmdexSyncGui : public CmdexSync {
 		bool execution_running_ = false;  ///< If true, the execution is still in progress
 		bool should_abort_ = false;  ///< GUI callbacks may set this to abort the execution
 
-		Gtk::MessageDialog* running_dialog_ = nullptr;  ///< "Running" dialog
+		std::unique_ptr<Gtk::MessageDialog> running_dialog_;  ///< "Running" dialog
 		bool running_dialog_shown_ = false;  ///< If true, the "running" dialog is visible
 		bool running_dialog_abort_mode_ = false;  ///< If true, the "running" dialog is in "aborting..." mode.
 		Glib::Timer running_dialog_timer_;  ///< "Running" dialog show timer.

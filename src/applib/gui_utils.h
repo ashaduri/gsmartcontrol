@@ -12,12 +12,10 @@ Copyright:
 #ifndef GUI_UTILS_H
 #define GUI_UTILS_H
 
-// TODO Remove this in gtkmm4.
 #include "local_glibmm.h"
-
+#include <gtkmm.h>
 #include <string>
 
-#include <gtkmm.h>
 
 
 // These functions won't return until the dialogs are closed.

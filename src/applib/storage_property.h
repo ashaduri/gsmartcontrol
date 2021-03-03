@@ -62,7 +62,7 @@ class StorageAttribute {
 		};
 
 		/// Get readable attribute type name
-		static std::string get_attr_type_name(AttributeType type)
+		[[nodiscard]] static std::string get_attr_type_name(AttributeType type)
 		{
 			static const std::unordered_map<AttributeType, std::string> m {
 					{AttributeType::unknown, "[unknown]"},
@@ -84,7 +84,7 @@ class StorageAttribute {
 		};
 
 		/// Get readable when-updated type name
-		static std::string get_update_type_name(UpdateType type)
+		[[nodiscard]] static std::string get_update_type_name(UpdateType type)
 		{
 			static const std::unordered_map<UpdateType, std::string> m {
 					{UpdateType::unknown, "[unknown]"},
@@ -107,7 +107,7 @@ class StorageAttribute {
 		};
 
 		/// Get a readable when-failed type name
-		static std::string get_fail_time_name(FailTime type)
+		[[nodiscard]] static std::string get_fail_time_name(FailTime type)
 		{
 			static const std::unordered_map<FailTime, std::string> m {
 					{FailTime::unknown, "[unknown]"},
@@ -123,7 +123,7 @@ class StorageAttribute {
 
 
 		/// Format raw value with commas (if it's a number)
-		std::string format_raw_value() const;
+		[[nodiscard]] std::string format_raw_value() const;
 
 
 		int32_t id = -1;  ///< Attribute ID (most vendors agree on this)
@@ -151,13 +151,13 @@ class StorageStatistic {
 	public:
 
 		/// Whether the normalization flag is present
-		bool is_normalized() const
+		[[nodiscard]] bool is_normalized() const
 		{
-			return flags.find('N') != flags.npos;
+			return flags.find('N') != std::string::npos;
 		}
 
 		/// Format value with commas (if it's a number)
-		std::string format_value() const;
+		[[nodiscard]] std::string format_value() const;
 
 		bool is_header = false;  ///< If the line is a header
 		std::string flags;  ///< Flags in "NDC" / "---" format
@@ -184,7 +184,7 @@ class StorageErrorBlock {
 		static WarningLevel get_warning_level_for_error_type(const std::string& type);
 
 		/// Format lifetime hours with comma
-		std::string format_lifetime_hours() const;
+		[[nodiscard]] std::string format_lifetime_hours() const;
 
 		uint32_t error_num = 0;  ///< Error number
 		uint32_t lifetime_hours = 0;  ///< When the error occurred (in lifetime hours)
@@ -229,7 +229,7 @@ class StorageSelftestEntry {
 		};
 
 		/// Get log entry status displayable name
-		static std::string get_status_displayable_name(Status s)
+		[[nodiscard]] static std::string get_status_displayable_name(Status s)
 		{
 			static const std::unordered_map<Status, std::string> m {
 					{Status::unknown, "[unknown]"},
@@ -252,7 +252,7 @@ class StorageSelftestEntry {
 		}
 
 		/// Get severity of error status
-		static StatusSeverity get_status_severity(Status s)
+		[[nodiscard]] static StatusSeverity get_status_severity(Status s)
 		{
 			static const std::unordered_map<Status, StatusSeverity> m {
 					{Status::unknown, StatusSeverity::none},
@@ -276,14 +276,14 @@ class StorageSelftestEntry {
 
 
 		/// Get error status as a string
-		std::string get_status_str() const
+		[[nodiscard]] std::string get_status_str() const
 		{
 			return (status == Status::unknown ? status_str : get_status_displayable_name(status));
 		}
 
 
 		/// Format lifetime hours with comma
-		std::string format_lifetime_hours() const;
+		[[nodiscard]] std::string format_lifetime_hours() const;
 
 
 		uint32_t test_num = 0;  ///< Test number. always starts from 1. larger means older or newer, depending on model. 0 for capability.
@@ -315,7 +315,7 @@ class StorageProperty {
 		};
 
 		/// Get displayable section type name
-		static std::string get_section_name(Section s)
+		[[nodiscard]] static std::string get_section_name(Section s)
 		{
 			static const std::unordered_map<Section, std::string> m {
 					{Section::unknown, "unknown"},
@@ -347,7 +347,7 @@ class StorageProperty {
 		};
 
 		/// Get displayable subsection type name
-		static std::string get_subsection_name(SubSection s)
+		[[nodiscard]] static std::string get_subsection_name(SubSection s)
 		{
 			static const std::unordered_map<SubSection, std::string> m {
 					{SubSection::unknown, "unknown"},
@@ -371,7 +371,7 @@ class StorageProperty {
 
 
 		/// Get displayable value type name
-		std::string get_value_type_name() const
+		[[nodiscard]] std::string get_value_type_name() const
 		{
 			if (std::holds_alternative<std::monostate>(value))
 				return "empty";
@@ -398,7 +398,7 @@ class StorageProperty {
 
 
 		/// Check if this is an empty object with no value set.
-		bool empty() const
+		[[nodiscard]] bool empty() const
 		{
 			return std::holds_alternative<std::monostate>(value);
 		}
@@ -409,7 +409,7 @@ class StorageProperty {
 
 
 		/// Format this property for debugging purposes
-		std::string format_value(bool add_reported_too = false) const;
+		[[nodiscard]] std::string format_value(bool add_reported_too = false) const;
 
 
 		/// Get value of type T
@@ -422,14 +422,14 @@ class StorageProperty {
 
 		/// Check if value is of type T
 		template<typename T>
-		bool is_value_type() const
+		[[nodiscard]] bool is_value_type() const
 		{
 			return std::holds_alternative<T>(value);
 		}
 
 
 		/// Get property description (used in tooltips)
-		std::string get_description(bool clean = false) const
+		[[nodiscard]] std::string get_description(bool clean = false) const
 		{
 			if (clean)
 				return this->description;

@@ -42,7 +42,7 @@ class Cmdex : public hz::ErrorHolder {
 
 		/// Destructor. Don't destroy this object unless the child has exited. It will leak stuff
 		/// and possibly crash, etc... .
-		~Cmdex()
+		~Cmdex() override
 		{
 			// This will help if object is destroyed after the command has exited, but before
 			// stopped_cleanup() has been called.
@@ -110,7 +110,7 @@ class Cmdex : public hz::ErrorHolder {
 		/// Check if the process is running. Note that if this returns false, it doesn't mean that
 		/// the io channels have been closed or that the data may be read safely. Poll
 		/// stopped_cleanup_needed() instead.
-		bool is_running() const
+		[[nodiscard]] bool is_running() const
 		{
 			return running_;
 		}

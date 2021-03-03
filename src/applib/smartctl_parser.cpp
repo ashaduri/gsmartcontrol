@@ -211,24 +211,23 @@ bool SmartctlParser::parse_full(const std::string& full, StorageAttribute::DiskT
 		set_error_msg("Cannot extract smartctl version information.");
 		debug_out_warn("app", DBG_FUNC_MSG << "Cannot extract version information. Returning.\n");
 		return false;
+	}
 
-	} else {
-		{
-			StorageProperty p;
-			p.set_name("Smartctl version", "smartctl_version", "Smartctl Version");
-			p.reported_value = version;
-			p.value = p.reported_value;  // string-type value
-			p.section = StorageProperty::Section::info;  // add to info section
-			add_property(p);
-		}
-		{
-			StorageProperty p;
-			p.set_name("Smartctl version", "smartctl_version_full", "Smartctl Version");
-			p.reported_value = version_full;
-			p.value = p.reported_value;  // string-type value
-			p.section = StorageProperty::Section::info;  // add to info section
-			add_property(p);
-		}
+	{
+		StorageProperty p;
+		p.set_name("Smartctl version", "smartctl_version", "Smartctl Version");
+		p.reported_value = version;
+		p.value = p.reported_value;  // string-type value
+		p.section = StorageProperty::Section::info;  // add to info section
+		add_property(p);
+	}
+	{
+		StorageProperty p;
+		p.set_name("Smartctl version", "smartctl_version_full", "Smartctl Version");
+		p.reported_value = version_full;
+		p.value = p.reported_value;  // string-type value
+		p.section = StorageProperty::Section::info;  // add to info section
+		add_property(p);
 	}
 
 	if (!check_parsed_version(version, version_full)) {
@@ -368,23 +367,27 @@ bool SmartctlParser::parse_section(const std::string& header, const std::string&
 {
 	if (app_pcre_match("/START OF INFORMATION SECTION/mi", header)) {
 		return parse_section_info(body);
+	}
 
-	} else if (app_pcre_match("/START OF READ SMART DATA SECTION/mi", header)) {
+	if (app_pcre_match("/START OF READ SMART DATA SECTION/mi", header)) {
 		return parse_section_data(body);
+	}
 
 	// These sections provide information about actions performed.
 	// You may encounter this if e.g. executing "smartctl -a -s on".
 
 	// example contents: "SMART Enabled.".
-	} else if (app_pcre_match("/START OF READ SMART DATA SECTION/mi", header)) {
+	if (app_pcre_match("/START OF READ SMART DATA SECTION/mi", header)) {
 		return true;
+	}
 
 	// We don't parse this - it's parsed by the respective command issuer.
-	} else if (app_pcre_match("/START OF ENABLE/DISABLE COMMANDS SECTION/mi", header)) {
+	if (app_pcre_match("/START OF ENABLE/DISABLE COMMANDS SECTION/mi", header)) {
 		return true;
+	}
 
 	// This is printed when executing "-t long", etc... . Parsed by respective command issuer.
-	} else if (app_pcre_match("/START OF OFFLINE IMMEDIATE AND SELF-TEST SECTION/mi", header)) {
+	if (app_pcre_match("/START OF OFFLINE IMMEDIATE AND SELF-TEST SECTION/mi", header)) {
 		return true;
 	}
 
@@ -1024,7 +1027,8 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 			// add as a time property
 			StorageProperty p(pt);
 			p.set_name(name);
-			p.reported_value = numvalue_orig + " | " + strvalue_orig;  // well, not really as reported, but still...
+			// well, not really as reported, but still...
+			p.reported_value.append(numvalue_orig).append(" | ").append(strvalue_orig);
 			p.value = std::chrono::seconds(numvalue);  // always in seconds
 
 			// Set some generic names on the recognized ones
@@ -1039,7 +1043,8 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 
 			StorageProperty p(pt);
 			p.set_name(name);
-			p.reported_value = numvalue_orig + " | " + strvalue_orig;  // well, not really as reported, but still...
+			// well, not really as reported, but still...
+			p.reported_value.append(numvalue_orig).append(" | ").append(strvalue_orig);
 
 			StorageCapability cap;
 			cap.reported_flag_value = numvalue_orig;

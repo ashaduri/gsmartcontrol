@@ -26,7 +26,7 @@ class StorageDetector {
 	public:
 
 		/// Detects a list of drives. Returns detection error message if error occurs.
-		std::string detect(std::vector<StorageDevicePtr>& put_drives_here,
+		std::string detect(std::vector<StorageDevicePtr>& drives,
 				const ExecutorFactoryPtr& ex_factory);
 
 
@@ -50,21 +50,21 @@ class StorageDetector {
 
 
 		/// Add device patterns to drive detection blacklist
-		void add_blacklist_patterns(std::vector<std::string>& patterns)
+		void add_blacklist_patterns(const std::vector<std::string>& patterns)
 		{
 			blacklist_patterns_.insert(blacklist_patterns_.end(), patterns.begin(), patterns.end());
 		}
 
 
 		/// Get all errors produced by fetch_basic_data().
-		const std::vector<std::string>& get_fetch_data_errors() const
+		[[nodiscard]] const std::vector<std::string>& get_fetch_data_errors() const
 		{
 			return fetch_data_errors_;
 		}
 
 
 		/// Get command output for each error in get_fetch_data_errors().
-		const std::vector<std::string>& get_fetch_data_error_outputs() const
+		[[nodiscard]] const std::vector<std::string>& get_fetch_data_error_outputs() const
 		{
 			return fetch_data_error_outputs_;
 		}

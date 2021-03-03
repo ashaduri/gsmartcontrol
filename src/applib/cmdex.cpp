@@ -15,6 +15,7 @@ Copyright:
 #include <string>
 #include <sys/types.h>
 #include <cerrno>  // errno (not std::errno, it may be a macro)
+#include <array>
 
 #ifdef _WIN32
 // 	#include <io.h>  // close()
@@ -69,7 +70,7 @@ extern "C" {
 		DBG_FUNCTION_ENTER_MSG;
 		auto* self = static_cast<Cmdex*>(data);
 		self->try_stop(hz::Signal::Terminate);
-		return false;  // one-time call
+		return FALSE;  // one-time call
 	}
 
 
@@ -79,7 +80,7 @@ extern "C" {
 		DBG_FUNCTION_ENTER_MSG;
 		auto* self = static_cast<Cmdex*>(data);
 		self->try_stop(hz::Signal::Kill);
-		return false;  // one-time call
+		return FALSE;  // one-time call
 	}
 
 
@@ -173,14 +174,14 @@ bool Cmdex::execute()
 		// Since we invoke shutdown() manually before unref(), this would cause
 		// a double-shutdown.
 		// g_io_channel_set_close_on_unref(channel_stdout_, true);  // close() on fd
-		g_io_channel_set_encoding(channel_stdout_, nullptr, 0);  // binary IO
-		g_io_channel_set_flags(channel_stdout_, GIOFlags(g_io_channel_get_flags(channel_stdout_) & channel_flags), 0);
+		g_io_channel_set_encoding(channel_stdout_, nullptr, nullptr);  // binary IO
+		g_io_channel_set_flags(channel_stdout_, GIOFlags(g_io_channel_get_flags(channel_stdout_) & channel_flags), nullptr);
 		g_io_channel_set_buffer_size(channel_stdout_, channel_stdout_buffer_size_);
 	}
 	if (channel_stderr_) {
 		// g_io_channel_set_close_on_unref(channel_stderr_, true);  // close() on fd
-		g_io_channel_set_encoding(channel_stderr_, nullptr, 0);  // binary IO
-		g_io_channel_set_flags(channel_stderr_, GIOFlags(g_io_channel_get_flags(channel_stderr_) & channel_flags), 0);
+		g_io_channel_set_encoding(channel_stderr_, nullptr, nullptr);  // binary IO
+		g_io_channel_set_flags(channel_stderr_, GIOFlags(g_io_channel_get_flags(channel_stderr_) & channel_flags), nullptr);
 		g_io_channel_set_buffer_size(channel_stderr_, channel_stderr_buffer_size_);
 	}
 
@@ -271,14 +272,14 @@ void Cmdex::set_stop_timeouts(std::chrono::milliseconds term_timeout_msec, std::
 void Cmdex::unset_stop_timeouts()
 {
 	DBG_FUNCTION_ENTER_MSG;
-	if (event_source_id_term) {
+	if (event_source_id_term != 0) {
 		GSource* source_term = g_main_context_find_source_by_id(nullptr, event_source_id_term);
 		if (source_term)
 			g_source_destroy(source_term);
 		event_source_id_term = 0;
 	}
 
-	if (event_source_id_kill) {
+	if (event_source_id_kill != 0) {
 		GSource* source_kill = g_main_context_find_source_by_id(nullptr, event_source_id_kill);
 		if (source_kill)
 			g_source_destroy(source_kill);
@@ -356,13 +357,13 @@ void Cmdex::on_child_watch_handler([[maybe_unused]] GPid arg_pid, int waitpid_st
 	on_channel_io(self->channel_stderr_, GIOCondition(0), self, Channel::standard_error);
 
 	if (self->channel_stdout_) {
-		g_io_channel_shutdown(self->channel_stdout_, false, nullptr);
+		g_io_channel_shutdown(self->channel_stdout_, FALSE, nullptr);
 		g_io_channel_unref(self->channel_stdout_);
 		self->channel_stdout_ = nullptr;
 	}
 
 	if (self->channel_stderr_) {
-		g_io_channel_shutdown(self->channel_stderr_, false, nullptr);
+		g_io_channel_shutdown(self->channel_stderr_, FALSE, nullptr);
 		g_io_channel_unref(self->channel_stderr_);
 		self->channel_stderr_ = nullptr;
 	}
@@ -370,13 +371,13 @@ void Cmdex::on_child_watch_handler([[maybe_unused]] GPid arg_pid, int waitpid_st
 	// Remove fd IO callbacks. They may actually be removed already (note sure about this).
 	// This will force calling the iochannel callback (they may not be called
 	// otherwise at all if there was no output).
-	if (self->event_source_id_stdout_) {
+	if (self->event_source_id_stdout_ != 0) {
 		GSource* source_stdout = g_main_context_find_source_by_id(nullptr, self->event_source_id_stdout_);
 		if (source_stdout)
 			g_source_destroy(source_stdout);
 	}
 
-	if (self->event_source_id_stderr_) {
+	if (self->event_source_id_stderr_ != 0) {
 		GSource* source_stderr = g_main_context_find_source_by_id(nullptr, self->event_source_id_stderr_);
 		if (source_stderr)
 			g_source_destroy(source_stderr);
@@ -405,17 +406,17 @@ gboolean Cmdex::on_channel_io(GIOChannel* channel,
 // 			<< (type == Channel::standard_output ? "STDOUT" : "STDERR") << ") " << int(cond) << "\n");
 
 	bool continue_events = true;
-	if ((cond & G_IO_ERR) || (cond & G_IO_HUP) || (cond & G_IO_NVAL)) {
+	if (bool(cond & G_IO_ERR) || bool(cond & G_IO_HUP) || bool(cond & G_IO_NVAL)) {
 		continue_events = false;  // there'll be no more data
 	}
 
-	DBG_ASSERT(channel_type == Channel::standard_output || channel_type == Channel::standard_error);
+	DBG_ASSERT_RETURN(channel_type == Channel::standard_output || channel_type == Channel::standard_error, false);
 
 // 	const gsize count = 4 * 1024;
 	// read the bytes one by one. without this, a buffered iochannel hangs while waiting for data.
 	// we don't use unbuffered iochannels - they may lose data on program exit.
-	const gsize count = 1;
-	gchar buf[count] = {0};
+	constexpr gsize count = 1;
+	std::array<gchar, count> buf = {0};
 
 	std::string* output_str = nullptr;
 	if (channel_type == Channel::standard_output) {
@@ -423,15 +424,16 @@ gboolean Cmdex::on_channel_io(GIOChannel* channel,
 	} else if (channel_type == Channel::standard_error) {
 		output_str = &self->str_stderr_;
 	}
+	DBG_ASSERT_RETURN(output_str, false);
 
 
 	// while there's anything to read, read it
 	do {
 		GError* channel_error = nullptr;
 		gsize bytes_read = 0;
-		GIOStatus status = g_io_channel_read_chars(channel, buf, count, &bytes_read, &channel_error);
-		if (bytes_read)
-			output_str->append(buf, bytes_read);
+		GIOStatus status = g_io_channel_read_chars(channel, buf.data(), count, &bytes_read, &channel_error);
+		if (bytes_read != 0)
+			output_str->append(buf.data(), bytes_read);
 
 		if (channel_error) {
 			self->push_error(Error<void>("giochannel", ErrorLevel::error, channel_error->message));
@@ -444,12 +446,12 @@ gboolean Cmdex::on_channel_io(GIOChannel* channel,
 			continue_events = false;
 			break;
 		}
-	} while (g_io_channel_get_buffer_condition(channel) & G_IO_IN);
+	} while (bool(g_io_channel_get_buffer_condition(channel) & G_IO_IN));
 
 // 	DBG_FUNCTION_EXIT_MSG;
 
 	// false if the source should be removed, true otherwise.
-	return continue_events;
+	return gboolean(continue_events);
 }
 
 

@@ -26,7 +26,7 @@ class SmartctlParser {
 	public:
 
 		/// Parse full "smartctl -x" output
-		bool parse_full(const std::string& s, StorageAttribute::DiskType disk_type);
+		bool parse_full(const std::string& full, StorageAttribute::DiskType disk_type);
 
 
 		/// Supply any output of smartctl here, the smartctl version will be retrieved.
@@ -89,7 +89,7 @@ class SmartctlParser {
 
 
 		/// Get "full" data, as passed to parse_full().
-		std::string get_data_full() const;
+		[[nodiscard]] std::string get_data_full() const;
 
 /*
 		std::string get_data_section_info() const
@@ -105,11 +105,11 @@ class SmartctlParser {
 
 		/// Get parse error message. Call this only if parsing doesn't succeed,
 		/// to get a friendly error message.
-		std::string get_error_msg() const;
+		[[nodiscard]] std::string get_error_msg() const;
 
 
 		/// Get parse result properties
-		const std::vector<StorageProperty>& get_properties() const;
+		[[nodiscard]] const std::vector<StorageProperty>& get_properties() const;
 
 
 

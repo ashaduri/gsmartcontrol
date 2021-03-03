@@ -121,14 +121,18 @@ inline std::string detect_drives_linux_udev_byid(std::vector<std::string>& devic
 
 
 /// Cache of file->contents, caches read files.
-std::map<hz::fs::path, std::string> s_read_file_cache;
+inline std::map<hz::fs::path, std::string>& get_read_file_cache_ref()
+{
+	static std::map<hz::fs::path, std::string> cache;
+	return cache;
+}
 
 
 
 /// Clear the read file cache.
 inline void clear_read_file_cache()
 {
-	s_read_file_cache.clear();
+	get_read_file_cache_ref().clear();
 }
 
 
@@ -136,7 +140,8 @@ inline void clear_read_file_cache()
 /// Read procfs file without using seeking.
 inline std::error_code read_proc_file(const hz::fs::path& file, std::string& contents)
 {
-	if (auto iter = s_read_file_cache.find(file); iter != s_read_file_cache.end()) {
+	auto& cache = get_read_file_cache_ref();
+	if (auto iter = cache.find(file); iter != cache.end()) {
 		contents = iter->second;
 		return std::error_code();
 	}
@@ -146,7 +151,7 @@ inline std::error_code read_proc_file(const hz::fs::path& file, std::string& con
 		return ec;
 	}
 
-	s_read_file_cache[file] = contents;
+	cache[file] = contents;
 
 	debug_begin();  // avoiding printing prefix on every line
 	debug_out_dump("app", DBG_FUNC_MSG << "File contents (\"" << file.string() << "\"):\n" << contents << "\n");

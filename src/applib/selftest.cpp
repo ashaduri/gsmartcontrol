@@ -94,9 +94,13 @@ bool SelfTest::is_supported() const
 
 	std::string prop_name;
 	switch(type_) {
-		case TestType::immediate_offline: prop_name = "iodc_support"; break;
-		case TestType::short_test: prop_name = "selftest_support"; break;
-		case TestType::long_test: prop_name = "selftest_support"; break;  // same for short and long
+		case TestType::immediate_offline:
+			prop_name = "iodc_support";
+			break;
+		case TestType::short_test:
+		case TestType::long_test:  // same for short and long
+			prop_name = "selftest_support";
+			break;
 		case TestType::conveyance: prop_name = "conveyance_support"; break;
 	}
 

@@ -151,7 +151,7 @@ class CmdexSync : public sigc::trackable {
 		/// See Cmdex::set_exit_status_translator() for details.
 		void set_exit_status_translator(Cmdex::exit_status_translator_func_t func)
 		{
-			cmdex_.set_exit_status_translator(func);
+			cmdex_.set_exit_status_translator(std::move(func));
 		}
 
 

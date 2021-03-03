@@ -368,14 +368,16 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 
 	std::string output;
 	std::string error_msg = execute_device_smartctl((b ? "--smart=on --saveauto=on" : "--smart=off"), smartctl_ex, output);
-	if (!error_msg.empty())
+	if (!error_msg.empty()) {
 		return error_msg;
+	}
 
 	// search at line start, because they are sometimes present in other sentences too.
 	if (app_pcre_match("/^SMART Enabled/mi", output) || app_pcre_match("/^SMART Disabled/mi", output)) {
 		return std::string();  // success
+	}
 
-	} else if (app_pcre_match("/^A mandatory SMART command failed/mi", output)) {
+	if (app_pcre_match("/^A mandatory SMART command failed/mi", output)) {
 		return _("Mandatory SMART command failed.");
 	}
 
@@ -386,8 +388,9 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 
 std::string StorageDevice::set_aodc_enabled(bool b, const std::shared_ptr<CmdexSync>& smartctl_ex)
 {
-	if (this->test_is_active_)
+	if (this->test_is_active_) {
 		return _("A test is currently being performed on this drive.");
+	}
 
 	// execute smartctl --offlineauto=on|off /dev/...
 	// Output:
@@ -407,8 +410,9 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 
 	if (app_pcre_match("/Testing Enabled/mi", output) || app_pcre_match("/Testing Disabled/mi", output)) {
 		return std::string();  // success
+	}
 
-	} else if (app_pcre_match("/^A mandatory SMART command failed/mi", output)) {
+	if (app_pcre_match("/^A mandatory SMART command failed/mi", output)) {
 		return _("Mandatory SMART command failed.");
 	}
 
@@ -692,7 +696,7 @@ std::string StorageDevice::get_serial_number() const
 
 bool StorageDevice::get_is_hdd() const
 {
-	return hdd_.has_value() ? hdd_.value() : false;
+	return hdd_.has_value() && hdd_.value();
 }
 
 

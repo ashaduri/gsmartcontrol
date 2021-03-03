@@ -1101,7 +1101,7 @@ namespace {
 
 
 			/// Find the description by smartctl name or id, merging them if they're partial.
-			AttributeDescription find(const std::string& reported_name, int32_t id, StorageAttribute::DiskType type) const
+			[[nodiscard]] AttributeDescription find(const std::string& reported_name, int32_t id, StorageAttribute::DiskType type) const
 			{
 				// search by ID first
 				auto id_iter = id_db.find(id);
@@ -1143,8 +1143,14 @@ namespace {
 	};
 
 
-	/// Program-wide attribute description database
-	const AttributeDatabase s_attribute_db;
+
+
+	/// Get program-wide attribute description database
+	inline const AttributeDatabase& get_attribute_db()
+	{
+		static const AttributeDatabase attribute_db;
+		return attribute_db;
+	}
 
 
 
@@ -1356,7 +1362,7 @@ namespace {
 
 
 			/// Find the description by smartctl name or id, merging them if they're partial.
-			StatisticDescription find(const std::string& reported_name) const
+			[[nodiscard]] StatisticDescription find(const std::string& reported_name) const
 			{
 				// search by ID first
 				auto iter = devstat_db.find(reported_name);
@@ -1374,8 +1380,13 @@ namespace {
 	};
 
 
-	/// Program-wide devstat description database
-	const StatisticsDatabase s_devstat_db;
+
+	/// Get program-wide devstat description database
+	inline const StatisticsDatabase& get_devstat_db()
+	{
+		static const StatisticsDatabase devstat_db;
+		return devstat_db;
+	}
 
 
 
@@ -1414,7 +1425,7 @@ namespace {
 	/// with all the readable information we can gather.
 	inline void auto_set_attr(StorageProperty& p, StorageAttribute::DiskType disk_type)
 	{
-		AttributeDescription attr = s_attribute_db.find(p.reported_name, p.get_value<StorageAttribute>().id, disk_type);
+		AttributeDescription attr = get_attribute_db().find(p.reported_name, p.get_value<StorageAttribute>().id, disk_type);
 
 		std::string humanized_reported_name;
 		std::string ssd_hdd_str;
@@ -1511,7 +1522,7 @@ namespace {
 	/// with all the readable information we can gather.
 	inline bool auto_set_statistic(StorageProperty& p)
 	{
-		StatisticDescription sd = s_devstat_db.find(p.reported_name);
+		StatisticDescription sd = get_devstat_db().find(p.reported_name);
 
 		std::string displayable_name = (sd.displayable_name.empty() ? sd.reported_name : sd.displayable_name);
 
@@ -1641,17 +1652,8 @@ bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::
 				break;
 
 			case StorageProperty::SubSection::erc_log:
-				// nothing here
-				break;
-
 			case StorageProperty::SubSection::phy_log:
-				// nothing here
-				break;
-
 			case StorageProperty::SubSection::directory_log:
-				// nothing here
-				break;
-
 			case StorageProperty::SubSection::unknown:
 				// nothing
 				break;
@@ -1952,17 +1954,8 @@ WarningLevel storage_property_autoset_warning(StorageProperty& p)
 				break;
 
 			case StorageProperty::SubSection::erc_log:
-				// nothing here
-				break;
-
 			case StorageProperty::SubSection::phy_log:
-				// nothing here
-				break;
-
 			case StorageProperty::SubSection::directory_log:
-				// nothing here
-				break;
-
 			case StorageProperty::SubSection::unknown:
 				// nothing here
 				break;
