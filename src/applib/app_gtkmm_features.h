@@ -12,9 +12,7 @@ Copyright:
 #ifndef APP_GTKMM_FEATURES_H
 #define APP_GTKMM_FEATURES_H
 
-// TODO Remove this in gtkmm4.
 #include "local_glibmm.h"
-
 #include <gtkmm.h>
 
 
