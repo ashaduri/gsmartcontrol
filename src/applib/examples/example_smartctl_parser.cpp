@@ -26,7 +26,7 @@ Copyright:
 
 
 /// Main function of the test
-int main(int argc, char** argv)
+int main(int argc, char* argv[])
 {
 	if (argc < 2) {
 		std::cout << "Usage: " << argv[0] << " <file_to_parse>\n";

@@ -13,6 +13,7 @@ Copyright:
 
 #include "applib/storage_device.h"
 #include "applib/storage_detector.h"
+
 #include "hz/main_tools.h"
 #include "gsc_settings.h"  // in src directory
 
@@ -45,6 +46,7 @@ int main()
 						" (" << StorageDevice::get_type_storable_name(drive->get_detected_type()) << ")\n";
 			}
 		}
+		return EXIT_SUCCESS;
 	});
 }
 

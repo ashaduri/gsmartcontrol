@@ -15,6 +15,9 @@ Copyright:
 
 #include <iostream>
 
+#include "hz/main_tools.h"
+
+
 
 /// libdebug namespace for tests
 namespace libdebug_example {
@@ -62,8 +65,8 @@ namespace {
 
 
 
-/// Main function for the test
-int main()
+/// A separate function is needed to avoid clang-tidy complaining about capturing __function__ from lambda.
+int main_impl()
 {
 	debug_register_domain("dom");
 
@@ -182,12 +185,21 @@ int main()
 
 	TestClassB<unsigned int>().func2(TestClassC<char*>(), 0);
 
-// 	debug_out_warn("default", DBG_FUNC_MSG << "Doing something.\n");
-// 	debug_out_warn("default", DBG_FUNC_MSG << "Doing something.\n");
-
+	// 	debug_out_warn("default", DBG_FUNC_MSG << "Doing something.\n");
+	// 	debug_out_warn("default", DBG_FUNC_MSG << "Doing something.\n");
 
 	return EXIT_SUCCESS;
+}
 
+
+
+/// Main function for the test
+int main()
+{
+	return hz::main_exception_wrapper([]()
+	{
+		return main_impl();
+	});
 }
 
 

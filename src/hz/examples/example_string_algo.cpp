@@ -23,89 +23,94 @@ Copyright:
 #include <vector>
 #include <iostream>
 
+#include "hz/main_tools.h"
+
 
 
 /// Main function for the test
 int main()
 {
-	using namespace hz;
-
-
+	return hz::main_exception_wrapper([]()
 	{
-		std::string s = "/aa/bbb/ccccc//dsada//";
+		using namespace hz;
 
-		std::vector<std::string> v;
+		{
+			std::string s = "/aa/bbb/ccccc//dsada//";
 
-		string_split(s, '/', v, false);
+			std::vector<std::string> v;
 
-		for (std::size_t i = 0; i < v.size(); i++)
-			std::cerr << (v[i] == "" ? "[empty]" : v[i]) << "\n";
-	}
+			string_split(s, '/', v, false);
 
-
-	{
-		std::string s = "//aa////bbb/ccccc//dsada////";
-
-		std::vector<std::string> v;
-
-		string_split(s, "//", v, false);
-
-		for (std::size_t i = 0; i < v.size(); i++)
-			std::cerr << (v[i] == "" ? "[empty]" : v[i]) << "\n";
-	}
+			for (const auto& str : v) {
+				std::cerr << (str.empty() ? "[empty]" : str) << "\n";
+			}
+		}
 
 
-	{
-		std::string s = "  a b bb  c     d   ";
-		std::cerr << string_remove_adjacent_duplicates_copy(s, ' ') << "\n";
-		std::cerr << string_remove_adjacent_duplicates_copy(s, ' ', 2) << "\n";
-	}
+		{
+			std::string s = "//aa////bbb/ccccc//dsada////";
+
+			std::vector<std::string> v;
+
+			string_split(s, "//", v, false);
+
+			for (const auto& str : v) {
+				std::cerr << (str.empty() ? "[empty]" : str) << "\n";
+			}
+		}
+
+
+		{
+			std::string s = "  a b bb  c     d   ";
+			std::cerr << string_remove_adjacent_duplicates_copy(s, ' ') << "\n";
+			std::cerr << string_remove_adjacent_duplicates_copy(s, ' ', 2) << "\n";
+		}
 
 
 
-	{
-		std::string s = "/a/b/c/dd//e/";
-		string_replace(s, '/', ':');
-		std::cerr << s << "\n";
-	}
+		{
+			std::string s = "/a/b/c/dd//e/";
+			string_replace(s, '/', ':');
+			std::cerr << s << "\n";
+		}
 
 
-	{
-		std::string s = "112/2123412";
-		string_replace(s, "12", "AB");
-		std::cerr << s << "\n";
-	}
+		{
+			std::string s = "112/2123412";
+			string_replace(s, "12", "AB");
+			std::cerr << s << "\n";
+		}
 
 
-	{
-		std::vector<std::string> from, to;
+		{
+			std::vector<std::string> from, to;
 
-		from.push_back("12");
-		from.push_back("abc");
+			from.emplace_back("12");
+			from.emplace_back("abc");
 
-		to.push_back("345");
-		to.push_back("de");
+			to.emplace_back("345");
+			to.emplace_back("de");
 
-		std::string s = "12345678abcdefg abc ab";
-		std::cerr << s << "\n";
-		string_replace_array(s, from, to);
-		std::cerr << s << "\n";
-	}
+			std::string s = "12345678abcdefg abc ab";
+			std::cerr << s << "\n";
+			string_replace_array(s, from, to);
+			std::cerr << s << "\n";
+		}
 
-	{
-		std::vector<std::string> from, to;
+		{
+			std::vector<std::string> from, to;
 
-		from.push_back("12");
-		from.push_back("abc");
+			from.emplace_back("12");
+			from.emplace_back("abc");
 
-		std::string s = "12345678abcdefg abc ab";
-		std::cerr << s << "\n";
-		string_replace_array(s, from, ":");
-		std::cerr << s << "\n";
-	}
+			std::string s = "12345678abcdefg abc ab";
+			std::cerr << s << "\n";
+			string_replace_array(s, from, ":");
+			std::cerr << s << "\n";
+		}
 
-
-	return 0;
+		return EXIT_SUCCESS;
+	});
 }
 
 
