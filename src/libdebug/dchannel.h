@@ -69,7 +69,7 @@ class DebugChannelOStream : public DebugChannelBase {
 		// Non-debug-API members:
 
 		/// Get the ostream.
-		std::ostream& get_ostream()
+		[[nodiscard]] std::ostream& get_ostream()
 		{
 			return os_;
 		}

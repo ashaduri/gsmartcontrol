@@ -56,14 +56,14 @@ namespace debug_internal {
 
 
 			/// Get the domain/level mapping.
-			domain_map_t& get_domain_map()
+			[[nodiscard]] domain_map_t& get_domain_map()
 			{
 				return domain_map;
 			}
 
 
 			/// Get current indentation level.
-			int get_indent_level() const
+			[[nodiscard]] int get_indent_level() const
 			{
 				return indent_level_;
 			}
@@ -91,7 +91,7 @@ namespace debug_internal {
 			}
 
 			/// Check if we're inside a debug_begin() context.
-			bool get_inside_begin() const
+			[[nodiscard]] bool get_inside_begin() const
 			{
 				if (inside_begin_.empty())
 					return false;

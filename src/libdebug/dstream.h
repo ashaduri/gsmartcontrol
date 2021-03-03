@@ -48,7 +48,7 @@ namespace debug_internal {
 		public:
 
 			/// Constructor
-			DebugStreamBuf(DebugOutStream* dos) : dos_(dos)
+			explicit DebugStreamBuf(DebugOutStream* dos) : dos_(dos)
 			{
 				// in case of overflow for output, overflow() will be called to _output_ the data.
 
@@ -70,7 +70,7 @@ namespace debug_internal {
 
 
 			/// Virtual destructor
-			virtual ~DebugStreamBuf()
+			~DebugStreamBuf() override
 			{
 				sync();
 				delete[] pbase();  // delete the buffer
@@ -109,7 +109,7 @@ namespace debug_internal {
 
 			/// Sort-of flush the buffer. Only makes sense if there is a buffer.
 			/// Reimplemented.
-			int sync() override
+			int sync() final
 			{
 				if (pbase() != pptr()) {  // pptr() - current position; condition is true only if there is something in the buffer.
 	// 				write_out(std::string(pbase(), pptr() - pbase()));
@@ -193,7 +193,7 @@ namespace debug_internal {
 			}
 
 			/// Get format flags
-			debug_format::type get_format() const
+			[[nodiscard]] debug_format::type get_format() const
 			{
 				return format_;
 			}
@@ -210,7 +210,7 @@ namespace debug_internal {
 			}
 
 			/// Check whether the stream is enabled or not.
-			bool get_enabled() const
+			[[nodiscard]] bool get_enabled() const
 			{
 				return (rdbuf() == &buf_);
 			}
@@ -238,7 +238,7 @@ namespace debug_internal {
 
 			/// Check if the last sent output is still on the same line
 			/// as the first one.
-			bool get_is_first_line()
+			[[nodiscard]] bool get_is_first_line()
 			{
 				return is_first_line_;
 			}

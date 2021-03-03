@@ -16,6 +16,7 @@ Copyright:
 // Note: Sun compiler refuses to compile without <ostream> (iosfwd is not enough).
 // Since every useful operator << is defined in ostream, we include it here anyway.
 #include <ostream>  // std::ostream
+#include <utility>
 
 #include "hz/system_specific.h"  // HZ_FUNC_PRINTF_ISO_CHECK
 
@@ -109,17 +110,18 @@ namespace debug_internal {
 	struct DebugSourcePos {
 
 		/// Constructor
-		inline DebugSourcePos(const std::string& file_, int line_, const std::string& func_name_, const std::string& func_)
-				: func_name(func_name_), func(func_), line(line_), file(file_), enabled_types(debug_pos::def)
+		inline DebugSourcePos(std::string par_file, int line_, std::string par_func_name, std::string par_func)
+				: func_name(std::move(par_func_name)), func(std::move(par_func)), line(line_), file(std::move(par_file)),
+				enabled_types(debug_pos::def)
 		{ }
 
 		/// Formatted output string
-		std::string str() const;
+		[[nodiscard]] std::string str() const;
 
 
 		std::string func_name;  ///< Function name only
 		std::string func;  ///< Function name with namespaces and classes
-		int line;  ///< Source line
+		int line = 0;  ///< Source line
 		std::string file;  ///< Source file
 
 		debug_pos::type enabled_types;  ///< Enabled formatting types
@@ -230,6 +232,28 @@ namespace debug_internal {
 	} else (void)0
 
 
+/// Prints generic message to error-level if assertion fails. Don't need to send into stream, it prints by itself.
+/// Returns from the function on assertion failure.
+#define DBG_ASSERT_RETURN(cond, return_value) \
+	do { \
+		if (!(cond)) { \
+			debug_out_error("default", "ASSERTION FAILED: " << #cond << " at " << DBG_POS << "\n"); \
+			return (return_value); \
+		} \
+	} while(false)
+
+
+/// Prints generic message to error-level if assertion fails. Don't need to send into stream, it prints by itself.
+/// Returns from the function on assertion failure.
+#define DBG_ASSERT_RETURN_NONE(cond) \
+	do { \
+		if (!(cond)) { \
+			debug_out_error("default", "ASSERTION FAILED: " << #cond << " at " << DBG_POS << "\n"); \
+			return; \
+		} \
+	} while(false)
+
+
 
 
 // ------------------ Indentation and manipulators
@@ -259,7 +283,7 @@ namespace debug_internal {
 	/// A stream manipulator that increases the indentation level
 	struct DebugIndent {
 		/// Constructor
-		DebugIndent(int indent_level = 1) : by(indent_level)
+		constexpr explicit DebugIndent(int indent_level = 1) : by(indent_level)
 		{ }
 
 		/// Constructs a new DebugIndent object
@@ -275,7 +299,7 @@ namespace debug_internal {
 	/// A stream manipulator that decreases the indentation level
 	struct DebugUnindent {
 		/// Constructor
-		DebugUnindent(int unindent_level = 1) : by(unindent_level)
+		constexpr explicit DebugUnindent(int unindent_level = 1) : by(unindent_level)
 		{ }
 
 		/// Constructs a new DebugUnindent object
@@ -304,7 +328,7 @@ namespace debug_internal {
 	// operands are for ADL to work inside _other_ namespaces.
 
 	/// A stream manipulator operator
-	inline std::ostream& operator<< (std::ostream& os, debug_internal::DebugIndent& m)
+	inline std::ostream& operator<< (std::ostream& os, const debug_internal::DebugIndent& m)
 	{
 		debug_indent_inc(m.by);
 		return os;
@@ -312,7 +336,7 @@ namespace debug_internal {
 
 
 	/// A stream manipulator operator
-	inline std::ostream& operator<< (std::ostream& os, debug_internal::DebugUnindent& m)
+	inline std::ostream& operator<< (std::ostream& os, const debug_internal::DebugUnindent& m)
 	{
 		debug_indent_dec(m.by);
 		return os;
@@ -320,36 +344,25 @@ namespace debug_internal {
 
 
 	/// A stream manipulator operator
-	inline std::ostream& operator<< (std::ostream& os,  [[maybe_unused]] debug_internal::DebugResetIndent& m)
+	inline std::ostream& operator<< (std::ostream& os,  [[maybe_unused]] const debug_internal::DebugResetIndent& m)
 	{
 		debug_indent_reset();
 		return os;
 	}
 
 
-	// Manipulator objects:
-
-	/// Send this to libdebug-backed stream to increase the indentation level by 1.
-	extern DebugIndent debug_indent;
-
-	/// Send this to libdebug-backed stream to decrease the indentation level by 1.
-	extern DebugUnindent debug_unindent;
-
-	/// Send this to libdebug-backed stream to reset the indentation level to 0.
-	extern DebugResetIndent debug_resindent;
-
-
 }  // ns
 
 
 
-// manupulator objects
-using debug_internal::debug_indent;
-using debug_internal::debug_unindent;
-using debug_internal::debug_resindent;
+/// Manupulator object - send this to libdebug-backed stream to increase the indentation level by 1.
+constexpr inline debug_internal::DebugIndent debug_indent;
 
+/// Manupulator object - send this to libdebug-backed stream to decrease the indentation level by 1.
+constexpr inline debug_internal::DebugUnindent debug_unindent;
 
-
+/// Manupulator object - send this to libdebug-backed stream to reset the indentation level to 0.
+constexpr inline debug_internal::DebugResetIndent debug_resindent;
 
 
 

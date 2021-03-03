@@ -31,17 +31,8 @@ std::ostream& debug_out(debug_level::flag level, const std::string& domain)
 
 	auto level_map = dm.find(domain);
 	if (level_map == dm.end()) {  // no such domain
-		std::string msg = "debug_out(): Debug state doesn't contain the requested domain: \"" + domain + "\".";
-
-		if (domain != "default") {
-			debug_out(debug_level::warn, "default") << msg << "\n";
-			debug_out(debug_level::info, "default") << "Auto-creating the missing domain.\n";
-			debug_register_domain(domain);
-			debug_out(debug_level::warn, "default") << "The message follows:\n";
-			return debug_out(level, domain);  // try again
-		}
-
 		// this is an internal error
+		std::string msg = "debug_out(): Debug state doesn't contain the requested domain: \"" + domain + "\".";
 		throw debug_internal_error(msg.c_str());
 	}
 
@@ -103,20 +94,20 @@ namespace debug_internal {
 		std::ostringstream os;
 		os << "(";
 
-		if (enabled_types.to_ulong() & debug_pos::func_name) {
+		if (enabled_types.test(debug_pos::func_name)) {
 			os << "function: " << func_name;
 
-		} else if (enabled_types.to_ulong() & debug_pos::func) {
+		} else if (enabled_types.test(debug_pos::func)) {
 			os << "function: " << func << "()";
 		}
 
-		if (enabled_types.to_ulong() & debug_pos::file) {
+		if (enabled_types.test(debug_pos::file)) {
 			if (os.str() != "(")
 				os << ", ";
 			os << "file: " << file;
 		}
 
-		if (enabled_types.to_ulong() & debug_pos::line) {
+		if (enabled_types.test(debug_pos::line)) {
 			if (os.str() != "(")
 				os << ", ";
 			os << "line: " << line;
@@ -156,20 +147,6 @@ void debug_indent_dec(int by)
 void debug_indent_reset()
 {
 	debug_internal::get_debug_state().set_indent_level(0);
-}
-
-
-
-
-namespace debug_internal {
-
-
-	// manupulator objects
-	DebugIndent debug_indent;
-	DebugUnindent debug_unindent;
-	DebugResetIndent debug_resindent;
-
-
 }
 
 

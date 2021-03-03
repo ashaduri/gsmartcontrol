@@ -57,13 +57,11 @@ namespace debug_internal {
 
 
 
-	/// Libdebug global command-line arguments
-	static DebugCmdArgs s_debug_cmd_args;
-
 	/// Get libdebug command-line arguments
-	inline DebugCmdArgs* debug_get_args_holder()
+	inline DebugCmdArgs* get_debug_get_args_holder()
 	{
-		return &s_debug_cmd_args;
+		static DebugCmdArgs args;
+		return &args;
 	}
 
 
