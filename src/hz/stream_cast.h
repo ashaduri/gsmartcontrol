@@ -105,7 +105,7 @@ class bad_stream_cast : public hz::bad_cast_except {
 	public:
 		bad_stream_cast(const std::type_info& src, const std::type_info& dest)
 				: hz::bad_cast_except(src, dest, "bad_stream_cast",
-				"Failed stream_cast from \"%s\" to \"%s\".")
+				R"(Failed stream_cast from "%s" to "%s".)")
 		{ }
 };
 

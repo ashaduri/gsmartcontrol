@@ -16,6 +16,7 @@ Copyright:
 #include <exception>  // for std::exception specialization
 #include <typeinfo>  // std::type_info
 #include <system_error>
+#include <utility>
 
 #include "debug.h"  // DBG_ASSERT
 #include "process_signal.h"  // hz::signal_to_string
@@ -65,24 +66,24 @@ class ErrorBase {
 
 
 		/// Constructor
-		ErrorBase(const std::string& type_, ErrorLevel level_, const std::string& msg)
-				: type(type_), level(level_), message(msg)
+		ErrorBase(std::string type_, ErrorLevel level_, std::string msg)
+				: type(std::move(type_)), level(level_), message(std::move(msg))
 		{ }
 
 		/// Constructor
-		ErrorBase(const std::string& type_, ErrorLevel level_)
-				: type(type_), level(level_)
+		ErrorBase(std::string type_, ErrorLevel level_)
+				: type(std::move(type_)), level(level_)
 		{ }
 
 		/// Virtual destructor
 		virtual ~ErrorBase() = default;
 
 		/// Clone this object
-		virtual ErrorBase* clone() = 0;  // needed for copying by base pointers
+		[[nodiscard]] virtual ErrorBase* clone() = 0;  // needed for copying by base pointers
 
 
 		/// Get std::type_info for the error code type.
-		virtual const std::type_info& get_code_type() const = 0;
+		[[nodiscard]] virtual const std::type_info& get_code_type() const = 0;
 
 		
 		/// Get error code of type \c CodeMemberType
@@ -122,20 +123,20 @@ class ErrorBase {
 		}
 
 		/// Get error level (severity)
-		ErrorLevel get_level() const
+		[[nodiscard]] ErrorLevel get_level() const
 		{
 			return level;
 		}
 
 
 		/// Get error type
-		std::string get_type() const
+		[[nodiscard]] std::string get_type() const
 		{
 			return type;
 		}
 
 		/// Get error message
-		std::string get_message() const
+		[[nodiscard]] std::string get_message() const
 		{
 			return message;
 		}
@@ -175,7 +176,7 @@ class ErrorCodeHolder : public ErrorBase {
 	public:
 
 		// Reimplemented from ErrorBase
-		const std::type_info& get_code_type() const override
+		[[nodiscard]] const std::type_info& get_code_type() const override
 		{
 			return typeid(CodeType);
 		}
@@ -199,7 +200,7 @@ class ErrorCodeHolder<void> : public ErrorBase {
 	public:
 
 		// Reimplemented from ErrorBase
-		const std::type_info& get_code_type() const override
+		[[nodiscard]] const std::type_info& get_code_type() const override
 		{
 			return typeid(void);
 		}

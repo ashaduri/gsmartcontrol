@@ -45,14 +45,14 @@ class ErrorHolder {
 
 
 		/// Check if there are any errors in this class.
-		bool has_errors() const
+		[[nodiscard]] bool has_errors() const
 		{
 			return !errors_.empty();
 		}
 
 
 		/// Get a list of errors.
-		error_list_t get_errors() const
+		[[nodiscard]] error_list_t get_errors() const
 		{
 			return errors_;
 		}

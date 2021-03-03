@@ -248,7 +248,7 @@ inline std::string format_date(const std::string& format, std::time_t timet, boo
 	const struct std::tm* ltmp = std::localtime(&timet);
 
 #else
-	struct std::tm ltm;
+	struct std::tm ltm = {};
 	if (!localtime_r(&timet, &ltm))  // use reentrant localtime_r (posix/bsd and related)
 		return std::string();
 	const struct std::tm* ltmp = &ltm;

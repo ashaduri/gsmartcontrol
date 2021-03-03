@@ -226,13 +226,13 @@ class ScopedCLocale {
 		}
 
 		/// Get the old locale
-		std::string old() const
+		[[nodiscard]] std::string old() const
 		{
 			return old_locale_;
 		}
 
 		/// Return true if locale setting was unsuccessful
-		bool bad() const
+		[[nodiscard]] bool bad() const
 		{
 			return bad_;
 		}
@@ -294,13 +294,13 @@ class ScopedCppLocale {
 		}
 
 		/// Get the old locale
-		std::locale old() const
+		[[nodiscard]] std::locale old() const
 		{
 			return old_locale_;
 		}
 
 		/// Return true if locale setting was unsuccessful
-		bool bad() const
+		[[nodiscard]] bool bad() const
 		{
 			return bad_;
 		}

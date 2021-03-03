@@ -14,6 +14,7 @@ Copyright:
 
 #include <string>
 #include <memory>
+#include <utility>
 
 
 /// \def HAVE_SETENV
@@ -225,8 +226,8 @@ class ScopedEnv {
 		/// 	to conditionally set a variable (you can't practically declare a scoped variable inside
 		/// 	a conditional block to be used outside it).
 		/// \param overwrite if false and the variable already exists, don't change it.
-		ScopedEnv(const std::string& name, const std::string& value, bool do_change = true, bool overwrite = true)
-				: name_(name), do_change_(do_change), old_set_(false), error_(false)
+		ScopedEnv(std::string name, const std::string& value, bool do_change = true, bool overwrite = true)
+				: name_(std::move(name)), do_change_(do_change), old_set_(false), error_(false)
 		{
 			if (do_change_) {
 				old_set_ = env_get_value(name_, old_value_);
@@ -253,21 +254,21 @@ class ScopedEnv {
 
 
 		/// If true, there was an error setting the value.
-		bool bad() const
+		[[nodiscard]] bool bad() const
 		{
 			return error_;
 		}
 
 
 		/// Check if there was a value before we set it
-		bool get_old_set() const
+		[[nodiscard]] bool get_old_set() const
 		{
 			return old_set_;
 		}
 
 
 		/// Get the old variable value
-		std::string get_old_value() const
+		[[nodiscard]] std::string get_old_value() const
 		{
 			return old_value_;
 		}
@@ -277,9 +278,9 @@ class ScopedEnv {
 
 		std::string name_;  ///< Variable name
 		std::string old_value_;  ///< Old value
-		bool do_change_;  ///< If false, don't do anything
-		bool old_set_;  ///< If false, there was no variable before we set it
-		bool error_;  ///< If true, there was an error setting the value
+		bool do_change_ = false;  ///< If false, don't do anything
+		bool old_set_ = false;  ///< If false, there was no variable before we set it
+		bool error_ = false;  ///< If true, there was an error setting the value
 
 };
 
