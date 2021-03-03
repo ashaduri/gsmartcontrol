@@ -104,6 +104,11 @@ inline std::string signal_string(int signal_value);
 #endif
 
 
+/// Check if process ID handle is a valid ID or pointer.
+/// Invalid ID is 0 in Unix and nullptr in Windows.
+inline bool process_id_valid(process_id_t process_handle);
+
+
 /// Portable kill(). Works with Signal signals only.
 /// Process groups are not supported under win32.
 inline int process_signal_send(process_id_t process_handle, Signal sig);
@@ -112,6 +117,7 @@ inline int process_signal_send(process_id_t process_handle, Signal sig);
 
 
 // ------------------------------------------ Implementation
+
 
 
 
@@ -147,13 +153,25 @@ inline std::string signal_to_string(int signal_value)
 
 
 
+bool process_id_valid(process_id_t process_handle)
+{
+#ifdef _WIN32
+	return process_handle != nullptr;
+#else
+	return process_handle != 0;
+#endif
+}
+
+
+
+
 #ifdef _WIN32
 
 namespace internal {
 
 	// structure used to pass parameters to process_signal_find_by_pid.
 	struct process_signal_find_by_pid_arg {
-		process_signal_find_by_pid_arg(DWORD pid_) : pid(pid_), hwnd(nullptr)
+		explicit process_signal_find_by_pid_arg(DWORD pid_) : pid(pid_), hwnd(nullptr)
 		{ }
 		DWORD pid;  // pid we're looking from
 		HWND hwnd;  // hwnd used to return the result
@@ -165,7 +183,7 @@ namespace internal {
 		DWORD pid = 0;
 		GetWindowThreadProcessId(hwnd, &pid);
 
-		process_signal_find_by_pid_arg* arg = reinterpret_cast<process_signal_find_by_pid_arg*>(cb_arg);
+		auto* arg = reinterpret_cast<process_signal_find_by_pid_arg*>(cb_arg);
 		if (pid == arg->pid) {
 			arg->hwnd = hwnd;
 			return FALSE;  // stop the caller
@@ -192,7 +210,7 @@ namespace internal {
 
 	inline int process_signal_send(process_id_t process_handle, Signal sig)
 	{
-		if (process_handle <= 0) {
+		if (!process_id_valid(process_handle)) {
 			errno = ESRCH;  // The pid or process group does not exist.
 			return -1;
 		}
@@ -209,10 +227,10 @@ namespace internal {
 			}
 		#endif
 			return 0;  // everything ok
-
+		}
 
 		// unconditionall kill, no cleanups
-		} else if (sig == Signal::Kill) {
+		if (sig == Signal::Kill) {
 
 			// This is an ugly way of murder, but such is the life of processes in win32...
 			// GetExitCodeProcess() will return UINT(-1) as exit code.
@@ -278,6 +296,7 @@ namespace internal {
 
 		return 0;
 	}
+
 
 
 #endif

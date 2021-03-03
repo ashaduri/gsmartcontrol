@@ -218,7 +218,7 @@ bool Cmdex::execute()
 bool Cmdex::try_stop(hz::Signal sig)
 {
 	DBG_FUNCTION_ENTER_MSG;
-	if (!this->running_ || this->pid_ <= 0)
+	if (!this->running_ || this->pid_ == 0)
 		return false;
 
 	// other variants: SIGHUP(1) (terminal closed), SIGINT(2) (Ctrl-C),

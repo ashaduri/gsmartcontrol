@@ -120,8 +120,7 @@ std::map<char, DriveLetterInfo> win32_get_drive_letter_map()
 	}
 
 	// Try to open each drive, check its disk extents
-	for (std::size_t i = 0; i < good_drives.size(); ++i) {
-		char drive = good_drives[i];
+	for (char drive : good_drives) {
 		string drive_str = string("\\\\.\\") + drive + ":";
 		HANDLE h = CreateFileA(
 				drive_str.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
@@ -140,8 +139,8 @@ std::map<char, DriveLetterInfo> win32_get_drive_letter_map()
 		}
 
 		std::set<int> physical_drives;
-		for (int i = 0; i < vde.NumberOfDiskExtents; ++i) {
-			physical_drives.insert(vde.Extents[i].DiskNumber);
+		for (int i = 0; i < int(vde.NumberOfDiskExtents); ++i) {
+			physical_drives.insert(int(vde.Extents[i].DiskNumber));
 			debug_out_dump("app", "Windows drive " << drive << " corresponds to physical drive " << vde.Extents[i].DiskNumber << ".\n");
 		}
 

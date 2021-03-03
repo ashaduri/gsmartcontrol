@@ -8,6 +8,7 @@
 # cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers is triggered by attribute database.
 # cppcoreguidelines-owning-memory doesn't support deleting Gtkmm objects.
 # cppcoreguidelines-pro-type-cstyle-cast needed by GTK C casts.
+# cppcoreguidelines-pro-type-reinterpret-cast is needed by WinAPI-facing functions
 # cppcoreguidelines-pro-type-vararg is triggered by libdebug's debug_print().
 # cppcoreguidelines-pro-bounds-array-to-pointer-decay is triggered by va_start in libdebug's debug_print().
 # cppcoreguidelines-pro-bounds-pointer-arithmetic is useless (triggered by argv) until we have std::span.
@@ -37,6 +38,7 @@ Checks:          >
   -cppcoreguidelines-owning-memory,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
   -cppcoreguidelines-pro-type-cstyle-cast,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
   -cppcoreguidelines-pro-type-vararg,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -darwin-*,

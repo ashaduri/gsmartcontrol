@@ -33,7 +33,7 @@ namespace hz {
 /// Open URL in browser or mailto: link in mail client.
 /// Return error message on error, empty string otherwise.
 /// The link is in utf-8 in windows.
-inline std::string launch_url(GtkWindow* window, const std::string& link)
+inline std::string launch_url([[maybe_unused]] GtkWindow* window, const std::string& link)
 {
 	// For some reason, gtk_show_uri() crashes on windows, so use our manual implementation.
 #ifdef _WIN32
@@ -41,7 +41,7 @@ inline std::string launch_url(GtkWindow* window, const std::string& link)
 	if (wlink.empty())
 		return "Error while executing a command: The specified URI contains non-UTF-8 characters.";
 
-	HINSTANCE inst = ShellExecuteW(0, L"open", wlink.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+	HINSTANCE inst = ShellExecuteW(nullptr, L"open", wlink.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
 	if (inst > reinterpret_cast<HINSTANCE>(32)) {
 		return std::string();
 	}

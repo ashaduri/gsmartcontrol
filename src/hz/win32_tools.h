@@ -16,15 +16,19 @@ Copyright:
 
 #include <windows.h>  // lots of stuff
 #include <shlobj.h>  // SH*
-#include <io.h>  // _open_osfhandle
+#include <io.h>  // _open_osfhandle, _waccess
 #include <fcntl.h>  // _O_TEXT
 
 #include <string>
+#include <vector>
+#include <array>
 #include <cctype>  // for ctype.h
 #include <ctype.h>  // towupper
 #include <cstdio>  // for stdio.h, std::f*, std::setvbuf, std::fprintf, std::FILE
 #include <stdio.h>  // _fdopen, _wfopen, _wremove
 #include <cstdlib>  // std::atexit
+#include <cstring>  // std::strlen
+#include <cwchar>  // std::wcslen
 #include <ios>  // std::ios::sync_with_stdio
 
 #if defined __MINGW32__
@@ -91,7 +95,9 @@ inline bool win32_redirect_stdio_to_console(bool create_if_none, bool& console_c
 /// Redirect stdout to stdout.txt and stderr to stderr.txt.
 /// Call once.
 /// \return true on success, false on failure.
-inline bool win32_redirect_stdio_to_files(std::string stdout_file = "", std::string stderr_file = "");
+inline bool win32_redirect_stdio_to_files(const std::string& stdout_file = "", const std::string& stderr_file = "");
+
+
 
 
 /// Convert a string in user-specified encoding to utf-16 string (00-terminated array of wchar_t).
@@ -108,8 +114,14 @@ inline std::string win32_utf16_to_user(UINT to_cp, std::wstring_view utf16_str, 
 inline std::wstring win32_utf8_to_utf16(std::string_view utf8_str, bool* ok = nullptr);
 
 
+
 /// Convert utf-16 string to utf-8 string. See win32_utf16_to_user() for details.
 inline std::string win32_utf16_to_utf8(std::wstring_view utf16_str, bool* ok = nullptr);
+
+/// Convert utf-16 string to utf-8 string. See win32_utf16_to_user() for details.
+template<std::size_t ArraySize>
+std::string win32_utf16_to_utf8(const std::array<wchar_t, ArraySize>& utf16_str, bool* ok = nullptr);
+
 
 
 /// Convert current locale-encoded string to utf-16 string. See win32_user_to_utf16() for details.
@@ -144,19 +156,18 @@ inline std::string win32_utf8_to_locale(std::string_view utf8_str, bool use_thre
 template<class Container> inline
 bool win32_get_drive_list(Container& put_here)
 {
-	DWORD buf_size = GetLogicalDriveStringsW(0, 0);  // find out the required buffer size
-	if (!buf_size)  // error
+	DWORD buf_size = GetLogicalDriveStringsW(0, nullptr);  // find out the required buffer size
+	if (buf_size == 0)  // error
 		return false;
 
-	wchar_t* buf = new wchar_t[buf_size];
+	std::vector<wchar_t> buf(buf_size);
 
 	// Returns a consecutive array of 00-terminated strings (each 00-terminated).
-	if (!GetLogicalDriveStringsW(buf_size, buf)) {
-		delete[] buf;
+	if (!GetLogicalDriveStringsW(buf_size, buf.data())) {
 		return false;
 	}
 
-	wchar_t* text_ptr = buf;
+	wchar_t* text_ptr = buf.data();
 
 	// add the drives to list
 	while (*text_ptr != 0) {
@@ -170,8 +181,6 @@ bool win32_get_drive_list(Container& put_here)
 		++text_ptr;  // set to position after 0
 	}
 
-	delete[] buf;
-
 	return true;
 }
 
@@ -182,24 +191,24 @@ bool win32_get_drive_list(Container& put_here)
 // for details.
 inline std::string win32_get_special_folder(int csidl, bool auto_create)
 {
-	wchar_t buf[MAX_PATH] = {0};
+	std::array<wchar_t, MAX_PATH> buf{};
 
 	// SHGetSpecialFolderPath() is since ie4
 #if (defined _WIN32_IE) && (_WIN32_IE >= 0x0400)
-	if (SHGetSpecialFolderPathW(nullptr, buf, csidl, auto_create)) {
+	if (SHGetSpecialFolderPathW(nullptr, buf.data(), csidl, static_cast<BOOL>(auto_create)) == TRUE) {
 		return win32_utf16_to_utf8(buf);
 	}
 
 #else
-	LPITEMIDLIST pidl = 0;
+	LPITEMIDLIST pidl = nullptr;
 
 	if (SHGetSpecialFolderLocation(nullptr, csidl, &pidl) == S_OK) {
-		if (SHGetPathFromIDListW(pidl, buf)) {
+		if (SHGetPathFromIDListW(pidl, buf.data())== TRUE) {
 			errno = 0;
 			// 00 is F_OK (for msvc). ENOENT is "no such file or directory".
 			// We can't really do anything if errors happen here, so ignore them.
-			if (auto_create && _waccess(buf, 00) == -1 && errno == ENOENT) {
-				_wmkdir(buf);
+			if (auto_create && _waccess(buf.data(), 00) == -1 && errno == ENOENT) {
+				_wmkdir(buf.data());
 			}
 			return win32_utf16_to_utf8(buf);
 		}
@@ -210,7 +219,7 @@ inline std::string win32_get_special_folder(int csidl, bool auto_create)
 		// CoTaskMemFree(pidl);
 
 		// SHGetMalloc() which is deprecated and may be removed in the future.
-		IMalloc* allocator = 0;
+		IMalloc* allocator = nullptr;
 		if (SHGetMalloc(&allocator) == S_OK && allocator) {
 			allocator->Free(pidl);
 			allocator->Release();
@@ -227,9 +236,12 @@ inline std::string win32_get_special_folder(int csidl, bool auto_create)
 // Usually C:\Windows or something like that.
 inline std::string win32_get_windows_directory()
 {
-	wchar_t buf[MAX_PATH] = {0};
-	UINT status = GetWindowsDirectoryW(buf, MAX_PATH);
-	return ((status != 0 && buf[0]) ? win32_utf16_to_utf8(buf) : std::string("C:\\"));
+	std::array<wchar_t, MAX_PATH> buf{};
+	UINT status = GetWindowsDirectoryW(buf.data(), MAX_PATH);
+	if (status != 0 && buf[0] != 0) {
+		win32_utf16_to_utf8(buf);
+	}
+	return "C:\\";
 }
 
 
@@ -261,24 +273,22 @@ inline bool win32_get_registry_value_string(HKEY base,
 	DWORD type = 0;
 	DWORD nbytes = 0;
 	// This returns the size, including the 0 character only if the data was stored with it.
-	bool status = (RegQueryValueExW(reg_key, wkey.c_str(), 0, &type, nullptr, &nbytes) == ERROR_SUCCESS);
+	bool status = (RegQueryValueExW(reg_key, wkey.c_str(), nullptr, &type, nullptr, &nbytes) == ERROR_SUCCESS);
 
 	if (status) {
-		DWORD buf_len = ((nbytes % 2) ? (nbytes+1) : nbytes);  // 00-terminate on 2-byte boundary, in case the value isn't.
-		BYTE* result = new BYTE[buf_len];
-		result[buf_len-1] = result[buf_len-2] = result[buf_len-3] = 0;
+		DWORD buf_len = ((nbytes % 2) == 1 ? (nbytes+1) : nbytes);  // 00-terminate on 2-byte boundary, in case the value isn't.
+		std::vector<BYTE> result(buf_len);
 
-		status = (RegQueryValueExW(reg_key, wkey.c_str(), 0, &type, result, &nbytes) == ERROR_SUCCESS);
+		status = (RegQueryValueExW(reg_key, wkey.c_str(), nullptr, &type, result.data(), &nbytes) == ERROR_SUCCESS);
 
 		if (status) {
-			std::string utf8 = win32_utf16_to_utf8(reinterpret_cast<wchar_t*>(result), &ok);
+			std::string utf8 = win32_utf16_to_utf8(reinterpret_cast<wchar_t*>(result.data()), &ok);
 			if (ok) {
 				put_here = utf8;
 			} else {
 				status = false;
 			}
 		}
-		delete[] result;
 	}
 
 	if (reg_key)
@@ -347,15 +357,14 @@ inline bool win32_redirect_stdio_to_console(bool create_if_none, bool& console_c
 	// AttachConsole is since winxp (note that mingw and MS headers say win2k,
 	// which is incorrect; msdn is correct).
 #if defined WINVER && WINVER >= 0x0501
-	if (!AttachConsole(ATTACH_PARENT_PROCESS)) {
+	if (AttachConsole(ATTACH_PARENT_PROCESS) == FALSE) {
 		if (create_if_none) {
 			// Even though msdn says that stdio is redirected to the new console,
 			// it isn't so and we must do it manually.
-			if (!AllocConsole()) {
+			if (AllocConsole() == FALSE) {
 				return false;
-			} else {
-				console_created = true;
 			}
+			console_created = true;
 		} else {
 			return false;
 		}
@@ -365,13 +374,13 @@ inline bool win32_redirect_stdio_to_console(bool create_if_none, bool& console_c
 	HANDLE h_out = GetStdHandle(STD_OUTPUT_HANDLE);
 	std::FILE* fp_out = _fdopen(_open_osfhandle((intptr_t)(h_out), _O_TEXT), "w");
 	*stdout = *fp_out;
-	std::setvbuf(stdout, 0, _IONBF, 0);
+	std::setvbuf(stdout, nullptr, _IONBF, 0);
 
 	// redirect unbuffered STDERR to the console
 	HANDLE h_err = GetStdHandle(STD_ERROR_HANDLE);
 	std::FILE* fp_err = _fdopen(_open_osfhandle((intptr_t)(h_err), _O_TEXT), "w");
 	*stderr = *fp_err;
-	std::setvbuf(stderr, 0, _IONBF, 0);
+	std::setvbuf(stderr, nullptr, _IONBF, 0);
 
 	std::ios::sync_with_stdio();
 
@@ -400,13 +409,13 @@ namespace internal {
 	/// Returns full path (in utf-16) to the output filename (in utf-8)
 	inline std::wstring win32_get_std_output_file(std::wstring_view base)
 	{
-		wchar_t name[MAX_PATH] = {0};
+		std::array<wchar_t, MAX_PATH> name{};
 
 		// This function doesn't write terminating 0 if the buffer is insufficient,
 		// so we reserve some space for it.
-		if (GetModuleFileNameW(0, name, MAX_PATH - 1)) {
-			std::wstring wname = name;
-			std::wstring::size_type pos = wname.find_last_of(L".");
+		if (GetModuleFileNameW(nullptr, name.data(), MAX_PATH - 1) == TRUE) {
+			std::wstring wname(name.data(), std::wcslen(name.data()));
+			std::wstring::size_type pos = wname.find_last_of(L'.');
 			wname = wname.substr(0, pos);  // full path, including the executable without extension.
 			if (!wname.empty()) {
 				return wname + L"-" + std::wstring(base);
@@ -428,7 +437,7 @@ namespace internal {
 
 		// See if the files have any output in them
 		if (!Win32RedirectHolder::stdout_file.empty()) {
-			std::FILE* file = 0;
+			std::FILE* file = nullptr;
 		#if defined MINGW_HAS_SECURE_API || defined _MSC_VER
 			errno = _wfopen_s(&file, Win32RedirectHolder::stdout_file.c_str(), L"rb");
 		#else
@@ -445,7 +454,7 @@ namespace internal {
 		Win32RedirectHolder::stdout_file.clear();
 
 		if (!Win32RedirectHolder::stdout_file.empty()) {
-			std::FILE* file = 0;
+			std::FILE* file = nullptr;
 		#if defined MINGW_HAS_SECURE_API || defined _MSC_VER
 			errno = _wfopen_s(&file, Win32RedirectHolder::stderr_file.c_str(), L"rb");
 		#else
@@ -470,7 +479,7 @@ namespace internal {
 
 // Redirect stdout to stdout.txt and stderr to stderr.txt.
 // Call once.
-inline bool win32_redirect_stdio_to_files(std::string stdout_file, std::string stderr_file)
+inline bool win32_redirect_stdio_to_files(const std::string& stdout_file, const std::string& stderr_file)
 {
 	std::wstring wstdout_file;
 	if (stdout_file.empty()) {
@@ -478,7 +487,7 @@ inline bool win32_redirect_stdio_to_files(std::string stdout_file, std::string s
 	} else {
 		wstdout_file = win32_utf8_to_utf16(stdout_file);
 	}
-	std::FILE* fp_out = 0;
+	std::FILE* fp_out = nullptr;
 	if (!wstdout_file.empty()) {
 #if defined MINGW_HAS_SECURE_API || defined _MSC_VER
 		errno = _wfopen_s(&fp_out, wstdout_file.c_str(), L"wb");
@@ -488,19 +497,19 @@ inline bool win32_redirect_stdio_to_files(std::string stdout_file, std::string s
 	}
 	if (!wstdout_file.empty() && fp_out) {
 		*stdout = *fp_out;
-		std::setvbuf(stdout, 0, _IOLBF, BUFSIZ);  // Line buffered
+		std::setvbuf(stdout, nullptr, _IOLBF, BUFSIZ);  // Line buffered
 	} else {
 		wstdout_file.clear();
 	}
 	internal::Win32RedirectHolder::stdout_file = wstdout_file;
 
-	std::wstring wstderr_file = 0;  // freed on cleanup
+	std::wstring wstderr_file = nullptr;  // freed on cleanup
 	if (stderr_file.empty()) {
 		wstderr_file = internal::win32_get_std_output_file(L"stderr.txt");
 	} else {
 		wstderr_file = win32_utf8_to_utf16(stderr_file);
 	}
-	std::FILE* fp_err = 0;
+	std::FILE* fp_err = nullptr;
 	if (!wstderr_file.empty()) {
 #if defined MINGW_HAS_SECURE_API || defined _MSC_VER
 		errno = _wfopen_s(&fp_err, wstderr_file.c_str(), L"wb");
@@ -510,7 +519,7 @@ inline bool win32_redirect_stdio_to_files(std::string stdout_file, std::string s
 	}
 	if (!wstderr_file.empty() && fp_out) {
 		*stderr = *fp_err;
-		std::setvbuf(stderr, 0, _IONBF, BUFSIZ);  // No buffering
+		std::setvbuf(stderr, nullptr, _IONBF, BUFSIZ);  // No buffering
 	} else {
 		wstderr_file.clear();
 	}
@@ -544,7 +553,7 @@ inline std::wstring win32_user_to_utf16(UINT from_cp, std::string_view from_str,
 	}
 
 	// excluding terminating 0
-	int wide_bufsize = MultiByteToWideChar(from_cp, 0, from_str.data(), DWORD(from_str.size()), nullptr, 0);
+	int wide_bufsize = MultiByteToWideChar(from_cp, 0, from_str.data(), int(from_str.size()), nullptr, 0);
 	if (wide_bufsize == ERROR_NO_UNICODE_TRANSLATION) {
 		if (ok) {
 			*ok = false;
@@ -558,16 +567,14 @@ inline std::wstring win32_user_to_utf16(UINT from_cp, std::string_view from_str,
 		return std::wstring();  // error in conversion
 	}
 
-	wchar_t* res = new wchar_t[wide_bufsize + 1];
-	MultiByteToWideChar(from_cp, 0, from_str.data(), from_str.size(), res, wide_bufsize + 1);
-	res[wide_bufsize] = L'\0';
-	std::wstring wres(res);
-	delete[] res;
+	std::vector<wchar_t> res(std::size_t(wide_bufsize + 1));
+	MultiByteToWideChar(from_cp, 0, from_str.data(), int(from_str.size()), res.data(), wide_bufsize + 1);
+	res.back() = L'\0';  // just in case
 
 	if (ok) {
 		*ok = true;
 	}
-	return wres;
+	return std::wstring(res.data());
 }
 
 
@@ -587,7 +594,7 @@ inline std::string win32_utf16_to_user(UINT to_cp, std::wstring_view utf16_str, 
 		return std::string();
 	}
 
-	int buf_size = WideCharToMultiByte(to_cp, 0, utf16_str.data(), utf16_str.size(), nullptr, 0, nullptr, 0);
+	int buf_size = WideCharToMultiByte(to_cp, 0, utf16_str.data(), int(utf16_str.size()), nullptr, 0, nullptr, nullptr);
 	if (buf_size == 0) {
 		if (ok) {
 			*ok = false;
@@ -595,13 +602,17 @@ inline std::string win32_utf16_to_user(UINT to_cp, std::wstring_view utf16_str, 
 		return std::string();
 	}
 
-	std::string res(buf_size, '\0');
-	WideCharToMultiByte(to_cp, 0, utf16_str.data(), utf16_str.size(), res.data(), res.size(), nullptr, 0);
+	std::vector<char> res(std::size_t(buf_size + 1));
+	WideCharToMultiByte(to_cp, 0,
+			utf16_str.data(), int(utf16_str.size()),
+			res.data(), int(res.size()),
+			nullptr, nullptr);
+	res.back() = '\0';  // just in case
 
 	if (ok) {
 		*ok = true;
 	}
-	return res;
+	return std::string(res.data());
 }
 
 
@@ -617,6 +628,15 @@ inline std::wstring win32_utf8_to_utf16(std::string_view utf8_str, bool* ok)
 inline std::string win32_utf16_to_utf8(std::wstring_view utf16_str, bool* ok)
 {
 	return win32_utf16_to_user(CP_UTF8, utf16_str, ok);
+}
+
+
+
+// Convert utf-16 string to utf-8 string. See win32_utf16_to_user() for details.
+template<std::size_t ArraySize>
+std::string win32_utf16_to_utf8(const std::array<wchar_t, ArraySize>& utf16_str, bool* ok)
+{
+	return win32_utf16_to_user(CP_UTF8, {utf16_str.data(), std::wcslen(utf16_str.data())}, ok);
 }
 
 
