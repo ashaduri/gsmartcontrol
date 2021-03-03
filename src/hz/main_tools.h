@@ -47,7 +47,6 @@ int main_exception_wrapper(MainImplFunc main_impl) noexcept
 		}
 	}
 	return EXIT_FAILURE;
-#endif
 }
 
 
