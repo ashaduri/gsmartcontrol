@@ -37,29 +37,28 @@ namespace debug_internal {
 		format_flags |= debug_format::color;
 #endif
 
-		std::map<debug_level::flag, bool> levels;
-		unsigned long levels_enabled_ulong = levels_enabled.to_ulong();
-		levels[debug_level::dump] = bool(levels_enabled_ulong & debug_level::dump);
-		levels[debug_level::info] = bool(levels_enabled_ulong & debug_level::info);
-		levels[debug_level::warn] = bool(levels_enabled_ulong & debug_level::warn);
-		levels[debug_level::error] = bool(levels_enabled_ulong & debug_level::error);
-		levels[debug_level::fatal] = bool(levels_enabled_ulong & debug_level::fatal);
+		std::map<debug_level::flag, bool> levels = {
+				{debug_level::dump, levels_enabled.test(debug_level::dump) },
+				{debug_level::info, levels_enabled.test(debug_level::info) },
+				{debug_level::warn, levels_enabled.test(debug_level::warn) },
+				{debug_level::error, levels_enabled.test(debug_level::error) },
+				{debug_level::fatal, levels_enabled.test(debug_level::fatal) },
+		};
 
-		domain_map_t& dm = get_domain_map();
+		domain_map_t& dm = get_domain_map_ref();
 
-		dm["default"] = level_map_t();
+		dm["default"] = {};
 
 		level_map_t& level_map = dm.find("default")->second;
 
 		// we add the same copy to save memory and to ensure proper std::cerr locking.
 		auto channel = std::make_shared<DebugChannelOStream>(std::cerr);
 
-		for (auto& iter : levels) {
-			debug_level::flag level = iter.first;
+		for (const auto& [level, enabled] : levels) {
 			level_map[level] = std::make_shared<DebugOutStream>(level, "default", format_flags);
 
 			level_map[level]->add_channel(channel);  // add by smartpointer
-			level_map[level]->set_enabled(iter.second);
+			level_map[level]->set_enabled(enabled);
 		}
 	}
 
@@ -67,12 +66,10 @@ namespace debug_internal {
 
 	/// Global libdebug state.
 	/// This will initialize the default domain and channels automatically.
-	static DebugState s_debug_state;
-
-
-	DebugState& get_debug_state()
+	DebugState& get_debug_state_ref()
 	{
-		return s_debug_state;
+		static DebugState state;
+		return state;
 	}
 
 
@@ -86,7 +83,7 @@ bool debug_register_domain(const std::string& domain)
 {
 	using namespace debug_internal;
 
-	DebugState::domain_map_t& dm = get_debug_state().get_domain_map();
+	DebugState::domain_map_t& dm = get_debug_state_ref().get_domain_map_ref();
 
 	if (dm.find(domain) != dm.end())  // already exists
 		return false;
@@ -115,7 +112,7 @@ bool debug_register_domain(const std::string& domain)
 bool debug_unregister_domain(const std::string& domain)
 {
 	using namespace debug_internal;
-	DebugState::domain_map_t& dm = get_debug_state().get_domain_map();
+	DebugState::domain_map_t& dm = get_debug_state_ref().get_domain_map_ref();
 
 	auto found = dm.find(domain);
 	if (found == dm.end())  // doesn't exists
@@ -130,7 +127,7 @@ bool debug_unregister_domain(const std::string& domain)
 std::vector<std::string> debug_get_registered_domains()
 {
 	using namespace debug_internal;
-	DebugState::domain_map_t& dm = get_debug_state().get_domain_map();
+	DebugState::domain_map_t& dm = get_debug_state_ref().get_domain_map_ref();
 
 	std::vector<std::string> domains;
 	domains.reserve(dm.size());
@@ -147,7 +144,7 @@ std::vector<std::string> debug_get_registered_domains()
 bool debug_set_enabled(const std::string& domain, const debug_level::types& levels, bool enabled)
 {
 	using namespace debug_internal;
-	DebugState::domain_map_t& dm = get_debug_state().get_domain_map();
+	DebugState::domain_map_t& dm = get_debug_state_ref().get_domain_map_ref();
 
 	if (domain == "all") {
 		bool status = true;
@@ -174,7 +171,7 @@ bool debug_set_enabled(const std::string& domain, const debug_level::types& leve
 debug_level::types debug_get_enabled(const std::string& domain)
 {
 	using namespace debug_internal;
-	DebugState::domain_map_t& dm = get_debug_state().get_domain_map();
+	DebugState::domain_map_t& dm = get_debug_state_ref().get_domain_map_ref();
 
 	debug_level::types levels;
 
@@ -198,7 +195,7 @@ debug_level::types debug_get_enabled(const std::string& domain)
 bool debug_set_format(const std::string& domain, const debug_level::types& levels, const debug_format::type& format)
 {
 	using namespace debug_internal;
-	DebugState::domain_map_t& dm = get_debug_state().get_domain_map();
+	DebugState::domain_map_t& dm = get_debug_state_ref().get_domain_map_ref();
 
 	if (domain == "all") {
 		bool status = true;
@@ -225,7 +222,7 @@ bool debug_set_format(const std::string& domain, const debug_level::types& level
 std::map<debug_level::flag, debug_format::type> debug_get_formats(const std::string& domain)
 {
 	using namespace debug_internal;
-	DebugState::domain_map_t& dm = get_debug_state().get_domain_map();
+	DebugState::domain_map_t& dm = get_debug_state_ref().get_domain_map_ref();
 
 	std::map<debug_level::flag, debug_format::type> formats;
 
@@ -245,7 +242,7 @@ std::map<debug_level::flag, debug_format::type> debug_get_formats(const std::str
 bool debug_add_channel(const std::string& domain, const debug_level::types& levels, const DebugChannelBasePtr& channel)
 {
 	using namespace debug_internal;
-	DebugState::domain_map_t& dm = get_debug_state().get_domain_map();
+	DebugState::domain_map_t& dm = get_debug_state_ref().get_domain_map_ref();
 
 	if (domain == "all") {
 		bool status = true;
@@ -273,7 +270,7 @@ bool debug_add_channel(const std::string& domain, const debug_level::types& leve
 bool debug_clear_channels(const std::string& domain, const debug_level::types& levels)
 {
 	using namespace debug_internal;
-	DebugState::domain_map_t& dm = get_debug_state().get_domain_map();
+	DebugState::domain_map_t& dm = get_debug_state_ref().get_domain_map_ref();
 
 	if (domain == "all") {
 		bool status = true;

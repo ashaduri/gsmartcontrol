@@ -69,7 +69,10 @@ int main()
 
 	debug_set_enabled("dom", debug_level::dump, false);
 	debug_set_format("dom", debug_level::info,
-			(debug_get_formats("dom")[debug_level::info].to_ulong() & ~debug_format::color) | debug_format::datetime);
+			(debug_get_formats("dom")[debug_level::info]
+			.reset(debug_format::color)
+			.set(debug_format::datetime)
+	));
 
 
 	std::string something = "some thing";

@@ -44,12 +44,16 @@ namespace debug_level {
 	template<class Container> inline
 	void get_matched_levels_array(const types& levels, Container& put_here)
 	{
-		unsigned long levels_ulong = levels.to_ulong();
-		if (levels_ulong & debug_level::dump) put_here.push_back(debug_level::dump);
-		if (levels_ulong & debug_level::info) put_here.push_back(debug_level::info);
-		if (levels_ulong & debug_level::warn) put_here.push_back(debug_level::warn);
-		if (levels_ulong & debug_level::error) put_here.push_back(debug_level::error);
-		if (levels_ulong & debug_level::fatal) put_here.push_back(debug_level::fatal);
+		for (auto level : {
+				debug_level::dump,
+				debug_level::info,
+				debug_level::warn,
+				debug_level::error,
+				debug_level::fatal }) {
+			if (levels.test(level)) {
+				put_here.push_back(level);
+			}
+		}
 	}
 }
 

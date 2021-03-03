@@ -51,7 +51,7 @@ namespace debug_internal {
 	{
 		debug_format::type flags = dos_->format_;
 		bool is_first_line = false;
-		if (get_debug_state().get_inside_begin()) {
+		if (get_debug_state_ref().get_inside_begin()) {
 			flags |= debug_format::first_line_only;
 			if (dos_->get_is_first_line()) {
 				dos_->set_is_first_line(false);  // tls
@@ -65,7 +65,7 @@ namespace debug_internal {
 		for (auto & channel : dos_->channels_) {
 			// send() locks the channel if needed
 			channel->send(dos_->level_, dos_->domain_, flags,
-					get_debug_state().get_indent_level(), is_first_line, oss_.str());
+					get_debug_state_ref().get_indent_level(), is_first_line, oss_.str());
 		}
 		oss_.str("");  // clear the buffer
 		oss_.clear();  // clear the flags

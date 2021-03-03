@@ -27,7 +27,7 @@ Copyright:
 // This may throw for invalid domain or level.
 std::ostream& debug_out(debug_level::flag level, const std::string& domain)
 {
-	auto& dm = debug_internal::get_debug_state().get_domain_map();
+	auto& dm = debug_internal::get_debug_state_ref().get_domain_map_ref();
 
 	auto level_map = dm.find(domain);
 	if (level_map == dm.end()) {  // no such domain
@@ -71,15 +71,15 @@ void debug_print(debug_level::flag level, const std::string& domain, const char*
 
 void debug_begin()
 {
-	debug_internal::get_debug_state().push_inside_begin();
+	debug_internal::get_debug_state_ref().push_inside_begin();
 }
 
 
 void debug_end()
 {
-	debug_internal::get_debug_state().pop_inside_begin();
+	debug_internal::get_debug_state_ref().pop_inside_begin();
 	// this is needed because else the contents won't be written until next write.
-	debug_internal::get_debug_state().force_output();
+	debug_internal::get_debug_state_ref().force_output();
 }
 
 
@@ -129,24 +129,24 @@ namespace debug_internal {
 // increase indentation level for all debug levels
 void debug_indent_inc(int by)
 {
-	int curr = debug_internal::get_debug_state().get_indent_level();
-	debug_internal::get_debug_state().set_indent_level(curr + by);
+	int curr = debug_internal::get_debug_state_ref().get_indent_level();
+	debug_internal::get_debug_state_ref().set_indent_level(curr + by);
 }
 
 
 void debug_indent_dec(int by)
 {
-	int curr = debug_internal::get_debug_state().get_indent_level();
+	int curr = debug_internal::get_debug_state_ref().get_indent_level();
 	curr -= by;
 	if (curr < 0)
 		curr = 0;
-	debug_internal::get_debug_state().set_indent_level(curr);
+	debug_internal::get_debug_state_ref().set_indent_level(curr);
 }
 
 
 void debug_indent_reset()
 {
-	debug_internal::get_debug_state().set_indent_level(0);
+	debug_internal::get_debug_state_ref().set_indent_level(0);
 }
 
 

@@ -56,7 +56,7 @@ namespace debug_internal {
 
 
 			/// Get the domain/level mapping.
-			[[nodiscard]] domain_map_t& get_domain_map()
+			[[nodiscard]] domain_map_t& get_domain_map_ref()
 			{
 				return domain_map;
 			}
@@ -121,7 +121,7 @@ namespace debug_internal {
 
 
 	/// Get global libdebug state
-	DebugState& get_debug_state();
+	DebugState& get_debug_state_ref();
 
 
 

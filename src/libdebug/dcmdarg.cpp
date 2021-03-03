@@ -89,12 +89,12 @@ static gboolean debug_internal_parse_levels([[maybe_unused]] const gchar* option
 		const gchar* value, gpointer data, [[maybe_unused]] GError** error)
 {
 	if (!value)
-		return false;
+		return FALSE;
 	auto* args = static_cast<debug_internal::DebugCmdArgs*>(data);
 	std::string levels = value;
 	hz::string_split(levels, ',', args->debug_levels, true);
 	// will filter out invalid ones later
-	return true;
+	return TRUE;
 }
 
 
@@ -118,10 +118,10 @@ static gboolean debug_internal_post_parse_func([[maybe_unused]] GOptionContext* 
 		args->levels_enabled |= (std::find(args->debug_levels.begin(), args->debug_levels.end(),
 				"fatal") != args->debug_levels.end() ? debug_level::fatal : debug_level::none);
 
-	} else if (args->quiet) {
+	} else if (args->quiet == TRUE) {
 		args->levels_enabled = debug_level::none;
 
-	} else if (args->verbose) {
+	} else if (args->verbose == TRUE) {
 		args->levels_enabled = debug_level::all;
 
 	} else {
@@ -138,7 +138,7 @@ static gboolean debug_internal_post_parse_func([[maybe_unused]] GOptionContext* 
 
 
 	unsigned long levels_enabled_ulong = args->levels_enabled.to_ulong();
-	debug_internal::DebugState::domain_map_t& dm = debug_internal::get_debug_state().get_domain_map();
+	debug_internal::DebugState::domain_map_t& dm = debug_internal::get_debug_state_ref().get_domain_map_ref();
 
 	for (auto& iter : dm) {
 		for (auto& iter2 : iter.second) {
@@ -154,7 +154,7 @@ static gboolean debug_internal_post_parse_func([[maybe_unused]] GOptionContext* 
 		}
 	}
 
-	return true;
+	return TRUE;
 }
 
 
@@ -163,7 +163,7 @@ static gboolean debug_internal_post_parse_func([[maybe_unused]] GOptionContext* 
 
 std::string debug_get_cmd_args_dump()
 {
-	debug_internal::DebugCmdArgs* args = debug_internal::debug_get_args_holder();
+	debug_internal::DebugCmdArgs* args = debug_internal::get_debug_get_args_holder();
 	std::ostringstream ss;
 
 // 	ss << "\tverbose: " << std::boolalpha << static_cast<bool>(args->verbose) << "\n";
@@ -183,14 +183,13 @@ std::string debug_get_cmd_args_dump()
 // no need to free the result.
 GOptionGroup* debug_get_option_group()
 {
-	debug_internal::DebugCmdArgs* args = debug_internal::debug_get_args_holder();
+	debug_internal::DebugCmdArgs* args = debug_internal::get_debug_get_args_holder();
 
 	GOptionGroup* group = g_option_group_new("debug",
 			"Libdebug Logging Options", "Show libdebug options",
 			args, nullptr);
 
-	static const GOptionEntry entries[] =
-	{
+	static const std::vector<GOptionEntry> entries = {
 		{ "verbose", 'v', G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE,
 				&(args->verbose), "Enable verbose logging; same as --verbosity-level 5", nullptr },
 		{ "quiet", 'q', G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE,
@@ -207,7 +206,7 @@ GOptionGroup* debug_get_option_group()
 		{ nullptr, '\0', 0, G_OPTION_ARG_NONE, nullptr, nullptr, nullptr }
 	};
 
-	g_option_group_add_entries(group, entries);
+	g_option_group_add_entries(group, entries.data());
 
 	g_option_group_set_parse_hooks(group, nullptr, &debug_internal_post_parse_func);
 

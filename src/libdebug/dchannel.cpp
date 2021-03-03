@@ -26,14 +26,14 @@ std::string debug_format_message(debug_level::flag level, const std::string& dom
 	ret.reserve(msg.size() + 40);  // indentation + domain/level
 
 	// allow prefix only for first line and others when first_line_only is disabled
-	if (is_first_line || !(format_flags.to_ulong() & debug_format::first_line_only)) {
+	if (is_first_line || !format_flags.test(debug_format::first_line_only)) {
 
-		if (format_flags.to_ulong() & debug_format::datetime) {  // print time
+		if (format_flags.test(debug_format::datetime)) {  // print time
 			ret += hz::format_date("%Y-%m-%d %H:%M:%S: ", true);
 		}
 
-		if (format_flags.to_ulong() & debug_format::level) {  // print level name
-			bool use_color = bool(format_flags.to_ulong() & debug_format::color);
+		if (format_flags.test(debug_format::level)) {  // print level name
+			bool use_color = format_flags.test(debug_format::color);
 			if (use_color)
 				ret += debug_level::get_color_start(level);
 
@@ -44,14 +44,14 @@ std::string debug_format_message(debug_level::flag level, const std::string& dom
 				ret += debug_level::get_color_stop(level);
 		}
 
-		if (format_flags.to_ulong() & debug_format::domain) {  // print domain name
+		if (format_flags.test(debug_format::domain)) {  // print domain name
 			ret += std::string("[") + domain + "] ";
 		}
 
 	}
 
 
-	if (format_flags.to_ulong() & debug_format::indent) {
+	if (format_flags.test(debug_format::indent)) {
 		std::string spaces(static_cast<std::size_t>(indent_level * 4), ' ');  // indentation spaces
 
 		// replace all newlines with \n(indent-spaces) except for the last one.
