@@ -14,19 +14,17 @@ Copyright:
 
 /**
 \file
-System/compiler-specific stuff goes here...
+System/compiler-specific functionality.
 */
 
 
-/// \def HAVE_GCC_ABI_DEMANGLE
-/// Defined to 0 or 1. If 1, compiler supports \::abi::__cxa_demangle.
-#ifndef HAVE_GCC_ABI_DEMANGLE
-// This also works with intel/linux (__GNUC__ is defined by default in it).
-	#if defined __GNUC__
-		#define HAVE_GCC_ABI_DEMANGLE 1
-	#else
-		#define HAVE_GCC_ABI_DEMANGLE 0
-	#endif
+/// \def HAVE_GCC_CXX_ABI
+/// Defined to 0 or 1. If 1, compiler supports C++ ABI library.
+
+
+// Check for C++ abi library availability (gcc / clang / intel+linux / apple-clang)
+#if __has_include(<cxxabi.h>)
+	#define HAVE_GCC_CXX_ABI 1
 #endif
 
 
@@ -84,11 +82,16 @@ Demangle a C/C++ type name, as returned by std::type_info.name().
 Similar to c++filt command. Supported under gcc only for now.
 */
 
-#if defined HAVE_GCC_ABI_DEMANGLE && HAVE_GCC_ABI_DEMANGLE
+/**
+\fn std::type_info* hz::get_current_exception_type()
+Returns the type_info for the currently handled exception, or null if there is none or unsupported.
+*/
 
+
+#if defined HAVE_GCC_CXX_ABI
 	#include <string>
 	#include <cstdlib>  // std::free().
-	#include <cxxabi.h>  // __cxa_demangle
+	#include <cxxabi.h>  // ::abi::*
 
 
 namespace hz {
@@ -106,6 +109,13 @@ namespace hz {
 		return ret;
 	}
 
+
+	inline std::type_info* get_current_exception_type()
+	{
+		return ::abi::__cxa_current_exception_type();
+	}
+
+
 }  // ns hz
 
 
@@ -117,6 +127,13 @@ namespace hz {
 	{
 		return name;  // can't do anything here
 	}
+
+
+	inline std::type_info* get_current_exception_type()
+	{
+		return nullptr;
+	}
+
 
 }  // ns hz
 
