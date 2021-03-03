@@ -19,6 +19,7 @@ target_sources(hz INTERFACE
 	instance_manager.h
 	launch_url.h
 	locale_tools.h
+	main_tools.h
 	process_signal.h
 	stream_cast.h
 	string_algo.h
