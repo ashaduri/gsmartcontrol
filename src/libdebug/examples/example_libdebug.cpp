@@ -46,7 +46,7 @@ namespace {
 	template<typename U>
 	struct TestClassB {
 		template<typename V>
-		U func2([[maybe_unused]] V v, int)
+		U func2([[maybe_unused]] V v, [[maybe_unused]] int i)
 		{
 			debug_out_info("default", DBG_FUNC_PRNAME << "\n");
 			debug_out_info("default", DBG_FUNC_MSG << "function called.\n");

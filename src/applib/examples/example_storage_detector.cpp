@@ -13,6 +13,7 @@ Copyright:
 
 #include "applib/storage_device.h"
 #include "applib/storage_detector.h"
+#include "hz/main_tools.h"
 #include "gsc_settings.h"  // in src directory
 
 
@@ -20,30 +21,31 @@ Copyright:
 /// Main function of the test
 int main()
 {
-	// These settings contain device search paths, smartctl binary, etc...
-	init_default_settings();
+	return hz::main_exception_wrapper([]()
+	{
+		// These settings contain device search paths, smartctl binary, etc...
+		init_default_settings();
 
-	std::vector<StorageDevicePtr> drives;
-// 	std::vector<std::string> match_patterns;
-	std::vector<std::string> blacklist_patterns;  // additional parameters
+		std::vector<StorageDevicePtr> drives;
+	// 	std::vector<std::string> match_patterns;
+		std::vector<std::string> blacklist_patterns;  // additional parameters
 
-	StorageDetector sd;
-// 	sd.add_match_patterns(match_patterns);
-	sd.add_blacklist_patterns(blacklist_patterns);
+		StorageDetector sd;
+	// 	sd.add_match_patterns(match_patterns);
+		sd.add_blacklist_patterns(blacklist_patterns);
 
-	auto ex_factory = std::make_shared<ExecutorFactory>(false);
-	std::string error_msg = sd.detect_and_fetch_basic_data(drives, ex_factory);
-	if (!error_msg.empty()) {
-		std::cerr << error_msg << "\n";
+		auto ex_factory = std::make_shared<ExecutorFactory>(false);
+		std::string error_msg = sd.detect_and_fetch_basic_data(drives, ex_factory);
+		if (!error_msg.empty()) {
+			std::cerr << error_msg << "\n";
 
-	} else {
-		for (const auto& drive : drives) {
-			std::cerr << drive->get_device_with_type() <<
-					" (" << StorageDevice::get_type_storable_name(drive->get_detected_type()) << ")\n";
+		} else {
+			for (const auto& drive : drives) {
+				std::cerr << drive->get_device_with_type() <<
+						" (" << StorageDevice::get_type_storable_name(drive->get_detected_type()) << ")\n";
+			}
 		}
-	}
-
-	return 0;
+	});
 }
 
 
