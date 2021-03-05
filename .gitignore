@@ -23,6 +23,7 @@ ehthumbs.db
 Thumbs.db
 
 # IDE
+/.vs
 /*.pcs
 /.idea
 /CMakeLists.txt.user
