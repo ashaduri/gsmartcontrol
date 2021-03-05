@@ -111,9 +111,12 @@ namespace debug_internal {
 
 		/// Constructor
 		inline DebugSourcePos(std::string par_file, int line_, std::string par_func_name, std::string par_func)
-				: func_name(std::move(par_func_name)), func(std::move(par_func)), line(line_), file(std::move(par_file)),
-				enabled_types(debug_pos::def)
-		{ }
+				: func_name(std::move(par_func_name)), func(std::move(par_func)), line(line_), file(std::move(par_file))
+		{
+			enabled_types.set(debug_pos::func_name);
+			enabled_types.set(debug_pos::line);
+			enabled_types.set(debug_pos::file);
+		}
 
 		/// Formatted output string
 		[[nodiscard]] std::string str() const;
@@ -124,7 +127,7 @@ namespace debug_internal {
 		int line = 0;  ///< Source line
 		std::string file;  ///< Source file
 
-		debug_pos::type enabled_types;  ///< Enabled formatting types
+		debug_pos::flags enabled_types;  ///< Enabled formatting types
 	};
 
 

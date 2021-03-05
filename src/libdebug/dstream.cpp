@@ -49,10 +49,10 @@ namespace debug_internal {
 
 	void DebugStreamBuf::flush_to_channel()
 	{
-		debug_format::type flags = dos_->format_;
+		debug_format::flags flags = dos_->format_;
 		bool is_first_line = false;
 		if (get_debug_state_ref().get_inside_begin()) {
-			flags |= debug_format::first_line_only;
+			flags.set(debug_format::first_line_only);
 			if (dos_->get_is_first_line()) {
 				dos_->set_is_first_line(false);  // tls
 				is_first_line = true;
@@ -62,7 +62,7 @@ namespace debug_internal {
 			is_first_line = true;
 		}
 
-		for (auto & channel : dos_->channels_) {
+		for (auto& channel : dos_->channels_) {
 			// send() locks the channel if needed
 			channel->send(dos_->level_, dos_->domain_, flags,
 					get_debug_state_ref().get_indent_level(), is_first_line, oss_.str());

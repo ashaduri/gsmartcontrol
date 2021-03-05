@@ -38,7 +38,7 @@ class DebugChannelBase {
 
 		/// Send a message to channel
 		virtual void send(debug_level::flag level, const std::string& domain,
-				debug_format::type& format_flags, int indent_level, bool is_first_line, const std::string& msg) = 0;
+				debug_format::flags& format_flags, int indent_level, bool is_first_line, const std::string& msg) = 0;
 };
 
 
@@ -46,7 +46,7 @@ class DebugChannelBase {
 
 /// Helper function for DebugChannel objects, formats a message.
 std::string debug_format_message(debug_level::flag level, const std::string& domain,
-				debug_format::type& format_flags, int indent_level, bool is_first_line, const std::string& msg);
+				debug_format::flags& format_flags, int indent_level, bool is_first_line, const std::string& msg);
 
 
 
@@ -60,7 +60,7 @@ class DebugChannelOStream : public DebugChannelBase {
 
 		/// Reimplemented from DebugChannelBase.
 		void send(debug_level::flag level, const std::string& domain,
-				debug_format::type& format_flags, int indent_level, bool is_first_line, const std::string& msg) override
+				debug_format::flags& format_flags, int indent_level, bool is_first_line, const std::string& msg) override
 		{
 			os_ << debug_format_message(level, domain, format_flags, indent_level, is_first_line, msg);
 		}

@@ -17,6 +17,22 @@ Copyright:
 namespace debug_level {
 
 
+const flags& get_all_flags()
+{
+	static const flags all_flags = []() {
+		flags f;
+		f.set(debug_level::fatal);
+		f.set(debug_level::error);
+		f.set(debug_level::warn);
+		f.set(debug_level::info);
+		f.set(debug_level::dump);
+		return f;
+	}();
+	return all_flags;
+}
+
+
+
 /// Get debug level name
 const char* get_name(flag level)
 {

@@ -52,7 +52,7 @@ namespace debug_internal {
 		std::vector<std::string> debug_levels;  ///< Comma-separated names of levels to enable
 		gboolean debug_colorize = TRUE;  ///< Colorize the output or not
 
-		debug_level::types levels_enabled;  ///< Final vector - not actually an argument, but filled after the parsing.
+		debug_level::flags levels_enabled;  ///< Final vector - not actually an argument, but filled after the parsing.
 	};
 
 
@@ -106,51 +106,55 @@ static gboolean debug_internal_post_parse_func([[maybe_unused]] GOptionContext* 
 	auto* args = static_cast<debug_internal::DebugCmdArgs*>(data);
 
 	if (!args->debug_levels.empty()) {  // no string levels on command line given
-		args->levels_enabled = debug_level::none;  // reset
-		args->levels_enabled |= (std::find(args->debug_levels.begin(), args->debug_levels.end(),
-				"dump") != args->debug_levels.end() ? debug_level::dump : debug_level::none);
-		args->levels_enabled |= (std::find(args->debug_levels.begin(), args->debug_levels.end(),
-				"info") != args->debug_levels.end() ? debug_level::info : debug_level::none);
-		args->levels_enabled |= (std::find(args->debug_levels.begin(), args->debug_levels.end(),
-				"warn") != args->debug_levels.end() ? debug_level::warn : debug_level::none);
-		args->levels_enabled |= (std::find(args->debug_levels.begin(), args->debug_levels.end(),
-				"error") != args->debug_levels.end() ? debug_level::error : debug_level::none);
-		args->levels_enabled |= (std::find(args->debug_levels.begin(), args->debug_levels.end(),
-				"fatal") != args->debug_levels.end() ? debug_level::fatal : debug_level::none);
+		args->levels_enabled.reset();  // reset
+		if (std::find(args->debug_levels.cbegin(), args->debug_levels.cend(), "dump") != args->debug_levels.cend()) {
+			args->levels_enabled.set(debug_level::dump);
+		}
+		if (std::find(args->debug_levels.cbegin(), args->debug_levels.cend(), "info") != args->debug_levels.cend()) {
+			args->levels_enabled.set(debug_level::info);
+		}
+		if (std::find(args->debug_levels.cbegin(), args->debug_levels.cend(), "warn") != args->debug_levels.cend()) {
+			args->levels_enabled.set(debug_level::warn);
+		}
+		if (std::find(args->debug_levels.cbegin(), args->debug_levels.cend(), "error") != args->debug_levels.cend()) {
+			args->levels_enabled.set(debug_level::error);
+		}
+		if (std::find(args->debug_levels.cbegin(), args->debug_levels.cend(), "fatal") != args->debug_levels.cend()) {
+			args->levels_enabled.set(debug_level::fatal);
+		}
 
 	} else if (args->quiet == TRUE) {
-		args->levels_enabled = debug_level::none;
+		args->levels_enabled.reset();
 
 	} else if (args->verbose == TRUE) {
-		args->levels_enabled = debug_level::all;
+		args->levels_enabled.reset();
+		args->levels_enabled.set(debug_level::dump);
+		args->levels_enabled.set(debug_level::info);
+		args->levels_enabled.set(debug_level::warn);
+		args->levels_enabled.set(debug_level::error);
+		args->levels_enabled.set(debug_level::fatal);
 
 	} else {
-		args->levels_enabled = debug_level::none;
-
-		if (args->verbosity_level > 0) args->levels_enabled |= debug_level::fatal;
-		if (args->verbosity_level > 1) args->levels_enabled |= debug_level::error;
-		if (args->verbosity_level > 2) args->levels_enabled |= debug_level::warn;
-		if (args->verbosity_level > 3) args->levels_enabled |= debug_level::info;
-		if (args->verbosity_level > 4) args->levels_enabled |= debug_level::dump;
+		args->levels_enabled.reset();
+		if (args->verbosity_level > 0) args->levels_enabled.set(debug_level::fatal);
+		if (args->verbosity_level > 1) args->levels_enabled.set(debug_level::error);
+		if (args->verbosity_level > 2) args->levels_enabled.set(debug_level::warn);
+		if (args->verbosity_level > 3) args->levels_enabled.set(debug_level::info);
+		if (args->verbosity_level > 4) args->levels_enabled.set(debug_level::dump);
 	}
 
 	bool color_enabled = static_cast<bool>(args->debug_colorize);
 
 
-	unsigned long levels_enabled_ulong = args->levels_enabled.to_ulong();
-	debug_internal::DebugState::domain_map_t& dm = debug_internal::get_debug_state_ref().get_domain_map_ref();
+	debug_internal::DebugState::DomainMap& domain_map = debug_internal::get_debug_state_ref().get_domain_map_ref();
 
-	for (auto& iter : dm) {
-		for (auto& iter2 : iter.second) {
-			iter2.second->set_enabled(bool(levels_enabled_ulong & iter2.first));
+	for (auto& [domain_name, levels_streams] : domain_map) {
+		for (auto& [level, stream] : levels_streams) {
+			stream->set_enabled(bool(args->levels_enabled.test(level)));
 
-			debug_format::type format = iter2.second->get_format();
-			if (color_enabled) {
-				format |= debug_format::color;
-			} else {
-				format &= ~(unsigned long)debug_format::color;
-			}
-			iter2.second->set_format(format);
+			debug_format::flags format = stream->get_format();
+			format.set(debug_format::color, color_enabled);
+			stream->set_format(format);
 		}
 	}
 

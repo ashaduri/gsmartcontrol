@@ -17,7 +17,7 @@ Copyright:
 
 
 std::string debug_format_message(debug_level::flag level, const std::string& domain,
-				debug_format::type& format_flags, int indent_level, bool is_first_line, const std::string& msg)
+				debug_format::flags& format_flags, int indent_level, bool is_first_line, const std::string& msg)
 {
 	if (msg.empty())
 		return msg;

@@ -53,13 +53,13 @@ namespace debug_internal {
 				// in case of overflow for output, overflow() will be called to _output_ the data.
 
 				// no buffers here - we process it char-by-char.
-				std::size_t buf_size = 0;
-				if (buf_size) {
-					char* buf = new char[buf_size];  // further accessible through pbase().
-					setp(buf, buf + buf_size);  // Set output sequence pointers, aka output buffer
-				} else {
+				// std::size_t buf_size = 0;
+				// if (buf_size) {
+				// 	char* buf = new char[buf_size];  // further accessible through pbase().
+				// 	setp(buf, buf + buf_size);  // Set output sequence pointers, aka output buffer
+				// } else {
 					setp(nullptr, nullptr);
-				}
+				// }
 
 				setg(nullptr, nullptr, nullptr);  // Set input sequence pointers; not relevant in this class.
 			}
@@ -153,7 +153,7 @@ namespace debug_internal {
 			friend class DebugStreamBuf;
 
 			/// Constructor
-			DebugOutStream(debug_level::flag level, std::string domain, const debug_format::type& format_flags)
+			DebugOutStream(debug_level::flag level, std::string domain, const debug_format::flags& format_flags)
 					: std::ostream(nullptr), level_(level), domain_(std::move(domain)), format_(format_flags), buf_(this)
 			{
 				set_enabled(true);  // sets ostream's rdbuf
@@ -187,13 +187,13 @@ namespace debug_internal {
 */
 
 			/// Set format flags
-			void set_format(const debug_format::type& format_flags)
+			void set_format(const debug_format::flags& format_flags)
 			{
 				format_ = format_flags;
 			}
 
 			/// Get format flags
-			[[nodiscard]] debug_format::type get_format() const
+			[[nodiscard]] debug_format::flags get_format() const
 			{
 				return format_;
 			}
@@ -203,10 +203,11 @@ namespace debug_internal {
 			/// stream is discarded.
 			void set_enabled(bool enabled)
 			{
-				if (enabled)
+				if (enabled) {
 					rdbuf(&buf_);
-				else
+				} else {
 					rdbuf(&get_null_streambuf());
+				}
 			}
 
 			/// Check whether the stream is enabled or not.
@@ -238,7 +239,7 @@ namespace debug_internal {
 
 			/// Check if the last sent output is still on the same line
 			/// as the first one.
-			[[nodiscard]] bool get_is_first_line()
+			[[nodiscard]] bool get_is_first_line() const
 			{
 				return is_first_line_;
 			}
@@ -261,9 +262,9 @@ namespace debug_internal {
 
 		private:
 
-			debug_level::flag level_ = debug_level::none;  ///< Debug level of this stream
+			debug_level::flag level_ = debug_level::dump;  ///< Debug level of this stream
 			std::string domain_;  ///< Domain of this stream
-			debug_format::type format_ = debug_format::none;  ///< Format flags
+			debug_format::flags format_;  ///< Format flags
 
 			bool is_first_line_ = true;  ///< Whether it's the first line of output or not
 

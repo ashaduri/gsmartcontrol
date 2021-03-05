@@ -37,10 +37,10 @@ namespace debug_internal {
 		public:
 
 			/// A mapping of debug levels to respective streams
-			using level_map_t = std::map<debug_level::flag, std::shared_ptr<DebugOutStream>>;
+			using LevelMap = std::map<debug_level::flag, std::shared_ptr<DebugOutStream>>;
 
 			/// A mapping of domains to debug level maps with streams
-			using domain_map_t = std::map<std::string, level_map_t>;
+			using DomainMap = std::map<std::string, LevelMap>;
 
 
 			/// Constructor (statically called), calls setup_default_state().
@@ -56,7 +56,7 @@ namespace debug_internal {
 
 
 			/// Get the domain/level mapping.
-			[[nodiscard]] domain_map_t& get_domain_map_ref()
+			[[nodiscard]] DomainMap& get_domain_map_ref()
 			{
 				return domain_map;
 			}
@@ -114,7 +114,7 @@ namespace debug_internal {
 			int indent_level_ = 0;  ///< Current indentation level
 			std::stack<bool> inside_begin_;  ///< True if inside debug_begin() / debug_end() block
 
-			domain_map_t domain_map;  ///< Domain / debug level mapping.
+			DomainMap domain_map;  ///< Domain / debug level mapping.
 
 	};
 

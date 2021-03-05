@@ -346,7 +346,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 
 	// Add special debug channel to collect all libdebug output into a buffer.
-	debug_add_channel("all", debug_level::all, get_debug_buf_channel());
+	debug_add_channel("all", debug_level::get_all_flags(), get_debug_buf_channel());
 
 
 

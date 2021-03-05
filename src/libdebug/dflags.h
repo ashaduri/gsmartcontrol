@@ -17,18 +17,19 @@ Copyright:
 
 /// Debug level enum and related functions
 namespace debug_level {
-	enum flag : std::size_t {  ///< Debug level (seriousness). Some of these flags can be ORed for some functions.
-		none = 0,  ///< No flags
-		dump = 1 << 0,  ///< Dump level (structure dumps, additional verbosity, etc...)
-		info = 1 << 1,  ///< Information level (what the application is doing)
-		warn = 1 << 2,  ///< Warning level (simple warnings)
-		error = 1 << 3,  ///< Error level (recoverable errors)
-		fatal = 1 << 4,  ///< Fatal level (non-recoverable errors)
-		all = dump | info | warn | error | fatal,  ///< All flags
-		bits = 5  ///< Number of bits for bitset
+	enum flag : std::size_t {  ///< Debug level (seriousness).
+		dump,  ///< Dump level (structure dumps, additional verbosity, etc...)
+		info,  ///< Information level (what the application is doing)
+		warn,  ///< Warning level (simple warnings)
+		error,  ///< Error level (recoverable errors)
+		fatal,  ///< Fatal level (non-recoverable errors)
+		bits,  ///< Number of bits for bitset
 	};
 
-	using types = std::bitset<bits>;  ///< Combination of debug level flags
+	using flags = std::bitset<bits>;  ///< Combination of debug level flags
+
+	/// Get bitset with all flags enabled
+	const flags& get_all_flags();
 
 	/// Get debug level name
 	const char* get_name(flag level);
@@ -42,7 +43,7 @@ namespace debug_level {
 
 	/// Convert ORed flags into a vector of flags
 	template<class Container> inline
-	void get_matched_levels_array(const types& levels, Container& put_here)
+	void get_matched_levels_array(const flags& levels, Container& put_here)
 	{
 		for (auto level : {
 				debug_level::dump,
@@ -62,18 +63,16 @@ namespace debug_level {
 /// Debug formatting option (how to format the message) enum and related functions
 namespace debug_format {
 	enum flag : std::size_t {  ///< Format flag. Some of these flags can be ORed for some functions.
-		none = 0,  ///< No flags
-		datetime = 1 << 0,  ///< Show datetime
-		level = 1 << 1,  ///< Show debug level name
-		domain = 1 << 2,  ///< Show domain name
-		color = 1 << 3,  ///< Colorize output. Note: Colorization works only for supported shells / terminals (e.g. bash / xterm).
-		indent = 1 << 4,  ///< Enable indentation
-		first_line_only = 1 << 5,  ///< Internal flag, prefix first line only.
-		all = datetime | level | domain | color | indent,  ///< All user formatting flags enabled
-		bits = 6  ///< Number of bits for bitset
+		datetime,  ///< Show datetime
+		level,  ///< Show debug level name
+		domain,  ///< Show domain name
+		color,  ///< Colorize output. Note: Colorization works only for supported shells / terminals (e.g. bash / xterm).
+		indent,  ///< Enable indentation
+		first_line_only,  ///< Internal flag, prefix first line only.
+		bits,  ///< Number of bits for bitset
 	};
 
-	 using type = std::bitset<bits>;  ///< Combination of format flags
+	 using flags = std::bitset<bits>;  ///< Combination of format flags
 }
 
 
@@ -81,16 +80,15 @@ namespace debug_format {
 /// Debug position output flags (how to format the current source line information)
 namespace debug_pos {
 	enum flag : std::size_t {  ///< Position output flags
-		none = 0,  ///< No flags
-		func_name = 1 << 0,  ///< Print function name (only)
-		func = 1 << 1,  ///< Print function name with namespaces, etc... (off by default).
-		line = 1 << 2,  ///< Print source code line
-		file = 1 << 3,  ///< Print file path and name
-		def = func_name | line | file,  ///< Default flags
-		bits = 4  ///< Number of bits for bitset
+		func_name,  ///< Print function name (only)
+		func,  ///< Print function name with namespaces, etc... (off by default).
+		line,  ///< Print source code line
+		file,  ///< Print file path and name
+		// def = func_name | line | file,  ///< Default flags
+		bits,  ///< Number of bits for bitset
 	};
 
-	using type = std::bitset<bits>;  ///< Combination of flags
+	using flags = std::bitset<bits>;  ///< Combination of flags
 }
 
 
