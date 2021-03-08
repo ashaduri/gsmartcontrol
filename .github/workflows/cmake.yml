@@ -71,7 +71,7 @@ jobs:
         working-directory: ${{runner.workspace}}/build
         shell: msys2 {0}
         run: >-
-          cmake -G'MSYS Makefiles' ..
+          cmake '-GMSYS Makefiles' ..
           -DCMAKE_MAKE_PROGRAM=mingw32-make
           -DAPP_BUILD_EXAMPLES=ON
           -DAPP_BUILD_TESTS=ON
@@ -82,6 +82,34 @@ jobs:
         shell: msys2 {0}
         working-directory: ${{runner.workspace}}/build
         run: cmake --build . --config $BUILD_TYPE
+
+
+  macos-homebrew:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Dependencies
+      run: brew install pkg-config gtkmm3 pcre cmake
+
+    - name: Create Build Directory
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: >-
+        cmake $GITHUB_WORKSPACE
+        -DAPP_BUILD_EXAMPLES=ON
+        -DAPP_BUILD_TESTS=ON
+        -DAPP_COMPILER_ENABLE_WARNINGS=ON
+        -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: cmake --build . --config $BUILD_TYPE
 
 
   freebsd:
