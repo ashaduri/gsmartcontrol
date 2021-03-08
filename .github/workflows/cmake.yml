@@ -6,12 +6,11 @@ env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: RelWithDebInfo
 
+
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-20.04]
+
+  linux-ubuntu:
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v2
@@ -19,29 +18,101 @@ jobs:
     - name: Install Dependencies
       run: sudo apt-get install libpcre3-dev libgtkmm-3.0-dev gettext
 
-    - name: Create Build Environment
+    - name: Create Build Directory
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
       run: >-
-        cmake -E make_directory
+        cmake $GITHUB_WORKSPACE
         -DAPP_BUILD_EXAMPLES=ON
         -DAPP_BUILD_TESTS=ON
         -DAPP_COMPILER_ENABLE_WARNINGS=ON
-        ${{runner.workspace}}/build
-
-    - name: Configure CMake
-      # Use a bash shell so we can use the same syntax for environment variable
-      # access regardless of the host operating system
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      # Note the current convention is to use the -S and -B options here to specify source 
-      # and build directories, but this is only available with CMake 3.13 and higher.  
-      # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build . --config $BUILD_TYPE
+
+
+  windows-msys2:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        include: [
+          { msystem: MINGW64, arch: x86_64 },
+          { msystem: MINGW32, arch: i686 }
+        ]
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: temp
+          fetch-depth: 0
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MSYS
+          update: true
+          install: >-
+            mingw-w64-${{ matrix.arch }}-gtkmm3
+            mingw-w64-${{ matrix.arch }}-pkg-config
+            mingw-w64-${{ matrix.arch }}-cmake
+            mingw-w64-${{ matrix.arch }}-gcc
+            mingw-w64-${{ matrix.arch }}-make
+
+      - name: Create Build Directory
+        run: cmake -E make_directory ${{runner.workspace}}/build
+
+      - name: Configure CMake
+        working-directory: ${{runner.workspace}}/build
+        run: >-
+          cmake $GITHUB_WORKSPACE
+          -DAPP_BUILD_EXAMPLES=ON
+          -DAPP_BUILD_TESTS=ON
+          -DAPP_COMPILER_ENABLE_WARNINGS=ON
+          -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+
+      - name: Build
+        working-directory: ${{runner.workspace}}/build
+        run: cmake --build . --config $BUILD_TYPE
+
+
+  freebsd:
+    runs-on: macos-latest
+    name: FreeBSD
+#    env:
+#      variables to pass to VM
+#      MYTOKEN : ${{ secrets.MYTOKEN }}
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build and test in FreeBSD
+      id: test
+      uses: vmactions/freebsd-vm@v0.1.2
+      with:
+#        envs: 'MYTOKEN MYTOKEN2'
+        usesh: true
+        sync: rsync
+        mem: 2048
+        prepare: |
+          pkg install -y cmake atkmm cairo glibmm gtk30 gtkmm30 libsigc++20 pangomm c++11-lang pkgconfig
+          cmake -E make_directory build
+
+        run: |
+          cd build
+
+          cmake
+          -DAPP_BUILD_EXAMPLES=ON
+          -DAPP_BUILD_TESTS=ON
+          -DAPP_COMPILER_ENABLE_WARNINGS=ON
+          -DCMAKE_BUILD_TYPE=Debug
+          ..
+
+          cmake --build . --config $BUILD_TYPE
+
 
 #    - name: Pack
 #      working-directory: ${{runner.workspace}}/build
