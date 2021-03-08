@@ -48,9 +48,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-        with:
-          path: temp
-          fetch-depth: 0
 
       - uses: msys2/setup-msys2@v2
         with:
@@ -62,10 +59,6 @@ jobs:
             mingw-w64-${{ matrix.arch }}-cmake
             mingw-w64-${{ matrix.arch }}-gcc
             mingw-w64-${{ matrix.arch }}-make
-
-      - name: Create Build Directory
-        shell: msys2 {0}
-        run: cmake -E make_directory ${{runner.workspace}}\build
 
       - name: Configure CMake
         working-directory: ${{runner.workspace}}
