@@ -64,7 +64,7 @@ jobs:
         working-directory: ${{runner.workspace}}
         shell: msys2 {0}
         run: >-
-          cmake -B build -S . -G "MSYS Makefiles" ..
+          cmake -B build -S "$GITHUB_WORKSPACE" -G "MSYS Makefiles" ..
           -DCMAKE_MAKE_PROGRAM=mingw32-make
           -DAPP_BUILD_EXAMPLES=ON
           -DAPP_BUILD_TESTS=ON
