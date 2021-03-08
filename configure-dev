@@ -2,87 +2,159 @@
 ###############################################################################
 # License: BSD Zero Clause License file
 # Copyright:
-#   (C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+#   (C) 2012 - 2021 Alexander Shaduri <ashaduri@gmail.com>
 ###############################################################################
 
-# Configure a build directory according to developer flags
+# Configure a build directory for development
 
-type="$1";
-configure_script="$2";
 
-if [ "$type" == "" ]; then
-	echo "Usage: $0 <type> [<configure_script>]"
-	echo "where <type> is one of:"
-	echo "none debug optimized gcc-debug clang-debug icc-debug sun win32-cross win32-cross-debug \
-		win64-cross win64-cross-debug win32-msys win32-msys-debug win64-msys win64-msys-debug";
-	echo "<configure_script> is ../configure by default"
+function print_usage() {
+	echo -e "Usage:"
+	echo -e "    ${0} [-t <toolchain_name>] [-c <compiler>] [-b <build_type>]"
+	echo -e "    [-s <source_dir>] [-g <generator>] [-o <cmake_options>]"
+	echo -e "\nDetails:"
+	echo -e "-t <toolchain_name> - toolchain_name can be e.g. \"win32-mingw64\"."
+	echo -e "    A toolchain file \"toolchains/<toolchain_name>.cmake\" will be used."
+	echo -e "-c <compiler> - compiler is one of:"
+	echo -e "    gcc, gcc-<version>, clang, intel."
+	echo -e "    The gcc version is the suffix of gcc and g++ executables, e.g. \"4.8\" in"
+	echo -e "    \"gcc-4.8\"."
+	echo -e "    If unspecified, CC and CXX environment variables are used."
+	echo -e "-b <build_type> - build_type is one of:"
+	echo -e "    Debug, Release, RelWithDebInfo, MinSizeRel, none. The default is Debug."
+	echo -e "-s <source_dir> - source_dir is \"..\" by default."
+	echo -e "-g <cmake_generator> - cmake uses \"Unix Makefiles\" by default."
+	echo -e "-o <cmake_options> - options to pass directly to cmake."
+}
+
+compiler=""
+build_type="";
+source_dir=".."
+toolchain_name=""
+generator=""
+cmake_options=""
+
+while getopts "t:c:b:s:g:o:h:" opt; do
+	case $opt in
+		t)
+			echo "Requested toolchain: $OPTARG"
+			toolchain_name="$OPTARG";
+			;;
+		c)
+			echo "Requested compiler: $OPTARG"
+			compiler="$OPTARG";
+			;;
+		b)
+			echo "Requested build type: $OPTARG"
+			build_type="$OPTARG";
+			;;
+		s)
+			echo "Requested source directory type: $OPTARG"
+			source_dir="$OPTARG";
+			;;
+		g)
+			echo "Requested generator: $OPTARG"
+			generator="$OPTARG";
+			;;
+		o)
+			echo "Requested cmake options: $OPTARG"
+			cmake_options="$OPTARG";
+			;;
+		h)
+			print_usage;
+			exit 1;
+			;;
+		\?)
+			echo "Invalid option: $opt";
+			print_usage;
+			exit 1;
+			;;
+	esac
+done
+
+
+if [ "$compiler" != "" ] && [ "$toolchain_name" != "" ]; then
+	echo "Error: Conflicting options -c and -t specified."
 	exit 1;
 fi
 
-if [ "$configure_script" == "" ]; then
-	configure_script="../configure";
+
+cmake_flags="-Wdev";
+
+if [ "$build_type" = "none" ]; then
+	build_type="";
+fi
+if [ "$build_type" != "" ]; then
+  cmake_flags="$cmake_flags -DCMAKE_BUILD_TYPE=$build_type";
+fi
+
+if [ "$generator" != "" ]; then
+	cmake_flags="$cmake_flags -G${generator}";
 fi
 
 
-flags="";
-
-case $type in
-	none)
-		flags="--enable-examples" ;;
-	debug)
-		flags="--enable-debug-options --enable-examples" ;;
-	optimized)
-		flags="--enable-optimize-options --enable-examples" ;;
-
-	gcc-debug)
-		flags="CC=gcc CXX=g++ --enable-common-options=gnu --enable-debug-options --enable-examples" ;;
-	clang-debug)
-		flags="CC=clang CXX=clang++ --enable-common-options=clang --enable-debug-options --enable-examples" ;;
-	icc-debug)
-		flags="CC=icc64 CXX=icpc64 --enable-common-options=intel --enable-debug-options --enable-examples" ;;
-	sun)
-		flags="CC=suncc CXX=sunCC --enable-common-options=sun CFLAGS=\"-errwarn=%all -I/opt/sun/target64/include\" \
-			CXXFLAGS=\"-I/opt/sun/target64/include\" PATH=\"/opt/sun/sunstudio/bin:$PATH\" \
-			LDFLAGS=\"-R/opt/sun/target64/lib64 -L/opt/sun/target64/lib64\" \
-			PKG_CONFIG_PATH=\"/opt/sun/target64/lib64/pkgconfig:/usr/lib64/pkgconfig\" \
-			PKG_CONFIG_LIBDIR=\"\" --enable-examples" ;;
-
-	win32-cross)
-		flags="PATH=\"/usr/i686-w64-mingw32/bin:/usr/i686-w64-mingw32/sys-root/mingw/bin:$PATH\" \
-			--with-nsis=/usr/bin/makensis --with-windows-sysroot=/usr/i686-w64-mingw32/sys-root/mingw \
-			--enable-optimize-options --enable-examples --host=i686-w64-mingw32" ;;
-	win32-cross-debug)
-		flags="PATH=\"/usr/i686-w64-mingw32/bin:/usr/i686-w64-mingw32/sys-root/mingw/bin:$PATH\" \
-			--enable-debug-options --enable-examples --host=i686-w64-mingw32" ;;
-	win64-cross)
-		flags="PATH=\"/usr/x86_64-w64-mingw32/bin:/usr/x86_64-w64-mingw32/sys-root/mingw/bin:$PATH\" \
-			--with-nsis=/usr/bin/makensis --with-windows-sysroot=/usr/x86_64-w64-mingw32/sys-root/mingw \
-			--enable-optimize-options --enable-examples --host=x86_64-w64-mingw32" ;;
-	win64-cross-debug)
-		flags="PATH=\"/usr/x86_64-w64-mingw32/bin:/usr/x86_64-w64-mingw32/sys-root/mingw/bin:$PATH\" \
-			--enable-debug-options --enable-examples --host=x86_64-w64-mingw32" ;;
-
-	win32-msys)
-		flags="PATH=\"/mingw32/i686-w64-mingw32:/mingw32/bin:$PATH\" \
-			--with-nsis=/mingw32/bin/makensis.exe --with-windows-sysroot=/mingw32 \
-			--enable-optimize-options --enable-examples --host=i686-w64-mingw32" ;;
-	win32-msys-debug)
-		flags="PATH=\"/mingw32/i686-w64-mingw32:/mingw32/bin:$PATH\" \
-			--enable-debug-options --enable-examples --host=i686-w64-mingw32" ;;
-	win64-msys)
-		flags="PATH=\"/mingw64/x86_64-w64-mingw32:/mingw64/bin:$PATH\" \
-			--with-nsis=/mingw64/bin/makensis.exe --with-windows-sysroot=/mingw64 \
-			--enable-optimize-options --enable-examples --host=x86_64-w64-mingw32" ;;
-	win64-msys-debug)
-		flags="PATH=\"/mingw64/x86_64-w64-mingw32:/mingw64/bin:$PATH\" \
-			--enable-debug-options --enable-examples --host=x86_64-w64-mingw32" ;;
-esac
+status=1
 
 
-echo "Running:"
-echo $configure_script $flags;
+# Toolchain mode
+if [ "$toolchain_name" != "" ]; then
+	cmake_flags="$cmake_flags -DCMAKE_TOOLCHAIN_FILE='${source_dir}/data/cmake/toolchains/${toolchain_name}.cmake'"
 
-$configure_script $flags
+	echo "Running:"
+	echo "cmake $cmake_flags $source_dir";
+
+	cmake $cmake_flags $cmake_options $source_dir
+	status=$?
+
+else  # Compiler mode
+	c_compiler="";
+	cxx_compiler="";
+
+	# Detect gcc suffix like "-4.7"
+	if [ "${compiler:0:4}" = "gcc-" ]; then
+		suffix=${compiler:4};
+		c_compiler="gcc-${suffix}";
+		cxx_compiler="g++-${suffix}";
+		compiler="gcc";
+	fi
+
+	case $compiler in
+		gcc)
+			if [ "$c_compiler" = "" ]; then
+				c_compiler="gcc${machine_bits_switch}";
+				cxx_compiler="g++${machine_bits_switch}";
+			fi
+			;;
+		intel)
+			if [ $machine_bits_precise = "64" ]; then
+				c_compiler="icc64";
+				cxx_compiler="icpc64";
+			else
+				c_compiler="icc32";
+				cxx_compiler="icpc32";
+			fi
+			;;
+		clang)
+			c_compiler="clang${machine_bits_switch}";
+			cxx_compiler="clang++${machine_bits_switch}";
+			;;
+		"")
+			c_compiler="$CC"
+			cxx_compiler="$CXX"
+			;;
+		*)
+			echo "Unsupported compiler given; use CC and CXX instead."
+			exit 1;
+			;;
+	esac
+
+	echo "Running:"
+	echo "CC=\"$c_compiler\" CXX=\"$cxx_compiler\" cmake $cmake_flags $source_dir";
+
+	CC="$c_compiler" CXX="$cxx_compiler" cmake $cmake_flags $cmake_options $source_dir
+	status=$?
+fi
 
 
-exit $?
+exit $status
+
