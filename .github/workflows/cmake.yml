@@ -65,10 +65,10 @@ jobs:
 
       - name: Create Build Directory
         shell: msys2 {0}
-        run: cmake -E make_directory ${{runner.workspace}}/build
+        run: cmake -E make_directory ${{runner.workspace}}\build
 
       - name: Configure CMake
-        working-directory: ${{runner.workspace}}/build
+        working-directory: ${{runner.workspace}}\build
         shell: msys2 {0}
         run: >-
           cmake '-GMSYS Makefiles' ..
