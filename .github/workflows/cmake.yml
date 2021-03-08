@@ -64,10 +64,12 @@ jobs:
             mingw-w64-${{ matrix.arch }}-make
 
       - name: Create Build Directory
+        shell: msys2 {0}
         run: cmake -E make_directory ${{runner.workspace}}/build
 
       - name: Configure CMake
         working-directory: ${{runner.workspace}}/build
+        shell: msys2 {0}
         run: >-
           cmake $GITHUB_WORKSPACE
           -DAPP_BUILD_EXAMPLES=ON
@@ -76,6 +78,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
       - name: Build
+        shell: msys2 {0}
         working-directory: ${{runner.workspace}}/build
         run: cmake --build . --config $BUILD_TYPE
 
