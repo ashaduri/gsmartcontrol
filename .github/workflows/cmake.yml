@@ -69,7 +69,7 @@ jobs:
 
       - name: Configure CMake
         working-directory: ${{runner.workspace}}\build
-        shell: msys2 {0}
+        shell: bash
         run: >-
           cmake ${{runner.workspace}}
           -DAPP_BUILD_EXAMPLES=ON
