@@ -14,7 +14,6 @@ Copyright:
 
 #include "local_glibmm.h"
 #include <gtkmm.h>
-#include <bits/stdc++.h>  // to avoid throw() macro errors.
 #include <iostream>
 
 #include "hz/main_tools.h"

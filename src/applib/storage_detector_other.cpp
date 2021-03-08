@@ -29,7 +29,8 @@ Copyright:
 
 
 
-std::string detect_drives_other(std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory)
+std::string detect_drives_other(std::vector<StorageDevicePtr>& drives,
+		[[maybe_unused]] const ExecutorFactoryPtr& ex_factory)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives through /dev...\n");
 
