@@ -85,11 +85,13 @@ jobs:
 
 
   freebsd:
+    # Disable for now - it fails with not being able to find packages for gtk30, libsigc++20, c++11-lang, pkgconfig.
+    if: ${{ false }}
     runs-on: macos-latest
     name: FreeBSD
-#    env:
-#      variables to pass to VM
-#      MYTOKEN : ${{ secrets.MYTOKEN }}
+    env:
+      # variables to pass to VM
+      # MYTOKEN : ${{ secrets.MYTOKEN }}
     steps:
     - uses: actions/checkout@v2
 
@@ -97,23 +99,21 @@ jobs:
       id: test
       uses: vmactions/freebsd-vm@v0.1.2
       with:
-#        envs: 'MYTOKEN MYTOKEN2'
+        envs: 'BUILD_TYPE'
         usesh: true
         sync: rsync
         mem: 2048
         prepare: |
           pkg install -y cmake atkmm cairo glibmm gtk30 gtkmm30 libsigc++20 pangomm c++11-lang pkgconfig
-          cmake -E make_directory build
 
         run: |
-          cd build
+          mkdir build && cd build
 
-          cmake
+          cmake ..
           -DAPP_BUILD_EXAMPLES=ON
           -DAPP_BUILD_TESTS=ON
           -DAPP_COMPILER_ENABLE_WARNINGS=ON
-          -DCMAKE_BUILD_TYPE=Debug
-          ..
+          -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
           cmake --build . --config $BUILD_TYPE
 
