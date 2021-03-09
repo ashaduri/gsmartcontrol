@@ -28,7 +28,7 @@ Group:		Hardware/Other
 # SUSE / OpenSUSE. SLES also defines the correct suse_version.
 %if 0%{?suse_version}
 Requires: smartmontools >= 5.43, polkit, bash, xterm
-BuildRequires: cmake pkg-config gcc-c++, libstdc++-devel, pcre-devel, gtkmm3-devel >= 3.4.0
+BuildRequires: cmake gcc-c++ libstdc++-devel pcre-devel gtkmm3-devel >= 3.4.0 pkgconf-pkg-config
 BuildRequires: update-desktop-files
 BuildRequires: fdupes
 %endif
@@ -50,17 +50,13 @@ on it.
 
 %prep
 %setup -q
-%configure
+%cmake
 
 %build
-make %{?_smp_mflags}
+%cmake_build
 
 %install
-
-# %%makeinstall
-make DESTDIR=%buildroot install-strip
-# Remove the icon cache file "make install" generates, to avoid package conflicts.
-rm -f $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/icon-theme.cache
+%cmake_install
 
 
 %if 0%{?suse_version}
