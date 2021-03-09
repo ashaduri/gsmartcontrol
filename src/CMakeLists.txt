@@ -35,7 +35,7 @@ target_sources(gsmartcontrol PRIVATE
 
 # Win32 resource file
 if (WIN32)
-	configure_file("gsc_winres.in.rc" "${CMAKE_CURRENT_BINARY_DIR}/gsc_winres.rc" ESCAPE_QUOTES @ONLY)
+	configure_file("gsc_winres.in.rc" "${CMAKE_CURRENT_BINARY_DIR}/gsc_winres.rc" ESCAPE_QUOTES @ONLY NEWLINE_STYLE DOS)
 	file(COPY "${CMAKE_SOURCE_DIR}/data/gsmartcontrol.ico" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")  # required by winres
 	target_sources(gsmartcontrol PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/gsc_winres.rc")
 endif()
@@ -46,7 +46,8 @@ if (WIN32)
 	if (CMAKE_SIZEOF_VOID_P EQUAL 8)
 		set(WINDOWS_ARCH "amd64")
 	endif()
-	configure_file("gsmartcontrol.exe.in.manifest" "${CMAKE_CURRENT_BINARY_DIR}/gsmartcontrol.exe.manifest" ESCAPE_QUOTES @ONLY)
+	configure_file("gsmartcontrol.exe.in.manifest" "${CMAKE_CURRENT_BINARY_DIR}/gsmartcontrol.exe.manifest"
+		ESCAPE_QUOTES @ONLY NEWLINE_STYLE DOS)
 
 	# We link the manifest into the binary instead of installing it.
 	# install(FILES "${CMAKE_CURRENT_BINARY_DIR}/gsmartcontrol.exe.manifest" DESTINATION "${CMAKE_INSTALL_SBINDIR}/")
@@ -62,7 +63,11 @@ target_link_libraries(gsmartcontrol
 		build_config
 )
 
-install(TARGETS gsmartcontrol DESTINATION "${CMAKE_INSTALL_SBINDIR}/")
+if (WIN32)
+	install(TARGETS gsmartcontrol DESTINATION .)
+else()
+	install(TARGETS gsmartcontrol DESTINATION "${CMAKE_INSTALL_SBINDIR}/")
+endif()
 
 
 add_subdirectory(build_config)

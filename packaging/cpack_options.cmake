@@ -140,9 +140,9 @@ endif()
 #configure_file("${CMAKE_SOURCE_DIR}/data/package_data/rpm-post-install.in.sh" "${CMAKE_BINARY_DIR}/rpm-post-install.sh" ESCAPE_QUOTES @ONLY)
 #configure_file("${CMAKE_SOURCE_DIR}/data/package_data/rpm-post-uninstall.in.sh" "${CMAKE_BINARY_DIR}/rpm-post-uninstall
 #.sh" ESCAPE_QUOTES @ONLY)
-#
-#set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/data/rpm-post-install.sh")
-#set(CPACK_RPM_POST_UNINSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/data/rpm-post-uninstall.sh")
+
+set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/packaging/cpack_rpm/rpm-post-install.sh")
+set(CPACK_RPM_POST_UNINSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/packaging/cpack_rpm/rpm-post-uninstall.sh")
 
 
 
@@ -162,8 +162,203 @@ endif()
 #	"${CMAKE_BINARY_DIR}/postinst" ESCAPE_QUOTES @ONLY)
 #configure_file("${CMAKE_SOURCE_DIR}/data/package_data/debian-postrm.in.sh"
 #	"${CMAKE_BINARY_DIR}/postrm" ESCAPE_QUOTES @ONLY)
-#
-#set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/data/postinst;${CMAKE_BINARY_DIR}/data/postrm")
+
+set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
+	"${CMAKE_BINARY_DIR}/packaging/cpack_debian/postinst;${CMAKE_BINARY_DIR}/packaging/cpack_debian/postrm")
+
+
+
+
+
+# Install GTK+ and other dependencies in Windows.
+# Requires installed smartctl-nc.exe, smartctl.exe, update-smart-drivedb.exe in bin subdirectory of sysroot.
+# Gtkmm and pcre dlls are required.
+# dos2unix is required on build machine.
+if (WIN32)
+	option(APP_WINDOWS_SYSROOT "Location of system root for Windows binaries, for packing" "${CMAKE_FIND_ROOT_PATH}")
+
+	set(WINDOWS_SUFFIX "win32")
+	if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+		set(WINDOWS_SUFFIX "win64")
+	endif()
+
+	# TODO unix2dos doc/*.txt
+
+	# Smartmontools
+	install(FILES
+		"${APP_WINDOWS_SYSROOT}/bin/drivedb.h"
+		"${APP_WINDOWS_SYSROOT}/bin/smartctl-nc.exe"
+		"${APP_WINDOWS_SYSROOT}/bin/smartctl.exe"
+		"${APP_WINDOWS_SYSROOT}/bin/update-smart-drivedb.exe"
+		DESTINATION .
+	)
+
+	# GCC Runtime
+	file(GLOB MATCHED_FILES LIST_DIRECTORIES false RELATIVE "${APP_WINDOWS_SYSROOT}/bin" "libgcc_s_*.dll")
+	install(FILES ${MATCHED_FILES} DESTINATION .)
+
+	# PCRE
+	install(FILES "${APP_WINDOWS_SYSROOT}/bin/libpcre-1.dll" DESTINATION .)
+	install(FILES "${APP_WINDOWS_SYSROOT}/bin/libpcrecpp-0.dll" DESTINATION .)
+
+
+	#	All of GTK+
+	set(GTK_FILES
+		gdk-pixbuf-query-loaders.exe
+		gspawn-win32-helper-console.exe
+		gspawn-win32-helper.exe
+		gspawn-win64-helper-console.exe
+		gspawn-win64-helper.exe
+		gtk-query-immodules-3.0.exe
+		gtk-update-icon-cache-3.0.exe
+		libatk-1.*.dll
+		libatkmm-1.*.dll
+		libbz2-*.dll
+		libcairo-*.dll
+		libcairomm-1*.dll
+		libepoxy-*.dll
+		libffi-*.dll
+		libexpat-*.dll
+		libfontconfig-*.dll
+		libfreetype-*.dll
+		libgdk-3*.dll
+		libgdk_pixbuf-2.*.dll
+		libgdkmm-3.*.dll
+		libgio-2.*.dll
+		libgiomm-2.*.dll
+		libglib-2.*.dll
+		libglibmm*2.*.dll
+		libgmodule-2.*.dll
+		libgobject-2.*.dll
+		libgraphite*.dll
+		libgthread-2.*.dll
+		libgtk-3*.dll
+		libgtkmm-3*.dll
+		libharfbuzz*.dll
+		libiconv*.dll
+		libintl*.dll
+		libjasper*.dll
+		libjpeg*.dll
+		liblzma*.dll
+		libpango*-1.*.dll
+		libpixman*.dll
+		libpng16-*.dll
+		libsigc-2.*.dll
+		libstdc++-*.dll
+		libtiff-*.dll
+		libwinpthread-*.dll
+		libxml2-*.dll
+		zlib1.dll
+	)
+	foreach(pattern ${GTK_FILES})
+		file(GLOB MATCHED_FILES LIST_DIRECTORIES false RELATIVE "${APP_WINDOWS_SYSROOT}/bin" ${pattern})
+		if (NOT "${MATCHED_FILES}" STREQUAL "")
+			install(FILES ${MATCHED_FILES} DESTINATION .)
+		endif()
+	endforeach()
+
+	# <prefix>/etc/gtk-3.0/ should contain settings.ini with a win32 theme.
+	install(FILES "${APP_WINDOWS_SYSROOT}/etc/fonts/fonts.conf" DESTINATION "etc/fonts/")
+#	install(FILES "${APP_WINDOWS_SYSROOT}/etc/gtk-3.0/im-multipress.conf" DESTINATION "etc/gtk-3.0/")
+	install(FILES "${APP_WINDOWS_SYSROOT}/etc/gtk-3.0/settings.ini" DESTINATION "etc/gtk-3.0/")
+
+	install(DIRECTORY "${APP_WINDOWS_SYSROOT}/share/themes" DESTINATION "share/")
+
+	# needed for file chooser
+	install(DIRECTORY "${APP_WINDOWS_SYSROOT}/share/glib-2.0/schemas" DESTINATION "share/glib-2.0/")
+
+#	install(DIRECTORY "${APP_WINDOWS_SYSROOT}/share/icons/hicolor" DESTINATION "share/icons/")
+
+	# needed for window titlebar (if using client-side decorations),
+	# tree sorting indicators, GUI icons.
+	install(FILES
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/16x16/actions/window-close-symbolic.symbolic.png"
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/16x16/actions/window-maximize-symbolic.symbolic.png"
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/16x16/actions/window-minimize-symbolic.symbolic.png"
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/16x16/actions/window-restore-symbolic.symbolic.png"
+		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/16x16/actions/pan-down-symbolic.symbolic.png"
+		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/16x16/actions/pan-up-symbolic.symbolic.png"
+		DESTINATION "share/icons/Adwaita/16x16/actions/"
+	)
+	install(FILES
+		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/16x16/status/dialog-information.png"
+		DESTINATION "share/icons/Adwaita/16x16/status/"
+	)
+	install(FILES
+		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/22x22/status/dialog-information.png"
+		DESTINATION "share/icons/Adwaita/22x22/status/"
+	)
+	install(FILES
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/24x24/actions/window-close-symbolic.symbolic.png"
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/24x24/actions/window-maximize-symbolic.symbolic.png"
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/24x24/actions/window-minimize-symbolic.symbolic.png"
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/24x24/actions/window-restore-symbolic.symbolic.png"
+		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/24x24/actions/pan-down-symbolic.symbolic.png"
+		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/24x24/actions/pan-up-symbolic.symbolic.png"
+		DESTINATION "share/icons/Adwaita/24x24/actions/"
+	)
+	install(FILES
+		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/24x24/status/dialog-information.png"
+		DESTINATION "share/icons/Adwaita/24x24/status/"
+	)
+	install(FILES
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/32x32/actions/window-close-symbolic.symbolic.png"
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/32x32/actions/window-maximize-symbolic.symbolic.png"
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/32x32/actions/window-minimize-symbolic.symbolic.png"
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/32x32/actions/window-restore-symbolic.symbolic.png"
+		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/32x32/actions/pan-down-symbolic.symbolic.png"
+		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/32x32/actions/pan-up-symbolic.symbolic.png"
+		DESTINATION "share/icons/Adwaita/32x32/actions/"
+	)
+	install(FILES
+		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/32x32/status/dialog-information.png"
+		DESTINATION "share/icons/Adwaita/32x32/status/"
+	)
+	install(FILES
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/48x48/actions/window-close-symbolic.symbolic.png"
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/48x48/actions/window-maximize-symbolic.symbolic.png"
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/48x48/actions/window-minimize-symbolic.symbolic.png"
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/48x48/actions/window-restore-symbolic.symbolic.png"
+		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/48x48/actions/pan-down-symbolic.symbolic.png"
+		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/48x48/actions/pan-up-symbolic.symbolic.png"
+		DESTINATION "share/icons/Adwaita/48x48/actions/"
+	)
+	install(FILES
+		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/48x48/status/dialog-information.png"
+		DESTINATION "share/icons/Adwaita/48x48/status/"
+	)
+	install(FILES
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/64x64/actions/window-close-symbolic.symbolic.png"
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/64x64/actions/window-maximize-symbolic.symbolic.png"
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/64x64/actions/window-minimize-symbolic.symbolic.png"
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/64x64/actions/window-restore-symbolic.symbolic.png"
+		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/64x64/actions/pan-down-symbolic.symbolic.png"
+		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/64x64/actions/pan-up-symbolic.symbolic.png"
+		DESTINATION "share/icons/Adwaita/64x64/actions/"
+	)
+	install(FILES
+		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/64x64/status/dialog-information.png"
+		DESTINATION "share/icons/Adwaita/64x64/status/"
+	)
+	install(FILES
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/96x96/actions/window-close-symbolic.symbolic.png"
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/96x96/actions/window-maximize-symbolic.symbolic.png"
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/96x96/actions/window-minimize-symbolic.symbolic.png"
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/96x96/actions/window-restore-symbolic.symbolic.png"
+		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/96x96/actions/pan-down-symbolic.symbolic.png"
+		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/96x96/actions/pan-up-symbolic.symbolic.png"
+		DESTINATION "share/icons/Adwaita/96x96/actions/"
+	)
+#	install(FILES
+#		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/96x96/status/dialog-information.png"
+#		DESTINATION "share/icons/Adwaita/96x96/status/"
+#	)
+	install(FILES
+		"${APP_WINDOWS_SYSROOT}/share/icons/Adwaita/256x256/status/dialog-information.png"
+		DESTINATION "share/icons/Adwaita/256x256/status/"
+	)
+endif()
+
 
 
 # All CPack variables must be set before this
@@ -171,6 +366,10 @@ include(CPack)
 
 
 if (WIN32)
+
+	# TODO Support NSIS in Linux
+	#	cd nsis-dist && @NSIS_EXEC@ gsmartcontrol.nsi
+
 	add_custom_target(package_nsis
 			COMMAND "${CMAKE_CPACK_COMMAND}" -G NSIS -C Release
 			COMMENT "Creating NSIS installer..."
@@ -222,6 +421,5 @@ if (UNIX)
 			EXCLUDE_FROM_ALL true
 			EXCLUDE_FROM_DEFAULT_BUILD true)
 endif()
-
 
 

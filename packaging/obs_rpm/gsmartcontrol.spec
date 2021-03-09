@@ -1,9 +1,14 @@
+###############################################################################
+# License: BSD Zero Clause License file
+# Copyright:
+#   (C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+###############################################################################
 
 # This spec file is for openSUSE Build Service.
 # Supported distributions: openSUSE, Fedora, CentOS, RHEL.
 
 Name:		gsmartcontrol
-Version: 	@CMAKE_PROJECT_VERSION@
+Version: 	git
 Release:	0
 License:	GPL-3.0
 Url:		https://gsmartcontrol.shaduri.dev/
@@ -18,26 +23,20 @@ Group:		Hardware/Other
 %global debug_package %{nil}
 
 
-# For non-specified distributions we don't specify any dependencies to avoid errors.
-
+# For distributions that are not listed here we don't specify any dependencies to avoid errors.
 
 # SUSE / OpenSUSE. SLES also defines the correct suse_version.
 %if 0%{?suse_version}
-
 Requires: smartmontools >= 5.43, polkit, bash, xterm
-BuildRequires: gcc-c++, libstdc++-devel, pcre-devel, gtkmm3-devel >= 3.4.0
+BuildRequires: cmake pkg-config gcc-c++, libstdc++-devel, pcre-devel, gtkmm3-devel >= 3.4.0
 BuildRequires: update-desktop-files
 BuildRequires: fdupes
-
 %endif
-
 
 # Fedora, CentOS, RHEL
 %if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
-
 Requires: smartmontools >= 5.43, polkit, bash, xterm
-BuildRequires: gcc-c++, pcre-devel, gtkmm30-devel >= 3.4.0
-
+BuildRequires: cmake pkg-config gcc-c++, pcre-devel, gtkmm30-devel >= 3.4.0
 %endif
 
 
@@ -48,15 +47,13 @@ Technology) data in hard disk and solid-state drives. It allows you to inspect
 the drive's SMART data to determine its health, as well as run various tests
 on it.
 
-%prep
 
+%prep
 %setup -q
 %configure
 
-
 %build
 make %{?_smp_mflags}
-
 
 %install
 
@@ -67,20 +64,17 @@ rm -f $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/icon-theme.cache
 
 
 %if 0%{?suse_version}
-
 %suse_update_desktop_file -n %{name}
 
 # There are some png file duplicates, hardlink them.
 %fdupes
 
 # We install icons, so this is needed.
-%if 0%{?suse_version} >= 1140
 %post
 %icon_theme_cache_post
 
 %postun
 %icon_theme_cache_postun
-%endif
 
 # endif suse
 %endif

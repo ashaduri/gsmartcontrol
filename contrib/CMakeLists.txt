@@ -4,5 +4,6 @@
 #   (C) 2021 Alexander Shaduri <ashaduri@gmail.com>
 ###############################################################################
 
-install(DIRECTORY "cron-based_noadmin" DESTINATION "${CMAKE_INSTALL_DOCDIR}/gsmartcontrol/contrib/")
-
+if (NOT WIN32)
+	install(DIRECTORY "cron-based_noadmin" DESTINATION "${CMAKE_INSTALL_DOCDIR}/gsmartcontrol/contrib/")
+endif()
