@@ -174,7 +174,7 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives,
 
 	static const std::vector<std::string> whitelist = {
 		"/^hd[0-9]+$/",
-	}
+	};
 
 #else  // unsupported OS
 
@@ -233,10 +233,10 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives,
 					<< matched_devices.size() << ", no need for filtering them out.\n");
 		}
 
-		for (const auto& dev : matched_devices.size()) {
+		for (const auto& dev : matched_devices) {
 			if (open_needed) {
 				std::FILE* fp = hz::fs_platform_fopen(dev, "rb");
-				if (!fp && errno = ENXIO) {
+				if (!fp && errno == ENXIO) {
 					debug_out_dump("app", DBG_FUNC_MSG << "Device \"" << dev.string() << "\" failed to open, ignoring.\n");
 					continue;
 				}
