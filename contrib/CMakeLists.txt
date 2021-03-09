@@ -5,5 +5,5 @@
 ###############################################################################
 
 if (NOT WIN32)
-	install(DIRECTORY "cron-based_noadmin" DESTINATION "${CMAKE_INSTALL_DOCDIR}/gsmartcontrol/contrib/")
+	install(DIRECTORY "cron-based_noadmin" DESTINATION "${CMAKE_INSTALL_DOCDIR}/contrib/")
 endif()

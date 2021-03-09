@@ -19,7 +19,7 @@ Copyright:
       <allow_inactive>auth_admin</allow_inactive>
       <allow_active>auth_admin</allow_active>
     </defaults>
-    <annotate key="org.freedesktop.policykit.exec.path">@CMAKE_INSTALL_SBINDIR@/gsmartcontrol</annotate>
+    <annotate key="org.freedesktop.policykit.exec.path">@CMAKE_INSTALL_FULL_SBINDIR@/gsmartcontrol</annotate>
     <annotate key="org.freedesktop.policykit.exec.allow_gui">true</annotate>
   </action>
 

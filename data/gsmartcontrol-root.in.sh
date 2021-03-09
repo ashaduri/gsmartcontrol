@@ -8,7 +8,7 @@
 # Run gsmartcontrol with root, asking for root password first.
 # export GSMARTCONTROL_SU to override a su command (e.g. "kdesu -c").
 
-EXEC_BIN="@CMAKE_INSTALL_SBINDIR@/gsmartcontrol";
+EXEC_BIN="@CMAKE_INSTALL_FULL_SBINDIR@/gsmartcontrol";
 prog_name="gsmartcontrol"
 
 
@@ -118,7 +118,7 @@ fi
 # Add sbindir as well (freebsd seems to require it).
 # Note that beesu won't show a GUI login box if /usr/sbin is before /usr/bin,
 # so add it first as well.
-EXTRA_PATHS="/usr/bin:/usr/sbin:/usr/local/sbin:@CMAKE_INSTALL_SBINDIR@";
+EXTRA_PATHS="/usr/bin:/usr/sbin:/usr/local/sbin:@CMAKE_INSTALL_FULL_SBINDIR@";
 export PATH="$EXTRA_PATHS:$PATH"
 
 

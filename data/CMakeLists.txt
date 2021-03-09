@@ -9,7 +9,7 @@
 configure_file("gsmartcontrol.appdata.in.xml" "gsmartcontrol.appdata.xml" ESCAPE_QUOTES @ONLY)
 configure_file("gsmartcontrol.in.desktop" "gsmartcontrol.desktop" ESCAPE_QUOTES @ONLY)
 configure_file("gsmartcontrol-root.in.sh" "gsmartcontrol-root.sh" ESCAPE_QUOTES @ONLY)
-configure_file("org.gsmartcontrol.in.policy" "gsmartcontrol.policy" ESCAPE_QUOTES @ONLY)
+configure_file("org.gsmartcontrol.in.policy" "org.gsmartcontrol.policy" ESCAPE_QUOTES @ONLY)
 
 # Install app icons
 if (NOT WIN32)
@@ -17,7 +17,8 @@ if (NOT WIN32)
 		install(FILES "${dir}/gsmartcontrol.png"
 			DESTINATION "${CMAKE_INSTALL_DATADIR}/icons/hicolor/${dir}x${dir}/apps/")
 	endforeach()
-	install(CODE "execute_process (COMMAND gtk-update-icon-cache-3.0 -t -f \"@CMAKE_INSTALL_DATADIR@/icons/hicolor\")")
+	# Don't run update-icon-cache, cpack is mostly for packaging.
+#	install(CODE "execute_process (COMMAND gtk-update-icon-cache-3.0 -t -f \"@CMAKE_INSTALL_DATADIR@/icons/hicolor\")")
 endif()
 
 if (WIN32)
@@ -43,7 +44,7 @@ if (NOT WIN32)
 			DESTINATION "${CMAKE_INSTALL_DATADIR}/pixmaps/")
 
 	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/gsmartcontrol.desktop"
-		DESTINATION "${CMAKE_INSTALL_DATADIR}/gsmartcontrol/icons/")
+		DESTINATION "${CMAKE_INSTALL_DATADIR}/applications/")
 
 	# Appdata file
 	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/gsmartcontrol.appdata.xml"

@@ -12,6 +12,7 @@ include(${CMAKE_SOURCE_DIR}/version.txt)
 
 project(gsmartcontrol
 	VERSION ${CMAKE_PROJECT_VERSION}
+	DESCRIPTION "Hard Disk Drive and SSD Health Inspection Tool"
 	HOMEPAGE_URL "https://gsmartcontrol.shaduri.dev"
 	LANGUAGES CXX
 )
@@ -19,6 +20,8 @@ project(gsmartcontrol
 
 # Provide DATADIR, etc...
 include(GNUInstallDirs)
+
+message(STATUS "Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}.")
 
 include(src/build_config/compiler_options.cmake)
 
@@ -50,8 +53,8 @@ if (WIN32)
 		PATTERN "CNAME" EXCLUDE
 	)
 else()
-	install(FILES ${DOC_FILES} DESTINATION "${CMAKE_INSTALL_DOCDIR}/gsmartcontrol/")
-	install(DIRECTORY docs DESTINATION "${CMAKE_INSTALL_DOCDIR}/gsmartcontrol/"
+	install(FILES ${DOC_FILES} DESTINATION "${CMAKE_INSTALL_DOCDIR}/")
+	install(DIRECTORY docs DESTINATION "${CMAKE_INSTALL_DOCDIR}/"
 		PATTERN "*.yml" EXCLUDE
 		PATTERN "CNAME" EXCLUDE
 	)
