@@ -28,7 +28,7 @@ Group:		Hardware/Other
 # SUSE / OpenSUSE. SLES also defines the correct suse_version.
 %if 0%{?suse_version}
 Requires: smartmontools >= 5.43, polkit, bash, xterm
-BuildRequires: cmake gcc-c++ libstdc++-devel pcre-devel gtkmm3-devel >= 3.4.0 pkgconf-pkg-config
+BuildRequires: cmake gcc-c++ libstdc++-devel pcre-devel gtkmm3-devel >= 3.4.0
 BuildRequires: update-desktop-files
 BuildRequires: fdupes
 %endif
