@@ -107,7 +107,7 @@ jobs:
 
   freebsd:
     # Disable for now - it fails with not being able to find packages for gtk30, libsigc++20, c++11-lang, pkgconfig.
-    if: ${{ false }}
+#    if: ${{ false }}
     runs-on: macos-latest
     name: FreeBSD
 #    env:
@@ -125,7 +125,7 @@ jobs:
         sync: rsync
         mem: 2048
         prepare: |
-          pkg install -y cmake atkmm cairo glibmm gtk30 gtkmm30 libsigc++20 pangomm c++11-lang pkgconfig
+          pkg install -y cmake pkgconf gtkmm30 gettext pcre libiconv
 
         run: |
           mkdir build && cd build
