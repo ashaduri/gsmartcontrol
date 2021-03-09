@@ -24,12 +24,12 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{runner.workspace}}/build
-      run: >-
+      run: >
         cmake $GITHUB_WORKSPACE
+        -DCMAKE_BUILD_TYPE=$BUILD_TYPE
         -DAPP_BUILD_EXAMPLES=ON
         -DAPP_BUILD_TESTS=ON
         -DAPP_COMPILER_ENABLE_WARNINGS=ON
-        -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
@@ -63,13 +63,13 @@ jobs:
       - name: Configure CMake
         working-directory: ${{runner.workspace}}
         shell: msys2 {0}
-        run: >-
+        run: >
           cmake -B build -S "$GITHUB_WORKSPACE" -G "MSYS Makefiles" ..
           -DCMAKE_MAKE_PROGRAM=mingw32-make
+          -DCMAKE_BUILD_TYPE=$BUILD_TYPE
           -DAPP_BUILD_EXAMPLES=ON
           -DAPP_BUILD_TESTS=ON
           -DAPP_COMPILER_ENABLE_WARNINGS=ON
-          -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
       - name: Build
         shell: msys2 {0}
@@ -92,12 +92,12 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{runner.workspace}}/build
-      run: >-
+      run: >
         cmake $GITHUB_WORKSPACE
+        -DCMAKE_BUILD_TYPE=$BUILD_TYPE
         -DAPP_BUILD_EXAMPLES=ON
         -DAPP_BUILD_TESTS=ON
         -DAPP_COMPILER_ENABLE_WARNINGS=ON
-        -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
@@ -106,10 +106,7 @@ jobs:
 
 
   freebsd:
-    # Disable for now - it fails with not being able to find packages for gtk30, libsigc++20, c++11-lang, pkgconfig.
-#    if: ${{ false }}
     runs-on: macos-latest
-    name: FreeBSD
 #    env:
 #    variables to pass to VM
 #    MYTOKEN : ${{ secrets.MYTOKEN }}
@@ -124,17 +121,17 @@ jobs:
         usesh: true
         sync: rsync
         mem: 2048
-        prepare: |
+        prepare: >
           pkg install -y cmake pkgconf gtkmm30 gettext pcre libiconv
 
-        run: |
+        run: >
           mkdir build && cd build
 
           cmake ..
+          -DCMAKE_BUILD_TYPE=$BUILD_TYPE
           -DAPP_BUILD_EXAMPLES=ON
           -DAPP_BUILD_TESTS=ON
           -DAPP_COMPILER_ENABLE_WARNINGS=ON
-          -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
           cmake --build . --config $BUILD_TYPE
 
