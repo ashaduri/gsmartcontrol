@@ -16,12 +16,8 @@ Vendor:		Alexander Shaduri <ashaduri@gmail.com>
 # Packager:	Alexander Shaduri <ashaduri@gmail.com>
 Source:		http://sourceforge.net/projects/gsmartcontrol/files/%{version}/%{name}-%{version}.tar.bz2
 BuildRoot:	%{_tmppath}/%{name}-%{version}-build
-Summary:	GSmartControl - Hard Disk Drive and SSD Health Inspection Tool
+Summary:	Hard Disk Drive and SSD Health Inspection Tool
 Group:		Hardware/Other
-
-# Empty debug packages cause errors in new RPM. Disable them.
-#%global debug_package %{nil}
-
 
 # For distributions that are not listed here we don't specify any dependencies to avoid errors.
 
