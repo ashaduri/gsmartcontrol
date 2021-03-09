@@ -50,9 +50,10 @@ on it.
 
 %prep
 %setup -q
-%cmake
 
 %build
+%cmake \
+	-DAPP_COMPILER_ENABLE_WARNINGS=ON
 %cmake_build
 
 %install
