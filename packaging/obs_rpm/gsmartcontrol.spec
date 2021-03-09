@@ -35,9 +35,9 @@ BuildRequires: fdupes
 
 
 # Fedora, CentOS, RHEL
-%if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
+%if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version}
 Requires: smartmontools >= 5.43 polkit bash xterm
-%if 0%{?centos_version} == 700 || 0%{?rhel_version}
+%if 0%{?centos_version} || 0%{?rhel_version}
 # Use cmake from EPEL
 BuildRequires: cmake3 >= 3.13.0
 %else
