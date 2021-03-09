@@ -28,7 +28,7 @@ Group:		Hardware/Other
 # SUSE / OpenSUSE. SLES also defines the correct suse_version.
 %if 0%{?suse_version}
 Requires: smartmontools >= 5.43, polkit, bash, xterm
-BuildRequires: cmake gcc-c++ libstdc++-devel pcre-devel gtkmm3-devel >= 3.4.0
+BuildRequires: cmake >= 3.13.0 gcc-c++ libstdc++-devel pcre-devel gtkmm3-devel >= 3.4.0
 BuildRequires: update-desktop-files
 BuildRequires: fdupes
 %endif
@@ -36,7 +36,7 @@ BuildRequires: fdupes
 # Fedora, CentOS, RHEL
 %if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
 Requires: smartmontools >= 5.43, polkit, bash, xterm
-BuildRequires: cmake pkg-config gcc-c++, pcre-devel, gtkmm30-devel >= 3.4.0
+BuildRequires: cmake >= 3.13.0 gcc-c++, pcre-devel, gtkmm30-devel >= 3.4.0
 %endif
 
 
