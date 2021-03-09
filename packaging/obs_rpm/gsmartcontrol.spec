@@ -20,7 +20,7 @@ Summary:	GSmartControl - Hard Disk Drive and SSD Health Inspection Tool
 Group:		Hardware/Other
 
 # Empty debug packages cause errors in new RPM. Disable them.
-%global debug_package %{nil}
+#%global debug_package %{nil}
 
 
 # For distributions that are not listed here we don't specify any dependencies to avoid errors.
@@ -33,10 +33,17 @@ BuildRequires: update-desktop-files
 BuildRequires: fdupes
 %endif
 
+
 # Fedora, CentOS, RHEL
 %if 0%{?fedora_version} || 0%{?rhel_version} || 0%{?centos_version}
-Requires: smartmontools >= 5.43, polkit, bash, xterm
-BuildRequires: cmake >= 3.13.0 gcc-c++, pcre-devel, gtkmm30-devel >= 3.4.0
+Requires: smartmontools >= 5.43 polkit bash xterm
+%if 0%{?centos_version} == 700 || 0%{?rhel_version}
+# Use cmake from EPEL
+BuildRequires: cmake3 >= 3.13.0
+%else
+BuildRequires: cmake >= 3.13.0
+%endif
+BuildRequires: gcc-c++ pcre-devel gtkmm30-devel >= 3.4.0
 %endif
 
 
