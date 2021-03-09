@@ -37,6 +37,16 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: cmake --build . --config $BUILD_TYPE
 
+    - name: Pack (cmake install and make binary package)
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: cmake --build . --config $BUILD_TYPE --target package
+
+#    - name: Test
+#      working-directory: ${{runner.workspace}}/build
+#      shell: bash
+#      run: ctest -C $BUILD_TYPE
+
 
   windows-msys2:
     runs-on: windows-latest
