@@ -99,15 +99,21 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}.desktop
 %attr(0755,root,root) %{_bindir}/%{name}-root
 %attr(0755,root,root) %{_sbindir}/%{name}
 
+%if 0%{?suse_version} || 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version}
+
 %if 0%{?suse_version}
 #%doc %{_defaultdocdir}/%{name}
 %doc %{_datadir}/doc/gsmartcontrol
-%elif 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version}
+%endif
+%if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version}
 %{_pkgdocdir}
 %endif
 
-%{_mandir}/man1/%{name}.1%{ext_man}
-%{_mandir}/man1/%{name}-root.1%{ext_man}
+%else
+%doc %{_datadir}/doc/gsmartcontrol
+%endif
+
+%{_mandir}/man1/*
 
 %{_datadir}/%{name}
 %{_datadir}/applications/*.desktop
