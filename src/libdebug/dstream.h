@@ -14,6 +14,7 @@ Copyright:
 
 #include <ostream>  // std::ostream definition
 #include <streambuf>  // std::streambuf definition
+#include <cstdio>
 #include <string>
 #include <sstream>
 #include <utility>
