@@ -1175,7 +1175,7 @@ bool GscMainWindow::add_virtual_drive(const std::string& file)
 
 bool GscMainWindow::testing_active() const
 {
-	return std::all_of(drives_.cbegin(), drives_.cend(),
+	return std::any_of(drives_.cbegin(), drives_.cend(),
 	[](const auto& drive)
 	{
 		return drive && drive->get_test_is_active();
