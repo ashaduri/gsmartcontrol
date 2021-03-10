@@ -345,6 +345,7 @@ std::string SmartctlParser::parse_byte_size(const std::string& str, uint64_t& by
 	to_replace.push_back(",");
 	to_replace.push_back(".");
 	to_replace.push_back(std::string(1, 0xa0));
+	to_replace.push_back(std::string(1, 0xc2));
 
 #ifdef _WIN32
 	// if current locale is C, then probably we didn't change it at application
