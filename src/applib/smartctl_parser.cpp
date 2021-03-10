@@ -322,6 +322,7 @@ std::string SmartctlParser::parse_byte_size(const std::string& str, int64_t& byt
 {
 	// E.g. "500,107,862,016" bytes or "80'060'424'192 bytes" or "80 026 361 856 bytes".
 	// French locale inserts 0xA0 as a separator (non-breaking space, _not_ a valid utf8 char).
+	// Finnish uses 0xC2 as a separator.
 	// Added '.'-separated too, just in case.
 	// Smartctl uses system locale's thousands_sep explicitly.
 
@@ -330,7 +331,14 @@ std::string SmartctlParser::parse_byte_size(const std::string& str, int64_t& byt
 
 // 	debug_out_dump("app", "Size reported as: " << str << "\n");
 
-	std::vector<std::string> to_replace = {" ", "'", ",", ".", std::string(1, static_cast<char>(0xa0))};
+	std::vector<std::string> to_replace = {
+			" ",
+			"'",
+			",",
+			".",
+			std::string(1, static_cast<char>(0xa0)),
+			std::string(1, static_cast<char>(0xc2)),
+	};
 
 #ifdef _WIN32
 	// if current locale is C, then probably we didn't change it at application
