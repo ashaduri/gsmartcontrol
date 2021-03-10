@@ -89,31 +89,3 @@ jobs:
 
     # TODO Pack zip, NSIS
 
-
-  macos-homebrew:
-    runs-on: macos-latest
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Install Dependencies
-      run: brew install pkg-config gtkmm3 pcre cmake
-
-    - name: Create Build Directory
-      run: cmake -E make_directory ${{runner.workspace}}/build
-
-    - name: Configure CMake
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: >
-        cmake $GITHUB_WORKSPACE
-        -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-        -DAPP_BUILD_EXAMPLES=ON
-        -DAPP_BUILD_TESTS=ON
-        -DAPP_COMPILER_ENABLE_WARNINGS=ON
-
-    - name: Build
-      shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: cmake --build . --config $BUILD_TYPE
-
