@@ -1,0 +1,2 @@
+version=4
+http://sf.net/gsmartcontrol/ gsmartcontrol-(.+)\.(?:tar\.gz|tar\.bz2) debian uupdate

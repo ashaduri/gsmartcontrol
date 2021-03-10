@@ -13,8 +13,8 @@ Release:	0
 License:	GPL-3.0
 Url:		https://gsmartcontrol.shaduri.dev/
 Vendor:		Alexander Shaduri <ashaduri@gmail.com>
-# Packager:	Alexander Shaduri <ashaduri@gmail.com>
-Source:		http://sourceforge.net/projects/gsmartcontrol/files/%{version}/%{name}-%{version}.tar.bz2
+Source0:		http://downloads.sourceforge.net/%{name}/%{version}/%{name}-%{version}.tar.bz2
+Source1:     %{name}-rpmlintrc
 BuildRoot:	%{_tmppath}/%{name}-%{version}-build
 Summary:	Hard Disk Drive and SSD Health Inspection Tool
 Group:		Hardware/Other
@@ -23,10 +23,11 @@ Group:		Hardware/Other
 
 # SUSE / OpenSUSE. SLES also defines the correct suse_version.
 %if 0%{?suse_version}
-Requires: smartmontools >= 5.43, polkit, bash, xterm
+Requires: smartmontools >= 5.43 xterm
+Requires: polkit bash
 BuildRequires: cmake >= 3.13.0 gcc-c++ libstdc++-devel pcre-devel gtkmm3-devel >= 3.4.0
-BuildRequires: update-desktop-files
-BuildRequires: fdupes
+BuildRequires: update-desktop-files fdupes hicolor-icon-theme polkit
+Recommends: xdg-utils
 %endif
 
 
@@ -40,6 +41,7 @@ BuildRequires: cmake3 >= 3.13.0
 BuildRequires: cmake >= 3.13.0
 %endif
 BuildRequires: gcc-c++ pcre-devel gtkmm30-devel >= 3.4.0
+BuildRequires: desktop-file-utils hicolor-icon-theme make
 %endif
 
 
@@ -62,48 +64,57 @@ on it.
 %install
 %cmake_install
 
-
 %if 0%{?suse_version}
 %suse_update_desktop_file -n %{name}
-
 # There are some png file duplicates, hardlink them.
-%fdupes
+%fdupes -s %{buildroot}%{_prefix}
+%endif
 
-# We install icons, so this is needed.
 %post
+%if 0%{?suse_version}
+%desktop_database_post
 %icon_theme_cache_post
+%endif
 
 %postun
+%if 0%{?suse_version}
+%desktop_database_postun
 %icon_theme_cache_postun
-
-# endif suse
 %endif
 
 
-%clean
-rm -rf %buildroot
+%if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version}
+%check
+desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}.desktop
+%endif
 
 
 %files
 %defattr(-,root,root)
 
-%attr(0755,root,root) %{_bindir}/gsmartcontrol-root
-%attr(0755,root,root) %{_sbindir}/gsmartcontrol
+%if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version}
+%license LICENSE.txt
+%endif
 
-# %%attr(0644,root,root) %%config(noreplace) %%{_sysconfdir}/*
+%attr(0755,root,root) %{_bindir}/%{name}-root
+%attr(0755,root,root) %{_sbindir}/%{name}
 
-%doc %{_datadir}/doc/gsmartcontrol
-%doc %{_mandir}/man1/*
+%if 0%{?suse_version}
+%doc %{_defaultdocdir}/%{name}
+%elif 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version}
+%{_pkgdocdir}
+%endif
 
-%{_datadir}/gsmartcontrol
-# %%{_datadir}/gsmartcontrol/*
+%{_mandir}/man1/%{name}.1%{ext_man}
+%{_mandir}/man1/%{name}-root.1%{ext_man}
+
+%{_datadir}/%{name}
 %{_datadir}/applications/*.desktop
-%{_datadir}/metainfo
-%{_datadir}/metainfo/gsmartcontrol.appdata.xml
-%{_datadir}/polkit-1
-%{_datadir}/polkit-1/actions
-%{_datadir}/polkit-1/actions/org.gsmartcontrol.policy
-%{_datadir}/icons/*
-%{_datadir}/pixmaps/*
+%{_datadir}/icons/hicolor/*/apps/%{name}.png
+%{_datadir}/pixmaps/%{name}.png
+%{_datadir}/pixmaps/%{name}.xpm
+%dir %{_datadir}/metainfo
+%{_datadir}/metainfo/%{name}.appdata.xml
+%{_datadir}/polkit-1/actions/org.%{name}.policy
 
 %changelog

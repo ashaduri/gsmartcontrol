@@ -1,0 +1,252 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: gsmartcontrol
+Source: https://gsmartcontrol.sf.io/
+Comment:
+ All files which don't have any copyright notices, as well as tests
+ and examples are covered under the Unlicense.
+
+Files: *
+Copyright: 2008-2010 Alex Butcher
+           2008-2017 Alexander Shaduri
+License: Unlicense or GPL-2-or-3
+
+Files:
+ data/gsmartcontrol-root*
+ src/hz/any_convert.h
+ src/libdebug/*
+ src/rconfig/*
+ src/global_macros.h
+Copyright: 2008-2014 Alexander Shaduri
+License: zlib
+
+Files:
+ data/*/gsmartcontrol.png
+ data/gsmartcontrol.ico
+ data/gsmartcontrol.xpm
+ data/icon_cddvd.png
+ data/icon_hdd.png
+Copyright: 2006-2007 Everaldo Coelho
+License: LGPL-2.1+
+ The Crystal Clear icon set was created by 
+ Everaldo Coelho, http://www.everaldo.com/
+ .
+ All Icons are free software; you can redistribute it and/or modify it
+ under the terms of the GNU Lesser General Public License as published
+ by the Free Software Foundation; either version 2.1 of the License,
+ or (at your option) any later version. This library is distributed in
+ the hope that it will be useful, but without any warranty; without
+ even the implied warranty of merchantability or fitness for a
+ particular purpose.
+ .
+  .
+ On Debian systems, the complete text of the GNU Lesser General Public
+ Licenses can be found in `/usr/share/common-licenses/LGPL-2.1'.
+
+Files: debian/*
+Copyright: 2008, 2009, 2011, 2013 Giuseppe Iuculano
+           2012 gregor herrmann
+           2013, 2016, 2017 Stephen Kitt
+License: GPL-2-or-3
+
+Files:
+ src/hz/*.h
+Copyright: 2003-2013 Alexander Shaduri
+License: zlib
+
+Files:
+ src/hz/any_type*.h
+ src/hz/stream_cast.h
+Copyright: 2000-2010 Kevlin Henney
+           2008-2012 Alexander Shaduri
+License: Boost-1.0
+
+Files:
+ src/hz/ascii.h
+Copyright: 1992, 1993 The Regents of the University of California
+           2008-2012 Alexander Shaduri
+License: BSD-UCB and zlib
+
+Files:
+ src/hz/cstdint_impl_msvc.h
+Copyright: 2006-2008 Alexander Chemeris
+License: BSD-AC
+
+Files:
+ src/hz/intrusive_ptr.h
+Copyright: 2001-2010 Peter Dimov
+           2008-2012 Alexander Shaduri
+License: Boost-1.0
+
+Files:
+ src/hz/noncopyable.h
+Copyright: 1999-2010 Beman Dawes
+           2008-2013 Alexander Shaduri
+License: Boost-1.0
+
+Files:
+ src/hz/scoped_array.h
+ src/hz/scoped_ptr.h
+Copyright: 1998-2010 Greg Colvin and Beman Dawes
+           2001-2010 Peter Dimov
+           2008-2012 Alexander Shaduri
+License: Boost-1.0
+
+Files:
+ src/hz/string_wcmatch.h
+Copyright: 1992, 1993, 1994 The Regents of the University of California
+           2008-2012 Alexander Shaduri
+License: BSD-UCB
+
+Files:
+ src/rmn/*
+Copyright: 2003-2010 Irakli Elizbarashvili
+           2008-2012 Alexander Shaduri
+License: zlib
+
+
+License: GPL-2-or-3
+ This product is multi-licensed under GNU GPL versions 2 and 3.
+ You are free to choose which one you use.
+ .
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of either version 2 or (at your option) version 3
+ of the GNU General Public License as published by the Free Software
+ Foundation.
+ .
+ This program is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ General Public Licenses for more details.
+ .
+ You should have received copies of these licenses along with this
+ program. If not, see <http://www.gnu.org/licenses/>.
+ .
+ On Debian systems, the complete text of the GNU General Public
+ Licenses can be found in `/usr/share/common-licenses/GPL-2' and
+ `/usr/share/common-licenses/GPL-3'.
+
+License: Unlicense
+ This is free and unencumbered software released into the public
+ domain.
+ .
+ Anyone is free to copy, modify, publish, use, compile, sell, or
+ distribute this software, either in source code form or as a compiled
+ binary, for any purpose, commercial or non-commercial, and by any
+ means.
+ .
+ In jurisdictions that recognize copyright laws, the author or authors
+ of this software dedicate any and all copyright interest in the
+ software to the public domain. We make this dedication for the
+ benefit of the public at large and to the detriment of our heirs and
+ successors. We intend this dedication to be an overt act of
+ relinquishment in perpetuity of all present and future rights to this
+ software under copyright law.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY
+ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ .
+ For more information, please refer to <http://unlicense.org/>
+
+License: BSD-UCB
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in
+    the documentation and/or other materials provided with the
+    distribution.
+ 3. Neither the name of the University nor the names of its
+    contributors may be used to endorse or promote products derived
+    from this software without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS''
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR
+ CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+License: BSD-AC
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ .
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in
+    the documentation and/or other materials provided with the
+    distribution.
+ .
+ 3. The name of the author may be used to endorse or promote products
+    derived from this software without specific prior written
+    permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+License: Boost-1.0
+ Permission is hereby granted, free of charge, to any person or
+ organization obtaining a copy of the software and accompanying
+ documentation covered by this license (the "Software") to use,
+ reproduce, display, distribute, execute, and transmit the Software,
+ and to prepare derivative works of the Software, and to permit
+ third-parties to whom the Software is furnished to do so, all subject
+ to the following:
+ .
+ The copyright notices in the Software and this entire statement,
+ including the above license grant, this restriction and the following
+ disclaimer, must be included in all copies of the Software, in whole
+ or in part, and all derivative works of the Software, unless such
+ copies or derivative works are solely in the form of
+ machine-executable object code generated by a source language
+ processor.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE AND
+ NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR ANYONE
+ DISTRIBUTING THE SOFTWARE BE LIABLE FOR ANY DAMAGES OR OTHER
+ LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
+ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+
+License: zlib
+ THIS SOFTWARE IS PROVIDED 'AS-IS', WITHOUT ANY EXPRESS OR IMPLIED
+ WARRANTY.  IN NO EVENT WILL THE AUTHORS BE HELD LIABLE FOR ANY
+ DAMAGES ARISING FROM THE USE OF THIS SOFTWARE.
+ .
+ Permission is granted to anyone to use this software for any purpose,
+ including commercial applications, and to alter it and redistribute
+ it freely, subject to the following restrictions:
+ .
+ 1. The origin of this software must not be misrepresented; you must
+    not claim that you wrote the original software. If you use this
+    software in a product, an acknowledgment in the product
+    documentation would be appreciated but is not required.
+ 2. Altered source versions must be plainly marked as such, and must
+    not be misrepresented as being the original software.
+ 3. This notice may not be removed or altered from any source
+    distribution.

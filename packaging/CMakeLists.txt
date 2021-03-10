@@ -19,7 +19,7 @@ endif()
 
 
 # OBS Debian
-configure_file("obs_debian/changelog.in" "obs_debian/changelog" ESCAPE_QUOTES @ONLY)
+#configure_file("obs_debian/changelog.in" "obs_debian/changelog" ESCAPE_QUOTES @ONLY)
 
 # OBS RPM
 #configure_file(obs_rpm/gsmartcontrol.in.spec obs_rpm/gsmartcontrol.spec)

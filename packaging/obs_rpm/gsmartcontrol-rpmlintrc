@@ -1,0 +1,3 @@
+
+# Hide warning about gsmartcontrol.desktop, it's a false positive.
+addFilter("desktopfile-without-binary")

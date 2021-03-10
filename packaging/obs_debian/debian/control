@@ -1,0 +1,34 @@
+Source: gsmartcontrol
+Maintainer: Stephen Kitt <skitt@debian.org>
+Section: utils
+Priority: optional
+Build-Depends: debhelper (>= 11~),
+               libpcre3-dev,
+               libgtkmm-3.0-dev
+Standards-Version: 4.1.4
+Rules-Requires-Root: no
+Vcs-Browser: https://salsa.debian.org/debian/gsmartcontrol
+Vcs-Git: https://salsa.debian.org/debian/gsmartcontrol.git
+Homepage: https://gsmartcontrol.sourceforge.io/
+
+Package: gsmartcontrol
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         smartmontools (>= 5.43)
+Description: graphical user interface for smartctl
+ GSmartControl is a graphical user interface for smartctl, which is a tool for
+ querying and controlling SMART (Self-Monitoring, Analysis, and Reporting
+ Technology) data on modern hard disk drives. It allows you to inspect the
+ drive's SMART data to determine its health, as well as run various tests on it.
+ .
+ Features:
+ .
+  * automatically reports and highlights any anomalies;
+  * allows enabling/disabling Automatic Offline Data Collection;
+  * allows enabling/disabling SMART itself;
+  * supports configuration of global and per-drive options for smartctl;
+  * performs SMART self-tests;
+  * displays drive IDs, capabilities, attributes, and self-test/error logs;
+  * can read in smartctl data from a saved file, interpreting it as a read-only
+    virtual device.

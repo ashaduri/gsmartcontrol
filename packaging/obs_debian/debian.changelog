@@ -1,4 +1,4 @@
-gsmartcontrol (@CMAKE_PROJECT_VERSION@+nmu1) unstable; urgency=low
+gsmartcontrol (git+nmu1) unstable; urgency=low
 
   * Permanently Initial Release.
 
