@@ -225,7 +225,7 @@
                                           <object class="GtkEntry" id="smartctl_options_entry">
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
-                                            <property name="tooltip_text" translatable="yes">Global parameters for smartctl. These parameters will be used every time the progam invokes smartctl. Must be shell-escaped.</property>
+                                            <property name="tooltip_text" translatable="yes">Global parameters for smartctl. These parameters will be used every time the program invokes smartctl. Must be shell-escaped.</property>
                                             <property name="activates_default">True</property>
                                             <property name="primary_icon_activatable">False</property>
                                             <property name="secondary_icon_activatable">False</property>
@@ -239,7 +239,7 @@
                                           <object class="GtkLabel" id="label8">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="tooltip_text" translatable="yes">Global parameters for smartctl. These parameters will be used every time the progam invokes smartctl. Must be shell-escaped.</property>
+                                            <property name="tooltip_text" translatable="yes">Global parameters for smartctl. These parameters will be used every time the program invokes smartctl. Must be shell-escaped.</property>
                                             <property name="halign">start</property>
                                             <property name="label" translatable="yes">Smartctl parameters:</property>
                                             <property name="use_underline">True</property>
