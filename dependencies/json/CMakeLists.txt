@@ -6,8 +6,9 @@
 
 add_library(json INTERFACE)
 
+# Relative sources are allowed only since cmake 3.13.
 target_sources(json INTERFACE
-	json.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/json.hpp
 )
 
 target_include_directories(json

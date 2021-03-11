@@ -6,27 +6,28 @@
 
 add_library(hz INTERFACE)
 
+# Relative sources are allowed only since cmake 3.13.
 target_sources(hz INTERFACE
-	bad_cast_exception.h
-	data_file.h
-	debug.h
-	env_tools.h
-	error.h
-	error_holder.h
-	format_unit.h
-	fs.h
-	fs_ns.h
-	instance_manager.h
-	launch_url.h
-	locale_tools.h
-	main_tools.h
-	process_signal.h
-	stream_cast.h
-	string_algo.h
-	string_num.h
-	string_sprintf.h
-	system_specific.h
-	win32_tools.h
+	${CMAKE_CURRENT_SOURCE_DIR}/bad_cast_exception.h
+	${CMAKE_CURRENT_SOURCE_DIR}/data_file.h
+	${CMAKE_CURRENT_SOURCE_DIR}/debug.h
+	${CMAKE_CURRENT_SOURCE_DIR}/env_tools.h
+	${CMAKE_CURRENT_SOURCE_DIR}/error.h
+	${CMAKE_CURRENT_SOURCE_DIR}/error_holder.h
+	${CMAKE_CURRENT_SOURCE_DIR}/format_unit.h
+	${CMAKE_CURRENT_SOURCE_DIR}/fs.h
+	${CMAKE_CURRENT_SOURCE_DIR}/fs_ns.h
+	${CMAKE_CURRENT_SOURCE_DIR}/instance_manager.h
+	${CMAKE_CURRENT_SOURCE_DIR}/launch_url.h
+	${CMAKE_CURRENT_SOURCE_DIR}/locale_tools.h
+	${CMAKE_CURRENT_SOURCE_DIR}/main_tools.h
+	${CMAKE_CURRENT_SOURCE_DIR}/process_signal.h
+	${CMAKE_CURRENT_SOURCE_DIR}/stream_cast.h
+	${CMAKE_CURRENT_SOURCE_DIR}/string_algo.h
+	${CMAKE_CURRENT_SOURCE_DIR}/string_num.h
+	${CMAKE_CURRENT_SOURCE_DIR}/string_sprintf.h
+	${CMAKE_CURRENT_SOURCE_DIR}/system_specific.h
+	${CMAKE_CURRENT_SOURCE_DIR}/win32_tools.h
 )
 
 target_link_libraries(hz

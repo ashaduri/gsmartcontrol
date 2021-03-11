@@ -6,10 +6,11 @@
 
 add_library(rconfig INTERFACE)
 
+# Relative sources are allowed only since cmake 3.13.
 target_sources(rconfig INTERFACE
-	autosave.h
-	loadsave.h
-	rconfig.h
+	${CMAKE_CURRENT_SOURCE_DIR}/autosave.h
+	${CMAKE_CURRENT_SOURCE_DIR}/loadsave.h
+	${CMAKE_CURRENT_SOURCE_DIR}/rconfig.h
 )
 
 target_include_directories(rconfig INTERFACE "${CMAKE_SOURCE_DIR}/src")

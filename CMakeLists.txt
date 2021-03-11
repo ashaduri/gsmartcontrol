@@ -5,8 +5,7 @@
 ###############################################################################
 
 # 3.12 for CMAKE_PROJECT_VERSION
-# 3.13 for interface sources
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.12)
 
 include(${CMAKE_SOURCE_DIR}/version.txt)
 
