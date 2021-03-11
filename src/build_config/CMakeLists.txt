@@ -110,7 +110,7 @@ endif()
 add_library(build_config INTERFACE)
 configure_file("build_config.in.h" "build_config.h" ESCAPE_QUOTES @ONLY)
 target_sources(build_config INTERFACE
-	build_config.in.h
+	${CMAKE_CURRENT_BINARY_DIR}/build_config.h
 )
 target_include_directories(build_config INTERFACE "${CMAKE_CURRENT_BINARY_DIR}")
 
