@@ -182,12 +182,12 @@ if (WIN32)
 
 	# Smartmontools
 	if ("$ENV{CI}")
-		# GitHub download location
+		# GitHub extract location. The files are extracted without relative paths in archive (7z e).
 		install(FILES
-			"${CMAKE_BINARY_DIR}/smartmontools/bin/drivedb.h"
-			"${CMAKE_BINARY_DIR}/smartmontools/bin/update-smart-drivedb.exe"
-			"${CMAKE_BINARY_DIR}/smartmontools/${SMARTCTL_EXTRACED_BIN_DIR}/smartctl-nc.exe"
-			"${CMAKE_BINARY_DIR}/smartmontools/${SMARTCTL_EXTRACED_BIN_DIR}/smartctl.exe"
+			"${CMAKE_BINARY_DIR}/smartmontools/drivedb.h"
+			"${CMAKE_BINARY_DIR}/smartmontools/update-smart-drivedb.exe"
+			"${CMAKE_BINARY_DIR}/smartmontools/smartctl-nc.exe"
+			"${CMAKE_BINARY_DIR}/smartmontools/smartctl.exe"
 			DESTINATION .
 		)
 	else()

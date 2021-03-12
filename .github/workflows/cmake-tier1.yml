@@ -6,6 +6,8 @@ on: [push]
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: RelWithDebInfo
+  SMARTMONTOOLS_INSTALLER: smartmontools-7.2-1.win32-setup.exe
+  SMARTMONTOOLS_URL: https://nav.dl.sourceforge.net/project/smartmontools/smartmontools/7.2/$SMARTMONTOOLS_INSTALLER
 
 
 jobs:
@@ -90,18 +92,33 @@ jobs:
         working-directory: ${{runner.workspace}}/build
         run: cmake --build . --config $BUILD_TYPE
 
-      - name: Install Package Requirements
+      - name: Download Package Requirements
         shell: msys2 {0}
         working-directory: ${{runner.workspace}}/build
-        run: >
+        run: |
           mkdir smartmontools
-
           cd smartmontools
+          wget $SMARTMONTOOLS_URL
 
-          wget https://nav.dl.sourceforge.net/project/smartmontools/smartmontools/7.2/smartmontools-7.2-1.win32-setup.exe
+      - name: Extract Package Requirements (64-bit)
+        if: ${{ matrix.msystem == 'MINGW64' }}
+        shell: msys2 {0}
+        working-directory: ${{runner.workspace}}/build/smartmontools
+        run: >
+          7z -bb1 e $SMARTMONTOOLS_INSTALLER
+          bin64/smartctl.exe
+          bin64/smartctl-nc.exe
+          bin/update-smart-drivedb.exe
+          bin/drivedb.h
 
-          7z e smartmontools-7.2-1.win32-setup.exe
-          bin64/smartctl.exe bin64/smartctl-nc.exe
+      - name: Extract Package Requirements (32-bit)
+        if: ${{ matrix.msystem == 'MINGW32' }}
+        shell: msys2 {0}
+        working-directory: ${{runner.workspace}}/build/smartmontools
+        run: >
+          7z -bb1 e $SMARTMONTOOLS_INSTALLER
+          bin/smartctl.exe
+          bin/smartctl-nc.exe
           bin/update-smart-drivedb.exe
           bin/drivedb.h
 
