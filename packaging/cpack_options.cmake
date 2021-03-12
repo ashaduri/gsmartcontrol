@@ -184,10 +184,10 @@ if (WIN32)
 	if ("$ENV{CI}")
 		# GitHub download location
 		install(FILES
-			"${CMAKE_BUILD_DIR}/smartmontools/bin/drivedb.h"
-			"${CMAKE_BUILD_DIR}/smartmontools/bin/update-smart-drivedb.exe"
-			"${CMAKE_BUILD_DIR}/smartmontools/${SMARTCTL_EXTRACED_BIN_DIR}/smartctl-nc.exe"
-			"${CMAKE_BUILD_DIR}/smartmontools/${SMARTCTL_EXTRACED_BIN_DIR}/smartctl.exe"
+			"${CMAKE_BINARY_DIR}/smartmontools/bin/drivedb.h"
+			"${CMAKE_BINARY_DIR}/smartmontools/bin/update-smart-drivedb.exe"
+			"${CMAKE_BINARY_DIR}/smartmontools/${SMARTCTL_EXTRACED_BIN_DIR}/smartctl-nc.exe"
+			"${CMAKE_BINARY_DIR}/smartmontools/${SMARTCTL_EXTRACED_BIN_DIR}/smartctl.exe"
 			DESTINATION .
 		)
 	else()
@@ -341,13 +341,14 @@ if (WIN32)
 		endif()
 	endforeach()
 
-	# <prefix>/etc/gtk-3.0/ should contain settings.ini with a win32 theme.
-	install(FILES "${APP_WINDOWS_SYSROOT}/etc/fonts/fonts.conf" DESTINATION "etc/fonts/")
-#	install(FILES "${APP_WINDOWS_SYSROOT}/etc/gtk-3.0/im-multipress.conf" DESTINATION "etc/gtk-3.0/")
+	# Msys2 in github has problems with this (cannot install: file exists!)
+#	install(FILES "${APP_WINDOWS_SYSROOT}/etc/fonts/fonts.conf" DESTINATION "etc/fonts/")
 
+	# <prefix>/etc/gtk-3.0/ should contain settings.ini with a win32 theme.
 	# Use custom settings.ini to enable Windows theme
 #	install(FILES "${APP_WINDOWS_SYSROOT}/etc/gtk-3.0/settings.ini" DESTINATION "etc/gtk-3.0/")
 	install(FILES "${CMAKE_SOURCE_DIR}/packaging/gtk/etc/gtk-3.0/settings.ini" DESTINATION "etc/gtk-3.0/")
+	#	install(FILES "${APP_WINDOWS_SYSROOT}/etc/gtk-3.0/im-multipress.conf" DESTINATION "etc/gtk-3.0/")
 
 	# Not present in msys2
 #	install(DIRECTORY "${APP_WINDOWS_SYSROOT}/share/themes" DESTINATION "share/")
