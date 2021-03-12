@@ -61,6 +61,8 @@ jobs:
       - uses: actions/checkout@v2
 
       - uses: msys2/setup-msys2@v2
+        # p7zip is needed to extract smartmontools
+        # fontconfig owns /etc/fonts
         with:
           msystem: ${{ matrix.msystem }}
           update: true
@@ -69,6 +71,7 @@ jobs:
             mingw-w64-${{ matrix.arch }}-pkg-config
             mingw-w64-${{ matrix.arch }}-cmake
             mingw-w64-${{ matrix.arch }}-gcc
+            mingw-w64-${{ matrix.arch }}-fontconfig
             make
             p7zip
 

@@ -154,14 +154,12 @@ if (WIN32)
 	option(APP_WINDOWS_SMARTCTL_ROOT "Location of root folder for smartctl, for packing Windows packages" "")
 	if (NOT APP_WINDOWS_SMARTCTL_ROOT)
 		if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-#			if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-#				set(APP_WINDOWS_SMARTCTL_ROOT "C:\\Program Files\\smartmontools")
-#			else()
-#				set(APP_WINDOWS_SMARTCTL_ROOT "C:\\Program Files (x86)\\smartmontools")
-#			endif()
-#			file(TO_CMAKE_PATH "${APP_WINDOWS_SMARTCTL_ROOT}" APP_WINDOWS_SMARTCTL_ROOT)
-			# GitHub download location
-			set(APP_WINDOWS_SMARTCTL_ROOT "${CMAKE_BINARY_DIR}/smartmontools")
+			if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+				set(APP_WINDOWS_SMARTCTL_ROOT "C:\\Program Files\\smartmontools")
+			else()
+				set(APP_WINDOWS_SMARTCTL_ROOT "C:\\Program Files (x86)\\smartmontools")
+			endif()
+			file(TO_CMAKE_PATH "${APP_WINDOWS_SMARTCTL_ROOT}" APP_WINDOWS_SMARTCTL_ROOT)
 		else()  # Cross-compiling
 			if (CMAKE_SIZEOF_VOID_P EQUAL 8)
 				set(APP_WINDOWS_SMARTCTL_ROOT "$ENV{HOME}/.wine/drive_c/Program Files/smartmontools")
@@ -174,20 +172,34 @@ if (WIN32)
 
 
 	set(WINDOWS_SUFFIX "win32")
+	set(SMARTCTL_EXTRACED_BIN_DIR "bin")
 	if (CMAKE_SIZEOF_VOID_P EQUAL 8)
 		set(WINDOWS_SUFFIX "win64")
+		set(SMARTCTL_EXTRACED_BIN_DIR "bin64")
 	endif()
 
 	# TODO unix2dos doc/*.txt
 
 	# Smartmontools
-	install(FILES
-		"${APP_WINDOWS_SMARTCTL_ROOT}/bin/drivedb.h"
-		"${APP_WINDOWS_SMARTCTL_ROOT}/bin/smartctl-nc.exe"
-		"${APP_WINDOWS_SMARTCTL_ROOT}/bin/smartctl.exe"
-		"${APP_WINDOWS_SMARTCTL_ROOT}/bin/update-smart-drivedb.exe"
-		DESTINATION .
-	)
+	if ("$ENV{CI}")
+		# GitHub download location
+		install(FILES
+			"${CMAKE_BUILD_DIR}/smartmontools/bin/drivedb.h"
+			"${CMAKE_BUILD_DIR}/smartmontools/bin/update-smart-drivedb.exe"
+			"${CMAKE_BUILD_DIR}/smartmontools/${SMARTCTL_EXTRACED_BIN_DIR}/smartctl-nc.exe"
+			"${CMAKE_BUILD_DIR}/smartmontools/${SMARTCTL_EXTRACED_BIN_DIR}/smartctl.exe"
+			DESTINATION .
+		)
+	else()
+		# System-installed smartmontools
+		install(FILES
+			"${APP_WINDOWS_SMARTCTL_ROOT}/bin/drivedb.h"
+			"${APP_WINDOWS_SMARTCTL_ROOT}/bin/smartctl-nc.exe"
+			"${APP_WINDOWS_SMARTCTL_ROOT}/bin/smartctl.exe"
+			"${APP_WINDOWS_SMARTCTL_ROOT}/bin/update-smart-drivedb.exe"
+			DESTINATION .
+		)
+	endif()
 
 	# GCC Runtime
 	file(GLOB MATCHED_FILES LIST_DIRECTORIES false "${APP_WINDOWS_SYSROOT}/bin/libgcc_s_*.dll")
@@ -337,10 +349,12 @@ if (WIN32)
 #	install(FILES "${APP_WINDOWS_SYSROOT}/etc/gtk-3.0/settings.ini" DESTINATION "etc/gtk-3.0/")
 	install(FILES "${CMAKE_SOURCE_DIR}/packaging/gtk/etc/gtk-3.0/settings.ini" DESTINATION "etc/gtk-3.0/")
 
-	install(DIRECTORY "${APP_WINDOWS_SYSROOT}/share/themes" DESTINATION "share/")
+	# Not present in msys2
+#	install(DIRECTORY "${APP_WINDOWS_SYSROOT}/share/themes" DESTINATION "share/")
 
 	# needed for file chooser
-	install(DIRECTORY "${APP_WINDOWS_SYSROOT}/share/glib-2.0/schemas" DESTINATION "share/glib-2.0/")
+	# Not present in msys2 (maybe use plain glib, not mingw64 variant?)
+#	install(DIRECTORY "${APP_WINDOWS_SYSROOT}/share/glib-2.0/schemas" DESTINATION "share/glib-2.0/")
 
 
 	# Disable installing icons for now. TODO: Update this for msys2.
