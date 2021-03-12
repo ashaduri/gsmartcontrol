@@ -188,15 +188,13 @@ if (WIN32)
 	)
 
 	# GCC Runtime
-	file(GLOB MATCHED_FILES LIST_DIRECTORIES false RELATIVE "${APP_WINDOWS_SYSROOT}/bin" "libgcc_s_*.dll")
+	file(GLOB MATCHED_FILES LIST_DIRECTORIES false "${APP_WINDOWS_SYSROOT}/bin/libgcc_s_*.dll")
+	install(FILES ${MATCHED_FILES} DESTINATION .)
+	file(GLOB MATCHED_FILES LIST_DIRECTORIES false "${APP_WINDOWS_SYSROOT}/bin/libstdc++-*.dll")
 	install(FILES ${MATCHED_FILES} DESTINATION .)
 
-	# PCRE
-	install(FILES "${APP_WINDOWS_SYSROOT}/bin/libpcre-1.dll" DESTINATION .)
-	install(FILES "${APP_WINDOWS_SYSROOT}/bin/libpcrecpp-0.dll" DESTINATION .)
 
-
-	#	All of GTK+
+	#	All of GTK+ / PCRE
 	set(GTK_FILES
 #		gdk-pixbuf-query-loaders.exe
 		gspawn-win32-helper-console.exe
@@ -205,45 +203,118 @@ if (WIN32)
 		gspawn-win64-helper.exe
 #		gtk-query-immodules-3.0.exe
 #		gtk-update-icon-cache-3.0.exe
-		libatk-1.*.dll
-		libatkmm-1.*.dll
-#		libbz2-*.dll
+
+		edit.dll
+		libarchive-*.dll
+		libasprintf-*.dll
+		libatk-*.dll
+		libatkmm-*.dll
+		libatomic-*.dll
+		libbrotlicommon.dll
+		libbrotlidec.dll
+		libbrotlienc.dll
+		libbz2-*.dll
 		libcairo-*.dll
-		libcairomm-1*.dll
+		libcairo-gobject-*.dll
+		libcairo-script-interpreter-*.dll
+		libcairomm-*.dll
+		libcares-*.dll
+		libcharset-*.dll
+		libcrypto-*.dll
+		libcurl-*.dll
+		libdatrie-*.dll
+		libdeflate*.dll
 		libepoxy-*.dll
+		libexpat-*.dll
 		libffi-*.dll
-#		libexpat-*.dll
 		libfontconfig-*.dll
 		libfreetype-*.dll
-		libgdk-3*.dll
-		libgdk_pixbuf-2.*.dll
-		libgdkmm-3.*.dll
-		libgio-2.*.dll
-		libgiomm-2.*.dll
-		libglib-2.*.dll
-		libglibmm*2.*.dll
-		libgmodule-2.*.dll
-		libgobject-2.*.dll
-#		libgraphite*.dll
-#		libgthread-2.*.dll
-		libgtk-3*.dll
-		libgtkmm-3*.dll
-		libharfbuzz*.dll
-#		libiconv*.dll
-		libintl*.dll
-		libjasper*.dll
-		libjpeg*.dll
-		liblzma*.dll
-		libpango*-1.*.dll
-		libpixman*.dll
-		libpng16-*.dll
-		libsigc-2.*.dll
-		libstdc++-*.dll
+		libfribidi-*.dll
+		libgailutil-*.dll
+		libgdk-*.dll
+		libgdkmm-*.dll
+		libgdk_pixbuf-*.dll
+		libgettextlib-*.dll
+		libgettextpo-*.dll
+		libgettextsrc-*.dll
+		libgif-*.dll
+		libgio-*.dll
+		libgiomm-*.dll
+		libglib-*.dll
+		libglibmm-*.dll
+		libglibmm_generate_extra_defs-*.dll
+		libgmodule-*.dll
+		libgmp-*.dll
+		libgmpxx-*.dll
+		libgobject-*.dll
+		libgomp-*.dll
+		libgraphite*.dll
+		libgthread-*.dll
+		libgtk-*.dll
+		libgtkmm-*.dll
+		libharfbuzz-*.dll
+		libhistory*.dll
+		libhogweed-*.dll
+		libiconv-*.dll
+		libidn*.dll
+		libintl-*.dll
+		libjansson-*.dll
+		libjemalloc.dll
+		libjpeg-*.dll
+		libjson-glib-*.dll
+		libjsoncpp-*.dll
+		liblz4.dll
+		liblzma-*.dll
+		liblzo2-*.dll
+		libmetalink-*.dll
+		libmpdec++-*.dll
+		libmpdec-*.dll
+		libnettle-*.dll
+		libnghttp2-*.dll
+		libp11-kit-*.dll
+		libpango-*.dll
+		libpangocairo-*.dll
+		libpangoft2-*.dll
+		libpangomm-*.dll
+		libpangowin32-*.dll
+		libpcre-*.dll
+		libpcre16-*.dll
+		libpcre32-*.dll
+		libpcrecpp-*.dll
+		libpcreposix-*.dll
+		libpixman-*.dll
+		libpng*-*.dll
+		libpsl-*.dll
+#		libpython*.dll
+		libquadmath-*.dll
+		libreadline*.dll
+		librhash.dll
+		librsvg-*.dll
+		libsigc-*.dll
+		libsqlite3-*.dll
+		libssh2-*.dll
+#		libssl-*.dll
+		libssp-*.dll
+		libsystre-*.dll
+		libtasn*.dll
+		libtermcap-*.dll
+		libthai-*.dll
 		libtiff-*.dll
+		libtiffxx-*.dll
+		libtre-*.dll
+		libturbojpeg.dll
+		libunistring-*.dll
+		libuv-*.dll
+#		libwebp-*.dll
+#		libwebpdecoder-*.dll
+#		libwebpdemux-*.dll
+#		libwebpmux-*.dll
 		libwinpthread-*.dll
 		libxml2-*.dll
-		libz*.dll
-#		zlib1.dll
+		libzstd.dll
+#		tcl86.dll
+#		tk86.dll
+		zlib*.dll
 	)
 	foreach(pattern ${GTK_FILES})
 		file(GLOB MATCHED_FILES
