@@ -25,7 +25,8 @@ Group:		Hardware/Other
 %if 0%{?suse_version}
 Requires: smartmontools >= 5.43 xterm
 Requires: polkit bash
-BuildRequires: cmake >= 3.13.0 gcc-c++ libstdc++-devel pcre-devel gtkmm3-devel >= 3.4.0
+# libX11-devel is required to resove pkgconfig(x11) requirement in SLE15.3
+BuildRequires: cmake >= 3.12.0 gcc-c++ libstdc++-devel pcre-devel gtkmm3-devel >= 3.4.0 libX11-devel
 BuildRequires: update-desktop-files fdupes hicolor-icon-theme polkit
 Recommends: xdg-utils
 %endif
@@ -36,9 +37,9 @@ Recommends: xdg-utils
 Requires: smartmontools >= 5.43 polkit bash xterm
 %if 0%{?centos_version} || 0%{?rhel_version}
 # Use cmake from EPEL
-BuildRequires: cmake3 >= 3.13.0
+BuildRequires: cmake3 >= 3.12.0
 %else
-BuildRequires: cmake >= 3.13.0
+BuildRequires: cmake >= 3.12.0
 %endif
 BuildRequires: gcc-c++ pcre-devel gtkmm30-devel >= 3.4.0
 BuildRequires: desktop-file-utils hicolor-icon-theme make
