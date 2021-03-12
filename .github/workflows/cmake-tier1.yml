@@ -69,14 +69,13 @@ jobs:
             mingw-w64-${{ matrix.arch }}-pkg-config
             mingw-w64-${{ matrix.arch }}-cmake
             mingw-w64-${{ matrix.arch }}-gcc
-            mingw-w64-${{ matrix.arch }}-make
+            make
 
       - name: Configure CMake
         shell: msys2 {0}
         working-directory: ${{runner.workspace}}
         run: >
           cmake -B build -S "$GITHUB_WORKSPACE" -G "MSYS Makefiles" ..
-          -DCMAKE_MAKE_PROGRAM=mingw32-make
           -DCMAKE_BUILD_TYPE=$BUILD_TYPE
           -DAPP_BUILD_EXAMPLES=ON
           -DAPP_BUILD_TESTS=ON
@@ -87,5 +86,41 @@ jobs:
         working-directory: ${{runner.workspace}}/build
         run: cmake --build . --config $BUILD_TYPE
 
-    # TODO Pack zip, NSIS
+      - name: Install Package Requirements
+        shell: msys2 {0}
+        working-directory: ${{runner.workspace}}/build
+        run: >
+          cmake -E make_directory ${{runner.workspace}}/build/smartmontools
+
+          cd smartmontools
+
+          wget https://nav.dl.sourceforge.net/project/smartmontools/smartmontools/7.2/smartmontools-7.2-1.win32-setup.exe
+
+          7z e smartmontools-7.2-1.win32-setup.exe
+          bin64/smartctl.exe bin64/smartctl-nc.exe
+          bin/update-smart-drivedb.exe
+          bin/drivedb.h
+
+      - name: Package ZIP
+        shell: msys2 {0}
+        working-directory: ${{runner.workspace}}/build
+        run: cpack -G ZIP
+
+      - name: Package NSIS (64-bit)
+        if: ${{ matrix.msystem == 'MINGW64' }}
+        shell: msys2 {0}
+        working-directory: ${{runner.workspace}}/build
+        run: cpack -G NSIS64
+
+      - name: Package NSIS (32-bit)
+        if: ${{ matrix.msystem == 'MINGW32' }}
+        shell: msys2 {0}
+        working-directory: ${{runner.workspace}}/build
+        run: cpack -G NSIS
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Windows Packages
+          path: ${{runner.workspace}}/build/gsmartcontrol-*-win*.*
 
