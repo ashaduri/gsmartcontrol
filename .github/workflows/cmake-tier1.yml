@@ -90,7 +90,7 @@ jobs:
         shell: msys2 {0}
         working-directory: ${{runner.workspace}}/build
         run: >
-          cmake -E make_directory ${{runner.workspace}}/build/smartmontools
+          mkdir smartmontools
 
           cd smartmontools
 
