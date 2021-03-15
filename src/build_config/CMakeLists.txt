@@ -51,6 +51,10 @@ message(STATUS "CMAKE_EXE_LINKER_FLAGS_MINSIZEREL: ${CMAKE_EXE_LINKER_FLAGS_MINS
 message(STATUS "CMAKE_EXE_LINKER_FLAGS_RELEASE: ${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 message(STATUS "CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO: ${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO}")
 
+# Suppress warning about manually specified variables not being used (this is a very common variable)
+message(STATUS "CMAKE_C_COMPILER: ${CMAKE_C_COMPILER}")
+
+
 # These variables are used in build_config.in.h
 if ("${CMAKE_SYSTEM_NAME}" MATCHES "Windows"
 		OR "${CMAKE_SYSTEM_NAME}" MATCHES "CYGWIN.*")
