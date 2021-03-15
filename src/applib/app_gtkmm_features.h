@@ -16,8 +16,10 @@ Copyright:
 #include <gtkmm.h>
 
 
+
 /// \def APP_GTKMM_CHECK_VERSION(major, minor, micro)
-/// Similar to GTK_CHECK_VERSION, but for gtkmm, which lacks this for some reason.
+/// Similar to GTK_CHECK_VERSION, but for Gtkmm, which lacks this before gtkmm4.
+/// This is useful as Gtk and Gtkmm versions may differ.
 #ifndef APP_GTKMM_CHECK_VERSION
 	#define APP_GTKMM_CHECK_VERSION(major, minor, micro) \
 		(GTKMM_MAJOR_VERSION > (major) \

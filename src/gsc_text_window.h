@@ -16,6 +16,7 @@ Copyright:
 #include <gtkmm.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
 #include <memory>
+#include <variant>
 
 #include "hz/debug.h"
 #include "hz/fs.h"
@@ -72,18 +73,36 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 		}
 
 
-		/// Set the text to display
+		void set_text_from_command(const Glib::ustring& title, const std::string& contents)
+		{
+			this->contents_ = contents;  // we save it to prevent its mangling through the widget
+			this->set_text_helper(title, true, true);
+		}
+
+
 		void set_text(const Glib::ustring& title, const Glib::ustring& contents,
+				bool save_visible = false, bool use_monospace = false)
+		{
+			this->contents_ = contents;
+			this->set_text_helper(title, save_visible, use_monospace);
+		}
+
+
+		/// Set the text to display
+		void set_text_helper(const Glib::ustring& title,
 				bool save_visible = false, bool use_monospace = false)
 		{
 			this->set_title(title + " - " + default_title_);  // something - gsmartcontrol
 
-			this->contents_ = contents;  // we save it to prevent its mangling through the widget
-
 			Gtk::TextView* textview = this->template lookup_widget<Gtk::TextView*>("main_textview");
 			if (textview) {
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
-				buffer->set_text(app_output_make_valid(contents));
+
+				if (std::holds_alternative<std::string>(contents_)) {
+					buffer->set_text(app_make_valid_utf8_from_command_output(std::get<std::string>(contents_)));
+				} else {
+					buffer->set_text(std::get<Glib::ustring>(contents_));
+				}
 
 				if (use_monospace) {
 					Glib::RefPtr<Gtk::TextTag> tag = buffer->create_tag();
@@ -207,7 +226,13 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 						file += ".txt";
 					}
 
-					auto ec = hz::fs_file_put_contents(hz::fs::u8path(file), this->contents_.c_str());
+					std::string text;
+					if (std::holds_alternative<std::string>(contents_)) {
+						text = std::get<std::string>(contents_);
+					} else {
+						text = std::get<Glib::ustring>(contents_);
+					}
+					auto ec = hz::fs_file_put_contents(hz::fs::u8path(file), text);
 					if (ec) {
 						gui_show_error_dialog(_("Cannot save data to file"), ec.message(), this);
 					}
@@ -228,14 +253,20 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 		/// Button click callback
 		void on_close_window_button_clicked()
 		{
-			this->destroy(this);
+			delete this;
 		}
 
 
 	private:
 
 		Glib::ustring default_title_;  ///< Window title
-		Glib::ustring contents_;  ///< The text to display
+
+		/// The text to display
+		std::variant<
+			std::string,  // command output
+			Glib::ustring  // utf-8 text
+		> contents_;
+
 		std::string save_filename_;  ///< Default filename for Save As
 
 };

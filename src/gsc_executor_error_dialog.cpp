@@ -92,7 +92,7 @@ void gsc_no_info_dialog_show(const std::string& message, const std::string& sec_
 
 	if (response == Gtk::RESPONSE_HELP) {
 		GscTextWindow<SmartctlOutputInstance>* win = GscTextWindow<SmartctlOutputInstance>::create();
-		win->set_text(output_window_title, output, true, true);
+		win->set_text_from_command(output_window_title, output);
 
 		if (!default_save_filename.empty())
 			win->set_save_filename(default_save_filename);

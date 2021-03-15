@@ -24,10 +24,9 @@ Copyright:
 
 
 
-// These allow easy attaching of gtkbuilder widget signals to member functions
-
-/// Connect member function (callback) to signal \c signal_name on widget
-/// \c ui_element, where \c ui_element is the widget's gtkbuilder name.
+/// Connect member function (callback) to signal \ref signal_name on widget
+/// \ref ui_element, where \ref ui_element is the widget's gtkbuilder name.
+/// This allows easy attaching of gtkbuilder widget signals to member functions.
 #define APP_BUILDER_CONNECT(ui_element, signal_name, callback) \
 	if (true) { \
 		if (!(ui_element)) \
@@ -38,11 +37,13 @@ Copyright:
 	} else (void)0
 
 
+
 /// Connect member function (callback) with a name of \c on_<widget_name>_<signal_name>
 /// to signal \c signal_name on widget \c ui_element, where \c ui_element is the
 /// widget's gtkbuilder name.
 #define APP_BUILDER_AUTO_CONNECT(ui_element, signal_name) \
 	APP_BUILDER_CONNECT(ui_element, signal_name, on_ ## ui_element ## _ ## signal_name)
+
 
 
 
@@ -54,106 +55,62 @@ template<class Child, bool MultiInstance, class WidgetType = Gtk::Window>
 class AppBuilderWidget : public WidgetType, public hz::InstanceManager<Child, MultiInstance> {
 	public:
 
-		/// Instance class type, which is also the parent class.
-		friend class Gtk::Builder;  // allow construction through gtkbuilder
-		friend class hz::InstanceManager<Child, MultiInstance>;  // allow construction through instance class
+		friend class Gtk::Builder;  // allow construction via GtkBuilder
+		// friend class hz::InstanceManager<Child, MultiInstance>;  // allow construction through instance class
 
 
-		/// Override parent hz::InstanceManager's function because of non-trivial constructor
-		static Child* create()
-		{
-			if constexpr(!MultiInstance) {  // for single-instance objects
-				if (hz::InstanceManager<Child, MultiInstance>::get_single_instance()) {
-					return hz::InstanceManager<Child, MultiInstance>::get_single_instance();
-				}
-			}
+		/// Disallow
+		AppBuilderWidget(const AppBuilderWidget& other) = delete;
 
-			std::string error_msg;
+		/// Disallow
+		AppBuilderWidget(const AppBuilderWidget&& other) = delete;
 
-			auto ui_path = hz::data_file_find("ui", std::string(Child::ui_name) + ".glade");
-			try {
-				auto ui = Gtk::Builder::create_from_file(ui_path.u8string());  // may throw
+		/// Disallow
+		AppBuilderWidget& operator=(const AppBuilderWidget& other) = delete;
 
-				Child* o = nullptr;
-				ui->get_widget_derived({Child::ui_name.data(), Child::ui_name.size()}, o);  // Calls Child's constructor
+		/// Disallow
+		AppBuilderWidget& operator=(const AppBuilderWidget&& other) = delete;
 
-				if (!o) {
-					debug_out_fatal("app", "Fatal error: Cannot get root widget from UI-resource-created hierarchy.\n");
-					gui_show_error_dialog(_("Fatal error: Cannot get root widget from UI-resource-created hierarchy."));
-					return nullptr;
-				}
+		/// Default
+		~AppBuilderWidget() = default;
 
-				if constexpr(!MultiInstance) {
-					hz::InstanceManager<Child, MultiInstance>::set_single_instance(o);  // for single-instance objects
-				}
-				return o;
-			}
-			catch (Glib::Exception& ex) {
-				error_msg = ex.what();
-			}
 
-			if (!error_msg.empty()) {
-				debug_out_fatal("app", "Fatal error: Cannot create UI-resource widgets: " << error_msg << "\n");
-				gui_show_error_dialog(Glib::ustring::compose(_("Fatal error: Cannot create UI-resource widgets: %1"), error_msg));
-			}
-			return nullptr;
-		}
+
+		/// Create an instance of this class, returning an existing instance if not MultiInstance.
+		/// A glade file in "ui" data domain is loaded with Child::ui_name filename base and is available as
+		/// `get_ui()` in child object.
+		/// \return nullptr if widget could not be loaded.
+		static Child* create();
 
 
 		/// Get UI resource
-		Glib::RefPtr<Gtk::Builder> get_ui()
-		{
-			return ui_;
-		}
+		Glib::RefPtr<Gtk::Builder> get_ui();
 
 
 		/// Find a widget in UI and return it.
-		Gtk::Widget* lookup_widget(const Glib::ustring& name)
-		{
-			return lookup_widget<Gtk::Widget*>(name);
-		}
+		/// \return nullptr if widget was not found.
+		Gtk::Widget* lookup_widget(const Glib::ustring& name);
 
 
 		/// Find a widget in UI and return it.
+		/// \return nullptr if widget was not found.
 		template<typename WidgetPtr>
-		WidgetPtr lookup_widget(const Glib::ustring& name)
-		{
-			WidgetPtr w = nullptr;
-			return lookup_widget(name, w);
-		}
+		WidgetPtr lookup_widget(const Glib::ustring& name);
 
 
-		/// Find a widget in UI and return it.
+		/// Find a widget in UI and return it in \ref w.
+		/// \return false if widget was not found.
 		template<typename Widget>
-		Widget* lookup_widget(const Glib::ustring& name, Widget*& w)
-		{
-			ui_->get_widget(name, w);
-			return w;
-		}
+		bool lookup_widget(const Glib::ustring& name, Widget*& w);
 
 
 	protected:
 
-		// protected constructor / destructor, use create() / destroy() instead of new / delete.
 
+		/// Protected constructor, use `create()` instead.
 		/// GtkBuilder needs this constructor in a child.
 		/// BaseObjectType is a C type, defined in specific Gtk:: widget class.
-		AppBuilderWidget(typename WidgetType::BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui)
-				: WidgetType(gtkcobj), ui_(std::move(ui))
-		{
-			// manually connecting signals:
-			// this->signal_delete_event().connect(sigc::mem_fun(*this, &MainWindow::on_main_window_delete));
-
-			// signals of GtkBuilder-created objects:
-			// Gtk::ToolButton* rescan_devices_toolbutton = 0;
-			// APP_BUILDER_AUTO_CONNECT(rescan_devices_toolbutton, clicked);
-
-			// show();
-		}
-
-
-		/// Virtual destructor
-		~AppBuilderWidget() = default;
+		AppBuilderWidget(typename WidgetType::BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui);
 
 
 	private:
@@ -163,6 +120,106 @@ class AppBuilderWidget : public WidgetType, public hz::InstanceManager<Child, Mu
 };
 
 
+
+
+
+// ------------------------------------------- Implementation
+
+
+template<class Child, bool MultiInstance, class WidgetType>
+Child* AppBuilderWidget<Child, MultiInstance, WidgetType>::create()
+{
+	if constexpr(!MultiInstance) {  // for single-instance objects
+		if (auto* inst = hz::InstanceManager<Child, MultiInstance>::instance()) {
+			return inst;
+		}
+	}
+
+	std::string error_msg;
+
+	auto ui_path = hz::data_file_find("ui", std::string(Child::ui_name) + ".glade");
+	try {
+		auto ui = Gtk::Builder::create_from_file(ui_path.u8string());  // may throw
+
+		Child* o = nullptr;
+		ui->get_widget_derived({Child::ui_name.data(), Child::ui_name.size()}, o);  // Calls Child's constructor
+
+		if (!o) {
+			debug_out_fatal("app", "Fatal error: Cannot get root widget from UI-resource-created hierarchy.\n");
+			gui_show_error_dialog(_("Fatal error: Cannot get root widget from UI-resource-created hierarchy."));
+			return nullptr;
+		}
+
+		if constexpr(!MultiInstance) {
+			hz::InstanceManager<Child, MultiInstance>::set_single_instance(o);  // for single-instance objects
+		}
+		return o;
+	}
+	catch (Glib::Exception& ex) {
+		error_msg = ex.what();
+	}
+
+	if (!error_msg.empty()) {
+		debug_out_fatal("app", "Fatal error: Cannot create UI-resource widgets: " << error_msg << "\n");
+		gui_show_error_dialog(Glib::ustring::compose(_("Fatal error: Cannot create UI-resource widgets: %1"), error_msg));
+	}
+	return nullptr;
+}
+
+
+
+template<class Child, bool MultiInstance, class WidgetType>
+Glib::RefPtr<Gtk::Builder> AppBuilderWidget<Child, MultiInstance, WidgetType>::get_ui()
+{
+	return ui_;
+}
+
+
+
+template<class Child, bool MultiInstance, class WidgetType>
+template<typename WidgetPtr>
+WidgetPtr AppBuilderWidget<Child, MultiInstance, WidgetType>::lookup_widget(const Glib::ustring& name)
+{
+	WidgetPtr w = nullptr;
+	lookup_widget(name, w);
+	return w;
+}
+
+
+
+template<class Child, bool MultiInstance, class WidgetType>
+Gtk::Widget* AppBuilderWidget<Child, MultiInstance, WidgetType>::lookup_widget(const Glib::ustring& name)
+{
+	return lookup_widget<Gtk::Widget*>(name);
+}
+
+
+
+template<class Child, bool MultiInstance, class WidgetType>
+template<typename Widget>
+bool AppBuilderWidget<Child, MultiInstance, WidgetType>::lookup_widget(const Glib::ustring& name, Widget*& w)
+{
+	ui_->get_widget(name, w);
+	return w != nullptr;
+}
+
+
+
+template<class Child, bool MultiInstance, class WidgetType>
+AppBuilderWidget<Child, MultiInstance, WidgetType>::AppBuilderWidget(typename WidgetType::BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui)
+		: WidgetType(gtkcobj), ui_(std::move(ui))
+{
+	// An example of Child's constructor:
+
+	// Manually connect signals:
+	// this->signal_delete_event().connect(sigc::mem_fun(*this, &MainWindow::on_main_window_delete));
+
+	// Automatically connect signals of GtkBuilder-created objects to member functions:
+	// Gtk::ToolButton* rescan_devices_toolbutton = 0;
+	// APP_BUILDER_AUTO_CONNECT(rescan_devices_toolbutton, clicked);
+
+	// show();
+}
 
 
 

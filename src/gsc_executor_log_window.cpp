@@ -421,7 +421,7 @@ void GscExecutorLogWindow::on_tree_selection_changed()
 		if (auto* output_textview = this->lookup_widget<Gtk::TextView*>("output_textview")) {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = output_textview->get_buffer();
 			if (buffer) {
-				buffer->set_text(app_output_make_valid(entry->std_output));
+				buffer->set_text(app_make_valid_utf8_from_command_output(entry->std_output));
 
 				Glib::RefPtr<Gtk::TextTag> tag;
 				Glib::RefPtr<Gtk::TextTagTable> table = buffer->get_tag_table();
@@ -437,7 +437,7 @@ void GscExecutorLogWindow::on_tree_selection_changed()
 
 		if (auto* command_entry = this->lookup_widget<Gtk::Entry*>("command_entry")) {
 			std::string cmd_text = entry->command + " " + entry->parameters;
-			command_entry->set_text(app_output_make_valid(cmd_text));
+			command_entry->set_text(app_make_valid_utf8_from_command_output(cmd_text));
 		}
 
 		if (auto* window_save_current_button = this->lookup_widget<Gtk::Button*>("window_save_current_button"))

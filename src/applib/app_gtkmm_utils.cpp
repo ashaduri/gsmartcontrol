@@ -20,7 +20,6 @@ Copyright:
 
 
 
-// Note: This works only if the column has custom widget set.
 Gtk::Widget* app_gtkmm_get_column_header(Gtk::TreeViewColumn& column)
 {
 	Gtk::Widget* w = column.get_widget();
@@ -37,19 +36,16 @@ Gtk::Widget* app_gtkmm_get_column_header(Gtk::TreeViewColumn& column)
 
 
 
-// Read column header text and create a label with that text, set it as column's custom widget.
-Gtk::Widget* app_gtkmm_labelize_column(Gtk::TreeViewColumn& column)
+Gtk::Label& app_gtkmm_labelize_column(Gtk::TreeViewColumn& column)
 {
 	Gtk::Label* label = Gtk::manage(new Gtk::Label(column.get_title()));
 	label->show();
 	column.set_widget(*label);
-	return label;
+	return *label;
 }
 
 
 
-
-// A wrapper around set_tooltip_*() for portability across different gtkmm versions.
 void app_gtkmm_set_widget_tooltip(Gtk::Widget& widget,
 		const Glib::ustring& tooltip_text, bool use_markup)
 {
@@ -67,7 +63,7 @@ namespace {
 	/// This has been copied from _g_utf8_make_valid() (glib-2.20.4).
 	/// _g_utf8_make_valid() is GLib's private function for auto-correcting
 	/// the potentially invalid utf-8 data.
-	inline gchar* gsc_g_utf8_make_valid (const gchar* name)
+	inline gchar* app_make_valid_utf_c (const gchar* name)
 	{
 		GString* str = nullptr;
 		const gchar* remainder = nullptr;
@@ -123,29 +119,23 @@ Glib::ustring app_ustring_from_gchar(gchar* str)
 
 
 
-Glib::ustring app_utf8_make_valid(const Glib::ustring& str)
+Glib::ustring app_make_valid_utf8(const Glib::ustring& str)
 {
-	char* s = gsc_g_utf8_make_valid(str.c_str());
-	if (!s) {
-		return Glib::ustring();
-	}
-	Glib::ustring res(s);
-	g_free(s);
-	return res;
+	return app_ustring_from_gchar(app_make_valid_utf_c(str.c_str()));
 }
 
 
 
-Glib::ustring app_output_make_valid(const Glib::ustring& str)
+Glib::ustring app_make_valid_utf8_from_command_output(const std::string& str)
 {
 	#ifdef _WIN32
 	try {
-		return app_utf8_make_valid(Glib::locale_to_utf8(str));
+		return Glib::locale_to_utf8(str);  // detects invalid utf-8 sequences
 	} catch (Glib::ConvertError& e) {
 		// nothing, try to fix as it is
 	}
 	#endif
-	return app_utf8_make_valid(str);
+	return app_ustring_from_gchar(app_make_valid_utf_c(str.c_str()));
 }
 
 

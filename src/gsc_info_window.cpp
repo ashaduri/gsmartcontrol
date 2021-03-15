@@ -722,7 +722,7 @@ void GscInfoWindow::on_view_output_button_clicked()
 		output = this->drive->get_info_output();
 	}
 
-	win->set_text(_("Smartctl Output"), output, true, true);
+	win->set_text_from_command(_("Smartctl Output"), output);
 
 	std::string filename = drive->get_save_filename();
 	if (!filename.empty())
@@ -838,7 +838,7 @@ void GscInfoWindow::on_close_window_button_clicked()
 	if (drive && drive->get_test_is_active()) {  // disallow close if test is active.
 		gui_show_warn_dialog(_("Please wait until all tests are finished."), this);
 	} else {
-		destroy(this);  // deletes this object and nullifies instance
+		delete this;  // deletes this object and nullifies instance
 	}
 }
 
@@ -963,63 +963,63 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<StorageProperty>& props
 	auto* treeview = lookup_widget<Gtk::TreeView*>("attributes_treeview");
 
 	Gtk::TreeModelColumnRecord model_columns;
-	int num_tree_cols = 0;
+	[[maybe_unused]] int num_tree_col = 0;
 
 	// ID (int), Name, Flag (hex), Normalized Value (uint8), Worst (uint8), Thresh (uint8), Raw (int64), Type (string),
 	// Updated (string), When Failed (string)
 
 	Gtk::TreeModelColumn<int32_t> col_id;
 	model_columns.add(col_id);  // we can use the column variable by value after this.
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_id, *treeview, _("ID"), _("Attribute ID"), true);
+	num_tree_col = app_gtkmm_create_tree_view_column(col_id, *treeview, _("ID"), _("Attribute ID"), true);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_name;
 	model_columns.add(col_name);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_name, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_name, *treeview,
 			_("Name"), _("Attribute name (this is deduced from ID by smartctl and may be incorrect, as it's highly vendor-specific)"), true);
 	treeview->set_search_column(col_name.index());
-	auto* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
+	auto* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_col));
 	if (cr_name)
 		cr_name->property_weight() = Pango::WEIGHT_BOLD;
 
 	Gtk::TreeModelColumn<Glib::ustring> col_failed;
 	model_columns.add(col_failed);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_failed, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_failed, *treeview,
 			_("Failed"), _("When failed (that is, the normalized value became equal to or less than threshold)"), true, true);
 
 	Gtk::TreeModelColumn<std::string> col_value;
 	model_columns.add(col_value);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_value, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_value, *treeview,
 			C_("value", "Normalized"), _("Normalized value (highly vendor-specific; converted from Raw value by the drive's firmware)"), false);
 
 	Gtk::TreeModelColumn<std::string> col_worst;
 	model_columns.add(col_worst);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_worst, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_worst, *treeview,
 			C_("value", "Worst"), _("The worst normalized value recorded for this attribute during the drive's lifetime (with SMART enabled)"), false);
 
 	Gtk::TreeModelColumn<std::string> col_threshold;
 	model_columns.add(col_threshold);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_threshold, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_threshold, *treeview,
 			C_("value", "Threshold"), _("Threshold for normalized value. Normalized value should be greater than threshold (unless vendor thinks otherwise)."), false);
 
 	Gtk::TreeModelColumn<std::string> col_raw;
 	model_columns.add(col_raw);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_raw, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_raw, *treeview,
 			_("Raw value"), _("Raw value as reported by drive. May or may not be sensible."), false);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_type;
 	model_columns.add(col_type);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_type, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_type, *treeview,
 			_("Type"), _("Alarm condition is reached when normalized value becomes less than or equal to threshold. Type indicates whether it's a signal of drive's pre-failure time or just an old age."), false, true);
 
 	// Doesn't carry that much info. Advanced users can look at the flags.
 // 		Gtk::TreeModelColumn<Glib::ustring> col_updated;
 // 		model_columns.add(col_updated);
-// 		num_tree_cols = app_gtkmm_create_tree_view_column(col_updated, *treeview,
+// 		tree_col = app_gtkmm_create_tree_view_column(col_updated, *treeview,
 // 				"Updated", "The attribute is usually updated continuously, or during Offline Data Collection only. This column indicates that.", true);
 
 	Gtk::TreeModelColumn<std::string> col_flag_value;
 	model_columns.add(col_flag_value);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_flag_value, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_flag_value, *treeview,
 			_("Flags"), _("Flags") + "\n\n"s
 					+ Glib::ustring::compose(_("If given in %1 format, the presence of each letter indicates that the flag is on."), "POSRCK+") + "\n"
 					+ _("P: pre-failure attribute (if the attribute failed, the drive is failing)") + "\n"
@@ -1044,7 +1044,7 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<StorageProperty>& props
 	list_store->set_sort_column(col_id, Gtk::SORT_ASCENDING);  // default sort
 	treeview->set_model(list_store);
 
-	for (int i = 0; i < num_tree_cols; ++i) {
+	for (int i = 0; i < int(treeview->get_n_columns()); ++i) {
 		Gtk::TreeViewColumn* tcol = treeview->get_column(i);
 		tcol->set_cell_data_func(*(tcol->get_first_cell()),
 				sigc::bind(sigc::ptr_fun(app_list_cell_renderer_func), col_storage));
@@ -1111,25 +1111,25 @@ void GscInfoWindow::fill_ui_statistics(const std::vector<StorageProperty>& props
 	auto* treeview = lookup_widget<Gtk::TreeView*>("statistics_treeview");
 
 	Gtk::TreeModelColumnRecord model_columns;
-	int num_tree_cols = 0;
+	[[maybe_unused]] int num_tree_col = 0;
 
 	Gtk::TreeModelColumn<Glib::ustring> col_description;
 	model_columns.add(col_description);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_description, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_description, *treeview,
 			_("Description"), _("Entry description"), true);
 	treeview->set_search_column(col_description.index());
-// 		Gtk::CellRendererText* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
+// 		Gtk::CellRendererText* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_col));
 // 		if (cr_name)
 // 			cr_name->property_weight() = Pango::WEIGHT_BOLD ;
 
 	Gtk::TreeModelColumn<std::string> col_value;
 	model_columns.add(col_value);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_value, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_value, *treeview,
 			_("Value"), Glib::ustring::compose(_("Value (can be normalized if '%1' flag is present)"), "N"), false);
 
 	Gtk::TreeModelColumn<std::string> col_flags;
 	model_columns.add(col_flags);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_flags, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_flags, *treeview,
 			_("Flags"), _("Flags") + "\n\n"s
 					+ _("N: value is normalized") + "\n"
 					+ _("D: supports Device Statistics Notification (DSN)") + "\n"
@@ -1138,7 +1138,7 @@ void GscInfoWindow::fill_ui_statistics(const std::vector<StorageProperty>& props
 
 	Gtk::TreeModelColumn<std::string> col_page_offset;
 	model_columns.add(col_page_offset);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_page_offset, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_page_offset, *treeview,
 			_("Page, Offset"), _("Page and offset of the entry"), false);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
@@ -1154,7 +1154,7 @@ void GscInfoWindow::fill_ui_statistics(const std::vector<StorageProperty>& props
 	treeview->set_model(list_store);
 	// No sorting (we don't want to screw up the headers).
 
-	for (int i = 0; i < num_tree_cols; ++i) {
+	for (int i = 0; i < int(treeview->get_n_columns()); ++i) {
 		Gtk::TreeViewColumn* tcol = treeview->get_column(i);
 		tcol->set_cell_data_func(*(tcol->get_first_cell()),
 				sigc::bind(sigc::ptr_fun(app_list_cell_renderer_func), col_storage));
@@ -1291,42 +1291,42 @@ void GscInfoWindow::fill_ui_self_test_log(const std::vector<StorageProperty>& pr
 	auto* treeview = lookup_widget<Gtk::TreeView*>("selftest_log_treeview");
 
 	Gtk::TreeModelColumnRecord model_columns;
-	int num_tree_cols = 0;
+	[[maybe_unused]] int num_tree_col = 0;
 
 	// Test num., Type, Status, % Completed, Lifetime hours, LBA of the first error
 
 	Gtk::TreeModelColumn<uint32_t> col_num;
 	model_columns.add(col_num);  // we can use the column variable by value after this.
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_num, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_num, *treeview,
 			_("Test #"), _("Test # (greater may mean newer or older depending on drive model)"), true);
-	auto* cr_test_num = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
+	auto* cr_test_num = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_col));
 	if (cr_test_num)
 		cr_test_num->property_weight() = Pango::WEIGHT_BOLD ;
 
 	Gtk::TreeModelColumn<std::string> col_type;
 	model_columns.add(col_type);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_type, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_type, *treeview,
 			_("Type"), _("Type of the test performed"), true);
 	treeview->set_search_column(col_type.index());
 
 	Gtk::TreeModelColumn<std::string> col_status;
 	model_columns.add(col_status);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_status, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_status, *treeview,
 			_("Status"), _("Test completion status"), true);
 
 	Gtk::TreeModelColumn<std::string> col_percent;
 	model_columns.add(col_percent);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_percent, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_percent, *treeview,
 			_("% Completed"), _("Percentage of the test completed. Instantly-aborted tests have 10%, while unsupported ones <i>may</i> have 100%."), true, false, true);
 
 	Gtk::TreeModelColumn<std::string> col_hours;
 	model_columns.add(col_hours);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_hours, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_hours, *treeview,
 			_("Lifetime hours"), _("During which hour of the drive's (powered on) lifetime did the test complete (or abort)"), true);
 
 	Gtk::TreeModelColumn<std::string> col_lba;
 	model_columns.add(col_lba);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_lba, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_lba, *treeview,
 			_("LBA of the first error"), _("LBA of the first error (if an LBA-related error happened)"), true);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
@@ -1342,7 +1342,7 @@ void GscInfoWindow::fill_ui_self_test_log(const std::vector<StorageProperty>& pr
 	list_store->set_sort_column(col_num, Gtk::SORT_ASCENDING);  // default sort
 	treeview->set_model(list_store);
 
-	for (int i = 0; i < num_tree_cols; ++i) {
+	for (int i = 0; i < int(treeview->get_n_columns()); ++i) {
 		Gtk::TreeViewColumn* tcol = treeview->get_column(i);
 		tcol->set_cell_data_func(*(tcol->get_first_cell()),
 				sigc::bind(sigc::ptr_fun(app_list_cell_renderer_func), col_storage));
@@ -1402,35 +1402,35 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
 	auto* treeview = lookup_widget<Gtk::TreeView*>("error_log_treeview");
 
 	Gtk::TreeModelColumnRecord model_columns;
-	int num_tree_cols = 0;
+	[[maybe_unused]] int num_tree_col = 0;
 
 	// Error Number, Lifetime Hours, State, Type, Details, [tooltips]
 
 	Gtk::TreeModelColumn<uint32_t> col_num;
 	model_columns.add(col_num);  // we can use the column variable by value after this.
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_num, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_num, *treeview,
 			_("Error #"), _("Error # in the error log (greater means newer)"), true);
-	if (auto* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1)))
+	if (auto* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_col)))
 		cr_name->property_weight() = Pango::WEIGHT_BOLD ;
 
 	Gtk::TreeModelColumn<std::string> col_hours;
 	model_columns.add(col_hours);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_hours, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_hours, *treeview,
 			_("Lifetime hours"), _("During which hour of the drive's (powered on) lifetime did the error happen."), true);
 
 	Gtk::TreeModelColumn<std::string> col_state;
 	model_columns.add(col_state);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_state, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_state, *treeview,
 			C_("power", "State"), _("Power state of the drive when the error occurred"), false);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_type;
 	model_columns.add(col_type);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_type, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_type, *treeview,
 			_("Type"), _("Type of error"), true);
 
 	Gtk::TreeModelColumn<std::string> col_details;
 	model_columns.add(col_details);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_details, *treeview,
+	num_tree_col = app_gtkmm_create_tree_view_column(col_details, *treeview,
 			_("Details"), _("Additional details (e.g. LBA where the error occurred, etc...)"), true);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
@@ -1449,7 +1449,7 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
 	list_store->set_sort_column(col_num, Gtk::SORT_DESCENDING);  // default sort
 	treeview->set_model(list_store);
 
-	for (int i = 0; i < num_tree_cols; ++i) {
+	for (int i = 0; i < int(treeview->get_n_columns()); ++i) {
 		Gtk::TreeViewColumn* tcol = treeview->get_column(i);
 		tcol->set_cell_data_func(*(tcol->get_first_cell()),
 				sigc::bind(sigc::ptr_fun(app_list_cell_renderer_func), col_storage));
@@ -1607,29 +1607,29 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<StorageProper
 	auto* treeview = lookup_widget<Gtk::TreeView*>("capabilities_treeview");
 
 	Gtk::TreeModelColumnRecord model_columns;
-	int num_tree_cols = 0;
+	[[maybe_unused]] int num_tree_col = 0;
 
 	// N, Name, Flag, Capabilities, [tooltips]
 
 	Gtk::TreeModelColumn<int> col_index;
 	model_columns.add(col_index);  // we can use the column variable by value after this.
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_index, *treeview, _("#"), _("Entry #"), true);
+	num_tree_col = app_gtkmm_create_tree_view_column(col_index, *treeview, _("#"), _("Entry #"), true);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_name;
 	model_columns.add(col_name);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_name, *treeview, _("Name"), _("Name"), true);
+	num_tree_col = app_gtkmm_create_tree_view_column(col_name, *treeview, _("Name"), _("Name"), true);
 	treeview->set_search_column(col_name.index());
-	auto* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_cols - 1));
+	auto* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_col));
 	if (cr_name)
 		cr_name->property_weight() = Pango::WEIGHT_BOLD ;
 
 	Gtk::TreeModelColumn<std::string> col_flag_value;
 	model_columns.add(col_flag_value);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_flag_value, *treeview, _("Flags"), _("Flags"), false);
+	num_tree_col = app_gtkmm_create_tree_view_column(col_flag_value, *treeview, _("Flags"), _("Flags"), false);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_str_values;
 	model_columns.add(col_str_values);
-	num_tree_cols = app_gtkmm_create_tree_view_column(col_str_values, *treeview, _("Capabilities"), _("Capabilities"), false);
+	num_tree_col = app_gtkmm_create_tree_view_column(col_str_values, *treeview, _("Capabilities"), _("Capabilities"), false);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
 	model_columns.add(col_tooltip);
@@ -1644,7 +1644,7 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<StorageProper
 	list_store->set_sort_column(col_index, Gtk::SORT_ASCENDING);  // default sort
 	treeview->set_model(list_store);
 
-	for (int i = 0; i < num_tree_cols; ++i) {
+	for (int i = 0; i < int(treeview->get_n_columns()); ++i) {
 		Gtk::TreeViewColumn* tcol = treeview->get_column(i);
 		tcol->set_cell_data_func(*(tcol->get_first_cell()),
 				sigc::bind(sigc::ptr_fun(app_list_cell_renderer_func), col_storage));

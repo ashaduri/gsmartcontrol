@@ -458,7 +458,7 @@ bool GscPreferencesWindow::on_delete_event([[maybe_unused]] GdkEventAny* e)
 
 void GscPreferencesWindow::on_window_cancel_button_clicked()
 {
-	destroy(this);
+	delete this;
 }
 
 
@@ -491,7 +491,7 @@ void GscPreferencesWindow::on_window_ok_button_clicked()
 		main_window_->show_prefs_updated_message();
 	}
 
-	destroy(this);
+	delete this;
 }
 
 
@@ -506,7 +506,7 @@ void GscPreferencesWindow::on_window_reset_all_button_clicked()
 		rconfig::clear_config();
 		import_config();
 		// close the window, because the user might get the impression that "Cancel" will revert.
-		destroy(this);
+		delete this;
 	}
 }
 

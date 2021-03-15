@@ -543,9 +543,9 @@ bool app_init_and_loop(int& argc, char**& argv)
 	debug_out_info("app", "Main loop exited.\n");
 
 	// close the main window and delete its object
-	GscMainWindow::destroy();
+	delete GscMainWindow::instance();
 
-	GscExecutorLogWindow::destroy();
+	delete GscExecutorLogWindow::instance();
 
 
 	// std::cerr << app_get_debug_buffer_str();  // this will output everything that went through libdebug.
