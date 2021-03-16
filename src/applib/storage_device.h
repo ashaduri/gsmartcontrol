@@ -19,8 +19,8 @@ Copyright:
 #include <sigc++/sigc++.h>
 
 #include "hz/fs_ns.h"
-#include "storage_property.h"
-#include "smartctl_parser.h"  // prop_list_t
+#include "ata_storage_property.h"
+#include "smartctl_text_parser.h"  // prop_list_t
 #include "smartctl_executor.h"
 
 
@@ -121,7 +121,7 @@ class StorageDevice {
 		std::string get_device_size_str() const;
 
 		/// Get the overall health property
-		StorageProperty get_health_property() const;
+		AtaStorageProperty get_health_property() const;
 
 
 		/// Get device name (e.g. /dev/sda)
@@ -176,13 +176,13 @@ class StorageDevice {
 
 
 		/// Get all detected properties
-		const std::vector<StorageProperty>& get_properties() const;
+		const std::vector<AtaStorageProperty>& get_properties() const;
 
 
 		/// Find a property
-		StorageProperty lookup_property(const std::string& generic_name,
-				StorageProperty::Section section = StorageProperty::Section::unknown,  // if unknown, search in all.
-				StorageProperty::SubSection subsection = StorageProperty::SubSection::unknown) const;
+		AtaStorageProperty lookup_property(const std::string& generic_name,
+				AtaStorageProperty::Section section = AtaStorageProperty::Section::unknown,  // if unknown, search in all.
+				AtaStorageProperty::SubSection subsection = AtaStorageProperty::SubSection::unknown) const;
 
 
 		/// Get model name.
@@ -244,7 +244,7 @@ class StorageDevice {
 
 
 		/// Emitted whenever new information is available
-		sigc::signal<void, StorageDevice*> signal_changed;
+		sigc::signal<void, StorageDevice*>& signal_changed();
 
 
 	protected:
@@ -253,7 +253,7 @@ class StorageDevice {
 		void set_parse_status(ParseStatus value);
 
 		/// Set parsed properties
-		void set_properties(std::vector<StorageProperty> props);
+		void set_properties(std::vector<AtaStorageProperty> props);
 
 
 	private:
@@ -287,9 +287,12 @@ class StorageDevice {
 		std::optional<std::string> serial_number_;  ///< Serial number
 		std::optional<std::string> size_;  ///< Formatted size
 		std::optional<bool> hdd_;  ///< Whether it's a rotational drive (HDD) or something else (SSD, flash, etc...)
-		mutable std::optional<StorageProperty> health_property_;  ///< Cached health property.
+		mutable std::optional<AtaStorageProperty> health_property_;  ///< Cached health property.
 
-		std::vector<StorageProperty> properties_;  ///< Smart properties. Detected through full output.
+		std::vector<AtaStorageProperty> properties_;  ///< Smart properties. Detected through full output.
+
+		/// Emitted whenever new information is available
+		sigc::signal<void, StorageDevice*> signal_changed_;
 
 
 };

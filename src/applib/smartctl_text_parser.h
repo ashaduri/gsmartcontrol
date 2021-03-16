@@ -9,24 +9,24 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#ifndef SMARTCTL_PARSER_H
-#define SMARTCTL_PARSER_H
+#ifndef SMARTCTL_TEXT_PARSER_H
+#define SMARTCTL_TEXT_PARSER_H
 
 #include <string>
 #include <vector>
 
-#include "storage_property.h"
+#include "ata_storage_property.h"
 
 
 
 /// Smartctl parser.
 /// Note: ALL parse_* functions (except parse_full() and parse_version())
 /// expect data in unix-newline format!
-class SmartctlParser {
+class SmartctlTextParser {
 	public:
 
 		/// Parse full "smartctl -x" output
-		bool parse_full(const std::string& full, StorageAttribute::DiskType disk_type);
+		bool parse_full(const std::string& full, AtaStorageAttribute::DiskType disk_type);
 
 
 		/// Supply any output of smartctl here, the smartctl version will be retrieved.
@@ -53,7 +53,7 @@ class SmartctlParser {
 		bool parse_section_info(const std::string& body);
 
 		/// Parse a component (one line) of the info section
-		bool parse_section_info_property(StorageProperty& p);
+		bool parse_section_info_property(AtaStorageProperty& p);
 
 
 		/// Parse the Data section (without "===" header)
@@ -73,7 +73,7 @@ class SmartctlParser {
 		bool parse_section_data_subsection_sataphy(const std::string& sub);
 
 		/// Check the capabilities for internal properties we can use.
-		bool parse_section_data_internal_capabilities(StorageProperty& cap_prop);
+		bool parse_section_data_internal_capabilities(AtaStorageProperty& cap_prop);
 
 
 		/// Clear parsed data
@@ -109,7 +109,7 @@ class SmartctlParser {
 
 
 		/// Get parse result properties
-		[[nodiscard]] const std::vector<StorageProperty>& get_properties() const;
+		[[nodiscard]] const std::vector<AtaStorageProperty>& get_properties() const;
 
 
 
@@ -117,7 +117,7 @@ class SmartctlParser {
 
 
 		/// Add a property into property list, look up and set its description
-		void add_property(StorageProperty p);
+		void add_property(AtaStorageProperty p);
 
 
 		/// Set "full" data ("smartctl -x" output)
@@ -137,7 +137,7 @@ class SmartctlParser {
 
 
 
-		std::vector<StorageProperty> properties_;  ///< Parsed data properties
+		std::vector<AtaStorageProperty> properties_;  ///< Parsed data properties
 
 		std::string data_full_;  ///< full data, filled by parse_full()
 		std::string data_section_info_;  ///< "info" section data, filled by parse_section_info()
@@ -145,7 +145,7 @@ class SmartctlParser {
 
 		std::string error_msg_;  ///< This will be filled with some displayable message on error
 
-		StorageAttribute::DiskType disk_type_ = StorageAttribute::DiskType::Any;  ///< Disk type (HDD, SSD)
+		AtaStorageAttribute::DiskType disk_type_ = AtaStorageAttribute::DiskType::Any;  ///< Disk type (HDD, SSD)
 
 };
 

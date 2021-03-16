@@ -15,8 +15,8 @@ Copyright:
 #include <chrono>
 
 #include "app_pcrecpp.h"
-#include "storage_property.h"
-#include "smartctl_parser.h"
+#include "ata_storage_property.h"
+#include "smartctl_text_parser.h"
 #include "selftest.h"
 
 
@@ -75,8 +75,8 @@ std::chrono::seconds SelfTest::get_min_duration_seconds() const
 		case TestType::conveyance: prop_name = "conveyance_total_time_length"; break;
 	}
 
-	StorageProperty p = drive_->lookup_property(prop_name,
-			StorageProperty::Section::data, StorageProperty::SubSection::capabilities);
+	AtaStorageProperty p = drive_->lookup_property(prop_name,
+			AtaStorageProperty::Section::data, AtaStorageProperty::SubSection::capabilities);
 
 	// p stores it as uint64_t
 	return (total_duration_ = (p.empty() ? 0s : p.get_value<std::chrono::seconds>()));
@@ -104,7 +104,7 @@ bool SelfTest::is_supported() const
 		case TestType::conveyance: prop_name = "conveyance_support"; break;
 	}
 
-	StorageProperty p = drive_->lookup_property(prop_name, StorageProperty::Section::internal);
+	AtaStorageProperty p = drive_->lookup_property(prop_name, AtaStorageProperty::Section::internal);
 	return (!p.empty() && p.get_value<bool>());
 }
 
@@ -155,7 +155,7 @@ std::string SelfTest::start(const std::shared_ptr<CommandExecutor>& smartctl_ex)
 
 	// Set up everything so that the caller won't have to.
 
-	status_ = StorageSelftestEntry::Status::in_progress;
+	status_ = AtaStorageSelftestEntry::Status::in_progress;
 
 	remaining_percent_ = 100;
 	// set to 90 to avoid the 100->90 timer reset. this way we won't be looking at
@@ -186,7 +186,7 @@ std::string SelfTest::force_stop(const std::shared_ptr<CommandExecutor>& smartct
 	// any command (e.g. "--abort") will abort it. If it has "Suspend Offline...",
 	// there's no way to abort such test.
 	if (type_ == TestType::immediate_offline) {
-		StorageProperty p = drive_->lookup_property("iodc_command_suspends", StorageProperty::Section::internal);
+		AtaStorageProperty p = drive_->lookup_property("iodc_command_suspends", AtaStorageProperty::Section::internal);
 		if (!p.empty() && p.get_value<bool>()) {  // if empty, give a chance to abort anyway.
 			return _("Aborting this test is unsupported by the drive.");
 		}
@@ -210,8 +210,8 @@ std::string SelfTest::force_stop(const std::shared_ptr<CommandExecutor>& smartct
 
 	// the thing is, update() may fail to actually update the statuses, so
 	// do it manually.
-	if (status_ == StorageSelftestEntry::Status::in_progress) {  // update() couldn't do its job
-		status_ = StorageSelftestEntry::Status::aborted_by_host;
+	if (status_ == AtaStorageSelftestEntry::Status::in_progress) {  // update() couldn't do its job
+		status_ = AtaStorageSelftestEntry::Status::aborted_by_host;
 		remaining_percent_ = -1;
 		last_seen_percent_ = -1;
 		poll_in_seconds_ = std::chrono::seconds(-1);
@@ -242,8 +242,8 @@ std::string SelfTest::update(const std::shared_ptr<CommandExecutor>& smartctl_ex
 	if (!error_msg.empty())  // checks for empty output too
 		return error_msg;
 
-	StorageAttribute::DiskType disk_type = drive_->get_is_hdd() ? StorageAttribute::DiskType::Hdd : StorageAttribute::DiskType::Ssd;
-	SmartctlParser ps;
+	AtaStorageAttribute::DiskType disk_type = drive_->get_is_hdd() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
+	SmartctlTextParser ps;
 	if (!ps.parse_full(output, disk_type)) {  // try to parse it
 		return ps.get_error_msg();
 	}
@@ -251,11 +251,11 @@ std::string SelfTest::update(const std::shared_ptr<CommandExecutor>& smartctl_ex
 	// Note: Since the self-test log is sometimes late
 	// and in undetermined order (sorting by hours is too rough),
 	// we use the "self-test status" capability.
-	StorageProperty p;
+	AtaStorageProperty p;
 	for (const auto& e : ps.get_properties()) {
-// 		if (e.section != StorageProperty::Section::data || e.subsection != StorageProperty::SubSection::selftest_log
-		if (e.section != StorageProperty::Section::internal
-				|| !e.is_value_type<StorageSelftestEntry>() || e.get_value<StorageSelftestEntry>().test_num != 0
+// 		if (e.section != AtaStorageProperty::Section::data || e.subsection != AtaStorageProperty::SubSection::selftest_log
+		if (e.section != AtaStorageProperty::Section::internal
+				|| !e.is_value_type<AtaStorageSelftestEntry>() || e.get_value<AtaStorageSelftestEntry>().test_num != 0
 				|| e.generic_name != "last_selftest_status")
 			continue;
 		p = e;
@@ -264,15 +264,15 @@ std::string SelfTest::update(const std::shared_ptr<CommandExecutor>& smartctl_ex
 	if (p.empty())
 		return _("The drive doesn't report the test status.");
 
-	status_ = p.get_value<StorageSelftestEntry>().status;
-	bool active = (status_ == StorageSelftestEntry::Status::in_progress);
+	status_ = p.get_value<AtaStorageSelftestEntry>().status;
+	bool active = (status_ == AtaStorageSelftestEntry::Status::in_progress);
 
 
 	// Note that the test needs 90% to complete, not 100. It starts at 90%
 	// and reaches 00% on completion. That's 9 pieces.
 	if (active) {
 
-		remaining_percent_ = p.get_value<StorageSelftestEntry>().remaining_percent;
+		remaining_percent_ = p.get_value<AtaStorageSelftestEntry>().remaining_percent;
 		if (remaining_percent_ != last_seen_percent_) {
 			last_seen_percent_ = remaining_percent_;
 			timer_.start();  // restart the timer

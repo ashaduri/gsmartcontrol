@@ -9,8 +9,8 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#ifndef STORAGE_PROPERTY_H
-#define STORAGE_PROPERTY_H
+#ifndef ATA_STORAGE_PROPERTY_H
+#define ATA_STORAGE_PROPERTY_H
 
 #include <string>
 #include <vector>
@@ -27,7 +27,7 @@ Copyright:
 
 /// Holds one block of "capabilities" subsection
 /// (only for non-time-interval blocks).
-class StorageCapability {
+class AtaStorageCapability {
 	public:
 		std::string reported_flag_value;  ///< original flag value as a string
 		uint16_t flag_value = 0x0;  ///< Flag value. This is one or sometimes two bytes (maybe more?)
@@ -37,14 +37,14 @@ class StorageCapability {
 
 
 /// Output operator for debug purposes
-std::ostream& operator<< (std::ostream& os, const StorageCapability& p);
+std::ostream& operator<< (std::ostream& os, const AtaStorageCapability& p);
 
 
 
 
 
 /// Holds one line of "attributes" subsection
-class StorageAttribute {
+class AtaStorageAttribute {
 	public:
 
 		/// Disk type the attribute may match
@@ -62,18 +62,7 @@ class StorageAttribute {
 		};
 
 		/// Get readable attribute type name
-		[[nodiscard]] static std::string get_attr_type_name(AttributeType type)
-		{
-			static const std::unordered_map<AttributeType, std::string> m {
-					{AttributeType::unknown, "[unknown]"},
-					{AttributeType::prefail, "pre-failure"},
-					{AttributeType::old_age, "old age"},
-			};
-			if (auto iter = m.find(type); iter != m.end()) {
-				return iter->second;
-			}
-			return "[internal_error]";
-		}
+		[[nodiscard]] static std::string get_attr_type_name(AttributeType type);
 
 
 		/// Attribute when-updated type
@@ -84,18 +73,7 @@ class StorageAttribute {
 		};
 
 		/// Get readable when-updated type name
-		[[nodiscard]] static std::string get_update_type_name(UpdateType type)
-		{
-			static const std::unordered_map<UpdateType, std::string> m {
-					{UpdateType::unknown, "[unknown]"},
-					{UpdateType::always, "continuously"},
-					{UpdateType::offline, "on offline data collect."},
-			};
-			if (auto iter = m.find(type); iter != m.end()) {
-				return iter->second;
-			}
-			return "[internal_error]";
-		}
+		[[nodiscard]] static std::string get_update_type_name(UpdateType type);
 
 
 		/// Attribute when-failed type
@@ -107,19 +85,7 @@ class StorageAttribute {
 		};
 
 		/// Get a readable when-failed type name
-		[[nodiscard]] static std::string get_fail_time_name(FailTime type)
-		{
-			static const std::unordered_map<FailTime, std::string> m {
-					{FailTime::unknown, "[unknown]"},
-					{FailTime::none, "never"},
-					{FailTime::past, "in the past"},
-					{FailTime::now, "now"},
-			};
-			if (auto iter = m.find(type); iter != m.end()) {
-				return iter->second;
-			}
-			return "[internal_error]";
-		}
+		[[nodiscard]] static std::string get_fail_time_name(FailTime type);
 
 
 		/// Format raw value with commas (if it's a number)
@@ -141,20 +107,17 @@ class StorageAttribute {
 
 
 /// Output operator for debug purposes
-std::ostream& operator<< (std::ostream& os, const StorageAttribute& p);
+std::ostream& operator<< (std::ostream& os, const AtaStorageAttribute& p);
 
 
 
 
 /// Holds one line of "devstat" subsection
-class StorageStatistic {
+class AtaStorageStatistic {
 	public:
 
 		/// Whether the normalization flag is present
-		[[nodiscard]] bool is_normalized() const
-		{
-			return flags.find('N') != std::string::npos;
-		}
+		[[nodiscard]] bool is_normalized() const;
 
 		/// Format value with commas (if it's a number)
 		[[nodiscard]] std::string format_value() const;
@@ -169,12 +132,12 @@ class StorageStatistic {
 
 
 /// Output operator for debug purposes
-std::ostream& operator<< (std::ostream& os, const StorageStatistic& p);
+std::ostream& operator<< (std::ostream& os, const AtaStorageStatistic& p);
 
 
 
 /// Holds one error block of "error log" subsection
-class StorageErrorBlock {
+class AtaStorageErrorBlock {
 	public:
 
 		/// Get readable error types from reported types
@@ -195,14 +158,14 @@ class StorageErrorBlock {
 
 
 /// Output operator for debug purposes
-std::ostream& operator<< (std::ostream& os, const StorageErrorBlock& b);
+std::ostream& operator<< (std::ostream& os, const AtaStorageErrorBlock& b);
 
 
 
 
 /// Holds one entry of selftest_log subsection.
 /// Also, holds "Self-test execution status" capability's "internal" section version.
-class StorageSelftestEntry {
+class AtaStorageSelftestEntry {
 	public:
 
 		/// Self-test log entry status
@@ -229,57 +192,14 @@ class StorageSelftestEntry {
 		};
 
 		/// Get log entry status displayable name
-		[[nodiscard]] static std::string get_status_displayable_name(Status s)
-		{
-			static const std::unordered_map<Status, std::string> m {
-					{Status::unknown, "[unknown]"},
-					{Status::completed_no_error, "Completed without error"},
-					{Status::aborted_by_host, "Manually aborted"},
-					{Status::interrupted, "Interrupted (host reset)"},
-					{Status::fatal_or_unknown, "Fatal or unknown error"},
-					{Status::compl_unknown_failure, "Completed with unknown failure"},
-					{Status::compl_electrical_failure, "Completed with electrical failure"},
-					{Status::compl_servo_failure, "Completed with servo/seek failure"},
-					{Status::compl_read_failure, "Completed with read failure"},
-					{Status::compl_handling_damage, "Completed: handling damage"},
-					{Status::in_progress, "In progress"},
-					{Status::reserved, "Unknown / reserved state"},
-			};
-			if (auto iter = m.find(s); iter != m.end()) {
-				return iter->second;
-			}
-			return "[internal_error]";
-		}
+		[[nodiscard]] static std::string get_status_displayable_name(Status s);
 
 		/// Get severity of error status
-		[[nodiscard]] static StatusSeverity get_status_severity(Status s)
-		{
-			static const std::unordered_map<Status, StatusSeverity> m {
-					{Status::unknown, StatusSeverity::none},
-					{Status::completed_no_error, StatusSeverity::none},
-					{Status::aborted_by_host, StatusSeverity::warning},
-					{Status::interrupted, StatusSeverity::warning},
-					{Status::fatal_or_unknown, StatusSeverity::error},
-					{Status::compl_unknown_failure, StatusSeverity::error},
-					{Status::compl_electrical_failure, StatusSeverity::error},
-					{Status::compl_servo_failure, StatusSeverity::error},
-					{Status::compl_read_failure, StatusSeverity::error},
-					{Status::compl_handling_damage, StatusSeverity::error},
-					{Status::in_progress, StatusSeverity::none},
-					{Status::reserved, StatusSeverity::none},
-			};
-			if (auto iter = m.find(s); iter != m.end()) {
-				return iter->second;
-			}
-			return StatusSeverity::none;
-		}
+		[[nodiscard]] static StatusSeverity get_status_severity(Status s);
 
 
 		/// Get error status as a string
-		[[nodiscard]] std::string get_status_str() const
-		{
-			return (status == Status::unknown ? status_str : get_status_displayable_name(status));
-		}
+		[[nodiscard]] std::string get_status_str() const;
 
 
 		/// Format lifetime hours with comma
@@ -297,13 +217,13 @@ class StorageSelftestEntry {
 
 
 /// Output operator for debug purposes
-std::ostream& operator<< (std::ostream& os, const StorageSelftestEntry& b);
+std::ostream& operator<< (std::ostream& os, const AtaStorageSelftestEntry& b);
 
 
 
 
 /// A single parser-extracted property
-class StorageProperty {
+class AtaStorageProperty {
 	public:
 
 		/// Sections in output
@@ -315,19 +235,7 @@ class StorageProperty {
 		};
 
 		/// Get displayable section type name
-		[[nodiscard]] static std::string get_section_name(Section s)
-		{
-			static const std::unordered_map<Section, std::string> m {
-					{Section::unknown, "unknown"},
-					{Section::info, "info"},
-					{Section::data, "data"},
-					{Section::internal, "internal"},
-			};
-			if (auto iter = m.find(s); iter != m.end()) {
-				return iter->second;
-			}
-			return "[internal_error]";
-		}
+		[[nodiscard]] static std::string get_section_name(Section s);
 
 
 		/// Subsections in smart data section
@@ -347,61 +255,15 @@ class StorageProperty {
 		};
 
 		/// Get displayable subsection type name
-		[[nodiscard]] static std::string get_subsection_name(SubSection s)
-		{
-			static const std::unordered_map<SubSection, std::string> m {
-					{SubSection::unknown, "unknown"},
-					{SubSection::health, "health"},
-					{SubSection::capabilities, "capabilities"},
-					{SubSection::attributes, "attributes"},
-					{SubSection::devstat, "devstat"},
-					{SubSection::error_log, "error_log"},
-					{SubSection::selftest_log, "selftest_log"},
-					{SubSection::selective_selftest_log, "selective_selftest_log"},
-					{SubSection::temperature_log, "temperature_log"},
-					{SubSection::erc_log, "erc_log"},
-					{SubSection::phy_log, "phy_log"},
-					{SubSection::directory_log, "directory_log"},
-			};
-			if (auto iter = m.find(s); iter != m.end()) {
-				return iter->second;
-			}
-			return "[internal_error]";
-		}
+		[[nodiscard]] static std::string get_subsection_name(SubSection s);
 
 
 		/// Get displayable value type name
-		[[nodiscard]] std::string get_value_type_name() const
-		{
-			if (std::holds_alternative<std::monostate>(value))
-				return "empty";
-			if (std::holds_alternative<std::string>(value))
-				return "string";
-			if (std::holds_alternative<int64_t>(value))
-				return "integer";
-			if (std::holds_alternative<bool>(value))
-				return "bool";
-			if (std::holds_alternative<std::chrono::seconds>(value))
-				return "time_length";
-			if (std::holds_alternative<StorageCapability>(value))
-				return "capability";
-			if (std::holds_alternative<StorageAttribute>(value))
-				return "attribute";
-			if (std::holds_alternative<StorageStatistic>(value))
-				return "statistic";
-			if (std::holds_alternative<StorageErrorBlock>(value))
-				return "error_block";
-			if (std::holds_alternative<StorageSelftestEntry>(value))
-				return "selftest_entry";
-			return "[internal_error]";
-		}
+		[[nodiscard]] std::string get_value_type_name() const;
 
 
 		/// Check if this is an empty object with no value set.
-		[[nodiscard]] bool empty() const
-		{
-			return std::holds_alternative<std::monostate>(value);
-		}
+		[[nodiscard]] bool empty() const;
 
 
 		/// Dump the property to a stream for debugging purposes
@@ -414,43 +276,24 @@ class StorageProperty {
 
 		/// Get value of type T
 		template<typename T>
-		const T& get_value() const
-		{
-			return std::get<T>(value);
-		}
+		const T& get_value() const;
 
 
 		/// Check if value is of type T
 		template<typename T>
-		[[nodiscard]] bool is_value_type() const
-		{
-			return std::holds_alternative<T>(value);
-		}
+		[[nodiscard]] bool is_value_type() const;
 
 
 		/// Get property description (used in tooltips)
-		[[nodiscard]] std::string get_description(bool clean = false) const
-		{
-			if (clean)
-				return this->description;
-			return (this->description.empty() ? "No description available" : this->description);
-		}
+		[[nodiscard]] std::string get_description(bool clean = false) const;
 
 
 		/// Set property description (used in tooltips)
-		void set_description(const std::string& descr)
-		{
-			this->description = descr;
-		}
+		void set_description(const std::string& descr);
 
 
 		/// Set smartctl-reported name, generic (internal) name, readable name
-		void set_name(const std::string& rep_name, const std::string& gen_name = "", const std::string& read_name = "")
-		{
-			this->reported_name = rep_name;
-			this->generic_name = (gen_name.empty() ? this->reported_name : gen_name);
-			this->displayable_name = (read_name.empty() ? this->reported_name : read_name);
-		}
+		void set_name(const std::string& rep_name, const std::string& gen_name = "", const std::string& read_name = "");
 
 
 		std::string reported_name;  ///< Property name as reported by smartctl.
@@ -471,11 +314,11 @@ class StorageProperty {
 			int64_t,   ///< Value (if it's an integer)
 			bool,  ///< Value (if it's bool)
 			std::chrono::seconds,  ///< Value in seconds (if it's time interval)
-			StorageCapability,  ///< Value (if it's a capability)
-			StorageAttribute,  ///< Value (if it's an attribute)
-			StorageStatistic,  ///< Value (if it's a statistic from devstat)
-			StorageErrorBlock,  ///< Value (if it's a error block)
-			StorageSelftestEntry  ///< Value (if it's a self-test entry)
+			AtaStorageCapability,  ///< Value (if it's a capability)
+			AtaStorageAttribute,  ///< Value (if it's an attribute)
+			AtaStorageStatistic,  ///< Value (if it's a statistic from devstat)
+			AtaStorageErrorBlock,  ///< Value (if it's a error block)
+			AtaStorageSelftestEntry  ///< Value (if it's a self-test entry)
 		> value;
 
 		WarningLevel warning = WarningLevel::none;  ///< Warning severity for this property
@@ -489,12 +332,29 @@ class StorageProperty {
 
 
 /// Output operator for debug purposes
-inline std::ostream& operator<< (std::ostream& os, const StorageProperty& p)
+std::ostream& operator<< (std::ostream& os, const AtaStorageProperty& p);
+
+
+
+
+
+// ------------------------------------------- Implementation
+
+
+
+template<typename T>
+const T& AtaStorageProperty::get_value() const
 {
-	p.dump(os);
-	return os;
+	return std::get<T>(value);
 }
 
+
+
+template<typename T>
+bool AtaStorageProperty::is_value_type() const
+{
+	return std::holds_alternative<T>(value);
+}
 
 
 

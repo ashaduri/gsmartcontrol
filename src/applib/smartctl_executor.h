@@ -82,7 +82,7 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 
 			// check every bit
 			for (unsigned int i = 0; i <= 7; i++) {
-				if (status & (1 << i)) {
+				if ( (status & (1 << i)) != 0 ) {
 					if (!str.empty())
 						str += "\n";  // new-line-separate each entry
 					str += table[i];

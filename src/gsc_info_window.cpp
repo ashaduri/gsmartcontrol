@@ -23,8 +23,8 @@ Copyright:
 #include "hz/format_unit.h"  // format_time_length
 #include "rconfig/rconfig.h"  // rconfig::*
 
-#include "applib/app_gtkmm_utils.h"  // app_gtkmm_*
-#include "applib/storage_property_colors.h"
+#include "applib/app_gtkmm_tools.h"  // app_gtkmm_*
+#include "applib/warning_colors.h"
 #include "applib/gui_utils.h"  // gui_show_error_dialog
 #include "applib/smartctl_executor_gui.h"
 
@@ -39,15 +39,15 @@ using namespace std::literals;
 
 
 
-/// A label for StorageProperty
+/// A label for AtaStorageProperty
 struct PropertyLabel {
 	/// Constructor
-	PropertyLabel(std::string label_, const StorageProperty* prop, bool markup_ = false) :
+	PropertyLabel(std::string label_, const AtaStorageProperty* prop, bool markup_ = false) :
 		label(std::move(label_)), property(prop), markup(markup_)
 	{ }
 
 	std::string label;  ///< Label text
-	const StorageProperty* property = nullptr;  ///< Storage property
+	const AtaStorageProperty* property = nullptr;  ///< Storage property
 	bool markup = false;  ///< Whether the label text uses markup
 };
 
@@ -114,9 +114,9 @@ namespace {
 
 	/// Cell renderer functions for list cells
 	inline void app_list_cell_renderer_func(Gtk::CellRenderer* cr, const Gtk::TreeModel::iterator& iter,
-			Gtk::TreeModelColumn<const StorageProperty*> storage_column)
+			Gtk::TreeModelColumn<const AtaStorageProperty*> storage_column)
 	{
-		const StorageProperty* p = (*iter)[storage_column];
+		const AtaStorageProperty* p = (*iter)[storage_column];
 		if (auto* crt = dynamic_cast<Gtk::CellRendererText*>(cr)) {
 			std::string fg, bg;
 			if (app_property_get_row_highlight_colors(p->warning, fg, bg)) {
@@ -130,7 +130,7 @@ namespace {
 				crt->property_cell_background().reset_value();
 				crt->property_foreground().reset_value();
 			}
-			if (p->is_value_type<StorageStatistic>() && p->get_value<StorageStatistic>().is_header) {
+			if (p->is_value_type<AtaStorageStatistic>() && p->get_value<AtaStorageStatistic>().is_header) {
 				crt->property_weight() = Pango::WEIGHT_BOLD;
 			} else {
 				crt->property_weight().reset_value();
@@ -358,7 +358,7 @@ void GscInfoWindow::set_drive(StorageDevicePtr d)
 	if (drive)  // if an old drive is present, disconnect our callback from it.
 		drive_changed_connection.disconnect();
 	drive = std::move(d);
-	drive_changed_connection = drive->signal_changed.connect(sigc::mem_fun(this,
+	drive_changed_connection = drive->signal_changed().connect(sigc::mem_fun(this,
 			&GscInfoWindow::on_drive_changed));
 }
 
@@ -867,13 +867,13 @@ void GscInfoWindow::on_test_type_combo_changed()
 
 
 
-void GscInfoWindow::fill_ui_general(const std::vector<StorageProperty>& props)
+void GscInfoWindow::fill_ui_general(const std::vector<AtaStorageProperty>& props)
 {
 	// filter out some properties
-	std::vector<StorageProperty> id_props, version_props, health_props;
+	std::vector<AtaStorageProperty> id_props, version_props, health_props;
 
 	for (auto&& p : props) {
-		if (p.section == StorageProperty::Section::info) {
+		if (p.section == AtaStorageProperty::Section::info) {
 			if (p.generic_name == "smartctl_version_full") {
 				version_props.push_back(p);
 			} else if (p.generic_name == "smartctl_version") {
@@ -881,7 +881,7 @@ void GscInfoWindow::fill_ui_general(const std::vector<StorageProperty>& props)
 			} else {
 				id_props.push_back(p);
 			}
-		} else if (p.section == StorageProperty::Section::data && p.subsection == StorageProperty::SubSection::health) {
+		} else if (p.section == AtaStorageProperty::Section::data && p.subsection == AtaStorageProperty::SubSection::health) {
 			health_props.push_back(p);
 		}
 	}
@@ -958,7 +958,7 @@ void GscInfoWindow::fill_ui_general(const std::vector<StorageProperty>& props)
 
 
 
-void GscInfoWindow::fill_ui_attributes(const std::vector<StorageProperty>& props)
+void GscInfoWindow::fill_ui_attributes(const std::vector<AtaStorageProperty>& props)
 {
 	auto* treeview = lookup_widget<Gtk::TreeView*>("attributes_treeview");
 
@@ -1035,7 +1035,7 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<StorageProperty>& props
 	treeview->set_tooltip_column(col_tooltip.index());
 
 
-	Gtk::TreeModelColumn<const StorageProperty*> col_storage;
+	Gtk::TreeModelColumn<const AtaStorageProperty*> col_storage;
 	model_columns.add(col_storage);
 
 
@@ -1055,11 +1055,11 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<StorageProperty>& props
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (const auto& p : props) {
-		if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::attributes)
+		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::attributes)
 			continue;
 
 		// add non-attribute-type properties to label above
-		if (!p.is_value_type<StorageAttribute>()) {
+		if (!p.is_value_type<AtaStorageAttribute>()) {
 			label_strings.emplace_back(p.displayable_name + ": " + p.format_value(), &p);
 
 			if (int(p.warning) > int(max_tab_warning))
@@ -1067,14 +1067,14 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<StorageProperty>& props
 			continue;
 		}
 
-		const auto& attr = p.get_value<StorageAttribute>();
+		const auto& attr = p.get_value<AtaStorageAttribute>();
 
-		std::string attr_type = StorageAttribute::get_attr_type_name(attr.attr_type);
-		if (attr.attr_type == StorageAttribute::AttributeType::prefail)
+		std::string attr_type = AtaStorageAttribute::get_attr_type_name(attr.attr_type);
+		if (attr.attr_type == AtaStorageAttribute::AttributeType::prefail)
 			attr_type.append("<b>").append(attr_type).append("</b>");
 
-		std::string fail_time = StorageAttribute::get_fail_time_name(attr.when_failed);
-		if (attr.when_failed != StorageAttribute::FailTime::none)
+		std::string fail_time = AtaStorageAttribute::get_fail_time_name(attr.when_failed);
+		if (attr.when_failed != AtaStorageAttribute::FailTime::none)
 			fail_time.append("<b>").append(fail_time).append("</b>");
 
 		Gtk::TreeRow row = *(list_store->append());
@@ -1087,7 +1087,7 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<StorageProperty>& props
 		row[col_threshold] = (attr.threshold.has_value() ? hz::number_to_string_locale(attr.threshold.value()) : "-");
 		row[col_raw] = attr.format_raw_value();
 		row[col_type] = attr_type;
-// 			row[col_updated] = StorageAttribute::get_update_type_name(attr.update_type);
+// 			row[col_updated] = AtaStorageAttribute::get_update_type_name(attr.update_type);
 		row[col_failed] = fail_time;
 		row[col_tooltip] = p.get_description();
 		row[col_storage] = &p;
@@ -1106,7 +1106,7 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<StorageProperty>& props
 
 
 
-void GscInfoWindow::fill_ui_statistics(const std::vector<StorageProperty>& props)
+void GscInfoWindow::fill_ui_statistics(const std::vector<AtaStorageProperty>& props)
 {
 	auto* treeview = lookup_widget<Gtk::TreeView*>("statistics_treeview");
 
@@ -1145,7 +1145,7 @@ void GscInfoWindow::fill_ui_statistics(const std::vector<StorageProperty>& props
 	model_columns.add(col_tooltip);
 	treeview->set_tooltip_column(col_tooltip.index());
 
-	Gtk::TreeModelColumn<const StorageProperty*> col_storage;
+	Gtk::TreeModelColumn<const AtaStorageProperty*> col_storage;
 	model_columns.add(col_storage);
 
 
@@ -1164,11 +1164,11 @@ void GscInfoWindow::fill_ui_statistics(const std::vector<StorageProperty>& props
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (const auto& p : props) {
-		if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::devstat)
+		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::devstat)
 			continue;
 
 		// add non-entry-type properties to label above
-		if (!p.is_value_type<StorageStatistic>()) {
+		if (!p.is_value_type<AtaStorageStatistic>()) {
 			label_strings.emplace_back(p.displayable_name + ": " + p.format_value(), &p);
 
 			if (int(p.warning) > int(max_tab_warning))
@@ -1178,7 +1178,7 @@ void GscInfoWindow::fill_ui_statistics(const std::vector<StorageProperty>& props
 
 		Gtk::TreeRow row = *(list_store->append());
 
-		const auto& st = p.get_value<StorageStatistic>();
+		const auto& st = p.get_value<AtaStorageStatistic>();
 		row[col_description] = (st.is_header ? p.displayable_name : ("    " + p.displayable_name));
 		row[col_value] = st.format_value();
 		row[col_flags] = st.flags;  // it's a string, not int.
@@ -1286,7 +1286,7 @@ void GscInfoWindow::fill_ui_self_test_info()
 
 
 
-void GscInfoWindow::fill_ui_self_test_log(const std::vector<StorageProperty>& props)
+void GscInfoWindow::fill_ui_self_test_log(const std::vector<AtaStorageProperty>& props)
 {
 	auto* treeview = lookup_widget<Gtk::TreeView*>("selftest_log_treeview");
 
@@ -1333,7 +1333,7 @@ void GscInfoWindow::fill_ui_self_test_log(const std::vector<StorageProperty>& pr
 	model_columns.add(col_tooltip);
 	treeview->set_tooltip_column(col_tooltip.index());
 
-	Gtk::TreeModelColumn<const StorageProperty*> col_storage;
+	Gtk::TreeModelColumn<const AtaStorageProperty*> col_storage;
 	model_columns.add(col_storage);
 
 
@@ -1353,14 +1353,14 @@ void GscInfoWindow::fill_ui_self_test_log(const std::vector<StorageProperty>& pr
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (auto&& p : props) {
-		if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::selftest_log)
+		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::selftest_log)
 			continue;
 
 		if (p.generic_name == "selftest_log")  // the whole section, we don't need it
 			continue;
 
 		// add non-entry properties to label above
-		if (!p.is_value_type<StorageSelftestEntry>()) {
+		if (!p.is_value_type<AtaStorageSelftestEntry>()) {
 			label_strings.emplace_back(p.displayable_name + ": " + p.format_value(), &p);
 
 			if (int(p.warning) > int(max_tab_warning))
@@ -1370,7 +1370,7 @@ void GscInfoWindow::fill_ui_self_test_log(const std::vector<StorageProperty>& pr
 
 		Gtk::TreeRow row = *(list_store->append());
 
-		const auto& sse = p.get_value<StorageSelftestEntry>();
+		const auto& sse = p.get_value<AtaStorageSelftestEntry>();
 
 		row[col_num] = sse.test_num;
 		row[col_type] = sse.type;
@@ -1397,7 +1397,7 @@ void GscInfoWindow::fill_ui_self_test_log(const std::vector<StorageProperty>& pr
 
 
 
-void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
+void GscInfoWindow::fill_ui_error_log(const std::vector<AtaStorageProperty>& props)
 {
 	auto* treeview = lookup_widget<Gtk::TreeView*>("error_log_treeview");
 
@@ -1437,7 +1437,7 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
 	model_columns.add(col_tooltip);
 	treeview->set_tooltip_column(col_tooltip.index());
 
-	Gtk::TreeModelColumn<const StorageProperty*> col_storage;
+	Gtk::TreeModelColumn<const AtaStorageProperty*> col_storage;
 	model_columns.add(col_storage);
 
 	Gtk::TreeModelColumn<Glib::ustring> col_mark_name;
@@ -1460,7 +1460,7 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (auto&& p : props) {
-		if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::error_log)
+		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::error_log)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1494,13 +1494,13 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
 
 
 			// add non-tree properties to label above
-		} else if (!p.is_value_type<StorageErrorBlock>()) {
+		} else if (!p.is_value_type<AtaStorageErrorBlock>()) {
 			label_strings.emplace_back(p.displayable_name + ": " + p.format_value(), &p);
 			if (p.generic_name == "error_log_error_count")
 				label_strings.back().label += " "s + _("(Note: The number of entries may be limited to the newest ones)");
 
 		} else {
-			const auto& eb = p.get_value<StorageErrorBlock>();
+			const auto& eb = p.get_value<AtaStorageErrorBlock>();
 
 			std::string type_details = eb.type_more_info;
 
@@ -1508,7 +1508,7 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
 			row[col_num] = eb.error_num;
 			row[col_hours] = eb.format_lifetime_hours();
 			row[col_state] = eb.device_state;
-			row[col_type] = StorageErrorBlock::get_displayable_error_types(eb.reported_types);
+			row[col_type] = AtaStorageErrorBlock::get_displayable_error_types(eb.reported_types);
 			row[col_details] = (type_details.empty() ? "-" : type_details);  // e.g. OBS has no details
 			// There are no descriptions in self-test log entries, so don't display
 			// "No description available" for all of them.
@@ -1530,7 +1530,7 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
 
 
 
-void GscInfoWindow::fill_ui_temperature_log(const std::vector<StorageProperty>& props)
+void GscInfoWindow::fill_ui_temperature_log(const std::vector<AtaStorageProperty>& props)
 {
 	auto* textview = lookup_widget<Gtk::TextView*>("temperature_log_textview");
 
@@ -1538,7 +1538,7 @@ void GscInfoWindow::fill_ui_temperature_log(const std::vector<StorageProperty>& 
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	std::string temperature;
-	StorageProperty temp_property;
+	AtaStorageProperty temp_property;
 	enum { temp_attr2 = 1, temp_attr1, temp_stat, temp_sct };  // less important to more important
 	int temp_prop_source = 0;
 
@@ -1550,22 +1550,22 @@ void GscInfoWindow::fill_ui_temperature_log(const std::vector<StorageProperty>& 
 			temp_prop_source = temp_sct;
 		}
 		if (temp_prop_source < temp_stat && p.generic_name == "stat_temperature_celsius") {
-			temperature = hz::number_to_string_locale(p.get_value<StorageStatistic>().value_int);
+			temperature = hz::number_to_string_locale(p.get_value<AtaStorageStatistic>().value_int);
 			temp_property = p;
 			temp_prop_source = temp_stat;
 		}
 		if (temp_prop_source < temp_attr1 && p.generic_name == "attr_temperature_celsius") {
-			temperature = hz::number_to_string_locale(p.get_value<StorageAttribute>().raw_value_int);
+			temperature = hz::number_to_string_locale(p.get_value<AtaStorageAttribute>().raw_value_int);
 			temp_property = p;
 			temp_prop_source = temp_attr1;
 		}
 		if (temp_prop_source < temp_attr2 && p.generic_name == "attr_temperature_celsius_x10") {
-			temperature = hz::number_to_string_locale(p.get_value<StorageAttribute>().raw_value_int / 10);
+			temperature = hz::number_to_string_locale(p.get_value<AtaStorageAttribute>().raw_value_int / 10);
 			temp_property = p;
 			temp_prop_source = temp_attr2;
 		}
 
-		if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::temperature_log)
+		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::temperature_log)
 			continue;
 
 		if (p.generic_name == "sct_unsupported" && p.get_value<bool>()) {  // only show if unsupported
@@ -1602,7 +1602,7 @@ void GscInfoWindow::fill_ui_temperature_log(const std::vector<StorageProperty>& 
 
 
 
-WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<StorageProperty>& props)
+WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<AtaStorageProperty>& props)
 {
 	auto* treeview = lookup_widget<Gtk::TreeView*>("capabilities_treeview");
 
@@ -1635,7 +1635,7 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<StorageProper
 	model_columns.add(col_tooltip);
 	treeview->set_tooltip_column(col_tooltip.index());
 
-	Gtk::TreeModelColumn<const StorageProperty*> col_storage;
+	Gtk::TreeModelColumn<const AtaStorageProperty*> col_storage;
 	model_columns.add(col_storage);
 
 
@@ -1655,16 +1655,16 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<StorageProper
 	int index = 1;
 
 	for (auto&& p : props) {
-		if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::capabilities)
+		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::capabilities)
 			continue;
 
 		Glib::ustring name = p.displayable_name;
 		std::string flag_value;
 		Glib::ustring str_value;
 
-		if (p.is_value_type<StorageCapability>()) {
-			flag_value = hz::number_to_string_nolocale(p.get_value<StorageCapability>().flag_value, 16);  // 0xXX
-			str_value = hz::string_join(p.get_value<StorageCapability>().strvalues, "\n");
+		if (p.is_value_type<AtaStorageCapability>()) {
+			flag_value = hz::number_to_string_nolocale(p.get_value<AtaStorageCapability>().flag_value, 16);  // 0xXX
+			str_value = hz::string_join(p.get_value<AtaStorageCapability>().strvalues, "\n");
 		} else {
 			// no flag value here
 			str_value = p.format_value();
@@ -1692,14 +1692,14 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<StorageProper
 
 
 
-WarningLevel GscInfoWindow::fill_ui_error_recovery(const std::vector<StorageProperty>& props)
+WarningLevel GscInfoWindow::fill_ui_error_recovery(const std::vector<AtaStorageProperty>& props)
 {
 	auto* textview = lookup_widget<Gtk::TextView*>("erc_log_textview");
 
 	WarningLevel max_tab_warning = WarningLevel::none;
 
 	for (auto&& p : props) {
-		if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::erc_log)
+		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::erc_log)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1717,14 +1717,14 @@ WarningLevel GscInfoWindow::fill_ui_error_recovery(const std::vector<StorageProp
 
 
 
-WarningLevel GscInfoWindow::fill_ui_selective_self_test_log(const std::vector<StorageProperty>& props)
+WarningLevel GscInfoWindow::fill_ui_selective_self_test_log(const std::vector<AtaStorageProperty>& props)
 {
 	auto* textview = lookup_widget<Gtk::TextView*>("selective_selftest_log_textview");
 
 	WarningLevel max_tab_warning = WarningLevel::none;
 
 	for (auto&& p : props) {
-		if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::selective_selftest_log)
+		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::selective_selftest_log)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1742,14 +1742,14 @@ WarningLevel GscInfoWindow::fill_ui_selective_self_test_log(const std::vector<St
 
 
 
-WarningLevel GscInfoWindow::fill_ui_physical(const std::vector<StorageProperty>& props)
+WarningLevel GscInfoWindow::fill_ui_physical(const std::vector<AtaStorageProperty>& props)
 {
 	auto* textview = lookup_widget<Gtk::TextView*>("phy_log_textview");
 
 	WarningLevel max_tab_warning = WarningLevel::none;
 
 	for (auto&& p : props) {
-		if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::phy_log)
+		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::phy_log)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1767,14 +1767,14 @@ WarningLevel GscInfoWindow::fill_ui_physical(const std::vector<StorageProperty>&
 
 
 
-WarningLevel GscInfoWindow::fill_ui_directory(const std::vector<StorageProperty>& props)
+WarningLevel GscInfoWindow::fill_ui_directory(const std::vector<AtaStorageProperty>& props)
 {
 	auto* textview = lookup_widget<Gtk::TextView*>("directory_log_textview");
 
 	WarningLevel max_tab_warning = WarningLevel::none;
 
 	for (auto&& p : props) {
-		if (p.section != StorageProperty::Section::data || p.subsection != StorageProperty::SubSection::directory_log)
+		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::directory_log)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1891,25 +1891,25 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 	self->test_timer_poll.stop();  // just in case
 	self->test_timer_bar.stop();  // just in case
 
-	StorageSelftestEntry::Status status = self->current_test->get_status();
+	AtaStorageSelftestEntry::Status status = self->current_test->get_status();
 
 	bool aborted = false;
-	StorageSelftestEntry::StatusSeverity severity = StorageSelftestEntry::StatusSeverity::none;
+	AtaStorageSelftestEntry::StatusSeverity severity = AtaStorageSelftestEntry::StatusSeverity::none;
 	std::string result_msg;
 
 	if (!self->test_error_msg.empty()) {
 		aborted = true;
-		severity = StorageSelftestEntry::StatusSeverity::error;
+		severity = AtaStorageSelftestEntry::StatusSeverity::error;
 		result_msg = Glib::ustring::compose(_("<b>Test aborted:</b> %1"), self->test_error_msg);
 
 	} else {
-		severity = StorageSelftestEntry::get_status_severity(status);
-		if (status == StorageSelftestEntry::Status::aborted_by_host) {
+		severity = AtaStorageSelftestEntry::get_status_severity(status);
+		if (status == AtaStorageSelftestEntry::Status::aborted_by_host) {
 			aborted = true;
 			result_msg = "<b>"s + _("Test was manually aborted.") + "</b>";  // it's a StatusSeverity::none message
 
 		} else {
-			result_msg = Glib::ustring::compose(_("<b>Test result:</b> %1."), StorageSelftestEntry::get_status_displayable_name(status));
+			result_msg = Glib::ustring::compose(_("<b>Test result:</b> %1."), AtaStorageSelftestEntry::get_status_displayable_name(status));
 
 			// It may not reach 100% somehow, so do it manually.
 			if (test_completion_progressbar)
@@ -1917,7 +1917,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 		}
 	}
 
-	if (severity != StorageSelftestEntry::StatusSeverity::none) {
+	if (severity != AtaStorageSelftestEntry::StatusSeverity::none) {
 		result_msg += "\n"s + _("Check the Self-Test Log for more information.");
 	}
 
@@ -1935,9 +1935,9 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 		test_stop_button->set_sensitive(false);
 
 	Gtk::StockID stock_id = Gtk::Stock::DIALOG_ERROR;
-	if (severity == StorageSelftestEntry::StatusSeverity::none) {
+	if (severity == AtaStorageSelftestEntry::StatusSeverity::none) {
 		stock_id = Gtk::Stock::DIALOG_INFO;
-	} else if (severity == StorageSelftestEntry::StatusSeverity::warning) {
+	} else if (severity == AtaStorageSelftestEntry::StatusSeverity::warning) {
 		stock_id = Gtk::Stock::DIALOG_WARNING;
 	}
 

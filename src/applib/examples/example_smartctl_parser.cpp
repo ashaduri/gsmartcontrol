@@ -20,8 +20,8 @@ Copyright:
 
 #include "libdebug/libdebug.h"
 #include "hz/fs.h"
-#include "applib/storage_property.h"
-#include "applib/smartctl_parser.h"
+#include "applib/ata_storage_property.h"
+#include "applib/smartctl_text_parser.h"
 
 
 
@@ -42,13 +42,13 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	SmartctlParser sp;
-	if (!sp.parse_full(contents, StorageAttribute::DiskType::Any)) {
+	SmartctlTextParser sp;
+	if (!sp.parse_full(contents, AtaStorageAttribute::DiskType::Any)) {
 		debug_out_error("app", "Cannot parse file contents: " << sp.get_error_msg() << "\n");
 		return EXIT_FAILURE;
 	}
 
-	const std::vector<StorageProperty>& props = sp.get_properties();
+	const std::vector<AtaStorageProperty>& props = sp.get_properties();
 	for(const auto& prop : props) {
 		debug_out_dump("app", prop << "\n");
 	}

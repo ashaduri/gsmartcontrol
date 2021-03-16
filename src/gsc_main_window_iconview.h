@@ -22,8 +22,8 @@ Copyright:
 #include "hz/string_algo.h"  // string_join
 #include "hz/debug.h"
 #include "hz/data_file.h"  // data_file_find
-#include "applib/app_gtkmm_utils.h"
-#include "applib/storage_property_colors.h"
+#include "applib/app_gtkmm_tools.h"
+#include "applib/warning_colors.h"
 
 #include "gsc_main_window.h"
 #include "rconfig/rconfig.h"
@@ -229,7 +229,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 			this->decorate_entry(row);
 
-			drive->signal_changed.connect(sigc::mem_fun(this, &GscMainWindowIconView::on_drive_changed));
+			drive->signal_changed().connect(sigc::mem_fun(this, &GscMainWindowIconView::on_drive_changed));
 
 			if (scroll_to_it) {
 				Gtk::TreeModel::Path tpath(row);
@@ -296,7 +296,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 			if (rconfig::get_data<bool>("gui/icons_show_serial_number") && !drive->get_serial_number().empty()) {
 				name += "\n" + Glib::Markup::escape_text(drive->get_serial_number());
 			}
-			StorageProperty scan_time_prop;
+			AtaStorageProperty scan_time_prop;
 			if (drive->get_is_virtual()) {
 				scan_time_prop = drive->lookup_property("scan_time");
 				if (!scan_time_prop.empty() && !scan_time_prop.get_value<std::string>().empty()) {
@@ -343,7 +343,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 					break;
 			}
 
-			StorageProperty health_prop = drive->get_health_property();
+			AtaStorageProperty health_prop = drive->get_health_property();
 			if (health_prop.warning != WarningLevel::none && health_prop.generic_name == "overall_health") {
 				if (icon) {
 					icon = icon->copy();  // work on a copy

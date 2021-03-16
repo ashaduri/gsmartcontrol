@@ -9,19 +9,19 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#ifndef STORAGE_PROPERTY_DESCR_H
-#define STORAGE_PROPERTY_DESCR_H
+#ifndef ATA_STORAGE_PROPERTY_DESCR_H
+#define ATA_STORAGE_PROPERTY_DESCR_H
 
-#include "storage_property.h"
+#include "ata_storage_property.h"
 
 
 
 /// Fill the property with all the information we can gather (description, etc...).
-bool storage_property_autoset_description(StorageProperty& p, StorageAttribute::DiskType disk_type);
+bool ata_storage_property_autoset_description(AtaStorageProperty& p, AtaStorageAttribute::DiskType disk_type);
 
 
 /// Do some basic checks on the property and set warnings if needed.
-WarningLevel storage_property_autoset_warning(StorageProperty& p);
+WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p);
 
 
 

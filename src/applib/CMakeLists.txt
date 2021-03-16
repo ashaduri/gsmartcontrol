@@ -10,10 +10,13 @@ target_sources(applib PRIVATE
 	async_command_executor.cpp
 	async_command_executor.h
 	app_builder_widget.h
-	app_gtkmm_features.h
-	app_gtkmm_utils.cpp
-	app_gtkmm_utils.h
+	app_gtkmm_tools.cpp
+	app_gtkmm_tools.h
 	app_pcrecpp.h
+	ata_storage_property.cpp
+	ata_storage_property.h
+	ata_storage_property_descr.cpp
+	ata_storage_property_descr.h
 	command_executor.h
 	command_executor.cpp
 	command_executor_3ware.h
@@ -29,8 +32,8 @@ target_sources(applib PRIVATE
 	smartctl_executor.cpp
 	smartctl_executor_gui.h
 	smartctl_executor.h
-	smartctl_parser.cpp
-	smartctl_parser.h
+	smartctl_text_parser.cpp
+	smartctl_text_parser.h
 	storage_detector.cpp
 	storage_detector.h
 	storage_detector_helpers.h
@@ -42,12 +45,8 @@ target_sources(applib PRIVATE
 	storage_detector_win32.h
 	storage_device.cpp
 	storage_device.h
-	storage_property_colors.h
-	storage_property.cpp
-	storage_property_descr.cpp
-	storage_property_descr.h
-	storage_property.h
 	storage_settings.h
+	warning_colors.h
 	warning_level.h
 )
 

@@ -15,7 +15,7 @@ Copyright:
 
 #include "hz/fs_ns.h"
 #include "hz/string_sprintf.h"
-#include "applib/app_gtkmm_utils.h"
+#include "applib/app_gtkmm_tools.h"
 
 #include "gsc_add_device_window.h"
 #include "gsc_main_window.h"

@@ -22,9 +22,8 @@ Copyright:
 #include "hz/fs.h"
 #include "rconfig/rconfig.h"
 
-#include "applib/app_gtkmm_features.h"
 #include "applib/app_builder_widget.h"
-#include "applib/app_gtkmm_utils.h"
+#include "applib/app_gtkmm_tools.h"
 
 
 

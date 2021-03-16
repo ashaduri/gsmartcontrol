@@ -9,12 +9,12 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#ifndef STORAGE_PROPERTY_COLORS_H
-#define STORAGE_PROPERTY_COLORS_H
+#ifndef WARNING_COLORS_H
+#define WARNING_COLORS_H
 
 #include "local_glibmm.h"
 
-#include "storage_property.h"
+#include "ata_storage_property.h"
 
 
 
@@ -62,7 +62,7 @@ inline bool app_property_get_label_highlight_color(WarningLevel warning, std::st
 
 
 /// Format warning text, but without description
-inline std::string storage_property_get_warning_reason(const StorageProperty& p)
+inline std::string storage_property_get_warning_reason(const AtaStorageProperty& p)
 {
 	std::string fg, start = "<b>", stop = "</b>";
 	if (app_property_get_label_highlight_color(p.warning, fg)) {
@@ -70,17 +70,19 @@ inline std::string storage_property_get_warning_reason(const StorageProperty& p)
 		stop = "</span>" + stop;
 	}
 
-	if (p.warning == WarningLevel::notice) {
-		/// Translators: %1 and %2 are HTML tags, %3 is a message.
-		return Glib::ustring::compose(_("%1Notice:%2 %3"), start, stop, p.warning_reason);
-
-	} else if (p.warning == WarningLevel::warning) {
-		/// Translators: %1 and %2 are HTML tags, %3 is a message.
-		return Glib::ustring::compose(_("%1Warning:%2 %3"), start, stop, p.warning_reason);
-
-	} else if (p.warning == WarningLevel::alert) {
-		/// Translators: %1 and %2 are HTML tags, %3 is a message.
-		return Glib::ustring::compose(_("%1ALERT:%2 %3"), start, stop, p.warning_reason);
+	switch (p.warning) {
+		case WarningLevel::none:
+			// nothing
+			break;
+		case WarningLevel::notice:
+			/// Translators: %1 and %2 are HTML tags, %3 is a message.
+			return Glib::ustring::compose(_("%1Notice:%2 %3"), start, stop, p.warning_reason);
+		case WarningLevel::warning:
+			/// Translators: %1 and %2 are HTML tags, %3 is a message.
+			return Glib::ustring::compose(_("%1Warning:%2 %3"), start, stop, p.warning_reason);
+		case WarningLevel::alert:
+			/// Translators: %1 and %2 are HTML tags, %3 is a message.
+			return Glib::ustring::compose(_("%1ALERT:%2 %3"), start, stop, p.warning_reason);
 	}
 
 	return std::string();
@@ -90,7 +92,7 @@ inline std::string storage_property_get_warning_reason(const StorageProperty& p)
 
 
 /// Append warning text to description and set it on the property
-inline void storage_property_autoset_warning_descr(StorageProperty& p)
+inline void storage_property_autoset_warning_descr(AtaStorageProperty& p)
 {
 	std::string reason = storage_property_get_warning_reason(p);
 	p.set_description(p.get_description() + (reason.empty() ? "" : "\n\n" + reason));

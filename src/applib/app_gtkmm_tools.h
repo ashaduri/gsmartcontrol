@@ -9,11 +9,27 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#ifndef APP_GTKMM_UTILS_H
-#define APP_GTKMM_UTILS_H
+#ifndef APP_GTKMM_TOOLS_H
+#define APP_GTKMM_TOOLS_H
 
 #include <string>
 #include <gtkmm.h>
+
+
+
+/// \def APP_GTKMM_CHECK_VERSION(major, minor, micro)
+/// Similar to GTK_CHECK_VERSION, but for Gtkmm, which lacks this before gtkmm4.
+/// This is useful as Gtk and Gtkmm versions may differ.
+#ifndef APP_GTKMM_CHECK_VERSION
+	#define APP_GTKMM_CHECK_VERSION(major, minor, micro) \
+		(GTKMM_MAJOR_VERSION > (major) \
+			|| (GTKMM_MAJOR_VERSION == (major) && (GTKMM_MINOR_VERSION > (minor) \
+				|| (GTKMM_MINOR_VERSION == (minor) && GTKMM_MICRO_VERSION >= (micro)) \
+				) \
+			) \
+		)
+#endif
+
 
 
 

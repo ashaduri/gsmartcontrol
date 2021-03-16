@@ -21,12 +21,12 @@ Copyright:
 #include "hz/fs.h"
 #include "rconfig/rconfig.h"
 #include "applib/storage_detector.h"
-#include "applib/smartctl_parser.h"
+#include "applib/smartctl_text_parser.h"
 #include "applib/gui_utils.h"  // gui_show_error_dialog
 #include "applib/smartctl_executor.h"  // get_smartctl_binary()
 #include "applib/smartctl_executor_gui.h"
-#include "applib/app_gtkmm_utils.h"  // app_gtkmm_*
-#include "applib/storage_property_colors.h"  // app_property_get_label_highlight_color
+#include "applib/app_gtkmm_tools.h"  // app_gtkmm_*
+#include "applib/warning_colors.h"  // app_property_get_label_highlight_color
 #include "applib/app_pcrecpp.h"  // app_pcre_match
 
 #include "gsc_init.h"  // app_quit()
@@ -118,7 +118,7 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 		}
 
 		std::string version, version_full;
-		if (!SmartctlParser::parse_version(output, version, version_full)) {
+		if (!SmartctlTextParser::parse_version(output, version, version_full)) {
 			error_msg = _("Smartctl returned invalid output.");
 			break;
 		}
@@ -941,7 +941,7 @@ void GscMainWindow::update_status_widgets()
 		app_gtkmm_set_widget_tooltip(*name_label_, info_str, false);  // in case it doesn't fit
 	}
 
-	StorageProperty health_prop = drive->get_health_property();
+	AtaStorageProperty health_prop = drive->get_health_property();
 
 	if (health_label_) {
 		if (health_prop.generic_name == "overall_health") {

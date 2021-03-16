@@ -16,8 +16,7 @@ Copyright:
 #include <cstddef>  // std::size_t
 #include <memory>
 
-#include "applib/app_gtkmm_utils.h"  // app_gtkmm_create_tree_view_column
-#include "applib/app_gtkmm_features.h"
+#include "applib/app_gtkmm_tools.h"  // app_gtkmm_create_tree_view_column
 #include "hz/fs.h"
 #include "rconfig/rconfig.h"
 

@@ -21,7 +21,7 @@ Copyright:
 #include "hz/string_sprintf.h"
 #include "rconfig/rconfig.h"
 #include "applib/storage_settings.h"
-#include "applib/app_gtkmm_utils.h"
+#include "applib/app_gtkmm_tools.h"
 #include "gsc_main_window.h"
 
 #include "gsc_preferences_window.h"

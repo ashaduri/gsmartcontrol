@@ -19,7 +19,7 @@ Copyright:
 
 #include "app_pcrecpp.h"
 #include "storage_device.h"
-#include "smartctl_parser.h"
+#include "smartctl_text_parser.h"
 #include "storage_settings.h"
 #include "smartctl_executor.h"
 
@@ -145,7 +145,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	}
 
 	std::string version, version_full;
-	if (!SmartctlParser::parse_version(this->info_output_, version, version_full))  // is this smartctl data at all?
+	if (!SmartctlTextParser::parse_version(this->info_output_, version, version_full))  // is this smartctl data at all?
 		return _("Cannot get smartctl version information.");
 
 	// Detect type. note: we can't distinguish between sata and scsi (on linux, for -d ata switch).
@@ -171,10 +171,10 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 		smart_enabled_ = false;
 
 	} else {
-		// Note: We don't use SmartctlParser here, because this information
+		// Note: We don't use SmartctlTextParser here, because this information
 		// may be in some other format. If this information is valid, only then it's
-		// passed to SmartctlParser.
-		// Compared to SmartctlParser, this one is much looser.
+		// passed to SmartctlTextParser.
+		// Compared to SmartctlTextParser, this one is much looser.
 
 		// Don't put complete messages here - they change across smartctl versions.
 		if (app_pcre_match("/^SMART support is:[ \\t]*Unavailable/mi", info_output_)  // cdroms output this
@@ -225,7 +225,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	std::string size;
 	if (app_pcre_match("/^User Capacity:[ \\t]*(.*)$/mi", info_output_, &size)) {
 		int64_t bytes = 0;
-		size_ = SmartctlParser::parse_byte_size(size, bytes, false);
+		size_ = SmartctlTextParser::parse_byte_size(size, bytes, false);
 	}
 
 
@@ -233,11 +233,11 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	// Note that this may try to parse data the second time (it may already have
 	// been parsed by parse_data() which failed at it).
 	if (do_set_properties) {
-		StorageAttribute::DiskType disk_type = StorageAttribute::DiskType::Any;
+		AtaStorageAttribute::DiskType disk_type = AtaStorageAttribute::DiskType::Any;
 		if (hdd_.has_value()) {
-			disk_type = hdd_.value() ? StorageAttribute::DiskType::Hdd : StorageAttribute::DiskType::Ssd;
+			disk_type = hdd_.value() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
 		}
-		SmartctlParser ps;
+		SmartctlTextParser ps;
 		if (ps.parse_full(this->info_output_, disk_type)) {  // try to parse it
 			this->set_properties(ps.get_properties());  // copy to our drive, overwriting old data
 		}
@@ -247,7 +247,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	set_parse_status(model_name_.has_value() ? ParseStatus::info : ParseStatus::none);
 
 	if (emit_signal)
-		signal_changed.emit(this);  // notify listeners
+		signal_changed().emit(this);  // notify listeners
 
 	return std::string();
 }
@@ -297,18 +297,18 @@ std::string StorageDevice::parse_data()
 {
 	this->clear_fetched(false);  // clear everything fetched before, except outputs
 
-	StorageAttribute::DiskType disk_type = StorageAttribute::DiskType::Any;
+	AtaStorageAttribute::DiskType disk_type = AtaStorageAttribute::DiskType::Any;
 	if (hdd_.has_value()) {
-		disk_type = hdd_.value() ? StorageAttribute::DiskType::Hdd : StorageAttribute::DiskType::Ssd;
+		disk_type = hdd_.value() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
 	}
-	SmartctlParser ps;
+	SmartctlTextParser ps;
 	if (ps.parse_full(this->full_output_, disk_type)) {  // try to parse it (parse only, set the properties after basic parsing).
 
 		// refresh basic info too
 		this->info_output_ = ps.get_data_full();  // put data including version information
 
 		// note: this will clear the non-basic properties!
-		// this will parse some info that is already parsed by SmartctlParser::parse_full(),
+		// this will parse some info that is already parsed by SmartctlTextParser::parse_full(),
 		// but this one sets the StorageDevice class members, not properties.
 		this->parse_basic_data(false, false);  // don't emit signal, we're not complete yet.
 
@@ -318,7 +318,7 @@ std::string StorageDevice::parse_data()
 		// set the full properties
 		this->set_properties(ps.get_properties());  // copy to our drive, overwriting old data
 
-		signal_changed.emit(this);  // notify listeners
+		signal_changed().emit(this);  // notify listeners
 
 		return std::string();
 	}
@@ -330,7 +330,7 @@ std::string StorageDevice::parse_data()
 
 	// proper parsing failed. try to at least extract info section
 	this->info_output_ = this->full_output_;  // complete output here. sometimes it's only the info section
-	if (!this->parse_basic_data(true).empty()) {  // will add some properties too. this will emit signal_changed.
+	if (!this->parse_basic_data(true).empty()) {  // will add some properties too. this will emit signal_changed().
 		return ps.get_error_msg();  // return full parser's error messages - they are more detailed.
 	}
 
@@ -470,7 +470,7 @@ StorageDevice::Status StorageDevice::get_aodc_status() const
 	int found = 0;
 
 	for (const auto& p : properties_) {
-		if (p.section == StorageProperty::Section::internal) {
+		if (p.section == AtaStorageProperty::Section::internal) {
 			if (p.generic_name == "aodc_enabled") {  // if this is not present at all, we set the unknown status.
 				status = (p.get_value<bool>() ? Status::enabled : Status::disabled);
 				//++found;
@@ -506,13 +506,13 @@ std::string StorageDevice::get_device_size_str() const
 
 
 
-StorageProperty StorageDevice::get_health_property() const
+AtaStorageProperty StorageDevice::get_health_property() const
 {
 	if (health_property_.has_value())  // cached return value
 		return health_property_.value();
 
-	StorageProperty p = this->lookup_property("overall_health",
-			StorageProperty::Section::data, StorageProperty::SubSection::health);
+	AtaStorageProperty p = this->lookup_property("overall_health",
+			AtaStorageProperty::Section::data, AtaStorageProperty::SubSection::health);
 	if (!p.empty())
 		health_property_ = p;  // store to cache
 
@@ -650,25 +650,25 @@ std::string StorageDevice::get_virtual_filename() const
 
 
 
-const std::vector<StorageProperty>& StorageDevice::get_properties() const
+const std::vector<AtaStorageProperty>& StorageDevice::get_properties() const
 {
 	return properties_;
 }
 
 
 
-StorageProperty StorageDevice::lookup_property(const std::string& generic_name, StorageProperty::Section section, StorageProperty::SubSection subsection) const
+AtaStorageProperty StorageDevice::lookup_property(const std::string& generic_name, AtaStorageProperty::Section section, AtaStorageProperty::SubSection subsection) const
 {
 	for (const auto& p : properties_) {
-		if (section != StorageProperty::Section::unknown && p.section != section)
+		if (section != AtaStorageProperty::Section::unknown && p.section != section)
 			continue;
-		if (subsection != StorageProperty::SubSection::unknown && p.subsection != subsection)
+		if (subsection != AtaStorageProperty::SubSection::unknown && p.subsection != subsection)
 			continue;
 
 		if (p.generic_name == generic_name)
 			return p;
 	}
-	return StorageProperty();  // check with .empty()
+	return AtaStorageProperty();  // check with .empty()
 }
 
 
@@ -748,7 +748,7 @@ void StorageDevice::set_test_is_active(bool b)
 	bool changed = (test_is_active_ != b);
 	test_is_active_ = b;
 	if (changed) {
-		signal_changed.emit(this);  // so that everybody stops any test-aborting operations.
+		signal_changed().emit(this);  // so that everybody stops any test-aborting operations.
 	}
 }
 
@@ -843,6 +843,13 @@ std::string StorageDevice::execute_device_smartctl(const std::string& command_op
 
 
 
+sigc::signal<void, StorageDevice*>& StorageDevice::signal_changed()
+{
+	return signal_changed_;
+}
+
+
+
 void StorageDevice::set_parse_status(ParseStatus value)
 {
 	parse_status_ = value;
@@ -850,7 +857,7 @@ void StorageDevice::set_parse_status(ParseStatus value)
 
 
 
-void StorageDevice::set_properties(std::vector<StorageProperty> props)
+void StorageDevice::set_properties(std::vector<AtaStorageProperty> props)
 {
 	properties_ = std::move(props);
 }

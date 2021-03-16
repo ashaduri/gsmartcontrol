@@ -58,40 +58,40 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 	protected:
 
 		/// fill_ui_with_info() helper
-		void fill_ui_general(const std::vector<StorageProperty>& props);
+		void fill_ui_general(const std::vector<AtaStorageProperty>& props);
 
 		/// fill_ui_with_info() helper
-		void fill_ui_attributes(const std::vector<StorageProperty>& props);
+		void fill_ui_attributes(const std::vector<AtaStorageProperty>& props);
 
 		/// fill_ui_with_info() helper
-		void fill_ui_statistics(const std::vector<StorageProperty>& props);
+		void fill_ui_statistics(const std::vector<AtaStorageProperty>& props);
 
 		/// fill_ui_with_info() helper
 		void fill_ui_self_test_info();
 
 		/// fill_ui_with_info() helper
-		void fill_ui_self_test_log(const std::vector<StorageProperty>& props);
+		void fill_ui_self_test_log(const std::vector<AtaStorageProperty>& props);
 
 		/// fill_ui_with_info() helper
-		void fill_ui_error_log(const std::vector<StorageProperty>& props);
+		void fill_ui_error_log(const std::vector<AtaStorageProperty>& props);
 
 		/// fill_ui_with_info() helper
-		void fill_ui_temperature_log(const std::vector<StorageProperty>& props);
+		void fill_ui_temperature_log(const std::vector<AtaStorageProperty>& props);
 
 		/// fill_ui_with_info() helper
-		WarningLevel fill_ui_capabilities(const std::vector<StorageProperty>& props);
+		WarningLevel fill_ui_capabilities(const std::vector<AtaStorageProperty>& props);
 
 		/// fill_ui_with_info() helper
-		WarningLevel fill_ui_error_recovery(const std::vector<StorageProperty>& props);
+		WarningLevel fill_ui_error_recovery(const std::vector<AtaStorageProperty>& props);
 
 		/// fill_ui_with_info() helper
-		WarningLevel fill_ui_selective_self_test_log(const std::vector<StorageProperty>& props);
+		WarningLevel fill_ui_selective_self_test_log(const std::vector<AtaStorageProperty>& props);
 
 		/// fill_ui_with_info() helper
-		WarningLevel fill_ui_physical(const std::vector<StorageProperty>& props);
+		WarningLevel fill_ui_physical(const std::vector<AtaStorageProperty>& props);
 
 		/// fill_ui_with_info() helper
-		WarningLevel fill_ui_directory(const std::vector<StorageProperty>& props);
+		WarningLevel fill_ui_directory(const std::vector<AtaStorageProperty>& props);
 
 
 		// -------------------- callbacks

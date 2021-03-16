@@ -49,7 +49,7 @@ class SelfTest {
 		/// Check if the test is currently active
 		bool is_active() const
 		{
-			return (status_ == StorageSelftestEntry::Status::in_progress);
+			return (status_ == AtaStorageSelftestEntry::Status::in_progress);
 		}
 
 
@@ -74,7 +74,7 @@ class SelfTest {
 
 
 		/// Get test status
-		StorageSelftestEntry::Status get_status() const
+		AtaStorageSelftestEntry::Status get_status() const
 		{
 			return status_;
 		}
@@ -117,7 +117,7 @@ class SelfTest {
 		TestType type_ = TestType::short_test;  ///< Test type
 
 		// status variables:
-		StorageSelftestEntry::Status status_ = StorageSelftestEntry::Status::unknown;  ///< Current status of the test as reported by the drive
+		AtaStorageSelftestEntry::Status status_ = AtaStorageSelftestEntry::Status::unknown;  ///< Current status of the test as reported by the drive
 		int8_t remaining_percent_ = -1;  ///< Remaining %. 0 means unknown, -1 means N/A. This is set to 100 on start.
 		int8_t last_seen_percent_ = -1;  ///< Last reported %, to detect changes in percentage (needed for timer update).
 		mutable std::chrono::seconds total_duration_ = std::chrono::seconds(-1);  ///< Total duration needed for the test, as reported by the drive. Constant. This variable acts as a cache.

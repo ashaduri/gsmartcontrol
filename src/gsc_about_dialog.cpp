@@ -15,7 +15,6 @@ Copyright:
 #include "hz/string_algo.h"  // hz::string_*
 #include "hz/launch_url.h"
 #include "hz/data_file.h"
-#include "applib/app_gtkmm_features.h"
 
 #include "gsc_about_dialog.h"
 
