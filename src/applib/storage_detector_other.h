@@ -20,13 +20,13 @@ Copyright:
 #include <string>
 #include <vector>
 
-#include "executor_factory.h"
+#include "command_executor_factory.h"
 #include "storage_device.h"
 
 
 
 /// Detect drives in FreeBSD, Solaris, etc... (all except Linux and Windows).
-std::string detect_drives_other(std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory);
+std::string detect_drives_other(std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory);
 
 
 

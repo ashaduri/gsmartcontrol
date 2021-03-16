@@ -28,7 +28,7 @@ Copyright:
 
 /// Find and execute tw_cli with specified options, return its output through \c output.
 /// \return error message
-inline std::string execute_tw_cli(const ExecutorFactoryPtr& ex_factory, const std::string& command_options, std::string& output)
+inline std::string execute_tw_cli(const CommandExecutorFactoryPtr& ex_factory, const std::string& command_options, std::string& output)
 {
 	std::shared_ptr<CommandExecutor> executor = ex_factory->create_executor(CommandExecutorFactory::ExecutorType::TwCli);
 
@@ -73,7 +73,7 @@ inline std::string execute_tw_cli(const ExecutorFactoryPtr& ex_factory, const st
 /// Get the drives on a 3ware controller using tw_cli.
 /// Note that the drives are inserted in the order they are detected.
 inline std::string tw_cli_get_drives(const std::string& dev, int controller,
-		std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory, bool use_tw_cli_dev)
+		std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory, bool use_tw_cli_dev)
 {
 	debug_out_info("app", "Getting available 3ware drives (ports) for controller " << controller << " through tw_cli...\n");
 
@@ -114,7 +114,7 @@ inline std::string tw_cli_get_drives(const std::string& dev, int controller,
 
 /// Return 3ware SCSI host numbers (same as /c switch to tw_cli).
 /// \return error string on error
-inline std::string tw_cli_get_controllers(const ExecutorFactoryPtr& ex_factory, std::vector<int>& controllers)
+inline std::string tw_cli_get_controllers(const CommandExecutorFactoryPtr& ex_factory, std::vector<int>& controllers)
 {
 	debug_out_info("app", "Getting available 3ware controllers through tw_cli...\n");
 
@@ -153,7 +153,7 @@ inline std::string tw_cli_get_controllers(const ExecutorFactoryPtr& ex_factory, 
 /// one of the gives an error. \c type contains a printf-formatted string with %d.
 /// \return an error message on error.
 inline std::string smartctl_scan_drives_sequentially(const std::string& dev, const std::string& type,
-	  int from, int to, std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory, std::string& last_output)
+	  int from, int to, std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory, std::string& last_output)
 {
 	std::shared_ptr<CommandExecutor> smartctl_ex = ex_factory->create_executor(CommandExecutorFactory::ExecutorType::Smartctl);
 

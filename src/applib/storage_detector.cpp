@@ -28,18 +28,18 @@ Copyright:
 
 
 
-std::string StorageDetector::detect(std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory)
+std::string StorageDetector::detect(std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Starting drive detection.\n");
 
 	std::vector<StorageDevicePtr> all_detected;
-	std::string error_msg;
+	std::string error_message;
 
 	// Try each one and move to next if it fails.
 
 #if defined CONFIG_KERNEL_LINUX
 
-	error_msg = detect_drives_linux(all_detected, ex_factory);  // linux /proc/partitions as fallback.
+	error_message = detect_drives_linux(all_detected, ex_factory);  // linux /proc/partitions as fallback.
 
 #elif defined CONFIG_KERNEL_FAMILY_WINDOWS
 
@@ -53,7 +53,7 @@ std::string StorageDetector::detect(std::vector<StorageDevicePtr>& drives, const
 
 	if (all_detected.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Cannot detect drives: None of the drive detection methods returned any drives.\n");
-		return error_msg;  // last error message should be ok.
+		return error_message;  // last error message should be ok.
 	}
 
 	for (auto& drive : all_detected) {
@@ -96,7 +96,7 @@ std::string StorageDetector::detect(std::vector<StorageDevicePtr>& drives, const
 
 
 std::string StorageDetector::fetch_basic_data(std::vector<StorageDevicePtr>& drives,
-		const ExecutorFactoryPtr& ex_factory, bool return_first_error)
+		const CommandExecutorFactoryPtr& ex_factory, bool return_first_error)
 {
 	fetch_data_errors_.clear();
 	fetch_data_error_outputs_.clear();
@@ -144,7 +144,7 @@ std::string StorageDetector::fetch_basic_data(std::vector<StorageDevicePtr>& dri
 
 
 std::string StorageDetector::detect_and_fetch_basic_data(std::vector<StorageDevicePtr>& put_drives_here,
-		const ExecutorFactoryPtr& ex_factory)
+		const CommandExecutorFactoryPtr& ex_factory)
 {
 	std::string error_msg = detect(put_drives_here, ex_factory);
 

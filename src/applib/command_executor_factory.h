@@ -55,7 +55,7 @@ class CommandExecutorFactory {
 
 
 /// A reference-counting pointer to CommandExecutorFactory
-using ExecutorFactoryPtr = std::shared_ptr<CommandExecutorFactory>;
+using CommandExecutorFactoryPtr = std::shared_ptr<CommandExecutorFactory>;
 
 
 

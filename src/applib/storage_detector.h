@@ -27,20 +27,20 @@ class StorageDetector {
 
 		/// Detects a list of drives. Returns detection error message if error occurs.
 		std::string detect(std::vector<StorageDevicePtr>& drives,
-				const ExecutorFactoryPtr& ex_factory);
+				const CommandExecutorFactoryPtr& ex_factory);
 
 
 		/// For each drive, fetch basic data and parse it.
 		/// If \c return_first_error is true, the function returns on the first error.
 		/// \return An empty string. Or, if return_first_error is true, the first error that occurs.
 		std::string fetch_basic_data(std::vector<StorageDevicePtr>& drives,
-				const ExecutorFactoryPtr& ex_factory, bool return_first_error = false);
+				const CommandExecutorFactoryPtr& ex_factory, bool return_first_error = false);
 
 
 		/// Run detect() and fetch_basic_data().
 		/// \return An error if such occurs.
 		std::string detect_and_fetch_basic_data(std::vector<StorageDevicePtr>& put_drives_here,
-				const ExecutorFactoryPtr& ex_factory);
+				const CommandExecutorFactoryPtr& ex_factory);
 
 
 // 		void add_match_patterns(std::vector<std::string>& patterns)

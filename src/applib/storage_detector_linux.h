@@ -26,7 +26,7 @@ Copyright:
 
 
 /// Detect drives in Linux
-std::string detect_drives_linux(std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory);
+std::string detect_drives_linux(std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory);
 
 
 

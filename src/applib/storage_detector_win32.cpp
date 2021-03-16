@@ -170,7 +170,7 @@ std::map<char, DriveLetterInfo> win32_get_drive_letter_map()
 /// a port parameter. We don't pick the others because the may
 /// conflict with pd* devices, and we like pd* better than sd*.
 std::string get_scan_open_multiport_devices(std::vector<StorageDevicePtr>& drives,
-		const ExecutorFactoryPtr& ex_factory,
+		const CommandExecutorFactoryPtr& ex_factory,
 		const std::map<char, DriveLetterInfo>& drive_letter_map,
 		std::set<int>& equivalent_pds)
 {
@@ -258,7 +258,7 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDevicePtr>& drive
 
 /// Find and execute areca cli with specified options, return its output through \c output.
 /// \return error message
-inline std::string execute_areca_cli(const ExecutorFactoryPtr& ex_factory, const std::string& cli_binary,
+inline std::string execute_areca_cli(const CommandExecutorFactoryPtr& ex_factory, const std::string& cli_binary,
 		const std::string& command_options, std::string& output)
 {
 	std::shared_ptr<CommandExecutor> executor = ex_factory->create_executor(CommandExecutorFactory::ExecutorType::ArecaCli);
@@ -364,7 +364,7 @@ GuiErrMsg<0x00>: Success.
 ------------------------------------------------------------
 </pre> */
 inline std::string areca_cli_get_drives(const std::string& cli_binary, const std::string& dev, int controller,
-		std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory)
+		std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory)
 {
 	debug_out_info("app", "Getting available Areca drives (ports) for controller " << controller << " through Areca CLI...\n");
 
@@ -486,7 +486,7 @@ If CLI is not installed, do the brute-force way:
 		-d areca,[1-128]/[1-8] /dev/arcmsrN
 			It's 2-3 drives a second on an empty port, so some limits are set in config.
 </pre> */
-inline std::string detect_drives_win32_areca(std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory)
+inline std::string detect_drives_win32_areca(std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives behind Areca controller(s)...\n");
 
@@ -647,7 +647,7 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDevicePtr>& driv
 // (or /dev/pdN, /dev/ being optional) where N comes from
 // "\\.\PhysicalDriveN" (winnt only).
 // http://msdn.microsoft.com/en-us/library/aa365247(VS.85).aspx
-std::string detect_drives_win32(std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory)
+std::string detect_drives_win32(std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory)
 {
 	std::vector<std::string> error_msgs;
 	std::string error_message;

@@ -367,7 +367,7 @@ major minor  #blocks  name
 254 8 1966080 mmcblk1
 254 9 2007032 mmcblk1p1
 </pre> */
-inline std::string detect_drives_linux_proc_partitions(std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory)
+inline std::string detect_drives_linux_proc_partitions(std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives through partitions file (/proc/partitions by default; set \"system/linux_proc_partitions_path\" config key to override).\n");
 
@@ -466,7 +466,7 @@ Implementation notes: it seems that twe uses "3ware" and twa uses "AMCC"
 We can't handle a situation with mixed twa/twe/twl systems, since we don't know
 how they will be ordered for tw_cli.
 </pre> */
-inline std::string detect_drives_linux_3ware(std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory)
+inline std::string detect_drives_linux_3ware(std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives behind 3ware controller(s)...\n");
 
@@ -600,7 +600,7 @@ using "id > 0" requirement (the third column of /proc/scsi/sg/devices.
 Try "-d sat" by default. If it fails ("Device Read Identity Failed:" ? not
 sure how to detect the failure), fall back to "-d scsi".
 </pre> */
-inline std::string detect_drives_linux_adaptec(std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory)
+inline std::string detect_drives_linux_adaptec(std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives behind Adaptec controller(s)...\n");
 
@@ -730,7 +730,7 @@ Notification: If /sys/bus/scsi/devices/hostN/scsi_host/hostN/host_fw_version
 	is older than "V1.46 2009-01-06", (1.51 for enclosure-having cards) notify the user
 	(maybe its better to grep the smartctl output for that on port 0?). NOT IMPLEMENTED YET.
 </pre> */
-inline std::string detect_drives_linux_areca(std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory)
+inline std::string detect_drives_linux_areca(std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives behind Areca controller(s)...\n");
 
@@ -881,7 +881,7 @@ Detection:
 	Note: We're not sure how to differentiate the outputs of free / non-existent ports,
 		so scan them until 15, just in case.
 </pre> */
-inline std::string detect_drives_linux_cciss(std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory)
+inline std::string detect_drives_linux_cciss(std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives behind HP RAID (CCISS) controller(s)...\n");
 
@@ -969,7 +969,7 @@ Detection:
 	Run smartctl -i -d cciss,[0-127] /dev/cciss/cNd0
 		until "No such device or address" or "VALID ARGUMENTS ARE" is encountered in output.
 </pre> */
-inline std::string detect_drives_linux_hpsa(std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory)
+inline std::string detect_drives_linux_hpsa(std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives behind HP RAID (hpsa/hpahcisr) controller(s)...\n");
 
@@ -1058,7 +1058,7 @@ inline std::string detect_drives_linux_hpsa(std::vector<StorageDevicePtr>& drive
 
 
 
-std::string detect_drives_linux(std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory)
+std::string detect_drives_linux(std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory)
 {
 	clear_read_file_cache();
 
