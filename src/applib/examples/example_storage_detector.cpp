@@ -35,7 +35,7 @@ int main()
 	// 	sd.add_match_patterns(match_patterns);
 		sd.add_blacklist_patterns(blacklist_patterns);
 
-		auto ex_factory = std::make_shared<ExecutorFactory>(false);
+		auto ex_factory = std::make_shared<CommandExecutorFactory>(false);
 		std::string error_msg = sd.detect_and_fetch_basic_data(drives, ex_factory);
 		if (!error_msg.empty()) {
 			std::cerr << error_msg << "\n";

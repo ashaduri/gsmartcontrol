@@ -417,7 +417,7 @@ inline std::string detect_drives_linux_proc_partitions(std::vector<StorageDevice
 		}
 	}
 
-	std::shared_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
+	std::shared_ptr<CommandExecutor> smartctl_ex = ex_factory->create_executor(CommandExecutorFactory::ExecutorType::Smartctl);
 
 	for (const auto& device : devices) {
 		auto drive = std::make_shared<StorageDevice>(device);
@@ -639,7 +639,7 @@ inline std::string detect_drives_linux_adaptec(std::vector<StorageDevicePtr>& dr
 		return error_msg;
 	}
 
-	std::shared_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
+	std::shared_ptr<CommandExecutor> smartctl_ex = ex_factory->create_executor(CommandExecutorFactory::ExecutorType::Smartctl);
 
 	std::set<int> controller_hosts;
 
@@ -776,7 +776,7 @@ inline std::string detect_drives_linux_areca(std::vector<StorageDevicePtr>& driv
 		return error_msg;
 	}
 
-	std::shared_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
+	std::shared_ptr<CommandExecutor> smartctl_ex = ex_factory->create_executor(CommandExecutorFactory::ExecutorType::Smartctl);
 
 	for (auto& iter : controller_hosts) {
 		const int host_num = iter.first;
@@ -906,7 +906,7 @@ inline std::string detect_drives_linux_cciss(std::vector<StorageDevicePtr>& driv
 		return std::string();  // no controllers
 	}
 
-	std::shared_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
+	std::shared_ptr<CommandExecutor> smartctl_ex = ex_factory->create_executor(CommandExecutorFactory::ExecutorType::Smartctl);
 
 	for (int controller_no : controllers) {
 		std::string dev = std::string("/dev/cciss/c") + hz::number_to_string_nolocale(controller_no) + "d0";
@@ -985,7 +985,7 @@ inline std::string detect_drives_linux_hpsa(std::vector<StorageDevicePtr>& drive
 		return error_msg;
 	}
 
-	std::shared_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
+	std::shared_ptr<CommandExecutor> smartctl_ex = ex_factory->create_executor(CommandExecutorFactory::ExecutorType::Smartctl);
 
 	std::set<int> controller_hosts;
 
@@ -1069,7 +1069,7 @@ std::string detect_drives_linux(std::vector<StorageDevicePtr>& drives, const Exe
 	// For example, on Ubuntu 8.04, /dev/disk/by-id contains two device
 	// links for two drives, but both point to the same sdb (instead of
 	// sda and sdb). Plus, there are no "*-partN" files (not that we need them).
-// 	error_msg = detect_drives_linux_udev_byid(devices);  // linux udev
+// 	error_message = detect_drives_linux_udev_byid(devices);  // linux udev
 
 	error_msg = detect_drives_linux_proc_partitions(drives, ex_factory);
 	if (!error_msg.empty()) {

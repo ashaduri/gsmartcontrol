@@ -84,14 +84,14 @@ class StorageDevice {
 		/// Calls "smartctl -i -H -c" (info section, health, capabilities), then parse_basic_data().
 		/// Called during drive detection.
 		/// Note: this will clear the non-basic properties!
-		std::string fetch_basic_data_and_parse(const std::shared_ptr<CmdexSync>& smartctl_ex = nullptr);
+		std::string fetch_basic_data_and_parse(const std::shared_ptr<CommandExecutor>& smartctl_ex = nullptr);
 
 		/// Detects type, smart support, smart status (on / off).
 		/// Note: this will clear the non-basic properties!
 		std::string parse_basic_data(bool do_set_properties = true, bool emit_signal = true);
 
 		/// Execute smartctl --all (all sections), get output, parse it (basic data too), fill properties.
-		std::string fetch_data_and_parse(const std::shared_ptr<CmdexSync>& smartctl_ex);  // returns error message on error.
+		std::string fetch_data_and_parse(const std::shared_ptr<CommandExecutor>& smartctl_ex);  // returns error message on error.
 
 		// Parses full info. If failed, try to parse it as basic info.
 		/// \return error message on error.
@@ -103,11 +103,11 @@ class StorageDevice {
 
 		/// Try to enable SMART.
 		/// \return error message on error, empty string on success
-		std::string set_smart_enabled(bool b, const std::shared_ptr<CmdexSync>&);
+		std::string set_smart_enabled(bool b, const std::shared_ptr<CommandExecutor>&);
 
 		/// Try to enable Automatic Offline Data Collection.
 		/// \return error message on error, empty string on success
-		std::string set_aodc_enabled(bool b, const std::shared_ptr<CmdexSync>&);
+		std::string set_aodc_enabled(bool b, const std::shared_ptr<CommandExecutor>&);
 
 
 		/// Get SMART status
@@ -240,7 +240,7 @@ class StorageDevice {
 		/// Execute smartctl on this device. Nothing is modified in this class.
 		/// \return error message on error, empty string on success
 		std::string execute_device_smartctl(const std::string& command_options,
-				const std::shared_ptr<CmdexSync>& smartctl_ex, std::string& output, bool check_type = false);
+				const std::shared_ptr<CommandExecutor>& smartctl_ex, std::string& output, bool check_type = false);
 
 
 		/// Emitted whenever new information is available

@@ -9,8 +9,8 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#ifndef APP_CMDEX_SYNC_H
-#define APP_CMDEX_SYNC_H
+#ifndef COMMAND_EXECUTOR_H
+#define COMMAND_EXECUTOR_H
 
 #include <sigc++/sigc++.h>
 #include <string>
@@ -20,50 +20,67 @@ Copyright:
 #include "hz/error.h"
 #include "hz/process_signal.h"  // hz::SIGNAL_*
 
-#include "cmdex.h"
+#include "async_command_executor.h"
 
 
 
 /// Information about a finished command.
-struct CmdexSyncCommandInfo {
-	CmdexSyncCommandInfo(std::string c, std::string p,
-			std::string so, std::string se, std::string em)
-			: command(std::move(c)), parameters(std::move(p)), std_output(std::move(so)),
-			std_error(std::move(se)), error_msg(std::move(em))
+struct CommandExecutorResult {
+	CommandExecutorResult(std::string arg_command, std::string arg_parameters,
+			std::string arg_std_output, std::string arg_std_error, std::string arg_error_message)
+			: command(std::move(arg_command)),
+			parameters(std::move(arg_parameters)),
+			std_output(std::move(arg_std_output)),
+			std_error(std::move(arg_std_error)),
+			error_message(std::move(arg_error_message))
 	{ }
 
 	const std::string command;  ///< Executed command
 	const std::string parameters;  ///< Command parameters
 	const std::string std_output;  ///< Stdout data
 	const std::string std_error;  ///< Stderr data
-	const std::string error_msg;  ///< Execution error message
+	const std::string error_message;  ///< Execution error message
 };
 
 
 
 /// cmdex_sync_signal_execute_finish() return signal.
-using cmdex_signal_execute_finish_type = sigc::signal<void, const CmdexSyncCommandInfo&>;
+using cmdex_signal_execute_finish_t = sigc::signal<void, const CommandExecutorResult&>;
 
 
 /// This signal is emitted every time execute() finishes.
-cmdex_signal_execute_finish_type& cmdex_sync_signal_execute_finish();
+cmdex_signal_execute_finish_t& cmdex_sync_signal_execute_finish();
 
 
 
 
 
-/// Synchronous Cmdex (command executor) with ticking support.
-class CmdexSync : public sigc::trackable {
+/// Synchronous AsyncCommandExecutor (command executor) with ticking support.
+class CommandExecutor : public sigc::trackable {
 	public:
 
 		/// Constructor
-		CmdexSync();
+		CommandExecutor();
 
 		/// Constructor
-		CmdexSync(std::string command_name, std::string command_args);
+		CommandExecutor(std::string command_name, std::string command_args);
+
+
+		/// Deleted
+		CommandExecutor(const CommandExecutor& other) = delete;
+
+		/// Deleted
+		CommandExecutor(const CommandExecutor&& other) = delete;
+
+		/// Deleted
+		CommandExecutor& operator=(CommandExecutor& other) = delete;
+
+		/// Deleted
+		CommandExecutor& operator=(const CommandExecutor&& other) = delete;
+
 
 		/// Virtual destructor
-		virtual ~CmdexSync() = default;
+		virtual ~CommandExecutor() = default;
 
 
 		/// Set command to execute and its parameters
@@ -92,67 +109,40 @@ class CmdexSync : public sigc::trackable {
 
 
 		/// Try to stop the process. Call this from ticker slot while executing.
-		bool try_stop(hz::Signal sig = hz::Signal::Terminate)
-		{
-			return cmdex_.try_stop(sig);
-		}
+		bool try_stop(hz::Signal sig = hz::Signal::Terminate);
 
 
 		/// Same as try_stop(hz::SIGNAL_SIGKILL).
-		bool try_kill()
-		{
-			return cmdex_.try_kill();
-		}
+		bool try_kill();
 
 
 		/// Set a timeout (since call to this function) to terminate, kill or both (use 0 to ignore the parameter).
 		/// the timeouts will be unset automatically when the command exits.
 		/// Call from ticker slot while executing.
-		void set_stop_timeouts(std::chrono::milliseconds term_timeout_msec, std::chrono::milliseconds kill_timeout_msec)
-		{
-			cmdex_.set_stop_timeouts(term_timeout_msec, kill_timeout_msec);
-		}
+		void set_stop_timeouts(std::chrono::milliseconds term_timeout_msec, std::chrono::milliseconds kill_timeout_msec);
 
 
 		/// Unset terminate / kill timeouts. This will stop the timeout counters.
 		/// Call from ticker slot while executing.
-		void unset_stop_timeouts()
-		{
-			cmdex_.unset_stop_timeouts();
-		}
+		void unset_stop_timeouts();
 
 
-		/// Check if the child process is running. See Cmdex::is_running().
+		/// Check if the child process is running. See AsyncCommandExecutor::is_running().
 		/// Call from ticker slot while executing.
-		bool is_running() const
-		{
-			return cmdex_.is_running();
-		}
+		bool is_running() const;
 
 
-		/// See Cmdex::set_buffer_sizes() for details. Call this before execute().
-		void set_buffer_sizes(gsize stdout_buffer_size = 0, gsize stderr_buffer_size = 0)
-		{
-			cmdex_.set_buffer_sizes(stdout_buffer_size, stderr_buffer_size);
-		}
+		/// See AsyncCommandExecutor::set_buffer_sizes() for details. Call this before execute().
+		void set_buffer_sizes(gsize stdout_buffer_size = 0, gsize stderr_buffer_size = 0);
 
-		/// See Cmdex::get_stdout_str() for details.
-		std::string get_stdout_str(bool clear_existing = false)
-		{
-			return cmdex_.get_stdout_str(clear_existing);
-		}
+		/// See AsyncCommandExecutor::get_stdout_str() for details.
+		std::string get_stdout_str(bool clear_existing = false);
 
-		/// See Cmdex::get_stderr_str() for details.
-		std::string get_stderr_str(bool clear_existing = false)
-		{
-			return cmdex_.get_stderr_str(clear_existing);
-		}
+		/// See AsyncCommandExecutor::get_stderr_str() for details.
+		std::string get_stderr_str(bool clear_existing = false);
 
-		/// See Cmdex::set_exit_status_translator() for details.
-		void set_exit_status_translator(Cmdex::exit_status_translator_func_t func)
-		{
-			cmdex_.set_exit_status_translator(std::move(func));
-		}
+		/// See AsyncCommandExecutor::set_exit_status_translator() for details.
+		void set_exit_status_translator(AsyncCommandExecutor::exit_status_translator_func_t func);
 
 
 		/// Get command execution error message. If \c with_header
@@ -185,9 +175,7 @@ class CmdexSync : public sigc::trackable {
 		};
 
 
-		/// This signal is emitted whenever something happens with the execution
-		/// (the status is changed), and periodically while the process is running.
-		sigc::signal<bool, TickStatus> signal_execute_tick;
+		sigc::signal<bool, TickStatus>& signal_execute_tick();
 
 
 
@@ -211,12 +199,12 @@ class CmdexSync : public sigc::trackable {
 
 
 		/// Get command executor object
-		Cmdex& get_command_executor();
+		AsyncCommandExecutor& get_async_executor();
 
 
 	private:
 
-		Cmdex cmdex_;  ///< Command executor
+		AsyncCommandExecutor cmdex_;  ///< Command executor
 
 		std::string command_name_;  ///< Command name
 		std::string command_args_;  ///< Command arguments
@@ -227,6 +215,12 @@ class CmdexSync : public sigc::trackable {
 
 		std::string error_msg_;  ///< Execution error message
 		std::string error_header_;  ///< The error message may have this prepended to it.
+
+
+		/// This signal is emitted whenever something happens with the execution
+		/// (the status is changed), and periodically while the process is running.
+		sigc::signal<bool, TickStatus> signal_execute_tick_;
+
 
 };
 

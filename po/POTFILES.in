@@ -20,8 +20,9 @@ src/gsc_preferences_window.cpp
 src/gsc_text_window.h
 
 src/applib/app_builder_widget.h
-src/applib/cli_executors.h
-src/applib/cmdex_sync_gui.cpp
+src/applib/cli_executor_3ware.h
+src/applib/cli_executor_areca.h
+src/applib/command_executor_gui.cpp
 src/applib/selftest.cpp
 src/applib/smartctl_executor.cpp
 src/applib/smartctl_executor.h

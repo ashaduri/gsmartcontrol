@@ -7,20 +7,21 @@
 add_library(applib STATIC)
 
 target_sources(applib PRIVATE
+	async_command_executor.cpp
+	async_command_executor.h
 	app_builder_widget.h
 	app_gtkmm_features.h
 	app_gtkmm_utils.cpp
 	app_gtkmm_utils.h
 	app_pcrecpp.h
-	cli_executors.h
-	cmdex.cpp
-	cmdex.h
-	cmdex_sync.cpp
-	cmdex_sync_gui.cpp
-	cmdex_sync_gui.h
-	cmdex_sync.h
-	executor_factory.cpp
-	executor_factory.h
+	command_executor.h
+	command_executor.cpp
+	command_executor_3ware.h
+	command_executor_areca.h
+	command_executor_gui.cpp
+	command_executor_gui.h
+	command_executor_factory.cpp
+	command_executor_factory.h
 	gui_utils.cpp
 	gui_utils.h
 	selftest.cpp

@@ -19,7 +19,7 @@ Copyright:
 #include <unordered_map>
 
 #include "storage_device.h"
-#include "cmdex_sync.h"
+#include "command_executor.h"
 
 
 
@@ -98,17 +98,17 @@ class SelfTest {
 		/// Start the test. Note that this object is not reusable, start() must be called
 		/// only on newly constructed objects.
 		/// \return error message on error, empty string on success.
-		std::string start(const std::shared_ptr<CmdexSync>& smartctl_ex = nullptr);
+		std::string start(const std::shared_ptr<CommandExecutor>& smartctl_ex = nullptr);
 
 
 		/// Abort the running test.
 		/// \return error message on error, empty string on success.
-		std::string force_stop(const std::shared_ptr<CmdexSync>& smartctl_ex = nullptr);
+		std::string force_stop(const std::shared_ptr<CommandExecutor>& smartctl_ex = nullptr);
 
 
 		/// Update status variables. The user should call this every get_poll_in_seconds() seconds.
 		/// \return error message on error, empty string on success.
-		std::string update(const std::shared_ptr<CmdexSync>& smartctl_ex = nullptr);
+		std::string update(const std::shared_ptr<CommandExecutor>& smartctl_ex = nullptr);
 
 
 	private:

@@ -103,7 +103,7 @@ GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, Glib::RefPtr
 
 	// ---------------
 
-	// Connect to CmdexSync signal
+	// Connect to CommandExecutor signal
 	cmdex_sync_signal_execute_finish().connect(sigc::mem_fun(*this,
 			&GscExecutorLogWindow::on_command_output_received));
 
@@ -148,9 +148,9 @@ void GscExecutorLogWindow::clear_view_widgets()
 
 
 
-void GscExecutorLogWindow::on_command_output_received(const CmdexSyncCommandInfo& info)
+void GscExecutorLogWindow::on_command_output_received(const CommandExecutorResult& info)
 {
-	auto entry = std::make_shared<CmdexSyncCommandInfo>(info);
+	auto entry = std::make_shared<CommandExecutorResult>(info);
 	entries.push_back(entry);
 
 	// update tree model
@@ -189,7 +189,7 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 		return;
 
 	Gtk::TreeIter iter = selection->get_selected();
-	std::shared_ptr<CmdexSyncCommandInfo> entry = (*iter)[col_entry];
+	std::shared_ptr<CommandExecutorResult> entry = (*iter)[col_entry];
 
 	static std::string last_dir;
 	if (last_dir.empty()) {
@@ -305,7 +305,7 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 		exss << "\n---------------" << "STDERR" << "---------------\n";
 		exss << entries[i]->std_error << "\n\n";
 		exss << "\n---------------" << "Error Message" << "---------------\n";
-		exss << entries[i]->error_msg << "\n\n";
+		exss << entries[i]->error_message << "\n\n";
 	}
 
 
@@ -416,7 +416,7 @@ void GscExecutorLogWindow::on_tree_selection_changed()
 		Gtk::TreeIter iter = selection->get_selected();
 		Gtk::TreeRow row = *iter;
 
-		std::shared_ptr<CmdexSyncCommandInfo> entry = row[col_entry];
+		std::shared_ptr<CommandExecutorResult> entry = row[col_entry];
 
 		if (auto* output_textview = this->lookup_widget<Gtk::TextView*>("output_textview")) {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = output_textview->get_buffer();

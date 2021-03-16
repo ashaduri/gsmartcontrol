@@ -13,12 +13,12 @@ Copyright:
 #define SMARTCTL_EXECUTOR_GUI_H
 
 #include "smartctl_executor.h"
-#include "cmdex_sync_gui.h"
+#include "command_executor_gui.h"
 
 
 
 /// Smartctl executor with GUI support
-using SmartctlExecutorGui = SmartctlExecutorGeneric<CmdexSyncGui>;
+using SmartctlExecutorGui = SmartctlExecutorGeneric<CommandExecutorGui>;
 
 
 

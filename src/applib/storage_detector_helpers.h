@@ -18,7 +18,7 @@ Copyright:
 #include "local_glibmm.h"  // Glib::shell_quote(), compose
 
 #include "build_config.h"
-#include "executor_factory.h"
+#include "command_executor_factory.h"
 #include "storage_device.h"
 #include "rconfig/rconfig.h"
 #include "app_pcrecpp.h"
@@ -30,7 +30,7 @@ Copyright:
 /// \return error message
 inline std::string execute_tw_cli(const ExecutorFactoryPtr& ex_factory, const std::string& command_options, std::string& output)
 {
-	std::shared_ptr<CmdexSync> executor = ex_factory->create_executor(ExecutorFactory::ExecutorType::TwCli);
+	std::shared_ptr<CommandExecutor> executor = ex_factory->create_executor(CommandExecutorFactory::ExecutorType::TwCli);
 
 	auto binary = rconfig::get_data<std::string>("system/tw_cli_binary");
 
@@ -155,7 +155,7 @@ inline std::string tw_cli_get_controllers(const ExecutorFactoryPtr& ex_factory, 
 inline std::string smartctl_scan_drives_sequentially(const std::string& dev, const std::string& type,
 	  int from, int to, std::vector<StorageDevicePtr>& drives, const ExecutorFactoryPtr& ex_factory, std::string& last_output)
 {
-	std::shared_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
+	std::shared_ptr<CommandExecutor> smartctl_ex = ex_factory->create_executor(CommandExecutorFactory::ExecutorType::Smartctl);
 
 	for (int i = from; i <= to; ++i) {
 		std::string type_arg = hz::string_sprintf(type.c_str(), i);

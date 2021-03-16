@@ -18,7 +18,7 @@ Copyright:
 #include <memory>
 
 #include "applib/app_builder_widget.h"
-#include "applib/cmdex_sync.h"
+#include "applib/command_executor.h"
 
 
 
@@ -51,7 +51,7 @@ class GscExecutorLogWindow : public AppBuilderWidget<GscExecutorLogWindow, false
 		// -------------------- callbacks
 
 		/// Callback attached to external source, adds entries in real time.
-		void on_command_output_received(const CmdexSyncCommandInfo& info);
+		void on_command_output_received(const CommandExecutorResult& info);
 
 
 
@@ -82,7 +82,7 @@ class GscExecutorLogWindow : public AppBuilderWidget<GscExecutorLogWindow, false
 
 	private:
 
-		std::vector<std::shared_ptr<CmdexSyncCommandInfo>> entries;  ///< Command information entries
+		std::vector<std::shared_ptr<CommandExecutorResult>> entries;  ///< Command information entries
 
 
 		Glib::RefPtr<Gtk::ListStore> list_store;  ///< List store
@@ -90,7 +90,7 @@ class GscExecutorLogWindow : public AppBuilderWidget<GscExecutorLogWindow, false
 
 		Gtk::TreeModelColumn<std::size_t> col_num;  ///< Tree column
 		Gtk::TreeModelColumn<std::string> col_command;  ///< Tree column
-		Gtk::TreeModelColumn<std::shared_ptr<CmdexSyncCommandInfo>> col_entry;  ///< Tree column
+		Gtk::TreeModelColumn<std::shared_ptr<CommandExecutorResult>> col_entry;  ///< Tree column
 
 
 };

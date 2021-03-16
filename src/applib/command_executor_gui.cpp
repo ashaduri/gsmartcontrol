@@ -17,16 +17,16 @@ Copyright:
 
 #include "hz/string_algo.h"
 #include "hz/fs_ns.h"
-#include "cmdex_sync_gui.h"
+#include "command_executor_gui.h"
 
 
 
 
-bool CmdexSyncGui::execute()
+bool CommandExecutorGui::execute()
 {
 	this->create_running_dialog();  // create, but don't show.
 	this->set_running_dialog_abort_mode(false);  // reset and set the message
-	return CmdexSync::execute();
+	return CommandExecutor::execute();
 }
 
 
@@ -35,7 +35,7 @@ bool CmdexSyncGui::execute()
 
 
 
-Gtk::MessageDialog* CmdexSyncGui::create_running_dialog(Gtk::Window* parent, const Glib::ustring& msg)
+Gtk::MessageDialog* CommandExecutorGui::create_running_dialog(Gtk::Window* parent, const Glib::ustring& msg)
 {
 	if (running_dialog_)
 		return running_dialog_.get();
@@ -53,7 +53,7 @@ Gtk::MessageDialog* CmdexSyncGui::create_running_dialog(Gtk::Window* parent, con
 	}
 
 	running_dialog_->signal_response().connect(sigc::mem_fun(*this,
-			&CmdexSyncGui::on_running_dialog_response));
+			&CommandExecutorGui::on_running_dialog_response));
 
 	running_dialog_->set_decorated(false);
 	running_dialog_->set_deletable(false);
@@ -70,7 +70,7 @@ Gtk::MessageDialog* CmdexSyncGui::create_running_dialog(Gtk::Window* parent, con
 
 
 
-void CmdexSyncGui::show_hide_dialog(bool show)
+void CommandExecutorGui::show_hide_dialog(bool show)
 {
 	if (running_dialog_) {
 		if (show) {
@@ -88,7 +88,7 @@ void CmdexSyncGui::show_hide_dialog(bool show)
 
 
 
-void CmdexSyncGui::update_dialog_show_timer()
+void CommandExecutorGui::update_dialog_show_timer()
 {
 	double timeout = 2.;  // 2 sec for normal dialogs
 	if (running_dialog_abort_mode_)
@@ -110,7 +110,7 @@ void CmdexSyncGui::update_dialog_show_timer()
 
 
 
-void CmdexSyncGui::set_running_dialog_abort_mode(bool aborting)
+void CommandExecutorGui::set_running_dialog_abort_mode(bool aborting)
 {
 	if (!running_dialog_)
 		return;
@@ -144,7 +144,7 @@ void CmdexSyncGui::set_running_dialog_abort_mode(bool aborting)
 
 
 
-bool CmdexSyncGui::execute_tick_func(TickStatus status)
+bool CommandExecutorGui::execute_tick_func(TickStatus status)
 {
 	if (status == TickStatus::starting) {
 		if (execution_running_)

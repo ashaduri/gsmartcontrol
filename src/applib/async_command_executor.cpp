@@ -9,7 +9,6 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-// TODO Remove this in gtkmm4.
 #include "local_glibmm.h"
 
 #include <string>
@@ -28,7 +27,7 @@ Copyright:
 #include "hz/debug.h"
 #include "hz/env_tools.h"  // hz::ScopedEnv
 
-#include "cmdex.h"
+#include "async_command_executor.h"
 
 
 using hz::Error;
@@ -46,21 +45,21 @@ extern "C" {
 	/// Child process watcher callback
 	inline void cmdex_child_watch_handler(GPid arg_pid, int waitpid_status, gpointer data)
 	{
-		Cmdex::on_child_watch_handler(arg_pid, waitpid_status, data);
+		AsyncCommandExecutor::on_child_watch_handler(arg_pid, waitpid_status, data);
 	}
 
 
 	/// Child process stdout handler callback
 	inline gboolean cmdex_on_channel_io_stdout(GIOChannel* source, GIOCondition cond, gpointer data)
 	{
-		return Cmdex::on_channel_io(source, cond, static_cast<Cmdex*>(data), Cmdex::Channel::standard_output);
+		return AsyncCommandExecutor::on_channel_io(source, cond, static_cast<AsyncCommandExecutor*>(data), AsyncCommandExecutor::Channel::standard_output);
 	}
 
 
 	/// Child process stderr handler callback
 	inline gboolean cmdex_on_channel_io_stderr(GIOChannel* source, GIOCondition cond, gpointer data)
 	{
-		return Cmdex::on_channel_io(source, cond, static_cast<Cmdex*>(data), Cmdex::Channel::standard_error);
+		return AsyncCommandExecutor::on_channel_io(source, cond, static_cast<AsyncCommandExecutor*>(data), AsyncCommandExecutor::Channel::standard_error);
 	}
 
 
@@ -68,7 +67,7 @@ extern "C" {
 	inline gboolean cmdex_on_term_timeout(gpointer data)
 	{
 		DBG_FUNCTION_ENTER_MSG;
-		auto* self = static_cast<Cmdex*>(data);
+		auto* self = static_cast<AsyncCommandExecutor*>(data);
 		self->try_stop(hz::Signal::Terminate);
 		return FALSE;  // one-time call
 	}
@@ -78,7 +77,7 @@ extern "C" {
 	inline gboolean cmdex_on_kill_timeout(gpointer data)
 	{
 		DBG_FUNCTION_ENTER_MSG;
-		auto* self = static_cast<Cmdex*>(data);
+		auto* self = static_cast<AsyncCommandExecutor*>(data);
 		self->try_stop(hz::Signal::Kill);
 		return FALSE;  // one-time call
 	}
@@ -90,8 +89,36 @@ extern "C" {
 
 
 
+AsyncCommandExecutor::AsyncCommandExecutor(AsyncCommandExecutor::exited_callback_func_t exited_cb)
+		: timer_(g_timer_new()),
+		exited_callback_(std::move(exited_cb))
+{ }
 
-bool Cmdex::execute()
+
+
+AsyncCommandExecutor::~AsyncCommandExecutor()
+{
+	// This will help if object is destroyed after the command has exited, but before
+	// stopped_cleanup() has been called.
+	stopped_cleanup();
+
+	g_timer_destroy(timer_);
+
+	// no need to destroy the channels - stopped_cleanup() calls
+	// cleanup_members(), which deletes them.
+}
+
+
+
+void AsyncCommandExecutor::set_command(const std::string& command_exec, const std::string& command_args)
+{
+	command_exec_ = command_exec;
+	command_args_ = command_args;
+}
+
+
+
+bool AsyncCommandExecutor::execute()
 {
 	DBG_FUNCTION_ENTER_MSG;
 	if (this->running_ || this->stopped_cleanup_needed()) {
@@ -213,9 +240,7 @@ bool Cmdex::execute()
 
 
 
-
-// send SIGTERM(15) (terminate)
-bool Cmdex::try_stop(hz::Signal sig)
+bool AsyncCommandExecutor::try_stop(hz::Signal sig)
 {
 	DBG_FUNCTION_ENTER_MSG;
 	if (!this->running_ || this->pid_ == 0)
@@ -239,7 +264,7 @@ bool Cmdex::try_stop(hz::Signal sig)
 
 
 
-bool Cmdex::try_kill()
+bool AsyncCommandExecutor::try_kill()
 {
 	DBG_TRACE_POINT_AUTO;
 	return try_stop(hz::Signal::Kill);
@@ -247,7 +272,7 @@ bool Cmdex::try_kill()
 
 
 
-void Cmdex::set_stop_timeouts(std::chrono::milliseconds term_timeout_msec, std::chrono::milliseconds kill_timeout_msec)
+void AsyncCommandExecutor::set_stop_timeouts(std::chrono::milliseconds term_timeout_msec, std::chrono::milliseconds kill_timeout_msec)
 {
 	DBG_FUNCTION_ENTER_MSG;
 	DBG_ASSERT(term_timeout_msec.count() == 0 || kill_timeout_msec.count() == 0 || kill_timeout_msec > term_timeout_msec);
@@ -268,8 +293,7 @@ void Cmdex::set_stop_timeouts(std::chrono::milliseconds term_timeout_msec, std::
 
 
 
-
-void Cmdex::unset_stop_timeouts()
+void AsyncCommandExecutor::unset_stop_timeouts()
 {
 	DBG_FUNCTION_ENTER_MSG;
 	if (event_source_id_term != 0) {
@@ -290,8 +314,7 @@ void Cmdex::unset_stop_timeouts()
 
 
 
-// Executed manually by the caller.
-void Cmdex::stopped_cleanup()
+void AsyncCommandExecutor::stopped_cleanup()
 {
 	DBG_FUNCTION_ENTER_MSG;
 	if (this->running_ || !this->stopped_cleanup_needed())  // huh?
@@ -335,13 +358,10 @@ void Cmdex::stopped_cleanup()
 
 
 
-
-
-// Called when child exits
-void Cmdex::on_child_watch_handler([[maybe_unused]] GPid arg_pid, int waitpid_status, gpointer data)
+void AsyncCommandExecutor::on_child_watch_handler([[maybe_unused]] GPid arg_pid, int waitpid_status, gpointer data)
 {
 // 	DBG_FUNCTION_ENTER_MSG;
-	auto* self = static_cast<Cmdex*>(data);
+	auto* self = static_cast<AsyncCommandExecutor*>(data);
 
 	g_timer_stop(self->timer_);  // stop the timer
 
@@ -396,13 +416,11 @@ void Cmdex::on_child_watch_handler([[maybe_unused]] GPid arg_pid, int waitpid_st
 
 
 
-
-
-gboolean Cmdex::on_channel_io(GIOChannel* channel,
-		GIOCondition cond, Cmdex* self, Channel channel_type)
+gboolean AsyncCommandExecutor::on_channel_io(GIOChannel* channel,
+		GIOCondition cond, AsyncCommandExecutor* self, Channel channel_type)
 {
 // 	DBG_FUNCTION_ENTER_MSG;
-// 	debug_out_dump("app", "Cmdex::on_channel_io("
+// 	debug_out_dump("app", "AsyncCommandExecutor::on_channel_io("
 // 			<< (type == Channel::standard_output ? "STDOUT" : "STDERR") << ") " << int(cond) << "\n");
 
 	bool continue_events = true;
@@ -456,7 +474,80 @@ gboolean Cmdex::on_channel_io(GIOChannel* channel,
 
 
 
-void Cmdex::cleanup_members()
+bool AsyncCommandExecutor::stopped_cleanup_needed()
+{
+	return (child_watch_handler_called_);
+}
+
+
+
+bool AsyncCommandExecutor::is_running() const
+{
+	return running_;
+}
+
+
+
+void AsyncCommandExecutor::set_buffer_sizes(gsize stdout_buffer_size, gsize stderr_buffer_size)
+{
+	if (stdout_buffer_size > 0) {
+		channel_stdout_buffer_size_ = stdout_buffer_size;  // 100K by default
+	}
+	if (stderr_buffer_size > 0) {
+		channel_stderr_buffer_size_ = stderr_buffer_size;  // 10K by default
+	}
+}
+
+
+
+std::string AsyncCommandExecutor::get_stdout_str(bool clear_existing)
+{
+	// debug_out_dump("app", str_stdout_);
+	if (clear_existing) {
+		std::string ret = str_stdout_;
+		str_stdout_.clear();
+		return ret;
+	}
+	return str_stdout_;
+}
+
+
+
+std::string AsyncCommandExecutor::get_stderr_str(bool clear_existing)
+{
+	if (clear_existing) {
+		std::string ret = str_stderr_;
+		str_stderr_.clear();
+		return ret;
+	}
+	return str_stderr_;
+}
+
+
+
+double AsyncCommandExecutor::get_execution_time_sec()
+{
+	gulong microsec = 0;
+	return g_timer_elapsed(timer_, &microsec);
+}
+
+
+
+void AsyncCommandExecutor::set_exit_status_translator(AsyncCommandExecutor::exit_status_translator_func_t func)
+{
+	translator_func_ = std::move(func);
+}
+
+
+
+void AsyncCommandExecutor::set_exited_callback(AsyncCommandExecutor::exited_callback_func_t func)
+{
+	exited_callback_ = std::move(func);
+}
+
+
+
+void AsyncCommandExecutor::cleanup_members()
 {
 	kill_signal_sent_ = 0;
 	child_watch_handler_called_ = false;

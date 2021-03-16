@@ -9,39 +9,39 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#ifndef APP_CMDEX_SYNC_GUI_H
-#define APP_CMDEX_SYNC_GUI_H
+#ifndef COMMAND_EXECUTOR_GUI_H
+#define COMMAND_EXECUTOR_GUI_H
 
 #include "local_glibmm.h"
 #include <gtkmm.h>
 #include <memory>
 
-#include "cmdex_sync.h"
+#include "command_executor.h"
 
 
 
-/// Same as CmdexSync, but with GTK UI support.
+/// Same as CommandExecutor, but with GTK UI support.
 /// This one is noncopyable, because we can't copy the dialogs, etc...
-class CmdexSyncGui : public CmdexSync {
+class CommandExecutorGui : public CommandExecutor {
 	public:
 
 		/// Constructor
-		CmdexSyncGui(const std::string& cmd, const std::string& cmdargs)
-				: CmdexSync(cmd, cmdargs)
+		CommandExecutorGui(const std::string& cmd, const std::string& cmdargs)
+				: CommandExecutor(cmd, cmdargs)
 		{
-			signal_execute_tick.connect(sigc::mem_fun(*this, &CmdexSyncGui::execute_tick_func));
+			signal_execute_tick().connect(sigc::mem_fun(*this, &CommandExecutorGui::execute_tick_func));
 		}
 
 
 		/// Constructor
-		CmdexSyncGui()
+		CommandExecutorGui()
 		{
-			signal_execute_tick.connect(sigc::mem_fun(*this, &CmdexSyncGui::execute_tick_func));
+			signal_execute_tick().connect(sigc::mem_fun(*this, &CommandExecutorGui::execute_tick_func));
 		}
 
 
 
-		// Reimplemented from CmdexSync
+		// Reimplemented from CommandExecutor
 		bool execute() override;
 
 
@@ -91,7 +91,7 @@ class CmdexSyncGui : public CmdexSync {
 		}
 
 
-		/// This function is attached to CmdexSync::signal_execute_tick.
+		/// This function is attached to CommandExecutor::signal_execute_tick().
 		bool execute_tick_func(TickStatus status);
 
 

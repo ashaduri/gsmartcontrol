@@ -16,8 +16,8 @@ Copyright:
 #include <string>
 
 #include "storage_device.h"
-#include "cmdex_sync.h"
-#include "executor_factory.h"
+#include "command_executor.h"
+#include "command_executor_factory.h"
 
 
 

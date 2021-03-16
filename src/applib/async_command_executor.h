@@ -4,8 +4,8 @@ Copyright:
 	(C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
 ******************************************************************************/
 
-#ifndef APP_CMDEX_H
-#define APP_CMDEX_H
+#ifndef ASYNC_COMMAND_EXECUTOR_H
+#define ASYNC_COMMAND_EXECUTOR_H
 
 #include <glib.h>
 #include <string>
@@ -22,7 +22,7 @@ Copyright:
 /// 1. Add a callback to signal_exited.
 /// 2. Manually poll stopped_cleanup_needed().
 /// In both cases, stopped_cleanup() must be called afterwards.
-class Cmdex : public hz::ErrorHolder {
+class AsyncCommandExecutor : public hz::ErrorHolder {
 	public:
 
 		/// A function that translates the exit error code into a readable string
@@ -33,37 +33,31 @@ class Cmdex : public hz::ErrorHolder {
 
 
 		/// Constructor
-		explicit Cmdex(exited_callback_func_t exited_cb = nullptr)
-				: timer_(g_timer_new()),
-				exited_callback_(std::move(exited_cb))
-		{ }
+		explicit AsyncCommandExecutor(exited_callback_func_t exited_cb = nullptr);
 
+		/// Deleted
+		AsyncCommandExecutor(const AsyncCommandExecutor& other) = delete;
+
+		/// Deleted
+		AsyncCommandExecutor(const AsyncCommandExecutor&& other) = delete;
+
+		/// Deleted
+		AsyncCommandExecutor& operator=(const AsyncCommandExecutor& other) = delete;
+
+		/// Deleted
+		AsyncCommandExecutor& operator=(const AsyncCommandExecutor&& other) = delete;
 
 
 		/// Destructor. Don't destroy this object unless the child has exited. It will leak stuff
 		/// and possibly crash, etc... .
-		~Cmdex() override
-		{
-			// This will help if object is destroyed after the command has exited, but before
-			// stopped_cleanup() has been called.
-			stopped_cleanup();
-
-			g_timer_destroy(timer_);
-
-			// no need to destroy the channels - stopped_cleanup() calls
-			// cleanup_members(), which deletes them.
-		}
+		~AsyncCommandExecutor() override;
 
 
 		/// Set the command to execute. Call before execute().
 		/// Note: The command and the arguments _must_ be shell-escaped.
 		/// Use g_shell_quote() or Glib::shell_quote(). Note that each argument
 		/// must be escaped separately.
-		void set_command(const std::string& command_exec, const std::string& command_args)
-		{
-			command_exec_ = command_exec;
-			command_args_ = command_args;
-		}
+		void set_command(const std::string& command_exec, const std::string& command_args);
 
 
 		/// Launch the command.
@@ -92,7 +86,6 @@ class Cmdex : public hz::ErrorHolder {
 		/// This has an effect only if the command is running (after execute()).
 		void unset_stop_timeouts();
 
-
 		/// If stopped_cleanup_needed() returned true, call this. The command
 		/// should be exited by this time. Must be called before the next execute().
 		void stopped_cleanup();
@@ -101,19 +94,13 @@ class Cmdex : public hz::ErrorHolder {
 		/// Returns true if command has stopped.
 		/// Call repeatedly in a waiting function, after execute().
 		/// When it returns true, call stopped_cleanup().
-		bool stopped_cleanup_needed()
-		{
-			return (child_watch_handler_called_);
-		}
+		bool stopped_cleanup_needed();
 
 
 		/// Check if the process is running. Note that if this returns false, it doesn't mean that
 		/// the io channels have been closed or that the data may be read safely. Poll
 		/// stopped_cleanup_needed() instead.
-		[[nodiscard]] bool is_running() const
-		{
-			return running_;
-		}
+		[[nodiscard]] bool is_running() const;
 
 
 
@@ -129,69 +116,36 @@ class Cmdex : public hz::ErrorHolder {
 		/// Another way is to delay the command exit so that the event source callback
 		/// catches on and reads the buffer.
 		// Use 0 to ignore the parameter. Call this before execute().
-		void set_buffer_sizes(gsize stdout_buffer_size = 0, gsize stderr_buffer_size = 0)
-		{
-			if (stdout_buffer_size)
-				channel_stdout_buffer_size_ = stdout_buffer_size;  // 100K by default
-			if (stderr_buffer_size)
-				channel_stderr_buffer_size_ = stderr_buffer_size;  // 10K by default
-		}
+		void set_buffer_sizes(gsize stdout_buffer_size = 0, gsize stderr_buffer_size = 0);
 
 
 
 		/// If stdout_make_str_as_available_ is false, call this after stopped_cleanup(),
 		/// before next execute(). If it's true, you may call this before the command has
 		/// stopped, but it will decrease performance significantly.
-		std::string get_stdout_str(bool clear_existing = false)
-		{
-			// debug_out_dump("app", str_stdout_);
-			if (clear_existing) {
-				std::string ret = str_stdout_;
-				str_stdout_.clear();
-				return ret;
-			}
-			return str_stdout_;
-		}
+		std::string get_stdout_str(bool clear_existing = false);
 
 
-		/// See notes on get_stdout_str().
-		std::string get_stderr_str(bool clear_existing = false)
-		{
-			if (clear_existing) {
-				std::string ret = str_stderr_;
-				str_stderr_.clear();
-				return ret;
-			}
-			return str_stderr_;
-		}
+		/// See notes for \ref get_stdout_str().
+		std::string get_stderr_str(bool clear_existing = false);
 
 
 		/// Return execution time, in seconds. Call this after execute().
-		double get_execution_time()
-		{
-			gulong microsec = 0;
-			return g_timer_elapsed(timer_, &microsec);
-		}
+		[[maybe_unused]] double get_execution_time_sec();
 
 
 		/// Set exit status translator callback, disconnecting the old one.
 		/// Call only before execute().
-		void set_exit_status_translator(exit_status_translator_func_t func)
-		{
-			translator_func_ = std::move(func);
-		}
+		void set_exit_status_translator(exit_status_translator_func_t func);
 
 
 		/// Set exit notifier callback, disconnecting the old one.
 		/// You can poll stopped_cleanup_needed() instead of using this function.
-		void set_exited_callback(exited_callback_func_t func)
-		{
-			exited_callback_ = std::move(func);
-		}
+		void set_exited_callback(exited_callback_func_t func);
 
 
 
-	// these are sorta-private
+		// these are sort of private
 
 		/// Channel type, for passing to callbacks
 		enum class Channel {
@@ -206,7 +160,7 @@ class Cmdex : public hz::ErrorHolder {
 		static void on_child_watch_handler(GPid arg_pid, int waitpid_status, gpointer data);
 
 		/// Channel I/O handler
-		static gboolean on_channel_io(GIOChannel* channel, GIOCondition cond, Cmdex* self, Channel channel_type);
+		static gboolean on_channel_io(GIOChannel* channel, GIOCondition cond, AsyncCommandExecutor* self, Channel channel_type);
 
 
 	private:
@@ -218,8 +172,8 @@ class Cmdex : public hz::ErrorHolder {
 
 
 		// default command and its args. std::strings, not ustrings.
-		std::string command_exec_{ };  /// Binary name to execute. NOT affected by cleanup_members().
-		std::string command_args_{ };  /// Arguments that always go with the binary. NOT affected by cleanup_members().
+		std::string command_exec_;  /// Binary name to execute. NOT affected by cleanup_members().
+		std::string command_args_;  /// Arguments that always go with the binary. NOT affected by cleanup_members().
 
 
 		bool running_ = false;  ///< If true, the child process is running now. NOT affected by cleanup_members().
@@ -248,8 +202,8 @@ class Cmdex : public hz::ErrorHolder {
 		guint event_source_id_stdout_ = 0;  ///< IO watcher event source ID for stdout
 		guint event_source_id_stderr_ = 0;  ///< IO watcher event source ID for stderr
 
-		std::string str_stdout_{ };  ///< stdout data read during execution. NOT affected by cleanup_members().
-		std::string str_stderr_{ };  ///< stderr data read during execution. NOT affected by cleanup_members().
+		std::string str_stdout_;  ///< stdout data read during execution. NOT affected by cleanup_members().
+		std::string str_stderr_;  ///< stderr data read during execution. NOT affected by cleanup_members().
 
 
 		// signals

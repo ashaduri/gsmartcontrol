@@ -9,12 +9,12 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#ifndef EXECUTOR_FACTORY_H
-#define EXECUTOR_FACTORY_H
+#ifndef COMMAND_EXECUTOR_FACTORY_H
+#define COMMAND_EXECUTOR_FACTORY_H
 
 #include <memory>
 
-#include "cmdex_sync.h"
+#include "command_executor.h"
 
 
 // Forward declaration
@@ -26,7 +26,7 @@ namespace Gtk {
 
 /// This class allows you to create new executors for different commands,
 /// without carrying the GUI/CLI stuff manually.
-class ExecutorFactory {
+class CommandExecutorFactory {
 	public:
 
 		/// Executor type for create_executor()
@@ -38,11 +38,11 @@ class ExecutorFactory {
 
 
 		/// Constructor. If \c use_gui is true, specify \c parent for the GUI dialogs.
-		explicit ExecutorFactory(bool use_gui, Gtk::Window* parent = nullptr);
+		explicit CommandExecutorFactory(bool use_gui, Gtk::Window* parent = nullptr);
 
 
 		/// Create a new executor instance according to \c type and the constructor parameters.
-		std::shared_ptr<CmdexSync> create_executor(ExecutorType type);
+		std::shared_ptr<CommandExecutor> create_executor(ExecutorType type);
 
 
 	private:
@@ -54,8 +54,8 @@ class ExecutorFactory {
 
 
 
-/// A reference-counting pointer to ExecutorFactory
-using ExecutorFactoryPtr = std::shared_ptr<ExecutorFactory>;
+/// A reference-counting pointer to CommandExecutorFactory
+using ExecutorFactoryPtr = std::shared_ptr<CommandExecutorFactory>;
 
 
 

@@ -15,8 +15,8 @@ Copyright:
 #include "local_glibmm.h"
 #include <vector>
 
-#include "cmdex.h"
-#include "cmdex_sync.h"
+#include "async_command_executor.h"
+#include "command_executor.h"
 #include "hz/fs_ns.h"
 
 
@@ -47,7 +47,7 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 		/// Called by constructors
 		void construct()
 		{
-			ExecutorSync::get_command_executor().set_exit_status_translator(&SmartctlExecutorGeneric::translate_exit_status);
+			ExecutorSync::get_async_executor().set_exit_status_translator(&SmartctlExecutorGeneric::translate_exit_status);
 			this->set_error_header(std::string(_("An error occurred while executing smartctl:")) + "\n\n");
 		}
 
@@ -96,9 +96,9 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 		/// Import the last error from command executor and clear all errors there
 		void import_error() override
 		{
-			Cmdex& cmdex = this->get_command_executor();
+			AsyncCommandExecutor& cmdex = this->get_async_executor();
 
-			Cmdex::error_list_t errors = cmdex.get_errors();  // these are not clones
+			AsyncCommandExecutor::error_list_t errors = cmdex.get_errors();  // these are not clones
 
 			hz::ErrorBase* e = nullptr;
 			// find the last relevant error.
@@ -156,7 +156,7 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 
 
 /// Smartctl executor without GUI support
-using SmartctlExecutor = SmartctlExecutorGeneric<CmdexSync>;
+using SmartctlExecutor = SmartctlExecutorGeneric<CommandExecutor>;
 
 
 
@@ -168,7 +168,7 @@ hz::fs::path get_smartctl_binary();
 /// \return error message on error, empty string on success.
 std::string execute_smartctl(const std::string& device, const std::string& device_opts,
 		const std::string& command_options,
-		std::shared_ptr<CmdexSync> smartctl_ex, std::string& smartctl_output);
+		std::shared_ptr<CommandExecutor> smartctl_ex, std::string& smartctl_output);
 
 
 

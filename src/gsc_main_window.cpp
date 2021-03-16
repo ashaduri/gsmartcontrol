@@ -39,7 +39,7 @@ Copyright:
 #include "gsc_main_window_iconview.h"
 #include "gsc_main_window.h"
 #include "gsc_add_device_window.h"
-#include "applib/executor_factory.h"
+#include "applib/command_executor_factory.h"
 #include "gsc_startup_settings.h"
 
 
@@ -1026,14 +1026,14 @@ void GscMainWindow::rescan_devices()
 	sd.add_blacklist_patterns(blacklist_patterns);
 
 
-	auto ex_factory = std::make_shared<ExecutorFactory>(true, this);  // run it with GUI support
+	auto ex_factory = std::make_shared<CommandExecutorFactory>(true, this);  // run it with GUI support
 
 	std::string error_msg = sd.detect_and_fetch_basic_data(drives_, ex_factory);
 
 	bool error = false;
 
 	// Catch permission errors.
-	// executor errors and outputs, not reported through error_msg.
+	// executor errors and outputs, not reported through error_message.
 	std::vector<std::string> fetch_outputs = sd.get_fetch_data_error_outputs();
 	for (const auto& fetch_output : fetch_outputs) {
 		// debug_out_error("app", DBG_FUNC_MSG << fetch_outputs[i] << "\n");
@@ -1119,7 +1119,7 @@ bool GscMainWindow::add_device(const std::string& file, const std::string& type_
 	drive->set_extra_arguments(extra_args);
 	drive->set_is_manually_added(true);
 
-	auto ex_factory = std::make_shared<ExecutorFactory>(true, this);  // pass this as dialog parent
+	auto ex_factory = std::make_shared<CommandExecutorFactory>(true, this);  // pass this as dialog parent
 
 	std::vector<StorageDevicePtr> tmp_drives;
 	tmp_drives.push_back(drive);

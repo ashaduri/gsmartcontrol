@@ -112,7 +112,7 @@ bool SelfTest::is_supported() const
 
 
 // start the test
-std::string SelfTest::start(const std::shared_ptr<CmdexSync>& smartctl_ex)
+std::string SelfTest::start(const std::shared_ptr<CommandExecutor>& smartctl_ex)
 {
 	if (!drive_)
 		return "[internal error: drive must not be NULL]";
@@ -146,9 +146,9 @@ std::string SelfTest::start(const std::shared_ptr<CmdexSync>& smartctl_ex)
 
 
 	// update our members
-// 	error_msg = this->update(smartctl_ex);
-// 	if (!error_msg.empty())  // update can error out too.
-// 		return error_msg;
+// 	error_message = this->update(smartctl_ex);
+// 	if (!error_message.empty())  // update can error out too.
+// 		return error_message;
 
 	// Don't update here - the logs may not be updated this fast.
 	// Better to wait several seconds and then call it manually.
@@ -174,7 +174,7 @@ std::string SelfTest::start(const std::shared_ptr<CmdexSync>& smartctl_ex)
 
 
 // abort test.
-std::string SelfTest::force_stop(const std::shared_ptr<CmdexSync>& smartctl_ex)
+std::string SelfTest::force_stop(const std::shared_ptr<CommandExecutor>& smartctl_ex)
 {
 	if (!drive_)
 		return "[internal error: drive must not be NULL]";
@@ -228,7 +228,7 @@ std::string SelfTest::force_stop(const std::shared_ptr<CmdexSync>& smartctl_ex)
 
 // update status variables. note: the returned error is an error in logic,
 // not an hw defect error.
-std::string SelfTest::update(const std::shared_ptr<CmdexSync>& smartctl_ex)
+std::string SelfTest::update(const std::shared_ptr<CommandExecutor>& smartctl_ex)
 {
 	using namespace std::literals;
 
@@ -236,7 +236,7 @@ std::string SelfTest::update(const std::shared_ptr<CmdexSync>& smartctl_ex)
 		return "[internal error: drive must not be NULL]";
 
 	std::string output;
-// 	std::string error_msg = drive_->execute_device_smartctl("--log=selftest", smartctl_ex, output);
+// 	std::string error_message = drive_->execute_device_smartctl("--log=selftest", smartctl_ex, output);
 	std::string error_msg = drive_->execute_device_smartctl("--capabilities", smartctl_ex, output);
 
 	if (!error_msg.empty())  // checks for empty output too

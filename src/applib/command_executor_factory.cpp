@@ -10,20 +10,20 @@ Copyright:
 /// @{
 
 #include "hz/debug.h"
-#include "executor_factory.h"
+#include "command_executor_factory.h"
 #include "smartctl_executor_gui.h"
-#include "cli_executors.h"
+#include "command_executor_areca.h"
+#include "command_executor_3ware.h"
 
 
 
-
-ExecutorFactory::ExecutorFactory(bool use_gui, Gtk::Window* parent)
+CommandExecutorFactory::CommandExecutorFactory(bool use_gui, Gtk::Window* parent)
 		: use_gui_(use_gui), parent_(parent)
 { }
 
 
 
-std::shared_ptr<CmdexSync> ExecutorFactory::create_executor(ExecutorFactory::ExecutorType type)
+std::shared_ptr<CommandExecutor> CommandExecutorFactory::create_executor(CommandExecutorFactory::ExecutorType type)
 {
 	switch (type) {
 		case ExecutorType::Smartctl:
@@ -56,7 +56,7 @@ std::shared_ptr<CmdexSync> ExecutorFactory::create_executor(ExecutorFactory::Exe
 	}
 
 	DBG_ASSERT(0);
-	return std::make_shared<CmdexSync>();
+	return std::make_shared<CommandExecutor>();
 }
 
 

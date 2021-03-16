@@ -43,11 +43,11 @@ std::string StorageDetector::detect(std::vector<StorageDevicePtr>& drives, const
 
 #elif defined CONFIG_KERNEL_FAMILY_WINDOWS
 
-	error_msg = detect_drives_win32(all_detected, ex_factory);  // win32
+	error_message = detect_drives_win32(all_detected, ex_factory);  // win32
 
 #else  // freebsd, etc...
 
-	error_msg = detect_drives_other(all_detected, ex_factory);  // bsd, etc... . scans /dev.
+	error_message = detect_drives_other(all_detected, ex_factory);  // bsd, etc... . scans /dev.
 
 #endif
 
@@ -101,7 +101,7 @@ std::string StorageDetector::fetch_basic_data(std::vector<StorageDevicePtr>& dri
 	fetch_data_errors_.clear();
 	fetch_data_error_outputs_.clear();
 
-	std::shared_ptr<CmdexSync> smartctl_ex = ex_factory->create_executor(ExecutorFactory::ExecutorType::Smartctl);
+	std::shared_ptr<CommandExecutor> smartctl_ex = ex_factory->create_executor(CommandExecutorFactory::ExecutorType::Smartctl);
 
 	for (auto& drive : drives) {
 		debug_out_info("app", "Retrieving basic information about the device...\n");
@@ -123,7 +123,7 @@ std::string StorageDetector::fetch_basic_data(std::vector<StorageDevicePtr>& dri
 		if (!error_msg.empty()) {
 			// use original executor error if present (permits matches by our users).
 			// if (!smartctl_ex->get_error_msg().empty())
-			//	error_msg = smartctl_ex->get_error_msg();
+			//	error_message = smartctl_ex->get_error_msg();
 
 			fetch_data_errors_.push_back(error_msg);
 			fetch_data_error_outputs_.push_back(smartctl_ex->get_stdout_str());

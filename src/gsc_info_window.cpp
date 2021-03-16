@@ -2021,7 +2021,7 @@ void GscInfoWindow::on_test_execute_button_clicked()
 
 
 	// We don't use idle function here, because it has the following problem:
-	// CmdexSync::execute() (which is called on force_stop()) calls g_main_context_pending(),
+	// CommandExecutor::execute() (which is called on force_stop()) calls g_main_context_pending(),
 	// which returns true EVERY time, until the idle callback returns false.
 	// So, force_stop() exits its "execute abort" command only when the
 	// idle callback polls the drive on the next timeout and sees that the test

@@ -70,7 +70,7 @@ hz::fs::path get_smartctl_binary()
 
 std::string execute_smartctl(const std::string& device, const std::string& device_opts,
 		const std::string& command_options,
-		std::shared_ptr<CmdexSync> smartctl_ex, std::string& smartctl_output)
+		std::shared_ptr<CommandExecutor> smartctl_ex, std::string& smartctl_output)
 {
 #ifndef _WIN32  // win32 doesn't have slashes in devices names
 	{
