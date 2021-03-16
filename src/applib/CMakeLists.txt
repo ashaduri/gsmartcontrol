@@ -69,4 +69,5 @@ target_include_directories(applib
 
 
 add_subdirectory(examples)
+add_subdirectory(tests)
 

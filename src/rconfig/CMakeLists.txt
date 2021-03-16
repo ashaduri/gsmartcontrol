@@ -18,7 +18,7 @@ target_include_directories(rconfig INTERFACE "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(rconfig
 	INTERFACE
 		hz
-		json
+		nlohmann_json
 		app_gtkmm_interface
 )
 

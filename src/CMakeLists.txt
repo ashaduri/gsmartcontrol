@@ -76,4 +76,5 @@ add_subdirectory(hz)
 add_subdirectory(libdebug)
 add_subdirectory(rconfig)
 add_subdirectory(ui)
+add_subdirectory(test_all)
 

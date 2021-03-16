@@ -46,10 +46,10 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: cmake --build . --config $BUILD_TYPE
 
-#    - name: Test
-#      working-directory: ${{runner.workspace}}/build
-#      shell: bash
-#      run: ctest -C $BUILD_TYPE
+    - name: Test
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: ctest -C $BUILD_TYPE
 
     - name: Pack (cmake install and make binary package)
       shell: bash
@@ -104,6 +104,11 @@ jobs:
         shell: msys2 {0}
         working-directory: ${{runner.workspace}}/build
         run: cmake --build . --config $BUILD_TYPE
+
+      - name: Test
+        working-directory: ${{runner.workspace}}/build
+        shell: bash
+        run: ctest -C $BUILD_TYPE
 
       - name: Download Package Requirements
         shell: msys2 {0}

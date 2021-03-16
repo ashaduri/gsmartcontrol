@@ -63,11 +63,18 @@ else()
 endif()
 
 
+# CTest support
+include(CTest)
+include(${CMAKE_SOURCE_DIR}/dependencies/catch2/Catch2/extras/Catch.cmake)
+
+
 add_subdirectory(contrib)
 add_subdirectory(data)
 add_subdirectory(dependencies)
 add_subdirectory(packaging)
 add_subdirectory(src)
 
+
+# Packaging support
 include(packaging/cpack_options.cmake)
 

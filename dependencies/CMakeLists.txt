@@ -62,4 +62,5 @@ endif()
 find_package(Gettext REQUIRED)
 
 
-add_subdirectory(json)
+add_subdirectory(catch2)
+add_subdirectory(nlohmann_json)
