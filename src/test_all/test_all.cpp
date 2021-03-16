@@ -10,8 +10,23 @@ Copyright:
 /// @{
 
 
-// Nothing here - by linking to Catch2WithMain we define the main() function.
-// We link to all the other test-containing libraries.
+#include "catch2/catch_session.hpp"
+#include "libdebug/libdebug.h"
+
+
+
+int main(int argc, char* argv[])
+{
+	debug_register_domain("gtk");
+	debug_register_domain("app");
+	debug_register_domain("hz");
+	debug_register_domain("rmn");
+	debug_register_domain("rconfig");
+
+	int result = Catch::Session().run( argc, argv );
+	return result;
+}
+
 
 
 /// @}

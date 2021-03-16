@@ -16,8 +16,9 @@ target_sources(test_all PRIVATE
 	test_all.cpp
 )
 target_link_libraries(test_all PRIVATE
+	libdebug
 	applib_tests
-	Catch2WithMain
+	Catch2
 )
 
 catch_discover_tests(test_all)
