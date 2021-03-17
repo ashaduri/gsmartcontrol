@@ -21,4 +21,6 @@ target_link_libraries(test_all PRIVATE
 	Catch2
 )
 
-catch_discover_tests(test_all)
+if (NOT CMAKE_CROSSCOMPILING)
+	catch_discover_tests(test_all)
+endif()
