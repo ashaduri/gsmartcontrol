@@ -341,7 +341,6 @@ bool app_init_and_loop(int& argc, char**& argv)
 	debug_register_domain("gtk");
 	debug_register_domain("app");
 	debug_register_domain("hz");
-	debug_register_domain("rmn");
 	debug_register_domain("rconfig");
 
 
@@ -505,7 +504,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 #endif
 
 
-	// Export some command line arguments to rmn
+	// Export some command line arguments to rconfig
 
 	// obey the command line option for no-scan on startup
 	get_startup_settings().no_scan = !bool(args.arg_scan);
