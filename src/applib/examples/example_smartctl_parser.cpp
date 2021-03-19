@@ -21,7 +21,7 @@ Copyright:
 #include "libdebug/libdebug.h"
 #include "hz/fs.h"
 #include "applib/ata_storage_property.h"
-#include "applib/smartctl_text_parser.h"
+#include "applib/smartctl_ata_text_parser.h"
 
 
 
@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	SmartctlTextParser sp;
+	SmartctlAtaTextParser sp;
 	if (!sp.parse_full(contents, AtaStorageAttribute::DiskType::Any)) {
 		debug_out_error("app", "Cannot parse file contents: " << sp.get_error_msg() << "\n");
 		return EXIT_FAILURE;

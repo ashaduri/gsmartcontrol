@@ -9,8 +9,8 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#ifndef SMARTCTL_TEXT_PARSER_H
-#define SMARTCTL_TEXT_PARSER_H
+#ifndef SMARTCTL_ATA_TEXT_PARSER_H
+#define SMARTCTL_ATA_TEXT_PARSER_H
 
 #include <string>
 #include <vector>
@@ -19,10 +19,10 @@ Copyright:
 
 
 
-/// Smartctl parser.
+/// Smartctl (S)ATA text output parser.
 /// Note: ALL parse_* functions (except parse_full() and parse_version())
 /// expect data in unix-newline format!
-class SmartctlTextParser {
+class SmartctlAtaTextParser {
 	public:
 
 		/// Parse full "smartctl -x" output
@@ -41,8 +41,7 @@ class SmartctlTextParser {
 		static std::string parse_byte_size(const std::string& str, int64_t& bytes, bool extended);
 
 
-		// You don't really need to call these functions, use the ones above.
-
+	private:
 
 		/// Parse the section part (with "=== .... ===" header) - info or data sections.
 		bool parse_section(const std::string& header, const std::string& body);
@@ -77,31 +76,13 @@ class SmartctlTextParser {
 
 
 		/// Clear parsed data
-		void clear()
-		{
-			data_full_.clear();
-			data_section_info_.clear();
-			data_section_data_.clear();
-			error_msg_.clear();
+		void clear();
 
-			properties_.clear();
-		}
 
+	public:
 
 		/// Get "full" data, as passed to parse_full().
 		[[nodiscard]] std::string get_data_full() const;
-
-/*
-		std::string get_data_section_info() const
-		{
-			return data_section_info_;
-		}
-
-		std::string get_data_section_data() const
-		{
-			return data_section_data_;
-		}
-*/
 
 		/// Get parse error message. Call this only if parsing doesn't succeed,
 		/// to get a friendly error message.

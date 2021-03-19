@@ -19,7 +19,7 @@ Copyright:
 
 #include "app_pcrecpp.h"
 #include "storage_device.h"
-#include "smartctl_text_parser.h"
+#include "smartctl_ata_text_parser.h"
 #include "storage_settings.h"
 #include "smartctl_executor.h"
 
@@ -145,7 +145,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	}
 
 	std::string version, version_full;
-	if (!SmartctlTextParser::parse_version(this->info_output_, version, version_full))  // is this smartctl data at all?
+	if (!SmartctlAtaTextParser::parse_version(this->info_output_, version, version_full))  // is this smartctl data at all?
 		return _("Cannot get smartctl version information.");
 
 	// Detect type. note: we can't distinguish between sata and scsi (on linux, for -d ata switch).
@@ -171,10 +171,10 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 		smart_enabled_ = false;
 
 	} else {
-		// Note: We don't use SmartctlTextParser here, because this information
+		// Note: We don't use SmartctlAtaTextParser here, because this information
 		// may be in some other format. If this information is valid, only then it's
-		// passed to SmartctlTextParser.
-		// Compared to SmartctlTextParser, this one is much looser.
+		// passed to SmartctlAtaTextParser.
+		// Compared to SmartctlAtaTextParser, this one is much looser.
 
 		// Don't put complete messages here - they change across smartctl versions.
 		if (app_pcre_match("/^SMART support is:[ \\t]*Unavailable/mi", info_output_)  // cdroms output this
@@ -225,7 +225,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	std::string size;
 	if (app_pcre_match("/^User Capacity:[ \\t]*(.*)$/mi", info_output_, &size)) {
 		int64_t bytes = 0;
-		size_ = SmartctlTextParser::parse_byte_size(size, bytes, false);
+		size_ = SmartctlAtaTextParser::parse_byte_size(size, bytes, false);
 	}
 
 
@@ -237,7 +237,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 		if (hdd_.has_value()) {
 			disk_type = hdd_.value() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
 		}
-		SmartctlTextParser ps;
+		SmartctlAtaTextParser ps;
 		if (ps.parse_full(this->info_output_, disk_type)) {  // try to parse it
 			this->set_properties(ps.get_properties());  // copy to our drive, overwriting old data
 		}
@@ -301,14 +301,14 @@ std::string StorageDevice::parse_data()
 	if (hdd_.has_value()) {
 		disk_type = hdd_.value() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
 	}
-	SmartctlTextParser ps;
+	SmartctlAtaTextParser ps;
 	if (ps.parse_full(this->full_output_, disk_type)) {  // try to parse it (parse only, set the properties after basic parsing).
 
 		// refresh basic info too
 		this->info_output_ = ps.get_data_full();  // put data including version information
 
 		// note: this will clear the non-basic properties!
-		// this will parse some info that is already parsed by SmartctlTextParser::parse_full(),
+		// this will parse some info that is already parsed by SmartctlAtaTextParser::parse_full(),
 		// but this one sets the StorageDevice class members, not properties.
 		this->parse_basic_data(false, false);  // don't emit signal, we're not complete yet.
 

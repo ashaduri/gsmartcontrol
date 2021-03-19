@@ -21,7 +21,7 @@ Copyright:
 #include "hz/fs.h"
 #include "rconfig/rconfig.h"
 #include "applib/storage_detector.h"
-#include "applib/smartctl_text_parser.h"
+#include "applib/smartctl_ata_text_parser.h"
 #include "applib/gui_utils.h"  // gui_show_error_dialog
 #include "applib/smartctl_executor.h"  // get_smartctl_binary()
 #include "applib/smartctl_executor_gui.h"
@@ -118,7 +118,7 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 		}
 
 		std::string version, version_full;
-		if (!SmartctlTextParser::parse_version(output, version, version_full)) {
+		if (!SmartctlAtaTextParser::parse_version(output, version, version_full)) {
 			error_msg = _("Smartctl returned invalid output.");
 			break;
 		}

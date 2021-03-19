@@ -29,11 +29,11 @@ target_sources(applib PRIVATE
 	gui_utils.h
 	selftest.cpp
 	selftest.h
+	smartctl_ata_text_parser.cpp
+	smartctl_ata_text_parser.h
 	smartctl_executor.cpp
 	smartctl_executor_gui.h
 	smartctl_executor.h
-	smartctl_text_parser.cpp
-	smartctl_text_parser.h
 	storage_detector.cpp
 	storage_detector.h
 	storage_detector_helpers.h

@@ -20,7 +20,7 @@ Copyright:
 #include "hz/debug.h"  // debug_*
 
 #include "app_pcrecpp.h"
-#include "smartctl_text_parser.h"
+#include "smartctl_ata_text_parser.h"
 #include "ata_storage_property_descr.h"
 #include "warning_colors.h"
 
@@ -67,7 +67,7 @@ namespace {
 
 
 // Parse full "smartctl -x" output
-bool SmartctlTextParser::parse_full(const std::string& full, AtaStorageAttribute::DiskType disk_type)
+bool SmartctlAtaTextParser::parse_full(const std::string& full, AtaStorageAttribute::DiskType disk_type)
 {
 	this->clear();  // clear previous data
 
@@ -276,7 +276,7 @@ bool SmartctlTextParser::parse_full(const std::string& full, AtaStorageAttribute
 
 // Supply output of "smartctl --version" here.
 // returns false on failure. Non-unix newlines in s are ok.
-bool SmartctlTextParser::parse_version(const std::string& s, std::string& version, std::string& version_full)
+bool SmartctlAtaTextParser::parse_version(const std::string& s, std::string& version, std::string& version_full)
 {
 	// e.g.
 	// "smartctl version 5.37"
@@ -296,7 +296,7 @@ bool SmartctlTextParser::parse_version(const std::string& s, std::string& versio
 
 
 // check that the version of smartctl output can be parsed with this parser.
-bool SmartctlTextParser::check_parsed_version(const std::string& version_str, [[maybe_unused]] const std::string& version_full_str)
+bool SmartctlAtaTextParser::check_parsed_version(const std::string& version_str, [[maybe_unused]] const std::string& version_full_str)
 {
 	// tested with 5.1-xx versions (1 - 18), and 5.[20 - 38].
 	// note: 5.1-11 (maybe others too) with scsi disk gives non-parsable output (why?).
@@ -318,7 +318,7 @@ bool SmartctlTextParser::check_parsed_version(const std::string& version_str, [[
 
 // convert e.g. "1,000,204,886,016 bytes" to 1.00 TB [931.51 GiB, 1000204886016 bytes].
 // Note: this property is present since 5.33.
-std::string SmartctlTextParser::parse_byte_size(const std::string& str, int64_t& bytes, bool extended)
+std::string SmartctlAtaTextParser::parse_byte_size(const std::string& str, int64_t& bytes, bool extended)
 {
 	// E.g. "500,107,862,016" bytes or "80'060'424'192 bytes" or "80 026 361 856 bytes".
 	// French locale inserts 0xA0 as a separator (non-breaking space, _not_ a valid utf8 char).
@@ -371,7 +371,7 @@ std::string SmartctlTextParser::parse_byte_size(const std::string& str, int64_t&
 
 
 // Parse the section part (with "=== .... ===" header) - info or data sections.
-bool SmartctlTextParser::parse_section(const std::string& header, const std::string& body)
+bool SmartctlAtaTextParser::parse_section(const std::string& header, const std::string& body)
 {
 	if (app_pcre_match("/START OF INFORMATION SECTION/mi", header)) {
 		return parse_section_info(body);
@@ -413,7 +413,7 @@ bool SmartctlTextParser::parse_section(const std::string& header, const std::str
 // ------------------------------------------------ INFO SECTION
 
 
-bool SmartctlTextParser::parse_section_info(const std::string& body)
+bool SmartctlAtaTextParser::parse_section_info(const std::string& body)
 {
 	this->set_data_section_info(body);
 
@@ -522,7 +522,7 @@ http://knowledge.seagate.com/articles/en_US/FAQ/213891en
 
 
 // Parse a component (one line) of the info section
-bool SmartctlTextParser::parse_section_info_property(AtaStorageProperty& p)
+bool SmartctlAtaTextParser::parse_section_info_property(AtaStorageProperty& p)
 {
 	// ---- Info
 	if (p.section != AtaStorageProperty::Section::info) {
@@ -713,7 +713,7 @@ bool SmartctlTextParser::parse_section_info_property(AtaStorageProperty& p)
 
 
 // Parse the Data section (without "===" header)
-bool SmartctlTextParser::parse_section_data(const std::string& body)
+bool SmartctlAtaTextParser::parse_section_data(const std::string& body)
 {
 	this->set_data_section_data(body);
 
@@ -864,7 +864,7 @@ bool SmartctlTextParser::parse_section_data(const std::string& body)
 
 // -------------------- Health
 
-bool SmartctlTextParser::parse_section_data_subsection_health(const std::string& sub)
+bool SmartctlAtaTextParser::parse_section_data_subsection_health(const std::string& sub)
 {
 	// Health section data (--info and --get=all):
 /*
@@ -907,7 +907,7 @@ Device is:        In smartctl database [for details use: -P show]
 
 // -------------------- Capabilities
 
-bool SmartctlTextParser::parse_section_data_subsection_capabilities(const std::string& sub_initial)
+bool SmartctlAtaTextParser::parse_section_data_subsection_capabilities(const std::string& sub_initial)
 {
 	// Capabilities section data:
 /*
@@ -1087,7 +1087,7 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 
 
 // Check the capabilities for internal properties we can use.
-bool SmartctlTextParser::parse_section_data_internal_capabilities(AtaStorageProperty& cap_prop)
+bool SmartctlAtaTextParser::parse_section_data_internal_capabilities(AtaStorageProperty& cap_prop)
 {
 	// Some special capabilities we're interested in.
 
@@ -1344,7 +1344,7 @@ bool SmartctlTextParser::parse_section_data_internal_capabilities(AtaStorageProp
 
 // -------------------- Attributes
 
-bool SmartctlTextParser::parse_section_data_subsection_attributes(const std::string& sub)
+bool SmartctlAtaTextParser::parse_section_data_subsection_attributes(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -1564,7 +1564,7 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 
 
 
-bool SmartctlTextParser::parse_section_data_subsection_directory_log(const std::string& sub)
+bool SmartctlAtaTextParser::parse_section_data_subsection_directory_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -1616,7 +1616,7 @@ Address    Access  R/W   Size  Description
 
 
 
-bool SmartctlTextParser::parse_section_data_subsection_error_log(const std::string& sub)
+bool SmartctlAtaTextParser::parse_section_data_subsection_error_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -1805,7 +1805,7 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 
 // -------------------- Selftest Log
 
-bool SmartctlTextParser::parse_section_data_subsection_selftest_log(const std::string& sub)
+bool SmartctlAtaTextParser::parse_section_data_subsection_selftest_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -1981,7 +1981,7 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 
 // -------------------- Selective Selftest Log
 
-bool SmartctlTextParser::parse_section_data_subsection_selective_selftest_log(const std::string& sub)
+bool SmartctlAtaTextParser::parse_section_data_subsection_selective_selftest_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -2034,7 +2034,7 @@ If Selective self-test is pending on power-up, resume after 0 minute delay.
 
 
 
-bool SmartctlTextParser::parse_section_data_subsection_scttemp_log(const std::string& sub)
+bool SmartctlAtaTextParser::parse_section_data_subsection_scttemp_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -2120,7 +2120,7 @@ Index    Estimated Time   Temperature Celsius
 
 
 
-bool SmartctlTextParser::parse_section_data_subsection_scterc_log(const std::string& sub)
+bool SmartctlAtaTextParser::parse_section_data_subsection_scterc_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -2165,7 +2165,7 @@ SCT Error Recovery Control:
 
 
 
-bool SmartctlTextParser::parse_section_data_subsection_devstat(const std::string& sub)
+bool SmartctlAtaTextParser::parse_section_data_subsection_devstat(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -2335,7 +2335,7 @@ Page Offset Size         Value  Description
 
 
 
-bool SmartctlTextParser::parse_section_data_subsection_sataphy(const std::string& sub)
+bool SmartctlAtaTextParser::parse_section_data_subsection_sataphy(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -2389,21 +2389,33 @@ ID      Size     Value  Description
 
 
 
-std::string SmartctlTextParser::get_data_full() const
+void SmartctlAtaTextParser::clear()
+{
+	data_full_.clear();
+	data_section_info_.clear();
+	data_section_data_.clear();
+	error_msg_.clear();
+
+	properties_.clear();
+}
+
+
+
+std::string SmartctlAtaTextParser::get_data_full() const
 {
 	return data_full_;
 }
 
 
 
-std::string SmartctlTextParser::get_error_msg() const
+std::string SmartctlAtaTextParser::get_error_msg() const
 {
 	return Glib::ustring::compose(_("Cannot parse smartctl output: %1"), error_msg_);
 }
 
 
 
-const std::vector<AtaStorageProperty>& SmartctlTextParser::get_properties() const
+const std::vector<AtaStorageProperty>& SmartctlAtaTextParser::get_properties() const
 {
 	return properties_;
 }
@@ -2412,7 +2424,7 @@ const std::vector<AtaStorageProperty>& SmartctlTextParser::get_properties() cons
 
 // adds a property into property list, looks up and sets its description.
 // Yes, there's no place for this in the Parser, but whatever...
-void SmartctlTextParser::add_property(AtaStorageProperty p)
+void SmartctlAtaTextParser::add_property(AtaStorageProperty p)
 {
 	ata_storage_property_autoset_description(p, disk_type_);
 	ata_storage_property_autoset_warning(p);
@@ -2423,28 +2435,28 @@ void SmartctlTextParser::add_property(AtaStorageProperty p)
 
 
 
-void SmartctlTextParser::set_data_full(const std::string& s)
+void SmartctlAtaTextParser::set_data_full(const std::string& s)
 {
 	data_full_ = s;
 }
 
 
 
-void SmartctlTextParser::set_data_section_info(const std::string& s)
+void SmartctlAtaTextParser::set_data_section_info(const std::string& s)
 {
 	data_section_info_ = s;
 }
 
 
 
-void SmartctlTextParser::set_data_section_data(const std::string& s)
+void SmartctlAtaTextParser::set_data_section_data(const std::string& s)
 {
 	data_section_data_ = s;
 }
 
 
 
-void SmartctlTextParser::set_error_msg(const std::string& s)
+void SmartctlAtaTextParser::set_error_msg(const std::string& s)
 {
 	error_msg_ = s;
 }

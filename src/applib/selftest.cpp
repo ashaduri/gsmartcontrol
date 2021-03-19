@@ -16,7 +16,7 @@ Copyright:
 
 #include "app_pcrecpp.h"
 #include "ata_storage_property.h"
-#include "smartctl_text_parser.h"
+#include "smartctl_ata_text_parser.h"
 #include "selftest.h"
 
 
@@ -243,7 +243,7 @@ std::string SelfTest::update(const std::shared_ptr<CommandExecutor>& smartctl_ex
 		return error_msg;
 
 	AtaStorageAttribute::DiskType disk_type = drive_->get_is_hdd() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
-	SmartctlTextParser ps;
+	SmartctlAtaTextParser ps;
 	if (!ps.parse_full(output, disk_type)) {  // try to parse it
 		return ps.get_error_msg();
 	}
