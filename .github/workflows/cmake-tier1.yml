@@ -94,7 +94,7 @@ jobs:
         shell: msys2 {0}
         working-directory: ${{runner.workspace}}
         run: >
-          cmake -B build -S "$GITHUB_WORKSPACE" -G "MSYS Makefiles" ..
+          cmake -B build -S "$GITHUB_WORKSPACE" -G "MSYS Makefiles"
           -DCMAKE_BUILD_TYPE=$BUILD_TYPE
           -DAPP_BUILD_EXAMPLES=ON
           -DAPP_BUILD_TESTS=ON
@@ -107,7 +107,7 @@ jobs:
 
       - name: Test
         working-directory: ${{runner.workspace}}/build
-        shell: bash
+        shell: msys2 {0}
         run: ctest -C $BUILD_TYPE
 
       - name: Download Package Requirements
