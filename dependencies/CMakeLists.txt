@@ -4,7 +4,17 @@
 #   (C) 2021 Alexander Shaduri <ashaduri@gmail.com>
 ###############################################################################
 
-find_package(PkgConfig REQUIRED)
+# Disable all warnings
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang
+		OR ${CMAKE_CXX_COMPILER_ID} STREQUAL GNU
+		OR ${CMAKE_CXX_COMPILER_ID} STREQUAL AppleClang)
+	add_compile_options(-w)
+elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
+	add_compile_options(/w)
+endif()
+
+
+find_package(PkgConfig REQUIRED)  # pkg_check_modules()
 
 
 # Gtkmm.
