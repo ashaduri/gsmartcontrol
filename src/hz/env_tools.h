@@ -130,6 +130,7 @@ inline bool env_get_value(const std::string& name, std::string& value)
 
 /// Set environment variable. If \c overwrite is false, the value won't
 /// be overwritten if it already exists.
+/// NOTE: This function is not thread-safe in GLibc and should only be invoked at the start of the program.
 /// \return true if the value was written successfully.
 inline bool env_set_value(const std::string& name, const std::string& value, bool overwrite = true)
 {
@@ -179,7 +180,8 @@ inline bool env_set_value(const std::string& name, const std::string& value, boo
 
 
 
-/// Unset an environment variable
+/// Unset an environment variable.
+/// NOTE: This function is not thread-safe in GLibc and should only be invoked at the start of the program.
 inline bool env_unset_value(const std::string& name)
 {
 	if (name.empty() || name.find('=') != std::string::npos)
@@ -210,79 +212,6 @@ inline bool env_unset_value(const std::string& name)
 #endif
 
 }
-
-
-
-/// Temporarily change a value of an environment variable (for as long
-/// as an object of this class exists).
-class ScopedEnv {
-
-	public:
-
-		/// Constructor.
-		/// \param name variable name
-		/// \param value variable value to set
-		/// \param do_change if false, no operation will be performed. This is useful if you need
-		/// 	to conditionally set a variable (you can't practically declare a scoped variable inside
-		/// 	a conditional block to be used outside it).
-		/// \param overwrite if false and the variable already exists, don't change it.
-		ScopedEnv(std::string name, const std::string& value, bool do_change = true, bool overwrite = true)
-				: name_(std::move(name)), do_change_(do_change), old_set_(false), error_(false)
-		{
-			if (do_change_) {
-				old_set_ = env_get_value(name_, old_value_);
-				if (old_set_ && !overwrite) {
-					do_change_ = false;
-				} else {
-					error_ = !env_set_value(name_, value, true);
-				}
-			}
-		}
-
-
-		/// Destructor, changes back the variable to the old value
-		~ScopedEnv()
-		{
-			if (do_change_) {
-				if (old_set_) {
-					env_set_value(name_, old_value_, true);
-				} else {
-					env_unset_value(name_);
-				}
-			}
-		}
-
-
-		/// If true, there was an error setting the value.
-		[[nodiscard]] bool bad() const
-		{
-			return error_;
-		}
-
-
-		/// Check if there was a value before we set it
-		[[nodiscard]] bool get_old_set() const
-		{
-			return old_set_;
-		}
-
-
-		/// Get the old variable value
-		[[nodiscard]] std::string get_old_value() const
-		{
-			return old_value_;
-		}
-
-
-	private:
-
-		std::string name_;  ///< Variable name
-		std::string old_value_;  ///< Old value
-		bool do_change_ = false;  ///< If false, don't do anything
-		bool old_set_ = false;  ///< If false, there was no variable before we set it
-		bool error_ = false;  ///< If true, there was an error setting the value
-
-};
 
 
 

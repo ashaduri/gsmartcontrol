@@ -25,7 +25,6 @@ Copyright:
 
 #include "hz/process_signal.h"  // hz::process_signal_send, win32's W*
 #include "hz/debug.h"
-#include "hz/env_tools.h"  // hz::ScopedEnv
 
 #include "async_command_executor.h"
 
@@ -147,7 +146,7 @@ bool AsyncCommandExecutor::execute()
 
 
 	// Set the locale for a child to Classic - otherwise it may mangle the output.
-	// TODO: make this controllable.
+	// TODO: Disable this for JSON format.
 	bool change_lang = true;
 	#ifdef _WIN32
 		// LANG is posix-only, so it has no effect on win32.
@@ -156,15 +155,19 @@ bool AsyncCommandExecutor::execute()
 		change_lang = false;
 	#endif
 
-	hz::ScopedEnv lang_env("LANG", "C", change_lang);
-
+	std::unique_ptr<gchar*, decltype(&g_strfreev)> child_env(g_get_environ(), &g_strfreev);
+	if (change_lang) {
+		child_env.reset(g_environ_setenv(child_env.release(), "LANG", "C", TRUE));
+	}
+	std::vector<std::string> envp = Glib::ArrayHandler<std::string>::array_to_vector(child_env.release(),
+			Glib::OWNERSHIP_DEEP);
 
 	debug_out_info("app", DBG_FUNC_MSG << "Executing \"" << cmd << "\".\n");
 
 	// Execute the command
 
 	try {
-		Glib::spawn_async_with_pipes(Glib::get_current_dir(), argvp, std::vector<std::string>(),
+		Glib::spawn_async_with_pipes(Glib::get_current_dir(), argvp, envp,
 				Glib::SpawnFlags::SPAWN_SEARCH_PATH | Glib::SpawnFlags::SPAWN_DO_NOT_REAP_CHILD,
 				Glib::SlotSpawnChildSetup(),
 				&this->pid_, nullptr, &fd_stdout_, &fd_stderr_);
