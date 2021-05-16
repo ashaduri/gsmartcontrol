@@ -120,7 +120,6 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}.desktop
 %{_datadir}/applications/*.desktop
 %{_datadir}/icons/hicolor/*/apps/%{name}.png
 %{_datadir}/pixmaps/%{name}.png
-%{_datadir}/pixmaps/%{name}.xpm
 %dir %{_datadir}/metainfo
 %{_datadir}/metainfo/%{name}.appdata.xml
 %{_datadir}/polkit-1/actions/org.%{name}.policy
