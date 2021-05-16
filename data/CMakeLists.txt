@@ -37,11 +37,6 @@ endif()
 
 # Desktop file
 if (NOT WIN32)
-	# Application pixmap (fallback icon for desktop files).
-	# Same as 48/gsmartcontrol.png.
-	install(FILES 48/gsmartcontrol.png
-			DESTINATION "${CMAKE_INSTALL_DATADIR}/pixmaps/")
-
 	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/gsmartcontrol.desktop"
 		DESTINATION "${CMAKE_INSTALL_DATADIR}/applications/")
 
