@@ -37,12 +37,6 @@ endif()
 
 # Desktop file
 if (NOT WIN32)
-	# Application pixmap (fallback icon for desktop files).
-	# Same as 48/gsmartcontrol.png.
-	# Also, xpm for debian menu, 32x32.
-	install(FILES 48/gsmartcontrol.png gsmartcontrol.xpm
-			DESTINATION "${CMAKE_INSTALL_DATADIR}/pixmaps/")
-
 	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/gsmartcontrol.desktop"
 		DESTINATION "${CMAKE_INSTALL_DATADIR}/applications/")
 
