@@ -765,7 +765,7 @@ std::string StorageDevice::get_save_filename() const
 {
 	std::string model = this->get_model_name();  // may be empty
 	std::string serial = this->get_serial_number();
-	std::string date = hz::format_date("%Y-%m-%d", true);
+	std::string date = hz::format_date("%Y-%m-%d_%H%M", true);
 
 	auto filename_format = rconfig::get_data<std::string>("gui/smartctl_output_filename_format");
 	hz::string_replace(filename_format, "{serial}", serial);
