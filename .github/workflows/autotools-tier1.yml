@@ -67,7 +67,7 @@ jobs:
 
   windows-msys2:
     # Disable for now, the configure stage errors out with "The directory name is invalid."
-    if: ${{ false }}  # disable for now
+    if: ${{ false }}
 
     runs-on: windows-latest
     strategy:
@@ -111,8 +111,8 @@ jobs:
       - name: Configure
         shell: msys2 {0}
         working-directory: ${{runner.workspace}}/build
-#        run: >
-#          ../gsmartcontrol/configure --enable-tests --with-nsis=${{ matrix.root }}/bin/makensis.exe --with-windows-sysroot=${{ matrix.root }}
+        # run: >
+        # ../gsmartcontrol/configure --enable-tests --with-nsis=${{ matrix.root }}/bin/makensis.exe --with-windows-sysroot=${{ matrix.root }}
         run: "${GITHUB_WORKSPACE}/gsmartcontrol/configure" --enable-tests
 
       - name: Build
