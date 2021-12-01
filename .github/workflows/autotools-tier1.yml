@@ -1,0 +1,168 @@
+name: Build - GTK3 Branch (Tier 1 platforms)
+
+on:
+  # Triggers the workflow on push or pull request events but only for the branch
+  push:
+    branches: [ gsmartcontrol-gtk3 ]
+  pull_request:
+    branches: [ gsmartcontrol-gtk3 ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+
+env:
+  SMARTMONTOOLS_INSTALLER: smartmontools-7.2-1.win32-setup.exe
+  SMARTMONTOOLS_URL: https://nav.dl.sourceforge.net/project/smartmontools/smartmontools/7.2/smartmontools-7.2-1.win32-setup.exe
+
+
+jobs:
+
+  linux-ubuntu:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: gsmartcontrol-gtk3
+
+    - name: Install Dependencies
+      run: sudo apt-get install libpcre3-dev libgtkmm-3.0-dev gettext autoconf automake
+
+    - name: Run Autogen
+      shell: bash
+      working-directory: ${{runner.workspace}}
+      run: ./autogen.sh
+
+    - name: Create Build Directory
+      shell: bash
+      run: mkdir -p ${{runner.workspace}}/build
+
+    - name: Configure
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: >
+        ../configure --prefix=/usr --enable-tests
+
+    - name: Build
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: make
+
+    - name: Test
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: make check
+
+    - name: Pack Source
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: make dist
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Source Packages (GTK3 Branch)
+        path: ${{runner.workspace}}/build/gsmartcontrol-*.tar.bz2
+
+
+  windows-msys2:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        include: [
+          { msystem: MINGW64, arch: x86_64, root: /mingw64 },
+          { msystem: MINGW32, arch: i686, root: /mingw32 }
+        ]
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: gsmartcontrol-gtk3
+
+      - uses: msys2/setup-msys2@v2
+        # p7zip is needed to extract smartmontools
+        # fontconfig owns /etc/fonts
+        with:
+          msystem: ${{ matrix.msystem }}
+          update: true
+          install: >-
+            mingw-w64-${{ matrix.arch }}-gtkmm3
+            mingw-w64-${{ matrix.arch }}-pkg-config
+            mingw-w64-${{ matrix.arch }}-autoconf
+            mingw-w64-${{ matrix.arch }}-automake
+            mingw-w64-${{ matrix.arch }}-gcc
+            mingw-w64-${{ matrix.arch }}-fontconfig
+            make
+            p7zip
+
+      - name: Run Autogen
+        shell: msys2 {0}
+        working-directory: ${{runner.workspace}}
+        run: ./autogen.sh
+
+      - name: Create Build Directory
+        shell: msys2 {0}
+        run: mkdir -p ${{runner.workspace}}/build
+
+      - name: Configure
+        shell: msys2 {0}
+        working-directory: ${{runner.workspace}}/build
+        run: >
+          ../configure --enable-tests --with-nsis=${{ matrix.root }}/bin/makensis.exe --with-windows-sysroot=${{ matrix.root }}
+
+      - name: Build
+        shell: msys2 {0}
+        working-directory: ${{runner.workspace}}/build
+        run: make
+
+      - name: Test
+        working-directory: ${{runner.workspace}}/build
+        shell: msys2 {0}
+        run: make check
+
+      - name: Download Package Requirements
+        shell: msys2 {0}
+        working-directory: ${{runner.workspace}}/build
+        run: |
+          mkdir smartmontools
+          cd smartmontools
+          wget $SMARTMONTOOLS_URL
+
+      - name: Extract Package Requirements (64-bit)
+        if: ${{ matrix.msystem == 'MINGW64' }}
+        shell: msys2 {0}
+        working-directory: ${{runner.workspace}}/build/smartmontools
+        run: >
+          7z -bb1 e $SMARTMONTOOLS_INSTALLER
+          bin64/smartctl.exe
+          bin64/smartctl-nc.exe
+          bin/update-smart-drivedb.exe
+          bin/drivedb.h
+
+      - name: Extract Package Requirements (32-bit)
+        if: ${{ matrix.msystem == 'MINGW32' }}
+        shell: msys2 {0}
+        working-directory: ${{runner.workspace}}/build/smartmontools
+        run: >
+          7z -bb1 e $SMARTMONTOOLS_INSTALLER
+          bin/smartctl.exe
+          bin/smartctl-nc.exe
+          bin/update-smart-drivedb.exe
+          bin/drivedb.h
+
+      - name: Package ZIP
+        shell: msys2 {0}
+        working-directory: ${{runner.workspace}}/build
+        run: make win-zip-dist
+
+      - name: Package NSIS
+        shell: msys2 {0}
+        working-directory: ${{runner.workspace}}/build
+        run: make win-dist
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Windows Packages (GTK3 Branch)
+          path: ${{runner.workspace}}/build/gsmartcontrol-*-win*.*
+

@@ -1,0 +1,80 @@
+name: Build - GTK3 Branch (Tier 2 platforms)
+
+# Manually triggered
+on: [workflow_dispatch]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: RelWithDebInfo
+
+
+jobs:
+
+  macos-homebrew:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: gsmartcontrol-gtk3
+
+    - name: Install Dependencies
+      run: brew install pkg-config gtkmm3 pcre automake autoconf
+
+    - name: Run Autogen
+      shell: bash
+      working-directory: ${{runner.workspace}}
+      run: ./autogen.sh
+
+    - name: Create Build Directory
+      shell: bash
+      run: mkdir -p ${{runner.workspace}}/build
+
+    - name: Configure
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: >
+        ../configure --prefix=/usr --enable-tests
+
+    - name: Build
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: make
+
+    - name: Test
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: make check
+
+
+  freebsd:
+    runs-on: macos-latest
+#    env:
+#    variables to pass to VM
+#    MYTOKEN : ${{ secrets.MYTOKEN }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: gsmartcontrol-gtk3
+
+    - name: Build and test in FreeBSD
+      id: test
+      uses: vmactions/freebsd-vm@v0.1.2
+      with:
+        envs: 'BUILD_TYPE'
+        usesh: true
+        sync: rsync
+        mem: 2048
+        prepare: >
+          pkg install -y pkgconf gtkmm30 gettext pcre libiconv autoconf automake
+
+        run: >
+          ./autogen.sh
+
+          mkdir build && cd build
+
+          ../configure --prefix=/usr --enable-tests
+
+          make
+
+          make check
