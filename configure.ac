@@ -478,7 +478,7 @@ AC_CONFIG_FILES([ data/gsmartcontrol.desktop data/gsmartcontrol.appdata.xml \
 	data/nsis/distribution.txt data/nsis/gsmartcontrol.nsi \
 	debian.dist/changelog \
 	src/gsc_winres.rc src/gsmartcontrol.exe.manifest \
-	gsmartcontrol.spec version compilation_flags ])
+	gsmartcontrol.spec version.txt compilation_flags ])
 
 
 AC_CONFIG_FILES([data/gsmartcontrol-root], [chmod +x data/gsmartcontrol-root])
