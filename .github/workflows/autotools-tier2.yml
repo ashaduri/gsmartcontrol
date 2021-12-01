@@ -55,7 +55,7 @@ jobs:
 
 
   freebsd:
-    runs-on: macos-latest
+    runs-on: macos-10.15
 #    env:
 #    variables to pass to VM
 #    MYTOKEN : ${{ secrets.MYTOKEN }}
@@ -66,11 +66,9 @@ jobs:
 
     - name: Build and test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@v0.1.2
+      uses: vmactions/freebsd-vm@v0.1.5
       with:
         usesh: true
-        # sshfs is more reliable than rsync
-        sync: sshfs
         mem: 2048
         prepare: >
           pkg install -y pkgconf gtkmm30 gettext pcre libiconv autoconf automake
