@@ -474,11 +474,7 @@ AC_SUBST(AUTODIRS)
 # -------------------------------------------------------------------------------------
 
 
-AC_CONFIG_FILES([ data/gsmartcontrol.desktop data/gsmartcontrol.appdata.xml \
-	data/nsis/distribution.txt data/nsis/gsmartcontrol.nsi \
-	debian.dist/changelog \
-	src/gsc_winres.rc src/gsmartcontrol.exe.manifest \
-	gsmartcontrol.spec version.txt compilation_flags ])
+AC_CONFIG_FILES([data/gsmartcontrol.desktop data/gsmartcontrol.appdata.xml data/nsis/distribution.txt data/nsis/gsmartcontrol.nsi debian.dist/changelog src/gsc_winres.rc src/gsmartcontrol.exe.manifest gsmartcontrol.spec version.txt compilation_flags])
 
 
 AC_CONFIG_FILES([data/gsmartcontrol-root], [chmod +x data/gsmartcontrol-root])
@@ -486,11 +482,7 @@ AC_CONFIG_FILES([data/gsmartcontrol-root], [chmod +x data/gsmartcontrol-root])
 
 # these are all the makefiles to generate
 
-AC_CONFIG_FILES([Makefile src/Makefile src/applib/Makefile src/res/Makefile src/hz/Makefile \
-	src/libdebug/Makefile src/rconfig/Makefile src/rmn/Makefile \
-	data/Makefile data/16/Makefile data/22/Makefile data/24/Makefile data/32/Makefile \
-	data/48/Makefile data/64/Makefile data/128/Makefile data/256/Makefile data/nsis/Makefile \
-	debian.dist/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile src/applib/Makefile src/res/Makefile src/hz/Makefile src/libdebug/Makefile src/rconfig/Makefile src/rmn/Makefile data/Makefile data/16/Makefile data/22/Makefile data/24/Makefile data/32/Makefile data/48/Makefile data/64/Makefile data/128/Makefile data/256/Makefile data/nsis/Makefile debian.dist/Makefile])
 
 
 AC_OUTPUT
