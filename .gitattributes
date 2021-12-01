@@ -1,0 +1,3 @@
+
+# Make sure github recognizes header files as C++, not C.
+*.h linguist-language=C++

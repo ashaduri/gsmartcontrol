@@ -1,0 +1,78 @@
+
+# Builds
+/0*
+/doxygen_doc*
+/win32*
+/win64*
+/cmake-build-*
+
+# Build system artifacts
+/autom4te.cache
+/aclocal.m4
+/ar-lib
+/compilation_flags
+/compile
+/config.guess
+/config.h
+/config.h.in
+/config.log
+/config.status
+/config.sub
+/configure
+/depcomp
+/gsmartcontrol.spec
+/install-sh
+Makefile
+Makefile.in
+/missing
+/stamp-h1
+/version.txt
+*.glade.cpp
+*.ui.cpp
+*.txt.cpp
+/data/gsmartcontrol.appdata.xml
+/data/gsmartcontrol.desktop
+/data/gsmartcontrol-root
+/data/nsis/distribution.txt
+/data/nsis/gsmartcontrol.nsi
+/debian.dist/changelog
+/src/gsc_winres.rc
+/src/gsmartcontrol.exe.manifest
+.deps
+
+
+# Non-project files
+/TODO
+
+# Doxygen generated
+/doxygen_doc
+
+# OS-generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+
+# IDE
+/.vs
+/*.pcs
+/.idea
+/CMakeLists.txt.user
+/.kdev4
+
+# Translations
+/po/boldquot.sed
+/po/en@boldquot.header
+/po/en@quot.header
+/po/insert-header.sin
+/po/Makevars.template
+/po/quot.sed
+/po/remove-potcdate.sin
+/po/Rules-quot
+/po/gsmartcontrol.pot
+/po/*.gmo
+
