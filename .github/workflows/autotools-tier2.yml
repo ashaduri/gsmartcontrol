@@ -1,7 +1,14 @@
 name: Build - GTK3 Branch (Tier 2 platforms)
 
-# Manually triggered
-on: [workflow_dispatch]
+on:
+  # Triggers the workflow on push or pull request events but only for the branch
+  push:
+    branches: [ gsmartcontrol-gtk3 ]
+  pull_request:
+    branches: [ gsmartcontrol-gtk3 ]
+  # Allows you to run this workflow manually from the Actions tab.
+  # This does not work for non-default branches, that's why we use the push / pull_request triggers above.
+  workflow_dispatch:
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)

@@ -88,8 +88,8 @@ jobs:
           install: >-
             mingw-w64-${{ matrix.arch }}-gtkmm3
             mingw-w64-${{ matrix.arch }}-pkg-config
-            mingw-w64-${{ matrix.arch }}-autoconf
-            mingw-w64-${{ matrix.arch }}-automake
+            autoconf
+            automake
             mingw-w64-${{ matrix.arch }}-gcc
             mingw-w64-${{ matrix.arch }}-fontconfig
             make
