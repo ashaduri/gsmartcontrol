@@ -68,7 +68,6 @@ jobs:
       id: test
       uses: vmactions/freebsd-vm@v0.1.2
       with:
-        envs: 'BUILD_TYPE'
         usesh: true
         sync: rsync
         mem: 2048

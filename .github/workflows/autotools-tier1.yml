@@ -108,7 +108,7 @@ jobs:
         shell: msys2 {0}
         working-directory: ${{runner.workspace}}/build
         run: >
-          $GITHUB_WORKSPACE/configure --enable-tests --with-nsis=${{ matrix.root }}/bin/makensis.exe --with-windows-sysroot=${{ matrix.root }}
+          ../gsmartcontrol/configure --enable-tests --with-nsis=${{ matrix.root }}/bin/makensis.exe --with-windows-sysroot=${{ matrix.root }}
 
       - name: Build
         shell: msys2 {0}
