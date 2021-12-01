@@ -69,7 +69,8 @@ jobs:
       uses: vmactions/freebsd-vm@v0.1.2
       with:
         usesh: true
-        sync: rsync
+        # sshfs is more reliable than rsync
+        sync: sshfs
         mem: 2048
         prepare: >
           pkg install -y pkgconf gtkmm30 gettext pcre libiconv autoconf automake
