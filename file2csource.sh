@@ -24,7 +24,12 @@ fi
 in_file="$1";
 out_file="$2";
 sym_name="$3";
-size=`stat -c "%s" "$in_file"`
+size="";
+if [[ $OSTYPE == 'darwin'* ]]; then
+	size=`stat "-f%z" "$in_file"`
+else
+	size=`stat -c "%s" "$in_file"`
+fi
 
 
 # header. extern means "global" in this context (needed because const
