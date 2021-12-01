@@ -104,9 +104,10 @@ jobs:
         run: ./autogen.sh
 
       - name: Create Build Directory
-        shell: msys2 {0}
+        shell: cmd
         working-directory: ${{runner.workspace}}
-        run: mkdir build
+        run: md build
+
 
       - name: Configure
         shell: msys2 {0}
