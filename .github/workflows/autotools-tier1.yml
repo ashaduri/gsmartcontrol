@@ -108,11 +108,10 @@ jobs:
         working-directory: ${{runner.workspace}}
         run: md build
 
-
       - name: Configure
         shell: msys2 {0}
         working-directory: ${{runner.workspace}}/build
-        run: "${GITHUB_WORKSPACE}/gsmartcontrol/configure" --enable-tests
+        run: ../gsmartcontrol/configure --enable-tests
 
       - name: Build
         shell: msys2 {0}
