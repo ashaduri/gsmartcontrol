@@ -30,7 +30,7 @@ jobs:
 
     - name: Run Autogen
       shell: bash
-      working-directory: ${{runner.workspace}}
+      working-directory: ${{runner.workspace}}/gsmartcontrol
       run: ./autogen.sh
 
     - name: Create Build Directory
@@ -41,7 +41,7 @@ jobs:
       shell: bash
       working-directory: ${{runner.workspace}}/build
       run: >
-        ../configure --prefix=/usr --enable-tests
+        $GITHUB_WORKSPACE/configure --prefix=/usr --enable-tests
 
     - name: Build
       shell: bash
@@ -97,7 +97,7 @@ jobs:
 
       - name: Run Autogen
         shell: msys2 {0}
-        working-directory: ${{runner.workspace}}
+        working-directory: ${{runner.workspace}}/gsmartcontrol
         run: ./autogen.sh
 
       - name: Create Build Directory
@@ -108,7 +108,7 @@ jobs:
         shell: msys2 {0}
         working-directory: ${{runner.workspace}}/build
         run: >
-          ../configure --enable-tests --with-nsis=${{ matrix.root }}/bin/makensis.exe --with-windows-sysroot=${{ matrix.root }}
+          $GITHUB_WORKSPACE/configure --enable-tests --with-nsis=${{ matrix.root }}/bin/makensis.exe --with-windows-sysroot=${{ matrix.root }}
 
       - name: Build
         shell: msys2 {0}

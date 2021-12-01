@@ -23,7 +23,7 @@ jobs:
 
     - name: Run Autogen
       shell: bash
-      working-directory: ${{runner.workspace}}
+      working-directory: ${{runner.workspace}}/gsmartcontrol
       run: ./autogen.sh
 
     - name: Create Build Directory
@@ -34,7 +34,7 @@ jobs:
       shell: bash
       working-directory: ${{runner.workspace}}/build
       run: >
-        ../configure --prefix=/usr --enable-tests
+        $GITHUB_WORKSPACE/configure --prefix=/usr --enable-tests
 
     - name: Build
       shell: bash
