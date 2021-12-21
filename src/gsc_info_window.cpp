@@ -133,7 +133,7 @@ namespace {
 			if (p->is_value_type<AtaStorageStatistic>() && p->get_value<AtaStorageStatistic>().is_header) {
 				crt->property_weight() = Pango::WEIGHT_BOLD;
 			} else {
-				crt->property_weight().reset_value();
+				crt->property_weight() = Pango::WEIGHT_NORMAL;
 			}
 		}
 	}
