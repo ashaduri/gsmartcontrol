@@ -158,6 +158,7 @@ bool AsyncCommandExecutor::execute()
 	std::unique_ptr<gchar*, decltype(&g_strfreev)> child_env(g_get_environ(), &g_strfreev);
 	if (change_lang) {
 		child_env.reset(g_environ_setenv(child_env.release(), "LANG", "C", TRUE));
+		child_env.reset(g_environ_setenv(child_env.release(), "LC_NUMERIC", "C", TRUE));
 	}
 	std::vector<std::string> envp = Glib::ArrayHandler<std::string>::array_to_vector(child_env.release(),
 			Glib::OWNERSHIP_DEEP);
