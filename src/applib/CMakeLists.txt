@@ -48,6 +48,7 @@ target_sources(applib PRIVATE
 	storage_settings.h
 	warning_colors.h
 	warning_level.h
+	window_instance_manager.h
 )
 
 target_link_libraries(applib

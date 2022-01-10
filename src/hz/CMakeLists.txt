@@ -17,7 +17,6 @@ target_sources(hz INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}/format_unit.h
 	${CMAKE_CURRENT_SOURCE_DIR}/fs.h
 	${CMAKE_CURRENT_SOURCE_DIR}/fs_ns.h
-	${CMAKE_CURRENT_SOURCE_DIR}/instance_manager.h
 	${CMAKE_CURRENT_SOURCE_DIR}/launch_url.h
 	${CMAKE_CURRENT_SOURCE_DIR}/locale_tools.h
 	${CMAKE_CURRENT_SOURCE_DIR}/main_tools.h
