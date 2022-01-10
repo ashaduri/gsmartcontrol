@@ -131,7 +131,7 @@ bool Cmdex::execute()
 	#endif
 
 	hz::ScopedEnv lang_env("LANG", "C", change_lang);
-
+	hz::ScopedEnv lc_numeric_env("LC_NUMERIC", "C", change_lang);
 
 	debug_out_info("app", DBG_FUNC_MSG << "Executing \"" << cmd << "\".\n");
 /*
