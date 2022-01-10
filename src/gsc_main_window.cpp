@@ -155,7 +155,8 @@ GscMainWindow::~GscMainWindow()
 	// This is needed because for some reason, if any icon is selected,
 	// on_iconview_selection_changed() is called even after the window is deleted,
 	// causing crash on exit.
-	iconview_->clear_all();
+	// iconview_->clear_all();
+	delete iconview_;
 }
 
 
@@ -535,7 +536,7 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 
 		case action_perform_tests:
 			if (iconview_) {
-				GscInfoWindow* win = this->show_device_info_window(iconview_->get_selected_drive());
+				auto win = this->show_device_info_window(iconview_->get_selected_drive());
 				if (win)  // won't be created if test is already running
 					win->show_tests();
 			}
@@ -573,7 +574,7 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 		case action_executor_log:
 		{
 			// this one will only hide on close.
-			GscExecutorLogWindow* win = GscExecutorLogWindow::create();  // probably already created
+			auto win = GscExecutorLogWindow::create();  // probably already created
 			// win->set_transient_for(*this);  // don't do this - it will make it always-on-top of this.
 			win->show_last();  // show the window and select last entry
 			break;
@@ -587,7 +588,7 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 
 		case action_preferences:
 		{
-			GscPreferencesWindow* win = GscPreferencesWindow::create();  // destroyed on close
+			auto win = GscPreferencesWindow::create();  // destroyed on close
 			win->set_transient_for(*this);  // for "destroy with parent", always-on-top
 			win->set_main_window(this);
 			win->set_modal(true);
@@ -609,7 +610,7 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 
 		case action_about:
 		{
-			GscAboutDialog* dialog = GscAboutDialog::create();  // destroyed on close
+			auto dialog = GscAboutDialog::create();  // destroyed on close
 			dialog->set_transient_for(*this);  // for "destroy with parent"
 			dialog->show();
 			break;
@@ -1184,7 +1185,7 @@ bool GscMainWindow::testing_active() const
 
 
 
-GscInfoWindow* GscMainWindow::show_device_info_window(const StorageDevicePtr& drive)
+std::shared_ptr<GscInfoWindow> GscMainWindow::show_device_info_window(const StorageDevicePtr& drive)
 {
 	// if a test is being run on it, disallow.
 	if (drive->get_test_is_active()) {
@@ -1245,7 +1246,7 @@ GscInfoWindow* GscMainWindow::show_device_info_window(const StorageDevicePtr& dr
 	}
 
 
-	GscInfoWindow* win = GscInfoWindow::create();  // self-destroyed
+	auto win = GscInfoWindow::create();  // self-destroyed
 
 	win->set_drive(drive);
 	win->fill_ui_with_info(false);  // already scanned. "refresh" will scan it again in the info window.
@@ -1272,7 +1273,7 @@ void GscMainWindow::show_prefs_updated_message()
 
 void GscMainWindow::show_add_device_chooser()
 {
-	GscAddDeviceWindow* window = GscAddDeviceWindow::create();
+	auto window = GscAddDeviceWindow::create();
 	window->set_main_window(this);
 	window->set_transient_for(*this);
 	window->show();

@@ -138,7 +138,7 @@ bool GscAddDeviceWindow::on_delete_event([[maybe_unused]] GdkEventAny* e)
 
 void GscAddDeviceWindow::on_window_cancel_button_clicked()
 {
-	delete this;
+	this->destroy_instance();
 }
 
 
@@ -159,7 +159,7 @@ void GscAddDeviceWindow::on_window_ok_button_clicked()
 		main_window_->add_device(dev, type, params);
 	}
 
-	delete this;
+	destroy_instance();
 }
 
 

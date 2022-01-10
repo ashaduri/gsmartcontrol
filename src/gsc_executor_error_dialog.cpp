@@ -75,7 +75,7 @@ void gsc_executor_error_dialog_show(const std::string& message, const std::strin
 
 	if (response == Gtk::RESPONSE_HELP) {
 		// this one will only hide on close.
-		GscExecutorLogWindow* win = GscExecutorLogWindow::create();  // probably already created
+		auto win = GscExecutorLogWindow::create();  // probably already created
 		// win->set_transient_for(*this);  // don't do this - it will make it always-on-top of this.
 		win->show_last();  // show the window and select last entry
 	}
@@ -91,7 +91,7 @@ void gsc_no_info_dialog_show(const std::string& message, const std::string& sec_
 			parent, sec_msg_markup, !output.empty());
 
 	if (response == Gtk::RESPONSE_HELP) {
-		GscTextWindow<SmartctlOutputInstance>* win = GscTextWindow<SmartctlOutputInstance>::create();
+		auto win = GscTextWindow<SmartctlOutputInstance>::create();
 		win->set_text_from_command(output_window_title, output);
 
 		if (!default_save_filename.empty())

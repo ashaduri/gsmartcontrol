@@ -78,7 +78,7 @@ void GscAboutDialog::on_response(int response_id)
 	if (response_id == Gtk::RESPONSE_NONE || response_id == Gtk::RESPONSE_DELETE_EVENT
 			|| response_id == Gtk::RESPONSE_CANCEL || response_id == Gtk::RESPONSE_CLOSE) {
 		debug_out_info("app", DBG_FUNC_MSG << "Closing the dialog.\n");
-		delete this;  // close the window and delete the object
+		destroy_instance();  // close the window and delete the object
 	}
 }
 

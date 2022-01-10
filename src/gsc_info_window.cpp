@@ -714,7 +714,7 @@ void GscInfoWindow::on_refresh_info_button_clicked()
 
 void GscInfoWindow::on_view_output_button_clicked()
 {
-	GscTextWindow<SmartctlOutputInstance>* win = GscTextWindow<SmartctlOutputInstance>::create();
+	auto win = GscTextWindow<SmartctlOutputInstance>::create();
 	// make save visible and enable monospace font
 
 	std::string output = this->drive->get_full_output();
@@ -838,7 +838,7 @@ void GscInfoWindow::on_close_window_button_clicked()
 	if (drive && drive->get_test_is_active()) {  // disallow close if test is active.
 		gui_show_warn_dialog(_("Please wait until all tests are finished."), this);
 	} else {
-		delete this;  // deletes this object and nullifies instance
+		destroy_instance();  // deletes this object and nullifies instance
 	}
 }
 

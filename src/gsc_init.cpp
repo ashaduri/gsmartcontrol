@@ -41,6 +41,7 @@ Copyright:
 #include "hz/string_num.h"
 #include "build_config.h"  // VERSION, *PACKAGE*, ...
 
+#include "applib/window_instance_manager.h"
 #include "gsc_main_window.h"
 #include "gsc_executor_log_window.h"
 #include "gsc_settings.h"
@@ -521,34 +522,32 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 	// Create executor log window, but don't show it.
 	// It will track all command executor outputs.
+	// The window is destroyed by the instance manager.
 	GscExecutorLogWindow::create();
 
 
-	// Open the main window
-	GscMainWindow* win = GscMainWindow::create();
-	if (!win) {
-		debug_out_fatal("app", "Cannot create the main window. Exiting.\n");
-		return false;  // cannot create main window
+	// Open the main window.
+	// The window is destroyed by the instance manager.
+	{
+		auto main_window = GscMainWindow::create();
+		if (!main_window) {
+			debug_out_fatal("app", "Cannot create the main window. Exiting.\n");
+			return false;  // cannot create main window
+		}
+
+		// first-boot message
+		// app_show_first_boot_message(win);
+
+		// The Main Loop
+		debug_out_info("app", "Entering main loop.\n");
+		Gtk::Main::run();
+		debug_out_info("app", "Main loop exited.\n");
 	}
 
-
-	// first-boot message
-	// app_show_first_boot_message(win);
-
-
-	// The Main Loop (tm)
-	debug_out_info("app", "Entering main loop.\n");
-	Gtk::Main::run();
-	debug_out_info("app", "Main loop exited.\n");
-
-	// close the main window and delete its object
-	delete GscMainWindow::instance();
-
-	delete GscExecutorLogWindow::instance();
-
+	// Destroy all windows manually, to avoid surprises
+	WindowInstanceManagerStorage::destroy_all_instances();
 
 	// std::cerr << app_get_debug_buffer_str();  // this will output everything that went through libdebug.
-
 
 	return true;
 }

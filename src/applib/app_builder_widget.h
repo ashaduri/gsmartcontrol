@@ -15,11 +15,12 @@ Copyright:
 #include "local_glibmm.h"
 #include <string>
 #include <gtkmm.h>
+#include <memory>
 
 #include "hz/debug.h"
-#include "hz/instance_manager.h"
 #include "hz/data_file.h"
 
+#include "window_instance_manager.h"
 #include "gui_utils.h"  // gui_show_error_dialog
 
 
@@ -52,11 +53,11 @@ Copyright:
 /// management and other benefits.
 /// If \c MultiInstance is false, create() will return the same instance each time.
 template<class Child, bool MultiInstance, class WidgetType = Gtk::Window>
-class AppBuilderWidget : public WidgetType, public hz::InstanceManager<Child, MultiInstance> {
+class AppBuilderWidget : public WidgetType, public WindowInstanceManager<Child, MultiInstance> {
 	public:
 
 		friend class Gtk::Builder;  // allow construction via GtkBuilder
-		// friend class hz::InstanceManager<Child, MultiInstance>;  // allow construction through instance class
+		// friend class WindowInstanceManager<Child, MultiInstance>;  // allow construction through instance class
 
 
 		/// Disallow
@@ -80,7 +81,7 @@ class AppBuilderWidget : public WidgetType, public hz::InstanceManager<Child, Mu
 		/// A glade file in "ui" data domain is loaded with Child::ui_name filename base and is available as
 		/// `get_ui()` in child object.
 		/// \return nullptr if widget could not be loaded.
-		static Child* create();
+		static std::shared_ptr<Child> create();
 
 
 		/// Get UI resource
@@ -127,10 +128,10 @@ class AppBuilderWidget : public WidgetType, public hz::InstanceManager<Child, Mu
 
 
 template<class Child, bool MultiInstance, class WidgetType>
-Child* AppBuilderWidget<Child, MultiInstance, WidgetType>::create()
+std::shared_ptr<Child> AppBuilderWidget<Child, MultiInstance, WidgetType>::create()
 {
 	if constexpr(!MultiInstance) {  // for single-instance objects
-		if (auto* inst = hz::InstanceManager<Child, MultiInstance>::instance()) {
+		if (auto inst = WindowInstanceManager<Child, MultiInstance>::instance()) {
 			return inst;
 		}
 	}
@@ -141,19 +142,16 @@ Child* AppBuilderWidget<Child, MultiInstance, WidgetType>::create()
 	try {
 		auto ui = Gtk::Builder::create_from_file(ui_path.u8string());  // may throw
 
-		Child* o = nullptr;
-		ui->get_widget_derived({Child::ui_name.data(), Child::ui_name.size()}, o);  // Calls Child's constructor
-
-		if (!o) {
+		Child* raw_obj = nullptr;
+		ui->get_widget_derived({Child::ui_name.data(), Child::ui_name.size()}, raw_obj);  // Calls Child's constructor
+		if (!raw_obj) {
 			debug_out_fatal("app", "Fatal error: Cannot get root widget from UI-resource-created hierarchy.\n");
 			gui_show_error_dialog(_("Fatal error: Cannot get root widget from UI-resource-created hierarchy."));
 			return nullptr;
 		}
 
-		if constexpr(!MultiInstance) {
-			hz::InstanceManager<Child, MultiInstance>::set_single_instance(o);  // for single-instance objects
-		}
-		return o;
+		// Store the instance so it does not get destroyed
+		return WindowInstanceManager<Child, MultiInstance>::store_instance(raw_obj);
 	}
 	catch (Glib::Exception& ex) {
 		error_msg = ex.what();

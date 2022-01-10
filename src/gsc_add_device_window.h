@@ -42,7 +42,7 @@ class GscAddDeviceWindow : public AppBuilderWidget<GscAddDeviceWindow, true> {
 	protected:
 
 
-		// ---------- overriden virtual methods
+		// ---------- overridden virtual methods
 
 		/// Destroy this object on delete event (by default it calls hide()).
 		/// Reimplemented from Gtk::Window.

@@ -65,7 +65,7 @@ class GscMainWindow : public AppBuilderWidget<GscMainWindow, false> {
 
 
 		/// Show the info window for the drive
-		GscInfoWindow* show_device_info_window(const StorageDevicePtr& drive);
+		std::shared_ptr<GscInfoWindow> show_device_info_window(const StorageDevicePtr& drive);
 
 		/// Show "Preferences updated, please rescan" message
 		void show_prefs_updated_message();

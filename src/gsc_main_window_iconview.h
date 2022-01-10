@@ -169,6 +169,9 @@ class GscMainWindowIconView : public Gtk::IconView {
 		// Overridden from Gtk::Widget
 		bool on_draw(const Cairo::RefPtr<Cairo::Context>& cr) override
 		{
+			if (in_destruction()) {
+				return true;
+			}
 			if (empty_view_message != Message::none && this->num_icons == 0) {  // no icons
 				Glib::RefPtr<Pango::Layout> layout = this->create_pango_layout("");
 				layout->set_alignment(Pango::ALIGN_CENTER);

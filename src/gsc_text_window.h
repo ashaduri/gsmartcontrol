@@ -252,7 +252,7 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 		/// Button click callback
 		void on_close_window_button_clicked()
 		{
-			delete this;
+			this->destroy_instance();
 		}
 
 
