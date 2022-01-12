@@ -1203,6 +1203,10 @@ bool GscMainWindow::testing_active() const
 
 GscInfoWindow* GscMainWindow::show_device_info_window(StorageDeviceRefPtr drive)
 {
+	if (!drive) {
+		return 0;
+	}
+
 	// if a test is being run on it, disallow.
 	if (drive->get_test_is_active()) {
 		gui_show_warn_dialog("Please wait until the test is finished on this drive.", this);
