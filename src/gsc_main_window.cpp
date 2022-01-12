@@ -1187,6 +1187,10 @@ bool GscMainWindow::testing_active() const
 
 std::shared_ptr<GscInfoWindow> GscMainWindow::show_device_info_window(const StorageDevicePtr& drive)
 {
+	if (!drive) {
+		return nullptr;
+	}
+
 	// if a test is being run on it, disallow.
 	if (drive->get_test_is_active()) {
 		gui_show_warn_dialog(_("Please wait until the test is finished on this drive."), this);

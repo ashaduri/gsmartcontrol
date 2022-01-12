@@ -83,6 +83,8 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 			columns.add(col_drive_ptr);
 
+			columns.add(col_populated);
+
 			// create a Tree Model
 			ref_list_model = Gtk::ListStore::create(columns);
 // 			ref_list_model->set_sort_column(col_name, Gtk::SORT_ASCENDING);
@@ -232,6 +234,8 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 			this->decorate_entry(row);
 
+			row[col_populated] = true;  // triggers rendering
+
 			drive->signal_changed().connect(sigc::mem_fun(this, &GscMainWindowIconView::on_drive_changed));
 
 			if (scroll_to_it) {
@@ -270,6 +274,9 @@ class GscMainWindowIconView : public Gtk::IconView {
 		void decorate_entry(Gtk::TreeModel::Row& row)
 		{
 			StorageDevicePtr drive = row[col_drive_ptr];
+			if (!drive) {
+				return;
+			}
 
 			// it needs this space to be symmetric (why?);
 			std::string name;  // = "<big>" + drive->get_device_with_type() + " </big>\n";
@@ -467,8 +474,11 @@ class GscMainWindowIconView : public Gtk::IconView {
 			} else {  // enable drives menu, set proper smart toggles
 				Gtk::TreePath model_path = *(this->get_selected_items().begin());
 				Gtk::TreeModel::Row row = *(ref_list_model->get_iter(model_path));
-				StorageDevicePtr drive = row[col_drive_ptr];
+				if (!row[col_populated]) {  // protect against using incomplete model entry
+					return;
+				}
 
+				StorageDevicePtr drive = row[col_drive_ptr];
 				main_window->set_drive_menu_status(drive);
 			}
 		}
@@ -482,8 +492,11 @@ class GscMainWindowIconView : public Gtk::IconView {
 				return;
 
 			Gtk::TreeModel::Row row = *(ref_list_model->get_iter(model_path));
-			StorageDevicePtr drive = row[col_drive_ptr];
+			if (!row[col_populated]) {  // protect against using incomplete model entry
+				return;
+			}
 
+			StorageDevicePtr drive = row[col_drive_ptr];
 			main_window->show_device_info_window(drive);
 		}
 
@@ -562,6 +575,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 		Gtk::TreeModelColumn<Glib::ustring> col_description;  ///< Model column
 		Gtk::TreeModelColumn<Glib::RefPtr<Gdk::Pixbuf> > col_pixbuf;  ///< Model column
 		Gtk::TreeModelColumn<StorageDevicePtr> col_drive_ptr;  ///< Model column
+		Gtk::TreeModelColumn<bool> col_populated;  ///< Model column, indicates whether the model entry has been fully populated.
 
 		Glib::RefPtr<Gtk::ListStore> ref_list_model;  ///< The icon view model
 		int num_icons = 0;  ///< Track the number of icons, because liststore makes it difficult to count them.
