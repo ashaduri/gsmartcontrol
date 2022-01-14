@@ -300,7 +300,7 @@ class AtaStorageProperty {
 		std::string generic_name;  ///< Generic (internal) name. May be same as reported_name, or something more program-identifiable.
 		std::string displayable_name;  ///< Readable property name. May be same as reported_name, or something more user-readable. Possibly translatable.
 
-		std::string description;  ///< Property description (for tooltips, etc...)
+		std::string description;  ///< Property description (for tooltips, etc...). May contain markup.
 
 		Section section = Section::unknown;  ///< Section this property belongs to
 		SubSection subsection = SubSection::unknown;  ///< Subsection this property belongs to

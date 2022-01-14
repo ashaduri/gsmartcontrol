@@ -133,7 +133,8 @@ namespace {
 			if (p->is_value_type<AtaStorageStatistic>() && p->get_value<AtaStorageStatistic>().is_header) {
 				crt->property_weight() = Pango::WEIGHT_BOLD;
 			} else {
-				crt->property_weight() = Pango::WEIGHT_NORMAL;
+				// Do not use WEIGHT_NORMAL here, it interferes with cell markup
+				crt->property_weight().reset_value();
 			}
 		}
 	}
@@ -1181,12 +1182,12 @@ void GscInfoWindow::fill_ui_statistics(const std::vector<AtaStorageProperty>& pr
 		Gtk::TreeRow row = *(list_store->append());
 
 		const auto& st = p.get_value<AtaStorageStatistic>();
-		row[col_description] = (st.is_header ? p.displayable_name : ("    " + p.displayable_name));
-		row[col_value] = st.format_value();
-		row[col_flags] = st.flags;  // it's a string, not int.
-		row[col_page_offset] = (st.is_header ? std::string()
+		row[col_description] = Glib::Markup::escape_text(st.is_header ? p.displayable_name : ("    " + p.displayable_name));
+		row[col_value] = Glib::Markup::escape_text(st.format_value());
+		row[col_flags] = Glib::Markup::escape_text(st.flags);  // it's a string, not int.
+		row[col_page_offset] = Glib::Markup::escape_text(st.is_header ? std::string()
 				: hz::string_sprintf("0x%02x, 0x%03x", int(st.page), int(st.offset)));
-		row[col_tooltip] = p.get_description();
+		row[col_tooltip] = p.get_description();  // markup
 		row[col_storage] = &p;
 
 		if (int(p.warning) > int(max_tab_warning))
@@ -1375,11 +1376,11 @@ void GscInfoWindow::fill_ui_self_test_log(const std::vector<AtaStorageProperty>&
 		const auto& sse = p.get_value<AtaStorageSelftestEntry>();
 
 		row[col_num] = sse.test_num;
-		row[col_type] = sse.type;
-		row[col_status] = sse.get_status_str();
-		row[col_percent] = hz::number_to_string_locale(100 - sse.remaining_percent) + "%";
-		row[col_hours] = sse.format_lifetime_hours();
-		row[col_lba] = sse.lba_of_first_error;
+		row[col_type] = Glib::Markup::escape_text(sse.type);
+		row[col_status] = Glib::Markup::escape_text(sse.get_status_str());
+		row[col_percent] = Glib::Markup::escape_text(hz::number_to_string_locale(100 - sse.remaining_percent) + "%");
+		row[col_hours] = Glib::Markup::escape_text(sse.format_lifetime_hours());
+		row[col_lba] = Glib::Markup::escape_text(sse.lba_of_first_error);
 		// There are no descriptions in self-test log entries, so don't display
 		// "No description available" for all of them.
 		// row[col_tooltip] = p.get_description();
@@ -1508,13 +1509,11 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<AtaStorageProperty>& pro
 
 			Gtk::TreeRow row = *(list_store->append());
 			row[col_num] = eb.error_num;
-			row[col_hours] = eb.format_lifetime_hours();
-			row[col_state] = eb.device_state;
-			row[col_type] = AtaStorageErrorBlock::get_displayable_error_types(eb.reported_types);
-			row[col_details] = (type_details.empty() ? "-" : type_details);  // e.g. OBS has no details
-			// There are no descriptions in self-test log entries, so don't display
-			// "No description available" for all of them.
-			row[col_tooltip] = p.get_description();
+			row[col_hours] = Glib::Markup::escape_text(eb.format_lifetime_hours());
+			row[col_state] = Glib::Markup::escape_text(eb.device_state);
+			row[col_type] = Glib::Markup::escape_text(AtaStorageErrorBlock::get_displayable_error_types(eb.reported_types));
+			row[col_details] = Glib::Markup::escape_text(type_details.empty() ? "-" : type_details);  // e.g. OBS has no details
+			row[col_tooltip] = p.get_description();  // markup
 			row[col_storage] = &p;
 			row[col_mark_name] = Glib::ustring::compose(_("Error %1"), eb.error_num);
 		}
@@ -1590,7 +1589,8 @@ void GscInfoWindow::fill_ui_temperature_log(const std::vector<AtaStorageProperty
 		temperature = Glib::ustring::compose(C_("temperature", "%1 C"), temperature);
 	}
 	temp_property.set_description(_("Current drive temperature in Celsius."));  // overrides attribute description
-	label_strings.emplace_back(Glib::ustring::compose(_("Current temperature: %1"), "<b>" + temperature + "</b>"), &temp_property, true);
+	label_strings.emplace_back(Glib::ustring::compose(_("Current temperature: %1"),
+			"<b>" + Glib::Markup::escape_text(temperature) + "</b>"), &temp_property, true);
 	if (int(temp_property.warning) > int(max_tab_warning))
 		max_tab_warning = temp_property.warning;
 
@@ -1660,7 +1660,6 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<AtaStoragePro
 		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::capabilities)
 			continue;
 
-		Glib::ustring name = p.displayable_name;
 		std::string flag_value;
 		Glib::ustring str_value;
 
@@ -1674,10 +1673,10 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<AtaStoragePro
 
 		Gtk::TreeRow row = *(list_store->append());
 		row[col_index] = index;
-		row[col_name] = name;
-		row[col_flag_value] = (flag_value.empty() ? "-" : flag_value);
-		row[col_str_values] = str_value;
-		row[col_tooltip] = p.get_description();
+		row[col_name] = Glib::Markup::escape_text(p.displayable_name);
+		row[col_flag_value] = Glib::Markup::escape_text(flag_value.empty() ? "-" : flag_value);
+		row[col_str_values] = Glib::Markup::escape_text(str_value);
+		row[col_tooltip] = p.get_description();  // markup
 		row[col_storage] = &p;
 
 		if (int(p.warning) > int(max_tab_warning))
@@ -1902,7 +1901,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 	if (!self->test_error_msg.empty()) {
 		aborted = true;
 		severity = AtaStorageSelftestEntry::StatusSeverity::error;
-		result_msg = Glib::ustring::compose(_("<b>Test aborted:</b> %1"), self->test_error_msg);
+		result_msg = Glib::ustring::compose(_("<b>Test aborted:</b> %1"), Glib::Markup::escape_text(self->test_error_msg));
 
 	} else {
 		severity = AtaStorageSelftestEntry::get_status_severity(status);
@@ -1911,7 +1910,8 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 			result_msg = "<b>"s + _("Test was manually aborted.") + "</b>";  // it's a StatusSeverity::none message
 
 		} else {
-			result_msg = Glib::ustring::compose(_("<b>Test result:</b> %1."), AtaStorageSelftestEntry::get_status_displayable_name(status));
+			result_msg = Glib::ustring::compose(_("<b>Test result:</b> %1."),
+					Glib::Markup::escape_text(AtaStorageSelftestEntry::get_status_displayable_name(status)));
 
 			// It may not reach 100% somehow, so do it manually.
 			if (test_completion_progressbar)

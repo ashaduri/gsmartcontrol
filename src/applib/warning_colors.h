@@ -76,13 +76,13 @@ inline std::string storage_property_get_warning_reason(const AtaStorageProperty&
 			break;
 		case WarningLevel::notice:
 			/// Translators: %1 and %2 are HTML tags, %3 is a message.
-			return Glib::ustring::compose(_("%1Notice:%2 %3"), start, stop, p.warning_reason);
+			return Glib::ustring::compose(_("%1Notice:%2 %3"), start, stop, Glib::Markup::escape_text(p.warning_reason));
 		case WarningLevel::warning:
 			/// Translators: %1 and %2 are HTML tags, %3 is a message.
-			return Glib::ustring::compose(_("%1Warning:%2 %3"), start, stop, p.warning_reason);
+			return Glib::ustring::compose(_("%1Warning:%2 %3"), start, stop, Glib::Markup::escape_text(p.warning_reason));
 		case WarningLevel::alert:
 			/// Translators: %1 and %2 are HTML tags, %3 is a message.
-			return Glib::ustring::compose(_("%1ALERT:%2 %3"), start, stop, p.warning_reason);
+			return Glib::ustring::compose(_("%1ALERT:%2 %3"), start, stop, Glib::Markup::escape_text(p.warning_reason));
 	}
 
 	return {};

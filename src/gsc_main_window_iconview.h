@@ -334,9 +334,9 @@ class GscMainWindowIconView : public Gtk::IconView {
 				tooltip_strs.push_back(Glib::ustring::compose(_("Serial number: %1"), "<b>" + Glib::Markup::escape_text(drive->get_serial_number()) + "</b>"));
 			}
 			tooltip_strs.push_back(Glib::ustring::compose(_("SMART status: %1"),
-					"<b>" + StorageDevice::get_status_displayable_name(drive->get_smart_status()) + "</b>"));
+					"<b>" + Glib::Markup::escape_text(StorageDevice::get_status_displayable_name(drive->get_smart_status())) + "</b>"));
 			tooltip_strs.push_back(Glib::ustring::compose(_("Automatic Offline Data Collection status: %1"),
-					"<b>" + StorageDevice::get_status_displayable_name(drive->get_aodc_status()) + "</b>"));
+					"<b>" + Glib::Markup::escape_text(StorageDevice::get_status_displayable_name(drive->get_aodc_status())) + "</b>"));
 
 			std::string tooltip_str = hz::string_join(tooltip_strs, '\n');
 
@@ -385,9 +385,9 @@ class GscMainWindowIconView : public Gtk::IconView {
 			// sometimes leads to screwed up icons in iconview (blame gtk).
 
 			if (row.get_value(col_name) != name)
-				row[col_name] = name;
+				row[col_name] = name;  // markup
 			if (row.get_value(col_description) != tooltip_str)
-				row[col_description] = tooltip_str;
+				row[col_description] = tooltip_str;  // markup
 
 			if (row.get_value(col_pixbuf) != icon)
 				row[col_pixbuf] = icon;

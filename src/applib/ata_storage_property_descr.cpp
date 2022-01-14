@@ -1504,9 +1504,9 @@ namespace {
 				same_names = app_pcre_match("/^" + app_pcre_escape(match) + "$/i", against);
 			}
 
-			std::string descr =  std::string("<b>") + attr.displayable_name + "</b>";
+			std::string descr =  std::string("<b>") + Glib::Markup::escape_text(attr.displayable_name) + "</b>";
 			if (!same_names) {
-				std::string reported_name_for_descr = hz::string_replace_copy(p.reported_name, '_', ' ');
+				std::string reported_name_for_descr = Glib::Markup::escape_text(hz::string_replace_copy(p.reported_name, '_', ' '));
 				descr += "\n<small>Reported by smartctl as <b>\"" + reported_name_for_descr + "\"</b></small>\n";
 			}
 			descr += "\n";
@@ -1535,7 +1535,7 @@ namespace {
 			sd.description = "No description is available for this attribute.";
 
 		} else {
-			std::string descr =  std::string("<b>") + displayable_name + "</b>\n";
+			std::string descr =  std::string("<b>") + Glib::Markup::escape_text(displayable_name) + "</b>\n";
 			descr += sd.description;
 
 			if (p.get_value<AtaStorageStatistic>().is_normalized()) {

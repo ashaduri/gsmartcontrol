@@ -949,7 +949,7 @@ void GscMainWindow::update_status_widgets()
 			health_label_->set_text(health_prop.format_value());
 			std::string fg;
 			if (app_property_get_label_highlight_color(health_prop.warning, fg)) {
-				health_label_->set_markup("<span color=\"" + fg + "\">"+ health_label_->get_text() + "</span>");
+				health_label_->set_markup("<span color=\"" + fg + "\">"+ Glib::Markup::escape_text(health_label_->get_text()) + "</span>");
 			}
 			// don't set description tooltip - we already have the basic one.
 			// unless it's failing.
