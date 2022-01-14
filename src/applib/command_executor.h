@@ -70,13 +70,13 @@ class CommandExecutor : public sigc::trackable {
 		CommandExecutor(const CommandExecutor& other) = delete;
 
 		/// Deleted
-		CommandExecutor(const CommandExecutor&& other) = delete;
+		CommandExecutor(CommandExecutor&& other) = delete;
 
 		/// Deleted
 		CommandExecutor& operator=(CommandExecutor& other) = delete;
 
 		/// Deleted
-		CommandExecutor& operator=(const CommandExecutor&& other) = delete;
+		CommandExecutor& operator=(CommandExecutor&& other) = delete;
 
 
 		/// Virtual destructor

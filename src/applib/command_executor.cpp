@@ -34,9 +34,9 @@ CommandExecutor::CommandExecutor(std::string command_name, std::string command_a
 
 
 CommandExecutor::CommandExecutor()
+		// Translators: {command} will be replaced by command name.
+		: running_msg_(_("Running {command}..."))
 {
-	/// Translators: {command} will be replaced by command name.
-	running_msg_ = _("Running {command}...");
 	set_error_header(std::string(_("An error occurred while executing command:")) + "\n\n");
 }
 
@@ -131,7 +131,7 @@ bool CommandExecutor::execute()
 			g_main_context_iteration(nullptr, FALSE);
 		}
 
-		const gulong sleep_us = 50*1000;  // 50 msec. avoids 100% CPU usage.
+		const gulong sleep_us = 50UL * 1000UL;  // 50 msec. avoids 100% CPU usage.
 		g_usleep(sleep_us);
 	}
 

@@ -143,7 +143,7 @@ inline std::error_code read_proc_file(const hz::fs::path& file, std::string& con
 	auto& cache = get_read_file_cache_ref();
 	if (auto iter = cache.find(file); iter != cache.end()) {
 		contents = iter->second;
-		return std::error_code();
+		return {};
 	}
 
 	auto ec = hz::fs_file_get_contents_unseekable(file, contents);
@@ -157,7 +157,7 @@ inline std::error_code read_proc_file(const hz::fs::path& file, std::string& con
 	debug_out_dump("app", DBG_FUNC_MSG << "File contents (\"" << file.string() << "\"):\n" << contents << "\n");
 	debug_end();
 
-	return std::error_code();
+	return {};
 }
 
 
@@ -196,7 +196,7 @@ inline std::string read_proc_partitions_file(std::vector<std::string>& lines)
 		return ec.message();
 	}
 
-	return std::string();
+	return {};
 }
 
 
@@ -221,7 +221,7 @@ inline std::string read_proc_devices_file(std::vector<std::string>& lines)
 		return ec.message();
 	}
 
-	return std::string();
+	return {};
 }
 
 
@@ -267,7 +267,7 @@ inline std::string read_proc_scsi_scsi_file(std::vector< std::pair<int, std::str
 		}
 	}
 
-	return std::string();
+	return {};
 }
 
 
@@ -315,7 +315,7 @@ inline std::string read_proc_scsi_sg_devices_file(std::vector<std::vector<int>>&
 		}
 	}
 
-	return std::string();
+	return {};
 }
 
 
@@ -434,7 +434,7 @@ inline std::string detect_drives_linux_proc_partitions(std::vector<StorageDevice
 		}
 	}
 
-	return std::string();
+	return {};
 }
 
 
@@ -499,7 +499,7 @@ inline std::string detect_drives_linux_3ware(std::vector<StorageDevicePtr>& driv
 
 	if (!twa_found && !twe_found && !twl_found) {
 		debug_out_info("app", DBG_FUNC_MSG << "No 3ware-specific entries found in devices file.\n");
-		return std::string();  // no controllers
+		return {};  // no controllers
 	}
 
 	lines.clear();
@@ -621,7 +621,7 @@ inline std::string detect_drives_linux_adaptec(std::vector<StorageDevicePtr>& dr
 	}
 	if (!aac_found) {
 		debug_out_info("app", DBG_FUNC_MSG << "No Adaptec-specific entries found in devices file.\n");
-		return std::string();  // no controllers
+		return {};  // no controllers
 	}
 
 	lines.clear();
@@ -903,7 +903,7 @@ inline std::string detect_drives_linux_cciss(std::vector<StorageDevicePtr>& driv
 	}
 	if (controllers.empty()) {
 		debug_out_info("app", DBG_FUNC_MSG << "No cciss-specific entries found in devices file.\n");
-		return std::string();  // no controllers
+		return {};  // no controllers
 	}
 
 	std::shared_ptr<CommandExecutor> smartctl_ex = ex_factory->create_executor(CommandExecutorFactory::ExecutorType::Smartctl);

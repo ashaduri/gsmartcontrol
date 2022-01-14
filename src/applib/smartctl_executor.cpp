@@ -129,7 +129,7 @@ std::string execute_smartctl(const std::string& device, const std::string& devic
 		return _("Smartctl returned an empty output.");
 	}
 
-	return std::string();
+	return {};
 }
 
 

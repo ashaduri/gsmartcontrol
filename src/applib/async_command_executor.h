@@ -39,13 +39,13 @@ class AsyncCommandExecutor : public hz::ErrorHolder {
 		AsyncCommandExecutor(const AsyncCommandExecutor& other) = delete;
 
 		/// Deleted
-		AsyncCommandExecutor(const AsyncCommandExecutor&& other) = delete;
+		AsyncCommandExecutor(AsyncCommandExecutor&& other) = delete;
 
 		/// Deleted
 		AsyncCommandExecutor& operator=(const AsyncCommandExecutor& other) = delete;
 
 		/// Deleted
-		AsyncCommandExecutor& operator=(const AsyncCommandExecutor&& other) = delete;
+		AsyncCommandExecutor& operator=(AsyncCommandExecutor&& other) = delete;
 
 
 		/// Destructor. Don't destroy this object unless the child has exited. It will leak stuff
@@ -196,8 +196,8 @@ class AsyncCommandExecutor : public hz::ErrorHolder {
 		GIOChannel* channel_stdout_ = nullptr;  ///< stdout channel
 		GIOChannel* channel_stderr_ = nullptr;  ///< stderr channel
 
-		gsize channel_stdout_buffer_size_ = 100 * 1024;  ///< stdout channel buffer size. NOT affected by cleanup_members(). 100K.
-		gsize channel_stderr_buffer_size_ = 10 * 1024;  ///< stderr channel buffer size. NOT affected by cleanup_members(). 10K.
+		gsize channel_stdout_buffer_size_ = 100UL * 1024UL;  ///< stdout channel buffer size. NOT affected by cleanup_members(). 100K.
+		gsize channel_stderr_buffer_size_ = 10UL * 1024UL;  ///< stderr channel buffer size. NOT affected by cleanup_members(). 10K.
 
 		guint event_source_id_stdout_ = 0;  ///< IO watcher event source ID for stdout
 		guint event_source_id_stderr_ = 0;  ///< IO watcher event source ID for stderr

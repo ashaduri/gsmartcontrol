@@ -157,7 +157,7 @@ inline bool env_set_value(const std::string& name, const std::string& value, boo
 
 	// glib version may be thread-unsafe on win32, so don't use it there.
 #elif defined ENABLE_GLIB && ENABLE_GLIB
-	return g_setenv(name.c_str(), value.c_str(), overwrite) != 0;  // may be thread-unsafe
+	return g_setenv(name.c_str(), value.c_str(), static_cast<gboolean>(overwrite)) != 0;  // may be thread-unsafe
 
 
 #elif defined HAVE_SETENV && HAVE_SETENV

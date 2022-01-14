@@ -89,14 +89,12 @@ bool SelfTest::is_supported() const
 	if (!drive_)
 		return false;
 
-	if (type_ == TestType::immediate_offline)  // disable this for now - it's unsupported.
-		return false;
-
 	std::string prop_name;
 	switch(type_) {
 		case TestType::immediate_offline:
-			prop_name = "iodc_support";
-			break;
+			// prop_name = "iodc_support";
+			// break;
+			return false;  // disable this for now - it's unsupported.
 		case TestType::short_test:
 		case TestType::long_test:  // same for short and long
 			prop_name = "selftest_support";
@@ -168,7 +166,7 @@ std::string SelfTest::start(const std::shared_ptr<CommandExecutor>& smartctl_ex)
 	drive_->set_test_is_active(true);
 
 
-	return std::string();  // everything ok
+	return {};  // everything ok
 }
 
 
@@ -221,7 +219,7 @@ std::string SelfTest::force_stop(const std::shared_ptr<CommandExecutor>& smartct
 
 	if (!error_msg.empty())  // update can error out too.
 		return error_msg;
-	return std::string();  // everything ok
+	return {};  // everything ok
 }
 
 
@@ -309,7 +307,7 @@ std::string SelfTest::update(const std::shared_ptr<CommandExecutor>& smartctl_ex
 
 	drive_->set_test_is_active(active);
 
-	return std::string();  // everything ok
+	return {};  // everything ok
 }
 
 

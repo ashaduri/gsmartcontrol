@@ -55,7 +55,7 @@ bool gui_show_text_entry_dialog(const std::string& title, const std::string& mes
 /// \c result is filled with the user-entered string on success.
 /// \return false if Cancel was clicked.
 bool gui_show_text_entry_dialog(const std::string& title, const std::string& message, const std::string& sec_message,
-		std::string& result, const std::string& default_str, Gtk::Window* parent = 0, bool sec_msg_markup = false);
+		std::string& result, const std::string& default_str, Gtk::Window* parent = nullptr, bool sec_msg_markup = false);
 
 
 

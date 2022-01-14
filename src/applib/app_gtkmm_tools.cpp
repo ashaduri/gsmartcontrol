@@ -110,7 +110,7 @@ namespace {
 Glib::ustring app_ustring_from_gchar(gchar* str)
 {
 	if (!str) {
-		return Glib::ustring();
+		return {};
 	}
 	Glib::ustring ustr(str);
 	g_free(str);

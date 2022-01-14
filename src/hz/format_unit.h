@@ -177,12 +177,13 @@ inline std::string format_time_length(std::chrono::seconds secs)
 					std::vector<std::string>{"{days}", "{hours}"},
 					std::vector<std::string>{std::to_string(days.count()), std::to_string(hours)});
 
-		} else {  // display days only
-			return hz::string_replace_copy(C_("time", "{days} d"),
-					"{days}", std::to_string(days.count()));
 		}
+		// display days only
+		return hz::string_replace_copy(C_("time", "{days} d"),
+			"{days}", std::to_string(days.count()));
+	}
 
-	} else if (secs >= 100min) {
+	if (secs >= 100min) {
 		auto hours = std::chrono::round<std::chrono::hours>(secs);
 		std::chrono::seconds sec_diff = secs - hours;
 
@@ -195,11 +196,12 @@ inline std::string format_time_length(std::chrono::seconds secs)
 					std::vector<std::string>{"{hours}", "{minutes}"},
 					std::vector<std::string>{std::to_string(hours.count()), std::to_string(minutes)});
 
-		} else {  // display hours only
-			return std::to_string(hours.count()) + " " + "h";
 		}
+		// display hours only
+		return std::to_string(hours.count()) + " " + "h";
+	}
 
-	} else if (secs >= 100s) {
+	if (secs >= 100s) {
 		auto minutes = std::chrono::round<std::chrono::minutes>(secs);
 		return hz::string_replace_copy(C_("time", "{minutes} min"),
 				"{minutes}", std::to_string(minutes.count()));
@@ -222,7 +224,7 @@ inline std::string format_time_length(std::chrono::seconds secs)
 inline std::string format_date(const std::string& format, const struct std::tm* ltmp, bool use_classic_locale)
 {
 	if (!ltmp || format.empty())
-		return std::string();
+		return {};
 
 	std::ostringstream ss;
 	if (!use_classic_locale) {
@@ -250,7 +252,7 @@ inline std::string format_date(const std::string& format, std::time_t timet, boo
 #else
 	struct std::tm ltm = {};
 	if (!localtime_r(&timet, &ltm))  // use reentrant localtime_r (posix/bsd and related)
-		return std::string();
+		return {};
 	const struct std::tm* ltmp = &ltm;
 #endif
 
@@ -265,7 +267,7 @@ inline std::string format_date(const std::string& format, bool use_classic_local
 {
 	const std::time_t timet = std::time(nullptr);
 	if (timet == static_cast<std::time_t>(-1))
-		return std::string();
+		return {};
 
 	return format_date(format, timet, use_classic_locale);
 }

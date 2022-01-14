@@ -34,7 +34,7 @@ int main_exception_wrapper(MainImplFunc main_impl) noexcept
 		return main_impl();
 	}
 	catch(std::exception& e) {
-		// don't use anything other than cerr here, it's the most safe option.
+		// don't use anything other than cerr here, it's the safest option.
 		std::cerr << "main(): Unhandled exception: " << e.what() << std::endl;
 		if (const auto* ex_type = get_current_exception_type()) {
 			std::cerr << "Type of exception: " << type_name_demangle(ex_type->name()) << std::endl;

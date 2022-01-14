@@ -51,7 +51,7 @@ extern "C" {
 		bool force = (bool)data;
 
 		if (!force && !impl::autosave_enabled)  // no more autosaves
-			return false;  // remove timeout, disable autosave for real.
+			return FALSE;  // remove timeout, disable autosave for real.
 
 		auto file = impl::autosave_config_file;
 		debug_print_info("rconfig", "Autosaving config to \"%s\".\n", file.u8string().c_str());
@@ -59,14 +59,14 @@ extern "C" {
 		std::error_code ec;
 		if ((hz::fs::exists(file, ec) && !hz::fs::is_regular_file(file, ec)) || !hz::fs_path_is_writable(file, ec)) {
 			debug_out_error("rconfig", "Autosave failed: Cannot write to file: " << ec.message() << "\n");
-			return !force;  // if manual, return failure. else, don't stop the timeout.
+			return static_cast<gboolean>(force);  // if manual, return failure. else, don't stop the timeout.
 		}
 
 		bool status = rconfig::save_to_file(impl::autosave_config_file);
 		if (force)
-			return status;  // return status to caller
+			return static_cast<gboolean>(status);  // return status to caller
 
-		return true;  // continue timeouts
+		return TRUE;  // continue timeouts
 	}
 
 }
@@ -123,7 +123,7 @@ inline void autosave_stop()
 /// Forcibly save the config now.
 inline bool autosave_force_now()
 {
-	return static_cast<bool>(autosave_timeout_callback((void*)true));  // anyone tell me what is the C++ variant of this?
+	return static_cast<bool>(autosave_timeout_callback(reinterpret_cast<void*>(true)));  // anyone tell me what is the C++ variant of this?
 }
 
 

@@ -59,10 +59,9 @@ std::string StorageDevice::get_status_displayable_name(Status status)
 
 
 StorageDevice::StorageDevice(std::string dev_or_vfile, bool is_virtual)
+		: is_virtual_(is_virtual)
 {
-	is_virtual_ = is_virtual;
-
-	if (is_virtual) {
+	if (is_virtual_) {
 		virtual_file_ = hz::fs::u8path(dev_or_vfile);
 	} else {
 		device_ = std::move(dev_or_vfile);
@@ -249,7 +248,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	if (emit_signal)
 		signal_changed().emit(this);  // notify listeners
 
-	return std::string();
+	return {};
 }
 
 
@@ -320,7 +319,7 @@ std::string StorageDevice::parse_data()
 
 		signal_changed().emit(this);  // notify listeners
 
-		return std::string();
+		return {};
 	}
 
 	// Don't show any GUI warnings on parse failure - it may just be an unsupported
@@ -334,7 +333,7 @@ std::string StorageDevice::parse_data()
 		return ps.get_error_msg();  // return full parser's error messages - they are more detailed.
 	}
 
-	return std::string();  // return ok if at least the info was ok.
+	return {};  // return ok if at least the info was ok.
 }
 
 
@@ -374,7 +373,7 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 
 	// search at line start, because they are sometimes present in other sentences too.
 	if (app_pcre_match("/^SMART Enabled/mi", output) || app_pcre_match("/^SMART Disabled/mi", output)) {
-		return std::string();  // success
+		return {};  // success
 	}
 
 	if (app_pcre_match("/^A mandatory SMART command failed/mi", output)) {
@@ -409,7 +408,7 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 		return error_msg;
 
 	if (app_pcre_match("/Testing Enabled/mi", output) || app_pcre_match("/Testing Disabled/mi", output)) {
-		return std::string();  // success
+		return {};  // success
 	}
 
 	if (app_pcre_match("/^A mandatory SMART command failed/mi", output)) {
@@ -668,7 +667,7 @@ AtaStorageProperty StorageDevice::lookup_property(const std::string& generic_nam
 		if (p.generic_name == generic_name)
 			return p;
 	}
-	return AtaStorageProperty();  // check with .empty()
+	return {};  // check with .empty()
 }
 
 
@@ -781,7 +780,7 @@ std::string StorageDevice::get_device_options() const
 {
 	if (is_virtual_) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Cannot get device options of a virtual device.\n");
-		return std::string();
+		return {};
 	}
 
 	// If we have some special type or option, specify it on the command line (like "-d scsi").
@@ -838,7 +837,7 @@ std::string StorageDevice::execute_device_smartctl(const std::string& command_op
 		return error_msg;
 	}
 
-	return std::string();
+	return {};
 }
 
 

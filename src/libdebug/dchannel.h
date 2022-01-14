@@ -33,6 +33,21 @@ using DebugChannelBasePtr = std::shared_ptr<DebugChannelBase>;
 class DebugChannelBase {
 	public:
 
+		/// Defaulted
+		DebugChannelBase() = default;
+
+		/// Deleted
+		DebugChannelBase(const DebugChannelBase& other) = delete;
+
+		/// Deleted
+		DebugChannelBase(DebugChannelBase&& other) = delete;
+
+		/// Deleted
+		DebugChannelBase& operator=(const DebugChannelBase&) = delete;
+
+		/// Deleted
+		DebugChannelBase& operator=(DebugChannelBase&&) = delete;
+
 		/// Virtual destructor
 		virtual ~DebugChannelBase() = default;
 

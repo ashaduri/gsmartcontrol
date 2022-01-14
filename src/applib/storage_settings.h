@@ -85,13 +85,13 @@ inline AppDeviceOptionMap app_config_get_device_option_map()
 inline std::string app_get_device_option(const std::string& dev, const std::string& type_arg)
 {
 	if (dev.empty())
-		return std::string();
+		return {};
 
 	auto devmap = app_config_get_device_option_map().value;
 	if (auto iter = devmap.find(std::pair(dev, type_arg)); iter != devmap.end()) {
 		return iter->second;
 	}
-	return std::string();
+	return {};
 }
 
 

@@ -365,7 +365,7 @@ std::string SmartctlAtaTextParser::parse_byte_size(const std::string& str, int64
 				" [" + hz::format_size(static_cast<uint64_t>(v), false) + ", " + hz::number_to_string_locale(v) + " bytes]" : "");
 	}
 
-	return std::string();
+	return {};
 }
 
 

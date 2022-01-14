@@ -66,32 +66,46 @@ class ErrorBase {
 
 
 		/// Constructor
-		ErrorBase(std::string type_, ErrorLevel level_, std::string msg)
-				: type(std::move(type_)), level(level_), message(std::move(msg))
+		ErrorBase(std::string type, ErrorLevel level, std::string message)
+				: type_(std::move(type)), level_(level), message_(std::move(message))
 		{ }
 
 		/// Constructor
-		ErrorBase(std::string type_, ErrorLevel level_)
-				: type(std::move(type_)), level(level_)
+		ErrorBase(std::string type, ErrorLevel level)
+				: type_(std::move(type)), level_(level)
 		{ }
+
+		/// Defaulted
+		ErrorBase(const ErrorBase& other) = default;
+
+		/// Defaulted
+		ErrorBase(ErrorBase&& other) = default;
+
+		/// Defaulted
+		ErrorBase& operator=(const ErrorBase&) = default;
+
+		/// Defaulted
+		ErrorBase& operator=(ErrorBase&&) = default;
+
 
 		/// Virtual destructor
 		virtual ~ErrorBase() = default;
+
 
 		/// Clone this object
 		[[nodiscard]] virtual ErrorBase* clone() = 0;  // needed for copying by base pointers
 
 
 		/// Get std::type_info for the error code type.
-		[[nodiscard]] virtual const std::type_info& get_code_type() const = 0;
+		[[nodiscard]] virtual const std::type_info& get_code_type_info() const = 0;
 
 		
 		/// Get error code of type \c CodeMemberType
 		template<class CodeMemberType>
 		CodeMemberType get_code() const  // this may throw on bad cast!
 		{
-			if (get_code_type() != typeid(CodeMemberType))
-				throw type_mismatch(get_code_type(), typeid(CodeMemberType));
+			if (get_code_type_info() != typeid(CodeMemberType))
+				throw type_mismatch(get_code_type_info(), typeid(CodeMemberType));
 			return static_cast<const Error<CodeMemberType>*>(this)->code;
 		}
 
@@ -99,9 +113,9 @@ class ErrorBase {
 		template<class CodeMemberType>
 		bool get_code(CodeMemberType& put_it_here) const  // this doesn't throw
 		{
-			if (get_code_type() != typeid(CodeMemberType))
+			if (get_code_type_info() != typeid(CodeMemberType))
 				return false;
-			put_it_here = static_cast<const Error<CodeMemberType>*>(this)->code;
+			put_it_here = static_cast<const Error<CodeMemberType>*>(this)->get_code_member();
 			return true;
 		}
 
@@ -109,47 +123,67 @@ class ErrorBase {
 		/// Increase the level (severity) of the error
 		ErrorLevel level_inc()
 		{
-			if (level == ErrorLevel::fatal)
-				return level;
-			return (level = static_cast<ErrorLevel>(static_cast<int>(level) << 1));
+			if (level_ == ErrorLevel::fatal)
+				return level_;
+			return (level_ = static_cast<ErrorLevel>(static_cast<int>(level_) << 1));
 		}
 
 		/// Decrease the level (severity) of the error
 		ErrorLevel level_dec()
 		{
-			if (level == ErrorLevel::none)
-				return level;
-			return (level = static_cast<ErrorLevel>(static_cast<int>(level) >> 1));
+			if (level_ == ErrorLevel::none)
+				return level_;
+			return (level_ = static_cast<ErrorLevel>(static_cast<int>(level_) >> 1));
 		}
 
 		/// Get error level (severity)
 		[[nodiscard]] ErrorLevel get_level() const
 		{
-			return level;
+			return level_;
 		}
 
 
 		/// Get error type
 		[[nodiscard]] std::string get_type() const
 		{
-			return type;
+			return type_;
 		}
 
 		/// Get error message
 		[[nodiscard]] std::string get_message() const
 		{
-			return message;
+			return message_;
 		}
-
-
-		// no set_type, set_message - we don't allow changing those.
 
 
 	protected:
 
-		std::string type;  ///< Error type
-		ErrorLevel level = ErrorLevel::none;  ///< Error severity
-		std::string message;  ///< Error message
+		/// Set error type
+		void set_type(std::string type)
+		{
+			type_ = std::move(type);
+		}
+
+
+		/// Set error level
+		void set_level(ErrorLevel level)
+		{
+			level_ = level;
+		}
+
+
+		/// Set error message
+		void set_message(std::string message)
+		{
+			message_ = std::move(message);
+		}
+
+
+	private:
+
+		std::string type_;  ///< Error type
+		ErrorLevel level_ = ErrorLevel::none;  ///< Error severity
+		std::string message_;  ///< Error message
 
 };
 
@@ -163,25 +197,33 @@ class ErrorCodeHolder : public ErrorBase {
 	protected:
 
 		/// Constructor
-		ErrorCodeHolder(const std::string& type_, ErrorLevel level_, const CodeType& code_,
+		ErrorCodeHolder(const std::string& type, ErrorLevel level, const CodeType& code,
 				const std::string& msg)
-			: ErrorBase(type_, level_, msg), code(code_)
+			: ErrorBase(type, level, msg), code_(code)
 		{ }
 
 		/// Constructor
-		ErrorCodeHolder(const std::string& type_, ErrorLevel level_, const CodeType& code_)
-			: ErrorBase(type_, level_), code(code_)
+		ErrorCodeHolder(const std::string& type, ErrorLevel level, const CodeType& code)
+			: ErrorBase(type, level), code_(code)
 		{ }
 
 	public:
 
 		// Reimplemented from ErrorBase
-		[[nodiscard]] const std::type_info& get_code_type() const override
+		[[nodiscard]] const std::type_info& get_code_type_info() const override
 		{
 			return typeid(CodeType);
 		}
 
-		CodeType code = CodeType();  ///< Error code. We have a class specialization for references too
+		// Reimplemented from ErrorBase
+		[[nodiscard]] const CodeType& get_code_member() const
+		{
+			return code_;
+		}
+
+	private:
+
+		CodeType code_ = CodeType();  ///< Error code. We have a class specialization for references too
 
 };
 
@@ -193,14 +235,14 @@ class ErrorCodeHolder<void> : public ErrorBase {
 	protected:
 
 		/// Constructor
-		ErrorCodeHolder(const std::string& type_, ErrorLevel level_, const std::string& msg)
-			: ErrorBase(type_, level_, msg)
+		ErrorCodeHolder(const std::string& type, ErrorLevel level, const std::string& msg)
+			: ErrorBase(type, level, msg)
 		{ }
 
 	public:
 
 		// Reimplemented from ErrorBase
-		[[nodiscard]] const std::type_info& get_code_type() const override
+		[[nodiscard]] const std::type_info& get_code_type_info() const override
 		{
 			return typeid(void);
 		}
@@ -219,16 +261,16 @@ class Error : public ErrorCodeHolder<CodeType> {
 	public:
 
 		/// Constructor
-		Error(const std::string& type_, ErrorLevel level_, const CodeType& code_,
+		Error(const std::string& type, ErrorLevel level, const CodeType& code,
 				const std::string& msg)
-			: ErrorCodeHolder<CodeType>(type_, level_, code_, msg)
+			: ErrorCodeHolder<CodeType>(type, level, code, msg)
 		{ }
 
 		// Reimplemented from ErrorBase
 		ErrorBase* clone() override
 		{
-			return new Error(ErrorCodeHolder<CodeType>::type, ErrorCodeHolder<CodeType>::level,
-					ErrorCodeHolder<CodeType>::code, ErrorCodeHolder<CodeType>::message);
+			return new Error(ErrorCodeHolder<CodeType>::get_type(), ErrorCodeHolder<CodeType>::get_level(),
+					ErrorCodeHolder<CodeType>::get_code_member(), ErrorCodeHolder<CodeType>::get_message());
 		}
 };
 
@@ -240,15 +282,15 @@ template<>
 class Error<void> : public ErrorCodeHolder<void> {
 	public:
 
-		Error(const std::string& type_, ErrorLevel level_, const std::string& msg)
-			: ErrorCodeHolder<void>(type_, level_, msg)
+		Error(const std::string& type, ErrorLevel level, const std::string& msg)
+			: ErrorCodeHolder<void>(type, level, msg)
 		{ }
 
 		// Reimplemented from ErrorBase
 		ErrorBase* clone() override
 		{
-			return new Error(ErrorCodeHolder<void>::type, ErrorCodeHolder<void>::level,
-					ErrorCodeHolder<void>::message);
+			return new Error(ErrorCodeHolder<void>::get_type(), ErrorCodeHolder<void>::get_level(),
+					ErrorCodeHolder<void>::get_message());
 		}
 };
 
@@ -262,20 +304,20 @@ class Error<int> : public ErrorCodeHolder<int> {
 	public:
 
 		/// Constructor
-		Error(const std::string& type_, ErrorLevel level_, int code_, const std::string& msg)
-			: ErrorCodeHolder<int>(type_, level_, code_, msg)
+		Error(const std::string& type, ErrorLevel level, int code, const std::string& msg)
+			: ErrorCodeHolder<int>(type, level, code, msg)
 		{ }
 
 		/// Constructor
-		Error(const std::string& type_, ErrorLevel level_, int code_)
-			: ErrorCodeHolder<int>(type_, level_, code_)
+		Error(const std::string& type, ErrorLevel level, int code)
+			: ErrorCodeHolder<int>(type, level, code)
 		{
 			if (type == "errno") {
-				message = std::error_code(code_, std::system_category()).message();
+				this->set_message(std::error_code(code, std::system_category()).message());
 
 			} else if (type == "signal") {
 				// hz::signal_string should be translated already
-				message = "Child exited with signal: " + hz::signal_to_string(code_);
+				this->set_message("Child exited with signal: " + hz::signal_to_string(code));
 
 			} else {  // nothing else supported here. use constructor with a message.
 				DBG_ASSERT(0);
@@ -285,8 +327,8 @@ class Error<int> : public ErrorCodeHolder<int> {
 		// Reimplemented from ErrorBase
 		ErrorBase* clone() override
 		{
-			return new Error(ErrorCodeHolder<int>::type, ErrorCodeHolder<int>::level,
-					ErrorCodeHolder<int>::code, ErrorCodeHolder<int>::message);
+			return new Error(ErrorCodeHolder<int>::get_type(), ErrorCodeHolder<int>::get_level(),
+					ErrorCodeHolder<int>::get_code_member(), ErrorCodeHolder<int>::get_message());
 		}
 };
 

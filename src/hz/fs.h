@@ -19,6 +19,7 @@ Copyright:
 #include <cstdio>  // std::FILE, std::fopen() and friends
 #include <stdio.h>  // off_t, fileno(), _fileno(), _wfopen()
 #include <limits>
+#include <array>
 
 #ifdef _WIN32
 	#include <io.h>  // _waccess*()
@@ -161,7 +162,7 @@ inline std::error_code fs_file_get_contents_noalloc(const fs::path& file, unsign
 
 	std::FILE* f = fs_platform_fopen(file, "rb");
 	if (!f) {
-		return std::error_code(errno, std::system_category());
+		return {errno, std::system_category()};
 	}
 
 	std::error_code ec;
@@ -271,19 +272,19 @@ inline std::error_code fs_file_get_contents_unseekable(const hz::fs::path& file,
 {
 	std::FILE* fp = fs_platform_fopen(file, "rb");
 	if (!fp) {
-		return std::error_code(errno, std::system_category());;
+		return {errno, std::system_category()};
 	}
 	put_data_here.clear();
 
-	char line[1024] = {0};
-	while (std::fgets(line, static_cast<int>(sizeof(line)), fp) != nullptr) {
-		if (*line != '\0')
-			put_data_here += line;  // line contains the terminating newline as well
+	std::array<char, 1024> line = {};
+	while (std::fgets(line.data(), static_cast<int>(line.size()), fp) != nullptr) {
+		if (line[0] != '\0')
+			put_data_here += line.data();  // line contains the terminating newline as well
 	}
 
 	std::fclose(fp);
 
-	return std::error_code();
+	return {};
 }
 
 
@@ -299,7 +300,7 @@ inline std::error_code fs_file_put_contents(const fs::path& file, const unsigned
 
 	std::FILE* f = fs_platform_fopen(file, "wb");
 	if (!f) {
-		return std::error_code(errno, std::system_category());
+		return {errno, std::system_category()};
 	}
 
 	// We write in chunks to support large files.
@@ -328,9 +329,9 @@ inline std::error_code fs_file_put_contents(const fs::path& file, const unsigned
 	}
 
 	if (std::fclose(f) != 0)
-		return std::error_code(errno, std::system_category());
+		return {errno, std::system_category()};
 
-	return std::error_code();
+	return {};
 }
 
 
@@ -386,7 +387,7 @@ inline fs::path fs_get_home_dir()
 		return fs::temp_directory_path(ec);
 	}
 
-	return fs::path(dir);  // native encoding
+	return {dir};  // native encoding
 #endif
 }
 

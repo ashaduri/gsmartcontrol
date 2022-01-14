@@ -64,13 +64,13 @@ class AppBuilderWidget : public WidgetType, public WindowInstanceManager<Child, 
 		AppBuilderWidget(const AppBuilderWidget& other) = delete;
 
 		/// Disallow
-		AppBuilderWidget(const AppBuilderWidget&& other) = delete;
+		AppBuilderWidget(AppBuilderWidget&& other) = delete;
 
 		/// Disallow
 		AppBuilderWidget& operator=(const AppBuilderWidget& other) = delete;
 
 		/// Disallow
-		AppBuilderWidget& operator=(const AppBuilderWidget&& other) = delete;
+		AppBuilderWidget& operator=(AppBuilderWidget&& other) = delete;
 
 		/// Default
 		~AppBuilderWidget() = default;

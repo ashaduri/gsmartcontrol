@@ -191,7 +191,7 @@ std::string locale_cpp_get<std::string>()
 template<> inline
 std::locale locale_cpp_get<std::locale>()
 {
-	return std::locale();
+	return {};
 }
 
 
@@ -218,6 +218,19 @@ class ScopedCLocale {
 				bad_ = locale_c_set(loc, old_locale_);
 			}
 		}
+
+		/// Deleted
+		ScopedCLocale(const ScopedCLocale& other) = delete;
+
+		/// Deleted
+		ScopedCLocale(ScopedCLocale&& other) = delete;
+
+		/// Deleted
+		ScopedCLocale& operator=(const ScopedCLocale&) = delete;
+
+		/// Deleted
+		ScopedCLocale& operator=(ScopedCLocale&&) = delete;
+
 
 		/// Change back the locale
 		~ScopedCLocale()
@@ -287,11 +300,25 @@ class ScopedCppLocale {
 			}
 		}
 
+		/// Deleted
+		ScopedCppLocale(const ScopedCppLocale& other) = delete;
+
+		/// Deleted
+		ScopedCppLocale(ScopedCppLocale&& other) = delete;
+
+		/// Deleted
+		ScopedCppLocale& operator=(const ScopedCppLocale&) = delete;
+
+		/// Deleted
+		ScopedCppLocale& operator=(ScopedCppLocale&&) = delete;
+
+
 		/// Change the locale back to the old one
 		~ScopedCppLocale()
 		{
 			this->restore();
 		}
+
 
 		/// Get the old locale
 		[[nodiscard]] std::locale old() const

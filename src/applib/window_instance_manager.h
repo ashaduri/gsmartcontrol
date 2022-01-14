@@ -73,13 +73,13 @@ class WindowInstanceManager {
 		WindowInstanceManager(const WindowInstanceManager& other) = delete;
 
 		/// Deleted
-		WindowInstanceManager(const WindowInstanceManager&& other) = delete;
+		WindowInstanceManager(WindowInstanceManager&& other) = delete;
 
 		/// Deleted
 		WindowInstanceManager& operator=(const WindowInstanceManager&) = delete;
 
 		/// Deleted
-		WindowInstanceManager& operator=(const WindowInstanceManager&&) = delete;
+		WindowInstanceManager& operator=(WindowInstanceManager&&) = delete;
 
 		/// Default, must be polymorphic for casts to succeed
 		virtual ~WindowInstanceManager() = default;
@@ -125,13 +125,13 @@ class WindowInstanceManager<Child, false> {
 		WindowInstanceManager(const WindowInstanceManager& other) = delete;
 
 		/// Deleted
-		WindowInstanceManager(const WindowInstanceManager&& other) = delete;
+		WindowInstanceManager(WindowInstanceManager&& other) = delete;
 
 		/// Deleted
 		WindowInstanceManager& operator=(const WindowInstanceManager&) = delete;
 
 		/// Deleted
-		WindowInstanceManager& operator=(const WindowInstanceManager&&) = delete;
+		WindowInstanceManager& operator=(WindowInstanceManager&&) = delete;
 
 		/// Default, must be polymorphic for casts to succeed
 		virtual ~WindowInstanceManager() = default;

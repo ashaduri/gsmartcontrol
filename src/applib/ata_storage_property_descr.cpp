@@ -1110,11 +1110,11 @@ namespace {
 				// search by ID first
 				auto id_iter = id_db.find(id);
 				if (id_iter == id_db.end()) {
-					return AttributeDescription();  // not found
+					return {};  // not found
 				}
 				DBG_ASSERT(!id_iter->second.empty());
 				if (id_iter->second.empty()) {
-					return AttributeDescription();  // invalid DB?
+					return {};  // invalid DB?
 				}
 
 				std::vector<AttributeDescription> type_matched;
@@ -1124,7 +1124,7 @@ namespace {
 					}
 				}
 				if (type_matched.empty()) {
-					return AttributeDescription();  // not found
+					return {};  // not found
 				}
 
 				// search by smartctl name in ID-supplied vector
@@ -1371,7 +1371,7 @@ namespace {
 				// search by ID first
 				auto iter = devstat_db.find(reported_name);
 				if (iter == devstat_db.end()) {
-					return StatisticDescription();  // not found
+					return {};  // not found
 				}
 				return iter->second;
 			}

@@ -85,7 +85,7 @@ inline std::string storage_property_get_warning_reason(const AtaStorageProperty&
 			return Glib::ustring::compose(_("%1ALERT:%2 %3"), start, stop, p.warning_reason);
 	}
 
-	return std::string();
+	return {};
 }
 
 

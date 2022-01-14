@@ -51,9 +51,8 @@ void string_split(const std::string& str, char delimiter,
 			if (++num == limit) {
 				append_here.push_back(str.substr(last, std::string::npos));
 				break;
-			} else {
-				append_here.push_back(str.substr(last, (curr == std::string::npos ? curr : (curr - last))));
 			}
+			append_here.push_back(str.substr(last, (curr == std::string::npos ? curr : (curr - last))));
 		}
 
 		if (curr == std::string::npos)
@@ -98,9 +97,8 @@ void string_split(const std::string& str, const std::string& delimiter,
 			if (++num == limit) {
 				append_here.push_back(str.substr(last, std::string::npos));
 				break;
-			} else {
-				append_here.push_back(component);
 			}
+			append_here.push_back(component);
 		}
 
 		if (curr == std::string::npos)
@@ -137,9 +135,8 @@ void string_split_by_chars(const std::string& str, const std::string& delimiter_
 			if (++num == limit) {
 				append_here.push_back(str.substr(last, std::string::npos));
 				break;
-			} else {
-				append_here.push_back(str.substr(last, (curr == std::string::npos ? curr : (curr - last))));
 			}
+			append_here.push_back(str.substr(last, (curr == std::string::npos ? curr : (curr - last))));
 		}
 
 		if (curr == std::string::npos)
@@ -203,10 +200,11 @@ inline bool string_trim(std::string& s, const std::string& trim_chars = " \t\r\n
 		s.erase(index + 1);  // from index+1 to the end
 
 	index = s.find_first_not_of(trim_chars);
-	if (index != std::string::npos)
+	if (index != std::string::npos) {
 		s.erase(0, index);
-	else
+	} else {
 		s.clear();
+	}
 
 	return s_size != s.size();  // true if s was modified
 }
@@ -234,10 +232,11 @@ inline bool string_trim_left(std::string& s, const std::string& trim_chars = " \
 	const auto s_size = s.size();
 
 	std::string::size_type index = s.find_first_not_of(trim_chars);
-	if (index != std::string::npos)
+	if (index != std::string::npos) {
 		s.erase(0, index);
-	else
+	} else {
 		s.clear();
+	}
 
 	return s_size != s.size();  // true if s was modified
 }
@@ -359,7 +358,7 @@ inline bool string_remove_adjacent_duplicates(std::string& s, char c, std::size_
 		return false;
 
 	bool changed = false;
-	std::string::size_type pos1 = 0, pos2;
+	std::string::size_type pos1 = 0, pos2 = 0;
 
 	while ((pos1 = s.find(c, pos1)) != std::string::npos) {
 		pos2 = s.find_first_not_of(c, pos1);

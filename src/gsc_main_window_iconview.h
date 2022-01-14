@@ -66,7 +66,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 		/// Constructor, GtkBuilder needs this.
-		GscMainWindowIconView(BaseObjectType* gtkcobj, [[maybe_unused]] const Glib::RefPtr<Gtk::Builder>& ref_ui)
+		[[maybe_unused]] GscMainWindowIconView(BaseObjectType* gtkcobj, [[maybe_unused]] const Glib::RefPtr<Gtk::Builder>& ref_ui)
 				: Gtk::IconView(gtkcobj)
 		{
 			columns.add(col_name);  // we can use the col_name variable by value after this.
@@ -358,16 +358,15 @@ class GscMainWindowIconView : public Gtk::IconView {
 				if (icon) {
 					icon = icon->copy();  // work on a copy
 					if (icon->get_colorspace() == Gdk::COLORSPACE_RGB && icon->get_bits_per_sample() == 8) {
-						int n_channels = icon->get_n_channels();
-						int icon_width = icon->get_width();
-						int icon_height = icon->get_height();
-						int rowstride = icon->get_rowstride();
+						std::ptrdiff_t n_channels = icon->get_n_channels();
+						std::ptrdiff_t icon_width = icon->get_width();
+						std::ptrdiff_t icon_height = icon->get_height();
+						std::ptrdiff_t rowstride = icon->get_rowstride();
 						guint8* pixels = icon->get_pixels();
 
-						guint8* p = nullptr;
-						for (int y = 0; y < icon_height; ++y) {
-							for (int x = 0; x < icon_width; ++x) {
-								p = pixels + y * rowstride + x * n_channels;
+						for (std::ptrdiff_t y = 0; y < icon_height; ++y) {
+							for (std::ptrdiff_t x = 0; x < icon_width; ++x) {
+								guint8* p = pixels + y * rowstride + x * n_channels;
 								auto avg = static_cast<uint8_t>(std::floor((p[0] * 0.30) + (p[1] * 0.59) + (p[2] * 0.11) + 0.001 + 0.5));
 								p[0] = avg;  // R
 								p[1] = 0;  // G
@@ -459,7 +458,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 				if (drive == row.get_value(col_drive_ptr).get())
 					return ref_list_model->get_path(row);
 			}
-			return Gtk::TreePath();  // check with .empty()
+			return {};  // check with .empty()
 		}
 
 
@@ -530,7 +529,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 					Gtk::CellRenderer* cell = nullptr;
 					if (this->get_cursor(cell) && cell) {
 						// gtkmm's set_cursor() is undefined (but declared) in 2.8, so use gtk variant.
-						gtk_icon_view_set_cursor(GTK_ICON_VIEW(this->gobj()), tpath.gobj(), cell->gobj(), false);
+						gtk_icon_view_set_cursor(GTK_ICON_VIEW(this->gobj()), tpath.gobj(), cell->gobj(), FALSE);
 					}
 
 					// select the icon

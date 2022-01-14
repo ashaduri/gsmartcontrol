@@ -50,7 +50,7 @@ inline std::vector<fs::path> data_file_get_search_directories(const std::string&
 	if (DataFileStaticHolder::search_directories.count(domain) > 0) {
 		return DataFileStaticHolder::search_directories.at(domain);
 	}
-	return std::vector<fs::path>();
+	return {};
 }
 
 
@@ -68,19 +68,19 @@ inline void data_file_set_search_directories(const std::string& domain, std::vec
 inline fs::path data_file_find(const std::string& domain, const std::string& filename, bool allow_to_be_directory = false)
 {
 	if (filename.empty())
-		return fs::path();
+		return {};
 
 	if (fs::u8path(filename).is_absolute()) {  // shouldn't happen
 		debug_print_error("app", "%s: Data file \"%s\" must be relative.\n",
 				DBG_FUNC, filename.c_str());
-		return fs::path();
+		return {};
 	}
 
 	auto dirs = data_file_get_search_directories(domain);
 	if (dirs.empty()) {  // shouldn't happen
 		debug_print_error("app", "%s: No search directories registered for domain \"%s\".\n",
 				DBG_FUNC, domain.c_str());
-		return fs::path();
+		return {};
 	}
 
 	for (const auto& dir : dirs) {
@@ -91,7 +91,7 @@ inline fs::path data_file_find(const std::string& domain, const std::string& fil
 			if (!allow_to_be_directory && fs::is_directory(file_path, ec)) {
 				debug_print_error("app", "%s: Data file \"[%s:]%s\" file found at \"%s\", but it is a directory.\n",
 						DBG_FUNC, domain.c_str(), file_path.string().c_str(), dir.string().c_str());
-				return fs::path();
+				return {};
 			}
 			debug_print_info("app", "%s: Data file \"[%s:]%s\" found at \"%s\".\n",
 					DBG_FUNC, domain.c_str(), file_path.string().c_str(), dir.string().c_str());
@@ -101,7 +101,7 @@ inline fs::path data_file_find(const std::string& domain, const std::string& fil
 
 	debug_print_error("app", "%s: Data file \"[%s:]%s\" not found.\n",
 			DBG_FUNC, domain.c_str(), filename.c_str());
-	return fs::path();
+	return {};
 }
 
 
@@ -115,12 +115,11 @@ inline std::string data_file_get_contents(const std::string& domain, const std::
 		auto ec = hz::fs_file_get_contents(file, contents, max_size);
 		if (!ec) {
 			return contents;
-		} else {
-			debug_print_error("app", "%s: Data file \"[%s:]%s\" cannot be loaded: %s.\n",
-					DBG_FUNC, domain.c_str(), filename.c_str(), ec.message().c_str());
 		}
+		debug_print_error("app", "%s: Data file \"[%s:]%s\" cannot be loaded: %s.\n",
+				DBG_FUNC, domain.c_str(), filename.c_str(), ec.message().c_str());
 	}
-	return std::string();
+	return {};
 }
 
 

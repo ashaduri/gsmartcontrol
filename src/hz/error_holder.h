@@ -30,6 +30,21 @@ class ErrorHolder {
 
 		using error_list_t = std::vector<std::shared_ptr<ErrorBase>>;  ///< A list of ErrorBase* pointers
 
+		/// Defaulted
+		ErrorHolder() = default;
+
+		/// Deleted
+		ErrorHolder(const ErrorHolder& other) = delete;
+
+		/// Deleted
+		ErrorHolder(ErrorHolder&& other) = delete;
+
+		/// Deleted
+		ErrorHolder& operator=(const ErrorHolder&) = delete;
+
+		/// Deleted
+		ErrorHolder& operator=(ErrorHolder&&) = delete;
+
 		/// Virtual destructor
 		virtual ~ErrorHolder() = default;
 
@@ -85,7 +100,7 @@ class ErrorHolder {
 		}
 
 
-	protected:
+	private:
 
 		error_list_t errors_;  ///< Error list. The newest errors at the end.
 

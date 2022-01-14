@@ -65,7 +65,7 @@ inline std::string execute_tw_cli(const CommandExecutorFactoryPtr& ex_factory, c
 		return _("tw_cli returned an empty output.");
 	}
 
-	return std::string();
+	return {};
 }
 
 
@@ -107,7 +107,7 @@ inline std::string tw_cli_get_drives(const std::string& dev, int controller,
 		}
 	}
 
-	return std::string();
+	return {};
 }
 
 
@@ -144,7 +144,7 @@ inline std::string tw_cli_get_controllers(const CommandExecutorFactoryPtr& ex_fa
 	// are sorted in the end anyway.
 	std::sort(controllers.begin(), controllers.end());
 
-	return std::string();
+	return {};
 }
 
 
@@ -191,7 +191,7 @@ inline std::string smartctl_scan_drives_sequentially(const std::string& dev, con
 		}
 	}
 
-	return std::string();
+	return {};
 }
 
 

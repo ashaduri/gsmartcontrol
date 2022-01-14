@@ -202,7 +202,7 @@ namespace internal {
 			return false;
 		const char* str = s.c_str();
 
-		if (boolalpha_enabled) {
+		if (boolalpha_enabled != 0) {
 			// skip spaces. won't do anything in strict mode (we already ruled out spaces there)
 			while (std::isspace(*str, loc)) {
 				++str;
@@ -345,7 +345,7 @@ namespace internal {
 
 	inline std::string number_to_string_impl_bool(bool number, int boolalpha_enabled)
 	{
-		if (boolalpha_enabled)
+		if (boolalpha_enabled != 0)
 			return (number ? "true" : "false");
 		return (number ? "1" : "0");
 	}
@@ -357,7 +357,8 @@ namespace internal {
 		if (number == 0) {
 			if (base == 16) {
 				return "0x" + std::string(sizeof(T) * 2, '0');  // 0 doesn't print as 0x0000, but as 000000. fix that.
-			} else if (base == 8) {  // same here, 0 prints as 0.
+			}
+			if (base == 8) {  // same here, 0 prints as 0.
 				return "00";  // better than simply 0 (at least it's clearly octal).
 			}
 			// base 10 can possibly have some funny formatting, so continue...
@@ -420,7 +421,7 @@ namespace internal {
 			return internal::number_to_string_impl_floating(number, boolalpha_or_base_or_precision, fixed_prec, use_classic_locale);
 		}
 		// unreachable
-		return std::string();
+		return {};
 	}
 
 

@@ -66,8 +66,17 @@ namespace debug_internal {
 			}
 
 
-			/// Disallow copying
-			DebugStreamBuf(const DebugStreamBuf& from) = delete;
+			/// Deleted
+			DebugStreamBuf(const DebugStreamBuf& other) = delete;
+
+			/// Deleted
+			DebugStreamBuf(DebugStreamBuf&& other) = delete;
+
+			/// Deleted
+			DebugStreamBuf& operator=(const DebugStreamBuf&) = delete;
+
+			/// Deleted
+			DebugStreamBuf& operator=(DebugStreamBuf&&) = delete;
 
 
 			/// Virtual destructor
