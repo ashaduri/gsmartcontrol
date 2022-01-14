@@ -1069,27 +1069,29 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<AtaStorageProperty>& pr
 
 		const auto& attr = p.get_value<AtaStorageAttribute>();
 
-		std::string attr_type = AtaStorageAttribute::get_attr_type_name(attr.attr_type);
-		if (attr.attr_type == AtaStorageAttribute::AttributeType::prefail)
-			attr_type.append("<b>").append(attr_type).append("</b>");
+		std::string attr_type_name = Glib::Markup::escape_text(AtaStorageAttribute::get_attr_type_name(attr.attr_type));
+		if (attr.attr_type == AtaStorageAttribute::AttributeType::prefail) {
+			attr_type_name = Glib::ustring::compose("<b>%1</b>", attr_type_name);
+		}
 
-		std::string fail_time = AtaStorageAttribute::get_fail_time_name(attr.when_failed);
-		if (attr.when_failed != AtaStorageAttribute::FailTime::none)
-			fail_time.append("<b>").append(fail_time).append("</b>");
+		std::string fail_time_name = Glib::Markup::escape_text(AtaStorageAttribute::get_fail_time_name(attr.when_failed));
+		if (attr.when_failed != AtaStorageAttribute::FailTime::none) {
+			fail_time_name = Glib::ustring::compose("<b>%1</b>", fail_time_name);
+		}
 
 		Gtk::TreeRow row = *(list_store->append());
 
 		row[col_id] = attr.id;
-		row[col_name] = p.displayable_name;
-		row[col_flag_value] = attr.flag;  // it's a string, not int.
-		row[col_value] = (attr.value.has_value() ? hz::number_to_string_locale(attr.value.value()) : "-");
-		row[col_worst] = (attr.worst.has_value() ? hz::number_to_string_locale(attr.worst.value()) : "-");
-		row[col_threshold] = (attr.threshold.has_value() ? hz::number_to_string_locale(attr.threshold.value()) : "-");
-		row[col_raw] = attr.format_raw_value();
-		row[col_type] = attr_type;
-// 			row[col_updated] = AtaStorageAttribute::get_update_type_name(attr.update_type);
-		row[col_failed] = fail_time;
-		row[col_tooltip] = p.get_description();
+		row[col_name] = Glib::Markup::escape_text(p.displayable_name);
+		row[col_flag_value] = Glib::Markup::escape_text(attr.flag);  // it's a string, not int.
+		row[col_value] = Glib::Markup::escape_text(attr.value.has_value() ? hz::number_to_string_locale(attr.value.value()) : "-");
+		row[col_worst] = Glib::Markup::escape_text(attr.worst.has_value() ? hz::number_to_string_locale(attr.worst.value()) : "-");
+		row[col_threshold] = Glib::Markup::escape_text(attr.threshold.has_value() ? hz::number_to_string_locale(attr.threshold.value()) : "-");
+		row[col_raw] = Glib::Markup::escape_text(attr.format_raw_value());
+		row[col_type] = attr_type_name;
+// 		row[col_updated] = Glib::Markup::escape_text(AtaStorageAttribute::get_update_type_name(attr.update_type));
+		row[col_failed] = fail_time_name;
+		row[col_tooltip] = p.get_description();  // markup
 		row[col_storage] = &p;
 
 		if (int(p.warning) > int(max_tab_warning))
