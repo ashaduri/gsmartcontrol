@@ -431,6 +431,8 @@ bool app_init_and_loop(int& argc, char**& argv)
 	debug_out_info("app", "Current C locale: " << hz::locale_c_get() << "\n");
 	debug_out_info("app", "Current C++ locale: " << hz::locale_cpp_get<std::string>() << "\n");
 
+	debug_out_info("app", "Current working directory: " << Glib::get_current_dir() << "\n");
+
 
 #ifdef _WIN32
 	// Now that all program-specific locale setup has been performed,
@@ -443,24 +445,28 @@ bool app_init_and_loop(int& argc, char**& argv)
 	// This shows up in About dialog gtk.
 	Glib::set_application_name(_("GSmartControl"));
 
+	// Check whether we're running from build directory, or it's a packaged program.
+	auto application_dir = hz::fs_get_application_dir();
+	debug_out_info("app", "Application directory: " << application_dir << "\n");
+
+	bool is_from_source = !application_dir.empty() && hz::fs::exists((application_dir / "src"));  // this covers standard cmake builds, but not VS.
 
 	// Add data file search paths
-#ifdef _WIN32
-	hz::data_file_add_search_directory("icons", hz::fs::u8path("."));  // current dir, since shortcuts also use this icon.
-	hz::data_file_add_search_directory("ui", hz::fs::u8path("ui"));
-	hz::data_file_add_search_directory("doc", hz::fs::u8path("doc"));
-#else
-	hz::data_file_add_search_directory("icons", hz::fs::u8path(PACKAGE_PKGDATA_DIR) / "icons");  // /usr/share/program_name/icons
-	hz::data_file_add_search_directory("ui", hz::fs::u8path(PACKAGE_PKGDATA_DIR) / "ui");  // /usr/share/program_name/ui
-	hz::data_file_add_search_directory("doc", hz::fs::u8path(PACKAGE_DOC_DIR));  // /usr/share/doc/[packages/]gsmartcontrol
-#endif
-
-	// Paths in source tree
-#ifdef DEBUG_BUILD
-	hz::data_file_add_search_directory("icons", hz::fs::u8path(PACKAGE_TOP_SOURCE_DIR) / "data");
-	hz::data_file_add_search_directory("ui", hz::fs::u8path(PACKAGE_TOP_SOURCE_DIR) / "src/ui");
-	hz::data_file_add_search_directory("doc", hz::fs::u8path(PACKAGE_TOP_SOURCE_DIR) / "doc");
-#endif
+	if (is_from_source) {
+		hz::data_file_add_search_directory("icons", hz::fs::u8path(PACKAGE_TOP_SOURCE_DIR) / "data");
+		hz::data_file_add_search_directory("ui", hz::fs::u8path(PACKAGE_TOP_SOURCE_DIR) / "src/ui");
+		hz::data_file_add_search_directory("doc", hz::fs::u8path(PACKAGE_TOP_SOURCE_DIR) / "doc");
+	} else {
+	#ifdef _WIN32
+		hz::data_file_add_search_directory("icons", application_dir);
+		hz::data_file_add_search_directory("ui", application_dir / "ui");
+		hz::data_file_add_search_directory("doc", application_dir / "doc");
+	#else
+		hz::data_file_add_search_directory("icons", hz::fs::u8path(PACKAGE_PKGDATA_DIR) / "icons");  // /usr/share/program_name/icons
+		hz::data_file_add_search_directory("ui", hz::fs::u8path(PACKAGE_PKGDATA_DIR) / "ui");  // /usr/share/program_name/ui
+		hz::data_file_add_search_directory("doc", hz::fs::u8path(PACKAGE_DOC_DIR));  // /usr/share/doc/[packages/]gsmartcontrol
+	#endif
+	}
 
 
 #ifdef _WIN32

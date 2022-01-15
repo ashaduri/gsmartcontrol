@@ -36,6 +36,7 @@ target_link_libraries(hz
 #		app_pcrecpp_interface
 		app_gettext_interface  # format_unit.h uses this
 		libdebug  # debug.h
+		whereami  # whereami.h
 		std::filesystem  # fs_ns.h, linking to stdc++fs / c++fs if needed
 )
 

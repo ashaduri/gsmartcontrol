@@ -20,6 +20,7 @@ Copyright:
 #include <stdio.h>  // off_t, fileno(), _fileno(), _wfopen()
 #include <limits>
 #include <array>
+#include <vector>
 
 #ifdef _WIN32
 	#include <io.h>  // _waccess*()
@@ -39,6 +40,7 @@ Copyright:
 #endif
 
 #include "fs_ns.h"
+#include "whereami.h"
 
 
 /// \def HAVE_POSIX_OFF_T_FUNCS
@@ -415,6 +417,25 @@ inline fs::path fs_get_user_config_dir()
 	}
 #endif
 	return path;
+}
+
+
+
+/// Get absolute path of the current executable
+inline fs::path fs_get_application_dir()
+{
+	auto path_len = static_cast<std::size_t>(wai_getExecutablePath(nullptr, 0, nullptr));
+	if (path_len == 0) {
+		return {};
+	}
+	std::vector<char> vpath(path_len + 1);
+
+	int dirname_length = 0;
+
+	// In Windows the path is in utf-8.
+	wai_getExecutablePath(vpath.data(), int(path_len), &dirname_length);
+
+	return {vpath.begin(), vpath.begin() + dirname_length};
 }
 
 
