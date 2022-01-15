@@ -25,6 +25,7 @@ Copyright:
 
 #include "hz/process_signal.h"  // hz::process_signal_send, win32's W*
 #include "hz/debug.h"
+#include "hz/fs.h"
 
 #include "async_command_executor.h"
 
@@ -163,10 +164,19 @@ bool AsyncCommandExecutor::execute()
 	std::vector<std::string> envp = Glib::ArrayHandler<std::string>::array_to_vector(child_env.release(),
 			Glib::OWNERSHIP_DEEP);
 
+	// Set the current directory to application directory so that the default executable (which is simply "smartctl-nc")
+	// can be found even if CWD is something different.
+	auto current_path = hz::fs::current_path();
+	bool path_changed = false;
+	if (auto app_dir = hz::fs_get_application_dir(); !app_dir.empty()) {
+		std::error_code ec;
+		hz::fs::current_path(app_dir, ec);
+		path_changed = !ec;
+	}
+
 	debug_out_info("app", DBG_FUNC_MSG << "Executing \"" << cmd << "\".\n");
 
 	// Execute the command
-
 	try {
 		Glib::spawn_async_with_pipes(Glib::get_current_dir(), argvp, envp,
 				Glib::SpawnFlags::SPAWN_SEARCH_PATH | Glib::SpawnFlags::SPAWN_DO_NOT_REAP_CHILD,
@@ -176,7 +186,18 @@ bool AsyncCommandExecutor::execute()
 	catch(Glib::SpawnError& e) {
 		// no data is returned to &-parameters on error.
 		push_error(Error<void>("gspawn", ErrorLevel::error, e.what()));
+		// Restore CWD
+		if (path_changed) {
+			std::error_code dummy_ec;
+			hz::fs::current_path(current_path, dummy_ec);
+		}
 		return false;
+	}
+
+	// Restore CWD
+	if (path_changed) {
+		std::error_code dummy_ec;
+		hz::fs::current_path(current_path, dummy_ec);
 	}
 
 	g_timer_start(timer_);  // start the timer
