@@ -15,7 +15,7 @@ Copyright:
 #include "hz/win32_tools.h"
 #include "rconfig/rconfig.h"
 #include "app_pcrecpp.h"
-
+#include "hz/fs.h"
 
 
 
@@ -24,16 +24,17 @@ hz::fs::path get_smartctl_binary()
 	auto smartctl_binary = hz::fs::u8path(rconfig::get_data<std::string>("system/smartctl_binary"));
 
 #ifdef _WIN32
-	// look in smartmontools installation directory.
+	// Look in smartmontools installation directory.
+	hz::fs::path system_binary;
 	do {
 		bool use_smt = rconfig::get_data<bool>("system/win32_search_smartctl_in_smartmontools");
 		if (!use_smt)
 			break;
 
-		std::string smt_regpath = rconfig::get_data<std::string>("system/win32_smartmontools_regpath");
-		std::string smt_regpath_wow = rconfig::get_data<std::string>("system/win32_smartmontools_regpath_wow");  // same as above, but with WOW6432Node
-		std::string smt_regkey = rconfig::get_data<std::string>("system/win32_smartmontools_regkey");
-		std::string smt_smartctl = rconfig::get_data<std::string>("system/win32_smartmontools_smartctl_binary");
+		auto smt_regpath = rconfig::get_data<std::string>("system/win32_smartmontools_regpath");
+		auto smt_regpath_wow = rconfig::get_data<std::string>("system/win32_smartmontools_regpath_wow");  // same as above, but with WOW6432Node
+		auto smt_regkey = rconfig::get_data<std::string>("system/win32_smartmontools_regkey");
+		auto smt_smartctl = rconfig::get_data<std::string>("system/win32_smartmontools_smartctl_binary");
 
 		if ((smt_regpath.empty() && smt_regpath_wow.empty()) || smt_regkey.empty() || smt_smartctl.empty())
 			break;
@@ -57,10 +58,18 @@ hz::fs::path get_smartctl_binary()
 		if (!hz::fs::exists(p) || !hz::fs::is_regular_file(p))
 			break;
 
-		smartctl_binary = p;
-
+		system_binary = p;
 	} while (false);
 
+	if (!system_binary.empty()) {
+		smartctl_binary = system_binary;
+
+	} else if (smartctl_binary.is_relative()) {
+		// If smartctl path is relative, and it's Windows, and the package seems to contain smartctl, use our own binary.
+		if (auto app_dir = hz::fs_get_application_dir(); !app_dir.empty() && hz::fs::exists(app_dir / smartctl_binary)) {
+			smartctl_binary = app_dir / smartctl_binary;
+		}
+	}
 #endif
 
 	return smartctl_binary;

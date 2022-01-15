@@ -164,8 +164,7 @@ bool AsyncCommandExecutor::execute()
 	std::vector<std::string> envp = Glib::ArrayHandler<std::string>::array_to_vector(child_env.release(),
 			Glib::OWNERSHIP_DEEP);
 
-	// Set the current directory to application directory so that the default executable (which is simply "smartctl-nc")
-	// can be found even if CWD is something different.
+	// Set the current directory to application directory so CWD does not interfere with finding binaries.
 	auto current_path = hz::fs::current_path();
 	bool path_changed = false;
 	if (auto app_dir = hz::fs_get_application_dir(); !app_dir.empty()) {
