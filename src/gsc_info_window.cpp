@@ -130,7 +130,7 @@ namespace {
 			if (p->value_statistic.is_header) {
 				crt->property_weight() = Pango::WEIGHT_BOLD;
 			} else {
-				crt->property_weight() = Pango::WEIGHT_NORMAL;
+				crt->property_weight().reset_value();
 			}
 		}
 	}
