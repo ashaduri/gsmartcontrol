@@ -1,0 +1,5 @@
+Where Am I?
+git master 2022-01-15
+https://github.com/gpakosz/whereami
+
+whereami.c renamed to whereami.cpp
