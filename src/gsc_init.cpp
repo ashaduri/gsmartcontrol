@@ -453,9 +453,17 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 	// Add data file search paths
 	if (is_from_source) {
+	#ifdef DEBUG_BUILD
 		hz::data_file_add_search_directory("icons", hz::fs::u8path(PACKAGE_TOP_SOURCE_DIR) / "data");
 		hz::data_file_add_search_directory("ui", hz::fs::u8path(PACKAGE_TOP_SOURCE_DIR) / "src/ui");
 		hz::data_file_add_search_directory("doc", hz::fs::u8path(PACKAGE_TOP_SOURCE_DIR) / "doc");
+	#else
+		// Assume the source is the parent directory (standard cmake build with the build directory as a subdirectory of source directory,
+		// and the executables placed directly in the build directory).
+		hz::data_file_add_search_directory("icons", application_dir.parent_path() / "data");
+		hz::data_file_add_search_directory("ui", application_dir.parent_path() / "src/ui");
+		hz::data_file_add_search_directory("doc", application_dir.parent_path() / "doc");
+	#endif
 	} else {
 	#ifdef _WIN32
 		hz::data_file_add_search_directory("icons", application_dir);
