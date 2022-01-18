@@ -13,7 +13,7 @@ Copyright:
 #include <gtkmm.h>  // compose()
 #include <algorithm>
 
-#include "build_config.h"  // CONFIG_*
+#include "build_config.h"
 
 #include "hz/debug.h"
 
@@ -37,19 +37,15 @@ std::string StorageDetector::detect(std::vector<StorageDevicePtr>& drives, const
 
 	// Try each one and move to next if it fails.
 
-#if defined CONFIG_KERNEL_LINUX
+	if constexpr(BuildEnv::is_kernel_linux()) {
+		error_message = detect_drives_linux(all_detected, ex_factory);  // linux /proc/partitions as fallback.
 
-	error_message = detect_drives_linux(all_detected, ex_factory);  // linux /proc/partitions as fallback.
+	} else if constexpr(BuildEnv::is_kernel_family_windows()) {
+		error_message = detect_drives_win32(all_detected, ex_factory);  // win32
 
-#elif defined CONFIG_KERNEL_FAMILY_WINDOWS
-
-	error_message = detect_drives_win32(all_detected, ex_factory);  // win32
-
-#else  // freebsd, etc...
-
-	error_message = detect_drives_other(all_detected, ex_factory);  // bsd, etc... . scans /dev.
-
-#endif
+	} else {  // freebsd, etc...
+		error_message = detect_drives_other(all_detected, ex_factory);  // bsd, etc... . scans /dev.
+	}
 
 	if (all_detected.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Cannot detect drives: None of the drive detection methods returned any drives.\n");

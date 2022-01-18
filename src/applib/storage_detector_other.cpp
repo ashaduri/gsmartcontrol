@@ -9,12 +9,11 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#include "build_config.h"  // CONFIG_*
-
-#if !defined CONFIG_KERNEL_LINUX && !defined CONFIG_KERNEL_FAMILY_WINDOWS
+#include "build_config.h"
 
 #include "local_glibmm.h"
 #include <algorithm>  // std::sort
+#include <cerrno>
 
 #if defined CONFIG_KERNEL_OPENBSD || defined CONFIG_KERNEL_NETBSD
 	#include <util.h>  // getrawpartition()
@@ -37,11 +36,11 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives,
 	std::vector<std::string> devices;
 
 	std::string sdev_config_path;
-	#if defined CONFIG_KERNEL_SOLARIS
+	if constexpr(BuildEnv::is_kernel_solaris()) {
 		sdev_config_path = "system/solaris_dev_path";
-	#else  // other unixes
+	} else {  // other unixes
 		sdev_config_path = "system/unix_sdev_path";
-	#endif
+	}
 
 	// defaults to /dev for freebsd, /dev/rdsk for solaris.
 	auto dev_dir = rconfig::get_data<std::string>(sdev_config_path);
@@ -57,130 +56,125 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives,
 		return _("Device directory does not exist.");
 	}
 
-
-#if defined CONFIG_KERNEL_FREEBSD || defined CONFIG_KERNEL_DRAGONFLY
-	// FreeBSD example device names:
-	// * /dev/ad0 - ide disk 0. /dev/ad0a - non-slice dos partition 1.
-	// * /dev/da1s1e - scsi disk 1 (second disk), slice 1 (aka dos partition 1),
-	// bsd partition e (multiple bsd partitions may be inside one dos partition).
-	// * /dev/acd0 - first cdrom. /dev/acd0c - ?.
-	// Info: http://www.freebsd.org/doc/en/books/handbook/disks-naming.html
-
-	// Of two machines I had access to, freebsd 6.3 had only real devices,
-	// while freebsd 4.10 had lots of dummy ones (ad1, ad2, ad3, da0, da1, da2, da3, sa0, ...).
-
-	static const std::vector<std::string> whitelist = {
-		"/^ad[0-9]+$/",  // adN without suffix - fbsd ide
-		"/^da[0-9]+$/",  // daN without suffix - fbsd scsi, usb
-		"/^ada[0-9]+$/",  // adaN without suffix - fbsd ata cam
-	// 	"/	^sa[0-9]+$/",  // saN without suffix - fbsd scsi tape
-	// 	"/^ast[0-9]+$/",  // astN without suffix - fbsd ide tape
-		"/^aacd[0-9]+$/",  // fbsd adaptec raid
-		"/^mlxd[0-9]+$/",  // fbsd mylex raid
-		"/^mlyd[0-9]+$/",  // fbsd mylex raid
-		"/^amrd[0-9]+$/",  // fbsd AMI raid
-		"/^idad[0-9]+$/",  // fbsd compaq raid
-		"/^twed[0-9]+$/",  // fbsd 3ware raid
-		// these are checked by smartctl, but they are not mentioned in freebsd docs:
-		"/^tw[ae][0-9]+$/",  // fbsd 3ware raid
-	};
-	// unused: acd - ide cdrom, cd - scsi cdrom, mcd - mitsumi cdrom, scd - sony cdrom,
-	// fd - floppy, fla - diskonchip flash.
+	std::vector<std::string> whitelist;
 
 
-#elif defined CONFIG_KERNEL_SOLARIS
+	if constexpr(BuildEnv::is_kernel_freebsd() || BuildEnv::is_kernel_dragonfly()) {
+		// FreeBSD example device names:
+		// * /dev/ad0 - ide disk 0. /dev/ad0a - non-slice dos partition 1.
+		// * /dev/da1s1e - scsi disk 1 (second disk), slice 1 (aka dos partition 1),
+		// bsd partition e (multiple bsd partitions may be inside one dos partition).
+		// * /dev/acd0 - first cdrom. /dev/acd0c - ?.
+		// Info: http://www.freebsd.org/doc/en/books/handbook/disks-naming.html
 
-	// /dev/rdsk contains "raw" physical char devices, as opposed to
-	// "filesystem" block devices in /dev/dsk. smartctl needs rdsk.
+		// Of two machines I had access to, freebsd 6.3 had only real devices,
+		// while freebsd 4.10 had lots of dummy ones (ad1, ad2, ad3, da0, da1, da2, da3, sa0, ...).
 
-	// x86:
+		whitelist = {
+			"/^ad[0-9]+$/",  // adN without suffix - fbsd ide
+			"/^da[0-9]+$/",  // daN without suffix - fbsd scsi, usb
+			"/^ada[0-9]+$/",  // adaN without suffix - fbsd ata cam
+		// 	"/	^sa[0-9]+$/",  // saN without suffix - fbsd scsi tape
+		// 	"/^ast[0-9]+$/",  // astN without suffix - fbsd ide tape
+			"/^aacd[0-9]+$/",  // fbsd adaptec raid
+			"/^mlxd[0-9]+$/",  // fbsd mylex raid
+			"/^mlyd[0-9]+$/",  // fbsd mylex raid
+			"/^amrd[0-9]+$/",  // fbsd AMI raid
+			"/^idad[0-9]+$/",  // fbsd compaq raid
+			"/^twed[0-9]+$/",  // fbsd 3ware raid
+			// these are checked by smartctl, but they are not mentioned in freebsd docs:
+			"/^tw[ae][0-9]+$/",  // fbsd 3ware raid
+		};
+		// unused: acd - ide cdrom, cd - scsi cdrom, mcd - mitsumi cdrom, scd - sony cdrom,
+		// fd - floppy, fla - diskonchip flash.
 
-	// /dev/rdsk/c0t0d0p0:1
-	// Where c0 is the controller number.
-	// t0 is the target (SCSI ID number) (omit for ATAPI)
-	// d0 is always 0 for SCSI, the drive # for ATAPI
-	// p0 is the partition (p0 is the entire disk, or p1 - p4)
-	// :1 is the logical drive (c - z or 1 - 24) (that is, logical partitions inside extended partition)
+	} else if constexpr(BuildEnv::is_kernel_solaris()) {
 
-	// /dev/rdsk/c0d0p2:1
-	// where p2 means the extended partition (type 0x05) is partition 2 (out of 1-4) and
-	// ":1" is the 2nd extended partition (:0 would be the first extended partition).  -- not sure about this!
+		// /dev/rdsk contains "raw" physical char devices, as opposed to
+		// "filesystem" block devices in /dev/dsk. smartctl needs rdsk.
 
-	// p0 whole physical disk
-	// p1 - p4 Four primary fdisk partitions
-	// p5 - p30 26 logical drives in extended DOS partition (not implemented by Solaris)
-	// s0 - s15 16 slices in the Solaris FDISK partition (SPARC has only 8)
-	// On Solaris, by convention, s2 is the whole Solaris partition.
+		// x86:
 
-	// SPARC: There are no *p* devices on sparc afaik, only slices. By convention,
-	// s2 is used as a "whole" disk there (but not with EFI partitions!).
-	// So, c0d0s2 is the whole disk there.
-	// x86 has both c0d0s2 and c0d0p2, where s2 is a whole solaris partition.
+		// /dev/rdsk/c0t0d0p0:1
+		// Where c0 is the controller number.
+		// t0 is the target (SCSI ID number) (omit for ATAPI)
+		// d0 is always 0 for SCSI, the drive # for ATAPI
+		// p0 is the partition (p0 is the entire disk, or p1 - p4)
+		// :1 is the logical drive (c - z or 1 - 24) (that is, logical partitions inside extended partition)
 
-	// NOTE: It seems that smartctl searches for s0 (aka root partition) in the end. I'm not sure
-	// what implications this has for x86, but we replicate this behaviour.
+		// /dev/rdsk/c0d0p2:1
+		// where p2 means the extended partition (type 0x05) is partition 2 (out of 1-4) and
+		// ":1" is the 2nd extended partition (:0 would be the first extended partition).  -- not sure about this!
 
-	// Note: Cdroms are ATAPI, so they pose as SCSI, as opposed to IDE hds.
+		// p0 whole physical disk
+		// p1 - p4 Four primary fdisk partitions
+		// p5 - p30 26 logical drives in extended DOS partition (not implemented by Solaris)
+		// s0 - s15 16 slices in the Solaris FDISK partition (SPARC has only 8)
+		// On Solaris, by convention, s2 is the whole Solaris partition.
 
-	// TODO: No idea how to implement /dev/rmt (scsi tape devices),
-	// I have no files in that directory.
+		// SPARC: There are no *p* devices on sparc afaik, only slices. By convention,
+		// s2 is used as a "whole" disk there (but not with EFI partitions!).
+		// So, c0d0s2 is the whole disk there.
+		// x86 has both c0d0s2 and c0d0p2, where s2 is a whole solaris partition.
 
-	static const std::vector<std::string> whitelist = {
-		"/^c[0-9]+(?:t[0-9]+)?d[0-9]+s0$/"
-	};
+		// NOTE: It seems that smartctl searches for s0 (aka root partition) in the end. I'm not sure
+		// what implications this has for x86, but we replicate this behaviour.
 
+		// Note: Cdroms are ATAPI, so they pose as SCSI, as opposed to IDE hds.
 
+		// TODO: No idea how to implement /dev/rmt (scsi tape devices),
+		// I have no files in that directory.
 
-#elif defined CONFIG_KERNEL_OPENBSD || defined CONFIG_KERNEL_NETBSD
+		whitelist = {
+			"/^c[0-9]+(?:t[0-9]+)?d[0-9]+s0$/"
+		};
 
-	// OpenBSD / NetBSD have /dev/wdNc for IDE/ATA, /dev/sdNc for SCSI disk,
-	// /dev/stNc for scsi tape. N is [0-9]+. "c" means "whole disk" (not sure about
-	// different architectures though). There are no "sdN" devices, only "sdNP".
-	// Another manual says that wd0d would be a whole disk, while wd0c is its
-	// bsd part only (on x86) (only on netbsd?). Anyway, getrawpartition() gives
-	// us the letter we need.
-	// There is no additional level of names for BSD subpartitions (unlike freebsd).
-	// cd0a is cdrom.
-	// Dummy devices are present.
+	} else if constexpr(BuildEnv::is_kernel_openbsd() || BuildEnv::is_kernel_netbsd()) {
 
-	// Note: This detection may take a while (probably due to open() check).
+		// OpenBSD / NetBSD have /dev/wdNc for IDE/ATA, /dev/sdNc for SCSI disk,
+		// /dev/stNc for scsi tape. N is [0-9]+. "c" means "whole disk" (not sure about
+		// different architectures though). There are no "sdN" devices, only "sdNP".
+		// Another manual says that wd0d would be a whole disk, while wd0c is its
+		// bsd part only (on x86) (only on netbsd?). Anyway, getrawpartition() gives
+		// us the letter we need.
+		// There is no additional level of names for BSD subpartitions (unlike freebsd).
+		// cd0a is cdrom.
+		// Dummy devices are present.
 
-	char whole_part = 'a' + getrawpartition();  // from bsd's util.h
+		// Note: This detection may take a while (probably due to open() check).
 
-	static const std::vector<std::string> whitelist = {
-		hz::string_sprintf("/^wd[0-9]+%c$/", whole_part),
-		hz::string_sprintf("/^sd[0-9]+%c$/", whole_part),
-		hz::string_sprintf("/^st[0-9]+%c$/", whole_part),
-	};
+		char whole_part = 'a';
+	#if defined CONFIG_KERNEL_OPENBSD || defined CONFIG_KERNEL_NETBSD
+		whole_part = 'a' + getrawpartition();  // from bsd's util.h
+	#endif
 
-
-
-#elif defined CONFIG_KERNEL_DARWIN
-
-	// Darwin has /dev/disk0, /dev/disk0s1, etc...
-	// Only real devices are present, so no need for additional checks.
-
-	static const std::vector<std::string> whitelist = {
-		"/^disk[0-9]+$/"
-	};
+		whitelist = {
+			hz::string_sprintf("/^wd[0-9]+%c$/", whole_part),
+			hz::string_sprintf("/^sd[0-9]+%c$/", whole_part),
+			hz::string_sprintf("/^st[0-9]+%c$/", whole_part),
+		};
 
 
-#elif defined CONFIG_KERNEL_QNX
+	} else if constexpr(BuildEnv::is_kernel_darwin()) {
+		// Darwin has /dev/disk0, /dev/disk0s1, etc...
+		// Only real devices are present, so no need for additional checks.
 
-	// QNX has /dev/hd0, /dev/hd0t78 (partition?).
-	// Afaik, IDE and SCSI have the same prefix. fd for floppy, cd for cdrom.
-	// Not sure about the tapes.
-	// Only real devices are present, so no need for additional checks.
+		whitelist = {
+			"/^disk[0-9]+$/"
+		};
 
-	static const std::vector<std::string> whitelist = {
-		"/^hd[0-9]+$/",
-	};
 
-#else  // unsupported OS
+	} else if constexpr(BuildEnv::is_kernel_qnx()) {
+		// QNX has /dev/hd0, /dev/hd0t78 (partition?).
+		// Afaik, IDE and SCSI have the same prefix. fd for floppy, cd for cdrom.
+		// Not sure about the tapes.
+		// Only real devices are present, so no need for additional checks.
 
-	static const std::vector<std::string> whitelist;
+		whitelist = {
+			"/^hd[0-9]+$/",
+		};
 
-#endif  // unix platforms
+	}  // unix platforms
 
 
 	std::vector<hz::fs::path> matched_devices;
@@ -212,8 +206,8 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives,
 
 
 	// List ones who need dummy device filtering
-	#if defined CONFIG_KERNEL_FREEBSD || defined CONFIG_KERNEL_DRAGONFLY \
-			|| defined CONFIG_KERNEL_OPENBSD || defined CONFIG_KERNEL_NETBSD
+	if constexpr(BuildEnv::is_kernel_freebsd() || BuildEnv::is_kernel_dragonfly()
+			|| BuildEnv::is_kernel_openbsd() || BuildEnv::is_kernel_netbsd()) {
 		// Since we may have encountered dummy devices, we should check
 		// if they really exist. Unfortunately, this involves opening them, which
 		// is not good with some media (e.g. it may hang on audio cd (freebsd, maybe others), etc...).
@@ -248,25 +242,22 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives,
 			devices.push_back(dev.string());
 		}
 
-	#else  // not *BSD
+	} else {  // not *BSD
 		for (const auto& dev : matched_devices) {
 			debug_out_info("app", DBG_FUNC_MSG << "Device \"" << dev << "\" matched the whitelist, adding to device list.\n");
 			devices.push_back(dev);
 		}
-
-	#endif
+	}
 
 	for (auto& device : devices) {
 		drives.emplace_back(std::make_shared<StorageDevice>(device));
 	}
 
-	return std::string();
+	return {};
 }
 
 
 
 
-
-#endif  // !defined CONFIG_KERNEL_LINUX && !defined CONFIG_KERNEL_FAMILY_WINDOWS
 
 /// @}

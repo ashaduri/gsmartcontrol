@@ -9,14 +9,12 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#include "build_config.h"  // CONFIG_*
-
-#if defined CONFIG_KERNEL_LINUX
+#include "build_config.h"
 
 #include "local_glibmm.h"
 #include <algorithm>  // std::find
 #include <cstdio>  // std::fgets(), std::FILE
-#include <cerrno>  // ENXIO
+// #include <cerrno>  // ENXIO
 #include <set>
 #include <map>
 #include <vector>
@@ -1107,7 +1105,5 @@ std::string detect_drives_linux(std::vector<StorageDevicePtr>& drives, const Com
 
 
 
-
-#endif  // CONFIG_KERNEL_LINUX
 
 /// @}

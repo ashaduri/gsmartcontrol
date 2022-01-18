@@ -12,10 +12,7 @@ Copyright:
 #ifndef STORAGE_DETECTOR_WIN32_H
 #define STORAGE_DETECTOR_WIN32_H
 
-#include "build_config.h"  // CONFIG_*
-
-#if defined CONFIG_KERNEL_FAMILY_WINDOWS
-
+#include "build_config.h"
 
 #include <string>
 #include <vector>
@@ -29,8 +26,6 @@ Copyright:
 std::string detect_drives_win32(std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory);
 
 
-
-#endif
 
 #endif
 

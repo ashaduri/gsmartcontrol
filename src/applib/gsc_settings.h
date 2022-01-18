@@ -5,15 +5,15 @@ Copyright:
 ******************************************************************************/
 /// \file
 /// \author Alexander Shaduri
-/// \ingroup gsc
-/// \weakgroup gsc
+/// \ingroup applib
+/// \weakgroup applib
 /// @{
 
 #ifndef GSC_SETTINGS_H
 #define GSC_SETTINGS_H
 
 #include "rconfig/rconfig.h"
-
+#include "build_config.h"
 
 
 /// Initializes ALL default settings.
@@ -25,14 +25,14 @@ inline void init_default_settings()
 	rconfig::set_default_data("system/config_autosave_timeout_sec", 3*60);  // 3 minutes. 0 to disable.
 	// rconfig::set_default_data("system/first_boot", true);  // used to show the first-start warning.
 
-#ifndef _WIN32
-	rconfig::set_default_data("system/smartctl_binary", "smartctl");  // must be in PATH or use absolute path.
-	rconfig::set_default_data("system/tw_cli_binary", "tw_cli");  // must be in PATH or use absolute path.
-#else
-	rconfig::set_default_data("system/smartctl_binary", "smartctl-nc.exe");  // use no-console version by default.
-	rconfig::set_default_data("system/tw_cli_binary", "tw_cli.exe");
-	rconfig::set_default_data("system/areca_cli_binary", "cli.exe");  // if relative, an installation path is prepended (if found).
-#endif
+	if constexpr(!BuildEnv::is_kernel_family_windows()) {
+		rconfig::set_default_data("system/smartctl_binary", "smartctl");  // must be in PATH or use absolute path.
+		rconfig::set_default_data("system/tw_cli_binary", "tw_cli");  // must be in PATH or use absolute path.
+	} else {
+		rconfig::set_default_data("system/smartctl_binary", "smartctl-nc.exe");  // use no-console version by default.
+		rconfig::set_default_data("system/tw_cli_binary", "tw_cli.exe");
+		rconfig::set_default_data("system/areca_cli_binary", "cli.exe");  // if relative, an installation path is prepended (if found).
+	}
 	// search for "smartctl-nc.exe" in smartmontools installation first.
 	rconfig::set_default_data("system/win32_search_smartctl_in_smartmontools", true);
 	rconfig::set_default_data("system/win32_smartmontools_regpath", "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\smartmontools");  // in HKLM

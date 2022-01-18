@@ -42,11 +42,11 @@ inline std::string execute_tw_cli(const CommandExecutorFactoryPtr& ex_factory, c
 	std::vector<std::string> binaries;  // binaries to try
 	// Note: tw_cli is automatically added to PATH in windows, no need to look for it.
 	binaries.push_back(binary);
-#ifdef CONFIG_KERNEL_LINUX
-	// tw_cli may be named tw_cli.x86 or tw_cli.x86_64 in linux
-	binaries.push_back(binary + ".x86_64");  // try this first
-	binaries.push_back(binary + ".x86");
-#endif
+	if constexpr(BuildEnv::is_kernel_linux()) {
+		// tw_cli may be named tw_cli.x86 or tw_cli.x86_64 in linux
+		binaries.push_back(binary + ".x86_64");  // try this first
+		binaries.push_back(binary + ".x86");
+	}
 
 	for (const auto& bin : binaries) {
 		executor->set_command(Glib::shell_quote(bin), command_options);

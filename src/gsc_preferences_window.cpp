@@ -235,9 +235,9 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, Glib::RefPtr
 
 
 	Glib::ustring smartctl_binary_tooltip = _("A path to smartctl binary. If the path is not absolute, the binary will be looked for in user's PATH.");
-#if defined CONFIG_KERNEL_FAMILY_WINDOWS
-	smartctl_binary_tooltip += Glib::ustring("\n") + _("Note: smartctl.exe shows a console during execution, while smartctl-nc.exe (default) doesn't (nc means no-console).");
-#endif
+	if constexpr(BuildEnv::is_kernel_family_windows()) {
+		smartctl_binary_tooltip += Glib::ustring("\n") + _("Note: smartctl.exe shows a console during execution, while smartctl-nc.exe (default) doesn't (nc means no-console).");
+	}
 	if (auto* smartctl_binary_label = lookup_widget<Gtk::Label*>("smartctl_binary_label")) {
 		app_gtkmm_set_widget_tooltip(*smartctl_binary_label, smartctl_binary_tooltip);
 	}
@@ -260,11 +260,11 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, Glib::RefPtr
 	APP_BUILDER_AUTO_CONNECT(device_options_device_entry, changed);
 
 	Glib::ustring device_options_tooltip = _("A device name to match");
-#if defined CONFIG_KERNEL_FAMILY_WINDOWS
-	device_options_tooltip = _("A device name to match (for example, use \"pd0\" for the first physical drive)");
-#elif defined CONFIG_KERNEL_LINUX
-	device_options_tooltip = _("A device name to match (for example, /dev/sda or /dev/twa0)");
-#endif
+	if constexpr(BuildEnv::is_kernel_family_windows()) {
+		device_options_tooltip = _("A device name to match (for example, use \"pd0\" for the first physical drive)");
+	} else if constexpr(BuildEnv::is_kernel_linux()) {
+		device_options_tooltip = _("A device name to match (for example, /dev/sda or /dev/twa0)");
+	}
 	if (auto* device_options_device_label = lookup_widget<Gtk::Label*>("device_options_device_label")) {
 		app_gtkmm_set_widget_tooltip(*device_options_device_label, device_options_tooltip);
 	}
@@ -298,11 +298,11 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, Glib::RefPtr
 	this->device_widget_set_remove_possible(false);  // initial state
 
 	// hide win32-only options for non-win32.
-#ifndef _WIN32
-	if (auto* smartctl_search_check = this->lookup_widget<Gtk::CheckButton*>("search_in_smartmontools_first_check"))
-		smartctl_search_check->hide();
-#endif
-
+	if constexpr(!BuildEnv::is_kernel_family_windows()) {
+		if (auto* smartctl_search_check = this->lookup_widget<Gtk::CheckButton*>("search_in_smartmontools_first_check")) {
+			smartctl_search_check->hide();
+		}
+	}
 
 	import_config();
 
@@ -519,15 +519,16 @@ void GscPreferencesWindow::on_smartctl_binary_browse_button_clicked()
 
 	int result = 0;
 
-#ifdef _WIN32
-	Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
-	specific_filter->set_name(_("Executable Files"));
-	specific_filter->add_pattern("*.exe");
+	Glib::RefPtr<Gtk::FileFilter> specific_filter, all_filter;
+	if constexpr(BuildEnv::is_kernel_family_windows()) {
+		specific_filter = Gtk::FileFilter::create();
+		specific_filter->set_name(_("Executable Files"));
+		specific_filter->add_pattern("*.exe");
 
-	Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
-	all_filter->set_name(_("All Files"));
-	all_filter->add_pattern("*");
-#endif
+		all_filter = Gtk::FileFilter::create();
+		all_filter->set_name(_("All Files"));
+		all_filter->add_pattern("*");
+	}
 
 #if GTK_CHECK_VERSION(3, 20, 0)
 	std::unique_ptr<GtkFileChooserNative, decltype(&g_object_unref)> dialog(gtk_file_chooser_native_new(
@@ -537,10 +538,10 @@ void GscPreferencesWindow::on_smartctl_binary_browse_button_clicked()
 	if (path.is_absolute())
 		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog.get()), path.u8string().c_str());
 
-#ifdef _WIN32
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), specific_filter->gobj());
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), all_filter->gobj());
-#endif
+	if constexpr(BuildEnv::is_kernel_family_windows()) {
+		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), specific_filter->gobj());
+		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), all_filter->gobj());
+	}
 
 	result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
 
@@ -552,10 +553,10 @@ void GscPreferencesWindow::on_smartctl_binary_browse_button_clicked()
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 	dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_ACCEPT);
 
-#ifdef _WIN32
-	dialog.add_filter(specific_filter);
-	dialog.add_filter(all_filter);
-#endif
+	if constexpr(BuildEnv::is_kernel_family_windows()) {
+		dialog.add_filter(specific_filter);
+		dialog.add_filter(all_filter);
+	}
 
 	// Note: This works on absolute paths only (otherwise it's gtk warning).
 	if (path.is_absolute())

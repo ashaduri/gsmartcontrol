@@ -16,7 +16,7 @@ Copyright:
 #include <vector>
 
 #include "app_gtkmm_tools.h"
-
+#include "build_config.h"
 
 
 
@@ -128,13 +128,13 @@ Glib::ustring app_make_valid_utf8(const Glib::ustring& str)
 
 Glib::ustring app_make_valid_utf8_from_command_output(const std::string& str)
 {
-	#ifdef _WIN32
-	try {
-		return Glib::locale_to_utf8(str);  // detects invalid utf-8 sequences
-	} catch (Glib::ConvertError& e) {
-		// nothing, try to fix as it is
+	if constexpr(BuildEnv::is_kernel_family_windows()) {
+		try {
+			return Glib::locale_to_utf8(str);  // detects invalid utf-8 sequences
+		} catch (Glib::ConvertError& e) {
+			// nothing, try to fix as it is
+		}
 	}
-	#endif
 	return app_ustring_from_gchar(app_make_valid_utf_c(str.c_str()));
 }
 

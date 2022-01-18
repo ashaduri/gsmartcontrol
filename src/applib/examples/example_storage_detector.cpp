@@ -13,9 +13,9 @@ Copyright:
 
 #include "applib/storage_device.h"
 #include "applib/storage_detector.h"
+#include "applib/gsc_settings.h"
 
 #include "hz/main_tools.h"
-#include "gsc_settings.h"  // in src directory
 
 
 

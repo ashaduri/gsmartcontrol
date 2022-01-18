@@ -94,11 +94,11 @@ GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, Glib::RefPtr
 	// Surprisingly, the treeview column text still works.
 
 	// The problem seems to have disappeared (new compiler/runtime?)
-// #ifdef _WIN32
+// if constexpr(BuildEnv::is_kernel_family_windows()) {
 // 	Gtk::Box* command_hbox = this->lookup_widget<Gtk::Box*>("command_hbox");
 // 	if (command_hbox)
 // 		command_hbox->hide();
-// #endif
+// }
 
 	// ---------------
 

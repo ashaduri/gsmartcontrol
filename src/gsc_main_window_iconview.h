@@ -27,6 +27,7 @@ Copyright:
 
 #include "gsc_main_window.h"
 #include "rconfig/rconfig.h"
+#include "build_config.h"
 
 
 
@@ -294,11 +295,11 @@ class GscMainWindowIconView : public Gtk::IconView {
 			if (rconfig::get_data<bool>("gui/icons_show_device_name")) {
 				if (!drive->get_is_virtual()) {
 					std::string dev = Glib::Markup::escape_text(drive->get_device_with_type());
-				#ifndef _WIN32
-					name += "\n" + dev;
-				#else
-					name += "\n" + Glib::ustring::compose(_("%1 (%2)"), dev, drive_letters);
-				#endif
+					if constexpr(BuildEnv::is_kernel_family_windows()) {
+						name += "\n" + Glib::ustring::compose(_("%1 (%2)"), dev, drive_letters);
+					} else {
+						name += "\n" + dev;
+					}
 				} else if (!drive->get_virtual_filename().empty()) {
 					name += "\n" + Glib::Markup::escape_text(drive->get_virtual_filename());
 				}
@@ -326,9 +327,9 @@ class GscMainWindowIconView : public Gtk::IconView {
 				tooltip_strs.push_back(Glib::ustring::compose(_("Device: %1"), "<b>" + Glib::Markup::escape_text(drive->get_device_with_type()) + "</b>"));
 			}
 
-		#ifdef _WIN32
-			tooltip_strs.push_back(Glib::ustring::compose(_("Drive letters: %1"), "<b>" + drive_letters_with_volname + "</b>"));
-		#endif
+			if constexpr(BuildEnv::is_kernel_family_windows()) {
+				tooltip_strs.push_back(Glib::ustring::compose(_("Drive letters: %1"), "<b>" + drive_letters_with_volname + "</b>"));
+			}
 
 			if (!drive->get_serial_number().empty()) {
 				tooltip_strs.push_back(Glib::ustring::compose(_("Serial number: %1"), "<b>" + Glib::Markup::escape_text(drive->get_serial_number()) + "</b>"));

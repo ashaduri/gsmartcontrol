@@ -1090,9 +1090,9 @@ void GscMainWindow::run_update_drivedb()
 	}
 	std::string update_binary = Glib::shell_quote(update_binary_path.u8string());
 
-#ifndef _WIN32
-	update_binary = "xterm -hold -e " + update_binary;
-#endif
+	if constexpr(!BuildEnv::is_kernel_family_windows()) {  // X11
+		update_binary = "xterm -hold -e " + update_binary;
+	}
 
 	try {
 		Glib::spawn_command_line_async(update_binary);
@@ -1106,14 +1106,15 @@ void GscMainWindow::run_update_drivedb()
 
 bool GscMainWindow::add_device(const std::string& file, const std::string& type_arg, const std::string& extra_args)
 {
-#ifndef _WIN32  	// win32 doesn't have device files, so skip the check
-	std::error_code ec;
-	if (!hz::fs::exists(hz::fs::u8path(file), ec)) {
-		gui_show_error_dialog(_("Cannot add device"),
-				(ec.message().empty() ? Glib::ustring::compose(_("Device \"%1\" doesn't exist."), file).raw() : ec.message()), this);
-		return false;
+	// win32 doesn't have device files, so skip the check in Windows.
+	if constexpr(!BuildEnv::is_kernel_family_windows()) {
+		std::error_code ec;
+		if (!hz::fs::exists(hz::fs::u8path(file), ec)) {
+			gui_show_error_dialog(_("Cannot add device"),
+					(ec.message().empty() ? Glib::ustring::compose(_("Device \"%1\" doesn't exist."), file).raw() : ec.message()), this);
+			return false;
+		}
 	}
-#endif
 
 	auto drive = std::make_shared<StorageDevice>(file);
 	drive->set_type_argument(type_arg);

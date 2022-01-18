@@ -25,6 +25,7 @@ target_sources(applib PRIVATE
 	command_executor_gui.h
 	command_executor_factory.cpp
 	command_executor_factory.h
+	gsc_settings.h
 	gui_utils.cpp
 	gui_utils.h
 	selftest.cpp
@@ -59,7 +60,6 @@ target_link_libraries(applib
 		app_gtkmm_interface
 		app_pcrecpp_interface
 		app_gettext_interface
-    PRIVATE
 		build_config
 )
 

@@ -28,6 +28,7 @@ Copyright:
 #include "hz/fs.h"
 
 #include "async_command_executor.h"
+#include "build_config.h"
 
 
 using hz::Error;
@@ -149,12 +150,12 @@ bool AsyncCommandExecutor::execute()
 	// Set the locale for a child to Classic - otherwise it may mangle the output.
 	// TODO: Disable this for JSON format.
 	bool change_lang = true;
-	#ifdef _WIN32
+	if constexpr(BuildEnv::is_kernel_family_windows()) {
 		// LANG is posix-only, so it has no effect on win32.
 		// Unfortunately, I was unable to find a way to execute a child with a different
 		// locale in win32. Locale seems to be non-inheritable, so setting it here won't help.
 		change_lang = false;
-	#endif
+	}
 
 	std::unique_ptr<gchar*, decltype(&g_strfreev)> child_env(g_get_environ(), &g_strfreev);
 	if (change_lang) {

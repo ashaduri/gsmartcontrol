@@ -12,9 +12,7 @@ Copyright:
 #ifndef STORAGE_DETECTOR_LINUX_H
 #define STORAGE_DETECTOR_LINUX_H
 
-#include "build_config.h"  // CONFIG_*
-
-#if defined CONFIG_KERNEL_LINUX
+#include "build_config.h"
 
 
 #include <string>
@@ -29,8 +27,6 @@ Copyright:
 std::string detect_drives_linux(std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory);
 
 
-
-#endif
 
 
 #endif

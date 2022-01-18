@@ -30,7 +30,7 @@ GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builde
 
 	// Note: The dialogs have ESC accelerator attached by default.
 
-	set_version(PACKAGE_VERSION);
+	set_version(BuildEnv::package_version());
 
 	// set these properties here (after setting hooks) to make the links work.
 	set_website("https://gsmartcontrol.shaduri.dev/");

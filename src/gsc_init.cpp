@@ -39,12 +39,12 @@ Copyright:
 #include "hz/win32_tools.h"  // win32_get_registry_value_string()
 #include "hz/env_tools.h"
 #include "hz/string_num.h"
-#include "build_config.h"  // VERSION, *PACKAGE*, ...
+#include "build_config.h"  // BuildEnv
 
 #include "applib/window_instance_manager.h"
+#include "applib/gsc_settings.h"
 #include "gsc_main_window.h"
 #include "gsc_executor_log_window.h"
-#include "gsc_settings.h"
 #include "gsc_init.h"
 #include "gsc_startup_settings.h"
 
@@ -97,11 +97,11 @@ namespace {
 	{
 		// Default system-wide settings. This file is empty by default.
 		hz::fs::path global_config_file;
-	#ifdef _WIN32
-		global_config_file = hz::fs::u8path("gsmartcontrol2.conf");  // CWD, installation dir by default.
-	#else
-		global_config_file = hz::fs::u8path(PACKAGE_SYSCONF_DIR) / "gsmartcontrol2.conf";
-	#endif
+		if constexpr(BuildEnv::is_kernel_family_windows()) {
+			global_config_file = hz::fs::u8path("gsmartcontrol2.conf");  // CWD, installation dir by default.
+		} else {
+			global_config_file = hz::fs::u8path(BuildEnv::package_sysconf_dir()) / "gsmartcontrol2.conf";
+		}
 
 		debug_out_dump("app", DBG_FUNC_MSG << "Global config file: \"" << global_config_file.u8string() << "\"\n");
 		debug_out_dump("app",
@@ -278,7 +278,7 @@ namespace {
 	/// Print application version information
 	inline void app_print_version_info()
 	{
-		std::string versiontext = "\n" + Glib::ustring::compose(_("GSmartControl version %1"), PACKAGE_VERSION) + "\n";
+		std::string versiontext = "\n" + Glib::ustring::compose(_("GSmartControl version %1"), BuildEnv::package_version()) + "\n";
 
 		std::string warningtext = std::string("\n") + _("Warning: GSmartControl comes with ABSOLUTELY NO WARRANTY.\n"
 				"See LICENSE.txt file for details.") + "\n\n";
@@ -296,15 +296,15 @@ namespace {
 
 bool app_init_and_loop(int& argc, char**& argv)
 {
-#ifdef _WIN32
-	// Disable client-side decorations (enable native windows decorations) under Windows.
-	hz::env_set_value("GTK_CSD", "0");
-#endif
+	if constexpr(BuildEnv::is_kernel_family_windows()) {
+		// Disable client-side decorations (enable native windows decorations) under Windows.
+		hz::env_set_value("GTK_CSD", "0");
+	}
 
 	// Set up gettext. This has to be before gtk is initialized.
-	bindtextdomain(PACKAGE_NAME, PACKAGE_LOCALE_DIR);
-	bind_textdomain_codeset(PACKAGE_NAME, "UTF-8");
-	textdomain(PACKAGE_NAME);
+	bindtextdomain(BuildEnv::package_name(), BuildEnv::package_locale_dir());
+	bind_textdomain_codeset(BuildEnv::package_name(), "UTF-8");
+	textdomain(BuildEnv::package_name());
 
 	// Glib needs the C locale set to system locale for command line args.
 	// We will reset it later if needed.
@@ -382,14 +382,14 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 	debug_out_dump("app", "LibDebug options:\n" << debug_get_cmd_args_dump());
 
-#ifndef _WIN32
-	if (!std::isnan(args.arg_gdk_scale)) {
-		hz::env_set_value("GDK_SCALE", hz::number_to_string_nolocale(args.arg_gdk_scale));
+	if constexpr(!BuildEnv::is_kernel_family_windows()) {  // X11
+		if (!std::isnan(args.arg_gdk_scale)) {
+			hz::env_set_value("GDK_SCALE", hz::number_to_string_nolocale(args.arg_gdk_scale));
+		}
+		if (!std::isnan(args.arg_gdk_dpi_scale)) {
+			hz::env_set_value("GDK_DPI_SCALE", hz::number_to_string_nolocale(args.arg_gdk_dpi_scale));
+		}
 	}
-	if (!std::isnan(args.arg_gdk_dpi_scale)) {
-		hz::env_set_value("GDK_DPI_SCALE", hz::number_to_string_nolocale(args.arg_gdk_dpi_scale));
-	}
-#endif
 
 
 	// Load config files
@@ -453,31 +453,31 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 	// Add data file search paths
 	if (is_from_source) {
-	#ifdef DEBUG_BUILD
-		hz::data_file_add_search_directory("icons", hz::fs::u8path(PACKAGE_TOP_SOURCE_DIR) / "data");
-		hz::data_file_add_search_directory("ui", hz::fs::u8path(PACKAGE_TOP_SOURCE_DIR) / "src/ui");
-		hz::data_file_add_search_directory("doc", hz::fs::u8path(PACKAGE_TOP_SOURCE_DIR) / "doc");
-	#else
-		// Assume the source is the parent directory (standard cmake build with the build directory as a subdirectory of source directory,
-		// and the executables placed directly in the build directory).
-		hz::data_file_add_search_directory("icons", application_dir.parent_path() / "data");
-		hz::data_file_add_search_directory("ui", application_dir.parent_path() / "src/ui");
-		hz::data_file_add_search_directory("doc", application_dir.parent_path() / "doc");
-	#endif
+		if constexpr(BuildEnv::debug_build()) {
+			hz::data_file_add_search_directory("icons", hz::fs::u8path(BuildEnv::package_top_source_dir()) / "data");
+			hz::data_file_add_search_directory("ui", hz::fs::u8path(BuildEnv::package_top_source_dir()) / "src/ui");
+			hz::data_file_add_search_directory("doc", hz::fs::u8path(BuildEnv::package_top_source_dir()) / "doc");
+		} else {
+			// Assume the source is the parent directory (standard cmake build with the build directory as a subdirectory of source directory,
+			// and the executables placed directly in the build directory).
+			hz::data_file_add_search_directory("icons", application_dir.parent_path() / "data");
+			hz::data_file_add_search_directory("ui", application_dir.parent_path() / "src/ui");
+			hz::data_file_add_search_directory("doc", application_dir.parent_path() / "doc");
+		}
 	} else {
-	#ifdef _WIN32
-		hz::data_file_add_search_directory("icons", application_dir);
-		hz::data_file_add_search_directory("ui", application_dir / "ui");
-		hz::data_file_add_search_directory("doc", application_dir / "doc");
-	#else
-		hz::data_file_add_search_directory("icons", hz::fs::u8path(PACKAGE_PKGDATA_DIR) / "icons");  // /usr/share/program_name/icons
-		hz::data_file_add_search_directory("ui", hz::fs::u8path(PACKAGE_PKGDATA_DIR) / "ui");  // /usr/share/program_name/ui
-		hz::data_file_add_search_directory("doc", hz::fs::u8path(PACKAGE_DOC_DIR));  // /usr/share/doc/[packages/]gsmartcontrol
-	#endif
+		if constexpr(BuildEnv::is_kernel_family_windows()) {
+			hz::data_file_add_search_directory("icons", application_dir);
+			hz::data_file_add_search_directory("ui", application_dir / "ui");
+			hz::data_file_add_search_directory("doc", application_dir / "doc");
+		} else {
+			hz::data_file_add_search_directory("icons", hz::fs::u8path(BuildEnv::package_pkgdata_dir()) / "icons");  // /usr/share/program_name/icons
+			hz::data_file_add_search_directory("ui", hz::fs::u8path(BuildEnv::package_pkgdata_dir()) / "ui");  // /usr/share/program_name/ui
+			hz::data_file_add_search_directory("doc", hz::fs::u8path(BuildEnv::package_doc_dir()));  // /usr/share/doc/[packages/]gsmartcontrol
+		}
 	}
 
 
-#ifdef _WIN32
+
 	// Windows "Classic" theme is broken under GTK+3's "win32" theme.
 	// Make sure we fall back to Adwaita (which works, but looks non-native)
 	// for platforms which support "Classic" theme - Windows Server and Windows Vista / 7.
@@ -487,20 +487,20 @@ bool app_init_and_loop(int& argc, char**& argv)
 		if (gtk_settings) {
 			Glib::ustring theme_name = gtk_settings->property_gtk_theme_name().get_value();
 			debug_out_dump("app", "Current GTK theme: " << theme_name << "\n");
+#ifdef _WIN32
 			if (IsWindowsServer() || !IsWindows8OrGreater()) {
 				if (theme_name == "win32") {
 					debug_out_dump("app", "Windows with Classic theme support detected, switching to Adwaita theme.\n");
 					gtk_settings->property_gtk_theme_name().set_value("Adwaita");
 				}
 			}
+#endif
 		}
 	}
-#endif
 
 	// Set default icon for all windows.
 	// Win32 version has its icon compiled-in, so no need to set it there.
-#ifndef _WIN32
-	{
+	if constexpr(BuildEnv::is_kernel_family_windows()) {
 		// we load it via icontheme to provide multi-size version.
 
 		// application-installed, /usr/share/icons/<theme_name>/apps/<size>
@@ -516,7 +516,6 @@ bool app_init_and_loop(int& argc, char**& argv)
 			Gtk::Window::set_default_icon_name("gtk-harddisk");
 		}
 	}
-#endif
 
 
 	// Export some command line arguments to rconfig
@@ -574,11 +573,7 @@ void app_quit()
 	debug_out_info("app", "Saving config before exit...\n");
 
 	// save the config
-#if defined ENABLE_GLIB && ENABLE_GLIB
 	rconfig::autosave_force_now();
-#else
-	rconfig::save_to_file(get_home_config_file());
-#endif
 
 	// exit the main loop
 	debug_out_info("app", "Trying to exit the main loop...\n");

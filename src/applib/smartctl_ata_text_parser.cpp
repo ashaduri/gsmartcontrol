@@ -23,6 +23,7 @@ Copyright:
 #include "smartctl_ata_text_parser.h"
 #include "ata_storage_property_descr.h"
 #include "warning_colors.h"
+#include "build_config.h"
 
 
 
@@ -340,20 +341,20 @@ std::string SmartctlAtaTextParser::parse_byte_size(const std::string& str, int64
 			std::string(1, static_cast<char>(0xc2)),
 	};
 
-#ifdef _WIN32
-	// if current locale is C, then probably we didn't change it at application
-	// startup, so set it now (temporarily). Otherwise, just use the current locale's
-	// thousands separator.
-	{
-		std::string old_locale = hz::locale_c_get();
-		hz::ScopedCLocale loc("", old_locale == "C");  // set system locale if the current one is C
+	if constexpr(BuildEnv::is_kernel_family_windows()) {
+		// if current locale is C, then probably we didn't change it at application
+		// startup, so set it now (temporarily). Otherwise, just use the current locale's
+		// thousands separator.
+		{
+			std::string old_locale = hz::locale_c_get();
+			hz::ScopedCLocale loc("", old_locale == "C");  // set system locale if the current one is C
 
-		struct lconv* lc = std::localeconv();
-		if (lc && lc->thousands_sep && *(lc->thousands_sep)) {
-			to_replace.push_back(lc->thousands_sep);
-		}
-	}  // the locale is restored here
-#endif
+			struct lconv* lc = std::localeconv();
+			if (lc && lc->thousands_sep && lc->thousands_sep[0] != '\0') {
+				to_replace.emplace_back(lc->thousands_sep);
+			}
+		}  // the locale is restored here
+	}
 
 	to_replace.emplace_back("bytes");
 	std::string s = hz::string_replace_array_copy(hz::string_trim_copy(str), to_replace, "");

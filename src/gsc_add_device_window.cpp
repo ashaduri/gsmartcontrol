@@ -44,11 +44,11 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk
 	top_info_link_label->set_text(Glib::ustring::compose(top_info_link_label->get_text(), man_url));
 
 	Glib::ustring device_name_tooltip = _("Device name");
-#if defined CONFIG_KERNEL_FAMILY_WINDOWS
-	device_name_tooltip = _("Device name (for example, use \"pd0\" for the first physical drive)");
-#elif defined CONFIG_KERNEL_LINUX
-	device_name_tooltip = _("Device name (for example, /dev/sda or /dev/twa0)");
-#endif
+	if constexpr(BuildEnv::is_kernel_family_windows()) {
+		device_name_tooltip = _("Device name (for example, use \"pd0\" for the first physical drive)");
+	} else if constexpr(BuildEnv::is_kernel_linux()) {
+		device_name_tooltip = _("Device name (for example, /dev/sda or /dev/twa0)");
+	}
 	if (auto* device_name_label = lookup_widget<Gtk::Label*>("device_name_label")) {
 		app_gtkmm_set_widget_tooltip(*device_name_label, device_name_tooltip);
 	}
@@ -61,9 +61,9 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk
 
 
 	Glib::ustring device_type_tooltip = _("Smartctl -d option parameter");
-#if defined CONFIG_KERNEL_LINUX || defined CONFIG_KERNEL_FAMILY_WINDOWS
-	device_type_tooltip = _("Smartctl -d option parameter. For example, use areca,1 for the first drive behind Areca RAID controller.");
-#endif
+	if constexpr(BuildEnv::is_kernel_family_windows() || BuildEnv::is_kernel_linux()) {
+		device_type_tooltip = _("Smartctl -d option parameter. For example, use areca,1 for the first drive behind Areca RAID controller.");
+	}
 	if (auto* device_type_label = lookup_widget<Gtk::Label*>("device_type_label")) {
 		app_gtkmm_set_widget_tooltip(*device_type_label, device_type_tooltip);
 	}
@@ -81,12 +81,12 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk
 	}
 
 
-#ifdef _WIN32
-	// "Browse" doesn't make sense in win32, hide it.
-	if (device_name_browse_button) {
-		device_name_browse_button->hide();
+	if constexpr(BuildEnv::is_kernel_family_windows()) {
+		// "Browse" doesn't make sense in win32, hide it.
+		if (device_name_browse_button) {
+			device_name_browse_button->hide();
+		}
 	}
-#endif
 
 
 	// Populate type combo with common types
@@ -98,18 +98,18 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk
 		type_combo->append("usbsunplus");
 		type_combo->append("ata");
 		type_combo->append("scsi");
-#if defined CONFIG_KERNEL_LINUX
-		type_combo->append("marvell");
-		type_combo->append("megaraid,N");
-		type_combo->append("areca,N");
-		type_combo->append("areca,N/E");
-#endif
-#if defined CONFIG_KERNEL_LINUX || defined CONFIG_KERNEL_FREEBSD || defined CONFIG_KERNEL_DRAGONFLY
-		type_combo->append("3ware,N");  // this option is not needed in windows
-		type_combo->append("cciss,N");
-		type_combo->append("hpt,L/M");
-		type_combo->append("hpt,L/M/N");
-#endif
+		if constexpr(BuildEnv::is_kernel_linux()) {
+			type_combo->append("marvell");
+			type_combo->append("megaraid,N");
+			type_combo->append("areca,N");
+			type_combo->append("areca,N/E");
+		}
+		if constexpr(BuildEnv::is_kernel_linux() || BuildEnv::is_kernel_freebsd() ||BuildEnv::is_kernel_dragonfly()) {
+			type_combo->append("3ware,N");  // this option is not needed in windows
+			type_combo->append("cciss,N");
+			type_combo->append("hpt,L/M");
+			type_combo->append("hpt,L/M/N");
+		}
 	}
 
 
