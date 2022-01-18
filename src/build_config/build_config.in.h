@@ -70,7 +70,7 @@ struct BuildEnv {
 		// Hide it in ifdef so that the binary does not contain it unless required.
 		return "@CMAKE_SOURCE_DIR@";
 	#else
-		throw std::logic_error("This function is unavailable in non-debug builds.");
+		return "";  // not available in non-debug builds
 	#endif
 	}
 
