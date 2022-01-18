@@ -245,7 +245,7 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives,
 	} else {  // not *BSD
 		for (const auto& dev : matched_devices) {
 			debug_out_info("app", DBG_FUNC_MSG << "Device \"" << dev << "\" matched the whitelist, adding to device list.\n");
-			devices.push_back(dev);
+			devices.push_back(dev.string());
 		}
 	}
 
