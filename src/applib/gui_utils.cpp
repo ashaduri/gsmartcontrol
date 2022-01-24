@@ -135,11 +135,11 @@ bool gui_show_text_entry_dialog(const std::string& title, const std::string& mes
 		vbox.pack_start(input_entry, true, true, 0);
 		vbox.show_all();
 
-		dialog.get_action_area()->set_border_width(5);
-		dialog.get_action_area()->set_spacing(6);
+		dialog.get_content_area()->set_border_width(5);
+		// dialog.get_action_area()->set_spacing(6);
 
-		dialog.get_vbox()->set_spacing(14);  // as in MessageDialog
-		dialog.get_vbox()->pack_start(vbox, false, false, 0);
+		dialog.get_content_area()->set_spacing(14);  // as in MessageDialog
+		dialog.get_content_area()->pack_start(vbox, false, false, 0);
 
 
 		dialog.add_button("gtk-cancel", Gtk::RESPONSE_CANCEL);

@@ -30,10 +30,10 @@ target_compile_definitions(app_gtkmm_interface
 		ENABLE_GLIB=1
 		ENABLE_GLIBMM=1
 		# For porting to GTK4
-#		GTK_DISABLE_DEPRECATED=1
-#		GDK_DISABLE_DEPRECATED=1
-#		GTKMM_DISABLE_DEPRECATED=1
-#		GDKMM_DISABLE_DEPRECATED=1
+		GTK_DISABLE_DEPRECATED=1
+		GDK_DISABLE_DEPRECATED=1
+		GTKMM_DISABLE_DEPRECATED=1
+		GDKMM_DISABLE_DEPRECATED=1
 )
 
 # Support pre-C++17 glibmm with throw(...) exception specifications
