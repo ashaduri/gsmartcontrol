@@ -152,9 +152,9 @@ bool CommandExecutorGui::execute_tick_func(TickStatus status)
 
 		// If quit() was called during one of the manual iterations, and execute()
 		// is called in a loop, we need to prevent any real execution past that point.
-		if (Gtk::Main::iteration(false) && Gtk::Main::level() > 0) {
-			return false;  // try to abort execution
-		}
+		// if (Gtk::Main::iteration(false) && Gtk::Main::level() > 0) {
+		// 	return false;  // try to abort execution
+		// }
 
 		execution_running_ = true;
 		should_abort_ = false;
@@ -181,14 +181,14 @@ bool CommandExecutorGui::execute_tick_func(TickStatus status)
 
 	if (status == TickStatus::running) {
 
-		while (Gtk::Main::events_pending()) {
-			// Gtk::Main::iteration() returns true if Gtk::Main::quit() has been called, or if there's no Main yet.
-			// debug_out_dump("app", Gtk::Main::level() << "\n");
-			if (Gtk::Main::iteration() && Gtk::Main::level() > 0) {
-				set_running_dialog_abort_mode(true);
-				return false;  // try to abort execution
-			}
-		}
+		// while (Gtk::Main::events_pending()) {
+		// 	// Gtk::Main::iteration() returns true if Gtk::Main::quit() has been called, or if there's no Main yet.
+		// 	// debug_out_dump("app", Gtk::Main::level() << "\n");
+		// 	if (Gtk::Main::iteration() && Gtk::Main::level() > 0) {
+		// 		set_running_dialog_abort_mode(true);
+		// 		return false;  // try to abort execution
+		// 	}
+		// }
 
 		if (should_abort_) {
 			should_abort_ = false;
@@ -205,9 +205,9 @@ bool CommandExecutorGui::execute_tick_func(TickStatus status)
 
 
 	if (status == TickStatus::stopping) {
-		if (Gtk::Main::iteration(false) && Gtk::Main::level() > 0) {
-			return false;  // we're exiting from the main loop, so return early
-		}
+		// if (Gtk::Main::iteration(false) && Gtk::Main::level() > 0) {
+		// 	return false;  // we're exiting from the main loop, so return early
+		// }
 
 		// show a dialog with "Aborting..."
 		this->update_dialog_show_timer();

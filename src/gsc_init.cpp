@@ -323,13 +323,16 @@ bool app_init_and_loop(int& argc, char**& argv)
 	// Note that changing GTK locale after it's inited isn't really supported by GTK,
 	// but we have no other choice - glib needs system locale when parsing the
 	// arguments, and gtk is inited while the parsing is performed.
+#if GTK_CHECK_VERSION(4, 0, 0)
+	Glib::set_init_to_users_preferred_locale(args.arg_locale == TRUE);
+#else
 	if (args.arg_locale == FALSE) {
 		hz::locale_c_set("C");
 	} else {
 		// change the C++ locale to match the C one.
 		hz::locale_cpp_set("");  // this may fail on some systems
 	}
-
+#endif
 
 	if (args.arg_version == TRUE) {
 		// show version information and exit
@@ -410,23 +413,25 @@ bool app_init_and_loop(int& argc, char**& argv)
 				| G_LOG_FLAG_RECURSION), glib_message_handler, nullptr);
 	}
 
-
+#if !GTK_CHECK_VERSION(4, 0, 0)
 	// Save the locale
 	std::locale final_loc_cpp = hz::locale_cpp_get<std::locale>();
+#endif
 
-	// Initialize GTK+ (it's already initialized by command-line parser,
-	// so this doesn't do much).
+	// Initialize GTK+.
+	// GTKMM 3 Notes (no longer valid as of gtkmm4):
 	// Newer gtkmm will try to set the C++ locale here.
 	// Note: passing false (as use_locale) as the third parameter here
 	// will generate a gtk_disable_setlocale() warning (due to gtk being
 	// already initialized), so manually save / restore the C++ locale
 	// (C locale won't be touched).
 	// Nothing is affected in gtkmm itself by C++ locale, so it's ok to do it.
-	Gtk::Main m(argc, argv);
+	auto app = Gtk::Application::create("org.gsmartcontrol.base");
 
+#if !GTK_CHECK_VERSION(4, 0, 0)
 	// Restore the locale
 	hz::locale_cpp_set(final_loc_cpp);
-
+#endif
 
 	debug_out_info("app", "Current C locale: " << hz::locale_c_get() << "\n");
 	debug_out_info("app", "Current C++ locale: " << hz::locale_cpp_get<std::string>() << "\n");
@@ -553,7 +558,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 		// The Main Loop
 		debug_out_info("app", "Entering main loop.\n");
-		Gtk::Main::run();
+		app->run(argc, argv);
 		debug_out_info("app", "Main loop exited.\n");
 	}
 
@@ -578,7 +583,7 @@ void app_quit()
 	// exit the main loop
 	debug_out_info("app", "Trying to exit the main loop...\n");
 
-	Gtk::Main::quit();
+	Gtk::Application::get_default()->quit();
 
 	// don't destroy main window here - we may be in one of its callbacks
 }

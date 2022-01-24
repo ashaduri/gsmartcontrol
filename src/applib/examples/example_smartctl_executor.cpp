@@ -25,7 +25,8 @@ int main(int argc, char** argv)
 {
 	return hz::main_exception_wrapper([&argc, &argv]()
 	{
-		Gtk::Main m(argc, argv);
+		// Required by executor
+		auto app = Gtk::Application::create("org.gsmartcontrol.examples.smartctl_executor");
 
 		// NOTE: Don't use long options (e.g. --info). Use short ones (e.g. -i),
 		// because long options may be unsupported on some platforms.
