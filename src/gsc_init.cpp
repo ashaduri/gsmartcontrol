@@ -492,14 +492,14 @@ bool app_init_and_loop(int& argc, char**& argv)
 		if (gtk_settings) {
 			Glib::ustring theme_name = gtk_settings->property_gtk_theme_name().get_value();
 			debug_out_dump("app", "Current GTK theme: " << theme_name << "\n");
-#ifdef _WIN32
-			if (IsWindowsServer() || !IsWindows8OrGreater()) {
-				if (theme_name == "win32") {
-					debug_out_dump("app", "Windows with Classic theme support detected, switching to Adwaita theme.\n");
-					gtk_settings->property_gtk_theme_name().set_value("Adwaita");
-				}
+			bool windows_is_using_classic_theme = false;
+		#ifdef _WIN32
+			is_win8_or_newer = IsWindowsServer() || !IsWindows8OrGreater();
+		#endif
+			if (windows_is_using_classic_theme && theme_name == "win32") {
+				debug_out_dump("app", "Windows with Classic theme support detected, switching to Adwaita theme.\n");
+				gtk_settings->property_gtk_theme_name().set_value("Adwaita");
 			}
-#endif
 		}
 	}
 
