@@ -112,7 +112,7 @@ bool gui_show_text_entry_dialog(const std::string& title, const std::string& mes
 				+ (sec_message.empty() ? "\n" : "") + "</b></big>");
 		main_label.set_line_wrap(true);
 		main_label.set_selectable(true);
-		main_label.set_alignment(Gtk::ALIGN_START);
+		main_label.set_halign(Gtk::ALIGN_START);
 
 		Gtk::Label sec_label;
 		if (sec_msg_markup) {
@@ -122,7 +122,7 @@ bool gui_show_text_entry_dialog(const std::string& title, const std::string& mes
 		}
 		sec_label.set_line_wrap(true);
 		sec_label.set_selectable(true);
-		sec_label.set_alignment(Gtk::ALIGN_START);
+		sec_label.set_halign(Gtk::ALIGN_START);
 
 		Gtk::Entry input_entry;
 		input_entry.set_activates_default(true);

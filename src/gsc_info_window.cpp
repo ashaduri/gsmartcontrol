@@ -86,7 +86,7 @@ namespace {
 				Gtk::Label* label = Gtk::manage(new Gtk::Label());
 				label->set_markup(label_text);
 				label->set_padding(6, 0);
-				label->set_alignment(Gtk::ALIGN_START);
+				label->set_halign(Gtk::ALIGN_START);
 				// label->set_ellipsize(Pango::ELLIPSIZE_END);
 				label->set_selectable(true);
 				label->set_can_focus(false);
@@ -917,7 +917,7 @@ void GscInfoWindow::fill_ui_general(const std::vector<AtaStorageProperty>& props
 
 		Gtk::Label* name = Gtk::manage(new Gtk::Label());
 		// name->set_ellipsize(Pango::ELLIPSIZE_END);
-		name->set_alignment(Gtk::ALIGN_END);  // right-align
+		name->set_halign(Gtk::ALIGN_END);  // right-align
 		name->set_selectable(true);
 		name->set_can_focus(false);
 		name->set_markup("<b>" + Glib::Markup::escape_text(p.displayable_name) + "</b>");
@@ -927,7 +927,7 @@ void GscInfoWindow::fill_ui_general(const std::vector<AtaStorageProperty>& props
 		// then it stops being right-aligned.
 		Gtk::Label* value = Gtk::manage(new Gtk::Label());
 		// value->set_ellipsize(Pango::ELLIPSIZE_END);
-		value->set_alignment(Gtk::ALIGN_START);  // left-align
+		value->set_halign(Gtk::ALIGN_START);  // left-align
 		value->set_selectable(true);
 		value->set_can_focus(false);
 		value->set_markup(Glib::Markup::escape_text(p.format_value()));
