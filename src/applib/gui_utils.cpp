@@ -142,9 +142,9 @@ bool gui_show_text_entry_dialog(const std::string& title, const std::string& mes
 		dialog.get_vbox()->pack_start(vbox, false, false, 0);
 
 
-		dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+		dialog.add_button("gtk-cancel", Gtk::RESPONSE_CANCEL);
 
-		Gtk::Button ok_button(Gtk::Stock::OK);
+		Gtk::Button ok_button("gtk-ok");
 		ok_button.set_can_default(true);
 		ok_button.show_all();
 		dialog.add_action_widget(ok_button, Gtk::RESPONSE_OK);
