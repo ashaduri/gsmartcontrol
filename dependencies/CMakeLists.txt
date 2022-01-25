@@ -1,7 +1,7 @@
 ###############################################################################
 # License: BSD Zero Clause License file
 # Copyright:
-#   (C) 2021 Alexander Shaduri <ashaduri@gmail.com>
+#   (C) 2021 - 2022 Alexander Shaduri <ashaduri@gmail.com>
 ###############################################################################
 
 # Disable all warnings
@@ -18,7 +18,7 @@ find_package(PkgConfig REQUIRED)  # pkg_check_modules()
 
 
 # Gtkmm.
-# Don't make it REQUIRED, we may want to build only the parsers
+# Don't make it REQUIRED, we may want to build only the parsers.
 pkg_check_modules(Gtkmm IMPORTED_TARGET GLOBAL "gtkmm-3.0>=3.0")
 add_library(app_gtkmm_interface INTERFACE)
 target_link_libraries(app_gtkmm_interface
@@ -34,7 +34,12 @@ target_compile_definitions(app_gtkmm_interface
 		GDK_DISABLE_DEPRECATED=1
 		GTKMM_DISABLE_DEPRECATED=1
 		GDKMM_DISABLE_DEPRECATED=1
+		GLIBMM_DISABLE_DEPRECATED=1
+		GIOMM_DISABLE_DEPRECATED=1
 )
+# Don't forget to set the following environment variable to catch deprecated properties and signals at runtime:
+#G_ENABLE_DIAGNOSTIC=1
+
 
 # Support pre-C++17 glibmm with throw(...) exception specifications
 pkg_check_modules(Glibmm "glibmm-2.4")
