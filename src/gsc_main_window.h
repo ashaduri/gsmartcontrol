@@ -103,7 +103,7 @@ class GscMainWindow : public AppBuilderWidget<GscMainWindow, false, Gtk::Applica
 		void set_drive_menu_status(const StorageDevicePtr& drive);
 
 		/// Get popup menu for a drive
-		Gtk::Menu* get_popup_menu(const StorageDevicePtr& drive);
+		std::unique_ptr<Gtk::Menu> get_popup_menu(const StorageDevicePtr& drive);
 
 		/// Update status widgets (status area, etc...)
 		void update_status_widgets();

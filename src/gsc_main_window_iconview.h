@@ -18,6 +18,7 @@ Copyright:
 #include <cmath>  // std::floor
 #include <unordered_map>
 #include <cairomm/cairomm.h>
+#include <memory>
 
 #include "hz/string_algo.h"  // string_join
 #include "hz/debug.h"
@@ -544,9 +545,9 @@ class GscMainWindowIconView : public Gtk::IconView {
 					this->unselect_all();  // unselect on empty area right-click
 				}
 
-				Gtk::Menu* menu = main_window->get_popup_menu(drive);
-				if (menu)
-					menu->popup(event_button->button, event_button->time);
+				current_popup_ = main_window->get_popup_menu(drive);
+				if (current_popup_)
+					current_popup_->popup_at_pointer(reinterpret_cast<const GdkEvent *>(event_button));
 
 				return true;  // stop handling
 			}
@@ -584,6 +585,8 @@ class GscMainWindowIconView : public Gtk::IconView {
 		// available icons
 		Glib::RefPtr<Gdk::Pixbuf> hd_icon;  ///< Icon pixbuf
 		Glib::RefPtr<Gdk::Pixbuf> cddvd_icon;  ///< Icon pixbuf
+
+		std::unique_ptr<Gtk::Menu> current_popup_;  ///< Currently popped up menu
 
 		GscMainWindow* main_window = nullptr;  ///< The main window, our parent
 

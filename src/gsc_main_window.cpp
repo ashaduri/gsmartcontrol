@@ -897,14 +897,19 @@ void GscMainWindow::on_action_reread_device_data()
 
 
 
-Gtk::Menu* GscMainWindow::get_popup_menu(const StorageDevicePtr& drive)
+std::unique_ptr<Gtk::Menu> GscMainWindow::get_popup_menu(const StorageDevicePtr& drive)
 {
-	if (!ui_manager_)
+	if (!ui_builder_)
 		return nullptr;
+
+	Gtk::Menu* menu = nullptr;
 	if (drive) {
-		return dynamic_cast<Gtk::Menu*>(ui_manager_->get_widget("/device_popup"));
+		ui_builder_->get_widget("/device_popup", menu);
+	} else {
+		ui_builder_->get_widget("/empty_area_popup", menu);
 	}
-	return dynamic_cast<Gtk::Menu*>(ui_manager_->get_widget("/empty_area_popup"));
+	std::unique_ptr<Gtk::Menu> umenu(menu);
+	return umenu;
 }
 
 
