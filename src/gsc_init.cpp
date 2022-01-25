@@ -489,7 +489,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 			debug_out_dump("app", "Current GTK theme: " << theme_name << "\n");
 			bool windows_is_using_classic_theme = false;
 		#ifdef _WIN32
-			is_win8_or_newer = IsWindowsServer() || !IsWindows8OrGreater();
+			windows_is_using_classic_theme = IsWindowsServer() || !IsWindows8OrGreater();
 		#endif
 			if (windows_is_using_classic_theme && theme_name == "win32") {
 				debug_out_dump("app", "Windows with Classic theme support detected, switching to Adwaita theme.\n");
