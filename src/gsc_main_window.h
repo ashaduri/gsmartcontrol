@@ -13,6 +13,7 @@ Copyright:
 #define GSC_MAIN_WINDOW_H
 
 #include <map>
+#include <memory>
 #include <gtkmm.h>
 
 #include "applib/app_builder_widget.h"
@@ -28,7 +29,7 @@ class GscInfoWindow;  // declared in gsc_info_window.h
 
 /// The main window.
 /// Use create() / destroy() with this class instead of new / delete!
-class GscMainWindow : public AppBuilderWidget<GscMainWindow, false> {
+class GscMainWindow : public AppBuilderWidget<GscMainWindow, false, Gtk::ApplicationWindow> {
 	public:
 
 		friend class GscMainWindowIconView;  // It needs our privates
@@ -144,10 +145,10 @@ class GscMainWindow : public AppBuilderWidget<GscMainWindow, false> {
 		void on_action_activated(action_t action_type);
 
 		/// Action callback
-		void on_action_enable_smart_toggled(Gtk::ToggleAction* action);
+		void on_action_enable_smart_toggled();
 
 		/// Action callback
-		void on_action_enable_aodc_toggled(Gtk::ToggleAction* action);
+		void on_action_enable_aodc_toggled();
 
 		/// Action callback
 		void on_action_reread_device_data();
@@ -158,11 +159,14 @@ class GscMainWindow : public AppBuilderWidget<GscMainWindow, false> {
 		GscMainWindowIconView* iconview_ = nullptr;  ///< The main icon view
 		std::vector<StorageDevicePtr> drives_;  ///< Scanned drives
 
-		Glib::RefPtr<Gtk::UIManager> ui_manager_;  ///< UI manager
-		Glib::RefPtr<Gtk::ActionGroup> actiongroup_main_;  ///< Action group
-		Glib::RefPtr<Gtk::ActionGroup> actiongroup_device_;  ///< Action group
+		Glib::RefPtr<Gtk::Builder> ui_builder_;  ///< UI builder
+		Glib::RefPtr<Gio::SimpleActionGroup> actiongroup_main_;  ///< Action group
+		Glib::RefPtr<Gio::SimpleActionGroup> actiongroup_device_;  ///< Action group
 		bool action_handling_enabled_ = true;  ///< Whether action handling is enabled or not
-		std::map<action_t, Glib::RefPtr<Gtk::Action> > action_map_;  ///< Used by on_action_activated().
+		std::map<action_t, Glib::RefPtr<Gio::Action> > action_map_;  ///< Used by on_action_activated().
+
+		Glib::RefPtr<Gio::SimpleAction> toggle_enable_smart_action_;
+		Glib::RefPtr<Gio::SimpleAction> toggle_enable_aodc_action_;
 
 		Gtk::Label* name_label_ = nullptr;  ///< A UI label
 		Gtk::Label* health_label_ = nullptr;  ///< A UI label

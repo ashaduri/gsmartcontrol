@@ -48,7 +48,7 @@ using namespace std::literals;
 
 
 GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui)
-		: AppBuilderWidget<GscMainWindow, false>(gtkcobj, std::move(ui))
+		: AppBuilderWidget<GscMainWindow, false, Gtk::ApplicationWindow>(gtkcobj, std::move(ui))
 {
 	// iconview, gtkuimanager stuff (menus), custom labels
 	create_widgets();
@@ -224,175 +224,287 @@ bool GscMainWindow::create_widgets()
 
 	iconview_->set_main_window(this);
 
-	// --------------------------------- Action widgets
 
-	static Glib::ustring ui_info =
-	"<menubar name='main_menubar'>"
+	// --------------------------------- Actions
 
-	"	<menu action='file_menu'>"
-	"		<menuitem action='" APP_ACTION_NAME(action_quit) "' />"
-	"	</menu>"
+	actiongroup_main_ = Gio::SimpleActionGroup::create();
+	actiongroup_device_ = Gio::SimpleActionGroup::create();
 
-	"	<menu action='device_menu'>"
-	"		<menuitem action='" APP_ACTION_NAME(action_view_details) "' />"
-	"		<separator />"
-	"		<menuitem action='" APP_ACTION_NAME(action_enable_smart) "' />"
-	"		<menuitem action='" APP_ACTION_NAME(action_enable_aodc) "' />"
-	"		<separator />"
-	"		<menuitem action='" APP_ACTION_NAME(action_reread_device_data) "' />"
-	"		<menuitem action='" APP_ACTION_NAME(action_perform_tests) "' />"
-	"		<menuitem action='" APP_ACTION_NAME(action_remove_device) "' />"
-	"		<menuitem action='" APP_ACTION_NAME(action_remove_virtual_device) "' />"
+	// Create actions:
 
-	"		<separator />"
-	"		<menuitem action='" APP_ACTION_NAME(action_add_device) "' />"
-	"		<menuitem action='" APP_ACTION_NAME(action_load_virtual) "' />"
-	"		<menuitem action='" APP_ACTION_NAME(action_rescan_devices) "' />"
-	"	</menu>"
+	actiongroup_main_->add_action("quit",
+			sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_quit));
 
-	"	<menu action='options_menu'>"
-	"		<menuitem action='" APP_ACTION_NAME(action_executor_log) "' />"
-	"		<menuitem action='" APP_ACTION_NAME(action_update_drivedb) "' />"
-	"		<menuitem action='" APP_ACTION_NAME(action_preferences) "' />"
-	"	</menu>"
+	// FIXME tooltips
 
-	"	<menu action='help_menu'>"
-	"		<menuitem action='" APP_ACTION_NAME(action_online_documentation) "' />"
-	"		<menuitem action='" APP_ACTION_NAME(action_support) "' />"
-	"		<menuitem action='" APP_ACTION_NAME(action_about) "' />"
-	"	</menu>"
+	// _("View detailed information")
+	actiongroup_device_->add_action("view_details",
+			sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_view_details));
 
-	"</menubar>"
+	// _("Toggle SMART status. The status will be preserved at least until reboot (unless you toggle it again).")
+	toggle_enable_smart_action_ = actiongroup_device_->add_action_bool("enable_smart",
+			sigc::mem_fun(*this, &GscMainWindow::on_action_enable_smart_toggled));
+	// FIXME
+	// lookup_widget<Gtk::CheckButton*>("status_smart_enabled_check")->set_related_action(action);
 
-	"<popup name='device_popup'>"
-	"	<menuitem action='" APP_ACTION_NAME(action_view_details) "' />"
-	"	<separator />"
-	"	<menuitem action='" APP_ACTION_NAME(action_enable_smart) "' />"
-	"	<menuitem action='" APP_ACTION_NAME(action_enable_aodc) "' />"
-	"	<separator />"
-	"	<menuitem action='" APP_ACTION_NAME(action_reread_device_data) "' />"
-	"	<menuitem action='" APP_ACTION_NAME(action_perform_tests) "' />"
-	"	<menuitem action='" APP_ACTION_NAME(action_remove_device) "' />"
-	"	<menuitem action='" APP_ACTION_NAME(action_remove_virtual_device) "' />"
-	"</popup>"
+	// _("Toggle Automatic Offline Data Collection which will update \"offline\" SMART attributes every four hours")
+	toggle_enable_aodc_action_ = actiongroup_device_->add_action_bool("enable_aodc",
+			sigc::mem_fun(*this, &GscMainWindow::on_action_enable_aodc_toggled));
+	// FIXME
+	// lookup_widget<Gtk::CheckButton*>("status_aodc_enabled_check")->set_related_action(action);
 
-	"<popup name='empty_area_popup'>"
-	"	<menuitem action='" APP_ACTION_NAME(action_add_device) "' />"
-	"	<menuitem action='" APP_ACTION_NAME(action_load_virtual) "' />"
-	"	<menuitem action='" APP_ACTION_NAME(action_rescan_devices) "' />"
-	"</popup>";
+	// _("Re-read basic SMART data")
+	actiongroup_device_->add_action("reread_device_data",
+			sigc::mem_fun(*this, &GscMainWindow::on_action_reread_device_data));
+
+	// _("Perform various self-tests on the drive")
+	actiongroup_device_->add_action("perform_tests",
+			sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_perform_tests));
+
+	// _("Remove previously added device")
+	actiongroup_device_->add_action("remove_device",
+			sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_remove_device));
+
+	// _("Remove previously loaded virtual device")
+	actiongroup_device_->add_action("remove_virtual_device",
+			sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_remove_virtual_device));
 
 
-	// Action groups
-	actiongroup_main_ = Gtk::ActionGroup::create("main_actions");
-	actiongroup_device_ = Gtk::ActionGroup::create("device_actions");
+	// _("Manually add device to device list")
+	actiongroup_main_->add_action("add_device",
+			sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_add_device));
 
-	Glib::RefPtr<Gtk::Action> action;
+	// _("Load smartctl output from a text file as a read-only virtual device")
+	actiongroup_main_->add_action("load_virtual",
+			sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_load_virtual));
 
-
-	// Add actions
-	actiongroup_main_->add(Gtk::Action::create("file_menu", _("_File")));
-
-		action = Gtk::Action::create(APP_ACTION_NAME(action_quit), Gtk::Stock::QUIT);
-		actiongroup_main_->add((action_map_[action_quit] = action), Gtk::AccelKey("<control>Q"),
-				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_quit));
-
-	actiongroup_main_->add(Gtk::Action::create("device_menu", _("_Device")));
-
-		action = Gtk::Action::create(APP_ACTION_NAME(action_view_details), Gtk::Stock::INFO, _("_View details"),
-				_("View detailed information"));
-		actiongroup_device_->add((action_map_[action_view_details] = action), Gtk::AccelKey("<control>V"),
-				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_view_details));
-
-		action = Gtk::ToggleAction::create(APP_ACTION_NAME(action_enable_smart), _("Enable SMART"),
-				_("Toggle SMART status. The status will be preserved at least until reboot (unless you toggle it again)."));
-		lookup_widget<Gtk::CheckButton*>("status_smart_enabled_check")->set_related_action(action);
-		actiongroup_device_->add((action_map_[action_enable_smart] = action), Gtk::AccelKey("<control>M"),
-				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_enable_smart));
-
-		action = Gtk::ToggleAction::create(APP_ACTION_NAME(action_enable_aodc), _("Enable Auto Offline Data Collection"),
-				_("Toggle Automatic Offline Data Collection which will update \"offline\" SMART attributes every four hours"));
-		lookup_widget<Gtk::CheckButton*>("status_aodc_enabled_check")->set_related_action(action);
-		actiongroup_device_->add((action_map_[action_enable_aodc] = action), Gtk::AccelKey("<control>F"),
-				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_enable_aodc));
-
-		action = Gtk::Action::create(APP_ACTION_NAME(action_reread_device_data), Gtk::Stock::REFRESH, _("Re-read Data"),
-				_("Re-read basic SMART data"));
-		actiongroup_device_->add((action_map_[action_reread_device_data] = action), Gtk::AccelKey("<control>E"),
-				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_reread_device_data));
-
-		action = Gtk::Action::create(APP_ACTION_NAME(action_perform_tests), _("Perform _Tests..."),
-				_("Perform various self-tests on the drive"));
-		actiongroup_device_->add((action_map_[action_perform_tests] = action), Gtk::AccelKey("<control>T"),
-				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_perform_tests));
-
-		action = Gtk::Action::create(APP_ACTION_NAME(action_remove_device), Gtk::Stock::REMOVE, _("Re_move Added Device"),
-				_("Remove previously added device"));
-		actiongroup_device_->add((action_map_[action_remove_device] = action), Gtk::AccelKey("<control>W"),
-				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_remove_device));
-
-		action = Gtk::Action::create(APP_ACTION_NAME(action_remove_virtual_device), Gtk::Stock::REMOVE, _("Re_move Virtual Device"),
-				_("Remove previously loaded virtual device"));
-		actiongroup_device_->add((action_map_[action_remove_virtual_device] = action), Gtk::AccelKey("Delete"),
-				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_remove_virtual_device));
-
-		// ---
-		action = Gtk::Action::create(APP_ACTION_NAME(action_add_device), Gtk::Stock::OPEN, _("_Add Device..."),
-				_("Manually add device to device list"));
-		actiongroup_main_->add((action_map_[action_add_device] = action), Gtk::AccelKey("<control>D"),
-				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_add_device));
-
-		action = Gtk::Action::create(APP_ACTION_NAME(action_load_virtual), Gtk::Stock::OPEN, _("_Load Smartctl Output as Virtual Device..."),
-				_("Load smartctl output from a text file as a read-only virtual device"));
-		actiongroup_main_->add((action_map_[action_load_virtual] = action), Gtk::AccelKey("<control>O"),
-				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_load_virtual));
-
-		action = Gtk::Action::create(APP_ACTION_NAME(action_rescan_devices), Gtk::Stock::REFRESH, _("_Re-scan Device List"),
-				_("Re-scan device list"));
-		actiongroup_main_->add((action_map_[action_rescan_devices] = action), Gtk::AccelKey("<control>R"),
-				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_rescan_devices));
-
-	actiongroup_main_->add(Gtk::Action::create("options_menu", _("_Options")));
-
-		action = Gtk::Action::create(APP_ACTION_NAME(action_executor_log), _("View Execution Log"));
-		actiongroup_main_->add((action_map_[action_executor_log] = action),
-				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_executor_log));
-
-		action = Gtk::Action::create(APP_ACTION_NAME(action_update_drivedb), _("Update Drive Database"));
-		actiongroup_main_->add((action_map_[action_update_drivedb] = action),
-				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_update_drivedb));
-
-		action = Gtk::Action::create(APP_ACTION_NAME(action_preferences), Gtk::Stock::PREFERENCES);
-		actiongroup_main_->add((action_map_[action_preferences] = action), Gtk::AccelKey("<alt>P"),
-				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_preferences));
-
-	actiongroup_main_->add(Gtk::Action::create("help_menu", _("_Help")));
-
-		action = Gtk::Action::create(APP_ACTION_NAME(action_online_documentation), Gtk::Stock::HELP);
-		actiongroup_main_->add((action_map_[action_online_documentation] = action), Gtk::AccelKey("F1"),
-				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_online_documentation));
-
-		action = Gtk::Action::create(APP_ACTION_NAME(action_support), _("Support"));
-		actiongroup_main_->add((action_map_[action_support] = action),
-				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_support));
-
-		action = Gtk::Action::create(APP_ACTION_NAME(action_about), Gtk::Stock::ABOUT);
-		actiongroup_main_->add((action_map_[action_about] = action),
-				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_about));
+	// _("Re-scan device list")
+	actiongroup_main_->add_action("rescan_devices",
+			sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_rescan_devices));
 
 
+	actiongroup_main_->add_action("executor_log",
+			sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_executor_log));
 
-	// create uimanager
-	ui_manager_ = Gtk::UIManager::create();
-	ui_manager_->insert_action_group(actiongroup_main_);
-	ui_manager_->insert_action_group(actiongroup_device_);
+	actiongroup_main_->add_action("update_drivedb",
+			sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_update_drivedb));
+
+	actiongroup_main_->add_action("preferences",
+			sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_preferences));
+
+
+	actiongroup_main_->add_action("online_documentation",
+			sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_online_documentation));
+
+	actiongroup_main_->add_action("support",
+			sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_support));
+
+	actiongroup_main_->add_action("about",
+			sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_about));
+
+	insert_action_group("main", actiongroup_main_);
+	insert_action_group("device", actiongroup_device_);
+
+
+	// Lay out the actions in a menubar and context menu
+	Glib::ustring ui_info =
+R"(<interface>
+	<menu id='main_menubar'>
+		<submenu>
+			<attribute name='label' translatable='yes'>_File</attribute>
+			<section>
+				<item>
+					<attribute name='label' translatable='yes'>_Quit</attribute>
+					<attribute name='action'>main.quit</attribute>
+					<attribute name='accel'>&lt;Primary&gt;n</attribute>
+					<attribute name="icon">application-exit</attribute>
+				</item>
+			</section>
+		</submenu>
+		<submenu>
+			<attribute name='label' translatable='yes'>_Device</attribute>
+			<section>
+				<item>
+					<attribute name='label' translatable='yes'>_View details</attribute>
+					<attribute name='action'>device.view_details</attribute>
+					<attribute name='accel'>&lt;Primary&gt;v</attribute>
+					<attribute name="icon">dialog-information</attribute>
+				</item>
+			</section>
+			<section>
+				<item>
+					<attribute name='label' translatable='yes'>Enable SMART</attribute>
+					<attribute name='action'>device.enable_smart</attribute>
+				</item>
+				<item>
+					<attribute name='label' translatable='yes'>Enable Auto Offline Data Collection</attribute>
+					<attribute name='action'>device.enable_aodc</attribute>
+				</item>
+			</section>
+			<section>
+				<item>
+					<attribute name='label' translatable='yes'>Re-read Data</attribute>
+					<attribute name='action'>device.reread_device_data</attribute>
+					<attribute name='accel'>&lt;Primary&gt;e</attribute>
+					<attribute name="icon">view-refresh</attribute>
+				</item>
+				<item>
+					<attribute name='label' translatable='yes'>Perform _Tests...</attribute>
+					<attribute name='action'>device.perform_tests</attribute>
+					<attribute name='accel'>&lt;Primary&gt;t</attribute>
+				</item>
+				<item>
+					<attribute name='label' translatable='yes'>Re_move Added Device</attribute>
+					<attribute name='action'>device.remove_device</attribute>
+					<attribute name='accel'>&lt;Primary&gt;w</attribute>
+					<attribute name="icon">list-remove</attribute>
+				</item>
+				<item>
+					<attribute name='label' translatable='yes'>Re_move Virtual Device</attribute>
+					<attribute name='action'>device.remove_virtual_device</attribute>
+					<attribute name='accel'>Delete</attribute>
+					<attribute name="icon">list-remove</attribute>
+				</item>
+			</section>
+			<section>
+				<item>
+					<attribute name='label' translatable='yes'>_Add Device...</attribute>
+					<attribute name='action'>main.add_device</attribute>
+					<attribute name='accel'>&lt;Primary&gt;d</attribute>
+					<attribute name="icon">document-open</attribute>
+				</item>
+				<item>
+					<attribute name='label' translatable='yes'>_Load Smartctl Output as Virtual Device...</attribute>
+					<attribute name='action'>main.load_virtual</attribute>
+					<attribute name='accel'>&lt;Primary&gt;o</attribute>
+					<attribute name="icon">document-open</attribute>
+				</item>
+				<item>
+					<attribute name='label' translatable='yes'>_Re-scan Device List</attribute>
+					<attribute name='action'>main.rescan_devices</attribute>
+					<attribute name='accel'>&lt;Primary&gt;r</attribute>
+					<attribute name="icon">view-refresh</attribute>
+				</item>
+			</section>
+		</submenu>
+		<submenu>
+			<attribute name='label' translatable='yes'>_Options</attribute>
+			<section>
+				<item>
+					<attribute name='label' translatable='yes'>View Execution Log</attribute>
+					<attribute name='action'>main.executor_log</attribute>
+				</item>
+				<item>
+					<attribute name='label' translatable='yes'>Update Drive Database</attribute>
+					<attribute name='action'>main.update_drivedb</attribute>
+				</item>
+				<item>
+					<attribute name='label' translatable='yes'>Preferences</attribute>
+					<attribute name='action'>main.preferences</attribute>
+					<attribute name='accel'>&lt;Alt&gt;p</attribute>
+					<attribute name="icon">preferences-system</attribute>
+				</item>
+			</section>
+		</submenu>
+		<submenu>
+			<attribute name='label' translatable='yes'>_Help</attribute>
+			<section>
+				<item>
+					<attribute name='label' translatable='yes'>Help</attribute>
+					<attribute name='action'>main.online_documentation</attribute>
+					<attribute name='accel'>F1</attribute>
+					<attribute name="icon">help-browser</attribute>
+				</item>
+				<item>
+					<attribute name='label' translatable='yes'>Support</attribute>
+					<attribute name='action'>main.support</attribute>
+				</item>
+				<item>
+					<attribute name='label' translatable='yes'>About GSmartControl...</attribute>
+					<attribute name='action'>main.about</attribute>
+					<attribute name="icon">help-about</attribute>
+				</item>
+			</section>
+		</submenu>
+	</menu>
+
+	<menu id='device_popup'>
+		<section>
+			<item>
+				<attribute name='label' translatable='yes'>_View details</attribute>
+				<attribute name='action'>device.view_details</attribute>
+				<attribute name='accel'>&lt;Primary&gt;v</attribute>
+				<attribute name="icon">dialog-information</attribute>
+			</item>
+		</section>
+		<section>
+			<item>
+				<attribute name='label' translatable='yes'>Enable SMART</attribute>
+				<attribute name='action'>device.enable_smart</attribute>
+			</item>
+			<item>
+				<attribute name='label' translatable='yes'>Enable Auto Offline Data Collection</attribute>
+				<attribute name='action'>device.enable_aodc</attribute>
+			</item>
+		</section>
+		<section>
+			<item>
+				<attribute name='label' translatable='yes'>Re-read Data</attribute>
+				<attribute name='action'>device.reread_device_data</attribute>
+				<attribute name='accel'>&lt;Primary&gt;e</attribute>
+				<attribute name="icon">view-refresh</attribute>
+			</item>
+			<item>
+				<attribute name='label' translatable='yes'>Perform _Tests...</attribute>
+				<attribute name='action'>device.perform_tests</attribute>
+				<attribute name='accel'>&lt;Primary&gt;t</attribute>
+			</item>
+			<item>
+				<attribute name='label' translatable='yes'>Re_move Added Device</attribute>
+				<attribute name='action'>device.remove_device</attribute>
+				<attribute name='accel'>&lt;Primary&gt;w</attribute>
+				<attribute name="icon">list-remove</attribute>
+			</item>
+			<item>
+				<attribute name='label' translatable='yes'>Re_move Virtual Device</attribute>
+				<attribute name='action'>device.remove_virtual_device</attribute>
+				<attribute name='accel'>Delete</attribute>
+				<attribute name="icon">list-remove</attribute>
+			</item>
+		</section>
+		<section>
+			<item>
+				<attribute name='label' translatable='yes'>_Add Device...</attribute>
+				<attribute name='action'>main.add_device</attribute>
+				<attribute name='accel'>&lt;Primary&gt;d</attribute>
+				<attribute name="icon">document-open</attribute>
+			</item>
+			<item>
+				<attribute name='label' translatable='yes'>_Load Smartctl Output as Virtual Device...</attribute>
+				<attribute name='action'>main.load_virtual</attribute>
+				<attribute name='accel'>&lt;Primary&gt;o</attribute>
+				<attribute name="icon">document-open</attribute>
+			</item>
+			<item>
+				<attribute name='label' translatable='yes'>_Re-scan Device List</attribute>
+				<attribute name='action'>main.rescan_devices</attribute>
+				<attribute name='accel'>&lt;Primary&gt;r</attribute>
+				<attribute name="icon">view-refresh</attribute>
+			</item>
+		</section>
+	</menu>
+</interface>
+)";
+
+	ui_builder_ = Gtk::Builder::create();
 
 	// add accelerator group to our window so that they work
-	add_accel_group(ui_manager_->get_accel_group());
+	// FIXME
+	// add_accel_group(ui_builder_->get_accel_group());
 
 
 	try {
-		ui_manager_->add_ui_from_string(ui_info);
+		ui_builder_->add_from_string(ui_info);
 	}
 	catch(Glib::Error& ex)
 	{
@@ -401,36 +513,39 @@ bool GscMainWindow::create_widgets()
 	}
 
 
+	// FIXME
 	// add some more accelerators (in addition to existing ones)
-	Gtk::Widget* rescan_item = ui_manager_->get_widget("/main_menubar/device_menu/" APP_ACTION_NAME(action_rescan_devices));
-	if (rescan_item)
-		rescan_item->add_accelerator("activate", get_accel_group(), GDK_KEY_F5, Gdk::ModifierType(0), Gtk::AccelFlags(0));
+	// Gtk::Widget* rescan_item = ui_builder_->get_widget("/main_menubar/device_menu/" APP_ACTION_NAME(action_rescan_devices));
+	// if (rescan_item)
+	// 	rescan_item->add_accelerator("activate", get_accel_group(), GDK_KEY_F5, Gdk::ModifierType(0), Gtk::AccelFlags(0));
 
 
 	// look after the created widgets
-	auto* menubar_vbox = lookup_widget<Gtk::Box*>("menubar_vbox");
-	Gtk::Widget* menubar = ui_manager_->get_widget("/main_menubar");
-	if (menubar_vbox && menubar) {
-		menubar_vbox->pack_start(*menubar, Gtk::PACK_EXPAND_WIDGET);
-		menubar->set_hexpand(true);
+	// FIXME
+	// auto* menubar_vbox = lookup_widget<Gtk::Box*>("menubar_vbox");
+	// Gtk::Widget* menubar = ui_builder_->get_widget("/main_menubar");
+	// if (menubar_vbox && menubar) {
+	// 	menubar_vbox->pack_start(*menubar, Gtk::PACK_EXPAND_WIDGET);
+	// 	menubar->set_hexpand(true);
 // 		menubar->set_halign(Gtk::ALIGN_START);
-	}
+// 	}
 
 
 	// Set tooltips on menu items - gtk does that only on toolbar items.
-	Glib::ustring tooltip_text;
-	std::vector<Glib::RefPtr<Gtk::ActionGroup> > groups = ui_manager_->get_action_groups();
-	for (auto& group : groups) {
-		std::vector<Glib::RefPtr<Gtk::Action> > actions = group->get_actions();
-		for (auto& group_action : actions) {
-			std::vector<Gtk::Widget*> widgets = group_action->get_proxies();
-			if (!(tooltip_text = group_action->property_tooltip()).empty()) {
-				for (auto& widget : widgets) {
-					app_gtkmm_set_widget_tooltip(*widget, tooltip_text, true);
-				}
-			}
-		}
-	}
+	// FIXME
+	// Glib::ustring tooltip_text;
+	// std::vector<Glib::RefPtr<Gtk::ActionGroup> > groups = ui_builder_->get_action_groups();
+	// for (auto& group : groups) {
+	// 	std::vector<Glib::RefPtr<Gtk::Action> > actions = group->get_actions();
+	// 	for (auto& group_action : actions) {
+	// 		std::vector<Gtk::Widget*> widgets = group_action->get_proxies();
+	// 		if (!(tooltip_text = group_action->property_tooltip()).empty()) {
+	// 			for (auto& widget : widgets) {
+	// 				app_gtkmm_set_widget_tooltip(*widget, tooltip_text, true);
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 
 	// ----------------------------------------- Labels
@@ -497,7 +612,7 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 		return;
 	}
 
-	Glib::RefPtr<Gtk::Action> action = action_map_[action_type];
+	Glib::RefPtr<Gio::Action> action = action_map_[action_type];
 	if (!action) {
 		debug_out_error("app", DBG_FUNC_MSG << "Action is NULL for action type " << static_cast<int>(action_type) << ".\n");
 		return;
@@ -518,16 +633,6 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 		case action_view_details:
 			if (iconview_)
 				this->show_device_info_window(iconview_->get_selected_drive());
-			break;
-
-		case action_enable_smart:  // this may be invoked on menu manipulation
-			on_action_enable_smart_toggled(dynamic_cast<Gtk::ToggleAction*>(
-					actiongroup_device_->get_action(APP_ACTION_NAME(action_enable_smart)).operator->()));
-			break;
-
-		case action_enable_aodc:  // this may be invoked on menu manipulation
-			on_action_enable_aodc_toggled(dynamic_cast<Gtk::ToggleAction*>(
-					actiongroup_device_->get_action(APP_ACTION_NAME(action_enable_aodc)).operator->()));
 			break;
 
 		case action_reread_device_data:
@@ -598,13 +703,13 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 
 		case action_online_documentation:
 		{
-			hz::launch_url(gobj(), "https://gsmartcontrol.sourceforge.io/documentation.html");
+			hz::launch_url(Gtk::Window::gobj(), "https://gsmartcontrol.sourceforge.io/documentation.html");
 			break;
 		}
 
 		case action_support:
 		{
-			hz::launch_url(gobj(), "https://gsmartcontrol.sourceforge.io/support.html");
+			hz::launch_url(Gtk::Window::gobj(), "https://gsmartcontrol.sourceforge.io/support.html");
 			break;
 		}
 
@@ -624,11 +729,9 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 
 
 
-void GscMainWindow::on_action_enable_smart_toggled(Gtk::ToggleAction* action)
+void GscMainWindow::on_action_enable_smart_toggled()
 {
-	if (!action || !iconview_)
-		return;
-	if (!action->get_sensitive())  // it's insensitive, nothing to do (this shouldn't happen).
+	if (!iconview_)
 		return;
 
 	StorageDevicePtr drive = iconview_->get_selected_drive();
@@ -641,7 +744,8 @@ void GscMainWindow::on_action_enable_smart_toggled(Gtk::ToggleAction* action)
 	if (status == StorageDevice::Status::unsupported)  // this shouldn't happen
 		return;
 
-	bool toggle_active = action->get_active();
+	bool toggle_active = false;
+	toggle_enable_smart_action_->get_state(toggle_active);
 
 	if ( (toggle_active && status == StorageDevice::Status::disabled)
 			|| (!toggle_active && status == StorageDevice::Status::enabled) ) {
@@ -662,11 +766,9 @@ void GscMainWindow::on_action_enable_smart_toggled(Gtk::ToggleAction* action)
 
 
 
-void GscMainWindow::on_action_enable_aodc_toggled(Gtk::ToggleAction* action)
+void GscMainWindow::on_action_enable_aodc_toggled()
 {
-	if (!action || !iconview_)
-		return;
-	if (!action->get_sensitive())  // it's insensitive, nothing to do (this shouldn't happen).
+	if (!iconview_)
 		return;
 
 	StorageDevicePtr drive = iconview_->get_selected_drive();
@@ -689,17 +791,20 @@ void GscMainWindow::on_action_enable_aodc_toggled(Gtk::ToggleAction* action)
 					true, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_NONE, true);  // markup, modal
 
 			Gtk::Button dismiss_button(_("Dis_miss"), true);
-			dismiss_button.set_image(*Gtk::manage(new Gtk::Image(Gtk::Stock::CANCEL, Gtk::ICON_SIZE_BUTTON)));
+			// FIXME
+			// dismiss_button.set_image(*Gtk::manage(new Gtk::Image("gtk-cancel", Gtk::ICON_SIZE_BUTTON)));
 			dismiss_button.show_all();
 			dialog.add_action_widget(dismiss_button, Gtk::RESPONSE_CANCEL);
 
 			Gtk::Button disable_button(_("_Disable"), true);
-			disable_button.set_image(*Gtk::manage(new Gtk::Image(Gtk::Stock::NO, Gtk::ICON_SIZE_BUTTON)));
+			// FIXME
+			// disable_button.set_image(*Gtk::manage(new Gtk::Image("gtk-no", Gtk::ICON_SIZE_BUTTON)));
 			disable_button.show_all();
 			dialog.add_action_widget(disable_button, Gtk::RESPONSE_NO);
 
 			Gtk::Button enable_button(_("_Enable"), true);
-			enable_button.set_image(*Gtk::manage(new Gtk::Image(Gtk::Stock::YES, Gtk::ICON_SIZE_BUTTON)));
+			// FIXME
+			// enable_button.set_image(*Gtk::manage(new Gtk::Image("gtk-yes", Gtk::ICON_SIZE_BUTTON)));
 			enable_button.set_can_default(true);
 			enable_button.show_all();
 			dialog.add_action_widget(enable_button, Gtk::RESPONSE_YES);
@@ -746,7 +851,8 @@ void GscMainWindow::on_action_enable_aodc_toggled(Gtk::ToggleAction* action)
 	}
 
 
-	bool toggle_active = action->get_active();
+	bool toggle_active = false;
+	toggle_enable_aodc_action_->get_state(toggle_active);
 
 	if ( (toggle_active && status == StorageDevice::Status::disabled)
 			|| (!toggle_active && status == StorageDevice::Status::enabled) ) {
@@ -813,12 +919,20 @@ void GscMainWindow::set_drive_menu_status(const StorageDevicePtr& drive)
 
 		// if no drive is selected or if a test is being run on selected drive, disallow.
 		if (!drive || drive->get_test_is_active()) {
-			actiongroup_device_->set_sensitive(false);
+			for (const auto& action_name : actiongroup_device_->list_actions()) {
+				if (auto action = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(actiongroup_device_->lookup_action(action_name))) {
+					action->set_enabled(false);
+				}
+			}
 			break;  // nothing else to do here
 		}
 
 		// make everything sensitive, then disable one by one
-		actiongroup_device_->set_sensitive(true);
+		for (const auto& action_name : actiongroup_device_->list_actions()) {
+			if (auto action = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(actiongroup_device_->lookup_action(action_name))) {
+				action->set_enabled(true);
+			}
+		}
 
 		bool is_virtual = (drive && drive->get_is_virtual());
 
@@ -834,59 +948,54 @@ void GscMainWindow::set_drive_menu_status(const StorageDevicePtr& drive)
 		// Sensitivity and visibility manipulation.
 		// Do this first, then do the enable / disable stuff.
 		{
-			Glib::RefPtr<Gtk::Action> action;
+			if (auto action = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(actiongroup_device_->lookup_action("perform_tests"))) {
+				action->set_enabled(smart_status == StorageDevice::Status::enabled);
+			}
+			// TODO
+			// if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_reread_device_data))))
+			// 	action->set_visible(drive && !is_virtual);
+			// if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_remove_device)))) {
+			// 	action->set_visible(drive && drive->get_is_manually_added());
+			// if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_remove_virtual_device))))
+			// 	action->set_visible(drive && is_virtual);
 
-			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_perform_tests))))
-				action->set_sensitive(smart_status == StorageDevice::Status::enabled);
-			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_reread_device_data))))
-				action->set_visible(drive && !is_virtual);
-			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_remove_device)))) {
-				action->set_visible(drive && drive->get_is_manually_added());
-				// action->set_sensitive(drive && drive->get_is_manually_added());
+			if (auto action = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(actiongroup_device_->lookup_action("enable_smart"))) {
+				action->set_enabled(smart_status != StorageDevice::Status::unsupported);
 			}
-			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_remove_virtual_device))))
-				action->set_visible(drive && is_virtual);
-			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_enable_smart)))) {
-				action->set_sensitive(smart_status != StorageDevice::Status::unsupported);
+			if (auto action = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(actiongroup_device_->lookup_action("enable_aodc"))) {
+				action->set_enabled(aodc_status != StorageDevice::Status::unsupported);
 			}
-			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_enable_aodc))))
-				action->set_sensitive(aodc_status != StorageDevice::Status::unsupported);
 		}
 
 
 		// smart toggle status
-		{
-			Gtk::ToggleAction* action = dynamic_cast<Gtk::ToggleAction*>(
-					actiongroup_device_->get_action(APP_ACTION_NAME(action_enable_smart)).operator->());
-			if (action) {
-				action->set_active(smart_status == StorageDevice::Status::enabled);
-			}
+		if (auto action = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(actiongroup_device_->lookup_action("enable_smart"))) {
+			action->change_state(smart_status == StorageDevice::Status::enabled);
 		}
 
 
 		// aodc toggle status
-		{
-			Gtk::ToggleAction* action = dynamic_cast<Gtk::ToggleAction*>(
-					actiongroup_device_->get_action(APP_ACTION_NAME(action_enable_aodc)).operator->());
+		if (auto action = Glib::RefPtr<Gio::SimpleAction>::cast_dynamic(actiongroup_device_->lookup_action("enable_smart"))) {
+			action->change_state(smart_status == StorageDevice::Status::enabled);
 
-			if (action) {
-				Gtk::CheckMenuItem* dev_odc_item = dynamic_cast<Gtk::CheckMenuItem*>(ui_manager_->get_widget(
-						"/main_menubar/device_menu/" APP_ACTION_NAME(action_enable_aodc)));
-				Gtk::CheckMenuItem* popup_odc_item = dynamic_cast<Gtk::CheckMenuItem*>(ui_manager_->get_widget(
-						"/device_popup/" APP_ACTION_NAME(action_enable_aodc)));
-				auto* status_aodc_check = lookup_widget<Gtk::CheckButton*>("status_aodc_enabled_check");
+			Gtk::CheckMenuItem* dev_odc_item = nullptr;
+			ui_builder_->get_widget("/main_menubar/device_menu/" APP_ACTION_NAME(action_enable_aodc), dev_odc_item);
 
-				// true if supported, but unknown whether it's enabled or not.
-				if (dev_odc_item)
-					dev_odc_item->set_inconsistent(aodc_status == StorageDevice::Status::unknown);
-				if (popup_odc_item)
-					popup_odc_item->set_inconsistent(aodc_status == StorageDevice::Status::unknown);
-				if (status_aodc_check)
-					status_aodc_check->set_inconsistent(aodc_status == StorageDevice::Status::unknown);
+			Gtk::CheckMenuItem* popup_odc_item = nullptr;
+			ui_builder_->get_widget("/device_popup/" APP_ACTION_NAME(action_enable_aodc), dev_odc_item);
 
-				// for unknown it doesn't really matter what state it's in.
-				action->set_active(aodc_status == StorageDevice::Status::enabled);
-			}
+			auto* status_aodc_check = lookup_widget<Gtk::CheckButton*>("status_aodc_enabled_check");
+
+			// true if supported, but unknown whether it's enabled or not.
+			if (dev_odc_item)
+				dev_odc_item->set_inconsistent(aodc_status == StorageDevice::Status::unknown);
+			if (popup_odc_item)
+				popup_odc_item->set_inconsistent(aodc_status == StorageDevice::Status::unknown);
+			if (status_aodc_check)
+				status_aodc_check->set_inconsistent(aodc_status == StorageDevice::Status::unknown);
+
+			// for unknown it doesn't really matter what state it's in.
+			action->change_state(aodc_status == StorageDevice::Status::enabled);
 		}
 
 	} while (false);
@@ -1303,8 +1412,10 @@ void GscMainWindow::show_load_virtual_file_chooser()
 	all_filter->add_pattern("*");
 
 #if GTK_CHECK_VERSION(3, 20, 0)
-	std::unique_ptr<GtkFileChooserNative, decltype(&g_object_unref)> dialog(gtk_file_chooser_native_new(
-			_("Load Data From..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_OPEN, nullptr, nullptr),
+	std::unique_ptr<GtkFileChooserNative, decltype(&g_object_unref)> dialog(
+			gtk_file_chooser_native_new(
+				_("Load Data From..."), Gtk::Window::gobj(),
+				GTK_FILE_CHOOSER_ACTION_OPEN, nullptr, nullptr),
 			&g_object_unref);
 
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), specific_filter->gobj());

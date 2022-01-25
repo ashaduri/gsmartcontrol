@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated with glade 3.22.1 
 
-Copyright (C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+Copyright (C) 2008 - 2022 Alexander Shaduri <ashaduri@gmail.com>
 
 This file is part of GSmartControl.
 
@@ -23,13 +23,13 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
   <requires lib="gtk+" version="3.20"/>
   <!-- interface-license-type gplv3 -->
   <!-- interface-name GSmartControl -->
-  <!-- interface-copyright 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com> -->
-  <object class="GtkWindow" id="gsc_main_window">
+  <!-- interface-copyright 2008 - 2022 Alexander Shaduri <ashaduri@gmail.com> -->
+  <object class="GtkApplicationWindow" id="gsc_main_window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">GSmartControl</property>
     <property name="default_width">560</property>
     <property name="default_height">450</property>
-    <child>
+    <child type="titlebar">
       <placeholder/>
     </child>
     <child>
@@ -37,20 +37,6 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
-        <child>
-          <object class="GtkBox" id="menubar_vbox">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
         <child>
           <object class="GtkGrid">
             <property name="visible">True</property>
@@ -150,7 +136,7 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">1</property>
+            <property name="position">0</property>
           </packing>
         </child>
         <child>
@@ -177,7 +163,7 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
           <packing>
             <property name="expand">True</property>
             <property name="fill">True</property>
-            <property name="position">2</property>
+            <property name="position">1</property>
           </packing>
         </child>
         <child>
@@ -222,7 +208,7 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">3</property>
+            <property name="position">2</property>
           </packing>
         </child>
       </object>

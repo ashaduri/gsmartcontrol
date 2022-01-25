@@ -429,7 +429,8 @@ class GscMainWindowIconView : public Gtk::IconView {
 				Gdk::Rectangle rect = this->get_allocation();
 				Glib::RefPtr<Gdk::Window> win = this->get_window();
 				win->invalidate_rect(rect, true);  // force expose event
-				win->process_updates(false);  // update immediately
+				// FIXME
+				// win->process_updates(false);  // update immediately
 			}
 		}
 
