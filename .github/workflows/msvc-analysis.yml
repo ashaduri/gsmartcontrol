@@ -28,6 +28,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+        
+      - name: run-vcpkg
+        # You may pin to the exact commit or the version.
+        uses: lukka/run-vcpkg@v10.0
+        with:
+          vcpkgArguments: 'gtkmm-3.22.2 libsigcpp-3 pcre3 gettext'
 
       - name: Configure CMake
         run: cmake -B ${{ env.build }}
@@ -44,6 +50,7 @@ jobs:
           cmakeBuildDirectory: ${{ env.build }}
           # Ruleset file that will determine what checks will be run
           ruleset: NativeRecommendedRules.ruleset
+          ignoredPaths: dependencies/
 
       # Upload SARIF file to GitHub Code Scanning Alerts
       - name: Upload SARIF to GitHub
