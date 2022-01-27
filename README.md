@@ -1,6 +1,8 @@
 
 # GSmartControl
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/528f4f7aaf0e446abf7e55d2affc7bec)](https://app.codacy.com/gh/ashaduri/gsmartcontrol?utm_source=github.com&utm_medium=referral&utm_content=ashaduri/gsmartcontrol&utm_campaign=Badge_Grade_Settings)
+
 ### Hard disk drive and SSD health inspection tool
 
 
