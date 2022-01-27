@@ -1,11 +1,11 @@
-name: Build - GTK3 Branch (Tier 1 platforms)
+name: Build - 1.1 Branch (Tier 1 platforms)
 
 on:
   # Triggers the workflow on push or pull request events but only for the branch
   push:
-    branches: [ gsmartcontrol-gtk3 ]
+    branches: [ release/1.1 ]
   pull_request:
-    branches: [ gsmartcontrol-gtk3 ]
+    branches: [ release/1.1 ]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -23,7 +23,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: gsmartcontrol-gtk3
+        ref: release/1.1
 
     - name: Install Dependencies
       run: sudo apt-get install libpcre3-dev libgtkmm-3.0-dev gettext autoconf automake
@@ -61,7 +61,7 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: Source Packages (GTK3 Branch)
+        name: Source Packages (1.1 Branch)
         path: ${{runner.workspace}}/build/gsmartcontrol-*.tar.bz2
 
 
@@ -80,7 +80,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: gsmartcontrol-gtk3
+          ref: release/1.1
 
       - uses: msys2/setup-msys2@v2
         # p7zip is needed to extract smartmontools
@@ -166,6 +166,6 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: Windows Packages (GTK3 Branch)
+          name: Windows Packages (1.1 Branch)
           path: ${{runner.workspace}}/build/gsmartcontrol-*-win*.*
 

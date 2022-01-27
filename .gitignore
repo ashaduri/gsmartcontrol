@@ -76,3 +76,5 @@ Thumbs.db
 /po/gsmartcontrol.pot
 /po/*.gmo
 
+# Backup files
+*~
