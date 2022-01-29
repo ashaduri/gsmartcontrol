@@ -95,13 +95,13 @@ Example:
 
 `-q`, `--quiet` - Disable logging; same as `--verbosity-level 0`.
 
-`-b`, `--verbosity-level` - Set verbosity level [0-5].
+`-b`, `--verbosity-level` - Set verbosity level \[0-5].
 
 
 
 ## Copyright and Licensing
 
-GSmartControl is Copyright (C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com> and contributors.
+GSmartControl is Copyright (C) 2008 - 2021 Alexander Shaduri [ashaduri@gmail.com](mailto:ashaduri@gmail.com) and contributors.
 
 GSmartControl is licensed under the terms of
 [GNU General Public License Version 3](https://www.gnu.org/licenses/gpl-3.0.en.html).
@@ -115,6 +115,6 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 A PARTICULAR PURPOSE. See the GNU General Public Licenses for more details.
 
 This product includes icons from Crystal Project,
-copyright 2006-2007 Everaldo Coelho (https://www.everaldo.com).
+copyright 2006-2007 Everaldo Coelho [www.everaldo.com](https://www.everaldo.com).
 Crystal Project icons are licensed under [GNU LGPL](https://www.gnu.org/licenses/lgpl-3.0.en.html).
 
