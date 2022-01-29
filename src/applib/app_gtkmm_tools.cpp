@@ -14,6 +14,7 @@ Copyright:
 #include <glib.h>
 #include <cstring>  // std::strlen
 #include <vector>
+#include <string>
 
 #include "app_gtkmm_tools.h"
 #include "build_config.h"
@@ -115,6 +116,18 @@ Glib::ustring app_ustring_from_gchar(gchar* str)
 	Glib::ustring ustr(str);
 	g_free(str);
 	return ustr;
+}
+
+
+
+std::string app_string_from_gchar(gchar* str)
+{
+	if (!str) {
+		return {};
+	}
+	std::string sstr(str);
+	g_free(str);
+	return sstr;
 }
 
 

@@ -62,6 +62,10 @@ int app_gtkmm_create_tree_view_column(const Gtk::TreeModelColumn<DataType>& mode
 Glib::ustring app_ustring_from_gchar(gchar* str);
 
 
+/// Get std::string from gchar*, freeing gchar*.
+std::string app_string_from_gchar(gchar* str);
+
+
 /// Convert a possibly invalid utf-8 string to valid utf-8.
 /// \param str string to test and fix.
 Glib::ustring app_make_valid_utf8(const Glib::ustring& str);

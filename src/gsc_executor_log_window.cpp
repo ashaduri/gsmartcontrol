@@ -247,21 +247,21 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 	switch (result) {
 		case Gtk::RESPONSE_ACCEPT:
 		{
-			std::string file;
+			hz::fs::path file;
 #if GTK_CHECK_VERSION(3, 20, 0)
-			file = app_ustring_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get())));
-			last_dir = hz::fs::u8path(file).parent_path().u8string();
+			file = hz::fs::u8path(app_string_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get()))));
+			last_dir = file.parent_path().u8string();
 #else
-			file = dialog.get_filename();  // in fs encoding
+			file = hz::fs::u8path(dialog.get_filename());  // in fs encoding
 			last_dir = dialog.get_current_folder();  // save for the future
 #endif
 			rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
 
-			if (file.rfind(".txt") != (file.size() - std::strlen(".txt"))) {
+			if (file.extension() != ".txt") {
 				file += ".txt";
 			}
 
-			auto ec = hz::fs_file_put_contents(hz::fs::u8path(file), entry->std_output);
+			auto ec = hz::fs_file_put_contents(file, entry->std_output);
 			if (ec) {
 				gui_show_error_dialog(_("Cannot save data to file"), ec.message(), this);
 			}
@@ -365,21 +365,21 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 	switch (result) {
 		case Gtk::RESPONSE_ACCEPT:
 		{
-			std::string file;
+			hz::fs::path file;
 #if GTK_CHECK_VERSION(3, 20, 0)
-			file = app_ustring_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get())));
-			last_dir = hz::fs::u8path(file).parent_path().u8string();
+			file = hz::fs::u8path(app_string_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get()))));
+			last_dir = file.parent_path().u8string();
 #else
-			file = dialog.get_filename();  // in fs encoding
+			file = hz::fs::u8path(dialog.get_filename());  // in fs encoding
 			last_dir = dialog.get_current_folder();  // save for the future
 #endif
 			rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
 
-			if (file.rfind(".txt") != (file.size() - std::strlen(".txt"))) {
+			if (file.extension() != ".txt") {
 				file += ".txt";
 			}
 
-			auto ec = hz::fs_file_put_contents(hz::fs::u8path(file), exss.str());
+			auto ec = hz::fs_file_put_contents(file, exss.str());
 			if (ec) {
 				gui_show_error_dialog(_("Cannot save data to file"), ec.message(), this);
 			}
