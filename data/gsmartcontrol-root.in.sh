@@ -93,7 +93,7 @@ fi
 
 if [ "$GSMARTCONTROL_SU" = "" ]; then
 	for subin in $candidates; do
-		which $subin &>/dev/null
+		which "$subin" &>/dev/null
 		if [ $? -eq 0 ]; then
 			found_su="$subin";
 			break;
