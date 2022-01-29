@@ -11,4 +11,5 @@ The following versions are supported with security updates:
 
 ## Reporting a Vulnerability
 
-Please report security vulnerabilities privately to Alexander Shaduri <ashaduri@gmail.com>
+Please report security vulnerabilities privately to
+Alexander Shaduri [ashaduri@gmail.com](mailto:ashaduri@gmail.com).
