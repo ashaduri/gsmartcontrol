@@ -214,6 +214,9 @@ class GscMainWindowIconView : public Gtk::IconView {
 			}
 
 			Glib::RefPtr<Gdk::Pixbuf> pixbuf = row[col_pixbuf];
+			if (!pixbuf) {
+				return;
+			}
 
 			// Gtkmm property_surface() doesn't work, so use plain C.
 			// https://bugzilla.gnome.org/show_bug.cgi?id=788513
