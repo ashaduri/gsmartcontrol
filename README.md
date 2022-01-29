@@ -1,10 +1,12 @@
 
 # GSmartControl
 
+***Hard disk drive and SSD health inspection tool***
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/528f4f7aaf0e446abf7e55d2affc7bec)](https://app.codacy.com/gh/ashaduri/gsmartcontrol?utm_source=github.com&utm_medium=referral&utm_content=ashaduri/gsmartcontrol&utm_campaign=Badge_Grade_Settings)
 
-### Hard disk drive and SSD health inspection tool
-
+---
 
 [GSmartControl](https://gsmartcontrol.shaduri.dev/)
 is a graphical user interface for smartctl (from [smartmontools](https://www.smartmontools.org/)
