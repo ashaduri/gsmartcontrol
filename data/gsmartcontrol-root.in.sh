@@ -2,14 +2,14 @@
 ###############################################################################
 # License: Zlib
 # Copyright:
-#   (C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+#   (C) 2008 - 2022 Alexander Shaduri <ashaduri@gmail.com>
 ###############################################################################
 
 # Run gsmartcontrol with root, asking for root password first.
 # export GSMARTCONTROL_SU to override a su command (e.g. "kdesu -c").
 
 EXEC_BIN="@CMAKE_INSTALL_FULL_SBINDIR@/gsmartcontrol";
-prog_name="gsmartcontrol"
+program_name="gsmartcontrol"
 
 
 # Preserve quotes in arguments
@@ -30,7 +30,7 @@ else
 	# New syntax:
 	# gsmartcontrol-root [--desktop=<auto|kde|gnome|other>] [program_options]
 
-	for arg in $*; do
+	for arg in "$@"; do
 		case $arg in
 			--desktop=*)
 				DESKTOP="${arg#*=}";
@@ -45,7 +45,7 @@ fi
 
 if [ "$DESKTOP" != "auto" ] && [ "$DESKTOP" != "kde" ] && \
 		[ "$DESKTOP" != "gnome" ] && [ "$DESKTOP" != "other" ]; then
-	echo "Usage: $0 [--desktop=<auto|kde|gnome|other>] [<${prog_name}_options>]";
+	echo "Usage: $0 [--desktop=<auto|kde|gnome|other>] [<${program_name}_options>]";
 	exit 1;
 fi
 
@@ -101,7 +101,7 @@ if [ "$GSMARTCONTROL_SU" = "" ]; then
 	done
 
 	if [ "$found_su" = "" ]; then
-		xmessage "Error launching ${prog_name}: No suitable su mechanism found.
+		xmessage "Error launching ${program_name}: No suitable su mechanism found.
 Try installing PolKit, kdesu, gnomesu, gksu, beesu or sux first.";
 		exit 1;
 	fi
@@ -164,8 +164,5 @@ fi
 
 
 # echo $full_cmd
-eval $full_cmd
-
-
-
+eval "$full_cmd"
 

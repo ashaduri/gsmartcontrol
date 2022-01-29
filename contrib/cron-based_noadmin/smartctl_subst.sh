@@ -2,8 +2,8 @@
 ###############################################################################
 # License: BSD Zero Clause License file
 # Copyright:
-#   (C) 2008 - 2021 Alex Butcher <alex dot butcher 'at' assursys.co.uk>
-#   (C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+#   (C) 2008 - 2022 Alex Butcher <alex dot butcher 'at' assursys.co.uk>
+#   (C) 2008 - 2022 Alexander Shaduri <ashaduri@gmail.com>
 ###############################################################################
 
 if [ "$1" = "-V" ]; then
@@ -21,7 +21,7 @@ if [ "$device" = "" ]; then
 	exit 1;
 fi
 
-dev_base="`basename \"$device\"`"
+dev_base=$(basename "$device")
 out_file=/var/run/smart-"$dev_base"
 
 cat "$out_file"
