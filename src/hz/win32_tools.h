@@ -30,6 +30,7 @@ Copyright:
 #include <cstring>  // std::strlen
 #include <cwchar>  // std::wcslen
 #include <ios>  // std::ios::sync_with_stdio
+#include <filesystem>
 
 #if defined __MINGW32__
 	#include <_mingw.h>  // MINGW_HAS_SECURE_API
@@ -435,40 +436,23 @@ namespace internal {
 		std::fclose(stdout);
 		std::fclose(stderr);
 
-		// See if the files have any output in them
+		// See if the files have any output in them. If not, remove the empty files.
 		if (!Win32RedirectHolder::stdout_file.empty()) {
-			std::FILE* file = nullptr;
-		#if defined MINGW_HAS_SECURE_API || defined _MSC_VER
-			errno = _wfopen_s(&file, Win32RedirectHolder::stdout_file.c_str(), L"rb");
-		#else
-			file = _wfopen(Win32RedirectHolder::stdout_file.c_str(), L"rb");
-		#endif
-			if (file) {
-				bool empty = (std::fgetc(file) == EOF);
-				std::fclose(file);
-				if (empty) {
-					(void)_wremove(Win32RedirectHolder::stdout_file.c_str());  // ignore possible failure
-				}
+			std::filesystem::path path(Win32RedirectHolder::stdout_file);
+			std::error_code ignored_ec;
+			if (std::filesystem::exists(path, ignored_ec) && std::filesystem::is_empty(path, ignored_ec)) {
+				std::filesystem::remove(path, ignored_ec);
 			}
+			Win32RedirectHolder::stdout_file.clear();
 		}
-		Win32RedirectHolder::stdout_file.clear();
-
-		if (!Win32RedirectHolder::stdout_file.empty()) {
-			std::FILE* file = nullptr;
-		#if defined MINGW_HAS_SECURE_API || defined _MSC_VER
-			errno = _wfopen_s(&file, Win32RedirectHolder::stderr_file.c_str(), L"rb");
-		#else
-			file = _wfopen(Win32RedirectHolder::stderr_file.c_str(), L"rb");
-		#endif
-			if (file) {
-				bool empty = (std::fgetc(file) == EOF);
-				std::fclose(file);
-				if (empty) {
-					(void)_wremove(Win32RedirectHolder::stderr_file.c_str());  // ignore possible failure
-				}
+		if (!Win32RedirectHolder::stderr_file.empty()) {
+			std::filesystem::path path(Win32RedirectHolder::stderr_file);
+			std::error_code ignored_ec;
+			if (std::filesystem::exists(path, ignored_ec) && std::filesystem::is_empty(path, ignored_ec)) {
+				std::filesystem::remove(path, ignored_ec);
 			}
+			Win32RedirectHolder::stderr_file.clear();
 		}
-		Win32RedirectHolder::stderr_file.clear();
 	}
 
 
