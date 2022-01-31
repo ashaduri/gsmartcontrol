@@ -28,7 +28,7 @@ jobs:
       - name: Run DevSkim scanner
         uses: microsoft/DevSkim-Action@v1
         with:
-          ignore-globs: dummy_to_avoid_action_error,**/.git/**,*.txt,**/dependencies/**
+          ignore-globs: dummy_to_avoid_action_error,**/.git/**,*.txt,**/dependencies/**,env_tools.h,app_gtkmm_tools.cpp
         
       - name: Upload DevSkim scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v1
