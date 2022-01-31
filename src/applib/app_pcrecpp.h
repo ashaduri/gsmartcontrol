@@ -178,6 +178,7 @@ pcrecpp::RE_Options app_pcre_get_options(std::string_view modifiers)
 {
 	// ANYCRLF means any of crlf, cr, lf. Used in ^ and $.
 	// This overrides the build-time newline setting of pcre.
+	// Defined to 0x00500000.
 #ifdef PCRE_NEWLINE_ANYCRLF  // not available in older versions of pcre1, not wrapped in pcrecpp
 	pcrecpp::RE_Options options(PCRE_NEWLINE_ANYCRLF);
 #else

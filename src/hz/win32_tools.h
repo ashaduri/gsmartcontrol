@@ -28,7 +28,6 @@ Copyright:
 #include <stdio.h>  // _fdopen, _wfopen, _wremove
 #include <cstdlib>  // std::atexit
 #include <cstring>  // std::strlen
-#include <cwchar>  // std::wcslen
 #include <ios>  // std::ios::sync_with_stdio
 #include <filesystem>
 
@@ -415,7 +414,7 @@ namespace internal {
 		// This function doesn't write terminating 0 if the buffer is insufficient,
 		// so we reserve some space for it.
 		if (GetModuleFileNameW(nullptr, name.data(), MAX_PATH - 1) == TRUE) {
-			std::wstring wname(name.data(), std::wcslen(name.data()));
+			std::wstring wname(name.data());
 			std::wstring::size_type pos = wname.find_last_of(L'.');
 			wname = wname.substr(0, pos);  // full path, including the executable without extension.
 			if (!wname.empty()) {
@@ -620,7 +619,7 @@ inline std::string win32_utf16_to_utf8(std::wstring_view utf16_str, bool* ok)
 template<std::size_t ArraySize>
 std::string win32_utf16_to_utf8(const std::array<wchar_t, ArraySize>& utf16_str, bool* ok)
 {
-	return win32_utf16_to_user(CP_UTF8, {utf16_str.data(), std::wcslen(utf16_str.data())}, ok);
+	return win32_utf16_to_user(CP_UTF8, {utf16_str.data()}, ok);
 }
 
 
