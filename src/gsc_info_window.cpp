@@ -1388,8 +1388,12 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<AtaStorageProperty>& pro
 				if (buffer) {
 					buffer->set_text("\n" + Glib::ustring::compose(_("Complete error log: %1"), "\n\n" + p.get_value<std::string>()));
 
-					// set marks so we can scroll to them
+					// Make the text monospace (the 3.16+ glade property does not work anymore for some reason).
+					Glib::RefPtr<Gtk::TextTag> tag = buffer->create_tag();
+					tag->property_family() = "Monospace";
+					buffer->apply_tag(tag, buffer->begin(), buffer->end());
 
+					// Set marks so we can scroll to them
 					if (!error_log_row_selected_conn.connected()) {  // avoid double-connect
 						error_log_row_selected_conn = treeview->get_selection()->signal_changed().connect(
 								sigc::bind(sigc::bind(sigc::ptr_fun(on_error_log_treeview_row_selected), error_log_table_columns.mark_name), this));
@@ -1494,6 +1498,11 @@ void GscInfoWindow::fill_ui_temperature_log(const std::vector<AtaStorageProperty
 		if (p.generic_name == "scttemp_log") {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 			buffer->set_text("\n" + Glib::ustring::compose(_("Complete SCT temperature log: %1"), "\n\n" + p.get_value<std::string>()));
+
+			// Make the text monospace (the 3.16+ glade property does not work anymore for some reason).
+			Glib::RefPtr<Gtk::TextTag> tag = buffer->create_tag();
+			tag->property_family() = "Monospace";
+			buffer->apply_tag(tag, buffer->begin(), buffer->end());
 		}
 	}
 
@@ -1612,6 +1621,11 @@ WarningLevel GscInfoWindow::fill_ui_error_recovery(const std::vector<AtaStorageP
 		if (p.generic_name == "scterc_log") {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 			buffer->set_text("\n" + Glib::ustring::compose(_("Complete SCT Error Recovery Control settings: %1"), "\n\n" + p.get_value<std::string>()));
+
+			// Make the text monospace (the 3.16+ glade property does not work anymore for some reason).
+			Glib::RefPtr<Gtk::TextTag> tag = buffer->create_tag();
+			tag->property_family() = "Monospace";
+			buffer->apply_tag(tag, buffer->begin(), buffer->end());
 		}
 	}
 
@@ -1637,6 +1651,11 @@ WarningLevel GscInfoWindow::fill_ui_selective_self_test_log(const std::vector<At
 		if (p.generic_name == "SubSection::selective_selftest_log") {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 			buffer->set_text("\n" + Glib::ustring::compose(_("Complete selective self-test log: %1"), "\n\n" + p.get_value<std::string>()));
+
+			// Make the text monospace (the 3.16+ glade property does not work anymore for some reason).
+			Glib::RefPtr<Gtk::TextTag> tag = buffer->create_tag();
+			tag->property_family() = "Monospace";
+			buffer->apply_tag(tag, buffer->begin(), buffer->end());
 		}
 	}
 
@@ -1662,6 +1681,11 @@ WarningLevel GscInfoWindow::fill_ui_physical(const std::vector<AtaStoragePropert
 		if (p.generic_name == "sataphy_log") {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 			buffer->set_text("\n" + Glib::ustring::compose(_("Complete phy log: %1"), "\n\n" + p.get_value<std::string>()));
+
+			// Make the text monospace (the 3.16+ glade property does not work anymore for some reason).
+			Glib::RefPtr<Gtk::TextTag> tag = buffer->create_tag();
+			tag->property_family() = "Monospace";
+			buffer->apply_tag(tag, buffer->begin(), buffer->end());
 		}
 	}
 
@@ -1687,6 +1711,11 @@ WarningLevel GscInfoWindow::fill_ui_directory(const std::vector<AtaStorageProper
 		if (p.generic_name == "directory_log") {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 			buffer->set_text("\n" + Glib::ustring::compose(_("Complete directory log: %1"), "\n\n" + p.get_value<std::string>()));
+
+			// Make the text monospace (the 3.16+ glade property does not work anymore for some reason).
+			Glib::RefPtr<Gtk::TextTag> tag = buffer->create_tag();
+			tag->property_family() = "Monospace";
+			buffer->apply_tag(tag, buffer->begin(), buffer->end());
 		}
 	}
 
