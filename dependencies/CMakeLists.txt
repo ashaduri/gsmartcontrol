@@ -34,6 +34,8 @@ target_compile_definitions(app_gtkmm_interface
 #		GDK_DISABLE_DEPRECATED=1
 #		GTKMM_DISABLE_DEPRECATED=1
 #		GDKMM_DISABLE_DEPRECATED=1
+#		GLIBMM_DISABLE_DEPRECATED=1
+#		GIOMM_DISABLE_DEPRECATED=1
 )
 
 # Support pre-C++17 glibmm with throw(...) exception specifications
