@@ -358,7 +358,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 			}
 
 			AtaStorageProperty health_prop = drive->get_health_property();
-			if (health_prop.warning != WarningLevel::none && health_prop.generic_name == "overall_health") {
+			if (health_prop.warning_level != WarningLevel::none && health_prop.generic_name == "overall_health") {
 				if (icon) {
 					icon = icon->copy();  // work on a copy
 					if (icon->get_colorspace() == Gdk::COLORSPACE_RGB && icon->get_bits_per_sample() == 8) {

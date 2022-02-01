@@ -94,13 +94,36 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 		WarningLevel fill_ui_directory(const std::vector<AtaStorageProperty>& props);
 
 
-		// -------------------- callbacks
+		// ---------- Helpers
+
+		/// Cell renderer function for a table
+		void cell_renderer_for_attributes(Gtk::CellRenderer* cr, const Gtk::TreeModel::iterator& iter,
+				int column_index) const;
+
+		/// Cell renderer function for a table
+		void cell_renderer_for_statistics(Gtk::CellRenderer* cr, const Gtk::TreeModel::iterator& iter,
+				int column_index) const;
+
+		/// Cell renderer function for a table
+		void cell_renderer_for_self_test_log(Gtk::CellRenderer* cr, const Gtk::TreeModel::iterator& iter,
+				int column_index) const;
+
+		/// Cell renderer function for a table
+		void cell_renderer_for_error_log(Gtk::CellRenderer* cr, const Gtk::TreeModel::iterator& iter,
+				int column_index) const;
+
+		/// Cell renderer function for a table
+		void cell_renderer_for_capabilities(Gtk::CellRenderer* cr, const Gtk::TreeModel::iterator& iter,
+				int column_index) const;
+
+
+		// ---------- Callbacks
 
 		/// An idle callback to update the status while the test is running.
 		static gboolean test_idle_callback(void* data);
 
 
-		// ---------- overriden virtual methods
+		// ---------- Overridden virtual methods
 
 		/// Destroy this object on delete event (by default it calls hide()).
 		/// If a test is running, show a question dialog first.
@@ -108,7 +131,7 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 		bool on_delete_event(GdkEventAny* e) override;
 
 
-		// ---------- other callbacks
+		// ---------- Other callbacks
 
 		/// Button click callback
 		void on_refresh_info_button_clicked();
@@ -145,7 +168,7 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 
 	private:
 
-		// --------- Connections
+		// ---------- Connections
 
 		sigc::connection error_log_row_selected_conn;  ///< Callback connection
 
@@ -154,7 +177,7 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 		sigc::connection drive_changed_connection;  // Callback connection of drive's signal_changed callback
 
 
-		// --------- Data members
+		// ---------- Data members
 
 		std::map<std::string, Gtk::Menu*> treeview_menus;  ///< Context menus
 
@@ -179,17 +202,79 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 
 		std::shared_ptr<SelfTest> current_test;  ///< Currently running test, or 0.
 
-		// test idle callback temporaries
+		// Test idle callback temporaries
 		std::string test_error_msg;  ///< Our errors
 		Glib::Timer test_timer_poll;  ///< Timer for testing phase
 		Glib::Timer test_timer_bar;  ///< Timer for testing phase
 		bool test_force_bar_update = false;  ///< Helper for testing callback
 
+		/// Attributes table model columns
+		struct {
+			Gtk::TreeModelColumn<int32_t> id;
+			Gtk::TreeModelColumn<Glib::ustring> displayable_name;
+			Gtk::TreeModelColumn<Glib::ustring> when_failed;
+			Gtk::TreeModelColumn<std::string> value;
+			Gtk::TreeModelColumn<std::string> worst;
+			Gtk::TreeModelColumn<std::string> threshold;
+			Gtk::TreeModelColumn<std::string> raw;
+			Gtk::TreeModelColumn<Glib::ustring> type;
+			// Gtk::TreeModelColumn<Glib::ustring> updated;
+			Gtk::TreeModelColumn<std::string> flag_value;
+			Gtk::TreeModelColumn<Glib::ustring> tooltip;
+			Gtk::TreeModelColumn<const AtaStorageProperty*> storage_property;
+		} attribute_table_columns;
 
-		// test type combobox stuff
-		Gtk::TreeModelColumn<Glib::ustring> test_combo_col_name;  ///< Combobox model column
-		Gtk::TreeModelColumn<Glib::ustring> test_combo_col_description;  ///< Combobox model column
-		Gtk::TreeModelColumn<std::shared_ptr<SelfTest>> test_combo_col_self_test;  ///< Combobox model column
+		/// Statistics table model columns
+		struct {
+			Gtk::TreeModelColumn<Glib::ustring> displayable_name;
+			Gtk::TreeModelColumn<std::string> value;
+			Gtk::TreeModelColumn<std::string> flags;
+			Gtk::TreeModelColumn<std::string> page_offset;
+			Gtk::TreeModelColumn<Glib::ustring> tooltip;
+			Gtk::TreeModelColumn<const AtaStorageProperty*> storage_property;
+		} statistics_table_columns;
+
+		/// Self-test log table model columns
+		struct {
+			Gtk::TreeModelColumn<uint32_t> log_entry_index;
+			Gtk::TreeModelColumn<std::string> type;
+			Gtk::TreeModelColumn<std::string> status;
+			Gtk::TreeModelColumn<std::string> percent;
+			Gtk::TreeModelColumn<std::string> hours;
+			Gtk::TreeModelColumn<std::string> lba;
+			Gtk::TreeModelColumn<Glib::ustring> tooltip;
+			Gtk::TreeModelColumn<const AtaStorageProperty*> storage_property;
+		} self_test_log_table_columns;
+
+		/// Error log table model columns
+		struct {
+			Gtk::TreeModelColumn<uint32_t> log_entry_index;
+			Gtk::TreeModelColumn<std::string> hours;
+			Gtk::TreeModelColumn<std::string> state;
+			Gtk::TreeModelColumn<Glib::ustring> type;
+			Gtk::TreeModelColumn<std::string> details;
+			Gtk::TreeModelColumn<Glib::ustring> tooltip;
+			Gtk::TreeModelColumn<const AtaStorageProperty*> storage_property;
+			Gtk::TreeModelColumn<Glib::ustring> mark_name;
+		} error_log_table_columns;
+
+		/// Capabilities table model columns
+		struct {
+			Gtk::TreeModelColumn<int> entry_index;
+			Gtk::TreeModelColumn<Glib::ustring> name;
+			Gtk::TreeModelColumn<std::string> flag_value;
+			Gtk::TreeModelColumn<Glib::ustring> str_values;
+			Gtk::TreeModelColumn<Glib::ustring> tooltip;
+			Gtk::TreeModelColumn<const AtaStorageProperty*> storage_property;
+		} capabilities_table_columns;
+
+		// "Test type" combobox columns
+		struct {
+			Gtk::TreeModelColumn<Glib::ustring> name;  ///< Combobox model column
+			Gtk::TreeModelColumn<Glib::ustring> description;  ///< Combobox model column
+			Gtk::TreeModelColumn<std::shared_ptr<SelfTest>> self_test;  ///< Combobox model column
+		} test_combo_columns;
+
 		Glib::RefPtr<Gtk::ListStore> test_combo_model;  ///< Combobox model
 
 };

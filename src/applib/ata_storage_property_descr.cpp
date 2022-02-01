@@ -1967,7 +1967,7 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 	}
 
 
-	p.warning = w;
+	p.warning_level = w;
 	p.warning_reason = reason;
 
 	return w;

@@ -321,7 +321,7 @@ class AtaStorageProperty {
 			AtaStorageSelftestEntry  ///< Value (if it's a self-test entry)
 		> value;
 
-		WarningLevel warning = WarningLevel::none;  ///< Warning severity for this property
+		WarningLevel warning_level = WarningLevel::none;  ///< Warning severity for this property
 		std::string warning_reason;  // Warning reason (displayable)
 
 		bool show_in_ui = true;  ///< Whether to show this property in UI or not

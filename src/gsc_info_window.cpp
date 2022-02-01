@@ -92,7 +92,7 @@ namespace {
 				label->set_can_focus(false);
 
 				std::string fg;
-				if (app_property_get_label_highlight_color(label_string.property->warning, fg)) {
+				if (app_property_get_label_highlight_color(label_string.property->warning_level, fg)) {
 					label->set_markup(
 							std::string("<span color=\"").append(fg).append("\">")
 							.append(label_text).append("</span>") );
@@ -108,35 +108,6 @@ namespace {
 		}
 
 		vbox->show_all_children(true);
-	}
-
-
-
-	/// Cell renderer functions for list cells
-	inline void app_list_cell_renderer_func(Gtk::CellRenderer* cr, const Gtk::TreeModel::iterator& iter,
-			Gtk::TreeModelColumn<const AtaStorageProperty*> storage_column)
-	{
-		const AtaStorageProperty* p = (*iter)[storage_column];
-		if (auto* crt = dynamic_cast<Gtk::CellRendererText*>(cr)) {
-			std::string fg, bg;
-			if (app_property_get_row_highlight_colors(p->warning, fg, bg)) {
-				// Note: property_cell_background makes horizontal tree lines disappear around it,
-				// but property_background doesn't play nice with sorted column color.
-				crt->property_cell_background() = bg;
-				crt->property_foreground() = fg;
-			} else {
-				// this is needed because cellrenderer is shared in column, so the previous call
-				// may set the color for all subsequent cells.
-				crt->property_cell_background().reset_value();
-				crt->property_foreground().reset_value();
-			}
-			if (p->is_value_type<AtaStorageStatistic>() && p->get_value<AtaStorageStatistic>().is_header) {
-				crt->property_weight() = Pango::WEIGHT_BOLD;
-			} else {
-				// Do not use WEIGHT_NORMAL here, it interferes with cell markup
-				crt->property_weight().reset_value();
-			}
-		}
 	}
 
 
@@ -851,7 +822,7 @@ void GscInfoWindow::on_test_type_combo_changed()
 
 	Gtk::TreeRow row = *(test_type_combo->get_active());
 	if (row) {
-		std::shared_ptr<SelfTest> test = row[test_combo_col_self_test];
+		std::shared_ptr<SelfTest> test = row[test_combo_columns.self_test];
 
 		//debug_out_error("app", test->get_min_duration_seconds() << "\n");
 		if (auto* min_duration_label = lookup_widget<Gtk::Label*>("min_duration_label")) {
@@ -862,7 +833,7 @@ void GscInfoWindow::on_test_type_combo_changed()
 
 		auto* test_description_textview = lookup_widget<Gtk::TextView*>("test_description_textview");
 		if (test_description_textview != nullptr && test_description_textview->get_buffer())
-			test_description_textview->get_buffer()->set_text(row[test_combo_col_description]);
+			test_description_textview->get_buffer()->set_text(row[test_combo_columns.description]);
 	}
 }
 
@@ -933,7 +904,7 @@ void GscInfoWindow::fill_ui_general(const std::vector<AtaStorageProperty>& props
 		value->set_markup(Glib::Markup::escape_text(p.format_value()));
 
 		std::string fg;
-		if (app_property_get_label_highlight_color(p.warning, fg)) {
+		if (app_property_get_label_highlight_color(p.warning_level, fg)) {
 			name->set_markup("<span color=\"" + fg + "\">" + name->get_label() + "</span>");
 			value->set_markup("<span color=\"" + fg + "\">" + value->get_label() + "</span>");
 		}
@@ -945,8 +916,8 @@ void GscInfoWindow::fill_ui_general(const std::vector<AtaStorageProperty>& props
 		app_gtkmm_set_widget_tooltip(*value, // value->get_label() + "\n\n" +
 				p.get_description(), true);
 
-		if (int(p.warning) > int(max_tab_warning))
-			max_tab_warning = p.warning;
+		if (int(p.warning_level) > int(max_tab_warning))
+			max_tab_warning = p.warning_level;
 
 		++row;
 	}
@@ -969,58 +940,45 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<AtaStorageProperty>& pr
 	// ID (int), Name, Flag (hex), Normalized Value (uint8), Worst (uint8), Thresh (uint8), Raw (int64), Type (string),
 	// Updated (string), When Failed (string)
 
-	Gtk::TreeModelColumn<int32_t> col_id;
-	model_columns.add(col_id);  // we can use the column variable by value after this.
-	num_tree_col = app_gtkmm_create_tree_view_column(col_id, *treeview, _("ID"), _("Attribute ID"), true);
+	model_columns.add(attribute_table_columns.id);  // we can use the column variable by value after this.
+	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.id, *treeview, _("ID"), _("Attribute ID"), true);
 
-	Gtk::TreeModelColumn<Glib::ustring> col_name;
-	model_columns.add(col_name);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_name, *treeview,
+	model_columns.add(attribute_table_columns.displayable_name);
+	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.displayable_name, *treeview,
 			_("Name"), _("Attribute name (this is deduced from ID by smartctl and may be incorrect, as it's highly vendor-specific)"), true);
-	treeview->set_search_column(col_name.index());
-	auto* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_col));
-	if (cr_name)
-		cr_name->property_weight() = Pango::WEIGHT_BOLD;
+	treeview->set_search_column(attribute_table_columns.displayable_name.index());
 
-	Gtk::TreeModelColumn<Glib::ustring> col_failed;
-	model_columns.add(col_failed);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_failed, *treeview,
+	model_columns.add(attribute_table_columns.when_failed);
+	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.when_failed, *treeview,
 			_("Failed"), _("When failed (that is, the normalized value became equal to or less than threshold)"), true, true);
 
-	Gtk::TreeModelColumn<std::string> col_value;
-	model_columns.add(col_value);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_value, *treeview,
+	model_columns.add(attribute_table_columns.value);
+	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.value, *treeview,
 			C_("value", "Normalized"), _("Normalized value (highly vendor-specific; converted from Raw value by the drive's firmware)"), false);
 
-	Gtk::TreeModelColumn<std::string> col_worst;
-	model_columns.add(col_worst);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_worst, *treeview,
+	model_columns.add(attribute_table_columns.worst);
+	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.worst, *treeview,
 			C_("value", "Worst"), _("The worst normalized value recorded for this attribute during the drive's lifetime (with SMART enabled)"), false);
 
-	Gtk::TreeModelColumn<std::string> col_threshold;
-	model_columns.add(col_threshold);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_threshold, *treeview,
+	model_columns.add(attribute_table_columns.threshold);
+	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.threshold, *treeview,
 			C_("value", "Threshold"), _("Threshold for normalized value. Normalized value should be greater than threshold (unless vendor thinks otherwise)."), false);
 
-	Gtk::TreeModelColumn<std::string> col_raw;
-	model_columns.add(col_raw);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_raw, *treeview,
+	model_columns.add(attribute_table_columns.raw);
+	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.raw, *treeview,
 			_("Raw value"), _("Raw value as reported by drive. May or may not be sensible."), false);
 
-	Gtk::TreeModelColumn<Glib::ustring> col_type;
-	model_columns.add(col_type);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_type, *treeview,
+	model_columns.add(attribute_table_columns.type);
+	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.type, *treeview,
 			_("Type"), _("Alarm condition is reached when normalized value becomes less than or equal to threshold. Type indicates whether it's a signal of drive's pre-failure time or just an old age."), false, true);
 
 	// Doesn't carry that much info. Advanced users can look at the flags.
-// 		Gtk::TreeModelColumn<Glib::ustring> col_updated;
-// 		model_columns.add(col_updated);
-// 		tree_col = app_gtkmm_create_tree_view_column(col_updated, *treeview,
+// 		model_columns.add(attribute_table_columns.updated);
+// 		tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.updated, *treeview,
 // 				"Updated", "The attribute is usually updated continuously, or during Offline Data Collection only. This column indicates that.", true);
 
-	Gtk::TreeModelColumn<std::string> col_flag_value;
-	model_columns.add(col_flag_value);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_flag_value, *treeview,
+	model_columns.add(attribute_table_columns.flag_value);
+	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.flag_value, *treeview,
 			_("Flags"), _("Flags") + "\n\n"s
 					+ Glib::ustring::compose(_("If given in %1 format, the presence of each letter indicates that the flag is on."), "POSRCK+") + "\n"
 					+ _("P: pre-failure attribute (if the attribute failed, the drive is failing)") + "\n"
@@ -1031,24 +989,21 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<AtaStorageProperty>& pr
 					+ _("K: auto-keep") + "\n"
 					+ _("+: undocumented bits present"), false);
 
-	Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
-	model_columns.add(col_tooltip);
-	treeview->set_tooltip_column(col_tooltip.index());
+	model_columns.add(attribute_table_columns.tooltip);
+	treeview->set_tooltip_column(attribute_table_columns.tooltip.index());
 
-
-	Gtk::TreeModelColumn<const AtaStorageProperty*> col_storage;
-	model_columns.add(col_storage);
+	model_columns.add(attribute_table_columns.storage_property);
 
 
 	// create a TreeModel (ListStore)
 	Glib::RefPtr<Gtk::ListStore> list_store = Gtk::ListStore::create(model_columns);
-	list_store->set_sort_column(col_id, Gtk::SORT_ASCENDING);  // default sort
+	list_store->set_sort_column(attribute_table_columns.id, Gtk::SORT_ASCENDING);  // default sort
 	treeview->set_model(list_store);
 
 	for (int i = 0; i < int(treeview->get_n_columns()); ++i) {
 		Gtk::TreeViewColumn* tcol = treeview->get_column(i);
 		tcol->set_cell_data_func(*(tcol->get_first_cell()),
-				sigc::bind(sigc::ptr_fun(app_list_cell_renderer_func), col_storage));
+				sigc::bind(sigc::mem_fun(*this, &GscInfoWindow::cell_renderer_for_attributes), i));
 	}
 
 
@@ -1063,40 +1018,29 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<AtaStorageProperty>& pr
 		if (!p.is_value_type<AtaStorageAttribute>()) {
 			label_strings.emplace_back(p.displayable_name + ": " + p.format_value(), &p);
 
-			if (int(p.warning) > int(max_tab_warning))
-				max_tab_warning = p.warning;
+			if (int(p.warning_level) > int(max_tab_warning))
+				max_tab_warning = p.warning_level;
 			continue;
 		}
 
 		const auto& attr = p.get_value<AtaStorageAttribute>();
 
-		std::string attr_type_name = Glib::Markup::escape_text(AtaStorageAttribute::get_attr_type_name(attr.attr_type));
-		if (attr.attr_type == AtaStorageAttribute::AttributeType::prefail) {
-			attr_type_name = Glib::ustring::compose("<b>%1</b>", attr_type_name);
-		}
-
-		std::string fail_time_name = Glib::Markup::escape_text(AtaStorageAttribute::get_fail_time_name(attr.when_failed));
-		if (attr.when_failed != AtaStorageAttribute::FailTime::none) {
-			fail_time_name = Glib::ustring::compose("<b>%1</b>", fail_time_name);
-		}
-
 		Gtk::TreeRow row = *(list_store->append());
+		row[attribute_table_columns.id] = attr.id;
+		row[attribute_table_columns.displayable_name] = Glib::Markup::escape_text(p.displayable_name);
+		row[attribute_table_columns.flag_value] = Glib::Markup::escape_text(attr.flag);  // it's a string, not int.
+		row[attribute_table_columns.value] = Glib::Markup::escape_text(attr.value.has_value() ? hz::number_to_string_locale(attr.value.value()) : "-");
+		row[attribute_table_columns.worst] = Glib::Markup::escape_text(attr.worst.has_value() ? hz::number_to_string_locale(attr.worst.value()) : "-");
+		row[attribute_table_columns.threshold] = Glib::Markup::escape_text(attr.threshold.has_value() ? hz::number_to_string_locale(attr.threshold.value()) : "-");
+		row[attribute_table_columns.raw] = Glib::Markup::escape_text(attr.format_raw_value());
+		row[attribute_table_columns.type] = Glib::Markup::escape_text(AtaStorageAttribute::get_attr_type_name(attr.attr_type));
+// 		row[attribute_table_columns.updated] = Glib::Markup::escape_text(AtaStorageAttribute::get_update_type_name(attr.update_type));
+		row[attribute_table_columns.when_failed] = Glib::Markup::escape_text(AtaStorageAttribute::get_fail_time_name(attr.when_failed));
+		row[attribute_table_columns.tooltip] = p.get_description();  // markup
+		row[attribute_table_columns.storage_property] = &p;
 
-		row[col_id] = attr.id;
-		row[col_name] = Glib::Markup::escape_text(p.displayable_name);
-		row[col_flag_value] = Glib::Markup::escape_text(attr.flag);  // it's a string, not int.
-		row[col_value] = Glib::Markup::escape_text(attr.value.has_value() ? hz::number_to_string_locale(attr.value.value()) : "-");
-		row[col_worst] = Glib::Markup::escape_text(attr.worst.has_value() ? hz::number_to_string_locale(attr.worst.value()) : "-");
-		row[col_threshold] = Glib::Markup::escape_text(attr.threshold.has_value() ? hz::number_to_string_locale(attr.threshold.value()) : "-");
-		row[col_raw] = Glib::Markup::escape_text(attr.format_raw_value());
-		row[col_type] = attr_type_name;
-// 		row[col_updated] = Glib::Markup::escape_text(AtaStorageAttribute::get_update_type_name(attr.update_type));
-		row[col_failed] = fail_time_name;
-		row[col_tooltip] = p.get_description();  // markup
-		row[col_storage] = &p;
-
-		if (int(p.warning) > int(max_tab_warning))
-			max_tab_warning = p.warning;
+		if (int(p.warning_level) > int(max_tab_warning))
+			max_tab_warning = p.warning_level;
 	}
 
 
@@ -1116,40 +1060,31 @@ void GscInfoWindow::fill_ui_statistics(const std::vector<AtaStorageProperty>& pr
 	Gtk::TreeModelColumnRecord model_columns;
 	[[maybe_unused]] int num_tree_col = 0;
 
-	Gtk::TreeModelColumn<Glib::ustring> col_description;
-	model_columns.add(col_description);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_description, *treeview,
+	model_columns.add(statistics_table_columns.displayable_name);
+	num_tree_col = app_gtkmm_create_tree_view_column(statistics_table_columns.displayable_name, *treeview,
 			_("Description"), _("Entry description"), true);
-	treeview->set_search_column(col_description.index());
-// 		Gtk::CellRendererText* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_col));
-// 		if (cr_name)
-// 			cr_name->property_weight() = Pango::WEIGHT_BOLD ;
+	treeview->set_search_column(statistics_table_columns.displayable_name.index());
 
-	Gtk::TreeModelColumn<std::string> col_value;
-	model_columns.add(col_value);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_value, *treeview,
+	model_columns.add(statistics_table_columns.value);
+	num_tree_col = app_gtkmm_create_tree_view_column(statistics_table_columns.value, *treeview,
 			_("Value"), Glib::ustring::compose(_("Value (can be normalized if '%1' flag is present)"), "N"), false);
 
-	Gtk::TreeModelColumn<std::string> col_flags;
-	model_columns.add(col_flags);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_flags, *treeview,
+	model_columns.add(statistics_table_columns.flags);
+	num_tree_col = app_gtkmm_create_tree_view_column(statistics_table_columns.flags, *treeview,
 			_("Flags"), _("Flags") + "\n\n"s
 					+ _("N: value is normalized") + "\n"
 					+ _("D: supports Device Statistics Notification (DSN)") + "\n"
 					+ _("C: monitored condition met") + "\n"  // Related to DSN? From the specification, it looks like something user-controllable.
 					+ _("+: undocumented bits present"), false);
 
-	Gtk::TreeModelColumn<std::string> col_page_offset;
-	model_columns.add(col_page_offset);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_page_offset, *treeview,
+	model_columns.add(statistics_table_columns.page_offset);
+	num_tree_col = app_gtkmm_create_tree_view_column(statistics_table_columns.page_offset, *treeview,
 			_("Page, Offset"), _("Page and offset of the entry"), false);
 
-	Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
-	model_columns.add(col_tooltip);
-	treeview->set_tooltip_column(col_tooltip.index());
+	model_columns.add(statistics_table_columns.tooltip);
+	treeview->set_tooltip_column(statistics_table_columns.tooltip.index());
 
-	Gtk::TreeModelColumn<const AtaStorageProperty*> col_storage;
-	model_columns.add(col_storage);
+	model_columns.add(statistics_table_columns.storage_property);
 
 
 	// create a TreeModel (ListStore)
@@ -1160,7 +1095,7 @@ void GscInfoWindow::fill_ui_statistics(const std::vector<AtaStorageProperty>& pr
 	for (int i = 0; i < int(treeview->get_n_columns()); ++i) {
 		Gtk::TreeViewColumn* tcol = treeview->get_column(i);
 		tcol->set_cell_data_func(*(tcol->get_first_cell()),
-				sigc::bind(sigc::ptr_fun(app_list_cell_renderer_func), col_storage));
+				sigc::bind(sigc::mem_fun(*this, &GscInfoWindow::cell_renderer_for_statistics), i));
 	}
 
 	WarningLevel max_tab_warning = WarningLevel::none;
@@ -1174,24 +1109,24 @@ void GscInfoWindow::fill_ui_statistics(const std::vector<AtaStorageProperty>& pr
 		if (!p.is_value_type<AtaStorageStatistic>()) {
 			label_strings.emplace_back(p.displayable_name + ": " + p.format_value(), &p);
 
-			if (int(p.warning) > int(max_tab_warning))
-				max_tab_warning = p.warning;
+			if (int(p.warning_level) > int(max_tab_warning))
+				max_tab_warning = p.warning_level;
 			continue;
 		}
 
 		Gtk::TreeRow row = *(list_store->append());
 
 		const auto& st = p.get_value<AtaStorageStatistic>();
-		row[col_description] = Glib::Markup::escape_text(st.is_header ? p.displayable_name : ("    " + p.displayable_name));
-		row[col_value] = Glib::Markup::escape_text(st.format_value());
-		row[col_flags] = Glib::Markup::escape_text(st.flags);  // it's a string, not int.
-		row[col_page_offset] = Glib::Markup::escape_text(st.is_header ? std::string()
+		row[statistics_table_columns.displayable_name] = Glib::Markup::escape_text(st.is_header ? p.displayable_name : ("    " + p.displayable_name));
+		row[statistics_table_columns.value] = Glib::Markup::escape_text(st.format_value());
+		row[statistics_table_columns.flags] = Glib::Markup::escape_text(st.flags);  // it's a string, not int.
+		row[statistics_table_columns.page_offset] = Glib::Markup::escape_text(st.is_header ? std::string()
 				: hz::string_sprintf("0x%02x, 0x%03x", int(st.page), int(st.offset)));
-		row[col_tooltip] = p.get_description();  // markup
-		row[col_storage] = &p;
+		row[statistics_table_columns.tooltip] = p.get_description();  // markup
+		row[statistics_table_columns.storage_property] = &p;
 
-		if (int(p.warning) > int(max_tab_warning))
-			max_tab_warning = p.warning;
+		if (int(p.warning_level) > int(max_tab_warning))
+			max_tab_warning = p.warning_level;
 	}
 
 	auto* label_vbox = lookup_widget<Gtk::Box*>("statistics_label_vbox");
@@ -1212,9 +1147,9 @@ void GscInfoWindow::fill_ui_self_test_info()
 		Gtk::TreeModelColumnRecord model_columns;
 
 		// Test name, [description], [selftest_obj]
-		model_columns.add(test_combo_col_name);  // we can use the column variable by value after this.
-		model_columns.add(test_combo_col_description);
-		model_columns.add(test_combo_col_self_test);
+		model_columns.add(test_combo_columns.name);  // we can use the column variable by value after this.
+		model_columns.add(test_combo_columns.description);
+		model_columns.add(test_combo_columns.self_test);
 
 		test_combo_model = Gtk::ListStore::create(model_columns);
 		test_type_combo->set_model(test_combo_model);
@@ -1222,7 +1157,7 @@ void GscInfoWindow::fill_ui_self_test_info()
 		// visible columns
 		test_type_combo->clear();  // clear old (glade) cellrenderers
 
-		test_type_combo->pack_start(test_combo_col_name);
+		test_type_combo->pack_start(test_combo_columns.name);
 	}
 
 	// add possible tests
@@ -1232,46 +1167,46 @@ void GscInfoWindow::fill_ui_self_test_info()
 	auto test_ioffline = std::make_shared<SelfTest>(drive, SelfTest::TestType::immediate_offline);
 	if (test_ioffline->is_supported()) {
 		row = *(test_combo_model->append());
-		row[test_combo_col_name] = SelfTest::get_test_displayable_name(SelfTest::TestType::immediate_offline);
-		row[test_combo_col_description] =
+		row[test_combo_columns.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::immediate_offline);
+		row[test_combo_columns.description] =
 				_("Immediate Offline Test (also known as Immediate Offline Data Collection)"
 				" is the manual version of Automatic Offline Data Collection, which, if enabled, is automatically run"
 				" every four hours. If an error occurs during this test, it will be reported in Error Log. Besides that,"
 				" its effects are visible only in that it updates the \"Offline\" Attribute values.");
-		row[test_combo_col_self_test] = test_ioffline;
+		row[test_combo_columns.self_test] = test_ioffline;
 	}
 
 	auto test_short = std::make_shared<SelfTest>(drive, SelfTest::TestType::short_test);
 	if (test_short->is_supported()) {
 		row = *(test_combo_model->append());
-		row[test_combo_col_name] = SelfTest::get_test_displayable_name(SelfTest::TestType::short_test);
-		row[test_combo_col_description] =
+		row[test_combo_columns.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::short_test);
+		row[test_combo_columns.description] =
 				_("Short self-test consists of a collection of test routines that have the highest chance"
 				" of detecting drive problems. Its result is reported in the Self-Test Log."
 				" Note that this test is in no way comprehensive. Its main purpose is to detect totally damaged"
 				" drives without running a full surface scan."
 				"\nNote: On some drives this actually runs several consequent tests, which may"
 				" cause the program to display the test progress incorrectly.");  // seagate multi-pass test on 7200.11.
-		row[test_combo_col_self_test] = test_short;
+		row[test_combo_columns.self_test] = test_short;
 	}
 
 	auto test_long = std::make_shared<SelfTest>(drive, SelfTest::TestType::long_test);
 	if (test_long->is_supported()) {
 		row = *(test_combo_model->append());
-		row[test_combo_col_name] = SelfTest::get_test_displayable_name(SelfTest::TestType::long_test);
-		row[test_combo_col_description] =
+		row[test_combo_columns.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::long_test);
+		row[test_combo_columns.description] =
 				_("Extended self-test examines complete disk surface and performs various test routines"
 				" built into the drive. Its result is reported in the Self-Test Log.");
-		row[test_combo_col_self_test] = test_long;
+		row[test_combo_columns.self_test] = test_long;
 	}
 
 	auto test_conveyance = std::make_shared<SelfTest>(drive, SelfTest::TestType::conveyance);
 	if (test_conveyance->is_supported()) {
 		row = *(test_combo_model->append());
-		row[test_combo_col_name] = SelfTest::get_test_displayable_name(SelfTest::TestType::conveyance);
-		row[test_combo_col_description] =
+		row[test_combo_columns.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::conveyance);
+		row[test_combo_columns.description] =
 				_("Conveyance self-test is intended to identify damage incurred during transporting of the drive.");
-		row[test_combo_col_self_test] = test_conveyance;
+		row[test_combo_columns.self_test] = test_conveyance;
 	}
 
 	if (!test_combo_model->children().empty()) {
@@ -1298,57 +1233,46 @@ void GscInfoWindow::fill_ui_self_test_log(const std::vector<AtaStorageProperty>&
 
 	// Test num., Type, Status, % Completed, Lifetime hours, LBA of the first error
 
-	Gtk::TreeModelColumn<uint32_t> col_num;
-	model_columns.add(col_num);  // we can use the column variable by value after this.
-	num_tree_col = app_gtkmm_create_tree_view_column(col_num, *treeview,
+	model_columns.add(self_test_log_table_columns.log_entry_index);  // we can use the column variable by value after this.
+	num_tree_col = app_gtkmm_create_tree_view_column(self_test_log_table_columns.log_entry_index, *treeview,
 			_("Test #"), _("Test # (greater may mean newer or older depending on drive model)"), true);
-	auto* cr_test_num = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_col));
-	if (cr_test_num)
-		cr_test_num->property_weight() = Pango::WEIGHT_BOLD ;
 
-	Gtk::TreeModelColumn<std::string> col_type;
-	model_columns.add(col_type);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_type, *treeview,
+	model_columns.add(self_test_log_table_columns.type);
+	num_tree_col = app_gtkmm_create_tree_view_column(self_test_log_table_columns.type, *treeview,
 			_("Type"), _("Type of the test performed"), true);
-	treeview->set_search_column(col_type.index());
+	treeview->set_search_column(self_test_log_table_columns.type.index());
 
-	Gtk::TreeModelColumn<std::string> col_status;
-	model_columns.add(col_status);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_status, *treeview,
+	model_columns.add(self_test_log_table_columns.status);
+	num_tree_col = app_gtkmm_create_tree_view_column(self_test_log_table_columns.status, *treeview,
 			_("Status"), _("Test completion status"), true);
 
-	Gtk::TreeModelColumn<std::string> col_percent;
-	model_columns.add(col_percent);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_percent, *treeview,
+	model_columns.add(self_test_log_table_columns.percent);
+	num_tree_col = app_gtkmm_create_tree_view_column(self_test_log_table_columns.percent, *treeview,
 			_("% Completed"), _("Percentage of the test completed. Instantly-aborted tests have 10%, while unsupported ones <i>may</i> have 100%."), true, false, true);
 
-	Gtk::TreeModelColumn<std::string> col_hours;
-	model_columns.add(col_hours);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_hours, *treeview,
+	model_columns.add(self_test_log_table_columns.hours);
+	num_tree_col = app_gtkmm_create_tree_view_column(self_test_log_table_columns.hours, *treeview,
 			_("Lifetime hours"), _("During which hour of the drive's (powered on) lifetime did the test complete (or abort)"), true);
 
-	Gtk::TreeModelColumn<std::string> col_lba;
-	model_columns.add(col_lba);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_lba, *treeview,
+	model_columns.add(self_test_log_table_columns.lba);
+	num_tree_col = app_gtkmm_create_tree_view_column(self_test_log_table_columns.lba, *treeview,
 			_("LBA of the first error"), _("LBA of the first error (if an LBA-related error happened)"), true);
 
-	Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
-	model_columns.add(col_tooltip);
-	treeview->set_tooltip_column(col_tooltip.index());
+	model_columns.add(self_test_log_table_columns.tooltip);
+	treeview->set_tooltip_column(self_test_log_table_columns.tooltip.index());
 
-	Gtk::TreeModelColumn<const AtaStorageProperty*> col_storage;
-	model_columns.add(col_storage);
+	model_columns.add(self_test_log_table_columns.storage_property);
 
 
 	// create a TreeModel (ListStore)
 	Glib::RefPtr<Gtk::ListStore> list_store = Gtk::ListStore::create(model_columns);
-	list_store->set_sort_column(col_num, Gtk::SORT_ASCENDING);  // default sort
+	list_store->set_sort_column(self_test_log_table_columns.log_entry_index, Gtk::SORT_ASCENDING);  // default sort
 	treeview->set_model(list_store);
 
 	for (int i = 0; i < int(treeview->get_n_columns()); ++i) {
 		Gtk::TreeViewColumn* tcol = treeview->get_column(i);
 		tcol->set_cell_data_func(*(tcol->get_first_cell()),
-				sigc::bind(sigc::ptr_fun(app_list_cell_renderer_func), col_storage));
+				sigc::bind(sigc::mem_fun(*this, &GscInfoWindow::cell_renderer_for_self_test_log), i));
 	}
 
 
@@ -1366,8 +1290,8 @@ void GscInfoWindow::fill_ui_self_test_log(const std::vector<AtaStorageProperty>&
 		if (!p.is_value_type<AtaStorageSelftestEntry>()) {
 			label_strings.emplace_back(p.displayable_name + ": " + p.format_value(), &p);
 
-			if (int(p.warning) > int(max_tab_warning))
-				max_tab_warning = p.warning;
+			if (int(p.warning_level) > int(max_tab_warning))
+				max_tab_warning = p.warning_level;
 			continue;
 		}
 
@@ -1375,19 +1299,19 @@ void GscInfoWindow::fill_ui_self_test_log(const std::vector<AtaStorageProperty>&
 
 		const auto& sse = p.get_value<AtaStorageSelftestEntry>();
 
-		row[col_num] = sse.test_num;
-		row[col_type] = Glib::Markup::escape_text(sse.type);
-		row[col_status] = Glib::Markup::escape_text(sse.get_status_str());
-		row[col_percent] = Glib::Markup::escape_text(hz::number_to_string_locale(100 - sse.remaining_percent) + "%");
-		row[col_hours] = Glib::Markup::escape_text(sse.format_lifetime_hours());
-		row[col_lba] = Glib::Markup::escape_text(sse.lba_of_first_error);
+		row[self_test_log_table_columns.log_entry_index] = sse.test_num;
+		row[self_test_log_table_columns.type] = Glib::Markup::escape_text(sse.type);
+		row[self_test_log_table_columns.status] = Glib::Markup::escape_text(sse.get_status_str());
+		row[self_test_log_table_columns.percent] = Glib::Markup::escape_text(hz::number_to_string_locale(100 - sse.remaining_percent) + "%");
+		row[self_test_log_table_columns.hours] = Glib::Markup::escape_text(sse.format_lifetime_hours());
+		row[self_test_log_table_columns.lba] = Glib::Markup::escape_text(sse.lba_of_first_error);
 		// There are no descriptions in self-test log entries, so don't display
 		// "No description available" for all of them.
-		// row[col_tooltip] = p.get_description();
-		row[col_storage] = &p;
+		// row[self_test_log_table_columns.tooltip] = p.get_description();
+		row[self_test_log_table_columns.storage_property] = &p;
 
-		if (int(p.warning) > int(max_tab_warning))
-			max_tab_warning = p.warning;
+		if (int(p.warning_level) > int(max_tab_warning))
+			max_tab_warning = p.warning_level;
 	}
 
 
@@ -1409,53 +1333,43 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<AtaStorageProperty>& pro
 
 	// Error Number, Lifetime Hours, State, Type, Details, [tooltips]
 
-	Gtk::TreeModelColumn<uint32_t> col_num;
-	model_columns.add(col_num);  // we can use the column variable by value after this.
-	num_tree_col = app_gtkmm_create_tree_view_column(col_num, *treeview,
+	model_columns.add(error_log_table_columns.log_entry_index);  // we can use the column variable by value after this.
+	num_tree_col = app_gtkmm_create_tree_view_column(error_log_table_columns.log_entry_index, *treeview,
 			_("Error #"), _("Error # in the error log (greater means newer)"), true);
-	if (auto* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_col)))
-		cr_name->property_weight() = Pango::WEIGHT_BOLD ;
 
-	Gtk::TreeModelColumn<std::string> col_hours;
-	model_columns.add(col_hours);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_hours, *treeview,
+	model_columns.add(error_log_table_columns.hours);
+	num_tree_col = app_gtkmm_create_tree_view_column(error_log_table_columns.hours, *treeview,
 			_("Lifetime hours"), _("During which hour of the drive's (powered on) lifetime did the error happen."), true);
 
-	Gtk::TreeModelColumn<std::string> col_state;
-	model_columns.add(col_state);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_state, *treeview,
+	model_columns.add(error_log_table_columns.state);
+	num_tree_col = app_gtkmm_create_tree_view_column(error_log_table_columns.state, *treeview,
 			C_("power", "State"), _("Power state of the drive when the error occurred"), false);
 
-	Gtk::TreeModelColumn<Glib::ustring> col_type;
-	model_columns.add(col_type);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_type, *treeview,
+	model_columns.add(error_log_table_columns.type);
+	num_tree_col = app_gtkmm_create_tree_view_column(error_log_table_columns.type, *treeview,
 			_("Type"), _("Type of error"), true);
 
-	Gtk::TreeModelColumn<std::string> col_details;
-	model_columns.add(col_details);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_details, *treeview,
+	model_columns.add(error_log_table_columns.details);
+	num_tree_col = app_gtkmm_create_tree_view_column(error_log_table_columns.details, *treeview,
 			_("Details"), _("Additional details (e.g. LBA where the error occurred, etc...)"), true);
 
-	Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
-	model_columns.add(col_tooltip);
-	treeview->set_tooltip_column(col_tooltip.index());
+	model_columns.add(error_log_table_columns.tooltip);
+	treeview->set_tooltip_column(error_log_table_columns.tooltip.index());
 
-	Gtk::TreeModelColumn<const AtaStorageProperty*> col_storage;
-	model_columns.add(col_storage);
+	model_columns.add(error_log_table_columns.storage_property);
 
-	Gtk::TreeModelColumn<Glib::ustring> col_mark_name;
-	model_columns.add(col_mark_name);
+	model_columns.add(error_log_table_columns.mark_name);
 
 
 	// create a TreeModel (ListStore)
 	Glib::RefPtr<Gtk::ListStore> list_store = Gtk::ListStore::create(model_columns);
-	list_store->set_sort_column(col_num, Gtk::SORT_DESCENDING);  // default sort
+	list_store->set_sort_column(error_log_table_columns.log_entry_index, Gtk::SORT_DESCENDING);  // default sort
 	treeview->set_model(list_store);
 
 	for (int i = 0; i < int(treeview->get_n_columns()); ++i) {
 		Gtk::TreeViewColumn* tcol = treeview->get_column(i);
 		tcol->set_cell_data_func(*(tcol->get_first_cell()),
-				sigc::bind(sigc::ptr_fun(app_list_cell_renderer_func), col_storage));
+				sigc::bind(sigc::mem_fun(*this, &GscInfoWindow::cell_renderer_for_error_log), i));
 	}
 
 
@@ -1478,7 +1392,7 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<AtaStorageProperty>& pro
 
 					if (!error_log_row_selected_conn.connected()) {  // avoid double-connect
 						error_log_row_selected_conn = treeview->get_selection()->signal_changed().connect(
-								sigc::bind(sigc::bind(sigc::ptr_fun(on_error_log_treeview_row_selected), col_mark_name), this));
+								sigc::bind(sigc::bind(sigc::ptr_fun(on_error_log_treeview_row_selected), error_log_table_columns.mark_name), this));
 					}
 
 					Gtk::TextIter titer = buffer->begin();
@@ -1508,18 +1422,18 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<AtaStorageProperty>& pro
 			std::string type_details = eb.type_more_info;
 
 			Gtk::TreeRow row = *(list_store->append());
-			row[col_num] = eb.error_num;
-			row[col_hours] = Glib::Markup::escape_text(eb.format_lifetime_hours());
-			row[col_state] = Glib::Markup::escape_text(eb.device_state);
-			row[col_type] = Glib::Markup::escape_text(AtaStorageErrorBlock::get_displayable_error_types(eb.reported_types));
-			row[col_details] = Glib::Markup::escape_text(type_details.empty() ? "-" : type_details);  // e.g. OBS has no details
-			row[col_tooltip] = p.get_description();  // markup
-			row[col_storage] = &p;
-			row[col_mark_name] = Glib::ustring::compose(_("Error %1"), eb.error_num);
+			row[error_log_table_columns.log_entry_index] = eb.error_num;
+			row[error_log_table_columns.hours] = Glib::Markup::escape_text(eb.format_lifetime_hours());
+			row[error_log_table_columns.state] = Glib::Markup::escape_text(eb.device_state);
+			row[error_log_table_columns.type] = Glib::Markup::escape_text(AtaStorageErrorBlock::get_displayable_error_types(eb.reported_types));
+			row[error_log_table_columns.details] = Glib::Markup::escape_text(type_details.empty() ? "-" : type_details);  // e.g. OBS has no details
+			row[error_log_table_columns.tooltip] = p.get_description();  // markup
+			row[error_log_table_columns.storage_property] = &p;
+			row[error_log_table_columns.mark_name] = Glib::ustring::compose(_("Error %1"), eb.error_num);
 		}
 
-		if (int(p.warning) > int(max_tab_warning))
-			max_tab_warning = p.warning;
+		if (int(p.warning_level) > int(max_tab_warning))
+			max_tab_warning = p.warning_level;
 	}
 
 	auto* label_vbox = lookup_widget<Gtk::Box*>("error_log_label_vbox");
@@ -1571,8 +1485,8 @@ void GscInfoWindow::fill_ui_temperature_log(const std::vector<AtaStorageProperty
 
 		if (p.generic_name == "sct_unsupported" && p.get_value<bool>()) {  // only show if unsupported
 			label_strings.emplace_back(_("SCT temperature commands not supported."), &p);
-			if (int(p.warning) > int(max_tab_warning))
-				max_tab_warning = p.warning;
+			if (int(p.warning_level) > int(max_tab_warning))
+				max_tab_warning = p.warning_level;
 			continue;
 		}
 
@@ -1591,8 +1505,8 @@ void GscInfoWindow::fill_ui_temperature_log(const std::vector<AtaStorageProperty
 	temp_property.set_description(_("Current drive temperature in Celsius."));  // overrides attribute description
 	label_strings.emplace_back(Glib::ustring::compose(_("Current temperature: %1"),
 			"<b>" + Glib::Markup::escape_text(temperature) + "</b>"), &temp_property, true);
-	if (int(temp_property.warning) > int(max_tab_warning))
-		max_tab_warning = temp_property.warning;
+	if (int(temp_property.warning_level) > int(max_tab_warning))
+		max_tab_warning = temp_property.warning_level;
 
 
 	auto* label_vbox = lookup_widget<Gtk::Box*>("temperature_log_label_vbox");
@@ -1613,43 +1527,34 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<AtaStoragePro
 
 	// N, Name, Flag, Capabilities, [tooltips]
 
-	Gtk::TreeModelColumn<int> col_index;
-	model_columns.add(col_index);  // we can use the column variable by value after this.
-	num_tree_col = app_gtkmm_create_tree_view_column(col_index, *treeview, _("#"), _("Entry #"), true);
+	model_columns.add(capabilities_table_columns.entry_index);  // we can use the column variable by value after this.
+	num_tree_col = app_gtkmm_create_tree_view_column(capabilities_table_columns.entry_index, *treeview, _("#"), _("Entry #"), true);
 
-	Gtk::TreeModelColumn<Glib::ustring> col_name;
-	model_columns.add(col_name);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_name, *treeview, _("Name"), _("Name"), true);
-	treeview->set_search_column(col_name.index());
-	auto* cr_name = dynamic_cast<Gtk::CellRendererText*>(treeview->get_column_cell_renderer(num_tree_col));
-	if (cr_name)
-		cr_name->property_weight() = Pango::WEIGHT_BOLD ;
+	model_columns.add(capabilities_table_columns.name);
+	num_tree_col = app_gtkmm_create_tree_view_column(capabilities_table_columns.name, *treeview, _("Name"), _("Name"), true);
+	treeview->set_search_column(capabilities_table_columns.name.index());
 
-	Gtk::TreeModelColumn<std::string> col_flag_value;
-	model_columns.add(col_flag_value);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_flag_value, *treeview, _("Flags"), _("Flags"), false);
+	model_columns.add(capabilities_table_columns.flag_value);
+	num_tree_col = app_gtkmm_create_tree_view_column(capabilities_table_columns.flag_value, *treeview, _("Flags"), _("Flags"), false);
 
-	Gtk::TreeModelColumn<Glib::ustring> col_str_values;
-	model_columns.add(col_str_values);
-	num_tree_col = app_gtkmm_create_tree_view_column(col_str_values, *treeview, _("Capabilities"), _("Capabilities"), false);
+	model_columns.add(capabilities_table_columns.str_values);
+	num_tree_col = app_gtkmm_create_tree_view_column(capabilities_table_columns.str_values, *treeview, _("Capabilities"), _("Capabilities"), false);
 
-	Gtk::TreeModelColumn<Glib::ustring> col_tooltip;
-	model_columns.add(col_tooltip);
-	treeview->set_tooltip_column(col_tooltip.index());
+	model_columns.add(capabilities_table_columns.tooltip);
+	treeview->set_tooltip_column(capabilities_table_columns.tooltip.index());
 
-	Gtk::TreeModelColumn<const AtaStorageProperty*> col_storage;
-	model_columns.add(col_storage);
+	model_columns.add(capabilities_table_columns.storage_property);
 
 
 	// create a TreeModel (ListStore)
 	Glib::RefPtr<Gtk::ListStore> list_store = Gtk::ListStore::create(model_columns);
-	list_store->set_sort_column(col_index, Gtk::SORT_ASCENDING);  // default sort
+	list_store->set_sort_column(capabilities_table_columns.entry_index, Gtk::SORT_ASCENDING);  // default sort
 	treeview->set_model(list_store);
 
 	for (int i = 0; i < int(treeview->get_n_columns()); ++i) {
 		Gtk::TreeViewColumn* tcol = treeview->get_column(i);
 		tcol->set_cell_data_func(*(tcol->get_first_cell()),
-				sigc::bind(sigc::ptr_fun(app_list_cell_renderer_func), col_storage));
+				sigc::bind(sigc::mem_fun(*this, &GscInfoWindow::cell_renderer_for_capabilities), i));
 	}
 
 
@@ -1672,15 +1577,15 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<AtaStoragePro
 		}
 
 		Gtk::TreeRow row = *(list_store->append());
-		row[col_index] = index;
-		row[col_name] = Glib::Markup::escape_text(p.displayable_name);
-		row[col_flag_value] = Glib::Markup::escape_text(flag_value.empty() ? "-" : flag_value);
-		row[col_str_values] = Glib::Markup::escape_text(str_value);
-		row[col_tooltip] = p.get_description();  // markup
-		row[col_storage] = &p;
+		row[capabilities_table_columns.entry_index] = index;
+		row[capabilities_table_columns.name] = Glib::Markup::escape_text(p.displayable_name);
+		row[capabilities_table_columns.flag_value] = Glib::Markup::escape_text(flag_value.empty() ? "-" : flag_value);
+		row[capabilities_table_columns.str_values] = Glib::Markup::escape_text(str_value);
+		row[capabilities_table_columns.tooltip] = p.get_description();  // markup
+		row[capabilities_table_columns.storage_property] = &p;
 
-		if (int(p.warning) > int(max_tab_warning))
-			max_tab_warning = p.warning;
+		if (int(p.warning_level) > int(max_tab_warning))
+			max_tab_warning = p.warning_level;
 
 		++index;
 	}
@@ -1789,6 +1694,124 @@ WarningLevel GscInfoWindow::fill_ui_directory(const std::vector<AtaStorageProper
 	app_highlight_tab_label(lookup_widget("directory_tab_label"), max_tab_warning, tab_directory_name);
 
 	return max_tab_warning;
+}
+
+
+
+/// Set cell renderer's foreground and background colors according to property warning level.
+inline void cell_renderer_set_warning_fg_bg(Gtk::CellRendererText* crt, const AtaStorageProperty& p)
+{
+	std::string fg, bg;
+	if (app_property_get_row_highlight_colors(p.warning_level, fg, bg)) {
+		// Note: property_cell_background makes horizontal tree lines disappear around it,
+		// but property_background doesn't play nice with sorted column color.
+		crt->property_cell_background() = bg;
+		crt->property_foreground() = fg;
+	} else {
+		// this is needed because cellrenderer is shared in column, so the previous call
+		// may set the color for all subsequent cells.
+		crt->property_cell_background().reset_value();
+		crt->property_foreground().reset_value();
+	}
+}
+
+
+
+void GscInfoWindow::cell_renderer_for_attributes(Gtk::CellRenderer* cr,
+		const Gtk::TreeModel::iterator& iter, [[maybe_unused]] int column_index) const
+{
+	const AtaStorageProperty* prop = (*iter)[this->attribute_table_columns.storage_property];
+	const auto& attribute = prop->get_value<AtaStorageAttribute>();
+
+	if (auto* crt = dynamic_cast<Gtk::CellRendererText*>(cr)) {
+		cell_renderer_set_warning_fg_bg(crt, *prop);
+
+		if (column_index == attribute_table_columns.displayable_name.index()) {
+			crt->property_weight() = Pango::WEIGHT_BOLD;
+		}
+		if (column_index == attribute_table_columns.type.index()) {
+			if (attribute.attr_type == AtaStorageAttribute::AttributeType::prefail) {
+				crt->property_weight() = Pango::WEIGHT_BOLD;
+			} else {  // reset to default value if reloading
+				crt->property_weight().reset_value();
+			}
+		}
+		if (column_index == attribute_table_columns.when_failed.index()) {
+			if (attribute.when_failed != AtaStorageAttribute::FailTime::none) {
+				crt->property_weight() = Pango::WEIGHT_BOLD;
+			} else {  // reset to default value if reloading
+				// Do not use WEIGHT_NORMAL here, it interferes with cell markup
+				crt->property_weight().reset_value();
+			}
+		}
+	}
+}
+
+
+
+void GscInfoWindow::cell_renderer_for_statistics(Gtk::CellRenderer* cr,
+		const Gtk::TreeModel::iterator& iter, [[maybe_unused]] int column_index) const
+{
+	const AtaStorageProperty* prop = (*iter)[this->statistics_table_columns.storage_property];
+	const auto& statistic = prop->get_value<AtaStorageStatistic>();
+
+	if (auto* crt = dynamic_cast<Gtk::CellRendererText*>(cr)) {
+		cell_renderer_set_warning_fg_bg(crt, *prop);
+
+		if (statistic.is_header) {  // subheader
+			crt->property_weight() = Pango::WEIGHT_BOLD;
+		} else {  // reset to default value if reloading
+			crt->property_weight().reset_value();
+		}
+	}
+}
+
+
+
+void GscInfoWindow::cell_renderer_for_self_test_log(Gtk::CellRenderer* cr,
+		const Gtk::TreeModel::iterator& iter, [[maybe_unused]] int column_index) const
+{
+	const AtaStorageProperty* prop = (*iter)[this->self_test_log_table_columns.storage_property];
+
+	if (auto* crt = dynamic_cast<Gtk::CellRendererText*>(cr)) {
+		cell_renderer_set_warning_fg_bg(crt, *prop);
+
+		if (column_index == self_test_log_table_columns.log_entry_index.index()) {
+			crt->property_weight() = Pango::WEIGHT_BOLD;
+		}
+	}
+}
+
+
+
+void GscInfoWindow::cell_renderer_for_error_log(Gtk::CellRenderer* cr,
+		const Gtk::TreeModel::iterator& iter, [[maybe_unused]] int column_index) const
+{
+	const AtaStorageProperty* prop = (*iter)[this->error_log_table_columns.storage_property];
+
+	if (auto* crt = dynamic_cast<Gtk::CellRendererText*>(cr)) {
+		cell_renderer_set_warning_fg_bg(crt, *prop);
+
+		if (column_index == error_log_table_columns.log_entry_index.index()) {
+			crt->property_weight() = Pango::WEIGHT_BOLD;
+		}
+	}
+}
+
+
+
+void GscInfoWindow::cell_renderer_for_capabilities(Gtk::CellRenderer* cr,
+		const Gtk::TreeModel::iterator& iter, [[maybe_unused]] int column_index) const
+{
+	const AtaStorageProperty* prop = (*iter)[this->capabilities_table_columns.storage_property];
+
+	if (auto* crt = dynamic_cast<Gtk::CellRendererText*>(cr)) {
+		cell_renderer_set_warning_fg_bg(crt, *prop);
+
+		if (column_index == capabilities_table_columns.name.index()) {
+			crt->property_weight() = Pango::WEIGHT_BOLD;
+		}
+	}
 }
 
 
@@ -1973,7 +1996,7 @@ void GscInfoWindow::on_test_execute_button_clicked()
 	if (!row)
 		return;
 
-	std::shared_ptr<SelfTest> test_from_combo = row[test_combo_col_self_test];
+	std::shared_ptr<SelfTest> test_from_combo = row[test_combo_columns.self_test];
 	auto test = std::make_shared<SelfTest>(drive, test_from_combo->get_test_type());
 	if (!test)
 		return;

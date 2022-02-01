@@ -948,14 +948,14 @@ void GscMainWindow::update_status_widgets()
 		if (health_prop.generic_name == "overall_health") {
 			health_label_->set_text(health_prop.format_value());
 			std::string fg;
-			if (app_property_get_label_highlight_color(health_prop.warning, fg)) {
+			if (app_property_get_label_highlight_color(health_prop.warning_level, fg)) {
 				health_label_->set_markup("<span color=\"" + fg + "\">"+ Glib::Markup::escape_text(health_label_->get_text()) + "</span>");
 			}
 			// don't set description tooltip - we already have the basic one.
 			// unless it's failing.
 			// app_gtkmm_set_widget_tooltip(*health_label, health_prop.get_description(), true);
 
-			if (health_prop.warning != WarningLevel::none) {
+			if (health_prop.warning_level != WarningLevel::none) {
 				std::string tooltip_str = storage_property_get_warning_reason(health_prop)
 						+ "\n\n" + _("View details for more information.");
 				app_gtkmm_set_widget_tooltip(*health_label_, tooltip_str, true);

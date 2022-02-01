@@ -65,12 +65,12 @@ inline bool app_property_get_label_highlight_color(WarningLevel warning, std::st
 inline std::string storage_property_get_warning_reason(const AtaStorageProperty& p)
 {
 	std::string fg, start = "<b>", stop = "</b>";
-	if (app_property_get_label_highlight_color(p.warning, fg)) {
+	if (app_property_get_label_highlight_color(p.warning_level, fg)) {
 		start += "<span color=\"" + fg + "\">";
 		stop = "</span>" + stop;
 	}
 
-	switch (p.warning) {
+	switch (p.warning_level) {
 		case WarningLevel::none:
 			// nothing
 			break;
