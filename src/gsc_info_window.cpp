@@ -127,10 +127,12 @@ namespace {
 				crt->property_cell_background().reset_value();
 				crt->property_foreground().reset_value();
 			}
-			if (p->value_statistic.is_header) {
-				crt->property_weight() = Pango::WEIGHT_BOLD;
-			} else {
-				crt->property_weight().reset_value();
+			if (p->value_type == StorageProperty::value_type_statistic) {
+				if (p->value_statistic.is_header) {
+					crt->property_weight() = Pango::WEIGHT_BOLD;
+				} else {
+					crt->property_weight().reset_value();
+				}
 			}
 		}
 	}
