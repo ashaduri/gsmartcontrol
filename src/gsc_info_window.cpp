@@ -952,8 +952,8 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<AtaStorageProperty>& pr
 	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.when_failed, *treeview,
 			_("Failed"), _("When failed (that is, the normalized value became equal to or less than threshold)"), true, true);
 
-	model_columns.add(attribute_table_columns.value);
-	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.value, *treeview,
+	model_columns.add(attribute_table_columns.normalized_value);
+	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.normalized_value, *treeview,
 			C_("value", "Normalized"), _("Normalized value (highly vendor-specific; converted from Raw value by the drive's firmware)"), false);
 
 	model_columns.add(attribute_table_columns.worst);
@@ -1029,7 +1029,7 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<AtaStorageProperty>& pr
 		row[attribute_table_columns.id] = attr.id;
 		row[attribute_table_columns.displayable_name] = Glib::Markup::escape_text(p.displayable_name);
 		row[attribute_table_columns.flag_value] = Glib::Markup::escape_text(attr.flag);  // it's a string, not int.
-		row[attribute_table_columns.value] = Glib::Markup::escape_text(attr.value.has_value() ? hz::number_to_string_locale(attr.value.value()) : "-");
+		row[attribute_table_columns.normalized_value] = Glib::Markup::escape_text(attr.value.has_value() ? hz::number_to_string_locale(attr.value.value()) : "-");
 		row[attribute_table_columns.worst] = Glib::Markup::escape_text(attr.worst.has_value() ? hz::number_to_string_locale(attr.worst.value()) : "-");
 		row[attribute_table_columns.threshold] = Glib::Markup::escape_text(attr.threshold.has_value() ? hz::number_to_string_locale(attr.threshold.value()) : "-");
 		row[attribute_table_columns.raw] = Glib::Markup::escape_text(attr.format_raw_value());
@@ -1744,6 +1744,23 @@ void GscInfoWindow::cell_renderer_for_attributes(Gtk::CellRenderer* cr,
 				crt->property_weight().reset_value();
 			}
 		}
+
+		// Monospace, align all numeric values
+		if (column_index == attribute_table_columns.normalized_value.index()
+				|| column_index == attribute_table_columns.worst.index()
+				|| column_index == attribute_table_columns.threshold.index()
+				|| column_index == attribute_table_columns.raw.index() ) {
+			crt->property_family() = "Monospace";
+			crt->property_xalign() = 1.;  // right-align
+		}
+		if (column_index == attribute_table_columns.id.index()
+				|| column_index == attribute_table_columns.flag_value.index()) {
+			crt->property_family() = "Monospace";
+			crt->property_xalign() = .5;  // center-align
+		}
+		if (column_index == attribute_table_columns.type.index()) {
+			crt->property_xalign() = .5;  // center-align
+		}
 	}
 }
 
@@ -1763,6 +1780,17 @@ void GscInfoWindow::cell_renderer_for_statistics(Gtk::CellRenderer* cr,
 		} else {  // reset to default value if reloading
 			crt->property_weight().reset_value();
 		}
+
+		// Monospace, align all numeric values
+		if (column_index == statistics_table_columns.value.index()) {
+			crt->property_family() = "Monospace";
+			crt->property_xalign() = 1.;  // right-align
+		}
+		if (column_index == statistics_table_columns.flags.index()
+				|| column_index == statistics_table_columns.page_offset.index() ) {
+			crt->property_family() = "Monospace";
+			crt->property_xalign() = .5;  // center-align
+		}
 	}
 }
 
@@ -1778,6 +1806,21 @@ void GscInfoWindow::cell_renderer_for_self_test_log(Gtk::CellRenderer* cr,
 
 		if (column_index == self_test_log_table_columns.log_entry_index.index()) {
 			crt->property_weight() = Pango::WEIGHT_BOLD;
+		}
+
+		// Monospace, align all numeric values
+		if (column_index == self_test_log_table_columns.log_entry_index.index()
+				|| column_index == self_test_log_table_columns.percent.index()
+				|| column_index == self_test_log_table_columns.hours.index() ) {
+			crt->property_family() = "Monospace";
+			crt->property_xalign() = 1.;  // right-align
+		}
+		if (column_index == self_test_log_table_columns.log_entry_index.index()) {
+			crt->property_family() = "Monospace";
+			crt->property_xalign() = .5;  // center-align
+		}
+		if (column_index == self_test_log_table_columns.lba.index()) {
+			crt->property_family() = "Monospace";
 		}
 	}
 }
@@ -1795,6 +1838,16 @@ void GscInfoWindow::cell_renderer_for_error_log(Gtk::CellRenderer* cr,
 		if (column_index == error_log_table_columns.log_entry_index.index()) {
 			crt->property_weight() = Pango::WEIGHT_BOLD;
 		}
+
+		// Monospace, align all numeric values
+		if (column_index == error_log_table_columns.log_entry_index.index()) {
+			crt->property_family() = "Monospace";
+			crt->property_xalign() = .5;  // center-align
+		}
+		if (column_index == error_log_table_columns.hours.index()) {
+			crt->property_family() = "Monospace";
+			crt->property_xalign() = 1.;  // right-align
+		}
 	}
 }
 
@@ -1810,6 +1863,13 @@ void GscInfoWindow::cell_renderer_for_capabilities(Gtk::CellRenderer* cr,
 
 		if (column_index == capabilities_table_columns.name.index()) {
 			crt->property_weight() = Pango::WEIGHT_BOLD;
+		}
+
+		// Monospace, align all numeric values
+		if (column_index == capabilities_table_columns.entry_index.index()
+				|| column_index == capabilities_table_columns.flag_value.index() ) {
+			crt->property_family() = "Monospace";
+			crt->property_xalign() = .5;  // center-align
 		}
 	}
 }

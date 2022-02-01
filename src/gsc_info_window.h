@@ -213,7 +213,7 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 			Gtk::TreeModelColumn<int32_t> id;
 			Gtk::TreeModelColumn<Glib::ustring> displayable_name;
 			Gtk::TreeModelColumn<Glib::ustring> when_failed;
-			Gtk::TreeModelColumn<std::string> value;
+			Gtk::TreeModelColumn<std::string> normalized_value;
 			Gtk::TreeModelColumn<std::string> worst;
 			Gtk::TreeModelColumn<std::string> threshold;
 			Gtk::TreeModelColumn<std::string> raw;
