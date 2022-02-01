@@ -1128,8 +1128,12 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 					if (buffer) {
 						buffer->set_text("\nComplete error log:\n\n" + iter->value_string);
 
-						// set marks so we can scroll to them
+						// Make the text monospace (the 3.16+ glade property does not work anymore for some reason).
+						Glib::RefPtr<Gtk::TextTag> tag = buffer->create_tag();
+						tag->property_family() = "Monospace";
+						buffer->apply_tag(tag, buffer->begin(), buffer->end());
 
+						// Set marks so we can scroll to them
 						if (!error_log_row_selected_conn.connected()) {  // avoid double-connect
 							error_log_row_selected_conn = treeview->get_selection()->signal_changed().connect(
 								sigc::bind(sigc::bind(sigc::ptr_fun(on_error_log_treeview_row_selected), col_mark_name), this));
@@ -1240,6 +1244,11 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			if (iter->generic_name == "scttemp_log") {
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 				buffer->set_text("\nComplete SCT temperature log:\n\n" + iter->value_string);
+
+				// Make the text monospace (the 3.16+ glade property does not work anymore for some reason).
+				Glib::RefPtr<Gtk::TextTag> tag = buffer->create_tag();
+				tag->property_family() = "Monospace";
+				buffer->apply_tag(tag, buffer->begin(), buffer->end());
 			}
 		}
 
@@ -1385,6 +1394,11 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			if (iter->generic_name == "scterc_log") {
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 				buffer->set_text("\nComplete SCT Error Recovery Control settings:\n\n" + iter->value_string);
+
+				// Make the text monospace (the 3.16+ glade property does not work anymore for some reason).
+				Glib::RefPtr<Gtk::TextTag> tag = buffer->create_tag();
+				tag->property_family() = "Monospace";
+				buffer->apply_tag(tag, buffer->begin(), buffer->end());
 			}
 		}
 
@@ -1418,6 +1432,11 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			if (iter->generic_name == "selective_selftest_log") {
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 				buffer->set_text("\nComplete selective self-test log:\n\n" + iter->value_string);
+
+				// Make the text monospace (the 3.16+ glade property does not work anymore for some reason).
+				Glib::RefPtr<Gtk::TextTag> tag = buffer->create_tag();
+				tag->property_family() = "Monospace";
+				buffer->apply_tag(tag, buffer->begin(), buffer->end());
 			}
 		}
 
@@ -1451,6 +1470,11 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			if (iter->generic_name == "sataphy_log") {
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 				buffer->set_text("\nComplete phy log:\n\n" + iter->value_string);
+
+				// Make the text monospace (the 3.16+ glade property does not work anymore for some reason).
+				Glib::RefPtr<Gtk::TextTag> tag = buffer->create_tag();
+				tag->property_family() = "Monospace";
+				buffer->apply_tag(tag, buffer->begin(), buffer->end());
 			}
 		}
 
@@ -1484,6 +1508,11 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			if (iter->generic_name == "directory_log") {
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 				buffer->set_text("\nComplete directory log:\n\n" + iter->value_string);
+
+				// Make the text monospace (the 3.16+ glade property does not work anymore for some reason).
+				Glib::RefPtr<Gtk::TextTag> tag = buffer->create_tag();
+				tag->property_family() = "Monospace";
+				buffer->apply_tag(tag, buffer->begin(), buffer->end());
 			}
 		}
 
