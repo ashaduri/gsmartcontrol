@@ -25,7 +25,7 @@ behind such controllers can be manually added to GSmartControl using
 "Add Device..." functionality or --add-device command-line option.
 See https://www.smartmontools.org/wiki/Supported_RAID-Controllers .
 
-https://gsmartcontrol.sourceforge.io/
+https://gsmartcontrol.shaduri.dev
 
 
 

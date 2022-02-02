@@ -1,11 +1,11 @@
 This package was debianized by Alexander Shaduri <ashaduri 'at' gmail.com> on
 Sat, 15 Nov 2008 00:12:04 +0400.
 
-It was downloaded from <https://gsmartcontrol.sourceforge.io/>
+It was downloaded from <https://gsmartcontrol.shaduri.dev>
 
 Copyright:
 
-    Copyright (C) 2008 - 2017  Alexander Shaduri <ashaduri 'at' gmail.com>
+    Copyright (C) 2008 - 2022 Alexander Shaduri <ashaduri 'at' gmail.com>
 
 License:
 
@@ -27,6 +27,6 @@ On Debian systems, the complete text of the GNU General
 Public Licenses can be found in `/usr/share/common-licenses/GPL-2' and
 `/usr/share/common-licenses/GPL-3'.
 
-The Debian packaging is (C) 2008 - 2017  Alexander Shaduri <ashaduri 'at' gmail.com> and
+The Debian packaging is (C) 2008 - 2022 Alexander Shaduri <ashaduri 'at' gmail.com> and
 is licensed under the GPLv2 and GPLv3, see above.
 

@@ -40,7 +40,7 @@ GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, const app_ui_res_ref_t& 
 	set_version(VERSION);
 
 	// set these properties here (after setting hooks) to make the links work.
-	set_website("https://gsmartcontrol.sourceforge.io/");
+	set_website("https://gsmartcontrol.shaduri.dev");
 
 	set_license(LicenseTextResData().get_string());
 
@@ -50,7 +50,7 @@ GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, const app_ui_res_ref_t& 
 // #endif
 
 	// spammers go away
-	set_copyright("Copyright (C) 2008 - 2017  Alexander Shaduri " "<ashaduri" "" "@" "" "" "gmail.com>");
+	set_copyright("Copyright (C) 2008 - 2022 Alexander Shaduri " "<ashaduri" "" "@" "" "" "gmail.com>");
 
 
 	std::string authors_str = AuthorsTextResData().get_string();

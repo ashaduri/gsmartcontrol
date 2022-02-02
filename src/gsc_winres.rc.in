@@ -14,7 +14,7 @@ BEGIN
             VALUE "FileDescription", "GSmartControl - Hard disk drive and SSD health inspection tool"
             VALUE "FileVersion", "@VERSION@"
             VALUE "InternalName", "gsmartcontrol.exe"
-            VALUE "LegalCopyright", "Copyright (C) 2008 - 2017  Alexander Shaduri"
+            VALUE "LegalCopyright", "Copyright (C) 2008 - 2022  Alexander Shaduri"
             VALUE "OriginalFilename", "gsmartcontrol.exe"
             VALUE "ProductName", "GSmartControl"
             VALUE "ProductVersion", "@VERSION@"
