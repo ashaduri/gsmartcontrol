@@ -9,10 +9,12 @@
 #define CATCH_STREAM_HPP_INCLUDED
 
 #include <catch2/internal/catch_noncopyable.hpp>
+#include <catch2/internal/catch_unique_ptr.hpp>
 
 #include <iosfwd>
 #include <cstddef>
 #include <ostream>
+#include <string>
 
 namespace Catch {
 
@@ -20,14 +22,12 @@ namespace Catch {
     std::ostream& cerr();
     std::ostream& clog();
 
-    class StringRef;
-
     struct IStream {
-        virtual ~IStream();
+        virtual ~IStream(); // = default
         virtual std::ostream& stream() const = 0;
     };
 
-    auto makeStream( StringRef const &filename ) -> IStream const*;
+    auto makeStream( std::string const& filename ) -> Detail::unique_ptr<IStream const>;
 
     class ReusableStringStream : Detail::NonCopyable {
         std::size_t m_index;

@@ -168,7 +168,7 @@ namespace Catch {
 
                 {
                     Colour colourGuard(colour);
-                    stream << " with " << pluralise(N, "message") << ':';
+                    stream << " with " << pluralise(N, "message"_sr) << ':';
                 }
 
                 for (; itMessage != itEnd; ) {
@@ -194,29 +194,26 @@ namespace Catch {
 
     } // End anonymous namespace
 
-    TAPReporter::~TAPReporter() {}
-
-    void TAPReporter::noMatchingTestCases(std::string const& spec) {
-        stream << "# No test cases matched '" << spec << "'\n";
+    void TAPReporter::noMatchingTestCases( StringRef unmatchedSpec ) {
+        m_stream << "# No test cases matched '" << unmatchedSpec << "'\n";
     }
 
-    bool TAPReporter::assertionEnded(AssertionStats const& _assertionStats) {
+    void TAPReporter::assertionEnded(AssertionStats const& _assertionStats) {
         ++counter;
 
-        stream << "# " << currentTestCaseInfo->name << '\n';
-        TapAssertionPrinter printer(stream, _assertionStats, counter);
+        m_stream << "# " << currentTestCaseInfo->name << '\n';
+        TapAssertionPrinter printer(m_stream, _assertionStats, counter);
         printer.print();
 
-        stream << '\n' << std::flush;
-        return true;
+        m_stream << '\n' << std::flush;
     }
 
     void TAPReporter::testRunEnded(TestRunStats const& _testRunStats) {
-        stream << "1.." << _testRunStats.totals.assertions.total();
+        m_stream << "1.." << _testRunStats.totals.assertions.total();
         if (_testRunStats.totals.testCases.total() == 0) {
-            stream << " # Skipped: No tests ran.";
+            m_stream << " # Skipped: No tests ran.";
         }
-        stream << "\n\n" << std::flush;
+        m_stream << "\n\n" << std::flush;
         StreamingReporterBase::testRunEnded(_testRunStats);
     }
 

@@ -10,6 +10,7 @@
 #include <catch2/catch_test_spec.hpp>
 #include <catch2/interfaces/catch_interfaces_testcase.hpp>
 #include <catch2/internal/catch_string_manip.hpp>
+#include <catch2/internal/catch_case_insensitive_comparisons.hpp>
 
 #include <cassert>
 #include <cctype>
@@ -101,16 +102,25 @@ namespace Catch {
             const size_t extras = 3 + 3;
             return extractFilenamePart(filepath).size() + extras;
         }
+    } // end unnamed namespace
+
+    bool operator<(  Tag const& lhs, Tag const& rhs ) {
+        Detail::CaseInsensitiveLess cmp;
+        return cmp( lhs.original, rhs.original );
+    }
+    bool operator==( Tag const& lhs, Tag const& rhs ) {
+        Detail::CaseInsensitiveEqualTo cmp;
+        return cmp( lhs.original, rhs.original );
     }
 
     Detail::unique_ptr<TestCaseInfo>
-        makeTestCaseInfo(std::string const& _className,
+        makeTestCaseInfo(StringRef _className,
                          NameAndTags const& nameAndTags,
                          SourceLineInfo const& _lineInfo ) {
-        return Detail::unique_ptr<TestCaseInfo>(new TestCaseInfo(_className, nameAndTags, _lineInfo));
+        return Detail::make_unique<TestCaseInfo>(_className, nameAndTags, _lineInfo);
     }
 
-    TestCaseInfo::TestCaseInfo(std::string const& _className,
+    TestCaseInfo::TestCaseInfo(StringRef _className,
                                NameAndTags const& _nameAndTags,
                                SourceLineInfo const& _lineInfo):
         name( _nameAndTags.name.empty() ? makeDefaultName() : _nameAndTags.name ),
@@ -122,7 +132,6 @@ namespace Catch {
         // (including optional hidden tag and filename tag)
         auto requiredSize = originalTags.size() + sizeOfExtraTags(_lineInfo.file);
         backingTags.reserve(requiredSize);
-        backingLCaseTags.reserve(requiredSize);
 
         // We cannot copy the tags directly, as we need to normalize
         // some tags, so that [.foo] is copied as [.][foo].
@@ -146,6 +155,7 @@ namespace Catch {
                 // it over to backing storage and actually reference the
                 // backing storage in the saved tags
                 StringRef tagStr = originalTags.substr(tagStart+1, tagEnd - tagStart - 1);
+                CATCH_ENFORCE(!tagStr.empty(), "Empty tags are not allowed");
                 enforceNotReservedTag(tagStr, lineInfo);
                 properties |= parseSpecialTag(tagStr);
                 // When copying a tag to the backing storage, we need to
@@ -167,9 +177,8 @@ namespace Catch {
         }
 
         // Sort and prepare tags
-        toLowerInPlace(backingLCaseTags);
-        std::sort(begin(tags), end(tags), [](Tag lhs, Tag rhs) { return lhs.lowerCased < rhs.lowerCased; });
-        tags.erase(std::unique(begin(tags), end(tags), [](Tag lhs, Tag rhs) {return lhs.lowerCased == rhs.lowerCased; }),
+        std::sort(begin(tags), end(tags));
+        tags.erase(std::unique(begin(tags), end(tags)),
                    end(tags));
     }
 
@@ -190,9 +199,6 @@ namespace Catch {
         std::string combined("#");
         combined += extractFilenamePart(lineInfo.file);
         internalAppendTag(combined);
-        // TBD: Running this over all tags again is inefficient, but
-        //      simple enough. In practice, the overhead is small enough.
-        toLowerInPlace(backingLCaseTags);
     }
 
     std::string TestCaseInfo::tagsAsString() const {
@@ -218,24 +224,22 @@ namespace Catch {
         backingTags += tagStr;
         const auto backingEnd = backingTags.size();
         backingTags += ']';
-        backingLCaseTags += '[';
-        // We append the tag to the lower-case backing storage as-is,
-        // because we will perform the lower casing later, in bulk
-        backingLCaseTags += tagStr;
-        backingLCaseTags += ']';
-        tags.emplace_back(StringRef(backingTags.c_str() + backingStart, backingEnd - backingStart),
-                          StringRef(backingLCaseTags.c_str() + backingStart, backingEnd - backingStart));
+        tags.emplace_back(StringRef(backingTags.c_str() + backingStart, backingEnd - backingStart));
     }
 
-
-    bool TestCaseHandle::operator == ( TestCaseHandle const& rhs ) const {
-        return m_invoker == rhs.m_invoker
-            && m_info->name == rhs.m_info->name
-            && m_info->className == rhs.m_info->className;
-    }
-
-    bool TestCaseHandle::operator < ( TestCaseHandle const& rhs ) const {
-        return m_info->name < rhs.m_info->name;
+    bool operator<( TestCaseInfo const& lhs, TestCaseInfo const& rhs ) {
+        // We want to avoid redoing the string comparisons multiple times,
+        // so we store the result of a three-way comparison before using
+        // it in the actual comparison logic.
+        const auto cmpName = lhs.name.compare( rhs.name );
+        if ( cmpName != 0 ) {
+            return cmpName < 0;
+        }
+        const auto cmpClassName = lhs.className.compare( rhs.className );
+        if ( cmpClassName != 0 ) {
+            return cmpClassName < 0;
+        }
+        return lhs.tags < rhs.tags;
     }
 
     TestCaseInfo const& TestCaseHandle::getTestCaseInfo() const {

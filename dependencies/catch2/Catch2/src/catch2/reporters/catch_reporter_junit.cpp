@@ -17,6 +17,7 @@
 #include <cassert>
 #include <ctime>
 #include <algorithm>
+#include <iomanip>
 
 namespace Catch {
 
@@ -26,7 +27,7 @@ namespace Catch {
             std::time(&rawtime);
 
             std::tm timeInfo = {};
-#if defined _MSC_VER || defined __MINGW32__
+#if defined (_MSC_VER) || defined (__MINGW32__)
             gmtime_s(&timeInfo, &rawtime);
 #else
             gmtime_r(&rawtime, &timeInfo);
@@ -38,7 +39,7 @@ namespace Catch {
 
             std::strftime(timeStamp, timeStampSize, fmt, &timeInfo);
 
-            return std::string(timeStamp);
+            return std::string(timeStamp, timeStampSize - 1);
         }
 
         std::string fileNameTag(std::vector<Tag> const& tags) {
@@ -54,45 +55,49 @@ namespace Catch {
             }
             return std::string();
         }
+
+        // Formats the duration in seconds to 3 decimal places.
+        // This is done because some genius defined Maven Surefire schema
+        // in a way that only accepts 3 decimal places, and tools like
+        // Jenkins use that schema for validation JUnit reporter output.
+        std::string formatDuration( double seconds ) {
+            ReusableStringStream rss;
+            rss << std::fixed << std::setprecision( 3 ) << seconds;
+            return rss.str();
+        }
+
     } // anonymous namespace
 
     JunitReporter::JunitReporter( ReporterConfig const& _config )
         :   CumulativeReporterBase( _config ),
-            xml( _config.stream() )
+            xml( m_stream )
         {
             m_preferences.shouldRedirectStdOut = true;
             m_preferences.shouldReportAllAssertions = true;
+            m_shouldStoreSuccesfulAssertions = false;
         }
-
-    JunitReporter::~JunitReporter() {}
 
     std::string JunitReporter::getDescription() {
         return "Reports test results in an XML format that looks like Ant's junitreport target";
     }
 
-    void JunitReporter::noMatchingTestCases( std::string const& /*spec*/ ) {}
-
     void JunitReporter::testRunStarting( TestRunInfo const& runInfo )  {
         CumulativeReporterBase::testRunStarting( runInfo );
         xml.startElement( "testsuites" );
-    }
-
-    void JunitReporter::testGroupStarting( GroupInfo const& groupInfo ) {
         suiteTimer.start();
         stdOutForSuite.clear();
         stdErrForSuite.clear();
         unexpectedExceptions = 0;
-        CumulativeReporterBase::testGroupStarting( groupInfo );
     }
 
     void JunitReporter::testCaseStarting( TestCaseInfo const& testCaseInfo ) {
         m_okToFail = testCaseInfo.okToFail();
     }
 
-    bool JunitReporter::assertionEnded( AssertionStats const& assertionStats ) {
+    void JunitReporter::assertionEnded( AssertionStats const& assertionStats ) {
         if( assertionStats.assertionResult.getResultType() == ResultWas::ThrewException && !m_okToFail )
             unexpectedExceptions++;
-        return CumulativeReporterBase::assertionEnded( assertionStats );
+        CumulativeReporterBase::assertionEnded( assertionStats );
     }
 
     void JunitReporter::testCaseEnded( TestCaseStats const& testCaseStats ) {
@@ -101,48 +106,42 @@ namespace Catch {
         CumulativeReporterBase::testCaseEnded( testCaseStats );
     }
 
-    void JunitReporter::testGroupEnded( TestGroupStats const& testGroupStats ) {
-        double suiteTime = suiteTimer.getElapsedSeconds();
-        CumulativeReporterBase::testGroupEnded( testGroupStats );
-        writeGroup( *m_testGroups.back(), suiteTime );
-    }
-
     void JunitReporter::testRunEndedCumulative() {
+        const auto suiteTime = suiteTimer.getElapsedSeconds();
+        writeRun( *m_testRun, suiteTime );
         xml.endElement();
     }
 
-    void JunitReporter::writeGroup( TestGroupNode const& groupNode, double suiteTime ) {
+    void JunitReporter::writeRun( TestRunNode const& testRunNode, double suiteTime ) {
         XmlWriter::ScopedElement e = xml.scopedElement( "testsuite" );
 
-        TestGroupStats const& stats = groupNode.value;
-        xml.writeAttribute( "name", stats.groupInfo.name );
-        xml.writeAttribute( "errors", unexpectedExceptions );
-        xml.writeAttribute( "failures", stats.totals.assertions.failed-unexpectedExceptions );
-        xml.writeAttribute( "tests", stats.totals.assertions.total() );
-        xml.writeAttribute( "hostname", "tbd" ); // !TBD
+        TestRunStats const& stats = testRunNode.value;
+        xml.writeAttribute( "name"_sr, stats.runInfo.name );
+        xml.writeAttribute( "errors"_sr, unexpectedExceptions );
+        xml.writeAttribute( "failures"_sr, stats.totals.assertions.failed-unexpectedExceptions );
+        xml.writeAttribute( "tests"_sr, stats.totals.assertions.total() );
+        xml.writeAttribute( "hostname"_sr, "tbd"_sr ); // !TBD
         if( m_config->showDurations() == ShowDurations::Never )
-            xml.writeAttribute( "time", "" );
+            xml.writeAttribute( "time"_sr, ""_sr );
         else
-            xml.writeAttribute( "time", suiteTime );
-        xml.writeAttribute( "timestamp", getCurrentTimestamp() );
+            xml.writeAttribute( "time"_sr, formatDuration( suiteTime ) );
+        xml.writeAttribute( "timestamp"_sr, getCurrentTimestamp() );
 
-        // Write properties if there are any
-        if (m_config->hasTestFilters() || m_config->rngSeed() != 0) {
+        // Write properties
+        {
             auto properties = xml.scopedElement("properties");
+            xml.scopedElement("property")
+                .writeAttribute("name"_sr, "random-seed"_sr)
+                .writeAttribute("value"_sr, m_config->rngSeed());
             if (m_config->hasTestFilters()) {
                 xml.scopedElement("property")
-                    .writeAttribute("name", "filters")
-                    .writeAttribute("value", serializeFilters(m_config->getTestsOrTags()));
-            }
-            if (m_config->rngSeed() != 0) {
-                xml.scopedElement("property")
-                    .writeAttribute("name", "random-seed")
-                    .writeAttribute("value", m_config->rngSeed());
+                    .writeAttribute("name"_sr, "filters"_sr)
+                    .writeAttribute("value"_sr, serializeFilters(m_config->getTestsOrTags()));
             }
         }
 
         // Write test cases
-        for( auto const& child : groupNode.children )
+        for( auto const& child : testRunNode.children )
             writeTestCase( *child );
 
         xml.scopedElement( "system-out" ).writeText( trim( stdOutForSuite ), XmlFormatting::Newline );
@@ -157,47 +156,56 @@ namespace Catch {
         assert( testCaseNode.children.size() == 1 );
         SectionNode const& rootSection = *testCaseNode.children.front();
 
-        std::string className = stats.testInfo->className;
+        std::string className =
+            static_cast<std::string>( stats.testInfo->className );
 
         if( className.empty() ) {
             className = fileNameTag(stats.testInfo->tags);
-            if ( className.empty() )
+            if ( className.empty() ) {
                 className = "global";
+            }
         }
 
         if ( !m_config->name().empty() )
-            className = m_config->name() + "." + className;
+            className = static_cast<std::string>(m_config->name()) + '.' + className;
 
-        writeSection( className, "", rootSection );
+        writeSection( className, "", rootSection, stats.testInfo->okToFail() );
     }
 
-    void JunitReporter::writeSection(  std::string const& className,
-                        std::string const& rootName,
-                        SectionNode const& sectionNode ) {
+    void JunitReporter::writeSection( std::string const& className,
+                                      std::string const& rootName,
+                                      SectionNode const& sectionNode,
+                                      bool testOkToFail) {
         std::string name = trim( sectionNode.stats.sectionInfo.name );
         if( !rootName.empty() )
             name = rootName + '/' + name;
 
-        if( !sectionNode.assertions.empty() ||
-            !sectionNode.stdOut.empty() ||
-            !sectionNode.stdErr.empty() ) {
+        if( sectionNode.hasAnyAssertions()
+           || !sectionNode.stdOut.empty()
+           || !sectionNode.stdErr.empty() ) {
             XmlWriter::ScopedElement e = xml.scopedElement( "testcase" );
             if( className.empty() ) {
-                xml.writeAttribute( "classname", name );
-                xml.writeAttribute( "name", "root" );
+                xml.writeAttribute( "classname"_sr, name );
+                xml.writeAttribute( "name"_sr, "root"_sr );
             }
             else {
-                xml.writeAttribute( "classname", className );
-                xml.writeAttribute( "name", name );
+                xml.writeAttribute( "classname"_sr, className );
+                xml.writeAttribute( "name"_sr, name );
             }
-            xml.writeAttribute( "time", ::Catch::Detail::stringify( sectionNode.stats.durationInSeconds ) );
+            xml.writeAttribute( "time"_sr, formatDuration( sectionNode.stats.durationInSeconds ) );
             // This is not ideal, but it should be enough to mimic gtest's
             // junit output.
             // Ideally the JUnit reporter would also handle `skipTest`
             // events and write those out appropriately.
-            xml.writeAttribute( "status", "run" );
+            xml.writeAttribute( "status"_sr, "run"_sr );
+
+            if (sectionNode.stats.assertions.failedButOk) {
+                xml.scopedElement("skipped")
+                    .writeAttribute("message", "TEST_CASE tagged with !mayfail");
+            }
 
             writeAssertions( sectionNode );
+
 
             if( !sectionNode.stdOut.empty() )
                 xml.scopedElement( "system-out" ).writeText( trim( sectionNode.stdOut ), XmlFormatting::Newline );
@@ -206,14 +214,17 @@ namespace Catch {
         }
         for( auto const& childNode : sectionNode.childSections )
             if( className.empty() )
-                writeSection( name, "", *childNode );
+                writeSection( name, "", *childNode, testOkToFail );
             else
-                writeSection( className, name, *childNode );
+                writeSection( className, name, *childNode, testOkToFail );
     }
 
     void JunitReporter::writeAssertions( SectionNode const& sectionNode ) {
-        for( auto const& assertion : sectionNode.assertions )
-            writeAssertion( assertion );
+        for (auto const& assertionOrBenchmark : sectionNode.assertionsAndBenchmarks) {
+            if (assertionOrBenchmark.isAssertion()) {
+                writeAssertion(assertionOrBenchmark.asAssertion());
+            }
+        }
     }
 
     void JunitReporter::writeAssertion( AssertionStats const& stats ) {
@@ -244,8 +255,8 @@ namespace Catch {
 
             XmlWriter::ScopedElement e = xml.scopedElement( elementName );
 
-            xml.writeAttribute( "message", result.getExpression() );
-            xml.writeAttribute( "type", result.getTestMacroName() );
+            xml.writeAttribute( "message"_sr, result.getExpression() );
+            xml.writeAttribute( "type"_sr, result.getTestMacroName() );
 
             ReusableStringStream rss;
             if (stats.totals.assertions.total() > 0) {

@@ -10,8 +10,9 @@
 #ifndef CATCH_CONSTRUCTOR_HPP_INCLUDED
 #define CATCH_CONSTRUCTOR_HPP_INCLUDED
 
+#include <catch2/internal/catch_move_and_forward.hpp>
+
 #include <type_traits>
-#include <utility>
 
 namespace Catch {
     namespace Benchmark {
@@ -19,7 +20,7 @@ namespace Catch {
             template <typename T, bool Destruct>
             struct ObjectStorage
             {
-                using TStorage = typename std::aligned_storage<sizeof(T), std::alignment_of<T>::value>::type;
+                using TStorage = std::aligned_storage_t<sizeof(T), std::alignment_of<T>::value>;
 
                 ObjectStorage() : data() {}
 
@@ -30,7 +31,7 @@ namespace Catch {
 
                 ObjectStorage(ObjectStorage&& other)
                 {
-                    new(&data) T(std::move(other.stored_object()));
+                    new(&data) T(CATCH_MOVE(other.stored_object()));
                 }
 
                 ~ObjectStorage() { destruct_on_exit<T>(); }
@@ -38,11 +39,11 @@ namespace Catch {
                 template <typename... Args>
                 void construct(Args&&... args)
                 {
-                    new (&data) T(std::forward<Args>(args)...);
+                    new (&data) T(CATCH_FORWARD(args)...);
                 }
 
                 template <bool AllowManualDestruction = !Destruct>
-                typename std::enable_if<AllowManualDestruction>::type destruct()
+                std::enable_if_t<AllowManualDestruction> destruct()
                 {
                     stored_object().~T();
                 }
@@ -50,10 +51,10 @@ namespace Catch {
             private:
                 // If this is a constructor benchmark, destruct the underlying object
                 template <typename U>
-                void destruct_on_exit(typename std::enable_if<Destruct, U>::type* = 0) { destruct<true>(); }
+                void destruct_on_exit(std::enable_if_t<Destruct, U>* = 0) { destruct<true>(); }
                 // Otherwise, don't
                 template <typename U>
-                void destruct_on_exit(typename std::enable_if<!Destruct, U>::type* = 0) { }
+                void destruct_on_exit(std::enable_if_t<!Destruct, U>* = 0) { }
 
                 T& stored_object() {
                     return *static_cast<T*>(static_cast<void*>(&data));

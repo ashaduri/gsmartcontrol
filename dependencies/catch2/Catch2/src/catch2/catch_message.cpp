@@ -9,18 +9,12 @@
 #include <catch2/interfaces/catch_interfaces_capture.hpp>
 #include <catch2/internal/catch_uncaught_exceptions.hpp>
 #include <catch2/internal/catch_enforce.hpp>
+#include <catch2/internal/catch_move_and_forward.hpp>
 
 #include <cassert>
 #include <stack>
 
 namespace Catch {
-
-    ////////////////////////////////////////////////////////////////////////////
-
-    Catch::MessageBuilder::MessageBuilder( StringRef const& macroName,
-                                           SourceLineInfo const& lineInfo,
-                                           ResultWas::OfType type )
-        :m_info(macroName, lineInfo, type) {}
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -32,7 +26,7 @@ namespace Catch {
     }
 
     ScopedMessage::ScopedMessage( ScopedMessage&& old ) noexcept:
-        m_info( std::move( old.m_info ) ) {
+        m_info( CATCH_MOVE( old.m_info ) ) {
         old.m_moved = true;
     }
 

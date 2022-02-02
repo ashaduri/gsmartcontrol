@@ -64,8 +64,10 @@ namespace Detail {
 
         struct OutputDebugWriter {
 
-            void operator()( std::string const&str ) {
-                writeToDebugConsole( str );
+            void operator()( std::string const& str ) {
+                if ( !str.empty() ) {
+                    writeToDebugConsole( str );
+                }
             }
         };
 
@@ -74,9 +76,9 @@ namespace Detail {
         class FileStream : public IStream {
             mutable std::ofstream m_ofs;
         public:
-            FileStream( StringRef filename ) {
+            FileStream( std::string const& filename ) {
                 m_ofs.open( filename.c_str() );
-                CATCH_ENFORCE( !m_ofs.fail(), "Unable to open file: '" << filename << "'" );
+                CATCH_ENFORCE( !m_ofs.fail(), "Unable to open file: '" << filename << '\'' );
             }
             ~FileStream() override = default;
         public: // IStream
@@ -121,17 +123,18 @@ namespace Detail {
 
     ///////////////////////////////////////////////////////////////////////////
 
-    auto makeStream( StringRef const &filename ) -> IStream const* {
-        if( filename.empty() )
-            return new Detail::CoutStream();
+    auto makeStream( std::string const& filename ) -> Detail::unique_ptr<IStream const> {
+        if ( filename.empty() || filename == "-" ) {
+            return Detail::make_unique<Detail::CoutStream>();
+        }
         else if( filename[0] == '%' ) {
             if( filename == "%debug" )
-                return new Detail::DebugOutStream();
+                return Detail::make_unique<Detail::DebugOutStream>();
             else
-                CATCH_ERROR( "Unrecognised stream: '" << filename << "'" );
+                CATCH_ERROR( "Unrecognised stream: '" << filename << '\'' );
         }
         else
-            return new Detail::FileStream( filename );
+            return Detail::make_unique<Detail::FileStream>( filename );
     }
 
 
@@ -143,7 +146,7 @@ namespace Detail {
 
         auto add() -> std::size_t {
             if( m_unused.empty() ) {
-                m_streams.push_back( Detail::unique_ptr<std::ostringstream>( new std::ostringstream ) );
+                m_streams.push_back( Detail::make_unique<std::ostringstream>() );
                 return m_streams.size()-1;
             }
             else {

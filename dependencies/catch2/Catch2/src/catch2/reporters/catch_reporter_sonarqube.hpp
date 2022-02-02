@@ -14,33 +14,31 @@
 
 namespace Catch {
 
-    struct SonarQubeReporter : CumulativeReporterBase {
+    struct SonarQubeReporter final : CumulativeReporterBase {
 
         SonarQubeReporter(ReporterConfig const& config)
         : CumulativeReporterBase(config)
-        , xml(config.stream()) {
+        , xml(m_stream) {
             m_preferences.shouldRedirectStdOut = true;
             m_preferences.shouldReportAllAssertions = true;
+            m_shouldStoreSuccesfulAssertions = false;
         }
 
-        ~SonarQubeReporter() override;
+        ~SonarQubeReporter() override = default;
 
         static std::string getDescription() {
             using namespace std::string_literals;
             return "Reports test results in the Generic Test Data SonarQube XML format"s;
         }
 
-        void noMatchingTestCases(std::string const& /*spec*/) override {}
-
-        void testRunStarting(TestRunInfo const& testRunInfo) override;
-
-        void testGroupEnded(TestGroupStats const& testGroupStats) override;
+        void testRunStarting( TestRunInfo const& testRunInfo ) override;
 
         void testRunEndedCumulative() override {
+            writeRun( *m_testRun );
             xml.endElement();
         }
 
-        void writeGroup(TestGroupNode const& groupNode);
+        void writeRun( TestRunNode const& groupNode );
 
         void writeTestFile(std::string const& filename, std::vector<TestCaseNode const*> const& testCaseNodes);
 

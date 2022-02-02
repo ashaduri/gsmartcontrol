@@ -49,8 +49,8 @@ namespace Catch {
         }
 
     public: // operators
-        auto operator == ( StringRef const& other ) const noexcept -> bool;
-        auto operator != (StringRef const& other) const noexcept -> bool {
+        auto operator == ( StringRef other ) const noexcept -> bool;
+        auto operator != (StringRef other) const noexcept -> bool {
             return !(*this == other);
         }
 
@@ -59,7 +59,7 @@ namespace Catch {
             return m_start[index];
         }
 
-        bool operator<(StringRef const& rhs) const noexcept;
+        bool operator<(StringRef rhs) const noexcept;
 
     public: // named queries
         constexpr auto empty() const noexcept -> bool {
@@ -69,11 +69,6 @@ namespace Catch {
             return m_size;
         }
 
-        // Returns the current start pointer. If the StringRef is not
-        // null-terminated, throws std::domain_exception
-        auto c_str() const -> char const*;
-
-    public: // substrings and searches
         // Returns a substring of [start, start + length).
         // If start + length > size(), then the substring is [start, start + size()).
         // If start > size(), then the substring is empty.
@@ -91,27 +86,30 @@ namespace Catch {
             return m_start;
         }
 
-        constexpr auto isNullTerminated() const noexcept -> bool {
-            return m_start[m_size] == '\0';
-        }
-
-    public: // iterators
         constexpr const_iterator begin() const { return m_start; }
         constexpr const_iterator end() const { return m_start + m_size; }
 
 
-        friend std::string& operator += (std::string& lhs, StringRef const& sr);
-        friend std::ostream& operator << (std::ostream& os, StringRef const& sr);
+        friend std::string& operator += (std::string& lhs, StringRef sr);
+        friend std::ostream& operator << (std::ostream& os, StringRef sr);
         friend std::string operator+(StringRef lhs, StringRef rhs);
+
+        /**
+         * Provides a three-way comparison with rhs
+         *
+         * Returns negative number if lhs < rhs, 0 if lhs == rhs, and a positive
+         * number if lhs > rhs
+         */
+        int compare( StringRef rhs ) const;
     };
 
 
-    constexpr auto operator "" _sr( char const* rawChars, std::size_t size ) noexcept -> StringRef {
+    constexpr auto operator ""_sr( char const* rawChars, std::size_t size ) noexcept -> StringRef {
         return StringRef( rawChars, size );
     }
 } // namespace Catch
 
-constexpr auto operator "" _catch_sr( char const* rawChars, std::size_t size ) noexcept -> Catch::StringRef {
+constexpr auto operator ""_catch_sr( char const* rawChars, std::size_t size ) noexcept -> Catch::StringRef {
     return Catch::StringRef( rawChars, size );
 }
 

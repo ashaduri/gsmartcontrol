@@ -9,10 +9,10 @@
 #define CATCH_MATCHERS_CONTAINS_HPP_INCLUDED
 
 #include <catch2/matchers/catch_matchers_templated.hpp>
+#include <catch2/internal/catch_move_and_forward.hpp>
 
 #include <algorithm>
 #include <functional>
-#include <utility>
 
 namespace Catch {
     namespace Matchers {
@@ -24,8 +24,8 @@ namespace Catch {
         public:
             template <typename T2, typename Equality2>
             ContainsElementMatcher(T2&& target, Equality2&& predicate):
-                m_desired(std::forward<T2>(target)),
-                m_eq(std::forward<Equality2>(predicate))
+                m_desired(CATCH_FORWARD(target)),
+                m_eq(CATCH_FORWARD(predicate))
             {}
 
             std::string describe() const override {
@@ -52,12 +52,11 @@ namespace Catch {
             // constructor (and also avoid some perfect forwarding failure
             // cases)
             ContainsMatcherMatcher(Matcher matcher):
-                m_matcher(std::move(matcher))
+                m_matcher(CATCH_MOVE(matcher))
             {}
 
             template <typename RangeLike>
             bool match(RangeLike&& rng) const {
-                using std::begin; using std::endl;
                 for (auto&& elem : rng) {
                     if (m_matcher.match(elem)) {
                         return true;
@@ -79,14 +78,14 @@ namespace Catch {
         template <typename T>
         std::enable_if_t<!Detail::is_matcher<T>::value,
         ContainsElementMatcher<T, std::equal_to<>>> Contains(T&& elem) {
-            return { std::forward<T>(elem), std::equal_to<>{} };
+            return { CATCH_FORWARD(elem), std::equal_to<>{} };
         }
 
         //! Creates a matcher that checks whether a range contains element matching a matcher
         template <typename Matcher>
         std::enable_if_t<Detail::is_matcher<Matcher>::value,
         ContainsMatcherMatcher<Matcher>> Contains(Matcher&& matcher) {
-            return { std::forward<Matcher>(matcher) };
+            return { CATCH_FORWARD(matcher) };
         }
 
         /**
@@ -96,7 +95,7 @@ namespace Catch {
          */
         template <typename T, typename Equality>
         ContainsElementMatcher<T, Equality> Contains(T&& elem, Equality&& eq) {
-            return { std::forward<T>(elem), std::forward<Equality>(eq) };
+            return { CATCH_FORWARD(elem), CATCH_FORWARD(eq) };
         }
 
     }

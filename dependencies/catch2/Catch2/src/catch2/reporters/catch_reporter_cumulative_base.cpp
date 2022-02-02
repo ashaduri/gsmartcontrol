@@ -32,8 +32,40 @@ namespace Catch {
 
     } // namespace
 
+    namespace Detail {
+        AssertionOrBenchmarkResult::AssertionOrBenchmarkResult(
+            AssertionStats const& assertion ):
+            m_assertion( assertion ) {}
+
+        AssertionOrBenchmarkResult::AssertionOrBenchmarkResult(
+            BenchmarkStats<> const& benchmark ):
+            m_benchmark( benchmark ) {}
+
+        bool AssertionOrBenchmarkResult::isAssertion() const {
+            return m_assertion.some();
+        }
+        bool AssertionOrBenchmarkResult::isBenchmark() const {
+            return m_benchmark.some();
+        }
+
+        AssertionStats const& AssertionOrBenchmarkResult::asAssertion() const {
+            assert(m_assertion.some());
+
+            return *m_assertion;
+        }
+        BenchmarkStats<> const& AssertionOrBenchmarkResult::asBenchmark() const {
+            assert(m_benchmark.some());
+
+            return *m_benchmark;
+        }
+
+    }
 
     CumulativeReporterBase::~CumulativeReporterBase() = default;
+
+    void CumulativeReporterBase::benchmarkEnded(BenchmarkStats<> const& benchmarkStats) {
+        m_sectionStack.back()->assertionsAndBenchmarks.emplace_back(benchmarkStats);
+    }
 
     void
     CumulativeReporterBase::sectionStarting( SectionInfo const& sectionInfo ) {
@@ -54,7 +86,7 @@ namespace Catch {
                 auto newNode =
                     Detail::make_unique<SectionNode>( incompleteStats );
                 node = newNode.get();
-                parentNode.childSections.push_back( std::move( newNode ) );
+                parentNode.childSections.push_back( CATCH_MOVE( newNode ) );
             } else {
                 node = it->get();
             }
@@ -64,7 +96,7 @@ namespace Catch {
         m_sectionStack.push_back( node );
     }
 
-    bool CumulativeReporterBase::assertionEnded(
+    void CumulativeReporterBase::assertionEnded(
         AssertionStats const& assertionStats ) {
         assert( !m_sectionStack.empty() );
         // AssertionResult holds a pointer to a temporary DecomposedExpression,
@@ -72,11 +104,18 @@ namespace Catch {
         // Our section stack copy of the assertionResult will likely outlive the
         // temporary, so it must be expanded or discarded now to avoid calling
         // a destroyed object later.
-        static_cast<void>(
-            assertionStats.assertionResult.getExpandedExpression() );
+        if ( m_shouldStoreFailedAssertions &&
+             !assertionStats.assertionResult.isOk() ) {
+            static_cast<void>(
+                assertionStats.assertionResult.getExpandedExpression() );
+        }
+        if ( m_shouldStoreSuccesfulAssertions &&
+             assertionStats.assertionResult.isOk() ) {
+            static_cast<void>(
+                assertionStats.assertionResult.getExpandedExpression() );
+        }
         SectionNode& sectionNode = *m_sectionStack.back();
-        sectionNode.assertions.push_back( assertionStats );
-        return true;
+        sectionNode.assertionsAndBenchmarks.emplace_back( assertionStats );
     }
 
     void CumulativeReporterBase::sectionEnded( SectionStats const& sectionStats ) {
@@ -90,40 +129,44 @@ namespace Catch {
         TestCaseStats const& testCaseStats ) {
         auto node = Detail::make_unique<TestCaseNode>( testCaseStats );
         assert( m_sectionStack.size() == 0 );
-        node->children.push_back( std::move(m_rootSection) );
-        m_testCases.push_back( std::move(node) );
+        node->children.push_back( CATCH_MOVE(m_rootSection) );
+        m_testCases.push_back( CATCH_MOVE(node) );
 
         assert( m_deepestSection );
         m_deepestSection->stdOut = testCaseStats.stdOut;
         m_deepestSection->stdErr = testCaseStats.stdErr;
     }
 
-    void CumulativeReporterBase::testGroupEnded(
-        TestGroupStats const& testGroupStats ) {
-        auto node = Detail::make_unique<TestGroupNode>( testGroupStats );
-        node->children.swap( m_testCases );
-        m_testGroups.push_back( std::move(node) );
-    }
 
     void CumulativeReporterBase::testRunEnded( TestRunStats const& testRunStats ) {
-        m_testRuns.emplace_back( testRunStats );
-        m_testRuns.back().children.swap( m_testGroups );
+        assert(!m_testRun && "CumulativeReporterBase assumes there can only be one test run");
+        m_testRun = Detail::make_unique<TestRunNode>( testRunStats );
+        m_testRun->children.swap( m_testCases );
         testRunEndedCumulative();
     }
 
     void CumulativeReporterBase::listReporters(std::vector<ReporterDescription> const& descriptions) {
-        defaultListReporters(stream, descriptions, m_config->verbosity());
+        defaultListReporters(m_stream, descriptions, m_config->verbosity());
     }
 
     void CumulativeReporterBase::listTests(std::vector<TestCaseHandle> const& tests) {
-        defaultListTests(stream,
+        defaultListTests(m_stream,
                          tests,
                          m_config->hasTestFilters(),
                          m_config->verbosity());
     }
 
     void CumulativeReporterBase::listTags(std::vector<TagInfo> const& tags) {
-        defaultListTags( stream, tags, m_config->hasTestFilters() );
+        defaultListTags( m_stream, tags, m_config->hasTestFilters() );
+    }
+
+    bool CumulativeReporterBase::SectionNode::hasAnyAssertions() const {
+        return std::any_of(
+            assertionsAndBenchmarks.begin(),
+            assertionsAndBenchmarks.end(),
+            []( Detail::AssertionOrBenchmarkResult const& res ) {
+                return res.isAssertion();
+            } );
     }
 
 } // end namespace Catch

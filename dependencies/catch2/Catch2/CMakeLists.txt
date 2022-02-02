@@ -4,10 +4,12 @@ cmake_minimum_required(VERSION 3.5)
 # disable testsuite in that case
 if(NOT DEFINED PROJECT_NAME)
   set(NOT_SUBPROJECT ON)
+else()
+  set(NOT_SUBPROJECT OFF)
 endif()
 
 option(CATCH_INSTALL_DOCS "Install documentation alongside library" ON)
-option(CATCH_INSTALL_EXTRAS "Install extras alongside library" ON)
+option(CATCH_INSTALL_EXTRAS "Install extras (CMake scripts, debugger helpers) alongside library" ON)
 option(CATCH_DEVELOPMENT_BUILD "Build tests, enable warnings, enable Werror, etc" OFF)
 
 include(CMakeDependentOption)
@@ -39,7 +41,9 @@ project(Catch2 LANGUAGES CXX VERSION 3.0.0)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMake")
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
-include(CTest)
+if(CATCH_DEVELOPMENT_BUILD)
+  include(CTest)
+endif()
 
 # This variable is used in some subdirectories, so we need it here, rather
 # than later in the install block
@@ -110,27 +114,11 @@ if (NOT_SUBPROJECT)
           ${CATCH_CMAKE_CONFIG_DESTINATION}
     )
 
-    ## TODO: Catch2 main target?
-    ## Install some cpp file as well?
-
-    # By default, FooConfigVersion is tied to architecture that it was
-    # generated on. Because Catch2 is header-only, it is arch-independent
-    # and thus Catch2ConfigVersion should not be tied to the architecture
-    # it was generated on.
-    #
-    # CMake does not provide a direct customization point for this in
-    # `write_basic_package_version_file`, but it can be accomplished
-    # indirectly by temporarily redefining `CMAKE_SIZEOF_VOID_P` to an
-    # empty string. Note that just undefining the variable could be
-    # insufficient in cases where the variable was already in CMake cache
-    set(CATCH2_CMAKE_SIZEOF_VOID_P ${CMAKE_SIZEOF_VOID_P})
-    set(CMAKE_SIZEOF_VOID_P "")
     write_basic_package_version_file(
       "${CMAKE_CURRENT_BINARY_DIR}/Catch2ConfigVersion.cmake"
       COMPATIBILITY
         SameMajorVersion
     )
-    set(CMAKE_SIZEOF_VOID_P ${CATCH2_CMAKE_SIZEOF_VOID_P})
 
     install(
       FILES

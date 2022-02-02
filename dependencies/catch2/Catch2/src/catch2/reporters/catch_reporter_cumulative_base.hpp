@@ -10,6 +10,7 @@
 
 #include <catch2/interfaces/catch_interfaces_reporter.hpp>
 #include <catch2/internal/catch_unique_ptr.hpp>
+#include <catch2/internal/catch_optional.hpp>
 
 #include <iosfwd>
 #include <string>
@@ -17,7 +18,49 @@
 
 namespace Catch {
 
-    struct CumulativeReporterBase : IStreamingReporter {
+    namespace Detail {
+
+        //! Represents either an assertion or a benchmark result to be handled by cumulative reporter later
+        class AssertionOrBenchmarkResult {
+            // This should really be a variant, but this is much faster
+            // to write and the data layout here is already terrible
+            // enough that we do not have to care about the object size.
+            Optional<AssertionStats> m_assertion;
+            Optional<BenchmarkStats<>> m_benchmark;
+        public:
+            AssertionOrBenchmarkResult(AssertionStats const& assertion);
+            AssertionOrBenchmarkResult(BenchmarkStats<> const& benchmark);
+
+            bool isAssertion() const;
+            bool isBenchmark() const;
+
+            AssertionStats const& asAssertion() const;
+            BenchmarkStats<> const& asBenchmark() const;
+        };
+    }
+
+    /**
+     * Utility base for reporters that need to handle all results at once
+     *
+     * It stores tree of all test cases, sections and assertions, and after the
+     * test run is finished, calls into `testRunEndedCumulative` to pass the
+     * control to the deriving class.
+     *
+     * If you are deriving from this class and override any testing related
+     * member functions, you should first call into the base's implementation to
+     * avoid breaking the tree construction.
+     *
+     * Due to the way this base functions, it has to expand assertions up-front,
+     * even if they are later unused (e.g. because the deriving reporter does
+     * not report successful assertions, or because the deriving reporter does
+     * not use assertion expansion at all). Derived classes can use two
+     * customization points, `m_shouldStoreSuccesfulAssertions` and
+     * `m_shouldStoreFailedAssertions`, to disable the expansion and gain extra
+     * performance. **Accessing the assertion expansions if it wasn't stored is
+     * UB.**
+     */
+    class CumulativeReporterBase : public IStreamingReporter {
+    public:
         template<typename T, typename ChildNodeT>
         struct Node {
             explicit Node( T const& _value ) : value( _value ) {}
@@ -33,36 +76,45 @@ namespace Catch {
                 return stats.sectionInfo.lineInfo == other.stats.sectionInfo.lineInfo;
             }
 
+            bool hasAnyAssertions() const;
+
             SectionStats stats;
             std::vector<Detail::unique_ptr<SectionNode>> childSections;
-            std::vector<AssertionStats> assertions;
+            std::vector<Detail::AssertionOrBenchmarkResult> assertionsAndBenchmarks;
             std::string stdOut;
             std::string stdErr;
         };
 
 
         using TestCaseNode = Node<TestCaseStats, SectionNode>;
-        using TestGroupNode = Node<TestGroupStats, TestCaseNode>;
-        using TestRunNode = Node<TestRunStats, TestGroupNode>;
+        using TestRunNode = Node<TestRunStats, TestCaseNode>;
 
         CumulativeReporterBase( ReporterConfig const& _config ):
             IStreamingReporter( _config.fullConfig() ),
-            stream( _config.stream() ) {}
+            m_stream( _config.stream() ) {}
         ~CumulativeReporterBase() override;
 
+        void benchmarkPreparing( StringRef ) override {}
+        void benchmarkStarting( BenchmarkInfo const& ) override {}
+        void benchmarkEnded( BenchmarkStats<> const& benchmarkStats ) override;
+        void benchmarkFailed( StringRef ) override {}
+
+        void noMatchingTestCases( StringRef ) override {}
+        void reportInvalidTestSpec( StringRef ) override {}
+        void fatalErrorEncountered( StringRef /*error*/ ) override {}
+
         void testRunStarting( TestRunInfo const& ) override {}
-        void testGroupStarting( GroupInfo const& ) override {}
 
         void testCaseStarting( TestCaseInfo const& ) override {}
-
+        void testCasePartialStarting( TestCaseInfo const&, uint64_t ) override {}
         void sectionStarting( SectionInfo const& sectionInfo ) override;
 
         void assertionStarting( AssertionInfo const& ) override {}
 
-        bool assertionEnded( AssertionStats const& assertionStats ) override;
+        void assertionEnded( AssertionStats const& assertionStats ) override;
         void sectionEnded( SectionStats const& sectionStats ) override;
+        void testCasePartialEnded( TestCaseStats const&, uint64_t ) override {}
         void testCaseEnded( TestCaseStats const& testCaseStats ) override;
-        void testGroupEnded( TestGroupStats const& testGroupStats ) override;
         void testRunEnded( TestRunStats const& testRunStats ) override;
         //! Customization point: called after last test finishes (testRunEnded has been handled)
         virtual void testRunEndedCumulative() = 0;
@@ -73,17 +125,29 @@ namespace Catch {
         void listTests( std::vector<TestCaseHandle> const& tests ) override;
         void listTags( std::vector<TagInfo> const& tags ) override;
 
+    protected:
+        //! Should the cumulative base store the assertion expansion for succesful assertions?
+        bool m_shouldStoreSuccesfulAssertions = true;
+        //! Should the cumulative base store the assertion expansion for failed assertions?
+        bool m_shouldStoreFailedAssertions = true;
 
-        std::ostream& stream;
+        //! Stream to write the output to
+        std::ostream& m_stream;
+
+        // We need lazy construction here. We should probably refactor it
+        // later, after the events are redone.
+        //! The root node of the test run tree.
+        Detail::unique_ptr<TestRunNode> m_testRun;
+
+    private:
         // Note: We rely on pointer identity being stable, which is why
-        //       which is why we store around pointers rather than values.
+        //       we store pointers to the nodes rather than the values.
         std::vector<Detail::unique_ptr<TestCaseNode>> m_testCases;
-        std::vector<Detail::unique_ptr<TestGroupNode>> m_testGroups;
-
-        std::vector<TestRunNode> m_testRuns;
-
+        // Root section of the _current_ test case
         Detail::unique_ptr<SectionNode> m_rootSection;
+        // Deepest section of the _current_ test case
         SectionNode* m_deepestSection = nullptr;
+        // Stack of _active_ sections in the _current_ test case
         std::vector<SectionNode*> m_sectionStack;
     };
 

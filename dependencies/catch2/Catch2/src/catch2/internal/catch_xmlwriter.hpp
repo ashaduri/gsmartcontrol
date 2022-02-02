@@ -9,6 +9,7 @@
 #define CATCH_XMLWRITER_HPP_INCLUDED
 
 #include <catch2/internal/catch_stream.hpp>
+#include <catch2/internal/catch_stringref.hpp>
 
 #include <vector>
 
@@ -22,18 +23,24 @@ namespace Catch {
     XmlFormatting operator | (XmlFormatting lhs, XmlFormatting rhs);
     XmlFormatting operator & (XmlFormatting lhs, XmlFormatting rhs);
 
+    /**
+     * Helper for XML-encoding text (escaping angle brackets, quotes, etc)
+     *
+     * Note: doesn't take ownership of passed strings, and thus the
+     *       encoded string must outlive the encoding instance.
+     */
     class XmlEncode {
     public:
         enum ForWhat { ForTextNodes, ForAttributes };
 
-        XmlEncode( std::string const& str, ForWhat forWhat = ForTextNodes );
+        XmlEncode( StringRef str, ForWhat forWhat = ForTextNodes );
 
         void encodeTo( std::ostream& os ) const;
 
         friend std::ostream& operator << ( std::ostream& os, XmlEncode const& xmlEncode );
 
     private:
-        std::string m_str;
+        StringRef m_str;
         ForWhat m_forWhat;
     };
 
@@ -49,10 +56,22 @@ namespace Catch {
 
             ~ScopedElement();
 
-            ScopedElement& writeText( std::string const& text, XmlFormatting fmt = XmlFormatting::Newline | XmlFormatting::Indent );
+            ScopedElement&
+            writeText( StringRef text,
+                       XmlFormatting fmt = XmlFormatting::Newline |
+                                           XmlFormatting::Indent );
 
-            template<typename T>
-            ScopedElement& writeAttribute( std::string const& name, T const& attribute ) {
+            ScopedElement& writeAttribute( StringRef name,
+                                           StringRef attribute );
+            template <typename T,
+                      // Without this SFINAE, this overload is a better match
+                      // for `std::string`, `char const*`, `char const[N]` args.
+                      // While it would still work, it would cause code bloat
+                      // and multiple iteration over the strings
+                      typename = typename std::enable_if_t<
+                          !std::is_convertible<T, StringRef>::value>>
+            ScopedElement& writeAttribute( StringRef name,
+                                           T const& attribute ) {
                 m_writer->writeAttribute( name, attribute );
                 return *this;
             }
@@ -74,24 +93,41 @@ namespace Catch {
 
         XmlWriter& endElement(XmlFormatting fmt = XmlFormatting::Newline | XmlFormatting::Indent);
 
-        XmlWriter& writeAttribute( std::string const& name, std::string const& attribute );
+        //! The attribute content is XML-encoded
+        XmlWriter& writeAttribute( StringRef name, StringRef attribute );
 
-        XmlWriter& writeAttribute( std::string const& name, bool attribute );
+        //! Writes the attribute as "true/false"
+        XmlWriter& writeAttribute( StringRef name, bool attribute );
 
-        template<typename T>
-        XmlWriter& writeAttribute( std::string const& name, T const& attribute ) {
+        //! The attribute content is XML-encoded
+        XmlWriter& writeAttribute( StringRef name, char const* attribute );
+
+        //! The attribute value must provide op<<(ostream&, T). The resulting
+        //! serialization is XML-encoded
+        template <typename T,
+                  // Without this SFINAE, this overload is a better match
+                  // for `std::string`, `char const*`, `char const[N]` args.
+                  // While it would still work, it would cause code bloat
+                  // and multiple iteration over the strings
+                  typename = typename std::enable_if_t<
+                      !std::is_convertible<T, StringRef>::value>>
+        XmlWriter& writeAttribute( StringRef name, T const& attribute ) {
             ReusableStringStream rss;
             rss << attribute;
             return writeAttribute( name, rss.str() );
         }
 
-        XmlWriter& writeText( std::string const& text, XmlFormatting fmt = XmlFormatting::Newline | XmlFormatting::Indent);
+        //! Writes escaped `text` in a element
+        XmlWriter& writeText( StringRef text,
+                              XmlFormatting fmt = XmlFormatting::Newline |
+                                                  XmlFormatting::Indent );
 
-        XmlWriter& writeComment(std::string const& text, XmlFormatting fmt = XmlFormatting::Newline | XmlFormatting::Indent);
+        //! Writes XML comment as "<!-- text -->"
+        XmlWriter& writeComment( StringRef text,
+                                 XmlFormatting fmt = XmlFormatting::Newline |
+                                                     XmlFormatting::Indent );
 
-        void writeStylesheetRef( std::string const& url );
-
-        XmlWriter& writeBlankLine();
+        void writeStylesheetRef( StringRef url );
 
         void ensureTagClosed();
 

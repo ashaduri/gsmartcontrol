@@ -11,23 +11,20 @@
 namespace Catch {
 
     struct IResultCapture;
-    struct IRunner;
     struct IConfig;
 
     struct IContext
     {
-        virtual ~IContext();
+        virtual ~IContext(); // = default
 
         virtual IResultCapture* getResultCapture() = 0;
-        virtual IRunner* getRunner() = 0;
         virtual IConfig const* getConfig() const = 0;
     };
 
     struct IMutableContext : IContext
     {
-        virtual ~IMutableContext();
+        virtual ~IMutableContext(); // = default
         virtual void setResultCapture( IResultCapture* resultCapture ) = 0;
-        virtual void setRunner( IRunner* runner ) = 0;
         virtual void setConfig( IConfig const* config ) = 0;
 
     private:

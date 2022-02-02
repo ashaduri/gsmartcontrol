@@ -5,7 +5,6 @@
 //        https://www.boost.org/LICENSE_1_0.txt)
 
 // SPDX-License-Identifier: BSL-1.0
-#include <catch2/internal/catch_enforce.hpp>
 #include <catch2/internal/catch_stringref.hpp>
 
 #include <algorithm>
@@ -18,25 +17,41 @@ namespace Catch {
     : StringRef( rawChars, static_cast<StringRef::size_type>(std::strlen(rawChars) ) )
     {}
 
-    auto StringRef::c_str() const -> char const* {
-        CATCH_ENFORCE(isNullTerminated(), "Called StringRef::c_str() on a non-null-terminated instance");
-        return m_start;
-    }
-
-    auto StringRef::operator == ( StringRef const& other ) const noexcept -> bool {
+    auto StringRef::operator == ( StringRef other ) const noexcept -> bool {
         return m_size == other.m_size
             && (std::memcmp( m_start, other.m_start, m_size ) == 0);
     }
 
-    bool StringRef::operator<(StringRef const& rhs) const noexcept {
+    bool StringRef::operator<(StringRef rhs) const noexcept {
         if (m_size < rhs.m_size) {
             return strncmp(m_start, rhs.m_start, m_size) <= 0;
         }
         return strncmp(m_start, rhs.m_start, rhs.m_size) < 0;
     }
 
-    auto operator << ( std::ostream& os, StringRef const& str ) -> std::ostream& {
-        return os.write(str.data(), str.size());
+    int StringRef::compare( StringRef rhs ) const {
+        auto cmpResult =
+            strncmp( m_start, rhs.m_start, std::min( m_size, rhs.m_size ) );
+
+        // This means that strncmp found a difference before the strings
+        // ended, and we can return it directly
+        if ( cmpResult != 0 ) {
+            return cmpResult;
+        }
+
+        // If strings are equal up to length, then their comparison results on
+        // their size
+        if ( m_size < rhs.m_size ) {
+            return -1;
+        } else if ( m_size > rhs.m_size ) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    auto operator << ( std::ostream& os, StringRef str ) -> std::ostream& {
+        return os.write(str.data(), static_cast<std::streamsize>(str.size()));
     }
 
     std::string operator+(StringRef lhs, StringRef rhs) {
@@ -47,7 +62,7 @@ namespace Catch {
         return ret;
     }
 
-    auto operator+=( std::string& lhs, StringRef const& rhs ) -> std::string& {
+    auto operator+=( std::string& lhs, StringRef rhs ) -> std::string& {
         lhs.append(rhs.data(), rhs.size());
         return lhs;
     }

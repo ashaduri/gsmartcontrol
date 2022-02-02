@@ -7,14 +7,16 @@
 // SPDX-License-Identifier: BSL-1.0
 #include <catch2/internal/catch_commandline.hpp>
 
+#include <catch2/internal/catch_compiler_capabilities.hpp>
 #include <catch2/catch_config.hpp>
 #include <catch2/internal/catch_string_manip.hpp>
 #include <catch2/interfaces/catch_interfaces_registry_hub.hpp>
 #include <catch2/interfaces/catch_interfaces_reporter_registry.hpp>
 #include <catch2/interfaces/catch_interfaces_reporter.hpp>
 
+#include <algorithm>
 #include <fstream>
-#include <ctime>
+#include <string>
 
 namespace Catch {
 
@@ -23,25 +25,21 @@ namespace Catch {
         using namespace Clara;
 
         auto const setWarning = [&]( std::string const& warning ) {
-                auto warningSet = [&]() {
-                    if( warning == "NoAssertions" )
-                        return WarnAbout::NoAssertions;
-
-                    if ( warning == "NoTests" )
-                        return WarnAbout::NoTests;
-
-                    return WarnAbout::Nothing;
-                }();
-
-                if (warningSet == WarnAbout::Nothing)
-                    return ParserResult::runtimeError( "Unrecognised warning: '" + warning + "'" );
-                config.warnings = static_cast<WarnAbout::What>( config.warnings | warningSet );
+            if ( warning == "NoAssertions" ) {
+                config.warnings = static_cast<WarnAbout::What>(config.warnings | WarnAbout::NoAssertions);
                 return ParserResult::ok( ParseResultType::Matched );
-            };
+            } else if ( warning == "UnmatchedTestSpec" ) {
+                config.warnings = static_cast<WarnAbout::What>(config.warnings | WarnAbout::UnmatchedTestSpec);
+                return ParserResult::ok( ParseResultType::Matched );
+            }
+
+            return ParserResult ::runtimeError(
+                "Unrecognised warning option: '" + warning + '\'' );
+        };
         auto const loadTestNamesFromFile = [&]( std::string const& filename ) {
                 std::ifstream f( filename.c_str() );
                 if( !f.is_open() )
-                    return ParserResult::runtimeError( "Unable to load input file: '" + filename + "'" );
+                    return ParserResult::runtimeError( "Unable to load input file: '" + filename + '\'' );
 
                 std::string line;
                 while( std::getline( f, line ) ) {
@@ -67,14 +65,35 @@ namespace Catch {
                 else if( startsWith( "random", order ) )
                     config.runOrder = TestRunOrder::Randomized;
                 else
-                    return ParserResult::runtimeError( "Unrecognised ordering: '" + order + "'" );
+                    return ParserResult::runtimeError( "Unrecognised ordering: '" + order + '\'' );
                 return ParserResult::ok( ParseResultType::Matched );
             };
         auto const setRngSeed = [&]( std::string const& seed ) {
-                if( seed != "time" )
-                    return Clara::Detail::convertInto( seed, config.rngSeed );
-                config.rngSeed = static_cast<unsigned int>( std::time(nullptr) );
-                return ParserResult::ok( ParseResultType::Matched );
+                if( seed == "time" ) {
+                    config.rngSeed = generateRandomSeed(GenerateFrom::Time);
+                    return ParserResult::ok(ParseResultType::Matched);
+                } else if (seed == "random-device") {
+                    config.rngSeed = generateRandomSeed(GenerateFrom::RandomDevice);
+                    return ParserResult::ok(ParseResultType::Matched);
+                }
+
+                CATCH_TRY {
+                    std::size_t parsedTo = 0;
+                    unsigned long parsedSeed = std::stoul(seed, &parsedTo, 0);
+                    if (parsedTo != seed.size()) {
+                        return ParserResult::runtimeError("Could not parse '" + seed + "' as seed");
+                    }
+
+                    // TODO: Ideally we could parse unsigned int directly,
+                    //       but the stdlib doesn't provide helper for that
+                    //       type. After this is refactored to use fixed size
+                    //       type, we should check the parsed value is in range
+                    //       of the underlying type.
+                    config.rngSeed = static_cast<unsigned int>(parsedSeed);
+                    return ParserResult::ok(ParseResultType::Matched);
+                } CATCH_CATCH_ANON(std::exception const&) {
+                    return ParserResult::runtimeError("Could not parse '" + seed + "' as seed");
+                }
             };
         auto const setColourUsage = [&]( std::string const& useColour ) {
                     auto mode = toLower( useColour );
@@ -112,31 +131,117 @@ namespace Catch {
             else if( lcVerbosity == "high" )
                 config.verbosity = Verbosity::High;
             else
-                return ParserResult::runtimeError( "Unrecognised verbosity, '" + verbosity + "'" );
+                return ParserResult::runtimeError( "Unrecognised verbosity, '" + verbosity + '\'' );
             return ParserResult::ok( ParseResultType::Matched );
         };
-        auto const setReporter = [&]( std::string const& reporter ) {
+        auto const setReporter = [&]( std::string const& reporterSpec ) {
+            if ( reporterSpec.empty() ) {
+                return ParserResult::runtimeError( "Received empty reporter spec." );
+            }
+
             IReporterRegistry::FactoryMap const& factories = getRegistryHub().getReporterRegistry().getFactories();
 
-            auto lcReporter = toLower( reporter );
-            auto result = factories.find( lcReporter );
+            // clear the default reporter
+            if (!config._nonDefaultReporterSpecifications) {
+                config.reporterSpecifications.clear();
+                config._nonDefaultReporterSpecifications = true;
+            }
 
-            if( factories.end() != result )
-                config.reporterName = lcReporter;
-            else
-                return ParserResult::runtimeError( "Unrecognized reporter, '" + reporter + "'. Check available with --list-reporters" );
+
+            // Exactly one of the reporters may be specified without an output
+            // file, in which case it defaults to the output specified by "-o"
+            // (or standard output).
+            static constexpr auto separator = "::";
+            static constexpr size_t separatorSize = 2;
+            auto fileNameSeparatorPos = reporterSpec.find( separator );
+            const bool containsFileName = fileNameSeparatorPos != reporterSpec.npos;
+            if ( containsFileName ) {
+                auto nextSeparatorPos = reporterSpec.find(
+                    separator, fileNameSeparatorPos + separatorSize );
+                if ( nextSeparatorPos != reporterSpec.npos ) {
+                    return ParserResult::runtimeError(
+                        "Too many separators in reporter spec '" + reporterSpec + '\'' );
+                }
+            }
+
+            std::string reporterName;
+            Optional<std::string> outputFileName;
+            reporterName = reporterSpec.substr( 0, fileNameSeparatorPos );
+            if ( reporterName.empty() ) {
+                return ParserResult::runtimeError( "Reporter name cannot be empty." );
+            }
+
+            if ( containsFileName ) {
+                outputFileName = reporterSpec.substr(
+                    fileNameSeparatorPos + separatorSize, reporterSpec.size() );
+            }
+
+            auto result = factories.find( reporterName );
+
+            if( result == factories.end() )
+                return ParserResult::runtimeError( "Unrecognized reporter, '" + reporterName + "'. Check available with --list-reporters" );
+            if( containsFileName && outputFileName->empty() )
+                return ParserResult::runtimeError( "Reporter '" + reporterName + "' has empty filename specified as its output. Supply a filename or remove the colons to use the default output." );
+
+            config.reporterSpecifications.push_back({ std::move(reporterName), std::move(outputFileName) });
+
+            // It would be enough to check this only once at the very end, but there is
+            // not a place where we could call this check, so do it every time it could fail.
+            // For valid inputs, this is still called at most once.
+            if (!containsFileName) {
+                int n_reporters_without_file = 0;
+                for (auto const& spec : config.reporterSpecifications) {
+                    if (spec.outputFileName.none()) {
+                        n_reporters_without_file++;
+                    }
+                }
+                if (n_reporters_without_file > 1) {
+                    return ParserResult::runtimeError( "Only one reporter may have unspecified output file." );
+                }
+            }
+
             return ParserResult::ok( ParseResultType::Matched );
         };
+        auto const setShardCount = [&]( std::string const& shardCount ) {
+            CATCH_TRY{
+                std::size_t parsedTo = 0;
+                int64_t parsedCount = std::stoll(shardCount, &parsedTo, 0);
+                if (parsedTo != shardCount.size()) {
+                    return ParserResult::runtimeError("Could not parse '" + shardCount + "' as shard count");
+                }
+                if (parsedCount <= 0) {
+                    return ParserResult::runtimeError("Shard count must be a positive number");
+                }
+
+                config.shardCount = static_cast<unsigned int>(parsedCount);
+                return ParserResult::ok(ParseResultType::Matched);
+            } CATCH_CATCH_ANON(std::exception const&) {
+                return ParserResult::runtimeError("Could not parse '" + shardCount + "' as shard count");
+            }
+        };
+
+        auto const setShardIndex = [&](std::string const& shardIndex) {
+            CATCH_TRY{
+                std::size_t parsedTo = 0;
+                int64_t parsedIndex = std::stoll(shardIndex, &parsedTo, 0);
+                if (parsedTo != shardIndex.size()) {
+                    return ParserResult::runtimeError("Could not parse '" + shardIndex + "' as shard index");
+                }
+                if (parsedIndex < 0) {
+                    return ParserResult::runtimeError("Shard index must be a non-negative number");
+                }
+
+                config.shardIndex = static_cast<unsigned int>(parsedIndex);
+                return ParserResult::ok(ParseResultType::Matched);
+            } CATCH_CATCH_ANON(std::exception const&) {
+                return ParserResult::runtimeError("Could not parse '" + shardIndex + "' as shard index");
+            }
+        };
+
 
         auto cli
             = ExeName( config.processName )
             | Help( config.showHelp )
-            | Opt( config.listTests )
-                ["-l"]["--list-tests"]
-                ( "list all/matching test cases" )
-            | Opt( config.listTags )
-                ["-t"]["--list-tags"]
-                ( "list all/matching tags" )
             | Opt( config.showSuccessfulTests )
                 ["-s"]["--success"]
                 ( "include successful tests in output" )
@@ -149,10 +254,10 @@ namespace Catch {
             | Opt( config.showInvisibles )
                 ["-i"]["--invisibles"]
                 ( "show invisibles (tabs, newlines)" )
-            | Opt( config.outputFilename, "filename" )
+            | Opt( config.defaultOutputFilename, "filename" )
                 ["-o"]["--out"]
-                ( "output filename" )
-            | Opt( setReporter, "name" )
+                ( "default output filename" )
+            | Opt( accept_many, setReporter, "name[:output-file]" )
                 ["-r"]["--reporter"]
                 ( "reporter to use (defaults to console)" )
             | Opt( config.name, "name" )
@@ -164,7 +269,7 @@ namespace Catch {
             | Opt( [&]( int x ){ config.abortAfter = x; }, "no. failures" )
                 ["-x"]["--abortx"]
                 ( "abort after x failures" )
-            | Opt( setWarning, "warning name" )
+            | Opt( accept_many, setWarning, "warning name" )
                 ["-w"]["--warn"]
                 ( "enable warnings" )
             | Opt( [&]( bool flag ) { config.showDurations = flag ? ShowDurations::Always : ShowDurations::Never; }, "yes|no" )
@@ -185,13 +290,19 @@ namespace Catch {
             | Opt( setVerbosity, "quiet|normal|high" )
                 ["-v"]["--verbosity"]
                 ( "set output verbosity" )
+            | Opt( config.listTests )
+                ["--list-tests"]
+                ( "list all/matching test cases" )
+            | Opt( config.listTags )
+                ["--list-tags"]
+                ( "list all/matching tags" )
             | Opt( config.listReporters )
                 ["--list-reporters"]
                 ( "list all reporters" )
             | Opt( setTestOrder, "decl|lex|rand" )
                 ["--order"]
                 ( "test case order (defaults to decl)" )
-            | Opt( setRngSeed, "'time'|number" )
+            | Opt( setRngSeed, "'time'|'random-device'|number" )
                 ["--rng-seed"]
                 ( "set a specific seed for random numbers" )
             | Opt( setColourUsage, "yes|no" )
@@ -218,6 +329,15 @@ namespace Catch {
             | Opt( config.benchmarkWarmupTime, "benchmarkWarmupTime" )
                 ["--benchmark-warmup-time"]
                 ( "amount of time in milliseconds spent on warming up each test (default: 100)" )
+            | Opt( setShardCount, "shard count" )
+                ["--shard-count"]
+                ( "split the tests to execute into this many groups" )
+            | Opt( setShardIndex, "shard index" )
+                ["--shard-index"]
+                ( "index of the group of tests to execute (see --shard-count)" ) |
+            Opt( config.allowZeroTests )
+                ["--allow-running-no-tests"]
+                ( "Treat 'No tests run' as a success" )
             | Arg( config.testsOrTags, "test name|pattern|tags" )
                 ( "which test or tests to use" );
 

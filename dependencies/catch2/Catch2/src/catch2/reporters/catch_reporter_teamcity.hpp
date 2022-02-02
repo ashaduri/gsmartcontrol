@@ -20,7 +20,7 @@
 
 namespace Catch {
 
-    struct TeamCityReporter : StreamingReporterBase {
+    struct TeamCityReporter final : StreamingReporterBase {
         TeamCityReporter( ReporterConfig const& _config )
         :   StreamingReporterBase( _config )
         {
@@ -34,17 +34,11 @@ namespace Catch {
             return "Reports test results as TeamCity service messages"s;
         }
 
-        void skipTest( TestCaseInfo const& /* testInfo */ ) override {}
-
-        void noMatchingTestCases( std::string const& /* spec */ ) override {}
-
-        void testGroupStarting(GroupInfo const& groupInfo) override;
-        void testGroupEnded(TestGroupStats const& testGroupStats) override;
+        void testRunStarting( TestRunInfo const& groupInfo ) override;
+        void testRunEnded( TestRunStats const& testGroupStats ) override;
 
 
-        void assertionStarting(AssertionInfo const&) override {}
-
-        bool assertionEnded(AssertionStats const& assertionStats) override;
+        void assertionEnded(AssertionStats const& assertionStats) override;
 
         void sectionStarting(SectionInfo const& sectionInfo) override {
             m_headerPrintedForThisSection = false;

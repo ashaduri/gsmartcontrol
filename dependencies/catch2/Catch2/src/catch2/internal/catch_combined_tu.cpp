@@ -194,7 +194,7 @@ Catch::LeakDetector::~LeakDetector() {
 
 namespace Catch {
 
-    MessageInfo::MessageInfo(   StringRef const& _macroName,
+    MessageInfo::MessageInfo(   StringRef _macroName,
                                 SourceLineInfo const& _lineInfo,
                                 ResultWas::OfType _type )
     :   macroName( _macroName ),
@@ -221,11 +221,11 @@ namespace Catch {
 
     auto operator << (std::ostream& os, LazyExpression const& lazyExpr) -> std::ostream& {
         if (lazyExpr.m_isNegated)
-            os << "!";
+            os << '!';
 
         if (lazyExpr) {
             if (lazyExpr.m_isNegated && lazyExpr.m_transientExpression->isBinaryExpression())
-                os << "(" << *lazyExpr.m_transientExpression << ")";
+                os << '(' << *lazyExpr.m_transientExpression << ')';
             else
                 os << *lazyExpr.m_transientExpression;
         } else {

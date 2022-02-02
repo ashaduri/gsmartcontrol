@@ -50,7 +50,7 @@ namespace Catch {
                 // without it, the code above creates 5 nested generators.
                 if ( currentTracker.nameAndLocation() == nameAndLocation ) {
                     auto thisTracker =
-                        currentTracker.parent().findChild( nameAndLocation );
+                        currentTracker.parent()->findChild( nameAndLocation );
                     assert( thisTracker );
                     assert( thisTracker->isGeneratorTracker() );
                     tracker = static_cast<GeneratorTracker*>( thisTracker );
@@ -64,7 +64,7 @@ namespace Catch {
                         Catch::Detail::make_unique<GeneratorTracker>(
                             nameAndLocation, ctx, &currentTracker );
                     tracker = newTracker.get();
-                    currentTracker.addChild( std::move(newTracker) );
+                    currentTracker.addChild( CATCH_MOVE(newTracker) );
                 }
 
                 if( !tracker->isComplete() ) {
@@ -110,7 +110,7 @@ namespace Catch {
                     // This is safe: there is always at least one section
                     // tracker in a test case tracking tree
                     while ( !parent->isSectionTracker() ) {
-                        parent = &( parent->parent() );
+                        parent = parent->parent();
                     }
                     assert( parent &&
                             "Missing root (test case) level section" );
@@ -153,21 +153,20 @@ namespace Catch {
                 return m_generator;
             }
             void setGenerator( GeneratorBasePtr&& generator ) override {
-                m_generator = std::move( generator );
+                m_generator = CATCH_MOVE( generator );
             }
         };
-        GeneratorTracker::~GeneratorTracker() {}
+        GeneratorTracker::~GeneratorTracker() = default;
     }
 
     RunContext::RunContext(IConfig const* _config, IStreamingReporterPtr&& reporter)
     :   m_runInfo(_config->name()),
         m_context(getCurrentMutableContext()),
         m_config(_config),
-        m_reporter(std::move(reporter)),
+        m_reporter(CATCH_MOVE(reporter)),
         m_lastAssertionInfo{ StringRef(), SourceLineInfo("",0), StringRef(), ResultDisposition::Normal },
         m_includeSuccessfulResults( m_config->includeSuccessfulResults() || m_reporter->getPreferences().shouldReportAllAssertions )
     {
-        m_context.setRunner(this);
         m_context.setResultCapture(this);
         m_reporter->testRunStarting(m_runInfo);
     }
@@ -176,16 +175,8 @@ namespace Catch {
         m_reporter->testRunEnded(TestRunStats(m_runInfo, m_totals, aborting()));
     }
 
-    void RunContext::testGroupStarting(std::string const& testSpec, std::size_t groupIndex, std::size_t groupsCount) {
-        m_reporter->testGroupStarting(GroupInfo(testSpec, groupIndex, groupsCount));
-    }
-
-    void RunContext::testGroupEnded(std::string const& testSpec, Totals const& totals, std::size_t groupIndex, std::size_t groupsCount) {
-        m_reporter->testGroupEnded(TestGroupStats(GroupInfo(testSpec, groupIndex, groupsCount), totals, aborting()));
-    }
-
     Totals RunContext::runTest(TestCaseHandle const& testCase) {
-        Totals prevTotals = m_totals;
+        const Totals prevTotals = m_totals;
 
         std::string redirectedCout;
         std::string redirectedCerr;
@@ -200,10 +191,25 @@ namespace Catch {
         ITracker& rootTracker = m_trackerContext.startRun();
         assert(rootTracker.isSectionTracker());
         static_cast<SectionTracker&>(rootTracker).addInitialFilters(m_config->getSectionsToRun());
+
+        uint64_t testRuns = 0;
         do {
             m_trackerContext.startCycle();
             m_testCaseTracker = &SectionTracker::acquire(m_trackerContext, TestCaseTracking::NameAndLocation(testInfo.name, testInfo.lineInfo));
-            runCurrentTest(redirectedCout, redirectedCerr);
+
+            m_reporter->testCasePartialStarting(testInfo, testRuns);
+
+            const auto beforeRunTotals = m_totals;
+            std::string oneRunCout, oneRunCerr;
+            runCurrentTest(oneRunCout, oneRunCerr);
+            redirectedCout += oneRunCout;
+            redirectedCerr += oneRunCerr;
+
+            const auto singleRunTotals = m_totals.delta(beforeRunTotals);
+            auto statsForOneRun = TestCaseStats(testInfo, singleRunTotals, oneRunCout, oneRunCerr, aborting());
+
+            m_reporter->testCasePartialEnded(statsForOneRun, testRuns);
+            ++testRuns;
         } while (!m_testCaseTracker->isSuccessfullyCompleted() && !aborting());
 
         Totals deltaTotals = m_totals.delta(prevTotals);
@@ -230,9 +236,11 @@ namespace Catch {
         if (result.getResultType() == ResultWas::Ok) {
             m_totals.assertions.passed++;
             m_lastAssertionPassed = true;
-        } else if (!result.isOk()) {
+        } else if (!result.succeeded()) {
             m_lastAssertionPassed = false;
-            if( m_activeTestCase->getTestCaseInfo().okToFail() )
+            if (result.isOk()) {
+            }
+            else if( m_activeTestCase->getTestCaseInfo().okToFail() )
                 m_totals.assertions.failedButOk++;
             else
                 m_totals.assertions.failed++;
@@ -241,9 +249,7 @@ namespace Catch {
             m_lastAssertionPassed = true;
         }
 
-        // We have no use for the return value (whether messages should be cleared), because messages were made scoped
-        // and should be let to clear themselves out.
-        static_cast<void>(m_reporter->assertionEnded(AssertionStats(result, m_messages, m_totals)));
+        m_reporter->assertionEnded(AssertionStats(result, m_messages, m_totals));
 
         if (result.getResultType() != ResultWas::Warning)
             m_messageScopes.clear();
@@ -315,7 +321,7 @@ namespace Catch {
         m_unfinishedSections.push_back(endInfo);
     }
 
-    void RunContext::benchmarkPreparing(std::string const& name) {
+    void RunContext::benchmarkPreparing( StringRef name ) {
         m_reporter->benchmarkPreparing(name);
     }
     void RunContext::benchmarkStarting( BenchmarkInfo const& info ) {
@@ -324,8 +330,8 @@ namespace Catch {
     void RunContext::benchmarkEnded( BenchmarkStats<> const& stats ) {
         m_reporter->benchmarkEnded( stats );
     }
-    void RunContext::benchmarkFailed(std::string const & error) {
-        m_reporter->benchmarkFailed(error);
+    void RunContext::benchmarkFailed( StringRef error ) {
+        m_reporter->benchmarkFailed( error );
     }
 
     void RunContext::pushScopedMessage(MessageInfo const & message) {
@@ -388,7 +394,6 @@ namespace Catch {
                                   std::string(),
                                   false));
         m_totals.testCases.failed++;
-        testGroupEnded(std::string(), m_totals, 1, 1);
         m_reporter->testRunEnded(TestRunStats(m_runInfo, m_totals, false));
     }
 
@@ -459,10 +464,10 @@ namespace Catch {
     }
 
     void RunContext::invokeActiveTestCase() {
-        // We need to register a handler for signals/structured exceptions
+        // We need to engage a handler for signals/structured exceptions
         // before running the tests themselves, or the binary can crash
         // without failed test being reported.
-        FatalConditionHandler _;
+        FatalConditionHandlerGuard _(&m_fatalConditionhandler);
         m_activeTestCase->invoke();
     }
 
@@ -518,7 +523,7 @@ namespace Catch {
     void RunContext::handleMessage(
             AssertionInfo const& info,
             ResultWas::OfType resultType,
-            StringRef const& message,
+            StringRef message,
             AssertionReaction& reaction
     ) {
         m_reporter->assertionStarting( info );

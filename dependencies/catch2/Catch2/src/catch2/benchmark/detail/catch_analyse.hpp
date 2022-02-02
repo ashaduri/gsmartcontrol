@@ -15,6 +15,7 @@
 #include <catch2/benchmark/catch_sample_analysis.hpp>
 #include <catch2/benchmark/detail/catch_stats.hpp>
 #include <catch2/interfaces/catch_interfaces_config.hpp>
+#include <catch2/internal/catch_move_and_forward.hpp>
 
 #include <algorithm>
 #include <iterator>
@@ -27,7 +28,7 @@ namespace Catch {
             SampleAnalysis<Duration> analyse(const IConfig &cfg, Environment<Duration>, Iterator first, Iterator last) {
                 if (!cfg.benchmarkNoAnalysis()) {
                     std::vector<double> samples;
-                    samples.reserve(last - first);
+                    samples.reserve(static_cast<size_t>(last - first));
                     std::transform(first, last, std::back_inserter(samples), [](Duration d) { return d.count(); });
 
                     auto analysis = Catch::Benchmark::Detail::analyse_samples(cfg.benchmarkConfidenceInterval(), cfg.benchmarkResamples(), samples.begin(), samples.end());
@@ -45,7 +46,7 @@ namespace Catch {
                     samples2.reserve(samples.size());
                     std::transform(samples.begin(), samples.end(), std::back_inserter(samples2), [](double d) { return Duration(d); });
                     return {
-                        std::move(samples2),
+                        CATCH_MOVE(samples2),
                         wrap_estimate(analysis.mean),
                         wrap_estimate(analysis.standard_deviation),
                         outliers,
@@ -53,7 +54,7 @@ namespace Catch {
                     };
                 } else {
                     std::vector<Duration> samples;
-                    samples.reserve(last - first);
+                    samples.reserve(static_cast<size_t>(last - first));
 
                     Duration mean = Duration(0);
                     int i = 0;
@@ -64,7 +65,7 @@ namespace Catch {
                     mean /= i;
 
                     return {
-                        std::move(samples),
+                        CATCH_MOVE(samples),
                         Estimate<Duration>{mean, mean, mean, 0.0},
                         Estimate<Duration>{Duration(0), Duration(0), Duration(0), 0.0},
                         OutlierClassification{},

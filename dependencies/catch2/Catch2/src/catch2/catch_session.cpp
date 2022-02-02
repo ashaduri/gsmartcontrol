@@ -16,13 +16,16 @@
 #include <catch2/catch_version.hpp>
 #include <catch2/interfaces/catch_interfaces_reporter.hpp>
 #include <catch2/internal/catch_startup_exception_registry.hpp>
+#include <catch2/internal/catch_sharding.hpp>
 #include <catch2/internal/catch_textflow.hpp>
 #include <catch2/internal/catch_windows_h_proxy.hpp>
-#include <catch2/reporters/catch_reporter_listening.hpp>
+#include <catch2/reporters/catch_reporter_multi.hpp>
 #include <catch2/interfaces/catch_interfaces_reporter_registry.hpp>
 #include <catch2/interfaces/catch_interfaces_reporter_factory.hpp>
+#include <catch2/internal/catch_move_and_forward.hpp>
 
 #include <algorithm>
+#include <cassert>
 #include <iomanip>
 #include <set>
 
@@ -31,31 +34,35 @@ namespace Catch {
     namespace {
         const int MaxExitCode = 255;
 
-        IStreamingReporterPtr createReporter(std::string const& reporterName, IConfig const* config) {
+        IStreamingReporterPtr createReporter(std::string const& reporterName, ReporterConfig const& config) {
             auto reporter = Catch::getRegistryHub().getReporterRegistry().create(reporterName, config);
-            CATCH_ENFORCE(reporter, "No reporter registered with name: '" << reporterName << "'");
+            CATCH_ENFORCE(reporter, "No reporter registered with name: '" << reporterName << '\'');
 
             return reporter;
         }
 
         IStreamingReporterPtr makeReporter(Config const* config) {
-            if (Catch::getRegistryHub().getReporterRegistry().getListeners().empty()) {
-                return createReporter(config->getReporterName(), config);
+            if (Catch::getRegistryHub().getReporterRegistry().getListeners().empty()
+                    && config->getReportersAndOutputFiles().size() == 1) {
+                auto& stream = config->getReporterOutputStream(0);
+                return createReporter(config->getReportersAndOutputFiles()[0].reporterName, ReporterConfig(config, stream));
             }
 
-            // On older platforms, returning unique_ptr<ListeningReporter>
-            // when the return type is unique_ptr<IStreamingReporter>
-            // doesn't compile without a std::move call. However, this causes
-            // a warning on newer platforms. Thus, we have to work around
-            // it a bit and downcast the pointer manually.
-            auto ret = Detail::unique_ptr<IStreamingReporter>(new ListeningReporter(config));
-            auto& multi = static_cast<ListeningReporter&>(*ret);
+            auto multi = Detail::make_unique<MultiReporter>(config);
+
             auto const& listeners = Catch::getRegistryHub().getReporterRegistry().getListeners();
             for (auto const& listener : listeners) {
-                multi.addListener(listener->create(Catch::ReporterConfig(config)));
+                multi->addListener(listener->create(Catch::ReporterConfig(config, config->defaultStream())));
             }
-            multi.addReporter(createReporter(config->getReporterName(), config));
-            return ret;
+
+            std::size_t reporterIdx = 0;
+            for (auto const& reporterAndFile : config->getReportersAndOutputFiles()) {
+                auto& stream = config->getReporterOutputStream(reporterIdx);
+                multi->addReporter(createReporter(reporterAndFile.reporterName, ReporterConfig(config, stream)));
+                reporterIdx++;
+            }
+
+            return multi;
         }
 
         class TestGroup {
@@ -63,26 +70,33 @@ namespace Catch {
             explicit TestGroup(IStreamingReporterPtr&& reporter, Config const* config):
                 m_reporter(reporter.get()),
                 m_config{config},
-                m_context{config, std::move(reporter)} {
+                m_context{config, CATCH_MOVE(reporter)} {
+
+                assert( m_config->testSpec().getInvalidSpecs().empty() &&
+                        "Invalid test specs should be handled before running tests" );
 
                 auto const& allTestCases = getAllTestCasesSorted(*m_config);
-                m_matches = m_config->testSpec().matchesByFilter(allTestCases, *m_config);
-                auto const& invalidArgs = m_config->testSpec().getInvalidArgs();
-
-                if (m_matches.empty() && invalidArgs.empty()) {
-                    for (auto const& test : allTestCases)
-                        if (!test.getTestCaseInfo().isHidden())
-                            m_tests.emplace(&test);
+                auto const& testSpec = m_config->testSpec();
+                if ( !testSpec.hasFilters() ) {
+                    for ( auto const& test : allTestCases ) {
+                        if ( !test.getTestCaseInfo().isHidden() ) {
+                            m_tests.emplace( &test );
+                        }
+                    }
                 } else {
-                    for (auto const& match : m_matches)
-                        m_tests.insert(match.tests.begin(), match.tests.end());
+                    m_matches =
+                        testSpec.matchesByFilter( allTestCases, *m_config );
+                    for ( auto const& match : m_matches ) {
+                        m_tests.insert( match.tests.begin(),
+                                        match.tests.end() );
+                    }
                 }
+
+                m_tests = createShard(m_tests, m_config->shardCount(), m_config->shardIndex());
             }
 
             Totals execute() {
-                auto const& invalidArgs = m_config->testSpec().getInvalidArgs();
                 Totals totals;
-                m_context.testGroupStarting(m_config->name(), 1, 1);
                 for (auto const& testCase : m_tests) {
                     if (!m_context.aborting())
                         totals += m_context.runTest(*testCase);
@@ -92,28 +106,26 @@ namespace Catch {
 
                 for (auto const& match : m_matches) {
                     if (match.tests.empty()) {
-                        m_reporter->noMatchingTestCases(match.name);
-                        totals.error = -1;
+                        m_unmatchedTestSpecs = true;
+                        m_reporter->noMatchingTestCases( match.name );
                     }
                 }
 
-                if (!invalidArgs.empty()) {
-                    for (auto const& invalidArg: invalidArgs)
-                         m_reporter->reportInvalidArguments(invalidArg);
-                }
-
-                m_context.testGroupEnded(m_config->name(), totals, 1, 1);
                 return totals;
             }
 
-        private:
-            using Tests = std::set<TestCaseHandle const*>;
+            bool hadUnmatchedTestSpecs() const {
+                return m_unmatchedTestSpecs;
+            }
 
+
+        private:
             IStreamingReporter* m_reporter;
             Config const* m_config;
             RunContext m_context;
-            Tests m_tests;
+            std::set<TestCaseHandle const*> m_tests;
             TestSpec::Matches m_matches;
+            bool m_unmatchedTestSpecs = false;
         };
 
         void applyFilenamesAsTags() {
@@ -161,16 +173,16 @@ namespace Catch {
 
     void Session::showHelp() const {
         Catch::cout()
-                << "\nCatch v" << libraryVersion() << "\n"
-                << m_cli << std::endl
-                << "For more detailed usage please see the project docs\n" << std::endl;
+                << "\nCatch2 v" << libraryVersion() << '\n'
+                << m_cli << '\n'
+                << "For more detailed usage please see the project docs\n\n" << std::flush;
     }
     void Session::libIdentify() {
         Catch::cout()
                 << std::left << std::setw(16) << "description: " << "A Catch2 test executable\n"
                 << std::left << std::setw(16) << "category: " << "testframework\n"
-                << std::left << std::setw(16) << "framework: " << "Catch Test\n"
-                << std::left << std::setw(16) << "version: " << libraryVersion() << std::endl;
+                << std::left << std::setw(16) << "framework: " << "Catch2\n"
+                << std::left << std::setw(16) << "version: " << libraryVersion() << '\n' << std::flush;
     }
 
     int Session::applyCommandLine( int argc, char const * const * argv ) {
@@ -178,6 +190,7 @@ namespace Catch {
             return 1;
 
         auto result = m_cli.parse( Clara::Args( argc, argv ) );
+
         if( !result ) {
             config();
             getCurrentMutableContext().setConfig(m_config.get());
@@ -186,7 +199,7 @@ namespace Catch {
                 << "\nError(s) in input:\n"
                 << TextFlow::Column( result.errorMessage() ).indent( 2 )
                 << "\n\n";
-            Catch::cerr() << "Run with -? for usage\n" << std::endl;
+            Catch::cerr() << "Run with -? for usage\n\n" << std::flush;
             return MaxExitCode;
         }
 
@@ -194,6 +207,7 @@ namespace Catch {
             showHelp();
         if( m_configData.libIdentify )
             libIdentify();
+
         m_config.reset();
         return 0;
     }
@@ -229,12 +243,12 @@ namespace Catch {
 
     int Session::run() {
         if( ( m_configData.waitForKeypress & WaitForKeypress::BeforeStart ) != 0 ) {
-            Catch::cout() << "...waiting for enter/ return before starting" << std::endl;
+            Catch::cout() << "...waiting for enter/ return before starting\n" << std::flush;
             static_cast<void>(std::getchar());
         }
         int exitCode = runInternal();
         if( ( m_configData.waitForKeypress & WaitForKeypress::BeforeExit ) != 0 ) {
-            Catch::cout() << "...waiting for enter/ return before exiting, with code: " << exitCode << std::endl;
+            Catch::cout() << "...waiting for enter/ return before exiting, with code: " << exitCode << '\n' << std::flush;
             static_cast<void>(std::getchar());
         }
         return exitCode;
@@ -263,6 +277,14 @@ namespace Catch {
             return 0;
         }
 
+        if ( m_configData.shardIndex >= m_configData.shardCount ) {
+            Catch::cerr() << "The shard count (" << m_configData.shardCount
+                          << ") must be greater than the shard index ("
+                          << m_configData.shardIndex << ")\n"
+                          << std::flush;
+            return 1;
+        }
+
         CATCH_TRY {
             config(); // Force config to be constructed
 
@@ -278,25 +300,41 @@ namespace Catch {
             // Create reporter(s) so we can route listings through them
             auto reporter = makeReporter(m_config.get());
 
+            auto const& invalidSpecs = m_config->testSpec().getInvalidSpecs();
+            if ( !invalidSpecs.empty() ) {
+                for ( auto const& spec : invalidSpecs ) {
+                    reporter->reportInvalidTestSpec( spec );
+                }
+                return 1;
+            }
+
+
             // Handle list request
             if (list(*reporter, *m_config)) {
                 return 0;
             }
 
-            TestGroup tests { std::move(reporter), m_config.get() };
+            TestGroup tests { CATCH_MOVE(reporter), m_config.get() };
             auto const totals = tests.execute();
 
-            if( m_config->warnAboutNoTests() && totals.error == -1 )
+            if ( tests.hadUnmatchedTestSpecs()
+                && m_config->warnAboutUnmatchedTestSpecs() ) {
+                return 3;
+            }
+
+            if ( totals.testCases.total() == 0
+                && !m_config->zeroTestsCountAsSuccess() ) {
                 return 2;
+            }
 
             // Note that on unices only the lower 8 bits are usually used, clamping
             // the return value to 255 prevents false negative when some multiple
             // of 256 tests has failed
-            return (std::min) (MaxExitCode, (std::max) (totals.error, static_cast<int>(totals.assertions.failed)));
+            return (std::min) (MaxExitCode, static_cast<int>(totals.assertions.failed));
         }
 #if !defined(CATCH_CONFIG_DISABLE_EXCEPTIONS)
         catch( std::exception& ex ) {
-            Catch::cerr() << ex.what() << std::endl;
+            Catch::cerr() << ex.what() << '\n' << std::flush;
             return MaxExitCode;
         }
 #endif

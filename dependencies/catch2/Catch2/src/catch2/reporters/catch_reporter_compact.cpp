@@ -19,9 +19,9 @@
 namespace {
 
     // Colour::LightGrey
-    Catch::Colour::Code dimColour() { return Catch::Colour::FileName; }
+    constexpr Catch::Colour::Code dimColour() { return Catch::Colour::FileName; }
 
-    Catch::StringRef bothOrAll( std::size_t count ) {
+    constexpr Catch::StringRef bothOrAll( std::uint64_t count ) {
         switch (count) {
         case 1:
             return Catch::StringRef{};
@@ -62,25 +62,25 @@ void printTotals(std::ostream& out, const Totals& totals) {
             bothOrAll(totals.assertions.failed) : StringRef{};
         out <<
             "Failed " << bothOrAll(totals.testCases.failed)
-            << pluralise(totals.testCases.failed, "test case") << ", "
+            << pluralise(totals.testCases.failed, "test case"_sr) << ", "
             "failed " << qualify_assertions_failed <<
-            pluralise(totals.assertions.failed, "assertion") << '.';
+            pluralise(totals.assertions.failed, "assertion"_sr) << '.';
     } else if (totals.assertions.total() == 0) {
         out <<
             "Passed " << bothOrAll(totals.testCases.total())
-            << pluralise(totals.testCases.total(), "test case")
+            << pluralise(totals.testCases.total(), "test case"_sr)
             << " (no assertions).";
     } else if (totals.assertions.failed) {
         Colour colour(Colour::ResultError);
         out <<
-            "Failed " << pluralise(totals.testCases.failed, "test case") << ", "
-            "failed " << pluralise(totals.assertions.failed, "assertion") << '.';
+            "Failed " << pluralise(totals.testCases.failed, "test case"_sr) << ", "
+            "failed " << pluralise(totals.assertions.failed, "assertion"_sr) << '.';
     } else {
         Colour colour(Colour::ResultSuccess);
         out <<
             "Passed " << bothOrAll(totals.testCases.passed)
-            << pluralise(totals.testCases.passed, "test case") <<
-            " with " << pluralise(totals.assertions.passed, "assertion") << '.';
+            << pluralise(totals.testCases.passed, "test case"_sr) <<
+            " with " << pluralise(totals.assertions.passed, "assertion"_sr) << '.';
     }
 }
 
@@ -227,7 +227,7 @@ private:
 
         {
             Colour colourGuard(colour);
-            stream << " with " << pluralise(N, "message") << ':';
+            stream << " with " << pluralise(N, "message"_sr) << ':';
         }
 
         while (itMessage != itEnd) {
@@ -258,13 +258,11 @@ private:
             return "Reports test results on a single line, suitable for IDEs";
         }
 
-        void CompactReporter::noMatchingTestCases( std::string const& spec ) {
-            stream << "No test cases matched '" << spec << '\'' << std::endl;
+        void CompactReporter::noMatchingTestCases( StringRef unmatchedSpec ) {
+            m_stream << "No test cases matched '" << unmatchedSpec << "'\n";
         }
 
-        void CompactReporter::assertionStarting( AssertionInfo const& ) {}
-
-        bool CompactReporter::assertionEnded( AssertionStats const& _assertionStats ) {
+        void CompactReporter::assertionEnded( AssertionStats const& _assertionStats ) {
             AssertionResult const& result = _assertionStats.assertionResult;
 
             bool printInfoMessages = true;
@@ -272,27 +270,26 @@ private:
             // Drop out if result was successful and we're not printing those
             if( !m_config->includeSuccessfulResults() && result.isOk() ) {
                 if( result.getResultType() != ResultWas::Warning )
-                    return false;
+                    return;
                 printInfoMessages = false;
             }
 
-            AssertionPrinter printer( stream, _assertionStats, printInfoMessages );
+            AssertionPrinter printer( m_stream, _assertionStats, printInfoMessages );
             printer.print();
 
-            stream << std::endl;
-            return true;
+            m_stream << '\n' << std::flush;
         }
 
         void CompactReporter::sectionEnded(SectionStats const& _sectionStats) {
             double dur = _sectionStats.durationInSeconds;
             if ( shouldShowDuration( *m_config, dur ) ) {
-                stream << getFormattedDuration( dur ) << " s: " << _sectionStats.sectionInfo.name << std::endl;
+                m_stream << getFormattedDuration( dur ) << " s: " << _sectionStats.sectionInfo.name << '\n' << std::flush;
             }
         }
 
         void CompactReporter::testRunEnded( TestRunStats const& _testRunStats ) {
-            printTotals( stream, _testRunStats.totals );
-            stream << '\n' << std::endl;
+            printTotals( m_stream, _testRunStats.totals );
+            m_stream << "\n\n" << std::flush;
             StreamingReporterBase::testRunEnded( _testRunStats );
         }
 

@@ -18,31 +18,49 @@ namespace Catch {
 
         class Columns;
 
+        /**
+         * Represents a column of text with specific width and indentation
+         *
+         * When written out to a stream, it will perform linebreaking
+         * of the provided text so that the written lines fit within
+         * target width.
+         */
         class Column {
+            // String to be written out
             std::string m_string;
+            // Width of the column for linebreaking
             size_t m_width = CATCH_CONFIG_CONSOLE_WIDTH - 1;
+            // Indentation of other lines (including first if initial indent is unset)
             size_t m_indent = 0;
+            // Indentation of the first line
             size_t m_initialIndent = std::string::npos;
 
         public:
-            class iterator {
+            /**
+             * Iterates "lines" in `Column` and return sthem
+             */
+            class const_iterator {
                 friend Column;
                 struct EndTag {};
 
                 Column const& m_column;
-                size_t m_pos = 0;
+                // Where does the current line start?
+                size_t m_lineStart = 0;
+                // How long should the current line be?
+                size_t m_lineLength = 0;
+                // How far have we checked the string to iterate?
+                size_t m_parsedTo = 0;
+                // Should a '-' be appended to the line?
+                bool m_addHyphen = false;
 
-                size_t m_len = 0;
-                size_t m_end = 0;
-                bool m_suffix = false;
+                const_iterator( Column const& column, EndTag ):
+                    m_column( column ), m_lineStart( m_column.m_string.size() ) {}
 
-                iterator( Column const& column, EndTag ):
-                    m_column( column ), m_pos( m_column.m_string.size() ) {}
-
+                // Calculates the length of the current line
                 void calcLength();
 
                 // Returns current indention width
-                size_t indent() const;
+                size_t indentSize() const;
 
                 // Creates an indented and (optionally) suffixed string from
                 // current iterator position, indentation and length.
@@ -56,21 +74,21 @@ namespace Catch {
                 using reference = value_type&;
                 using iterator_category = std::forward_iterator_tag;
 
-                explicit iterator( Column const& column );
+                explicit const_iterator( Column const& column );
 
                 std::string operator*() const;
 
-                iterator& operator++();
-                iterator operator++( int );
+                const_iterator& operator++();
+                const_iterator operator++( int );
 
-                bool operator==( iterator const& other ) const {
-                    return m_pos == other.m_pos && &m_column == &other.m_column;
+                bool operator==( const_iterator const& other ) const {
+                    return m_lineStart == other.m_lineStart && &m_column == &other.m_column;
                 }
-                bool operator!=( iterator const& other ) const {
+                bool operator!=( const_iterator const& other ) const {
                     return !operator==( other );
                 }
             };
-            using const_iterator = iterator;
+            using iterator = const_iterator;
 
             explicit Column( std::string const& text ): m_string( text ) {}
 
@@ -89,8 +107,8 @@ namespace Catch {
             }
 
             size_t width() const { return m_width; }
-            iterator begin() const { return iterator( *this ); }
-            iterator end() const { return { *this, iterator::EndTag{} }; }
+            const_iterator begin() const { return const_iterator( *this ); }
+            const_iterator end() const { return { *this, const_iterator::EndTag{} }; }
 
             friend std::ostream& operator<<( std::ostream& os,
                                              Column const& col );
@@ -110,7 +128,7 @@ namespace Catch {
                 struct EndTag {};
 
                 std::vector<Column> const& m_columns;
-                std::vector<Column::iterator> m_iterators;
+                std::vector<Column::const_iterator> m_iterators;
                 size_t m_activeIterators;
 
                 iterator( Columns const& columns, EndTag );

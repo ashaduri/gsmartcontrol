@@ -11,11 +11,15 @@
 #include <cassert>
 #include <type_traits>
 
+#include <catch2/internal/catch_move_and_forward.hpp>
+
 namespace Catch {
 namespace Detail {
-    // reimplementation of unique_ptr for improved compilation times
-    // Does not support custom deleters (and thus does not require EBO)
-    // Does not support arrays
+    /**
+     * A reimplementation of `std::unique_ptr` for improved compilation performance
+     *
+     * Does not support arrays nor custom deleters.
+     */
     template <typename T>
     class unique_ptr {
         T* m_ptr;
@@ -64,7 +68,11 @@ namespace Detail {
             assert(m_ptr);
             return *m_ptr;
         }
-        T* operator->() const noexcept {
+        T* operator->() noexcept {
+            assert(m_ptr);
+            return m_ptr;
+        }
+        T const* operator->() const noexcept {
             assert(m_ptr);
             return m_ptr;
         }
@@ -94,20 +102,13 @@ namespace Detail {
         }
     };
 
-    // Purposefully doesn't exist
-    // We could also rely on compiler warning + werror for calling plain delete
-    // on a T[], but this seems better.
-    // Maybe add definition and a static assert?
+    //! Specialization to cause compile-time error for arrays
     template <typename T>
     class unique_ptr<T[]>;
 
     template <typename T, typename... Args>
     unique_ptr<T> make_unique(Args&&... args) {
-        // static_cast<Args&&> does the same thing as std::forward in
-        // this case, but does not require including big header (<utility>)
-        // and compiles faster thanks to not requiring template instantiation
-        // and overload resolution
-        return unique_ptr<T>(new T(static_cast<Args&&>(args)...));
+        return unique_ptr<T>(new T(CATCH_FORWARD(args)...));
     }
 
 

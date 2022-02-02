@@ -16,6 +16,7 @@
 #include <catch2/benchmark/detail/catch_measure.hpp>
 #include <catch2/benchmark/detail/catch_run_for_at_least.hpp>
 #include <catch2/benchmark/catch_clock.hpp>
+#include <catch2/internal/catch_unique_ptr.hpp>
 
 #include <algorithm>
 #include <iterator>
@@ -28,11 +29,11 @@ namespace Catch {
             template <typename Clock>
             std::vector<double> resolution(int k) {
                 std::vector<TimePoint<Clock>> times;
-                times.reserve(k + 1);
+                times.reserve(static_cast<size_t>(k + 1));
                 std::generate_n(std::back_inserter(times), k + 1, now<Clock>{});
 
                 std::vector<double> deltas;
-                deltas.reserve(k);
+                deltas.reserve(static_cast<size_t>(k));
                 std::transform(std::next(times.begin()), times.end(), times.begin(),
                     std::back_inserter(deltas),
                     [](TimePoint<Clock> a, TimePoint<Clock> b) { return static_cast<double>((a - b).count()); });
@@ -66,7 +67,9 @@ namespace Catch {
             }
             template <typename Clock>
             EnvironmentEstimate<FloatDuration<Clock>> estimate_clock_cost(FloatDuration<Clock> resolution) {
-                auto time_limit = std::min(resolution * clock_cost_estimation_tick_limit, FloatDuration<Clock>(clock_cost_estimation_time_limit));
+                auto time_limit = (std::min)(
+                    resolution * clock_cost_estimation_tick_limit,
+                    FloatDuration<Clock>(clock_cost_estimation_time_limit));
                 auto time_clock = [](int k) {
                     return Detail::measure<Clock>([k] {
                         for (int i = 0; i < k; ++i) {
@@ -80,7 +83,7 @@ namespace Catch {
                 auto&& r = run_for_at_least<Clock>(std::chrono::duration_cast<ClockDuration<Clock>>(clock_cost_estimation_time), iters, time_clock);
                 std::vector<double> times;
                 int nsamples = static_cast<int>(std::ceil(time_limit / r.elapsed));
-                times.reserve(nsamples);
+                times.reserve(static_cast<size_t>(nsamples));
                 std::generate_n(std::back_inserter(times), nsamples, [time_clock, &r] {
                     return static_cast<double>((time_clock(r.iterations) / r.iterations).count());
                 });
@@ -92,7 +95,14 @@ namespace Catch {
 
             template <typename Clock>
             Environment<FloatDuration<Clock>> measure_environment() {
-                static Environment<FloatDuration<Clock>>* env = nullptr;
+#if defined(__clang__)
+#    pragma clang diagnostic push
+#    pragma clang diagnostic ignored "-Wexit-time-destructors"
+#endif
+                static Catch::Detail::unique_ptr<Environment<FloatDuration<Clock>>> env;
+#if defined(__clang__)
+#    pragma clang diagnostic pop
+#endif
                 if (env) {
                     return *env;
                 }
@@ -101,7 +111,7 @@ namespace Catch {
                 auto resolution = Detail::estimate_clock_resolution<Clock>(iters);
                 auto cost = Detail::estimate_clock_cost<Clock>(resolution.mean);
 
-                env = new Environment<FloatDuration<Clock>>{ resolution, cost };
+                env = Catch::Detail::make_unique<Environment<FloatDuration<Clock>>>( Environment<FloatDuration<Clock>>{resolution, cost} );
                 return *env;
             }
         } // namespace Detail

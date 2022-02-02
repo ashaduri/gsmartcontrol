@@ -8,6 +8,7 @@
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <catch2/internal/catch_string_manip.hpp>
 #include <catch2/catch_tostring.hpp>
+#include <catch2/internal/catch_move_and_forward.hpp>
 
 #include <regex>
 
@@ -42,7 +43,7 @@ namespace Matchers {
         description += m_operation;
         description += ": \"";
         description += m_comparator.m_str;
-        description += "\"";
+        description += '"';
         description += m_comparator.caseSensitivitySuffix();
         return description;
     }
@@ -76,7 +77,7 @@ namespace Matchers {
 
 
 
-    RegexMatcher::RegexMatcher(std::string regex, CaseSensitive caseSensitivity): m_regex(std::move(regex)), m_caseSensitivity(caseSensitivity) {}
+    RegexMatcher::RegexMatcher(std::string regex, CaseSensitive caseSensitivity): m_regex(CATCH_MOVE(regex)), m_caseSensitivity(caseSensitivity) {}
 
     bool RegexMatcher::match(std::string const& matchee) const {
         auto flags = std::regex::ECMAScript; // ECMAScript is the default syntax option anyway
@@ -95,7 +96,7 @@ namespace Matchers {
     StringEqualsMatcher Equals( std::string const& str, CaseSensitive caseSensitivity ) {
         return StringEqualsMatcher( CasedString( str, caseSensitivity) );
     }
-    StringContainsMatcher Contains( std::string const& str, CaseSensitive caseSensitivity ) {
+    StringContainsMatcher ContainsSubstring( std::string const& str, CaseSensitive caseSensitivity ) {
         return StringContainsMatcher( CasedString( str, caseSensitivity) );
     }
     EndsWithMatcher EndsWith( std::string const& str, CaseSensitive caseSensitivity ) {

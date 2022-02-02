@@ -14,33 +14,28 @@
 
 namespace Catch {
 
-    SonarQubeReporter::~SonarQubeReporter() {}
-
     void SonarQubeReporter::testRunStarting(TestRunInfo const& testRunInfo) {
         CumulativeReporterBase::testRunStarting(testRunInfo);
         xml.startElement("testExecutions");
-        xml.writeAttribute("version", '1');
+        xml.writeAttribute("version"_sr, '1');
     }
 
-    void SonarQubeReporter::testGroupEnded(TestGroupStats const& testGroupStats) {
-        CumulativeReporterBase::testGroupEnded(testGroupStats);
-        writeGroup(*m_testGroups.back());
-    }
-
-    void SonarQubeReporter::writeGroup(TestGroupNode const& groupNode) {
+    void SonarQubeReporter::writeRun( TestRunNode const& runNode ) {
         std::map<std::string, std::vector<TestCaseNode const*>> testsPerFile;
-        for ( auto const& child : groupNode.children ) {
+
+        for ( auto const& child : runNode.children ) {
             testsPerFile[child->value.testInfo->lineInfo.file].push_back(
                 child.get() );
         }
 
-        for (auto const& kv : testsPerFile)
-            writeTestFile(kv.first, kv.second);
+        for ( auto const& kv : testsPerFile ) {
+            writeTestFile( kv.first, kv.second );
+        }
     }
 
     void SonarQubeReporter::writeTestFile(std::string const& filename, std::vector<TestCaseNode const*> const& testCaseNodes) {
         XmlWriter::ScopedElement e = xml.scopedElement("file");
-        xml.writeAttribute("path", filename);
+        xml.writeAttribute("path"_sr, filename);
 
         for (auto const& child : testCaseNodes)
             writeTestCase(*child);
@@ -59,10 +54,12 @@ namespace Catch {
         if (!rootName.empty())
             name = rootName + '/' + name;
 
-        if (!sectionNode.assertions.empty() || !sectionNode.stdOut.empty() || !sectionNode.stdErr.empty()) {
+        if ( sectionNode.hasAnyAssertions()
+            || !sectionNode.stdOut.empty()
+            ||  !sectionNode.stdErr.empty() ) {
             XmlWriter::ScopedElement e = xml.scopedElement("testCase");
-            xml.writeAttribute("name", name);
-            xml.writeAttribute("duration", static_cast<long>(sectionNode.stats.durationInSeconds * 1000));
+            xml.writeAttribute("name"_sr, name);
+            xml.writeAttribute("duration"_sr, static_cast<long>(sectionNode.stats.durationInSeconds * 1000));
 
             writeAssertions(sectionNode, okToFail);
         }
@@ -72,8 +69,11 @@ namespace Catch {
     }
 
     void SonarQubeReporter::writeAssertions(SectionNode const& sectionNode, bool okToFail) {
-        for (auto const& assertion : sectionNode.assertions)
-            writeAssertion(assertion, okToFail);
+        for (auto const& assertionOrBenchmark : sectionNode.assertionsAndBenchmarks) {
+            if (assertionOrBenchmark.isAssertion()) {
+                writeAssertion(assertionOrBenchmark.asAssertion(), okToFail);
+            }
+        }
     }
 
     void SonarQubeReporter::writeAssertion(AssertionStats const& stats, bool okToFail) {
@@ -113,26 +113,26 @@ namespace Catch {
             XmlWriter::ScopedElement e = xml.scopedElement(elementName);
 
             ReusableStringStream messageRss;
-            messageRss << result.getTestMacroName() << "(" << result.getExpression() << ")";
-            xml.writeAttribute("message", messageRss.str());
+            messageRss << result.getTestMacroName() << '(' << result.getExpression() << ')';
+            xml.writeAttribute("message"_sr, messageRss.str());
 
             ReusableStringStream textRss;
             if (stats.totals.assertions.total() > 0) {
                 textRss << "FAILED:\n";
                 if (result.hasExpression()) {
-                    textRss << "\t" << result.getExpressionInMacro() << "\n";
+                    textRss << '\t' << result.getExpressionInMacro() << '\n';
                 }
                 if (result.hasExpandedExpression()) {
-                    textRss << "with expansion:\n\t" << result.getExpandedExpression() << "\n";
+                    textRss << "with expansion:\n\t" << result.getExpandedExpression() << '\n';
                 }
             }
 
             if (!result.getMessage().empty())
-                textRss << result.getMessage() << "\n";
+                textRss << result.getMessage() << '\n';
 
             for (auto const& msg : stats.infoMessages)
                 if (msg.type == ResultWas::Info)
-                    textRss << msg.message << "\n";
+                    textRss << msg.message << '\n';
 
             textRss << "at " << result.getSourceInfo();
             xml.writeText(textRss.str(), XmlFormatting::Newline);

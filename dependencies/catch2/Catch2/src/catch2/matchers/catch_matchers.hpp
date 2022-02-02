@@ -9,6 +9,7 @@
 #define CATCH_MATCHERS_HPP_INCLUDED
 
 #include <catch2/matchers/internal/catch_matchers_impl.hpp>
+#include <catch2/internal/catch_move_and_forward.hpp>
 
 #include <string>
 #include <vector>
@@ -34,22 +35,11 @@ namespace Matchers {
         mutable std::string m_cachedToString;
     };
 
-#ifdef __clang__
-#    pragma clang diagnostic push
-#    pragma clang diagnostic ignored "-Wnon-virtual-dtor"
-#endif
-
-    template<typename ObjectT>
-    struct MatcherMethod {
-        virtual bool match(ObjectT const& arg) const = 0;
-    };
-
-#ifdef __clang__
-#    pragma clang diagnostic pop
-#endif
 
     template<typename T>
-    struct MatcherBase : MatcherUntypedBase, MatcherMethod<T> {};
+    struct MatcherBase : MatcherUntypedBase {
+        virtual bool match( T const& arg ) const = 0;
+    };
 
     namespace Detail {
 
@@ -87,11 +77,11 @@ namespace Matchers {
 
             friend MatchAllOf operator&& (MatchAllOf&& lhs, MatcherBase<ArgT> const& rhs) {
                 lhs.m_matchers.push_back(&rhs);
-                return std::move(lhs);
+                return CATCH_MOVE(lhs);
             }
             friend MatchAllOf operator&& (MatcherBase<ArgT> const& lhs, MatchAllOf&& rhs) {
                 rhs.m_matchers.insert(rhs.m_matchers.begin(), &lhs);
-                return std::move(rhs);
+                return CATCH_MOVE(rhs);
             }
 
         private:
@@ -140,11 +130,11 @@ namespace Matchers {
 
             friend MatchAnyOf operator|| (MatchAnyOf&& lhs, MatcherBase<ArgT> const& rhs) {
                 lhs.m_matchers.push_back(&rhs);
-                return std::move(lhs);
+                return CATCH_MOVE(lhs);
             }
             friend MatchAnyOf operator|| (MatcherBase<ArgT> const& lhs, MatchAnyOf&& rhs) {
                 rhs.m_matchers.insert(rhs.m_matchers.begin(), &lhs);
-                return std::move(rhs);
+                return CATCH_MOVE(rhs);
             }
 
         private:

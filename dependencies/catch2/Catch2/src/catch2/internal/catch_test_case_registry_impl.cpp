@@ -12,9 +12,10 @@
 #include <catch2/interfaces/catch_interfaces_registry_hub.hpp>
 #include <catch2/internal/catch_random_number_generator.hpp>
 #include <catch2/internal/catch_run_context.hpp>
-#include <catch2/internal/catch_string_manip.hpp>
+#include <catch2/internal/catch_sharding.hpp>
 #include <catch2/catch_test_case_info.hpp>
 #include <catch2/catch_test_spec.hpp>
+#include <catch2/internal/catch_move_and_forward.hpp>
 
 #include <algorithm>
 #include <set>
@@ -22,24 +23,27 @@
 namespace Catch {
 
 namespace {
-    struct HashTest {
-        explicit HashTest(SimplePcg32& rng_inst) {
-            basis = rng_inst();
-            basis <<= 32;
-            basis |= rng_inst();
-        }
+    struct TestHasher {
+        using hash_t = uint64_t;
 
-        uint64_t basis;
+        explicit TestHasher( hash_t hashSuffix ):
+            m_hashSuffix( hashSuffix ) {}
 
-        uint64_t operator()(TestCaseInfo const& t) const {
-            // Modified FNV-1a hash
-            static constexpr uint64_t prime = 1099511628211;
-            uint64_t hash = basis;
+        uint64_t m_hashSuffix;
+
+        uint32_t operator()( TestCaseInfo const& t ) const {
+            // FNV-1a hash with multiplication fold.
+            const hash_t prime = 1099511628211u;
+            hash_t hash = 14695981039346656037u;
             for (const char c : t.name) {
                 hash ^= c;
                 hash *= prime;
             }
-            return hash;
+            hash ^= m_hashSuffix;
+            hash *= prime;
+            const uint32_t low{ static_cast<uint32_t>(hash) };
+            const uint32_t high{ static_cast<uint32_t>(hash >> 32) };
+            return low * high;
         }
     };
 } // end anonymous namespace
@@ -51,20 +55,36 @@ namespace {
 
         case TestRunOrder::LexicographicallySorted: {
             std::vector<TestCaseHandle> sorted = unsortedTestCases;
-            std::sort(sorted.begin(), sorted.end());
+            std::sort(
+                sorted.begin(),
+                sorted.end(),
+                []( TestCaseHandle const& lhs, TestCaseHandle const& rhs ) {
+                    return lhs.getTestCaseInfo() < rhs.getTestCaseInfo();
+                }
+            );
             return sorted;
         }
         case TestRunOrder::Randomized: {
             seedRng(config);
-            HashTest h(rng());
-            std::vector<std::pair<uint64_t, TestCaseHandle>> indexed_tests;
+            using TestWithHash = std::pair<TestHasher::hash_t, TestCaseHandle>;
+
+            TestHasher h{ config.rngSeed() };
+            std::vector<TestWithHash> indexed_tests;
             indexed_tests.reserve(unsortedTestCases.size());
 
             for (auto const& handle : unsortedTestCases) {
                 indexed_tests.emplace_back(h(handle.getTestCaseInfo()), handle);
             }
 
-            std::sort(indexed_tests.begin(), indexed_tests.end());
+            std::sort( indexed_tests.begin(),
+                       indexed_tests.end(),
+                       []( TestWithHash const& lhs, TestWithHash const& rhs ) {
+                           if ( lhs.first == rhs.first ) {
+                               return lhs.second.getTestCaseInfo() <
+                                      rhs.second.getTestCaseInfo();
+                           }
+                           return lhs.first < rhs.first;
+                       } );
 
             std::vector<TestCaseHandle> randomized;
             randomized.reserve(indexed_tests.size());
@@ -88,14 +108,22 @@ namespace {
         return testSpec.matches( testCase.getTestCaseInfo() ) && isThrowSafe( testCase, config );
     }
 
-    void enforceNoDuplicateTestCases( std::vector<TestCaseHandle> const& functions ) {
-        std::set<TestCaseHandle> seenFunctions;
-        for( auto const& function : functions ) {
-            auto prev = seenFunctions.insert( function );
-            CATCH_ENFORCE( prev.second,
-                    "error: TEST_CASE( \"" << function.getTestCaseInfo().name << "\" ) already defined.\n"
-                    << "\tFirst seen at " << prev.first->getTestCaseInfo().lineInfo << "\n"
-                    << "\tRedefined at " << function.getTestCaseInfo().lineInfo );
+    void
+    enforceNoDuplicateTestCases( std::vector<TestCaseHandle> const& tests ) {
+        auto testInfoCmp = []( TestCaseInfo const* lhs,
+                               TestCaseInfo const* rhs ) {
+            return *lhs < *rhs;
+        };
+        std::set<TestCaseInfo const*, decltype(testInfoCmp)> seenTests(testInfoCmp);
+        for ( auto const& test : tests ) {
+            const auto infoPtr = &test.getTestCaseInfo();
+            const auto prev = seenTests.insert( infoPtr );
+            CATCH_ENFORCE(
+                prev.second,
+                "error: test case \"" << infoPtr->name << "\", with tags \""
+                    << infoPtr->tagsAsString() << "\" already defined.\n"
+                    << "\tFirst seen at " << ( *prev.first )->lineInfo << "\n"
+                    << "\tRedefined at " << infoPtr->lineInfo );
         }
     }
 
@@ -108,7 +136,7 @@ namespace {
                 filtered.push_back(testCase);
             }
         }
-        return filtered;
+        return createShard(filtered, config.shardCount(), config.shardIndex());
     }
     std::vector<TestCaseHandle> const& getAllTestCasesSorted( IConfig const& config ) {
         return getRegistryHub().getTestCaseRegistry().getAllTestsSorted( config );
@@ -117,8 +145,8 @@ namespace {
     void TestRegistry::registerTest(Detail::unique_ptr<TestCaseInfo> testInfo, Detail::unique_ptr<ITestInvoker> testInvoker) {
         m_handles.emplace_back(testInfo.get(), testInvoker.get());
         m_viewed_test_infos.push_back(testInfo.get());
-        m_owned_test_infos.push_back(std::move(testInfo));
-        m_invokers.push_back(std::move(testInvoker));
+        m_owned_test_infos.push_back(CATCH_MOVE(testInfo));
+        m_invokers.push_back(CATCH_MOVE(testInvoker));
     }
 
     std::vector<TestCaseInfo*> const& TestRegistry::getAllInfos() const {
@@ -144,19 +172,6 @@ namespace {
     ///////////////////////////////////////////////////////////////////////////
     void TestInvokerAsFunction::invoke() const {
         m_testAsFunction();
-    }
-
-    std::string extractClassName( StringRef const& classOrQualifiedMethodName ) {
-        std::string className(classOrQualifiedMethodName);
-        if( startsWith( className, '&' ) )
-        {
-            std::size_t lastColons = className.rfind( "::" );
-            std::size_t penultimateColons = className.rfind( "::", lastColons-1 );
-            if( penultimateColons == std::string::npos )
-                penultimateColons = 1;
-            className = className.substr( penultimateColons, lastColons-penultimateColons );
-        }
-        return className;
     }
 
 } // end namespace Catch

@@ -31,8 +31,8 @@ namespace Catch {
                   .initialIndent(indent) << '\n';
         }
 
-        std::string escape(std::string const& str) {
-            std::string escaped = str;
+        std::string escape(StringRef str) {
+            std::string escaped = static_cast<std::string>(str);
             replaceInPlace(escaped, "|", "||");
             replaceInPlace(escaped, "'", "|'");
             replaceInPlace(escaped, "\n", "|n");
@@ -46,19 +46,17 @@ namespace Catch {
 
     TeamCityReporter::~TeamCityReporter() {}
 
-    void TeamCityReporter::testGroupStarting(GroupInfo const& groupInfo) {
-        StreamingReporterBase::testGroupStarting(groupInfo);
-        stream << "##teamcity[testSuiteStarted name='"
-            << escape(groupInfo.name) << "']\n";
+    void TeamCityReporter::testRunStarting( TestRunInfo const& runInfo ) {
+        m_stream << "##teamcity[testSuiteStarted name='" << escape( runInfo.name )
+               << "']\n";
     }
 
-    void TeamCityReporter::testGroupEnded(TestGroupStats const& testGroupStats) {
-        StreamingReporterBase::testGroupEnded(testGroupStats);
-        stream << "##teamcity[testSuiteFinished name='"
-            << escape(testGroupStats.groupInfo.name) << "']\n";
+    void TeamCityReporter::testRunEnded( TestRunStats const& runStats ) {
+        m_stream << "##teamcity[testSuiteFinished name='"
+               << escape( runStats.runInfo.name ) << "']\n";
     }
 
-    bool TeamCityReporter::assertionEnded(AssertionStats const& assertionStats) {
+    void TeamCityReporter::assertionEnded(AssertionStats const& assertionStats) {
         AssertionResult const& result = assertionStats.assertionResult;
         if (!result.isOk()) {
 
@@ -114,44 +112,43 @@ namespace Catch {
 
             if (currentTestCaseInfo->okToFail()) {
                 msg << "- failure ignore as test marked as 'ok to fail'\n";
-                stream << "##teamcity[testIgnored"
+                m_stream << "##teamcity[testIgnored"
                     << " name='" << escape(currentTestCaseInfo->name) << '\''
                     << " message='" << escape(msg.str()) << '\''
                     << "]\n";
             } else {
-                stream << "##teamcity[testFailed"
+                m_stream << "##teamcity[testFailed"
                     << " name='" << escape(currentTestCaseInfo->name) << '\''
                     << " message='" << escape(msg.str()) << '\''
                     << "]\n";
             }
         }
-        stream.flush();
-        return true;
+        m_stream.flush();
     }
 
     void TeamCityReporter::testCaseStarting(TestCaseInfo const& testInfo) {
         m_testTimer.start();
         StreamingReporterBase::testCaseStarting(testInfo);
-        stream << "##teamcity[testStarted name='"
+        m_stream << "##teamcity[testStarted name='"
             << escape(testInfo.name) << "']\n";
-        stream.flush();
+        m_stream.flush();
     }
 
     void TeamCityReporter::testCaseEnded(TestCaseStats const& testCaseStats) {
         StreamingReporterBase::testCaseEnded(testCaseStats);
         auto const& testCaseInfo = *testCaseStats.testInfo;
         if (!testCaseStats.stdOut.empty())
-            stream << "##teamcity[testStdOut name='"
+            m_stream << "##teamcity[testStdOut name='"
             << escape(testCaseInfo.name)
             << "' out='" << escape(testCaseStats.stdOut) << "']\n";
         if (!testCaseStats.stdErr.empty())
-            stream << "##teamcity[testStdErr name='"
+            m_stream << "##teamcity[testStdErr name='"
             << escape(testCaseInfo.name)
             << "' out='" << escape(testCaseStats.stdErr) << "']\n";
-        stream << "##teamcity[testFinished name='"
+        m_stream << "##teamcity[testFinished name='"
             << escape(testCaseInfo.name) << "' duration='"
             << m_testTimer.getElapsedMilliseconds() << "']\n";
-        stream.flush();
+        m_stream.flush();
     }
 
     void TeamCityReporter::printSectionHeader(std::ostream& os) {

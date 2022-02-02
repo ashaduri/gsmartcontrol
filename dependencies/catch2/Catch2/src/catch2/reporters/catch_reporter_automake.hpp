@@ -12,7 +12,7 @@
 
 namespace Catch {
 
-    struct AutomakeReporter : StreamingReporterBase {
+    struct AutomakeReporter final : StreamingReporterBase {
         AutomakeReporter( ReporterConfig const& _config )
           :   StreamingReporterBase( _config )
         {}
@@ -24,12 +24,7 @@ namespace Catch {
             return "Reports test results in the format of Automake .trs files"s;
         }
 
-        void assertionStarting( AssertionInfo const& ) override {}
-
-        bool assertionEnded( AssertionStats const& /*_assertionStats*/ ) override { return true; }
-
         void testCaseEnded(TestCaseStats const& _testCaseStats) override;
-
         void skipTest(TestCaseInfo const& testInfo) override;
 
     };

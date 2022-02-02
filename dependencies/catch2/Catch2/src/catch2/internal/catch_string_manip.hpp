@@ -17,12 +17,13 @@
 namespace Catch {
 
     bool startsWith( std::string const& s, std::string const& prefix );
-    bool startsWith( std::string const& s, char prefix );
+    bool startsWith( StringRef s, char prefix );
     bool endsWith( std::string const& s, std::string const& suffix );
     bool endsWith( std::string const& s, char suffix );
     bool contains( std::string const& s, std::string const& infix );
     void toLowerInPlace( std::string& s );
     std::string toLower( std::string const& s );
+    char toLower( char c );
     //! Returns a new string without whitespace at the start/end
     std::string trim( std::string const& str );
     //! Returns a substring of the original ref without whitespace. Beware lifetimes!
@@ -32,13 +33,26 @@ namespace Catch {
     std::vector<StringRef> splitStringRef( StringRef str, char delimiter );
     bool replaceInPlace( std::string& str, std::string const& replaceThis, std::string const& withThis );
 
+    /**
+     * Helper for streaming a "count [maybe-plural-of-label]" human-friendly string
+     *
+     * Usage example:
+     * ```cpp
+     * std::cout << "Found " << pluralise(count, "error") << '\n';
+     * ```
+     *
+     * **Important:** The provided string must outlive the instance
+     */
     struct pluralise {
-        pluralise( std::size_t count, std::string const& label );
+        pluralise(std::uint64_t count, StringRef label):
+            m_count(count),
+            m_label(label)
+        {}
 
         friend std::ostream& operator << ( std::ostream& os, pluralise const& pluraliser );
 
-        std::size_t m_count;
-        std::string m_label;
+        std::uint64_t m_count;
+        StringRef m_label;
     };
 }
 

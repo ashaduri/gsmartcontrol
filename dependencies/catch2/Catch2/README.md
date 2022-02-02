@@ -2,11 +2,24 @@
 ![Catch2 logo](data/artwork/catch2-logo-small.png)
 
 [![Github Releases](https://img.shields.io/github/release/catchorg/catch2.svg)](https://github.com/catchorg/catch2/releases)
-[![Build Status](https://travis-ci.org/catchorg/Catch2.svg?branch=devel)](https://travis-ci.org/catchorg/Catch2)
+[![Linux build status](https://github.com/catchorg/Catch2/actions/workflows/linux-simple-builds.yml/badge.svg)](https://github.com/catchorg/Catch2/actions/workflows/linux-simple-builds.yml)
+[![Linux build status](https://github.com/catchorg/Catch2/actions/workflows/linux-other-builds.yml/badge.svg)](https://github.com/catchorg/Catch2/actions/workflows/linux-other-builds.yml)
+[![MacOS build status](https://github.com/catchorg/Catch2/actions/workflows/mac-builds.yml/badge.svg)](https://github.com/catchorg/Catch2/actions/workflows/mac-builds.yml)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/catchorg/Catch2?svg=true&branch=devel)](https://ci.appveyor.com/project/catchorg/catch2)
 [![Code Coverage](https://codecov.io/gh/catchorg/Catch2/branch/devel/graph/badge.svg)](https://codecov.io/gh/catchorg/Catch2)
 [![Try online](https://img.shields.io/badge/try-online-blue.svg)](https://godbolt.org/z/9x9qoM)
 [![Join the chat in Discord: https://discord.gg/4CWS9zD](https://img.shields.io/badge/Discord-Chat!-brightgreen.svg)](https://discord.gg/4CWS9zD)
+
+
+## What's the Catch2?
+
+Catch2 is mainly a unit testing framework for C++, but it also
+provides basic micro-benchmarking features, and simple BDD macros.
+
+Catch2's main advantage is that using it is both simple and natural.
+Tests autoregister themselves and do not have to be named with valid
+identifiers, assertions look like normal C++ code, and sections provide
+a nice way to share set-up and tear-down code in tests.
 
 
 ## Catch2 v3 is being developed!
@@ -24,17 +37,6 @@ guidelines on getting started, and collects most common migration
 problems.
 
 
-## What's the Catch2?
-
-Catch2 is mainly a unit testing framework for C++, but it also
-provides basic micro-benchmarking features, and simple BDD macros.
-
-Catch2's main advantage is that using it is both simple and natural.
-Tests autoregister themselves and do not have to be named with valid
-identifiers, assertions look like normal C++ code, and sections provide
-a nice way to share set-up and tear-down code in tests.
-
-
 ## How to use it
 This documentation comprises these three parts:
 
@@ -45,5 +47,6 @@ This documentation comprises these three parts:
 
 ## More
 * Issues and bugs can be raised on the [Issue tracker on GitHub](https://github.com/catchorg/Catch2/issues)
-* For discussion or questions please use [the dedicated Google Groups forum](https://groups.google.com/forum/?fromgroups#!forum/catch-forum) or our [Discord](https://discord.gg/4CWS9zD)
-* See [who else is using Catch2](docs/opensource-users.md#top)
+* For discussion or questions please use [our Discord](https://discord.gg/4CWS9zD)
+* See who else is using Catch2 in [Open Source Software](docs/opensource-users.md#top)
+or [commercially](docs/commercial-users.md#top).

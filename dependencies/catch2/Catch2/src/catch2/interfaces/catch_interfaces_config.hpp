@@ -9,6 +9,7 @@
 #define CATCH_INTERFACES_CONFIG_HPP_INCLUDED
 
 #include <catch2/internal/catch_noncopyable.hpp>
+#include <catch2/internal/catch_stringref.hpp>
 
 #include <chrono>
 #include <iosfwd>
@@ -25,8 +26,10 @@ namespace Catch {
 
     struct WarnAbout { enum What {
         Nothing = 0x00,
+        //! A test case or leaf section did not run any assertions
         NoAssertions = 0x01,
-        NoTests = 0x02
+        //! A command line test spec matched no test cases
+        UnmatchedTestSpec = 0x02,
     }; };
 
     enum class ShowDurations {
@@ -58,12 +61,13 @@ namespace Catch {
         virtual ~IConfig();
 
         virtual bool allowThrows() const = 0;
-        virtual std::ostream& stream() const = 0;
-        virtual std::string name() const = 0;
+        virtual std::ostream& defaultStream() const = 0;
+        virtual StringRef name() const = 0;
         virtual bool includeSuccessfulResults() const = 0;
         virtual bool shouldDebugBreak() const = 0;
         virtual bool warnAboutMissingAssertions() const = 0;
-        virtual bool warnAboutNoTests() const = 0;
+        virtual bool warnAboutUnmatchedTestSpecs() const = 0;
+        virtual bool zeroTestsCountAsSuccess() const = 0;
         virtual int abortAfter() const = 0;
         virtual bool showInvisibles() const = 0;
         virtual ShowDurations showDurations() const = 0;
@@ -72,13 +76,15 @@ namespace Catch {
         virtual bool hasTestFilters() const = 0;
         virtual std::vector<std::string> const& getTestsOrTags() const = 0;
         virtual TestRunOrder runOrder() const = 0;
-        virtual unsigned int rngSeed() const = 0;
+        virtual uint32_t rngSeed() const = 0;
+        virtual unsigned int shardCount() const = 0;
+        virtual unsigned int shardIndex() const = 0;
         virtual UseColour useColour() const = 0;
         virtual std::vector<std::string> const& getSectionsToRun() const = 0;
         virtual Verbosity verbosity() const = 0;
 
         virtual bool benchmarkNoAnalysis() const = 0;
-        virtual int benchmarkSamples() const = 0;
+        virtual unsigned int benchmarkSamples() const = 0;
         virtual double benchmarkConfidenceInterval() const = 0;
         virtual unsigned int benchmarkResamples() const = 0;
         virtual std::chrono::milliseconds benchmarkWarmupTime() const = 0;

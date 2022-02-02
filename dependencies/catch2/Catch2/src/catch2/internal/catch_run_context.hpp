@@ -8,16 +8,17 @@
 #ifndef CATCH_RUN_CONTEXT_HPP_INCLUDED
 #define CATCH_RUN_CONTEXT_HPP_INCLUDED
 
-#include <catch2/interfaces/catch_interfaces_runner.hpp>
 #include <catch2/interfaces/catch_interfaces_reporter.hpp>
 #include <catch2/internal/catch_test_registry.hpp>
+#include <catch2/internal/catch_fatal_condition_handler.hpp>
 #include <catch2/catch_test_case_info.hpp>
 #include <catch2/catch_message.hpp>
 #include <catch2/catch_totals.hpp>
 #include <catch2/internal/catch_test_case_tracker.hpp>
 #include <catch2/catch_assertion_info.hpp>
 #include <catch2/catch_assertion_result.hpp>
-#include <catch2/internal/catch_option.hpp>
+#include <catch2/internal/catch_optional.hpp>
+#include <catch2/internal/catch_move_and_forward.hpp>
 
 #include <string>
 
@@ -29,7 +30,7 @@ namespace Catch {
 
     ///////////////////////////////////////////////////////////////////////////
 
-    class RunContext : public IResultCapture, public IRunner {
+    class RunContext : public IResultCapture {
 
     public:
         RunContext( RunContext const& ) = delete;
@@ -38,9 +39,6 @@ namespace Catch {
         explicit RunContext( IConfig const* _config, IStreamingReporterPtr&& reporter );
 
         ~RunContext() override;
-
-        void testGroupStarting( std::string const& testSpec, std::size_t groupIndex, std::size_t groupsCount );
-        void testGroupEnded( std::string const& testSpec, Totals const& totals, std::size_t groupIndex, std::size_t groupsCount );
 
         Totals runTest(TestCaseHandle const& testCase);
 
@@ -54,7 +52,7 @@ namespace Catch {
         void handleMessage
                 (   AssertionInfo const& info,
                     ResultWas::OfType resultType,
-                    StringRef const& message,
+                    StringRef message,
                     AssertionReaction& reaction ) override;
         void handleUnexpectedExceptionNotThrown
                 (   AssertionInfo const& info,
@@ -77,10 +75,10 @@ namespace Catch {
 
         auto acquireGeneratorTracker( StringRef generatorName, SourceLineInfo const& lineInfo ) -> IGeneratorTracker& override;
 
-        void benchmarkPreparing( std::string const& name ) override;
+        void benchmarkPreparing( StringRef name ) override;
         void benchmarkStarting( BenchmarkInfo const& info ) override;
         void benchmarkEnded( BenchmarkStats<> const& stats ) override;
-        void benchmarkFailed( std::string const& error ) override;
+        void benchmarkFailed( StringRef error ) override;
 
         void pushScopedMessage( MessageInfo const& message ) override;
         void popScopedMessage( MessageInfo const& message ) override;
@@ -101,7 +99,7 @@ namespace Catch {
 
     public:
         // !TBD We need to do this another way!
-        bool aborting() const override;
+        bool aborting() const;
 
     private:
 
@@ -128,7 +126,7 @@ namespace Catch {
         IMutableContext& m_context;
         TestCaseHandle const* m_activeTestCase = nullptr;
         ITracker* m_testCaseTracker = nullptr;
-        Option<AssertionResult> m_lastResult;
+        Optional<AssertionResult> m_lastResult;
 
         IConfig const* m_config;
         Totals m_totals;
@@ -139,6 +137,7 @@ namespace Catch {
         std::vector<SectionEndInfo> m_unfinishedSections;
         std::vector<ITracker*> m_activeSections;
         TrackerContext m_trackerContext;
+        FatalConditionHandler m_fatalConditionhandler;
         bool m_lastAssertionPassed = false;
         bool m_shouldReportUnexpected = true;
         bool m_includeSuccessfulResults;

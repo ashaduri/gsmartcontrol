@@ -69,11 +69,13 @@ namespace Catch {
         // Save previous errno, to prevent sprintf from overwriting it
         ErrnoGuard guard;
 #ifdef _MSC_VER
-        sprintf_s( buffer, "%.3f", duration );
+        size_t printedLength = static_cast<size_t>(
+            sprintf_s( buffer, "%.3f", duration ) );
 #else
-        std::snprintf( buffer, maxDoubleSize, "%.3f", duration );
+        size_t printedLength = static_cast<size_t>(
+            std::snprintf( buffer, maxDoubleSize, "%.3f", duration ) );
 #endif
-        return std::string( buffer );
+        return std::string( buffer, printedLength );
     }
 
     bool shouldShowDuration( IConfig const& config, double duration ) {
@@ -137,7 +139,7 @@ namespace Catch {
                            .width( 5 + maxNameLen )
                     << '\n';
             } else {
-                out << TextFlow::Column( desc.name + ":" )
+                out << TextFlow::Column( desc.name + ':' )
                                .indent( 2 )
                                .width( 5 + maxNameLen ) +
                            TextFlow::Column( desc.description )
@@ -169,7 +171,7 @@ namespace Catch {
                                .width( CATCH_CONFIG_CONSOLE_WIDTH - 10 );
             out << str << wrapper << '\n';
         }
-        out << pluralise( tags.size(), "tag" ) << '\n' << std::endl;
+        out << pluralise(tags.size(), "tag"_sr) << "\n\n" << std::flush;
     }
 
     void defaultListTests(std::ostream& out, std::vector<TestCaseHandle> const& tests, bool isFiltered, Verbosity verbosity) {
@@ -196,7 +198,7 @@ namespace Catch {
 
             out << TextFlow::Column(testCaseInfo.name).initialIndent(2).indent(4) << '\n';
             if (verbosity >= Verbosity::High) {
-                out << TextFlow::Column(Catch::Detail::stringify(testCaseInfo.lineInfo)).indent(4) << std::endl;
+                out << TextFlow::Column(Catch::Detail::stringify(testCaseInfo.lineInfo)).indent(4) << '\n';
             }
             if (!testCaseInfo.tags.empty() &&
                 verbosity > Verbosity::Quiet) {
@@ -205,10 +207,11 @@ namespace Catch {
         }
 
         if (isFiltered) {
-            out << pluralise(tests.size(), "matching test case") << '\n' << std::endl;
+            out << pluralise(tests.size(), "matching test case"_sr);
         } else {
-            out << pluralise(tests.size(), "test case") << '\n' << std::endl;
+            out << pluralise(tests.size(), "test case"_sr);
         }
+        out << "\n\n" << std::flush;
     }
 
 } // namespace Catch
@@ -217,23 +220,30 @@ namespace Catch {
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 
 namespace Catch {
+
+    void EventListenerBase::fatalErrorEncountered( StringRef ) {}
+
+    void EventListenerBase::benchmarkPreparing( StringRef ) {}
+    void EventListenerBase::benchmarkStarting( BenchmarkInfo const& ) {}
+    void EventListenerBase::benchmarkEnded( BenchmarkStats<> const& ) {}
+    void EventListenerBase::benchmarkFailed( StringRef ) {}
+
     void EventListenerBase::assertionStarting( AssertionInfo const& ) {}
 
-    bool EventListenerBase::assertionEnded( AssertionStats const& ) {
-        return false;
-    }
+    void EventListenerBase::assertionEnded( AssertionStats const& ) {}
     void EventListenerBase::listReporters(
         std::vector<ReporterDescription> const& ) {}
     void EventListenerBase::listTests( std::vector<TestCaseHandle> const& ) {}
     void EventListenerBase::listTags( std::vector<TagInfo> const& ) {}
-    void EventListenerBase::noMatchingTestCases( std::string const& ) {}
+    void EventListenerBase::noMatchingTestCases( StringRef ) {}
+    void EventListenerBase::reportInvalidTestSpec( StringRef ) {}
     void EventListenerBase::testRunStarting( TestRunInfo const& ) {}
-    void EventListenerBase::testGroupStarting( GroupInfo const& ) {}
     void EventListenerBase::testCaseStarting( TestCaseInfo const& ) {}
+    void EventListenerBase::testCasePartialStarting(TestCaseInfo const&, uint64_t) {}
     void EventListenerBase::sectionStarting( SectionInfo const& ) {}
     void EventListenerBase::sectionEnded( SectionStats const& ) {}
+    void EventListenerBase::testCasePartialEnded(TestCaseStats const&, uint64_t) {}
     void EventListenerBase::testCaseEnded( TestCaseStats const& ) {}
-    void EventListenerBase::testGroupEnded( TestGroupStats const& ) {}
     void EventListenerBase::testRunEnded( TestRunStats const& ) {}
     void EventListenerBase::skipTest( TestCaseInfo const& ) {}
 } // namespace Catch

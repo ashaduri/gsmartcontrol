@@ -9,39 +9,45 @@
 #include <catch2/internal/catch_compiler_capabilities.hpp>
 #include <catch2/internal/catch_enforce.hpp>
 #include <catch2/internal/catch_test_failure_exception.hpp>
+#include <catch2/internal/catch_move_and_forward.hpp>
 
 namespace Catch {
 
     ExceptionTranslatorRegistry::~ExceptionTranslatorRegistry() {
     }
 
-    void ExceptionTranslatorRegistry::registerTranslator( const IExceptionTranslator* translator ) {
-        m_translators.push_back( Detail::unique_ptr<const IExceptionTranslator>( translator ) );
+    void ExceptionTranslatorRegistry::registerTranslator( Detail::unique_ptr<IExceptionTranslator>&& translator ) {
+        m_translators.push_back( CATCH_MOVE( translator ) );
     }
 
 #if !defined(CATCH_CONFIG_DISABLE_EXCEPTIONS)
     std::string ExceptionTranslatorRegistry::translateActiveException() const {
+        // Compiling a mixed mode project with MSVC means that CLR
+        // exceptions will be caught in (...) as well. However, these do
+        // do not fill-in std::current_exception and thus lead to crash
+        // when attempting rethrow.
+        // /EHa switch also causes structured exceptions to be caught
+        // here, but they fill-in current_exception properly, so
+        // at worst the output should be a little weird, instead of
+        // causing a crash.
+        if ( std::current_exception() == nullptr ) {
+            return "Non C++ exception. Possibly a CLR exception.";
+        }
+
+        // First we try user-registered translators. If none of them can
+        // handle the exception, it will be rethrown handled by our defaults.
         try {
-            // Compiling a mixed mode project with MSVC means that CLR
-            // exceptions will be caught in (...) as well. However, these
-            // do not fill-in std::current_exception and thus lead to crash
-            // when attempting rethrow.
-            // /EHa switch also causes structured exceptions to be caught
-            // here, but they fill-in current_exception properly, so
-            // at worst the output should be a little weird, instead of
-            // causing a crash.
-            if (std::current_exception() == nullptr) {
-                return "Non C++ exception. Possibly a CLR exception.";
-            }
             return tryTranslators();
         }
+        // To avoid having to handle TFE explicitly everywhere, we just
+        // rethrow it so that it goes back up the caller.
         catch( TestFailureException& ) {
             std::rethrow_exception(std::current_exception());
         }
-        catch( std::exception& ex ) {
+        catch( std::exception const& ex ) {
             return ex.what();
         }
-        catch( std::string& msg ) {
+        catch( std::string const& msg ) {
             return msg;
         }
         catch( const char* msg ) {

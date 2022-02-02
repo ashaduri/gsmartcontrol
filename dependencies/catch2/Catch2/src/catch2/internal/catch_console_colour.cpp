@@ -59,10 +59,10 @@ namespace {
 
     class Win32ColourImpl : public IColourImpl {
     public:
-        Win32ColourImpl() : stdoutHandle( GetStdHandle(STD_OUTPUT_HANDLE) )
-        {
+        Win32ColourImpl() {
             CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
-            GetConsoleScreenBufferInfo( stdoutHandle, &csbiInfo );
+            GetConsoleScreenBufferInfo( GetStdHandle( STD_OUTPUT_HANDLE ),
+                                        &csbiInfo );
             originalForegroundAttributes = csbiInfo.wAttributes & ~( BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_BLUE | BACKGROUND_INTENSITY );
             originalBackgroundAttributes = csbiInfo.wAttributes & ~( FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY );
         }
@@ -93,9 +93,10 @@ namespace {
 
     private:
         void setTextAttribute( WORD _textAttribute ) {
-            SetConsoleTextAttribute( stdoutHandle, _textAttribute | originalBackgroundAttributes );
+            SetConsoleTextAttribute( GetStdHandle( STD_OUTPUT_HANDLE ),
+                                     _textAttribute |
+                                         originalBackgroundAttributes );
         }
-        HANDLE stdoutHandle;
         WORD originalForegroundAttributes;
         WORD originalBackgroundAttributes;
     };
@@ -159,7 +160,7 @@ namespace {
         void setColour( const char* _escapeCode ) {
             // The escape sequence must be flushed to console, otherwise if
             // stdin and stderr are intermixed, we'd get accidentally coloured output.
-            getCurrentContext().getConfig()->stream()
+            getCurrentContext().getConfig()->defaultStream()
                 << '\033' << _escapeCode << std::flush;
         }
     };

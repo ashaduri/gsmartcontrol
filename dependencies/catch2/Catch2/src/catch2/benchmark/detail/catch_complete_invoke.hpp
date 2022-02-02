@@ -10,13 +10,13 @@
 #ifndef CATCH_COMPLETE_INVOKE_HPP_INCLUDED
 #define CATCH_COMPLETE_INVOKE_HPP_INCLUDED
 
-#include <catch2/internal/catch_enforce.hpp>
+#include <catch2/internal/catch_test_failure_exception.hpp>
 #include <catch2/internal/catch_meta.hpp>
 #include <catch2/interfaces/catch_interfaces_capture.hpp>
 #include <catch2/interfaces/catch_interfaces_registry_hub.hpp>
+#include <catch2/internal/catch_move_and_forward.hpp>
 
 #include <type_traits>
-#include <utility>
 
 namespace Catch {
     namespace Benchmark {
@@ -33,14 +33,14 @@ namespace Catch {
             struct CompleteInvoker {
                 template <typename Fun, typename... Args>
                 static Result invoke(Fun&& fun, Args&&... args) {
-                    return std::forward<Fun>(fun)(std::forward<Args>(args)...);
+                    return CATCH_FORWARD(fun)(CATCH_FORWARD(args)...);
                 }
             };
             template <>
             struct CompleteInvoker<void> {
                 template <typename Fun, typename... Args>
                 static CompleteType_t<void> invoke(Fun&& fun, Args&&... args) {
-                    std::forward<Fun>(fun)(std::forward<Args>(args)...);
+                    CATCH_FORWARD(fun)(CATCH_FORWARD(args)...);
                     return {};
                 }
             };
@@ -48,20 +48,14 @@ namespace Catch {
             // invoke and not return void :(
             template <typename Fun, typename... Args>
             CompleteType_t<FunctionReturnType<Fun, Args...>> complete_invoke(Fun&& fun, Args&&... args) {
-                return CompleteInvoker<FunctionReturnType<Fun, Args...>>::invoke(std::forward<Fun>(fun), std::forward<Args>(args)...);
+                return CompleteInvoker<FunctionReturnType<Fun, Args...>>::invoke(CATCH_FORWARD(fun), CATCH_FORWARD(args)...);
             }
 
-            extern const std::string benchmarkErrorMsg;
         } // namespace Detail
 
         template <typename Fun>
         Detail::CompleteType_t<FunctionReturnType<Fun>> user_code(Fun&& fun) {
-            CATCH_TRY{
-                return Detail::complete_invoke(std::forward<Fun>(fun));
-            } CATCH_CATCH_ALL{
-                getResultCapture().benchmarkFailed(translateActiveException());
-                CATCH_RUNTIME_ERROR(Detail::benchmarkErrorMsg);
-            }
+            return Detail::complete_invoke(CATCH_FORWARD(fun));
         }
     } // namespace Benchmark
 } // namespace Catch

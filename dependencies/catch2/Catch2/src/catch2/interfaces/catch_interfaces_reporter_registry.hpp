@@ -8,6 +8,7 @@
 #ifndef CATCH_INTERFACES_REPORTER_REGISTRY_HPP_INCLUDED
 #define CATCH_INTERFACES_REPORTER_REGISTRY_HPP_INCLUDED
 
+#include <catch2/internal/catch_case_insensitive_comparisons.hpp>
 #include <catch2/internal/catch_unique_ptr.hpp>
 
 #include <string>
@@ -22,13 +23,14 @@ namespace Catch {
     using IStreamingReporterPtr = Detail::unique_ptr<IStreamingReporter>;
     struct IReporterFactory;
     using IReporterFactoryPtr = Detail::unique_ptr<IReporterFactory>;
+    struct ReporterConfig;
 
     struct IReporterRegistry {
-        using FactoryMap = std::map<std::string, IReporterFactoryPtr>;
+        using FactoryMap = std::map<std::string, IReporterFactoryPtr, Detail::CaseInsensitiveLess>;
         using Listeners = std::vector<IReporterFactoryPtr>;
 
-        virtual ~IReporterRegistry();
-        virtual IStreamingReporterPtr create( std::string const& name, IConfig const* config ) const = 0;
+        virtual ~IReporterRegistry(); // = default
+        virtual IStreamingReporterPtr create( std::string const& name, ReporterConfig const& config ) const = 0;
         virtual FactoryMap const& getFactories() const = 0;
         virtual Listeners const& getListeners() const = 0;
     };

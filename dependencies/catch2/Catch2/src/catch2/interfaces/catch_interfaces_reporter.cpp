@@ -20,29 +20,15 @@
 
 namespace Catch {
 
-    ReporterConfig::ReporterConfig( IConfig const* _fullConfig )
-    :   m_stream( &_fullConfig->stream() ), m_fullConfig( _fullConfig ) {}
-
     ReporterConfig::ReporterConfig( IConfig const* _fullConfig, std::ostream& _stream )
     :   m_stream( &_stream ), m_fullConfig( _fullConfig ) {}
 
     std::ostream& ReporterConfig::stream() const { return *m_stream; }
     IConfig const * ReporterConfig::fullConfig() const { return m_fullConfig; }
 
-
-    TestRunInfo::TestRunInfo( std::string const& _name ) : name( _name ) {}
-
-    GroupInfo::GroupInfo(  std::string const& _name,
-                           std::size_t _groupIndex,
-                           std::size_t _groupsCount )
-    :   name( _name ),
-        groupIndex( _groupIndex ),
-        groupsCounts( _groupsCount )
-    {}
-
-     AssertionStats::AssertionStats( AssertionResult const& _assertionResult,
-                                     std::vector<MessageInfo> const& _infoMessages,
-                                     Totals const& _totals )
+    AssertionStats::AssertionStats( AssertionResult const& _assertionResult,
+                                    std::vector<MessageInfo> const& _infoMessages,
+                                    Totals const& _totals )
     :   assertionResult( _assertionResult ),
         infoMessages( _infoMessages ),
         totals( _totals )
@@ -84,20 +70,6 @@ namespace Catch {
     {}
 
 
-    TestGroupStats::TestGroupStats( GroupInfo const& _groupInfo,
-                                    Totals const& _totals,
-                                    bool _aborting )
-    :   groupInfo( _groupInfo ),
-        totals( _totals ),
-        aborting( _aborting )
-    {}
-
-    TestGroupStats::TestGroupStats( GroupInfo const& _groupInfo )
-    :   groupInfo( _groupInfo ),
-        aborting( false )
-    {}
-
-
     TestRunStats::TestRunStats(   TestRunInfo const& _runInfo,
                     Totals const& _totals,
                     bool _aborting )
@@ -106,6 +78,6 @@ namespace Catch {
         aborting( _aborting )
     {}
 
-    void IStreamingReporter::fatalErrorEncountered( StringRef ) {}
+    IStreamingReporter::~IStreamingReporter() = default;
 
 } // end namespace Catch

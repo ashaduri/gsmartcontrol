@@ -5,28 +5,28 @@
 //        https://www.boost.org/LICENSE_1_0.txt)
 
 // SPDX-License-Identifier: BSL-1.0
-#ifndef CATCH_OPTION_HPP_INCLUDED
-#define CATCH_OPTION_HPP_INCLUDED
+#ifndef CATCH_OPTIONAL_HPP_INCLUDED
+#define CATCH_OPTIONAL_HPP_INCLUDED
 
 namespace Catch {
 
     // An optional type
     template<typename T>
-    class Option {
+    class Optional {
     public:
-        Option() : nullableValue( nullptr ) {}
-        Option( T const& _value )
+        Optional() : nullableValue( nullptr ) {}
+        Optional( T const& _value )
         : nullableValue( new( storage ) T( _value ) )
         {}
-        Option( Option const& _other )
+        Optional( Optional const& _other )
         : nullableValue( _other ? new( storage ) T( *_other ) : nullptr )
         {}
 
-        ~Option() {
+        ~Optional() {
             reset();
         }
 
-        Option& operator= ( Option const& _other ) {
+        Optional& operator= ( Optional const& _other ) {
             if( &_other != this ) {
                 reset();
                 if( _other )
@@ -34,7 +34,7 @@ namespace Catch {
             }
             return *this;
         }
-        Option& operator = ( T const& _value ) {
+        Optional& operator = ( T const& _value ) {
             reset();
             nullableValue = new( storage ) T( _value );
             return *this;
@@ -46,10 +46,22 @@ namespace Catch {
             nullableValue = nullptr;
         }
 
-        T& operator*() { return *nullableValue; }
-        T const& operator*() const { return *nullableValue; }
-        T* operator->() { return nullableValue; }
-        const T* operator->() const { return nullableValue; }
+        T& operator*() {
+            assert(nullableValue);
+            return *nullableValue;
+        }
+        T const& operator*() const {
+            assert(nullableValue);
+            return *nullableValue;
+        }
+        T* operator->() {
+            assert(nullableValue);
+            return nullableValue;
+        }
+        const T* operator->() const {
+            assert(nullableValue);
+            return nullableValue;
+        }
 
         T valueOr( T const& defaultValue ) const {
             return nullableValue ? *nullableValue : defaultValue;
@@ -63,6 +75,19 @@ namespace Catch {
             return some();
         }
 
+        friend bool operator==(Optional const& a, Optional const& b) {
+            if (a.none() && b.none()) {
+                return true;
+            } else if (a.some() && b.some()) {
+                return *a == *b;
+            } else {
+                return false;
+            }
+        }
+        friend bool operator!=(Optional const& a, Optional const& b) {
+            return !( a == b );
+        }
+
     private:
         T *nullableValue;
         alignas(alignof(T)) char storage[sizeof(T)];
@@ -70,4 +95,4 @@ namespace Catch {
 
 } // end namespace Catch
 
-#endif // CATCH_OPTION_HPP_INCLUDED
+#endif // CATCH_OPTIONAL_HPP_INCLUDED

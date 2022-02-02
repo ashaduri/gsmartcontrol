@@ -10,6 +10,7 @@
 
 #include <catch2/internal/catch_test_macro_impl.hpp>
 #include <catch2/internal/catch_stringref.hpp>
+#include <catch2/internal/catch_move_and_forward.hpp>
 
 namespace Catch {
 
@@ -19,20 +20,17 @@ namespace Catch {
         MatcherT const& m_matcher;
         StringRef m_matcherString;
     public:
-        MatchExpr( ArgT && arg, MatcherT const& matcher, StringRef const& matcherString )
+        MatchExpr( ArgT && arg, MatcherT const& matcher, StringRef matcherString )
         :   ITransientExpression{ true, matcher.match( arg ) }, // not forwarding arg here on purpose
-            m_arg( std::forward<ArgT>(arg) ),
+            m_arg( CATCH_FORWARD(arg) ),
             m_matcher( matcher ),
             m_matcherString( matcherString )
         {}
 
-        void streamReconstructedExpression( std::ostream &os ) const override {
-            auto matcherAsString = m_matcher.toString();
-            os << Catch::Detail::stringify( m_arg ) << ' ';
-            if( matcherAsString == Detail::unprintableString )
-                os << m_matcherString;
-            else
-                os << matcherAsString;
+        void streamReconstructedExpression( std::ostream& os ) const override {
+            os << Catch::Detail::stringify( m_arg )
+               << ' '
+               << m_matcher.toString();
         }
     };
 
@@ -43,11 +41,11 @@ namespace Catch {
 
     using StringMatcher = Matchers::MatcherBase<std::string>;
 
-    void handleExceptionMatchExpr( AssertionHandler& handler, StringMatcher const& matcher, StringRef const& matcherString  );
+    void handleExceptionMatchExpr( AssertionHandler& handler, StringMatcher const& matcher, StringRef matcherString  );
 
     template<typename ArgT, typename MatcherT>
-    auto makeMatchExpr( ArgT && arg, MatcherT const& matcher, StringRef const& matcherString  ) -> MatchExpr<ArgT, MatcherT> {
-        return MatchExpr<ArgT, MatcherT>( std::forward<ArgT>(arg), matcher, matcherString );
+    auto makeMatchExpr( ArgT && arg, MatcherT const& matcher, StringRef matcherString  ) -> MatchExpr<ArgT, MatcherT> {
+        return MatchExpr<ArgT, MatcherT>( CATCH_FORWARD(arg), matcher, matcherString );
     }
 
 } // namespace Catch

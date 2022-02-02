@@ -14,8 +14,9 @@
 #   include <atomic> // atomic_thread_fence
 #endif
 
+#include <catch2/internal/catch_move_and_forward.hpp>
+
 #include <type_traits>
-#include <utility>
 
 namespace Catch {
     namespace Benchmark {
@@ -56,13 +57,13 @@ namespace Catch {
         }
 
         template <typename Fn, typename... Args>
-        inline auto invoke_deoptimized(Fn&& fn, Args&&... args) -> typename std::enable_if<!std::is_same<void, decltype(fn(args...))>::value>::type {
-            deoptimize_value(std::forward<Fn>(fn) (std::forward<Args...>(args...)));
+        inline auto invoke_deoptimized(Fn&& fn, Args&&... args) -> std::enable_if_t<!std::is_same<void, decltype(fn(args...))>::value> {
+            deoptimize_value(CATCH_FORWARD(fn) (CATCH_FORWARD(args)...));
         }
 
         template <typename Fn, typename... Args>
-        inline auto invoke_deoptimized(Fn&& fn, Args&&... args) -> typename std::enable_if<std::is_same<void, decltype(fn(args...))>::value>::type {
-            std::forward<Fn>(fn) (std::forward<Args...>(args...));
+        inline auto invoke_deoptimized(Fn&& fn, Args&&... args) -> std::enable_if_t<std::is_same<void, decltype(fn(args...))>::value> {
+            CATCH_FORWARD(fn) (CATCH_FORWARD(args)...);
         }
     } // namespace Benchmark
 } // namespace Catch

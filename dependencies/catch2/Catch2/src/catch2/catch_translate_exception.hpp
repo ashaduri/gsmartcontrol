@@ -48,8 +48,9 @@ namespace Catch {
     public:
         template<typename T>
         ExceptionTranslatorRegistrar( std::string(*translateFunction)( T const& ) ) {
-            getMutableRegistryHub().registerTranslator
-                ( new ExceptionTranslator<T>( translateFunction ) );
+            getMutableRegistryHub().registerTranslator(
+                Detail::make_unique<ExceptionTranslator<T>>(translateFunction)
+            );
         }
     };
 

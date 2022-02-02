@@ -45,7 +45,7 @@ function(add_warnings_to_targets targets)
           "-Wglobal-constructors"
           "-Wmissing-noreturn"
           "-Wparentheses"
-          "-Wextra-semi-stmt"
+          "-Wextra-semi"
           "-Wunreachable-code"
           "-Wstrict-aliasing"
           "-Wreturn-std-move"
@@ -76,4 +76,14 @@ function(add_warnings_to_targets targets)
             endforeach()
         endif()
     endif()
+endfunction()
+
+# Adds flags required for reproducible build to the target
+# Currently only supports GCC and Clang
+function(add_build_reproducibility_settings target)
+# Make the build reproducible on versions of g++ and clang that supports -ffile-prefix-map
+  if(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND NOT ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 8) OR
+     ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND NOT ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 10))
+    target_compile_options(${target} PRIVATE "-ffile-prefix-map=${CATCH_DIR}=.")
+  endif()
 endfunction()

@@ -29,11 +29,7 @@ namespace Catch {
 
     public: // StreamingReporterBase
 
-        void noMatchingTestCases(std::string const& s) override;
-
         void testRunStarting(TestRunInfo const& testInfo) override;
-
-        void testGroupStarting(GroupInfo const& groupInfo) override;
 
         void testCaseStarting(TestCaseInfo const& testInfo) override;
 
@@ -41,20 +37,18 @@ namespace Catch {
 
         void assertionStarting(AssertionInfo const&) override;
 
-        bool assertionEnded(AssertionStats const& assertionStats) override;
+        void assertionEnded(AssertionStats const& assertionStats) override;
 
         void sectionEnded(SectionStats const& sectionStats) override;
 
         void testCaseEnded(TestCaseStats const& testCaseStats) override;
 
-        void testGroupEnded(TestGroupStats const& testGroupStats) override;
-
         void testRunEnded(TestRunStats const& testRunStats) override;
 
-        void benchmarkPreparing(std::string const& name) override;
+        void benchmarkPreparing( StringRef name ) override;
         void benchmarkStarting(BenchmarkInfo const&) override;
         void benchmarkEnded(BenchmarkStats<> const&) override;
-        void benchmarkFailed(std::string const&) override;
+        void benchmarkFailed( StringRef error ) override;
 
         void listReporters(std::vector<ReporterDescription> const& descriptions) override;
         void listTests(std::vector<TestCaseHandle> const& tests) override;

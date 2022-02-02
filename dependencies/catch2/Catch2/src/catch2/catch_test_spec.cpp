@@ -38,15 +38,13 @@ namespace Catch {
 
     TestSpec::TagPattern::TagPattern( std::string const& tag, std::string const& filterString )
     : Pattern( filterString )
-    , m_tag( toLower( tag ) )
+    , m_tag( tag )
     {}
 
     bool TestSpec::TagPattern::matches( TestCaseInfo const& testCase ) const {
-        return std::find_if(begin(testCase.tags),
-                            end(testCase.tags),
-                            [&](Tag const& tag) {
-                                return tag.lowerCased == m_tag;
-                            }) != end(testCase.tags);
+        return std::find( begin( testCase.tags ),
+                          end( testCase.tags ),
+                          Tag( m_tag ) ) != end( testCase.tags );
     }
 
     bool TestSpec::Filter::matches( TestCaseInfo const& testCase ) const {
@@ -98,8 +96,8 @@ namespace Catch {
         return matches;
     }
 
-    const TestSpec::vectorStrings& TestSpec::getInvalidArgs() const{
-        return  (m_invalidArgs);
+    const TestSpec::vectorStrings& TestSpec::getInvalidSpecs() const {
+        return m_invalidSpecs;
     }
 
 }
