@@ -8,4 +8,4 @@ export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 	dh $@
 
 override_dh_auto_configure:
-	dh_auto_configure -- -DAPP_COMPILER_ENABLE_WARNINGS=ON
+	dh_auto_configure -- -DAPP_COMPILER_ENABLE_WARNINGS=ON -DAPP_BUILD_EXAMPLES=ON -DAPP_BUILD_TESTS=ON
