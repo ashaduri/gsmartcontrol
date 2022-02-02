@@ -8,7 +8,7 @@
 
 ---
 
-[GSmartControl](https://gsmartcontrol.shaduri.dev/)
+[GSmartControl](https://gsmartcontrol.shaduri.dev)
 is a graphical user interface for smartctl (from [smartmontools](https://www.smartmontools.org/)
 package), which is a tool for
 querying and controlling [SMART](https://en.wikipedia.org/wiki/S.M.A.R.T.)

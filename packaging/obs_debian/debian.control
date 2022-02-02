@@ -1,7 +1,7 @@
 Source: gsmartcontrol
 Section: utils
 Priority: extra
-Homepage: https://gsmartcontrol.shaduri.dev/
+Homepage: https://gsmartcontrol.shaduri.dev
 Maintainer: Alexander Shaduri <ashaduri@gmail.com>
 Build-Depends: debhelper (>= 5), cmake,
  libpcre3-dev, libgtkmm-3.0-dev (>= 3.4.0)

@@ -11,7 +11,7 @@ Name:		gsmartcontrol
 Version: 	git
 Release:	0
 License:	GPL-3.0
-Url:		https://gsmartcontrol.shaduri.dev/
+Url:		https://gsmartcontrol.shaduri.dev
 Vendor:		Alexander Shaduri <ashaduri@gmail.com>
 Source0:		http://downloads.sourceforge.net/%{name}/%{version}/%{name}-%{version}.tar.bz2
 Source1:     %{name}-rpmlintrc

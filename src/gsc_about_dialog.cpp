@@ -33,7 +33,7 @@ GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builde
 	set_version(BuildEnv::package_version());
 
 	// set these properties here (after setting hooks) to make the links work.
-	set_website("https://gsmartcontrol.shaduri.dev/");
+	set_website("https://gsmartcontrol.shaduri.dev");
 
 //	set_license_type(Gtk::LICENSE_GPL_3_0_ONLY);  // this overrides set_license()
 //	set_license(hz::data_file_get_contents("doc", "LICENSE.txt", 1*1024*1024));  // 1M
