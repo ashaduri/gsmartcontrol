@@ -4,6 +4,8 @@
 ; Compatible with NSIS Unicode 2.45.
 ; Public Domain
 
+Unicode True
+
 !define PRODUCT_VERSION "@VERSION@"
 !define PRODUCT_NAME "GSmartControl"
 !define PRODUCT_NAME_SMALL "gsmartcontrol"
