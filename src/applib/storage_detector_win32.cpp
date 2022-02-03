@@ -110,7 +110,7 @@ std::map<char, DriveLetterInfo> win32_get_drive_letter_map()
 	for (char c = 'A'; c <= 'Z'; ++c) {
 		if (drives[c - 'A']) {  // drive is present
 			debug_out_dump("app", "Windows drive found: " << c << ".\n");
-			if (GetDriveType((c + string(":\\")).c_str()) == DRIVE_FIXED) {
+			if (GetDriveType((c + std::string(":\\")).c_str()) == DRIVE_FIXED) {
 				debug_out_dump("app", "Windows drive " << c << " is fixed.\n");
 				good_drives.push_back(c);
 			}
@@ -120,7 +120,7 @@ std::map<char, DriveLetterInfo> win32_get_drive_letter_map()
 	// Try to open each drive, check its disk extents
 	for (std::size_t i = 0; i < good_drives.size(); ++i) {
 		char drive = good_drives[i];
-		string drive_str = string("\\\\.\\") + drive + ":";
+		std::string drive_str = std::string("\\\\.\\") + drive + ":";
 		HANDLE h = CreateFileA(
 				drive_str.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
 				OPEN_EXISTING, FILE_FLAG_NO_BUFFERING | FILE_FLAG_RANDOM_ACCESS, NULL);
