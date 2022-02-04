@@ -128,8 +128,8 @@ win-dist-prepare: all
 	cp $(top_srcdir)/AUTHORS.txt $(top_srcdir)/LICENSE_* $(top_srcdir)/README.txt win-dist/doc/
 	cp $(top_srcdir)/NEWS win-dist/doc/NEWS.txt
 
-	# The manifest is already embedded in exe
-	# cp src/gsmartcontrol.exe src/gsmartcontrol.exe.manifest win-dist/
+# The manifest is already embedded in exe
+# cp src/gsmartcontrol.exe src/gsmartcontrol.exe.manifest win-dist/
 	cp src/gsmartcontrol.exe win-dist/
 
 	unix2dos win-dist/doc/*.txt
