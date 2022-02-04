@@ -147,7 +147,7 @@ win-dist-prepare: all
 	$(MKDIR_P) win-dist/etc/gtk-3.0
 	cp -p "@WINDOWS_SYSROOT@"/etc/fonts/fonts.conf win-dist/etc/fonts/
 #	cp -p "@WINDOWS_SYSROOT@"/etc/gtk-3.0/im-multipress.conf win-dist/etc/gtk-3.0/
-	cp -p "@WINDOWS_SYSROOT@"/etc/gtk-3.0/settings.ini win-dist/etc/gtk-3.0/
+#	cp -p "@WINDOWS_SYSROOT@"/etc/gtk-3.0/settings.ini win-dist/etc/gtk-3.0/
 
 	$(MKDIR_P) win-dist/share
 	cp -p -r "@WINDOWS_SYSROOT@"/share/themes win-dist/share
