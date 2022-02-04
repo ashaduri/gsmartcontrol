@@ -247,7 +247,9 @@ win-zip-dist-prepare: win-dist-prepare
 	cp -a win-dist $(WIN_ZIP_NAME)
 
 win-zip-dist-nocleanup: win-zip-dist-prepare
-	zip -K -9r $(WIN_ZIP_NAME).zip $(WIN_ZIP_NAME)
+	zip -9r $(WIN_ZIP_NAME).zip $(WIN_ZIP_NAME)
+# Only when cross-compiling:
+#	zip -K -9r $(WIN_ZIP_NAME).zip $(WIN_ZIP_NAME)
 
 win-zip-dist-cleanup:
 	rm -rf $(WIN_ZIP_NAME)
