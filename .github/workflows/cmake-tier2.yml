@@ -1,7 +1,14 @@
 name: Build (Tier 2 platforms)
 
-# Manually triggered
-on: [workflow_dispatch]
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -42,35 +49,3 @@ jobs:
       shell: bash
       run: ctest -C $BUILD_TYPE
 
-
-  freebsd:
-    runs-on: macos-latest
-#    env:
-#    variables to pass to VM
-#    MYTOKEN : ${{ secrets.MYTOKEN }}
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Build and test in FreeBSD
-      id: test
-      uses: vmactions/freebsd-vm@v0.1.2
-      with:
-        envs: 'BUILD_TYPE'
-        usesh: true
-        sync: rsync
-        mem: 2048
-        prepare: >
-          pkg install -y cmake pkgconf gtkmm30 gettext pcre libiconv
-
-        run: >
-          mkdir build && cd build
-
-          cmake ..
-          -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-          -DAPP_BUILD_EXAMPLES=ON
-          -DAPP_BUILD_TESTS=ON
-          -DAPP_COMPILER_ENABLE_WARNINGS=ON
-
-          cmake --build . --config $BUILD_TYPE
-
-          ctest -C $BUILD_TYPE
