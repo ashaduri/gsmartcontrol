@@ -195,7 +195,7 @@ namespace internal {
 
 	inline int process_signal_send(process_id_t process_handle, signal_t sig)
 	{
-		if (process_handle <= 0) {
+		if (process_handle == 0) {
 			errno = ESRCH;  // The pid or process group does not exist.
 			return -1;
 		}
