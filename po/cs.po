@@ -1,4 +1,4 @@
-a# Czech translations for gsmartcontrol package.
+# Czech translations for gsmartcontrol package.
 # Copyright (C) 2018 - 21 CZ-Translator
 # This file is distributed under the same license as the gsmartcontrol package.
 # CZ-Translator (super-vik1@protonmail.com), 2021.
@@ -42,8 +42,8 @@ msgid "Add Device - GSmartControl"
 msgstr "Přidat zařízení - GSmartControl"
 
 #: src/ui/gsc_add_device_window.glade:51
-msgid "The &lt;a href="%1"&gt;smartctl man page&lt;/a&gt; contains information on what you can enter here."
-msgstr "&lt;a href="%1"&gt;smartctl man page&lt;/a&gt; obsahuje informace o tom, co zde můžete zadat."
+msgid "The &lt;a href=\"%1\"&gt;smartctl man page&lt;/a&gt; contains information on what you can enter here."
+msgstr "&lt;a href=\"%1\"&gt;smartctl man page&lt;/a&gt; obsahuje informace o tom, co zde můžete zadat."
 
 #: src/ui/gsc_add_device_window.glade:89
 msgid "Browse..."
