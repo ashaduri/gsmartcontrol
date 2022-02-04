@@ -253,8 +253,13 @@ bool Cmdex::execute()
 bool Cmdex::try_stop(hz::signal_t sig)
 {
 	DBG_FUNCTION_ENTER_MSG;
+#ifdef _WIN32
+	if (!this->running_ || this->pid_ == 0)
+		return false;
+#else
 	if (!this->running_ || this->pid_ <= 0)
 		return false;
+#endif
 
 	// other variants: SIGHUP(1) (terminal closed), SIGINT(2) (Ctrl-C),
 	// SIGKILL(9) (kill).
