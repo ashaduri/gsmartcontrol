@@ -136,7 +136,6 @@ SectionIn 1 RO
 	SetOverwrite On
 	File *.exe
 	File *.dll
-	File gsmartcontrol.exe.manifest
 	File gsmartcontrol.ico
 	File icon_*.png
 	File drivedb.h
@@ -147,6 +146,7 @@ SectionIn 1 RO
 	; GTK and stuff
 	File /r etc
 	File /r share
+	File /r lib
 
 	; Add Shortcuts (this inherits the exe's run permissions)
 	CreateShortCut "$SMPROGRAMS\GSmartControl.lnk" "$INSTDIR\gsmartcontrol.exe" "" \
@@ -228,7 +228,6 @@ Section Uninstall
 
 	Delete "$INSTDIR\*.exe"
 	Delete "$INSTDIR\*.dll"
-	Delete "$INSTDIR\gsmartcontrol.exe.manifest"
 	Delete "$INSTDIR\gsmartcontrol.ico"
 	Delete "$INSTDIR\icon_*.png"
 
@@ -241,6 +240,7 @@ Section Uninstall
 	; GTK and stuff
 	RMDir /r "$INSTDIR\etc"
 	RMDir /r "$INSTDIR\share"
+	RMDir /r "$INSTDIR\lib"
 
 	; clean up generated stuff
 	Delete "$INSTDIR\*stdout.txt"
