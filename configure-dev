@@ -48,6 +48,7 @@ case $type in
 			--enable-optimize-options --enable-tests --host=i686-w64-mingw32" ;;
 	win32-cross-debug)
 		flags="PATH=\"/usr/i686-w64-mingw32/bin:/usr/i686-w64-mingw32/sys-root/mingw/bin:$PATH\" \
+		 	--with-windows-sysroot=/usr/i686-w64-mingw32/sys-root/mingw \
 			--enable-debug-options --enable-tests --host=i686-w64-mingw32" ;;
 	win64-cross)
 		flags="PATH=\"/usr/x86_64-w64-mingw32/bin:/usr/x86_64-w64-mingw32/sys-root/mingw/bin:$PATH\" \
@@ -55,6 +56,7 @@ case $type in
 			--enable-optimize-options --enable-tests --host=x86_64-w64-mingw32" ;;
 	win64-cross-debug)
 		flags="PATH=\"/usr/x86_64-w64-mingw32/bin:/usr/x86_64-w64-mingw32/sys-root/mingw/bin:$PATH\" \
+			--with-windows-sysroot=/usr/x86_64-w64-mingw32/sys-root/mingw \
 			--enable-debug-options --enable-tests --host=x86_64-w64-mingw32" ;;
 
 	win32-msys)
@@ -63,6 +65,7 @@ case $type in
 			--enable-optimize-options --enable-tests --host=i686-w64-mingw32" ;;
 	win32-msys-debug)
 		flags="PATH=\"/mingw32/i686-w64-mingw32:/mingw32/bin:$PATH\" \
+			 --with-windows-sysroot=/mingw32 \
 			--enable-debug-options --enable-tests --host=i686-w64-mingw32" ;;
 	win64-msys)
 		flags="PATH=\"/mingw64/x86_64-w64-mingw32:/mingw64/bin:$PATH\" \
@@ -70,6 +73,7 @@ case $type in
 			--enable-optimize-options --enable-tests --host=x86_64-w64-mingw32" ;;
 	win64-msys-debug)
 		flags="PATH=\"/mingw64/x86_64-w64-mingw32:/mingw64/bin:$PATH\" \
+			--with-windows-sysroot=/mingw64 \
 			--enable-debug-options --enable-tests --host=x86_64-w64-mingw32" ;;
 esac
 
