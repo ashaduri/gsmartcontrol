@@ -3,8 +3,12 @@
 
 ***Hard disk drive and SSD health inspection tool***
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![license: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/ashaduri/gsmartcontrol)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/528f4f7aaf0e446abf7e55d2affc7bec)](https://app.codacy.com/gh/ashaduri/gsmartcontrol?utm_source=github.com&utm_medium=referral&utm_content=ashaduri/gsmartcontrol&utm_campaign=Badge_Grade_Settings)
+![Platforms](https://img.shields.io/badge/platforms-linux%20%7C%20windows%20%7C%20macos%20%7C%20*bsd-blue)
+[![Packaging status](https://repology.org/badge/tiny-repos/gsmartcontrol.svg?header=software%20distributions%20and%20repositories)](https://repology.org/project/gsmartcontrol/versions)
+
 
 ---
 
