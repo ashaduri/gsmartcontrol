@@ -135,7 +135,7 @@ SectionIn 1 RO
 	SetOverwrite On
 	File *.exe
 	File *.dll
-	File gsmartcontrol.exe.manifest
+	; File gsmartcontrol.exe.manifest
 	File gsmartcontrol.ico
 	File icon_*.png
 	File drivedb.h
@@ -230,7 +230,7 @@ Section Uninstall
 
 	Delete "$INSTDIR\*.exe"
 	Delete "$INSTDIR\*.dll"
-	Delete "$INSTDIR\gsmartcontrol.exe.manifest"
+	; Delete "$INSTDIR\gsmartcontrol.exe.manifest"
 	Delete "$INSTDIR\gsmartcontrol.ico"
 	Delete "$INSTDIR\icon_*.png"
 

@@ -6,6 +6,9 @@ Copyright:
 
 gsmartcontrol ICON "gsmartcontrol.ico"
 
+// Embed manifest in exe
+1 24 "gsmartcontrol.exe.manifest"
+
 1 VERSIONINFO
     FILEVERSION 0,0,0,0
     PRODUCTVERSION 0,0,0,0
