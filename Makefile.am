@@ -71,7 +71,8 @@ win-dist-clean: win-dist-cleanup
 win-dist-prepare-all: nsis-dist-prepare win-zip-dist-prepare
 
 
-#	All of GTK+
+#	All of GTK+.
+# This includes both MSYS and OpenSUSE/mingw patterns.
 GTK_BIN_FILES = gdk-pixbuf-query-loaders.exe \
 	gspawn-win32-helper-console.exe \
 	gspawn-win32-helper.exe \
@@ -81,13 +82,18 @@ GTK_BIN_FILES = gdk-pixbuf-query-loaders.exe \
 	gtk-update-icon-cache-3.0.exe \
 	libatk-1.*.dll \
 	libatkmm-1.*.dll \
+	libbrotlidec.dll \
+	libbrotlicommon.dll \
+	libbz2-*.dll \
 	libcairo-*.dll \
 	libcairomm-1*.dll \
+	libdatrie-*.dll \
 	libepoxy-*.dll \
 	libffi-*.dll \
 	libexpat-*.dll \
 	libfontconfig-*.dll \
 	libfreetype-*.dll \
+	libfribidi-*.dll \
 	libgdk-3*.dll \
 	libgdk_pixbuf-2.*.dll \
 	libgdkmm-3.*.dll \
@@ -97,10 +103,12 @@ GTK_BIN_FILES = gdk-pixbuf-query-loaders.exe \
 	libglibmm*2.*.dll \
 	libgmodule-2.*.dll \
 	libgobject-2.*.dll \
+	libgraphite*.dll \
 	libgthread-2.*.dll \
 	libgtk-3*.dll \
 	libgtkmm-3*.dll \
 	libharfbuzz*.dll \
+	libiconv-*.dll \
 	libintl*.dll \
 	libjasper*.dll \
 	libjpeg*.dll \
@@ -111,9 +119,11 @@ GTK_BIN_FILES = gdk-pixbuf-query-loaders.exe \
 	libsigc-2.*.dll \
 	libssp-*.dll \
 	libstdc++-*.dll \
+	libthai-*.dll \
 	libtiff-*.dll \
 	libwinpthread-*.dll \
 	libxml2-*.dll \
+	zlib1.dl \
 	libz.dll
 
 
