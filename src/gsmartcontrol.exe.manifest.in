@@ -18,10 +18,12 @@
 		</ms_asmv2:security>
 	</ms_asmv2:trustInfo>
 
-	<!-- GTK3 applications aren't quite dpi-aware -->
+	<!-- GTK3 applications aren't quite dpi-aware with win32 theme, among other
+	visual issues.
+	On the other hand, HiDPI Adwaita works (it also looks slightly like win11 theme), so we prefer that. -->
 	<asmv3:application>
 		<asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">
-			<dpiAware>false</dpiAware>
+			<dpiAware>true</dpiAware>
 		</asmv3:windowsSettings>
 	</asmv3:application>
 
