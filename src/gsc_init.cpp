@@ -297,8 +297,11 @@ namespace {
 bool app_init_and_loop(int& argc, char**& argv)
 {
 	if constexpr(BuildEnv::is_kernel_family_windows()) {
-		// Disable client-side decorations (enable native windows decorations) under Windows.
-		hz::env_set_value("GTK_CSD", "0");
+		std::string csd_value;
+		if (!hz::env_get_value("GTK_CSD", csd_value)) {  // if not set
+			// Disable client-side decorations (enable native windows decorations) under Windows.
+			hz::env_set_value("GTK_CSD", "0");
+		}
 	}
 
 	// Set up gettext. This has to be before gtk is initialized.
