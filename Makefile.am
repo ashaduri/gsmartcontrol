@@ -251,11 +251,14 @@ win-dist-prepare: all
 #	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/96x96/devices/media-optical.png win-dist/share/icons/Adwaita/96x96/devices
 	$(MKDIR_P) win-dist/share/icons/Adwaita/96x96/status
 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/96x96/status/dialog-information-symbolic.symbolic.png win-dist/share/icons/Adwaita/96x96/status
-	$(MKDIR_P) win-dist/share/icons/Adwaita/256x256/devices
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/256x256/devices/drive-harddisk.png win-dist/share/icons/Adwaita/256x256/devices
-	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/256x256/devices/media-optical.png win-dist/share/icons/Adwaita/256x256/devices
+#	$(MKDIR_P) win-dist/share/icons/Adwaita/256x256/devices
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/256x256/devices/drive-harddisk.png win-dist/share/icons/Adwaita/256x256/devices
+#	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/256x256/devices/media-optical.png win-dist/share/icons/Adwaita/256x256/devices
 #	$(MKDIR_P) win-dist/share/icons/Adwaita/256x256/status
 #	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/256x256/status/dialog-information-symbolic.symbolic.png win-dist/share/icons/Adwaita/256x256/status
+	$(MKDIR_P) win-dist/share/icons/Adwaita/512x512/devices
+	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/512x512/devices/drive-harddisk.png win-dist/share/icons/Adwaita/512x512/devices
+	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/512x512/devices/media-optical.png win-dist/share/icons/Adwaita/512x512/devices
 
 #	other
 	cp -p "@WINDOWS_SYSROOT@"/bin/libgcc_s_*.dll win-dist/
