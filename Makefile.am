@@ -123,7 +123,7 @@ GTK_BIN_FILES = gdk-pixbuf-query-loaders.exe \
 	libtiff-*.dll \
 	libwinpthread-*.dll \
 	libxml2-*.dll \
-	zlib1.dl \
+	zlib1.dll \
 	libz.dll
 
 
@@ -158,6 +158,11 @@ win-dist-prepare: all
 	cp -p "@WINDOWS_SYSROOT@"/etc/fonts/fonts.conf win-dist/etc/fonts/
 #	cp -p "@WINDOWS_SYSROOT@"/etc/gtk-3.0/im-multipress.conf win-dist/etc/gtk-3.0/
 #	cp -p "@WINDOWS_SYSROOT@"/etc/gtk-3.0/settings.ini win-dist/etc/gtk-3.0/
+
+#	Without loaders, images and native file dialog do not work.
+	$(MKDIR_P) win-dist/lib
+	$(MKDIR_P) win-dist/lib/gdk-pixbuf-2.0
+	cp -p -r "@WINDOWS_SYSROOT@"/lib/gdk-pixbuf-2.0/2.10.0 win-dist/lib/gdk-pixbuf-2.0
 
 	$(MKDIR_P) win-dist/share
 	cp -p -r "@WINDOWS_SYSROOT@"/share/themes win-dist/share
