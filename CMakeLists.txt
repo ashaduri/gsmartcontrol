@@ -65,7 +65,8 @@ endif()
 
 # CTest support
 include(CTest)
-include(${CMAKE_SOURCE_DIR}/dependencies/catch2/Catch2/extras/Catch.cmake)
+#include(${CMAKE_SOURCE_DIR}/dependencies/catch2/Catch2/extras/Catch.cmake)
+include(${CMAKE_SOURCE_DIR}/dependencies/catch2/Catch2/contrib/Catch.cmake)
 
 
 add_subdirectory(contrib)

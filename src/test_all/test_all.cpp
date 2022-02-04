@@ -10,7 +10,14 @@ Copyright:
 /// @{
 
 
-#include "catch2/catch_session.hpp"
+// Catch2 v3
+// #include "catch2/catch_session.hpp"
+
+// Catch2 v2
+#define CATCH_CONFIG_RUNNER
+#include "catch2/catch.hpp"
+
+
 #include "libdebug/libdebug.h"
 
 

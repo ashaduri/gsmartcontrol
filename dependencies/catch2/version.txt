@@ -1,2 +1,2 @@
-Catch2 devel branch 2022-02-02.
+Catch2 v2.13.8.
 https://github.com/catchorg/Catch2

@@ -10,6 +10,9 @@ else()
     set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL false)
 endif()
 
+# Make sure include() works with our modules.
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/dependencies/catch2/Catch2/contrib")
+include(ParseAndAddCatchTests)
 
 add_executable(test_all)
 target_sources(test_all PRIVATE
