@@ -1,4 +1,4 @@
-Version 1.1.4, released on 2022-02-02
+Version 1.1.4, released on 2022-02-04
 	Fixed a crash when trying to render main window icons which have incomplete
 		data; this fixes a rare crash when scanning devices (#13).
 	Fixed rendering compatibility issues with newer GTK3 versions.
@@ -15,6 +15,8 @@ Version 1.1.4, released on 2022-02-02
 	Add current time to default filename in Save Output dialog.
 	Support macos stat command in file2csource.sh.
 	Fixed a few typos (backported from the Debian package).
+	Windows port now uses Adwaita theme due to issues with win32 theme.
+	Windows port is dpi-aware now.
 
 Version 1.1.3, released on 2017-11-12
 	Fixed gsmartcontrol-root not launching if GDK_* variables are not set.
