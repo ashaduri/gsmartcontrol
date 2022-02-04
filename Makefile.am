@@ -177,6 +177,8 @@ win-dist-prepare: all
 #	Needed for window titlebar (if using client-side decorations),
 #	tree sorting indicators, GUI icons.
 #	Note that the current Adwaita uses "ui" directory, while win32 theme expects "actions".
+	$(MKDIR_P) win-dist/share/icons/Adwaita
+	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/index.theme win-dist/share/icons/Adwaita
 	$(MKDIR_P) win-dist/share/icons/Adwaita/16x16/actions
 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/16x16/ui/window-close-symbolic.symbolic.png win-dist/share/icons/Adwaita/16x16/actions
 	cp -p "@WINDOWS_SYSROOT@"/share/icons/Adwaita/16x16/ui/window-maximize-symbolic.symbolic.png win-dist/share/icons/Adwaita/16x16/actions
