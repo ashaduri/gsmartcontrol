@@ -4,10 +4,10 @@
 ***Hard disk drive and SSD health inspection tool***
 
 [![Generic badge](https://img.shields.io/badge/Homepage-gsmartcontrol.shaduri.dev-brightgreen.svg)](https://gsmartcontrol.shaduri.dev)
-![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/ashaduri/gsmartcontrol?label=Version)
-[![license: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) \
-![Platforms](https://img.shields.io/badge/Platforms-linux%20%7C%20windows%20%7C%20macos%20%7C%20*bsd-blue)
-[![Packaging status](https://repology.org/badge/tiny-repos/gsmartcontrol.svg?header=Software%20distributions%20and%20repositories)](https://repology.org/project/gsmartcontrol/versions) \
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/ashaduri/gsmartcontrol?label=Version)](https://gsmartcontrol.shaduri.dev/downloads.html)
+[![license: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Platforms](https://img.shields.io/badge/Platforms-linux%20%7C%20windows%20%7C%20macos%20%7C%20*bsd-blue)](https://gsmartcontrol.shaduri.dev/software_requirements.html)
+[![Packaging status](https://repology.org/badge/tiny-repos/gsmartcontrol.svg?header=Software%20distributions%20and%20repositories)](https://repology.org/project/gsmartcontrol/versions)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/528f4f7aaf0e446abf7e55d2affc7bec)](https://app.codacy.com/gh/ashaduri/gsmartcontrol?utm_source=github.com&utm_medium=referral&utm_content=ashaduri/gsmartcontrol&utm_campaign=Badge_Grade_Settings)
 
 ---
