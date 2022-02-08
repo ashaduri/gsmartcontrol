@@ -3,12 +3,18 @@
 
 @import "";
 
-/* Hide sidebar's footer with GitHub info */
 div.addons-wrap {
 	display: none !important;
 }
 
-/* Sidebar links */
+div.navigation-top {
+	display: none !important;
+}
+
+div.content > hr {
+	display: none !important;
+}
+
 a.caption {
 	text-transform: none !important;
 	padding-left: 12px !important;
@@ -16,7 +22,4 @@ a.caption {
 	color: #fff !important;
 	font-weight: normal !important;
 }
-
-
-
 
