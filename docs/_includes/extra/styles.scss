@@ -1,20 +1,24 @@
 ---
 ---
 
-@import "";
+@import "{{ site.theme }}";
 
+/* Hide sidebar footer with GitHub links */
 div.addons-wrap {
 	display: none !important;
 }
 
+/* Hide page breadcrumbs */
 div.navigation-top {
 	display: none !important;
 }
 
+/* Hide a line after page breadcrumbs */
 div.content > hr {
 	display: none !important;
 }
 
+/* Customize navbar links */
 a.caption {
 	text-transform: none !important;
 	padding-left: 12px !important;
