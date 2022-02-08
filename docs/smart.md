@@ -1,6 +1,6 @@
 ---
 title: "What Is Smart?"
-permalink: /what-is-smart/
+permalink: /what-is-smart
 ---
 
 # What is SMART?

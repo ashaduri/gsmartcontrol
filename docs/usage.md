@@ -1,6 +1,6 @@
 ---
 title: "Usage"
-permalink: /usage/
+permalink: /usage
 ---
 
 # Usage

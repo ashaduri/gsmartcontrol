@@ -1,6 +1,6 @@
 ---
 title: "Software Requirements"
-permalink: /software-requirements/
+permalink: /software-requirements
 ---
 
 # Software Requirements

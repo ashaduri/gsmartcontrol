@@ -1,6 +1,6 @@
 ---
 title: "Troubleshooting"
-permalink: /troubleshooting/
+permalink: /troubleshooting
 ---
 
 # Troubleshooting

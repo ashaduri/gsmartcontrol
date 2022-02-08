@@ -1,6 +1,6 @@
 ---
 title: "Screenshots"
-permalink: /screenshots/
+permalink: /screenshots
 ---
 
 # Screenshots

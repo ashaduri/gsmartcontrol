@@ -1,0 +1,22 @@
+---
+---
+
+@import "";
+
+/* Hide sidebar's footer with GitHub info */
+div.addons-wrap {
+	display: none !important;
+}
+
+/* Sidebar links */
+a.caption {
+	text-transform: none !important;
+	padding-left: 12px !important;
+	padding: .5em !important;
+	color: #fff !important;
+	font-weight: normal !important;
+}
+
+
+
+

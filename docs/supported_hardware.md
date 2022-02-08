@@ -1,6 +1,6 @@
 ---
 title: "Supported Hardware"
-permalink: /supported-hardware/
+permalink: /supported-hardware
 ---
 
 # Supported Hardware

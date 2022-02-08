@@ -1,6 +1,6 @@
 ---
 title: "Downloads"
-permalink: /downloads/
+permalink: /downloads
 ---
 
 # Downloads
@@ -30,9 +30,11 @@ for installing these packages.
 
 - 32-bit installer **(use this if unsure)**:
 [gsmartcontrol-1.1.4-win32.exe](https://github.com/ashaduri/gsmartcontrol/releases/download/v1.1.4/gsmartcontrol-1.1.4-win32.exe).
+
 - 32-bit zip (portable): [gsmartcontrol-1.1.4-win32.zip](https://github.com/ashaduri/gsmartcontrol/releases/download/v1.1.4/gsmartcontrol-1.1.4-win32.zip).
 
 - 64-bit installer: [gsmartcontrol-1.1.4-win64.exe](https://github.com/ashaduri/gsmartcontrol/releases/download/v1.1.4/gsmartcontrol-1.1.4-win64.exe).
+
 - 64-bit zip (portable): [gsmartcontrol-1.1.4.win64.zip](https://github.com/ashaduri/gsmartcontrol/releases/download/v1.1.4/gsmartcontrol-1.1.4-win64.zip).
 
 #### Outdated: Windows XP, 2000 and 2003
