@@ -40,7 +40,7 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk
 
 
 	auto* top_info_link_label = lookup_widget<Gtk::Label*>("top_info_link_label");
-	std::string man_url = "https://gsmartcontrol.sourceforge.io/smartctl_man.html";
+	std::string man_url = "https://gsmartcontrol.shaduri.dev/smartctl_man.html";
 	top_info_link_label->set_text(Glib::ustring::compose(top_info_link_label->get_text(), man_url));
 
 	Glib::ustring device_name_tooltip = _("Device name");

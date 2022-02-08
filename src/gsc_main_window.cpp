@@ -598,13 +598,13 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 
 		case action_online_documentation:
 		{
-			hz::launch_url(gobj(), "https://gsmartcontrol.sourceforge.io/documentation.html");
+			hz::launch_url(gobj(), "https://gsmartcontrol.shaduri.dev/");
 			break;
 		}
 
 		case action_support:
 		{
-			hz::launch_url(gobj(), "https://gsmartcontrol.sourceforge.io/support.html");
+			hz::launch_url(gobj(), "https://gsmartcontrol.shaduri.dev/support");
 			break;
 		}
 
