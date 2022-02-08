@@ -1,10 +1,9 @@
-# GSmartControl - What is SMART?
+# What is SMART?
 
-### Short answer
 SMART is a technology which provides hard disk drives with methods to
 predict certain kinds of failures with certain chance of success.
 
-### Long answer
+## Long answer
 
 Self-Monitoring, Analysis, and Reporting Technology, or SMART, is a
 monitoring system for hard drives to detect and report various indicators
@@ -17,7 +16,7 @@ which may report valuable information. It may even automatically scan
 the disk surface in when the drive is idle, repairing the defects while
 reallocating the data to more safe areas.
 
-While having SMART sounds really good, there are some nuances to
+While having SMART sounds perfect, there are some nuances to
 consider. One of the common pitfalls is that it may create a false sense
 of security. That is, a perfectly good SMART data is NOT an indication
 that the drive won't fail the next minute. The reverse is also true - some
