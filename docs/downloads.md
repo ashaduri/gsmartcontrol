@@ -48,10 +48,10 @@ Use `pkg_add -r gsmartcontrol` to add the package.
 
 ### macOS / Darwin
 
-- [Homebrew](https://brew.sh/) project maintains
+- The [Homebrew](https://brew.sh/) project maintains a
 [package for GSmartControl](https://formulae.brew.sh/formula/gsmartcontrol).
 See the [Usage](usage.md) page for information on how to run it.
-- the [MacPorts](https://www.macports.org/) project also maintains a
+- The [MacPorts](https://www.macports.org/) project also maintains a
 [package for GSmartControl](https://github.com/macports/macports-ports/blob/master/sysutils/gsmartcontrol/Portfile). 
 
 

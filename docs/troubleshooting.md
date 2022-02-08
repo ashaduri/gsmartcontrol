@@ -6,7 +6,7 @@ Please see the [Support](support.md) page for information on how to report issue
 
 ## Known Limitations
 
-- Only ATA drives (both PATA and SATA), various USB to ATA bridges
+- Only ATA drives (both PATA and SATA), various USB to ATA bridges,
 and drives behind some RAID controllers are supported for now.
 The main reasons for this are:
   - We can't support drives which don't work with smartmontools.
@@ -15,7 +15,7 @@ The main reasons for this are:
   - Smartctl's output for SCSI drives is completely different compared to ATA.
   Also, SCSI drives are rarely found in desktop systems and the servers rarely
   have X11 / Gtkmm running, so this is a low priority task.
-- Immediate Offline Tests are not supported. I haven't found a way to reliably
+- Immediate Offline Tests are not supported. We have not found a way to reliably
 monitor them. Besides, they run automatically anyway if Automatic Offline
 Data Collection is enabled.
 - Testing is only supported on drives which correctly report their progress
@@ -36,13 +36,13 @@ at [smartmontools.org](https://smartmontools.org).
 
 
 ## Permission Problems
-You need to be root/Administrator to perform anything useful with GSmartControl.
+You need to have root / Administrator privileges to perform anything useful with GSmartControl.
 This is needed because most operating systems prohibit direct access to
 hardware to users with non-administrative privileges.
 
-In Windows, UAC is automatically invoked when you run it. In other operating
+In Windows, UAC is automatically invoked when you run it. In Linux / Unix operating
 systems, running `gsmartcontrol-root` (or using the desktop icon) will
-automatically launch gsmartcontrol using the system's preferred su
+automatically launch GSmartControl using the system's preferred su
 mechanism - `PolKit`, `kdesu`, `gnomesu`, etc...
 
 Please **do not** set the `setuid` flag on smartctl binary. It is considered
@@ -51,12 +51,12 @@ a security risk.
 
 ## SMART Does Not Stay Enabled
 Specifications say that once you set a SMART-related property, it will 
-be preserved across reboots. So, when you, say, enable SMART and 
+be preserved across reboots. For example, when you enable SMART and 
 Automatic Offline Data Collection, both will stay enabled until you disable them.
 
-However, BIOS, your operating system, your other operating systems
+However, BIOS / UEFI, your operating system, your other operating systems
 (if present), and various startup programs may affect that. For example,
-BIOS may enable SMART each time you start your computer, so if you 
+UEFI may enable SMART each time you start your computer, so if you 
 disabled SMART previously, it will be re-enabled on reboot.
 
 The easiest way to work around this is to set the desired settings on

@@ -3,7 +3,7 @@
 SMART is a technology which provides hard disk drives with methods to
 predict certain kinds of failures with certain chance of success.
 
-## Long answer
+## A Detailed Answer
 
 Self-Monitoring, Analysis, and Reporting Technology, or SMART, is a
 monitoring system for hard drives to detect and report various indicators

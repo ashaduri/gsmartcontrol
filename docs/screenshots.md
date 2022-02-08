@@ -1,6 +1,6 @@
 # Screenshots
 
-**Note:** Some of these screenshots may have been taken with an older version
+**Note:** Some of these screenshots may have been taken with older versions
 of GSmartControl.
 
 ## Main window - All drives pass the health self-check

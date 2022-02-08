@@ -1,23 +1,25 @@
 # Software Requirements
 
-**Note:** If using the official Windows package, no additional software is required.
+**Note:** If using the official Windows packages, no additional software is required.
 
 ## Supported Operating Systems
 * Linux
-* Windows Vista SP2 (32-bit and 64-bit) or later. The Windows port uses pd0, (pd1, ...)
-for physical drives 0, (1, ...).
+* Windows (Vista SP2 or later)
+  * **Note:** The Windows port uses `pd0`, (`pd1`, ...) devices
+  for physical drives 0, (1, ...).
 * FreeBSD
 * NetBSD
 * OpenBSD
 * DragonFlyBSD
-* macOS.
-* Solaris.
-* QNX - Code written but no testing has been performed yet.
+* macOS
+* Solaris
+* QNX (code written but no testing has been performed yet).
 
 ## Build Requirements
-* [pcre1](https://www.pcre.org).
-* [GTK+ 3](https://www.gtk.org), version 3.4 or higher.
-* [Gtkmm](https://www.gtkmm.org), version 3.4 or higher.
+**Note:** These are required only if you're building GSmartControl from source code.
+* [pcre1](https://www.pcre.org) library.
+* [GTK+ 3](https://www.gtk.org) library, version 3.4 or higher.
+* [Gtkmm](https://www.gtkmm.org) library, version 3.4 or higher.
 
 ## Runtime Requirements
 **Note:** The Windows packages already include all the required software. 

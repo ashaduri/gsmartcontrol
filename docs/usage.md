@@ -10,7 +10,7 @@ run `gsmartcontrol-root`, which invokes GSmartControl using your desktop's `su` 
 Simply install GSmartControl and run it from the Start menu.
 
 ### macOS
-When installed using Homebrew, GSmartControl can be run by
+After being installed using Homebrew, GSmartControl can be run by
 typing `gsmartcontrol` in Terminal. If all you get is `Command not found`, please run
 a `brew doctor` command first.
 
