@@ -5,6 +5,3 @@ description: Hard disk drive and SSD health inspection tool
 
 exclude:
   - CNAME
-  - documentation.html
-  - smartctl_man.html
-  - support.html
