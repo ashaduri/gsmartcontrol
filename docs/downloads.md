@@ -1,3 +1,9 @@
+---
+layout: page
+title: "Downloads"
+permalink: /downloads/
+---
+
 # Downloads
 
 **Note to article writers:** When posting GSmartControl download links, please
