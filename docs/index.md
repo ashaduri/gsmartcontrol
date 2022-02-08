@@ -19,7 +19,7 @@ tests on it.
 
 ## Downloads
 
-The [Downloads](https://gsmartcontrol.shaduri.dev/downloads.html) page contains
+The [Downloads](https://gsmartcontrol.shaduri.dev/downloads) page contains
 all the available packages of GSmartControl.
 
 
@@ -39,7 +39,7 @@ all the available packages of GSmartControl.
 GSmartControl supports ATA drives (both PATA and SATA), various USB to
 ATA bridges, and drives behind some RAID controllers.
 Please see the
-[Supported Hardware](https://gsmartcontrol.shaduri.dev/supported_hardware.html) page
+[Supported Hardware](https://gsmartcontrol.shaduri.dev/supported-hardware) page
 for more information.
 
 
@@ -48,7 +48,7 @@ for more information.
 GSmartControl supports all major desktop operating systems, including
 Linux, Windows, macOS, FreeBSD, and other BSD-style operating systems.
 Please see the
-[Software Requirements](https://gsmartcontrol.shaduri.dev/software_requirements.html) page
+[Software Requirements](https://gsmartcontrol.shaduri.dev/software-requirements) page
 for more information.
 
 

@@ -1,3 +1,8 @@
+---
+title: "Supported Hardware"
+permalink: /supported-hardware/
+---
+
 # Supported Hardware
 
 GSmartControl supports ATA drives (both PATA and SATA), various USB to

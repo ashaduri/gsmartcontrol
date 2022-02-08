@@ -1,3 +1,8 @@
+---
+title: "Usage"
+permalink: /usage/
+---
+
 # Usage
 
 ## Launching GSmartControl on Desktop

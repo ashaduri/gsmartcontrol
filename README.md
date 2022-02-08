@@ -4,9 +4,9 @@
 ***Hard disk drive and SSD health inspection tool***
 
 [![Generic badge](https://img.shields.io/badge/Homepage-gsmartcontrol.shaduri.dev-brightgreen.svg)](https://gsmartcontrol.shaduri.dev)
-[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/ashaduri/gsmartcontrol?label=Version)](https://gsmartcontrol.shaduri.dev/downloads.html)
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/ashaduri/gsmartcontrol?label=Version)](https://gsmartcontrol.shaduri.dev/downloads)
 [![license: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Platforms](https://img.shields.io/badge/Platforms-linux%20%7C%20windows%20%7C%20macos%20%7C%20*bsd-blue)](https://gsmartcontrol.shaduri.dev/software_requirements.html)
+[![Platforms](https://img.shields.io/badge/Platforms-linux%20%7C%20windows%20%7C%20macos%20%7C%20*bsd-blue)](https://gsmartcontrol.shaduri.dev/software-requirements)
 [![Packaging status](https://repology.org/badge/tiny-repos/gsmartcontrol.svg?header=Software%20distributions%20and%20repositories)](https://repology.org/project/gsmartcontrol/versions)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/528f4f7aaf0e446abf7e55d2affc7bec)](https://app.codacy.com/gh/ashaduri/gsmartcontrol?utm_source=github.com&utm_medium=referral&utm_content=ashaduri/gsmartcontrol&utm_campaign=Badge_Grade_Settings)
 
@@ -24,7 +24,7 @@ tests on it.
 
 ## Downloads
 
-The [Downloads](https://gsmartcontrol.shaduri.dev/downloads.html) page contains
+The [Downloads](https://gsmartcontrol.shaduri.dev/downloads) page contains
 all the available packages of GSmartControl.
 
 
@@ -44,7 +44,7 @@ all the available packages of GSmartControl.
 GSmartControl supports ATA drives (both PATA and SATA), various USB to
 ATA bridges, and drives behind some RAID controllers.
 Please see the
-[Supported Hardware](https://gsmartcontrol.shaduri.dev/supported_hardware.html) page
+[Supported Hardware](https://gsmartcontrol.shaduri.dev/supported-hardware) page
 for more information.
 
 
@@ -53,7 +53,7 @@ for more information.
 GSmartControl supports all major desktop operating systems, including
 Linux, Windows, macOS, FreeBSD, and other BSD-style operating systems.
 Please see the
-[Software Requirements](https://gsmartcontrol.shaduri.dev/software_requirements.html) page
+[Software Requirements](https://gsmartcontrol.shaduri.dev/software-requirements) page
 for more information.
 
 

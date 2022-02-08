@@ -1,3 +1,8 @@
+---
+title: "What Is Smart?"
+permalink: /what-is-smart/
+---
+
 # What is SMART?
 
 SMART is a technology which provides hard disk drives with methods to

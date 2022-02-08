@@ -1,3 +1,8 @@
+---
+title: "Support"
+permalink: /support/
+---
+
 # Support
 
 

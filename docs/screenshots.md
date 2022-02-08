@@ -1,3 +1,8 @@
+---
+title: "Screenshots"
+permalink: /screenshots/
+---
+
 # Screenshots
 
 **Note:** Some of these screenshots may have been taken with older versions

@@ -1,3 +1,8 @@
+---
+title: "Software Requirements"
+permalink: /software-requirements/
+---
+
 # Software Requirements
 
 **Note:** If using the official Windows packages, no additional software is required.
