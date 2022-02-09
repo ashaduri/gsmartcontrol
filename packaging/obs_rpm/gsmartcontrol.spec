@@ -13,7 +13,7 @@ Release:	0
 License:	GPL-3.0
 Url:		https://gsmartcontrol.shaduri.dev
 Vendor:		Alexander Shaduri <ashaduri@gmail.com>
-Source0:		http://downloads.sourceforge.net/%{name}/%{version}/%{name}-%{version}.tar.bz2
+Source0:		https://github.com/ashaduri/%{name}/releases/download/v%{version}/%{name}-%{version}.tar.bz2
 Source1:     %{name}-rpmlintrc
 BuildRoot:	%{_tmppath}/%{name}-%{version}-build
 Summary:	Hard Disk Drive and SSD Health Inspection Tool

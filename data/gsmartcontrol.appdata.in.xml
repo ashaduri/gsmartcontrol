@@ -19,15 +19,15 @@
 	<screenshots>
 		<screenshot type="default">
 			<caption>Main window</caption>
-			<image>https://gsmartcontrol.sourceforge.io/home/images/main_ok.png</image>
+			<image>https://gsmartcontrol.shaduri.dev/screenshots/main_ok.png</image>
 		</screenshot>
 		<screenshot>
 			<caption>Drive identity information</caption>
-			<image>https://gsmartcontrol.sourceforge.io/home/images/info_identity.png</image>
+			<image>https://gsmartcontrol.shaduri.dev/screenshots/info_identity.png</image>
 		</screenshot>
 		<screenshot>
 			<caption>Attribute list of a failing drive</caption>
-			<image>https://gsmartcontrol.sourceforge.io/home/images/info_failing.png</image>
+			<image>https://gsmartcontrol.shaduri.dev/screenshots/info_failing.png</image>
 		</screenshot>
 	</screenshots>
 </component>
