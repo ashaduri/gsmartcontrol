@@ -58,39 +58,6 @@ std::ostream& debug_out(debug_level::flag level, const std::string& domain);
 
 
 
-/// Send a printf-like-formatted string to libdebug stream.
-void debug_print(debug_level::flag level, const std::string& domain,
-		const char* format, ...) HZ_FUNC_PRINTF_ISO_CHECK(3, 4);
-
-
-/// Send a printf-like-formatted string to libdebug stream. For example:
-/// \code
-/// debug_print_error("app", "Error in %s while handling input parameters.\n", DBG_FUNC);
-/// debug_print_dump("app", "Parameter value: %d.\n", value);
-/// \endcode
-#define debug_print_dump(domain, ...) \
-	debug_print(debug_level::dump, domain, __VA_ARGS__)
-
-/// Send a printf-like-formatted string to libdebug stream. \see debug_print_dump().
-#define debug_print_info(domain, ...) \
-	debug_print(debug_level::info, domain, __VA_ARGS__)
-
-/// Send a printf-like-formatted string to libdebug stream. \see debug_print_dump().
-#define debug_print_warn(domain, ...) \
-	debug_print(debug_level::warn, domain, __VA_ARGS__)
-
-/// Send a printf-like-formatted string to libdebug stream. \see debug_print_dump().
-#define debug_print_error(domain, ...) \
-	debug_print(debug_level::error, domain, __VA_ARGS__)
-
-/// Send a printf-like-formatted string to libdebug stream. \see debug_print_dump().
-#define debug_print_fatal(domain, ...) \
-	debug_print(debug_level::fatal, domain, __VA_ARGS__)
-
-
-
-
-
 /// Start prefix printing. Useful for large dumps where you don't want prefixes to
 /// be printed on each debug_* call.
 void debug_begin();

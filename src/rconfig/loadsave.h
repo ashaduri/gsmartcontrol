@@ -31,8 +31,8 @@ inline bool load_from_file(const hz::fs::path& file)
 	std::string json_str;
 	auto ec = hz::fs_file_get_contents(file, json_str, 10*1024*1024);  // 10M
 	if (ec) {
-		debug_print_error("rconfig", "load_from_file(): Unable to read from file \"%s\": %s\n",
-				file.u8string().c_str(), ec.message().c_str());
+		debug_out_error("rconfig", "load_from_file(): Unable to read from file \""
+				<< file << "\": " << ec.message() << std::endl);
 		return false;
 	}
 
@@ -40,7 +40,8 @@ inline bool load_from_file(const hz::fs::path& file)
 		get_config_branch() = json::parse(json_str);
 	}
 	catch (json::parse_error& e) {
-		debug_out_warn("rconfig", "Cannot load config file \"" << file.u8string() << "\": " << e.what() << "\n");
+		debug_out_warn("rconfig", "Cannot load config file \""
+				<< file << "\": " << e.what() << std::endl);
 		return false;
 	}
 	return true;
@@ -55,8 +56,8 @@ inline bool save_to_file(const hz::fs::path& file)
 
 	auto ec = hz::fs_file_put_contents(file, json_str);
 	if (ec) {
-		debug_print_error("rconfig", "save_to_file(): Unable to write to file \"%s\": %s.\n",
-				file.u8string().c_str(), ec.message().c_str());
+		debug_out_error("rconfig", DBG_FUNC_MSG
+				<< "Unable to write to file \"" << file << "\": " << ec.message() << "." << std::endl);
 		return false;
 	}
 	return true;

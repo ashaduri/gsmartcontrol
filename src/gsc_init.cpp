@@ -172,17 +172,17 @@ extern "C" {
 			case G_LOG_FLAG_FATAL:
 			case G_LOG_LEVEL_ERROR:  // fatal
 			case G_LOG_LEVEL_CRITICAL:
-				debug_print_error("gtk", "%s\n", message);
+				debug_out_error("gtk", message << std::endl);
 				break;
 			case G_LOG_LEVEL_WARNING:
-				debug_print_warn("gtk", "%s\n", message);
+				debug_out_warn("gtk", message << std::endl);
 				break;
 			case G_LOG_LEVEL_MESSAGE:
 			case G_LOG_LEVEL_INFO:
-				debug_print_info("gtk", "%s\n", message);
+				debug_out_info("gtk", message << std::endl);
 				break;
 			case G_LOG_LEVEL_DEBUG:
-				debug_print_dump("gtk", "%s\n", message);
+				debug_out_dump("gtk", message << std::endl);
 				break;
 			case G_LOG_LEVEL_MASK:
 				break;

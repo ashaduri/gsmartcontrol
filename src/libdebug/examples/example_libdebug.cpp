@@ -83,9 +83,9 @@ int main_impl()
 	int op = 5;
 
 
-	debug_print_dump("dom", "Dumping something: %s\n", something.c_str());
-	debug_print_info("dom", "Doing something: %s\n", something.c_str());
-	debug_print_error("dom", "Error while doing something\n");
+	debug_out_dump("dom", "Dumping something: " << something << std::endl);
+	debug_out_info("dom", "Doing something: " << something << std::endl);
+	debug_out_error("dom", "Error while doing something\n");
 
 	debug_out_info("dom", "Doing something with " << obj << " object\n");
 	debug_out_fatal("dom", "Fatal error while performing operation " << op << "\n");
@@ -94,61 +94,8 @@ int main_impl()
 	DBG_ASSERT_MSG(1 == 0, "One does not equal 0");
 	DBG_ASSERT(1 == 0);
 
-
-//	debug::out(debug::dump) << debug::libdebug_info;
-// or
-//	printd(debug::dump, "%s", debug::libdebug_info_str().c_str());
-
-// 	debug::out() << "info1\n";  // info level, default domain
-//	or
-//	debug::print("info1\n");
-
-// 	debug::out(debug::error) << "error1\n";
-// or
-//	debug::out_error() << "error1\n";
-// or
-//	debug::print(debug::error, "error1\n");
-// or
-//	debug::print_error("error1\n");
-
-
-// 	debug::out(debug::warn, "dom") << debug::indent << "\nwarning1\nwarning2" << debug::unindent << "\n";
-// or
-//	debug::indent++;
-//	debug::printd_warn("dom", "\nwarning1\nwarning2");
-//	debug::indent--;
-
-// reseting indentation is done by
-//	debug::out("dom", debug::prnone) << debug::indent(0);
-// or
-//	indent_reset();
-
-// 	debug::out("dom", debug::prnone) << "info2\n";
-// or
-//	debug::out(debug::info, "dom") << "info2\n";
-// or
-//	debug::printd("dom", "info2\n");
-
-
-// 	debug::out(debug::error, "dom") << "error2\n";
-// or
-//	debug::printd_error("dom", "error2\n");
-
-// 	debug::out(debug::dump, "default", debug::prnone) << "dump1, no prefixes here\n";
-
-	// print out current function name
-// 	debug::out(debug::dump) << "dump2, " << DBG_POS(debug::posfunc) << "\n";
-// or
-//	debug::print_dump("%s", DBG_POS(debug::posfunc).get_text().c_str());
-
-
-// 	debug::out(debug::dump, "default", debug::prdate) << "date prefix here\n";
-
-
 	debug_out_dump("default", DBG_POS << "\n");
 	debug_out_dump("default", DBG_POS.func << "\n");
-// or
-	debug_print_info("default", "%s\n", DBG_POS.str().c_str());
 
 
 	DBG_TRACE_POINT_MSG(1);

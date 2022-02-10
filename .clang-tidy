@@ -2,15 +2,15 @@
 
 # Exceptions:
 # bugprone-branch-clone is too noisy in parsing code.
-# cert-dcl50-cpp is triggered by debug_print()'s C style.
+# cert-dcl50-cpp is triggered by hz::string_sprintf()'s C style.
 # clang-analyzer-deadcode.DeadStores is too noisy.
 # clang-analyzer-cplusplus.NewDeleteLeaks doesn't understand Gtkmm memory management.
 # cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers is triggered by attribute database.
 # cppcoreguidelines-owning-memory doesn't support deleting Gtkmm objects.
 # cppcoreguidelines-pro-type-cstyle-cast needed by GTK C casts.
 # cppcoreguidelines-pro-type-reinterpret-cast is needed by WinAPI-facing functions
-# cppcoreguidelines-pro-type-vararg is triggered by libdebug's debug_print().
-# cppcoreguidelines-pro-bounds-array-to-pointer-decay is triggered by va_start in libdebug's debug_print().
+# cppcoreguidelines-pro-type-vararg is triggered by hz::string_sprintf().
+# cppcoreguidelines-pro-bounds-array-to-pointer-decay is triggered by va_start in hz::string_sprintf().
 # cppcoreguidelines-pro-bounds-pointer-arithmetic is useless (triggered by argv) until we have std::span.
 # misc-no-recursion is too noisy.
 # modernize-raw-string-literal is very noisy.

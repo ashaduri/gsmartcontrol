@@ -71,15 +71,15 @@ inline fs::path data_file_find(const std::string& domain, const std::string& fil
 		return {};
 
 	if (fs::u8path(filename).is_absolute()) {  // shouldn't happen
-		debug_print_error("app", "%s: Data file \"%s\" must be relative.\n",
-				DBG_FUNC, filename.c_str());
+		debug_out_error("app", DBG_FUNC_MSG
+				<< "Data file \"" << filename << "\" must be relative.\n");
 		return {};
 	}
 
 	auto dirs = data_file_get_search_directories(domain);
 	if (dirs.empty()) {  // shouldn't happen
-		debug_print_error("app", "%s: No search directories registered for domain \"%s\".\n",
-				DBG_FUNC, domain.c_str());
+		debug_out_error("app", DBG_FUNC_MSG
+				<< "No search directories registered for domain \"" << domain << "\".\n");
 		return {};
 	}
 
@@ -89,18 +89,18 @@ inline fs::path data_file_find(const std::string& domain, const std::string& fil
 		std::error_code ec;
 		if (fs::exists(file_path, ec)) {
 			if (!allow_to_be_directory && fs::is_directory(file_path, ec)) {
-				debug_print_error("app", "%s: Data file \"[%s:]%s\" file found at \"%s\", but it is a directory.\n",
-						DBG_FUNC, domain.c_str(), file_path.string().c_str(), dir.string().c_str());
+				debug_out_error("app", DBG_FUNC_MSG
+						<< "Data file \"[" << domain << ":]" << file_path << "\" file found at \"" << dir << "\", but it is a directory.\n");
 				return {};
 			}
-			debug_print_info("app", "%s: Data file \"[%s:]%s\" found at \"%s\".\n",
-					DBG_FUNC, domain.c_str(), file_path.string().c_str(), dir.string().c_str());
+			debug_out_info("app", DBG_FUNC_MSG
+					<< "Data file \"[" << domain << ":]" << file_path << "\" file found at \"" << dir << "\".\n");
 			return file_path;
 		}
 	}
 
-	debug_print_error("app", "%s: Data file \"[%s:]%s\" not found.\n",
-			DBG_FUNC, domain.c_str(), filename.c_str());
+	debug_out_error("app", DBG_FUNC_MSG
+			<< "Data file \"[" << domain << ":]" << filename << "\" not found.\n");
 	return {};
 }
 
@@ -116,8 +116,8 @@ inline std::string data_file_get_contents(const std::string& domain, const std::
 		if (!ec) {
 			return contents;
 		}
-		debug_print_error("app", "%s: Data file \"[%s:]%s\" cannot be loaded: %s.\n",
-				DBG_FUNC, domain.c_str(), filename.c_str(), ec.message().c_str());
+		debug_out_error("app", DBG_FUNC_MSG
+				<< "Data file \"[" << domain << ":]" << filename << "\" cannot be loaded: " << ec.message() << ".\n");
 	}
 	return {};
 }

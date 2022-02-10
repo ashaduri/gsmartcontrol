@@ -64,11 +64,11 @@ extern "C" {
 			return FALSE;  // remove timeout, disable autosave for real.
 
 		auto file = impl::autosave_config_file;
-		debug_print_info("rconfig", "Autosaving config to \"%s\".\n", file.u8string().c_str());
+		debug_out_info("rconfig", "Autosaving config to \"" << file << "\"." << std::endl);
 
 		std::error_code ec;
 		if ((hz::fs::exists(file, ec) && !hz::fs::is_regular_file(file, ec)) || !hz::fs_path_is_writable(file, ec)) {
-			debug_out_error("rconfig", "Autosave failed: Cannot write to file: " << ec.message() << "\n");
+			debug_out_error("rconfig", "Autosave failed: Cannot write to file:  " << ec.message() << std::endl);
 			return static_cast<gboolean>(force);  // if manual, return failure. else, don't stop the timeout.
 		}
 
@@ -88,13 +88,13 @@ extern "C" {
 inline bool autosave_set_config_file(const hz::fs::path& file)
 {
 	if (file.empty()) {
-		debug_print_error("rconfig", "autosave_set_config_file(): Error: Filename is empty.\n");
+		debug_out_error("rconfig", DBG_FUNC_MSG << "Error: Filename is empty." << std::endl);
 		return false;
 	}
 
 	impl::autosave_config_file = file;
 
-	debug_print_info("rconfig", "Setting autosave config file to \"%s\"\n", file.u8string().c_str());
+	debug_out_info("rconfig", "Setting autosave config file to \"" << file << "\"." << std::endl);
 	return true;
 }
 
@@ -104,12 +104,12 @@ inline bool autosave_set_config_file(const hz::fs::path& file)
 inline bool autosave_start(std::chrono::seconds sec_interval)
 {
 	if (impl::autosave_enabled) {  // already autosaving, you should stop it first.
-		debug_print_warn("rconfig", "Error while starting config autosave: Autosave is active already.\n");
+		debug_out_warn("rconfig", "Error while starting config autosave: Autosave is active already." << std::endl);
 		return false;
 	}
 
 	impl::autosave_enabled = true;
-	debug_print_info("rconfig", "Starting config autosave with %d sec. interval.\n", int(sec_interval.count()));
+	debug_out_info("rconfig", "Starting config autosave with " << sec_interval.count() << " sec. interval." << std::endl);
 
 	g_timeout_add_full(G_PRIORITY_DEFAULT_IDLE, guint(std::chrono::milliseconds(sec_interval).count()),
 			&autosave_timeout_callback, nullptr, nullptr);
@@ -122,7 +122,7 @@ inline bool autosave_start(std::chrono::seconds sec_interval)
 /// Disable autosave
 inline void autosave_stop()
 {
-	debug_print_info("rconfig", "Stopping config autosave.\n");
+	debug_out_info("rconfig", "Stopping config autosave." << std::endl);
 
 	// set the stop flag. it will make autosave stop on next timeout callback call.
 	impl::autosave_enabled = false;

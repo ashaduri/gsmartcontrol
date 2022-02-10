@@ -14,10 +14,6 @@ Copyright:
 
 #include <cstdio>  // std::fprintf(), std::vfprintf()
 
-#ifndef __GNUC__
-	#include <cstdarg>  // std::va_start, va_list macro and friends
-#endif
-
 
 /*
 #include <cassert>
@@ -62,22 +58,6 @@ anyway).
 	#endif
 	#ifdef debug_out_fatal
 		#undef debug_out_fatal
-	#endif
-
-	#ifdef debug_print_dump
-		#undef debug_print_dump
-	#endif
-	#ifdef debug_print_info
-		#undef debug_print_info
-	#endif
-	#ifdef debug_print_warn
-		#undef debug_print_warn
-	#endif
-	#ifdef debug_print_error
-		#undef debug_print_error
-	#endif
-	#ifdef debug_print_fatal
-		#undef debug_print_fatal
 	#endif
 
 	#ifdef DBG_FILE
@@ -149,63 +129,6 @@ anyway).
 
 		#define debug_out_fatal(domain, output) \
 			std::cerr << "<fatal> [" << (domain) << "] " << output
-
-
-
-		#ifdef __GNUC__
-
-			// The "trim trailing comma" and "##" extensions are GNU features (works with intel too).
-			// The ## part is needed to avoid requirement of at least one argument after "format".
-
-			#define debug_print_dump(domain, format, ...) \
-				std::fprintf(stderr, (std::string("<dump>  [") + (domain) + "] " + format).c_str(), ## __VA_ARGS__)
-
-			#define debug_print_info(domain, format, ...) \
-				std::fprintf(stderr, (std::string("<info>  [") + (domain) + "] " + format).c_str(), ## __VA_ARGS__)
-
-			#define debug_print_warn(domain, format, ...) \
-				std::fprintf(stderr, (std::string("<warn>  [") + (domain) + "] " + format).c_str(), ## __VA_ARGS__)
-
-			#define debug_print_error(domain, format, ...) \
-				std::fprintf(stderr, (std::string("<error> [") + (domain) + "] " + format).c_str(), ## __VA_ARGS__)
-
-			#define debug_print_fatal(domain, format, ...) \
-				std::fprintf(stderr, (std::string("<fatal> [") + (domain) + "] " + format).c_str(), ## __VA_ARGS__)
-
-
-
-		#else  // non-gcc compilers:
-
-			namespace hz {
-				namespace internal {
-					inline void debug_print_impl(const std::string& header, const char* format, ...)
-					{
-						std::va_list ap;
-						va_start(ap, format);
-						std::vfprintf(stderr, (header + format).c_str(), ap);
-						va_end(ap);
-					}
-				}
-			}
-
-			#define debug_print_dump(domain, ...) \
-				hz::internal::debug_print_impl(std::string("<dump> [") + (domain) + "] ", __VA_ARGS__)
-
-			#define debug_print_info(domain, ...) \
-				hz::internal::debug_print_impl(std::string("<info> [") + (domain) + "] ", __VA_ARGS__)
-
-			#define debug_print_warn(domain, ...) \
-				hz::internal::debug_print_impl(std::string("<warn> [") + (domain) + "] ", __VA_ARGS__)
-
-			#define debug_print_error(domain, ...) \
-				hz::internal::debug_print_impl(std::string("<error> [") + (domain) + "] ", __VA_ARGS__)
-
-			#define debug_print_fatal(domain, ...) \
-				hz::internal::debug_print_impl(std::string("<fatal> [") + (domain) + "] ", __VA_ARGS__)
-
-
-		#endif
-
 
 
 		#define DBG_FILE __FILE__
@@ -286,12 +209,6 @@ anyway).
 		#define debug_out_warn(domain, output) if(true){}else(void)0
 		#define debug_out_error(domain, output) if(true){}else(void)0
 		#define debug_out_fatal(domain, output) if(true){}else(void)0
-
-		#define debug_print_dump(domain, format, ...) if(true){}else(void)0
-		#define debug_print_info(domain, format, ...) if(true){}else(void)0
-		#define debug_print_warn(domain, format, ...) if(true){}else(void)0
-		#define debug_print_error(domain, format, ...) if(true){}else(void)0
-		#define debug_print_fatal(domain, format, ...) if(true){}else(void)0
 
 		#define DBG_FILE ""
 		#define DBG_LINE 0
