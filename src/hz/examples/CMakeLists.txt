@@ -11,15 +11,6 @@ else()
 endif()
 
 
-add_executable(example_format_unit)
-target_sources(example_format_unit PRIVATE
-	example_format_unit.cpp
-)
-target_link_libraries(example_format_unit PRIVATE
-	hz
-)
-
-
 add_executable(example_string_algo)
 target_sources(example_string_algo PRIVATE
 	example_string_algo.cpp

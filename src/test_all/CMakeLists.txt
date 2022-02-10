@@ -21,6 +21,7 @@ target_sources(test_all PRIVATE
 target_link_libraries(test_all PRIVATE
 	libdebug
 	applib_tests
+	hz_tests
 	Catch2
 )
 
