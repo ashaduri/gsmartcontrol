@@ -45,10 +45,20 @@ namespace impl {
 
 extern "C" {
 
+	/// Data for autosave_timeout_callback() function
+	struct AutosaveCallbackData {
+		bool force = true;
+	};
+
+
+
 	/// Autosave timeout callback for Glib. internal.
 	inline gboolean autosave_timeout_callback(void* data)
 	{
-		bool force = (bool)data;
+		bool force = false;
+		if (data) {
+			force = reinterpret_cast<AutosaveCallbackData*>(data)->force;
+		}
 
 		if (!force && !impl::autosave_enabled)  // no more autosaves
 			return FALSE;  // remove timeout, disable autosave for real.
@@ -123,7 +133,8 @@ inline void autosave_stop()
 /// Forcibly save the config now.
 inline bool autosave_force_now()
 {
-	return static_cast<bool>(autosave_timeout_callback(reinterpret_cast<void*>(true)));  // anyone tell me what is the C++ variant of this?
+	AutosaveCallbackData data;
+	return static_cast<bool>(autosave_timeout_callback(&data));
 }
 
 
