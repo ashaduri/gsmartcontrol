@@ -22,7 +22,7 @@ Copyright:
 #include "smartctl_ata_text_parser.h"
 #include "storage_settings.h"
 #include "smartctl_executor.h"
-
+#include "smartctl_version_parser.h"
 
 
 
@@ -144,7 +144,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	}
 
 	std::string version, version_full;
-	if (!SmartctlAtaTextParser::parse_version(this->info_output_, version, version_full))  // is this smartctl data at all?
+	if (!SmartctlVersionParser::parse_version(this->info_output_, version, version_full))  // is this smartctl data at all?
 		return _("Cannot get smartctl version information.");
 
 	// Detect type. note: we can't distinguish between sata and scsi (on linux, for -d ata switch).

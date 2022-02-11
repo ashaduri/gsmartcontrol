@@ -11,6 +11,7 @@ target_sources(hz INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}/bad_cast_exception.h
 	${CMAKE_CURRENT_SOURCE_DIR}/data_file.h
 	${CMAKE_CURRENT_SOURCE_DIR}/debug.h
+	${CMAKE_CURRENT_SOURCE_DIR}/enum_helper.h
 	${CMAKE_CURRENT_SOURCE_DIR}/env_tools.h
 	${CMAKE_CURRENT_SOURCE_DIR}/error.h
 	${CMAKE_CURRENT_SOURCE_DIR}/error_holder.h

@@ -23,6 +23,7 @@ Copyright:
 #include "smartctl_ata_text_parser.h"
 #include "ata_storage_property_descr.h"
 #include "warning_colors.h"
+#include "smartctl_version_parser.h"
 #include "build_config.h"
 
 
@@ -208,7 +209,7 @@ bool SmartctlAtaTextParser::parse_full(const std::string& full, AtaStorageAttrib
 	// version info
 
 	std::string version, version_full;
-	if (!parse_version(s, version, version_full)) {
+	if (!SmartctlVersionParser::parse_version(s, version, version_full)) {
 		set_error_msg("Cannot extract smartctl version information.");
 		debug_out_warn("app", DBG_FUNC_MSG << "Cannot extract version information. Returning.\n");
 		return false;
@@ -231,7 +232,7 @@ bool SmartctlAtaTextParser::parse_full(const std::string& full, AtaStorageAttrib
 		add_property(p);
 	}
 
-	if (!check_parsed_version(version, version_full)) {
+	if (!SmartctlVersionParser::check_parsed_version(SmartctlOutputParserType::Text, version)) {
 		set_error_msg("Incompatible smartctl version.");
 		debug_out_warn("app", DBG_FUNC_MSG << "Incompatible smartctl version. Returning.\n");
 		return false;
@@ -271,48 +272,6 @@ bool SmartctlAtaTextParser::parse_full(const std::string& full, AtaStorageAttrib
 	}
 
 	return true;
-}
-
-
-
-// Supply output of "smartctl --version" here.
-// returns false on failure. Non-unix newlines in s are ok.
-bool SmartctlAtaTextParser::parse_version(const std::string& s, std::string& version, std::string& version_full)
-{
-	// e.g.
-	// "smartctl version 5.37"
-	// "smartctl 5.39"
-	// "smartctl 5.39 2009-06-03 20:10" (cvs versions)
-	// "smartctl 5.39 2009-08-08 r2873" (svn versions)
-	if (!app_pcre_match(R"(/^smartctl (?:version )?(([0-9][^ \t\n\r]+)(?: [0-9 r:-]+)?)/mi)", s, &version_full, &version)) {
-		debug_out_error("app", DBG_FUNC_MSG << "No smartctl version information found in supplied string.\n");
-		return false;
-	}
-	hz::string_trim(version_full);
-
-	return true;
-}
-
-
-
-
-// check that the version of smartctl output can be parsed with this parser.
-bool SmartctlAtaTextParser::check_parsed_version(const std::string& version_str, [[maybe_unused]] const std::string& version_full_str)
-{
-	// tested with 5.1-xx versions (1 - 18), and 5.[20 - 38].
-	// note: 5.1-11 (maybe others too) with scsi disk gives non-parsable output (why?).
-
-	// 5.0-24, 5.0-36, 5.0-49 tested with data only, from smartmontool site.
-	// can't fully test 5.0-xx, they don't support sata and I have only sata.
-	const double minimum_req_version = 5.0;
-
-	double version = 0;
-	if (hz::string_is_numeric_nolocale<double>(version_str, version, false)) {
-		if (version >= minimum_req_version)
-			return true;
-	}
-
-	return false;
 }
 
 

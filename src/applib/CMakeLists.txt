@@ -35,6 +35,9 @@ target_sources(applib PRIVATE
 	smartctl_executor.cpp
 	smartctl_executor_gui.h
 	smartctl_executor.h
+	smartctl_output_type.h
+	smartctl_version_parser.cpp
+	smartctl_version_parser.h
 	storage_detector.cpp
 	storage_detector.h
 	storage_detector_helpers.h

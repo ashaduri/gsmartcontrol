@@ -15,6 +15,7 @@ endif()
 add_library(applib_tests OBJECT)
 target_sources(applib_tests PRIVATE
 	test_app_pcrecpp.cpp
+	test_smartctl_version_parser.cpp
 )
 target_link_libraries(applib_tests PRIVATE
 	applib
