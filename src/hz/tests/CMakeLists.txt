@@ -15,6 +15,7 @@ endif()
 add_library(hz_tests OBJECT)
 target_sources(hz_tests PRIVATE
 	test_format_unit.cpp
+	test_string_num.cpp
 )
 target_link_libraries(hz_tests PRIVATE
 	hz

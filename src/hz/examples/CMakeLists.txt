@@ -18,12 +18,3 @@ target_sources(example_string_algo PRIVATE
 target_link_libraries(example_string_algo PRIVATE
 	hz
 )
-
-
-add_executable(example_string_num)
-target_sources(example_string_num PRIVATE
-	example_string_num.cpp
-)
-target_link_libraries(example_string_num PRIVATE
-	hz
-)

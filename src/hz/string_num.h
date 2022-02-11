@@ -122,6 +122,18 @@ namespace hz {
 namespace internal {
 
 
+	/// If a string starts with '-', stoul() and stoull() use unsigned wraparound rules
+	/// for the return value, not returning "out of range". Detect this condition.
+	inline bool string_starts_with_minus(const std::string& s, const std::locale& loc)
+	{
+		auto first_symbol = std::find_if(s.begin(), s.end(), [&](char c) {
+			return !std::isspace(c, loc);
+		});
+		return first_symbol != s.end() && *first_symbol == '-';
+	}
+
+
+
 	// Version for integral / floating point types
 	template<typename T>
 	bool string_is_numeric_impl_global_locale(const std::string& s, T& number, bool strict, [[maybe_unused]] int base, const std::locale& loc = std::locale())
@@ -135,9 +147,14 @@ namespace internal {
 		T value = T();
 
 		try {
-			if constexpr(std::is_same_v<T, char> || std::is_same_v<T, unsigned char> || std::is_same_v<T, signed char>
-					|| std::is_same_v<T, wchar_t> || std::is_same_v<T, char16_t> || std::is_same_v<T, char32_t>
-					|| std::is_same_v<T, short> || std::is_same_v<T, int>) {
+			if constexpr(std::is_same_v<T, char>
+			        || std::is_same_v<T, unsigned char>
+			        || std::is_same_v<T, signed char>
+					|| std::is_same_v<T, wchar_t>
+					|| std::is_same_v<T, char16_t>
+					|| std::is_same_v<T, char32_t>
+					|| std::is_same_v<T, short>
+					|| std::is_same_v<T, int>) {
 				int tmp = std::stoi(s, &num_read, base);
 				if (tmp != static_cast<T>(tmp)) {
 					return false;  // out of range
@@ -147,14 +164,21 @@ namespace internal {
 				value = std::stol(s, &num_read, base);
 			} else if constexpr(std::is_same_v<T, long long>) {
 				value = std::stoll(s, &num_read, base);
-			} else if constexpr(std::is_same_v<T, unsigned short> || std::is_same_v<T, unsigned int> ||
-					std::is_same_v<T, unsigned long>) {
+			} else if constexpr(std::is_same_v<T, unsigned short>
+			        || std::is_same_v<T, unsigned int>
+			        || std::is_same_v<T, unsigned long>) {
+				if (string_starts_with_minus(s, loc)) {
+					return false;  // "out of range" for unsigned
+				}
 				unsigned long tmp = std::stoul(s, &num_read, base);
 				if (tmp != static_cast<T>(tmp)) {
-					return false;  // out of range
+					return false;  // out of range for smaller type
 				}
 				value = static_cast<T>(tmp);
 			} else if constexpr(std::is_same_v<T, unsigned long long>) {
+				if (string_starts_with_minus(s, loc)) {
+					return false;  // "out of range" for unsigned
+				}
 				value = std::stoull(s, &num_read, base);
 			} else if constexpr(std::is_same_v<T, float>) {
 				value = std::stof(s, &num_read);
