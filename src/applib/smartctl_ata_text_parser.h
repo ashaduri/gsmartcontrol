@@ -28,13 +28,6 @@ class SmartctlAtaTextParser {
 		/// Parse full "smartctl -x" output
 		bool parse_full(const std::string& full, AtaStorageAttribute::DiskType disk_type);
 
-		/// Convert e.g. "1,000,204,886,016 bytes" to "1.00 TiB [931.51 GB, 1000204886016 bytes]"
-		/// \param str String to parse
-		/// \param bytes Number of bytes
-		/// \param extended Return size in other units as well
-		/// \return Size as a displayable string
-		static std::string parse_byte_size(const std::string& str, int64_t& bytes, bool extended);
-
 
 	private:
 

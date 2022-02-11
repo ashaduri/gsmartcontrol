@@ -23,6 +23,7 @@ Copyright:
 #include "storage_settings.h"
 #include "smartctl_executor.h"
 #include "smartctl_version_parser.h"
+#include "smartctl_text_parser_helper.h"
 
 
 
@@ -224,7 +225,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	std::string size;
 	if (app_pcre_match("/^User Capacity:[ \\t]*(.*)$/mi", info_output_, &size)) {
 		int64_t bytes = 0;
-		size_ = SmartctlAtaTextParser::parse_byte_size(size, bytes, false);
+		size_ = SmartctlTextParserHelper::parse_byte_size(size, bytes, false);
 	}
 
 
