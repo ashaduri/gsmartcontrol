@@ -32,7 +32,7 @@ Copyright:
 
 TEST_CASE("FormatUnitSize", "[hz][formatting]")
 {
-	REQUIRE(hz::format_size(3 * 1024 * 1024) == "3.00 MiB");
+	REQUIRE(hz::format_size(3LL * 1024 * 1024) == "3.00 MiB");
 	REQUIRE(hz::format_size(4LL * 1000 * 1000, true, true) == "4.00 Mbit");
 	REQUIRE(hz::format_size(100LL * 1000 * 1000 * 1000) == "93.13 GiB");  // aka how the hard disk manufactures screw you
 	REQUIRE(hz::format_size(100LL * 1024 * 1024, true) == "104.86 MB");  // 100 MiB in decimal MB

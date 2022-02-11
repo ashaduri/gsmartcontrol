@@ -21,6 +21,7 @@ Copyright:
 #include <cstring>  // std::strncmp
 #include <exception>
 #include <type_traits>
+#include <algorithm>
 
 #include "locale_tools.h"
 

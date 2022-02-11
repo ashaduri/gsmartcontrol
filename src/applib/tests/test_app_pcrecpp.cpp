@@ -45,7 +45,7 @@ TEST_CASE("AppPcreCpp", "[app][pcrecpp]")
 	REQUIRE(app_pcre_get_options("imX").ungreedy() == false);
 	REQUIRE(app_pcre_get_options("imX").no_auto_capture() == false);
 
-	// Invalid flags
+	// Invalid flags, may generate harmless console warnings
 	CHECK(app_pcre_get_options("Z").all_options() == 0x00500000);  // PCRE_NEWLINE_ANYCRLF
 	REQUIRE(app_pcre_get_options("Zi").caseless() == true);
 }
