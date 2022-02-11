@@ -59,6 +59,5 @@ target_compile_definitions(hz
 )
 
 
-add_subdirectory(examples)
 add_subdirectory(tests)
 
