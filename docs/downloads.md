@@ -20,9 +20,9 @@ of GSmartControl packages available in each distribution.
 
 If the package contained in your favourite distribution or repository is not up-to-date yet, our own
 [OBS Project Directory](http://download.opensuse.org/repositories/home:/alex_sh:/gsmartcontrol:/stable_latest/)
-contains the latest GSmartControl packages for a number of Linux distributions. Please see
-the [instructions](https://software.opensuse.org//download.html?project=home%3Aalex_sh%3Agsmartcontrol%3Astable_latest&package=gsmartcontrol)
-for installing these packages.
+contains the latest GSmartControl packages for a number of Linux distributions. Please
+[select the distribution](https://software.opensuse.org//download.html?project=home%3Aalex_sh%3Agsmartcontrol%3Astable_latest&package=gsmartcontrol)
+to install these packages.
 
 ### Windows
 
