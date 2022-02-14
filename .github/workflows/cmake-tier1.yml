@@ -25,6 +25,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Update Package Database
+      run: sudo apt-get update
+
     - name: Install Dependencies
       run: sudo apt-get install libpcre3-dev libgtkmm-3.0-dev gettext
 
