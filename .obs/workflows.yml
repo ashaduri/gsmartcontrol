@@ -1,0 +1,6 @@
+workflow:
+  steps:
+    - branch_package:
+      source_project: home:alex_sh:gsmartcontrol:github_ci:main
+      source_package: gsmartcontrol
+      target_project: builds
