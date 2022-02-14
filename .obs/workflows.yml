@@ -45,6 +45,7 @@ build_main_workflow:
     - configure_repositories:
       project: home:alex_sh:gsmartcontrol:github_ci:main
       repositories:
+
         - name: openSUSE_Tumbleweed
           paths:
             - target_project: openSUSE:Factory
@@ -207,14 +208,14 @@ build_main_workflow:
           architectures:
             - x86_64
 
-#    - set_flags:
-#      flags:
-#        - type: publish
-#          status: enable
-#          project: home:alex_sh:gsmartcontrol:github_ci:main
-#        - type: debuginfo
-#          status: enable
-#          project: home:alex_sh:gsmartcontrol:github_ci:main
+    - set_flags:
+      flags:
+        - type: publish
+          status: enable
+          project: home:alex_sh:gsmartcontrol:github_ci:main
+        - type: debuginfo
+          status: enable
+          project: home:alex_sh:gsmartcontrol:github_ci:main
 
   filters:
     event: push
