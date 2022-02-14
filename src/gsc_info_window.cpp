@@ -846,9 +846,9 @@ void GscInfoWindow::fill_ui_general(const std::vector<AtaStorageProperty>& props
 
 	for (auto&& p : props) {
 		if (p.section == AtaStorageProperty::Section::info) {
-			if (p.generic_name == "smartctl_version_full") {
+			if (p.generic_name == "smartctl/version/_merged_full") {
 				version_props.push_back(p);
-			} else if (p.generic_name == "smartctl_version") {
+			} else if (p.generic_name == "smartctl/version/_merged") {
 				continue;  // we use the full version string instead.
 			} else {
 				id_props.push_back(p);
@@ -879,7 +879,7 @@ void GscInfoWindow::fill_ui_general(const std::vector<AtaStorageProperty>& props
 			continue;  // hide debug messages from smartctl
 		}
 
-		if (p.generic_name == "overall_health") {  // a little distance for this one
+		if (p.generic_name == "smart_status/passed") {  // a little distance for this one
 			Gtk::Label* empty_label = Gtk::manage(new Gtk::Label());
 			empty_label->set_can_focus(false);
 			identity_table->attach(*empty_label, 0, row, 2, 1);
@@ -1283,7 +1283,7 @@ void GscInfoWindow::fill_ui_self_test_log(const std::vector<AtaStorageProperty>&
 		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::selftest_log)
 			continue;
 
-		if (p.generic_name == "selftest_log")  // the whole section, we don't need it
+		if (p.generic_name == "ata_smart_self_test_log/_merged")  // the whole section, we don't need it
 			continue;
 
 		// add non-entry properties to label above
@@ -1381,7 +1381,7 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<AtaStorageProperty>& pro
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-		if (p.generic_name == "error_log") {
+		if (p.generic_name == "ata_smart_error_log/_merged") {
 			if (auto* textview = lookup_widget<Gtk::TextView*>("error_log_textview")) {
 				// Add complete error log to textview window.
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
@@ -1417,7 +1417,7 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<AtaStorageProperty>& pro
 			// add non-tree properties to label above
 		} else if (!p.is_value_type<AtaStorageErrorBlock>()) {
 			label_strings.emplace_back(p.displayable_name + ": " + p.format_value(), &p);
-			if (p.generic_name == "error_log_error_count")
+			if (p.generic_name == "ata_smart_error_log/extended/count")
 				label_strings.back().label += " "s + _("(Note: The number of entries may be limited to the newest ones)");
 
 		} else {
@@ -1463,7 +1463,7 @@ void GscInfoWindow::fill_ui_temperature_log(const std::vector<AtaStorageProperty
 
 	for (const auto& p : props) {
 		// Find temperature
-		if (temp_prop_source < temp_sct && p.generic_name == "sct_temperature_celsius") {
+		if (temp_prop_source < temp_sct && p.generic_name == "ata_sct_status/temperature/current") {
 			temperature = hz::number_to_string_locale(p.get_value<int64_t>());
 			temp_property = p;
 			temp_prop_source = temp_sct;
@@ -1487,7 +1487,7 @@ void GscInfoWindow::fill_ui_temperature_log(const std::vector<AtaStorageProperty
 		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::temperature_log)
 			continue;
 
-		if (p.generic_name == "sct_unsupported" && p.get_value<bool>()) {  // only show if unsupported
+		if (p.generic_name == "ata_sct_status/_not_present" && p.get_value<bool>()) {  // only show if unsupported
 			label_strings.emplace_back(_("SCT temperature commands not supported."), &p);
 			if (int(p.warning_level) > int(max_tab_warning))
 				max_tab_warning = p.warning_level;
@@ -1495,7 +1495,7 @@ void GscInfoWindow::fill_ui_temperature_log(const std::vector<AtaStorageProperty
 		}
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-		if (p.generic_name == "scttemp_log") {
+		if (p.generic_name == "ata_sct_status/_and/ata_sct_temperature_history/_merged") {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 			buffer->set_text("\n" + Glib::ustring::compose(_("Complete SCT temperature log: %1"), "\n\n" + p.get_value<std::string>()));
 
@@ -1618,7 +1618,7 @@ WarningLevel GscInfoWindow::fill_ui_error_recovery(const std::vector<AtaStorageP
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-		if (p.generic_name == "scterc_log") {
+		if (p.generic_name == "ata_sct_erc") {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 			buffer->set_text("\n" + Glib::ustring::compose(_("Complete SCT Error Recovery Control settings: %1"), "\n\n" + p.get_value<std::string>()));
 
@@ -1648,7 +1648,7 @@ WarningLevel GscInfoWindow::fill_ui_selective_self_test_log(const std::vector<At
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-		if (p.generic_name == "SubSection::selective_selftest_log") {
+		if (p.generic_name == "SubSection::ata_smart_selective_self_test_log/_merged") {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 			buffer->set_text("\n" + Glib::ustring::compose(_("Complete selective self-test log: %1"), "\n\n" + p.get_value<std::string>()));
 
@@ -1678,7 +1678,7 @@ WarningLevel GscInfoWindow::fill_ui_physical(const std::vector<AtaStoragePropert
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-		if (p.generic_name == "sataphy_log") {
+		if (p.generic_name == "sata_phy_event_counters/_merged") {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 			buffer->set_text("\n" + Glib::ustring::compose(_("Complete phy log: %1"), "\n\n" + p.get_value<std::string>()));
 
@@ -1708,7 +1708,7 @@ WarningLevel GscInfoWindow::fill_ui_directory(const std::vector<AtaStorageProper
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-		if (p.generic_name == "directory_log") {
+		if (p.generic_name == "ata_log_directory/_merged") {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 			buffer->set_text("\n" + Glib::ustring::compose(_("Complete directory log: %1"), "\n\n" + p.get_value<std::string>()));
 

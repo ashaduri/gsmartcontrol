@@ -945,7 +945,7 @@ void GscMainWindow::update_status_widgets()
 	AtaStorageProperty health_prop = drive->get_health_property();
 
 	if (health_label_) {
-		if (health_prop.generic_name == "overall_health") {
+		if (health_prop.generic_name == "smart_status/passed") {
 			health_label_->set_text(health_prop.format_value());
 			std::string fg;
 			if (app_property_get_label_highlight_color(health_prop.warning_level, fg)) {

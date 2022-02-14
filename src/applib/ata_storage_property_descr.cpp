@@ -1572,18 +1572,18 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, AtaStorageA
 	// Section Info
 	} else if (p.section == AtaStorageProperty::Section::info) {
 		found = auto_set(p, "model_family", "Model family (from smartctl database)")
-		|| auto_set(p, "device_model", "Device model")
+		|| auto_set(p, "model_name", "Device model")
 		|| auto_set(p, "serial_number", "Serial number, unique to each physical drive")
-		|| auto_set(p, "capacity", "User-serviceable drive capacity as reported to an operating system")
-		|| auto_set(p, "in_smartctl_db", "Whether the device is in smartctl database or not. "
+		|| auto_set(p, "user_capacity/bytes", "User-serviceable drive capacity as reported to an operating system")
+		|| auto_set(p, "in_smartctl_database", "Whether the device is in smartctl database or not. "
 				"If it is, additional information may be provided; otherwise, Raw values of some attributes may be incorrectly formatted.")
-		|| auto_set(p, "smart_supported", "Whether the device supports SMART. If not, then only very limited information will be available.")
-		|| auto_set(p, "smart_enabled", "Whether the device has SMART enabled. If not, most of the reported values will be incorrect.")
-		|| auto_set(p, "aam_feature", "Automatic Acoustic Management (AAM) feature")
-		|| auto_set(p, "aam_feature", "Automatic Acoustic Management (AAM) level")
-		|| auto_set(p, "apm_feature", "Automatic Power Management (APM) feature")
-		|| auto_set(p, "apm_level", "Advanced Power Management (APM) level")
-		|| auto_set(p, "dsn_feature", "Device Statistics Notification (DSN) feature")
+		|| auto_set(p, "_custom/smart_supported", "Whether the device supports SMART. If not, then only very limited information will be available.")
+		|| auto_set(p, "_custom/smart_enabled", "Whether the device has SMART enabled. If not, most of the reported values will be incorrect.")
+		|| auto_set(p, "ata_aam/enabled", "Automatic Acoustic Management (AAM) feature")
+		|| auto_set(p, "ata_aam/level", "Automatic Acoustic Management (AAM) level")
+		|| auto_set(p, "ata_apm/enabled", "Automatic Power Management (APM) feature")
+		|| auto_set(p, "ata_apm/level", "Advanced Power Management (APM) level")
+		|| auto_set(p, "ata_dsn/enabled", "Device Statistics Notification (DSN) feature")
 		|| auto_set(p, "power_mode", "Power mode at the time of query");
 
 		// set just its name as a tooltip
@@ -1596,28 +1596,28 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, AtaStorageA
 
 		switch (p.subsection) {
 			case AtaStorageProperty::SubSection::health:
-				found = auto_set(p, "overall_health", "Overall health self-assessment test result. Note: If the drive passes this test, it doesn't mean it's OK. "
+				found = auto_set(p, "smart_status/passed", "Overall health self-assessment test result. Note: If the drive passes this test, it doesn't mean it's OK. "
 						"However, if the drive doesn't pass it, then it's either already dead, or it's predicting its own failure within the next 24 hours. In this case do a backup immediately!");
 				break;
 
 			case AtaStorageProperty::SubSection::capabilities:
-				found = auto_set(p, "offline_status_group", "Offline Data Collection (a.k.a. Offline test) is usually automatically performed when the device is idle or every fixed amount of time. "
+				found = auto_set(p, "ata_smart_data/offline_data_collection/status/_group", "Offline Data Collection (a.k.a. Offline test) is usually automatically performed when the device is idle or every fixed amount of time. "
 						"This should show if Automatic Offline Data Collection is enabled.")
-				|| auto_set(p, "iodc_total_time_length", "Offline Data Collection (a.k.a. Offline test) is usually automatically performed when the device is idle or every fixed amount of time. "
+				|| auto_set(p, "ata_smart_data/offline_data_collection/completion_seconds", "Offline Data Collection (a.k.a. Offline test) is usually automatically performed when the device is idle or every fixed amount of time. "
 						"This value shows the estimated time required to perform this operation in idle conditions. A value of 0 means unsupported.")
-				|| auto_set(p, "short_total_time_length", "This value shows the estimated time required to perform a short self-test in idle conditions. A value of 0 means unsupported.")
-				|| auto_set(p, "long_total_time_length", "This value shows the estimated time required to perform a long self-test in idle conditions. A value of 0 means unsupported.")
-				|| auto_set(p, "conveyance_total_time_length", "This value shows the estimated time required to perform a conveyance self-test in idle conditions. "
+				|| auto_set(p, "ata_smart_data/self_test/polling_minutes/short", "This value shows the estimated time required to perform a short self-test in idle conditions. A value of 0 means unsupported.")
+				|| auto_set(p, "ata_smart_data/self_test/polling_minutes/extended", "This value shows the estimated time required to perform a long self-test in idle conditions. A value of 0 means unsupported.")
+				|| auto_set(p, "ata_smart_data/self_test/polling_minutes/conveyance", "This value shows the estimated time required to perform a conveyance self-test in idle conditions. "
 						"A value of 0 means unsupported.")
-				|| auto_set(p, "last_selftest_cap_group", "Status of the last self-test run.")
-				|| auto_set(p, "offline_cap_group", "Drive properties related to Offline Data Collection and self-tests.")
-				|| auto_set(p, "smart_cap_group", "Drive properties related to SMART handling.")
-				|| auto_set(p, "error_log_cap_group", "Drive properties related to error logging.")
-				|| auto_set(p, "sct_cap_group", "Drive properties related to temperature information.");
+				|| auto_set(p, "ata_smart_data/self_test/status/_group", "Status of the last self-test run.")
+				|| auto_set(p, "ata_smart_data/offline_data_collection/_group", "Drive properties related to Offline Data Collection and self-tests.")
+				|| auto_set(p, "ata_smart_data/capabilities/_group", "Drive properties related to SMART handling.")
+				|| auto_set(p, "ata_smart_data/capabilities/error_logging_supported", "Drive properties related to error logging.")
+				|| auto_set(p, "ata_sct_capabilities/_group", "Drive properties related to temperature information.");
 				break;
 
 			case AtaStorageProperty::SubSection::attributes:
-				found = auto_set(p, "data_structure_version", p.displayable_name.c_str());
+				found = auto_set(p, "ata_smart_attributes/revision", p.displayable_name.c_str());
 				if (!found) {
 					auto_set_attr(p, disk_type);
 					found = true;  // true, because auto_set_attr() may set "Unknown attribute", which is still "found".
@@ -1629,8 +1629,8 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, AtaStorageA
 				break;
 
 			case AtaStorageProperty::SubSection::error_log:
-				found = auto_set(p, "error_log_version", p.displayable_name.c_str())
-				|| auto_set(p, "error_log_error_count", "Number of errors in error log. Note: Some manufacturers may list completely harmless errors in this log "
+				found = auto_set(p, "ata_smart_error_log/extended/revision", p.displayable_name.c_str())
+				|| auto_set(p, "ata_smart_error_log/extended/count", "Number of errors in error log. Note: Some manufacturers may list completely harmless errors in this log "
 					"(e.g., command invalid, not implemented, etc...).");
 // 				|| auto_set(p, "error_log_unsupported", "This device does not support error logging.");  // the property text already says that
 				if (p.is_value_type<AtaStorageErrorBlock>()) {
@@ -1642,9 +1642,9 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, AtaStorageA
 				break;
 
 			case AtaStorageProperty::SubSection::selftest_log:
-				found = auto_set(p, "selftest_log_version", p.displayable_name.c_str())
-				|| auto_set(p, "selftest_num_entries", "Number of tests in selftest log. Note: The number of entries may be limited to the newest manual tests.");
-		// 		|| auto_set(p, "selftest_log_unsupported", "This device does not support self-test logging.");  // the property text already says that
+				found = auto_set(p, "ata_smart_self_test_log/extended/revision", p.displayable_name.c_str())
+				|| auto_set(p, "ata_smart_self_test_log/extended/table/count", "Number of tests in selftest log. Note: The number of entries may be limited to the newest manual tests.");
+		// 		|| auto_set(p, "ata_smart_self_test_log/_present", "This device does not support self-test logging.");  // the property text already says that
 				break;
 
 			case AtaStorageProperty::SubSection::selective_selftest_log:
@@ -1652,7 +1652,7 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, AtaStorageA
 				break;
 
 			case AtaStorageProperty::SubSection::temperature_log:
-				found = auto_set(p, "sct_unsupported", "SCT support is needed for SCT temperature logging.");
+				found = auto_set(p, "ata_sct_status/_not_present", "SCT support is needed for SCT temperature logging.");
 				break;
 
 			case AtaStorageProperty::SubSection::erc_log:
@@ -1683,16 +1683,16 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 
 	// Section Info
 	} else if (p.section == AtaStorageProperty::Section::info) {
-		if (name_match(p, "smart_supported") && !p.get_value<bool>()) {
+		if (name_match(p, "_custom/smart_supported") && !p.get_value<bool>()) {
 			w = WarningLevel::notice;
 			reason = "SMART is not supported. You won't be able to read any SMART information from this drive.";
 
-		} else if (name_match(p, "smart_enabled") && !p.get_value<bool>()) {
+		} else if (name_match(p, "_custom/smart_enabled") && !p.get_value<bool>()) {
 			w = WarningLevel::notice;
 			reason = "SMART is disabled. You should enable it to read any SMART information from this drive. "
 					"Additionally, some drives do not log useful data with SMART disabled, so it's advisable to keep it always enabled.";
 
-		} else if (name_match(p, "info_warning")) {
+		} else if (name_match(p, "_text_only/info_warning")) {
 			w = WarningLevel::notice;
 			reason = "Your drive may be affected by the warning, please see the details.";
 		}
@@ -1701,7 +1701,7 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 
 		switch(p.subsection) {
 			case AtaStorageProperty::SubSection::health:
-				if (name_match(p, "overall_health") && p.get_value<std::string>() != "PASSED") {
+				if (name_match(p, "smart_status/passed") && p.get_value<std::string>() != "PASSED") {
 					w = WarningLevel::alert;
 					reason = "The drive is reporting that it will FAIL very soon. Please back up as soon as possible!";
 				}
@@ -1892,12 +1892,12 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 				// error-entry related descriptions are added here, don't forget to enable
 				// the tooltips.
 
-				if (name_match(p, "error_log_error_count") && p.get_value<int64_t>() > 0) {
+				if (name_match(p, "ata_smart_error_log/extended/count") && p.get_value<int64_t>() > 0) {
 					w = WarningLevel::notice;
 					reason = "The drive is reporting internal errors. Usually this means uncorrectable data loss and similar severe errors. "
 							"Check the actual errors for details.";
 
-				} else if (name_match(p, "error_log_unsupported")) {
+				} else if (name_match(p, "ata_smart_error_log/_not_present")) {
 					w = WarningLevel::notice;
 					reason = "The drive does not support error logging. This means that SMART error history is unavailable.";
 				}
@@ -1932,7 +1932,7 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 				// Don't include selftest warnings - they may be old or something.
 				// Self-tests are carried manually anyway, so the user is expected to check their status anyway.
 
-				if (name_match(p, "selftest_log_unsupported")) {
+				if (name_match(p, "ata_smart_self_test_log/_present")) {
 					w = WarningLevel::notice;
 					reason = "The drive does not support self-test logging. This means that SMART test results won't be logged.";
 				}
@@ -1945,12 +1945,12 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 
 			case AtaStorageProperty::SubSection::temperature_log:
 				// Don't highlight SCT Unsupported as warning, it's harmless.
-// 				if (name_match(p, "sct_unsupported") && p.value_bool) {
+// 				if (name_match(p, "ata_sct_status/_not_present") && p.value_bool) {
 // 					w = WarningLevel::notice;
 // 					reason = "The drive does not support SCT Temperature logging.";
 // 				}
 				// Current temperature
-				if (name_match(p, "sct_temperature_celsius") && p.get_value<int64_t>() > 50) {  // 50C
+				if (name_match(p, "ata_sct_status/temperature/current") && p.get_value<int64_t>() > 50) {  // 50C
 					w = WarningLevel::notice;
 					reason = "The temperature of the drive is higher than 50 degrees Celsius. "
 							"This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";

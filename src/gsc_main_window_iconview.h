@@ -312,7 +312,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 			}
 			AtaStorageProperty scan_time_prop;
 			if (drive->get_is_virtual()) {
-				scan_time_prop = drive->lookup_property("scan_time");
+				scan_time_prop = drive->lookup_property("local_time/asctime");
 				if (!scan_time_prop.empty() && !scan_time_prop.get_value<std::string>().empty()) {
 					name += "\n" + Glib::Markup::escape_text(scan_time_prop.get_value<std::string>());
 				}
@@ -358,7 +358,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 			}
 
 			AtaStorageProperty health_prop = drive->get_health_property();
-			if (health_prop.warning_level != WarningLevel::none && health_prop.generic_name == "overall_health") {
+			if (health_prop.warning_level != WarningLevel::none && health_prop.generic_name == "smart_status/passed") {
 				if (icon) {
 					icon = icon->copy();  // work on a copy
 					if (icon->get_colorspace() == Gdk::COLORSPACE_RGB && icon->get_bits_per_sample() == 8) {

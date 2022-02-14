@@ -69,10 +69,10 @@ std::chrono::seconds SelfTest::get_min_duration_seconds() const
 
 	std::string prop_name;
 	switch(type_) {
-		case TestType::immediate_offline: prop_name = "iodc_total_time_length"; break;
-		case TestType::short_test: prop_name = "short_total_time_length"; break;
-		case TestType::long_test: prop_name = "long_total_time_length"; break;
-		case TestType::conveyance: prop_name = "conveyance_total_time_length"; break;
+		case TestType::immediate_offline: prop_name = "ata_smart_data/offline_data_collection/completion_seconds"; break;
+		case TestType::short_test: prop_name = "ata_smart_data/self_test/polling_minutes/short"; break;
+		case TestType::long_test: prop_name = "ata_smart_data/self_test/polling_minutes/extended"; break;
+		case TestType::conveyance: prop_name = "ata_smart_data/self_test/polling_minutes/conveyance"; break;
 	}
 
 	AtaStorageProperty p = drive_->lookup_property(prop_name,
@@ -92,14 +92,14 @@ bool SelfTest::is_supported() const
 	std::string prop_name;
 	switch(type_) {
 		case TestType::immediate_offline:
-			// prop_name = "iodc_support";
+			// prop_name = "ata_smart_data/capabilities/exec_offline_immediate_supported";
 			// break;
 			return false;  // disable this for now - it's unsupported.
 		case TestType::short_test:
 		case TestType::long_test:  // same for short and long
-			prop_name = "selftest_support";
+			prop_name = "ata_smart_data/capabilities/self_tests_supported";
 			break;
-		case TestType::conveyance: prop_name = "conveyance_support"; break;
+		case TestType::conveyance: prop_name = "ata_smart_data/capabilities/conveyance_self_test_supported"; break;
 	}
 
 	AtaStorageProperty p = drive_->lookup_property(prop_name, AtaStorageProperty::Section::internal);
@@ -184,7 +184,8 @@ std::string SelfTest::force_stop(const std::shared_ptr<CommandExecutor>& smartct
 	// any command (e.g. "--abort") will abort it. If it has "Suspend Offline...",
 	// there's no way to abort such test.
 	if (type_ == TestType::immediate_offline) {
-		AtaStorageProperty p = drive_->lookup_property("iodc_command_suspends", AtaStorageProperty::Section::internal);
+		AtaStorageProperty p = drive_->lookup_property(
+				"ata_smart_data/capabilities/offline_is_aborted_upon_new_cmd", AtaStorageProperty::Section::internal);
 		if (!p.empty() && p.get_value<bool>()) {  // if empty, give a chance to abort anyway.
 			return _("Aborting this test is unsupported by the drive.");
 		}
@@ -254,7 +255,7 @@ std::string SelfTest::update(const std::shared_ptr<CommandExecutor>& smartctl_ex
 // 		if (e.section != AtaStorageProperty::Section::data || e.subsection != AtaStorageProperty::SubSection::selftest_log
 		if (e.section != AtaStorageProperty::Section::internal
 				|| !e.is_value_type<AtaStorageSelftestEntry>() || e.get_value<AtaStorageSelftestEntry>().test_num != 0
-				|| e.generic_name != "last_selftest_status")
+				|| e.generic_name != "ata_smart_data/self_test/status/passed")
 			continue;
 		p = e;
 	}

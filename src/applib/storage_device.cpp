@@ -471,12 +471,12 @@ StorageDevice::Status StorageDevice::get_aodc_status() const
 
 	for (const auto& p : properties_) {
 		if (p.section == AtaStorageProperty::Section::internal) {
-			if (p.generic_name == "aodc_enabled") {  // if this is not present at all, we set the unknown status.
+			if (p.generic_name == "ata_smart_data/offline_data_collection/status/value/_parsed") {  // if this is not present at all, we set the unknown status.
 				status = (p.get_value<bool>() ? Status::enabled : Status::disabled);
 				//++found;
 				continue;
 			}
-			if (p.generic_name == "aodc_support") {
+			if (p.generic_name == "_text_only/aodc_support") {
 				aodc_supported = p.get_value<bool>();
 				++found;
 				continue;
@@ -511,7 +511,7 @@ AtaStorageProperty StorageDevice::get_health_property() const
 	if (health_property_.has_value())  // cached return value
 		return health_property_.value();
 
-	AtaStorageProperty p = this->lookup_property("overall_health",
+	AtaStorageProperty p = this->lookup_property("smart_status/passed",
 			AtaStorageProperty::Section::data, AtaStorageProperty::SubSection::health);
 	if (!p.empty())
 		health_property_ = p;  // store to cache
