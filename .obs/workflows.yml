@@ -1,6 +1,225 @@
-workflow:
+
+# This file describes OBS workflows:
+# https://openbuildservice.org/help/manuals/obs-user-guide/cha.obs.scm_ci_workflow_integration.html
+
+# Workflow for pull requests
+build_pull_request_workflow:
   steps:
     - branch_package:
       source_project: home:alex_sh:gsmartcontrol:github_ci:main
       source_package: gsmartcontrol
-      target_project: builds
+      target_project: home:alex_sh:gsmartcontrol:github_ci:main
+
+    - configure_repositories:
+      project: home:alex_sh:gsmartcontrol:github_ci:main
+      repositories:
+
+        - name: openSUSE_Tumbleweed
+          paths:
+            - target_project: openSUSE:Factory
+              target_repository: snapshot
+          architectures:
+            - x86_64
+            - i586
+
+    - set_flags:
+      flags:
+        - type: publish
+          status: disable
+          project: home:alex_sh:gsmartcontrol:github_ci:main
+
+  filters:
+    event: pull_request
+    branches:
+      only:
+        - main
+
+
+# Workflow for pushes
+build_main_workflow:
+  steps:
+    - rebuild_package:
+      project: home:alex_sh:gsmartcontrol:github_ci:main
+      package: gsmartcontrol
+
+    - configure_repositories:
+      project: home:alex_sh:gsmartcontrol:github_ci:main
+      repositories:
+
+        - name: openSUSE_Tumbleweed
+          paths:
+            - target_project: openSUSE:Factory
+              target_repository: snapshot
+          architectures:
+            - x86_64
+            - i586
+
+        - name: openSUSE_Leap_15.4
+          paths:
+            - target_project: openSUSE:Leap:15.4
+              target_repository: standard
+          architectures:
+            - x86_64
+
+        - name: openSUSE_Leap_15.3
+          paths:
+            - target_project: openSUSE:Leap:15.3
+              target_repository: standard
+          architectures:
+            - x86_64
+
+        - name: openSUSE_Factory_PowerPC
+          paths:
+            - target_project: openSUSE:Factory:PowerPC
+              target_repository: standard
+          architectures:
+            - ppc64
+            - ppc64le
+
+        - name: openSUSE_Factory_ARM
+          paths:
+            - target_project: openSUSE:Factory:ARM
+              target_repository: standard
+          architectures:
+            - aarch64
+            - armv7l
+
+        - name: SUSE_SLE-15-SP4
+          paths:
+            - target_project: SUSE:SLE-15-SP4:GA
+              target_repository: standard
+          architectures:
+            - x86_64
+
+        - name: SUSE_SLE-12-SP5
+          paths:
+            - target_project: SUSE:SLE-12-SP5:GA
+              target_repository: standard
+          architectures:
+            - x86_64
+
+        - name: xUbuntu_21.10
+          paths:
+            - target_project: openSUSE:Tools
+              target_repository: xUbuntu_21.10
+            - target_project: Ubuntu:21.10
+              target_repository: universe
+          architectures:
+            - x86_64
+
+        - name: xUbuntu_20.04
+          paths:
+            - target_project: openSUSE:Tools
+              target_repository: xUbuntu_20.04
+            - target_project: Ubuntu:20.04
+              target_repository: universe
+          architectures:
+            - x86_64
+
+        - name: Fedora_Rawhide
+          paths:
+            - target_project: openSUSE:Tools
+              target_repository: Fedora_Rawhide
+            - target_project: Fedora:Rawhide
+              target_repository: standard
+          architectures:
+            - x86_64
+
+        - name: Fedora_35
+          paths:
+            - target_project: openSUSE:Tools
+              target_repository: Fedora_35
+            - target_project: Fedora:35
+              target_repository: standard
+          architectures:
+            - x86_64
+            - aarch64
+            - armv7l
+            - ppc64le
+
+        - name: Fedora_34
+          paths:
+            - target_project: openSUSE:Tools
+              target_repository: Fedora_34
+            - target_project: Fedora:34
+              target_repository: standard
+          architectures:
+            - x86_64
+
+        - name: Debian_Unstable
+          paths:
+            - target_project: openSUSE:Tools
+              target_repository: Debian_Unstable
+            - target_project: Debian:Next
+              target_repository: standard
+          architectures:
+            - x86_64
+            - i586
+
+        - name: Debian_Testing
+          paths:
+            - target_project: openSUSE:Tools
+              target_repository: Debian_Testing
+            - target_project: Debian:Testing
+              target_repository: update
+          architectures:
+            - x86_64
+            - i586
+
+        - name: Debian_11
+          paths:
+            - target_project: openSUSE:Tools
+              target_repository: Debian_11
+            - target_project: Debian:11
+              target_repository: standard
+          architectures:
+            - x86_64
+            - i586
+
+        - name: Debian_10
+          paths:
+            - target_project: openSUSE:Tools
+              target_repository: Debian_10
+            - target_project: Debian:10
+              target_repository: standard
+          architectures:
+            - x86_64
+            - i586
+
+        - name: CentOS_8_Stream
+          paths:
+            - target_project: openSUSE:Tools
+              target_repository: CentOS_8_Stream
+            - target_project: Fedora:EPEL:8
+              target_repository: CentOS
+            - target_project: CentOS:CentOS-8:Stream
+              target_repository: standard
+          architectures:
+            - x86_64
+
+        - name: CentOS_8
+          paths:
+            - target_project: openSUSE:Tools
+              target_repository: CentOS_8
+            - target_project: Fedora:EPEL:8
+              target_repository: CentOS
+            - target_project: CentOS:CentOS-8
+              target_repository: standard
+          architectures:
+            - x86_64
+
+    - set_flags:
+      flags:
+        - type: publish
+          status: enable
+          project: home:alex_sh:gsmartcontrol:github_ci:main
+        - type: debuginfo
+          status: enable
+          project: home:alex_sh:gsmartcontrol:github_ci:main
+
+  filters:
+    event: push
+    branches:
+      only:
+        - main
+
