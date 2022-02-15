@@ -4,8 +4,8 @@
 #   (C) 2021 Alexander Shaduri <ashaduri@gmail.com>
 ###############################################################################
 
-# 3.12 for CMAKE_PROJECT_VERSION
-cmake_minimum_required(VERSION 3.12)
+# 3.14 for proper object library support (wrt linking)
+cmake_minimum_required(VERSION 3.14)
 # Use new policy for option() to supress warnings.
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
