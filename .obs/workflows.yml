@@ -170,16 +170,16 @@ build_main_workflow:
               - x86_64
               - i586
 
-          - name: Debian_10
-            paths:
-              - target_project: openSUSE:Tools
-                target_repository: Debian_10
-              - target_project: Debian:10
-                target_repository: standard
-            architectures:
-              - x86_64
-              - i586
-
+#          - name: Debian_10
+#            paths:
+#              - target_project: openSUSE:Tools
+#                target_repository: Debian_10
+#              - target_project: Debian:10
+#                target_repository: standard
+#            architectures:
+#              - x86_64
+#              - i586
+#
 #          - name: CentOS_8_Stream
 #            paths:
 #              - target_project: openSUSE:Tools
