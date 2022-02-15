@@ -243,7 +243,7 @@ std::string SelfTest::update(const std::shared_ptr<CommandExecutor>& smartctl_ex
 		return error_msg;
 
 	AtaStorageAttribute::DiskType disk_type = drive_->get_is_hdd() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
-	auto parser = SmartctlParser::create(SmartctlOutputParserType::Text);
+	auto parser = SmartctlParser::create(SmartctlParserType::Text);
 	DBG_ASSERT_RETURN(parser, "Cannot create parser");
 
 	if (!parser->parse_full(output)) {  // try to parse it

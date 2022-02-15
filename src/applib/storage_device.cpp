@@ -241,7 +241,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 			disk_type = hdd_.value() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
 		}
 
-		auto parser = SmartctlParser::create(SmartctlOutputParserType::Text);
+		auto parser = SmartctlParser::create(SmartctlParserType::Text);
 		DBG_ASSERT_RETURN(parser, "Cannot create parser");
 
 		if (parser->parse_full(this->info_output_)) {  // try to parse it
@@ -308,7 +308,7 @@ std::string StorageDevice::parse_data()
 		disk_type = hdd_.value() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
 	}
 
-	auto parser = SmartctlParser::create(SmartctlOutputParserType::Text);
+	auto parser = SmartctlParser::create(SmartctlParserType::Text);
 	DBG_ASSERT_RETURN(parser, "Cannot create parser");
 
 	if (parser->parse_full(this->full_output_)) {  // try to parse it (parse only, set the properties after basic parsing).

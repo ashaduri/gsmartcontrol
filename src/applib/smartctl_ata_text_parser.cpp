@@ -227,7 +227,7 @@ bool SmartctlAtaTextParser::parse_full(const std::string& full)
 		add_property(p);
 	}
 
-	if (!SmartctlVersionParser::check_parsed_version(SmartctlOutputParserType::Text, version)) {
+	if (!SmartctlVersionParser::check_parsed_version(SmartctlParserType::Text, version)) {
 		set_error_msg("Incompatible smartctl version.");
 		debug_out_warn("app", DBG_FUNC_MSG << "Incompatible smartctl version. Returning.\n");
 		return false;

@@ -16,8 +16,9 @@ Copyright:
 #include <vector>
 #include <memory>
 
+// #include "leaf_ns.h"
 #include "ata_storage_property.h"
-#include "smartctl_output_type.h"
+#include "smartctl_parser_types.h"
 
 
 
@@ -51,12 +52,12 @@ class SmartctlParser {
 
 		/// Create an instance of this class.
 		/// \return nullptr if no such class exists
-		static std::unique_ptr<SmartctlParser> create(SmartctlOutputParserType type);
+		static std::unique_ptr<SmartctlParser> create(SmartctlParserType type);
 
 
 		/// Create an instance of this class.
 		/// \return nullptr if no such class exists
-		static std::unique_ptr<SmartctlParser> detect_and_parse(SmartctlOutputParserType type);
+		// static std::unique_ptr<SmartctlParser> detect_and_parse(SmartctlParserType type);
 
 
 		/// Parse full "smartctl -x" output.
@@ -65,8 +66,7 @@ class SmartctlParser {
 
 
 		/// Detect smartctl output type (text, json).
-		/// Return
-		[[nodiscard]] std::optional<SmartctlOutputParserType> detect_output_type(const std::string& output) const;
+		// [[nodiscard]] leaf::result<SmartctlParserType> detect_output_type(const std::string& output) const;
 
 
 		/// Get "full" data, as passed to parse_full().

@@ -18,7 +18,7 @@ Copyright:
 #include <vector>
 #include <optional>
 
-#include "smartctl_output_type.h"
+#include "smartctl_parser_types.h"
 
 
 
@@ -42,11 +42,11 @@ class SmartctlVersionParser {
 
 
 		/// Check that the version of smartctl output can be parsed with a parser.
-		static bool check_parsed_version(SmartctlOutputParserType parser_type, const std::string& version_only);
+		static bool check_parsed_version(SmartctlParserType parser_type, const std::string& version_only);
 
 
 		/// Detect smartctl parser type based on smartctl version
-		static std::optional<SmartctlOutputParserType> detect_supported_parser_type(const std::string& version_only);
+		static std::optional<SmartctlParserType> detect_supported_parser_type(const std::string& version_only);
 
 
 	private:

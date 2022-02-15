@@ -20,14 +20,12 @@ Copyright:
 
 
 
-std::unique_ptr<SmartctlParser> SmartctlParser::create(SmartctlOutputParserType type)
+std::unique_ptr<SmartctlParser> SmartctlParser::create(SmartctlParserType type)
 {
 	switch(type) {
-		case SmartctlOutputParserType::Auto:
-			break;
-		case SmartctlOutputParserType::Json:
+		case SmartctlParserType::Json:
 			return std::make_unique<SmartctlAtaJsonParser>();
-		case SmartctlOutputParserType::Text:
+		case SmartctlParserType::Text:
 			return std::make_unique<SmartctlAtaTextParser>();
 	}
 	return nullptr;
@@ -35,18 +33,18 @@ std::unique_ptr<SmartctlParser> SmartctlParser::create(SmartctlOutputParserType 
 
 
 
-std::optional<SmartctlOutputParserType> SmartctlParser::detect_output_type(const std::string& output) const
-{
+// std::optional<SmartctlParserType> SmartctlParser::detect_output_type(const std::string& output) const
+// {
 	// Look for the first non-whitespace symbol
-	auto first_symbol = std::find_if(output.begin(), output.end(), [&](char c) {
-		return !std::isspace(c, std::locale::classic());
-	});
-	if (first_symbol != output.end() && *first_symbol == '-'
+	// auto first_symbol = std::find_if(output.begin(), output.end(), [&](char c) {
+	// 	return !std::isspace(c, std::locale::classic());
+	// });
+	// if (first_symbol != output.end() && *first_symbol == '-'
 
 
 
 
-}
+// }
 
 
 

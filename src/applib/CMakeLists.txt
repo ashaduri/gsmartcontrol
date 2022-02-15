@@ -39,7 +39,7 @@ target_sources(applib PRIVATE
 	smartctl_executor.cpp
 	smartctl_executor_gui.h
 	smartctl_executor.h
-	smartctl_output_type.h
+	smartctl_parser_types.h
 	smartctl_text_parser_helper.cpp
 	smartctl_text_parser_helper.h
 	smartctl_version_parser.cpp
