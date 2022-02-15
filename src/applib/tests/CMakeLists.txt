@@ -17,9 +17,8 @@ target_sources(applib_tests PRIVATE
 	test_app_pcrecpp.cpp
 	test_smartctl_version_parser.cpp
 )
-target_link_libraries(applib_tests
-	PUBLIC  # must be public as the target is an object library
-		applib
-		Catch2
+target_link_libraries(applib_tests PRIVATE
+	applib
+	Catch2
 )
 
