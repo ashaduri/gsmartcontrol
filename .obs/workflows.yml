@@ -3,44 +3,40 @@
 # https://openbuildservice.org/help/manuals/obs-user-guide/cha.obs.scm_ci_workflow_integration.html
 
 # Workflow for pull requests
-build_pull_request_workflow:
-  steps:
-    - branch_package:
-        source_project: home:alex_sh:gsmartcontrol:github_ci:main
-        source_package: gsmartcontrol
-        target_project: home:alex_sh:gsmartcontrol:github_ci:main
-
-    - configure_repositories:
-        project: home:alex_sh:gsmartcontrol:github_ci:main
-        repositories:
-          - name: openSUSE_Tumbleweed
-            paths:
-              - target_project: openSUSE:Factory
-                target_repository: snapshot
-            architectures:
-              - x86_64
-              - i586
-
-    - set_flags:
-        flags:
-          - type: publish
-            status: disable
-            project: home:alex_sh:gsmartcontrol:github_ci:main
-
-  filters:
-    event: pull_request
-    branches:
-      only:
-        - main
+#build_pull_request_workflow:
+#  steps:
+#    - branch_package:
+#        source_project: home:alex_sh:gsmartcontrol:github_ci:main
+#        source_package: gsmartcontrol
+#        target_project: home:alex_sh:gsmartcontrol:github_ci:main
+#
+#    - configure_repositories:
+#        project: home:alex_sh:gsmartcontrol:github_ci:main
+#        repositories:
+#          - name: openSUSE_Tumbleweed
+#            paths:
+#              - target_project: openSUSE:Factory
+#                target_repository: snapshot
+#            architectures:
+#              - x86_64
+#              - i586
+#
+#    - set_flags:
+#        flags:
+#          - type: publish
+#            status: disable
+#            project: home:alex_sh:gsmartcontrol:github_ci:main
+#
+#  filters:
+#    event: pull_request
+#    branches:
+#      only:
+#        - main
 
 
 # Workflow for pushes
 build_main_workflow:
   steps:
-    - rebuild_package:
-        project: home:alex_sh:gsmartcontrol:github_ci:main
-        package: gsmartcontrol
-
     - configure_repositories:
         project: home:alex_sh:gsmartcontrol:github_ci:main
         repositories:
@@ -215,6 +211,10 @@ build_main_workflow:
           - type: debuginfo
             status: enable
             project: home:alex_sh:gsmartcontrol:github_ci:main
+
+    - rebuild_package:
+        project: home:alex_sh:gsmartcontrol:github_ci:main
+        package: gsmartcontrol
 
   filters:
     event: push
