@@ -13,7 +13,7 @@ target_sources(boost_leaf INTERFACE
 )
 
 target_include_directories(boost_leaf
-	INTERFACE SYSTEM
+	SYSTEM INTERFACE
 		"${CMAKE_SOURCE_DIR}/dependencies/leaf/standalone"
 		"${CMAKE_SOURCE_DIR}/dependencies/leaf/convenience"
 )

@@ -60,7 +60,7 @@ find_package(Intl REQUIRED)
 add_library(app_gettext_interface INTERFACE)
 if (Intl_INCLUDE_DIRS)
 	target_include_directories(app_gettext_interface
-		INTERFACE
+		SYSTEM INTERFACE
 			${Intl_INCLUDE_DIRS}
 	)
 endif()

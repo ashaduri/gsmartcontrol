@@ -15,7 +15,7 @@ target_sources(Catch2 INTERFACE
 )
 
 target_include_directories(Catch2
-	INTERFACE SYSTEM
+	SYSTEM INTERFACE
 		"${CMAKE_SOURCE_DIR}/dependencies/catch2/Catch2/single_include"
 )
 

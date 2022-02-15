@@ -12,7 +12,7 @@ target_sources(nlohmann_json INTERFACE
 )
 
 target_include_directories(nlohmann_json
-	INTERFACE SYSTEM
+	SYSTEM INTERFACE
 		"${CMAKE_SOURCE_DIR}/dependencies/nlohmann_json"
 )
 
