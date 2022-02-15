@@ -18,8 +18,9 @@ target_sources(hz_tests PRIVATE
 	test_string_algo.cpp
 	test_string_num.cpp
 )
-target_link_libraries(hz_tests PRIVATE
-	hz
-	Catch2
+target_link_libraries(hz_tests
+	PUBLIC  # must be public as the target is an object library
+		hz
+		Catch2
 )
 

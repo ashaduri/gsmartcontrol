@@ -20,9 +20,10 @@ target_sources(test_all PRIVATE
 )
 target_link_libraries(test_all PRIVATE
 	libdebug
+	Catch2
+	# Object libraries containing tests
 	applib_tests
 	hz_tests
-	Catch2
 )
 
 if (NOT CMAKE_CROSSCOMPILING)
