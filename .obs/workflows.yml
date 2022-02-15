@@ -129,7 +129,7 @@ build_main_workflow:
             architectures:
               - x86_64
               - aarch64
-              - armv7l
+#              - armv7l  # very slow
               - ppc64le
 
           - name: Fedora_34
@@ -149,7 +149,6 @@ build_main_workflow:
                 target_repository: standard
             architectures:
               - x86_64
-              - i586
 
           - name: Debian_Testing
             paths:
@@ -181,27 +180,27 @@ build_main_workflow:
               - x86_64
               - i586
 
-          - name: CentOS_8_Stream
-            paths:
-              - target_project: openSUSE:Tools
-                target_repository: CentOS_8_Stream
-              - target_project: Fedora:EPEL:8
-                target_repository: CentOS
-              - target_project: CentOS:CentOS-8:Stream
-                target_repository: standard
-            architectures:
-              - x86_64
-
-          - name: CentOS_8
-            paths:
-              - target_project: openSUSE:Tools
-                target_repository: CentOS_8
-              - target_project: Fedora:EPEL:8
-                target_repository: CentOS
-              - target_project: CentOS:CentOS-8
-                target_repository: standard
-            architectures:
-              - x86_64
+#          - name: CentOS_8_Stream
+#            paths:
+#              - target_project: openSUSE:Tools
+#                target_repository: CentOS_8_Stream
+#              - target_project: Fedora:EPEL:8
+#                target_repository: CentOS
+#              - target_project: CentOS:CentOS-8:Stream
+#                target_repository: standard
+#            architectures:
+#              - x86_64
+#
+#          - name: CentOS_8
+#            paths:
+#              - target_project: openSUSE:Tools
+#                target_repository: CentOS_8
+#              - target_project: Fedora:EPEL:8
+#                target_repository: CentOS
+#              - target_project: CentOS:CentOS-8
+#                target_repository: standard
+#            architectures:
+#              - x86_64
 
     - set_flags:
         flags:
