@@ -18,6 +18,7 @@ Copyright:
 #include "ata_storage_property.h"
 #include "smartctl_ata_text_parser.h"
 #include "selftest.h"
+#include "ata_storage_property_descr.h"
 
 
 
@@ -242,16 +243,19 @@ std::string SelfTest::update(const std::shared_ptr<CommandExecutor>& smartctl_ex
 		return error_msg;
 
 	AtaStorageAttribute::DiskType disk_type = drive_->get_is_hdd() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
-	SmartctlAtaTextParser ps;
-	if (!ps.parse_full(output, disk_type)) {  // try to parse it
-		return ps.get_error_msg();
+	auto parser = SmartctlParser::create(SmartctlOutputParserType::Text);
+	DBG_ASSERT_RETURN(parser, "Cannot create parser");
+
+	if (!parser->parse_full(output)) {  // try to parse it
+		return parser->get_error_msg();
 	}
+	auto properties = StoragePropertyProcessor::process_properties(parser->get_properties(), disk_type);
 
 	// Note: Since the self-test log is sometimes late
 	// and in undetermined order (sorting by hours is too rough),
 	// we use the "self-test status" capability.
 	AtaStorageProperty p;
-	for (const auto& e : ps.get_properties()) {
+	for (const auto& e : properties) {
 // 		if (e.section != AtaStorageProperty::Section::data || e.subsection != AtaStorageProperty::SubSection::selftest_log
 		if (e.section != AtaStorageProperty::Section::internal
 				|| !e.is_value_type<AtaStorageSelftestEntry>() || e.get_value<AtaStorageSelftestEntry>().test_num != 0

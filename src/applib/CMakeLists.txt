@@ -30,6 +30,10 @@ target_sources(applib PRIVATE
 	gui_utils.h
 	selftest.cpp
 	selftest.h
+	smartctl_parser.cpp
+	smartctl_parser.h
+	smartctl_ata_json_parser.cpp
+	smartctl_ata_json_parser.h
 	smartctl_ata_text_parser.cpp
 	smartctl_ata_text_parser.h
 	smartctl_executor.cpp

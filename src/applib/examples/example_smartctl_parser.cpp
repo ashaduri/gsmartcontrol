@@ -42,13 +42,13 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	SmartctlAtaTextParser sp;
-	if (!sp.parse_full(contents, AtaStorageAttribute::DiskType::Any)) {
-		debug_out_error("app", "Cannot parse file contents: " << sp.get_error_msg() << "\n");
+	SmartctlAtaTextParser parser;
+	if (!parser.parse_full(contents)) {
+		debug_out_error("app", "Cannot parse file contents: " << parser.get_error_msg() << "\n");
 		return EXIT_FAILURE;
 	}
 
-	const std::vector<AtaStorageProperty>& props = sp.get_properties();
+	const std::vector<AtaStorageProperty>& props = parser.get_properties();
 	for(const auto& prop : props) {
 		debug_out_dump("app", prop << "\n");
 	}

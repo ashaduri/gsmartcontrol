@@ -24,6 +24,7 @@ Copyright:
 #include "smartctl_executor.h"
 #include "smartctl_version_parser.h"
 #include "smartctl_text_parser_helper.h"
+#include "ata_storage_property_descr.h"
 
 
 
@@ -153,7 +154,9 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	// SMART support is: Unavailable - Packet Interface Devices [this device: CD/DVD] don't support ATA SMART
 	// Sample output line 2 (encountered on a BDRW drive):
 	// Device type:          CD/DVD
-	if (app_pcre_match("/this device: CD\\/DVD/mi", info_output_) || app_pcre_match("/^Device type:\\s+CD\\/DVD/mi", info_output_)) {
+	// NOTE: CD/DVD detection does not work in "-d scsi" mode.
+	if (app_pcre_match("/this device: CD\\/DVD/mi", info_output_)
+			|| app_pcre_match("/^Device type:\\s+CD\\/DVD/mi", info_output_)) {
 		debug_out_dump("app", "Drive " << get_device_with_type() << " seems to be a CD/DVD device.\n");
 		this->set_detected_type(DetectedType::cddvd);
 
@@ -237,9 +240,12 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 		if (hdd_.has_value()) {
 			disk_type = hdd_.value() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
 		}
-		SmartctlAtaTextParser ps;
-		if (ps.parse_full(this->info_output_, disk_type)) {  // try to parse it
-			this->set_properties(ps.get_properties());  // copy to our drive, overwriting old data
+
+		auto parser = SmartctlParser::create(SmartctlOutputParserType::Text);
+		DBG_ASSERT_RETURN(parser, "Cannot create parser");
+
+		if (parser->parse_full(this->info_output_)) {  // try to parse it
+			this->set_properties(StoragePropertyProcessor::process_properties(parser->get_properties(), disk_type));  // copy to our drive, overwriting old data
 		}
 	}
 
@@ -301,11 +307,14 @@ std::string StorageDevice::parse_data()
 	if (hdd_.has_value()) {
 		disk_type = hdd_.value() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
 	}
-	SmartctlAtaTextParser ps;
-	if (ps.parse_full(this->full_output_, disk_type)) {  // try to parse it (parse only, set the properties after basic parsing).
+
+	auto parser = SmartctlParser::create(SmartctlOutputParserType::Text);
+	DBG_ASSERT_RETURN(parser, "Cannot create parser");
+
+	if (parser->parse_full(this->full_output_)) {  // try to parse it (parse only, set the properties after basic parsing).
 
 		// refresh basic info too
-		this->info_output_ = ps.get_data_full();  // put data including version information
+		this->info_output_ = parser->get_data_full();  // put data including version information
 
 		// note: this will clear the non-basic properties!
 		// this will parse some info that is already parsed by SmartctlAtaTextParser::parse_full(),
@@ -315,8 +324,9 @@ std::string StorageDevice::parse_data()
 		// Call this after parse_basic_data(), since it sets parse status to "info".
 		this->set_parse_status(StorageDevice::ParseStatus::full);
 
-		// set the full properties
-		this->set_properties(ps.get_properties());  // copy to our drive, overwriting old data
+		// set the full properties.
+		// copy to our drive, overwriting old data.
+		this->set_properties(StoragePropertyProcessor::process_properties(parser->get_properties(), disk_type));
 
 		signal_changed().emit(this);  // notify listeners
 
@@ -331,7 +341,7 @@ std::string StorageDevice::parse_data()
 	// proper parsing failed. try to at least extract info section
 	this->info_output_ = this->full_output_;  // complete output here. sometimes it's only the info section
 	if (!this->parse_basic_data(true).empty()) {  // will add some properties too. this will emit signal_changed().
-		return ps.get_error_msg();  // return full parser's error messages - they are more detailed.
+		return parser->get_error_msg();  // return full parser's error messages - they are more detailed.
 	}
 
 	return {};  // return ok if at least the info was ok.

@@ -16,12 +16,14 @@ Copyright:
 
 
 
-/// Fill the property with all the information we can gather (description, etc...).
-bool ata_storage_property_autoset_description(AtaStorageProperty& p, AtaStorageAttribute::DiskType disk_type);
+class StoragePropertyProcessor {
+	public:
 
+		/// Set descriptions, warnings, etc... on properties, and return them.
+		static std::vector<AtaStorageProperty> process_properties(std::vector<AtaStorageProperty> properties, AtaStorageAttribute::DiskType disk_type);
 
-/// Do some basic checks on the property and set warnings if needed.
-WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p);
+};
+
 
 
 

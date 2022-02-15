@@ -19,6 +19,7 @@ Copyright:
 #include "applib/app_pcrecpp.h"
 
 #include "ata_storage_property_descr.h"
+#include "warning_colors.h"
 
 
 
@@ -1975,6 +1976,17 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 
 
 
+
+
+std::vector<AtaStorageProperty> StoragePropertyProcessor::process_properties(std::vector<AtaStorageProperty> properties, AtaStorageAttribute::DiskType disk_type)
+{
+	for (auto& p : properties) {
+		ata_storage_property_autoset_description(p, disk_type);
+		ata_storage_property_autoset_warning(p);
+		storage_property_autoset_warning_descr(p);  // append warning to description
+	}
+	return properties;
+}
 
 
 

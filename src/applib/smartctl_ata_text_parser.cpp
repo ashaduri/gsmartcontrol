@@ -9,11 +9,11 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#include "local_glibmm.h"
+// #include "local_glibmm.h"
 #include <clocale>  // localeconv
 #include <cstdint>
 
-#include "hz/locale_tools.h"  // ScopedCLocale, locale_c_get().
+// #include "hz/locale_tools.h"  // ScopedCLocale, locale_c_get().
 #include "hz/string_algo.h"  // string_*
 #include "hz/string_num.h"  // string_is_numeric, number_to_string
 #include "hz/debug.h"  // debug_*
@@ -21,7 +21,7 @@ Copyright:
 #include "app_pcrecpp.h"
 #include "smartctl_ata_text_parser.h"
 #include "ata_storage_property_descr.h"
-#include "warning_colors.h"
+// #include "warning_colors.h"
 #include "smartctl_version_parser.h"
 #include "smartctl_text_parser_helper.h"
 
@@ -68,13 +68,9 @@ namespace {
 
 
 // Parse full "smartctl -x" output
-bool SmartctlAtaTextParser::parse_full(const std::string& full, AtaStorageAttribute::DiskType disk_type)
+bool SmartctlAtaTextParser::parse_full(const std::string& full)
 {
-	this->clear();  // clear previous data
-
 	this->set_data_full(full);
-
-	disk_type_ = disk_type;
 
 
 	// -------------------- Fix the output so it doesn't interfere with proper parsing
@@ -2298,59 +2294,6 @@ ID      Size     Value  Description
 
 
 
-void SmartctlAtaTextParser::clear()
-{
-	data_full_.clear();
-	data_section_info_.clear();
-	data_section_data_.clear();
-	error_msg_.clear();
-
-	properties_.clear();
-}
-
-
-
-std::string SmartctlAtaTextParser::get_data_full() const
-{
-	return data_full_;
-}
-
-
-
-std::string SmartctlAtaTextParser::get_error_msg() const
-{
-	return Glib::ustring::compose(_("Cannot parse smartctl output: %1"), error_msg_);
-}
-
-
-
-const std::vector<AtaStorageProperty>& SmartctlAtaTextParser::get_properties() const
-{
-	return properties_;
-}
-
-
-
-// adds a property into property list, looks up and sets its description.
-// Yes, there's no place for this in the Parser, but whatever...
-void SmartctlAtaTextParser::add_property(AtaStorageProperty p)
-{
-	ata_storage_property_autoset_description(p, disk_type_);
-	ata_storage_property_autoset_warning(p);
-	storage_property_autoset_warning_descr(p);  // append warning to description
-
-	properties_.push_back(p);
-}
-
-
-
-void SmartctlAtaTextParser::set_data_full(const std::string& s)
-{
-	data_full_ = s;
-}
-
-
-
 void SmartctlAtaTextParser::set_data_section_info(const std::string& s)
 {
 	data_section_info_ = s;
@@ -2361,13 +2304,6 @@ void SmartctlAtaTextParser::set_data_section_info(const std::string& s)
 void SmartctlAtaTextParser::set_data_section_data(const std::string& s)
 {
 	data_section_data_ = s;
-}
-
-
-
-void SmartctlAtaTextParser::set_error_msg(const std::string& s)
-{
-	error_msg_ = s;
 }
 
 
