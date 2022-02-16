@@ -10,11 +10,7 @@ Copyright:
 
 
 /// Use leaf:: instead of boost::leaf for convenience
-namespace leaf {
-
-	using namespace boost::leaf;
-
-}
+namespace leaf = boost::leaf;
 
 
 #endif
