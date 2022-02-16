@@ -33,18 +33,23 @@ std::unique_ptr<SmartctlParser> SmartctlParser::create(SmartctlParserType type)
 
 
 
-// std::optional<SmartctlParserType> SmartctlParser::detect_output_type(const std::string& output) const
-// {
+leaf::result<SmartctlParserType> SmartctlParser::detect_output_type(const std::string& output)
+{
 	// Look for the first non-whitespace symbol
-	// auto first_symbol = std::find_if(output.begin(), output.end(), [&](char c) {
-	// 	return !std::isspace(c, std::locale::classic());
-	// });
-	// if (first_symbol != output.end() && *first_symbol == '-'
-
-
-
-
-// }
+	auto first_symbol = std::find_if(output.begin(), output.end(), [&](char c) {
+		return !std::isspace(c, std::locale::classic());
+	});
+	if (first_symbol != output.end()) {
+		if (*first_symbol == '{') {
+			return SmartctlParserType::Json;
+		}
+		if (output.rfind("smartctl", static_cast<std::size_t>(first_symbol - output.begin())) == 0) {
+			return SmartctlParserType::Text;
+		}
+		return leaf::new_error(SmartctlParserError::UnsupportedFormat);
+	}
+	return leaf::new_error(SmartctlParserError::EmptyInput);
+}
 
 
 

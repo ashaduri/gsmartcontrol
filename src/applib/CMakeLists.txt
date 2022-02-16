@@ -66,6 +66,7 @@ target_link_libraries(applib
 		libdebug
 		hz
 		rconfig
+		boost_leaf
 		app_gtkmm_interface
 		app_pcrecpp_interface
 		app_gettext_interface
