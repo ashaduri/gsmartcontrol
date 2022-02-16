@@ -18,6 +18,7 @@
 # readability-convert-member-functions-to-static is triggered for many callbacks.
 # readability-function-cognitive-complexity needed by UI constructors.
 # readability-isolate-declaration is noisy.
+# readability-identifier-length is too noisy.
 
 
 Checks:          >
@@ -63,6 +64,7 @@ Checks:          >
   -readability-function-cognitive-complexity,
   -readability-isolate-declaration,
   -readability-magic-numbers,
+  -readability-identifier-length,
   -zircon-*
 
 WarningsAsErrors: ''
