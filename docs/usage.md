@@ -64,3 +64,15 @@ GSmartControl provides the ability to specify custom options to smartctl. The
 [smartctl manual page](https://www.smartmontools.org/browser/trunk/smartmontools/smartctl.8.in)
 contains detailed information on these options. Additional information is available
 at [smartmontools.org](https://smartmontools.org).
+
+
+## Windows Installer Options
+
+GSmartControl's Windows installer is based on NSIS and supports all its options.
+Please see the [NSIS documentation](https://nsis.sourceforge.io/Docs/Chapter3.html#installerusage)
+for the list of supported options.
+
+For example, to run installer in silent mode, use `/S` option:
+```
+gsmartcontrol-<version>-win64.exe /S
+```
