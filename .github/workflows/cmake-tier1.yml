@@ -32,11 +32,11 @@ jobs:
       run: sudo apt-get install libpcre3-dev libgtkmm-3.0-dev gettext
 
     - name: Create Build Directory
-      run: cmake -E make_directory ${{runner.workspace}}/build
+      run: cmake -E make_directory build
 
     - name: Configure CMake
       shell: bash
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ${{github.workspace}}/build
       run: >
         cmake $GITHUB_WORKSPACE
         -DCMAKE_BUILD_TYPE=$BUILD_TYPE
@@ -46,24 +46,24 @@ jobs:
 
     - name: Build
       shell: bash
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ${{github.workspace}}/build
       run: cmake --build . --config $BUILD_TYPE
 
     - name: Test
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ${{github.workspace}}/build
       shell: bash
       run: ctest -C $BUILD_TYPE
 
     - name: Pack (cmake install and make binary package)
       shell: bash
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ${{github.workspace}}/build
       run: cpack -G TBZ2
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
         name: Linux Packages
-        path: ${{runner.workspace}}/build/gsmartcontrol-*-Linux*.*
+        path: ${{github.workspace}}/build/gsmartcontrol-*-Linux*.*
 
 
   windows-msys2:
@@ -95,7 +95,6 @@ jobs:
 
       - name: Configure CMake
         shell: msys2 {0}
-        working-directory: ${{runner.workspace}}
         run: >
           cmake -B build -S "$GITHUB_WORKSPACE" -G "MSYS Makefiles"
           -DCMAKE_BUILD_TYPE=$BUILD_TYPE
@@ -105,17 +104,17 @@ jobs:
 
       - name: Build
         shell: msys2 {0}
-        working-directory: ${{runner.workspace}}/build
+        working-directory: ${{github.workspace}}/build
         run: cmake --build . --config $BUILD_TYPE
 
       - name: Test
-        working-directory: ${{runner.workspace}}/build
+        working-directory: ${{github.workspace}}/build
         shell: msys2 {0}
         run: ctest -C $BUILD_TYPE
 
       - name: Download Package Requirements
         shell: msys2 {0}
-        working-directory: ${{runner.workspace}}/build
+        working-directory: ${{github.workspace}}/build
         run: |
           mkdir smartmontools
           cd smartmontools
@@ -124,7 +123,7 @@ jobs:
       - name: Extract Package Requirements (64-bit)
         if: ${{ matrix.msystem == 'MINGW64' }}
         shell: msys2 {0}
-        working-directory: ${{runner.workspace}}/build/smartmontools
+        working-directory: ${{github.workspace}}/build/smartmontools
         run: >
           7z -bb1 e $SMARTMONTOOLS_INSTALLER
           bin64/smartctl.exe
@@ -135,7 +134,7 @@ jobs:
       - name: Extract Package Requirements (32-bit)
         if: ${{ matrix.msystem == 'MINGW32' }}
         shell: msys2 {0}
-        working-directory: ${{runner.workspace}}/build/smartmontools
+        working-directory: ${{github.workspace}}/build/smartmontools
         run: >
           7z -bb1 e $SMARTMONTOOLS_INSTALLER
           bin/smartctl.exe
@@ -145,24 +144,24 @@ jobs:
 
       - name: Package ZIP
         shell: msys2 {0}
-        working-directory: ${{runner.workspace}}/build
+        working-directory: ${{github.workspace}}/build
         run: cpack -G ZIP
 
       - name: Package NSIS (64-bit)
         if: ${{ matrix.msystem == 'MINGW64' }}
         shell: msys2 {0}
-        working-directory: ${{runner.workspace}}/build
+        working-directory: ${{github.workspace}}/build
         run: cpack -G NSIS64
 
       - name: Package NSIS (32-bit)
         if: ${{ matrix.msystem == 'MINGW32' }}
         shell: msys2 {0}
-        working-directory: ${{runner.workspace}}/build
+        working-directory: ${{github.workspace}}/build
         run: cpack -G NSIS
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: Windows Packages
-          path: ${{runner.workspace}}/build/gsmartcontrol-*-win*.*
+          path: ${{github.workspace}}/build/gsmartcontrol-*-win*.*
 

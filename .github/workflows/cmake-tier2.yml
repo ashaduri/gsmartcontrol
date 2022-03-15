@@ -27,11 +27,11 @@ jobs:
       run: brew install pkg-config gtkmm3 pcre cmake
 
     - name: Create Build Directory
-      run: cmake -E make_directory ${{runner.workspace}}/build
+      run: cmake -E make_directory build
 
     - name: Configure CMake
       shell: bash
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ${{github.workspace}}/build
       run: >
         cmake $GITHUB_WORKSPACE
         -DCMAKE_BUILD_TYPE=$BUILD_TYPE
@@ -41,11 +41,11 @@ jobs:
 
     - name: Build
       shell: bash
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ${{github.workspace}}/build
       run: cmake --build . --config $BUILD_TYPE
 
     - name: Test
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ${{github.workspace}}/build
       shell: bash
       run: ctest -C $BUILD_TYPE
 
