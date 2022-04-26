@@ -100,8 +100,8 @@ struct intrusive_ptr_error : virtual public std::exception {  // from <exception
 		std::size_t tmsg_len = std::strlen(tmsg);
 		std::size_t tname_len = std::strlen(tname);
 		msg_ = new char[msg_len + tmsg_len + tname_len + 1];
-		std::strncpy(msg_, msg, msg_len);
-		std::strncpy(msg_ + msg_len, tmsg, tmsg_len);
+		std::strncpy(msg_, msg, msg_len + 1);
+		std::strncpy(msg_ + msg_len, tmsg, tmsg_len + 1);
 		std::strncpy(msg_ + msg_len + tmsg_len, tname, tname_len + 1);
 	}
 #endif
