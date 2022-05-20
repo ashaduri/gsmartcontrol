@@ -114,9 +114,23 @@ std::map<char, DriveLetterInfo> win32_get_drive_letter_map()
 	for (char c = 'A'; c <= 'Z'; ++c) {
 		if (drives[c - 'A']) {  // drive is present
 			debug_out_dump("app", "Windows drive found: " << c << ".\n");
-			if (GetDriveType((c + std::string(":\\")).c_str()) == DRIVE_FIXED) {
-				debug_out_dump("app", "Windows drive " << c << " is fixed.\n");
-				good_drives.push_back(c);
+			switch (auto drive_type = GetDriveType((c + std::string(":\\")).c_str())) {
+				case DRIVE_FIXED:
+					debug_out_dump("app", "Windows reports the drive " << c << " as fixed.\n");
+					good_drives.push_back(c);
+					break;
+				case DRIVE_REMOVABLE:
+					debug_out_dump("app", "Windows reports the drive " << c << " as removable.\n");
+					good_drives.push_back(c);
+					break;
+				case DRIVE_CDROM:
+					debug_out_dump("app", "Windows reports the drive " << c << " as cdrom.\n");
+					good_drives.push_back(c);
+					break;
+				default:
+					debug_out_dump("app", "Windows reports the drive " << c << " as type " << drive_type << ".\n");
+					// don't add
+					break;
 			}
 		}
 	}
