@@ -1,2 +1,2 @@
-Catch2 v2.13.8.
+Catch2 v2.13.10.
 https://github.com/catchorg/Catch2
