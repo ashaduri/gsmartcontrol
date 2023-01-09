@@ -1,7 +1,6 @@
 
 # Builds
 /0*
-/doxygen_doc*
 /win32*
 /win64*
 /cmake-build-*
