@@ -60,7 +60,7 @@ jobs:
       run: cpack -G TBZ2
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Linux Packages
         path: ${{github.workspace}}/build/gsmartcontrol-*-Linux*.*
@@ -161,7 +161,7 @@ jobs:
         run: cpack -G NSIS
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Windows Packages
           path: ${{github.workspace}}/build/gsmartcontrol-*-win*.*
