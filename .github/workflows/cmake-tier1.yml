@@ -90,6 +90,7 @@ jobs:
             mingw-w64-${{ matrix.arch }}-cmake
             mingw-w64-${{ matrix.arch }}-gcc
             mingw-w64-${{ matrix.arch }}-fontconfig
+            mingw-w64-${{ matrix.arch }}-pcre
             make
             p7zip
 
