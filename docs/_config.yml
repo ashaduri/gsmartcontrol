@@ -3,5 +3,10 @@ remote_theme: rundocs/jekyll-rtd-theme
 title: GSmartControl
 description: Hard disk drive and SSD health inspection tool
 
+# Sitemap
+url: "https://gsmartcontrol.shaduri.dev" # the base hostname & protocol for your site
+plugins:
+  - jekyll-sitemap
+
 exclude:
   - CNAME
