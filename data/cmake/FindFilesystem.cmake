@@ -197,12 +197,12 @@ set(_found FALSE)
 if(CXX_FILESYSTEM_HAVE_FS)
     # We have some filesystem library available. Do link checks
     string(CONFIGURE [[
-        #include <cstdlib>
+        #include <iostream>
         #include <@CXX_FILESYSTEM_HEADER@>
 
         int main() {
             auto cwd = @CXX_FILESYSTEM_NAMESPACE@::current_path();
-            printf("%s", cwd.c_str());
+            std::cout << cwd << std::endl;
             return EXIT_SUCCESS;
         }
     ]] code @ONLY)
