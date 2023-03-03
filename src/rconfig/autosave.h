@@ -72,7 +72,7 @@ extern "C" {
 			return static_cast<gboolean>(force);  // if manual, return failure. else, don't stop the timeout.
 		}
 
-		bool status = rconfig::save_to_file(impl::autosave_config_file);
+		const bool status = rconfig::save_to_file(impl::autosave_config_file);
 		if (force)
 			return static_cast<gboolean>(status);  // return status to caller
 

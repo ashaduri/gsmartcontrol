@@ -40,7 +40,7 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk
 
 
 	auto* top_info_link_label = lookup_widget<Gtk::Label*>("top_info_link_label");
-	std::string man_url = "https://gsmartcontrol.shaduri.dev/smartctl_man.html";
+	const std::string man_url = "https://gsmartcontrol.shaduri.dev/smartctl_man.html";
 	top_info_link_label->set_text(Glib::ustring::compose(top_info_link_label->get_text(), man_url));
 
 	Glib::ustring device_name_tooltip = _("Device name");
@@ -166,8 +166,6 @@ void GscAddDeviceWindow::on_window_ok_button_clicked()
 
 void GscAddDeviceWindow::on_device_name_browse_button_clicked()
 {
-	std::string default_file;
-
 	auto* entry = this->lookup_widget<Gtk::Entry*>("device_name_entry");
 	if (!entry)
 		return;

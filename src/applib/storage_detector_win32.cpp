@@ -215,7 +215,7 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDevicePtr>& drive
 	}
 
 	// any_to_unix is needed for windows
-	std::string output = hz::string_trim_copy(hz::string_any_to_unix_copy(smartctl_ex->get_stdout_str()));
+	const std::string output = hz::string_trim_copy(hz::string_any_to_unix_copy(smartctl_ex->get_stdout_str()));
 	if (output.empty()) {
 		debug_out_error("app", DBG_FUNC_MSG << "Smartctl returned an empty output.\n");
 		return _("Smartctl returned an empty output.");
@@ -251,7 +251,7 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDevicePtr>& drive
 				equivalent_pds.insert(drive_num);
 			}
 
-			std::string full_dev = dev + "," + port_str;
+			const std::string full_dev = dev + "," + port_str;
 			auto drive = std::make_shared<StorageDevice>(full_dev, type);
 
 			std::map<char, std::string> letters_volnames;
@@ -405,9 +405,9 @@ inline std::string areca_cli_get_drives(const std::string& cli_binary, const std
 		Enc
 	};
 
-	pcrecpp::RE noenc1_header_re = app_pcre_re("/^\\s*#\\s+Ch#/mi");
-	pcrecpp::RE noenc2_header_re = app_pcre_re("/^\\s*#\\s+ModelName/mi");
-	pcrecpp::RE exp_header_re = app_pcre_re("/^\\s*#\\s+Enc#/mi");
+	const pcrecpp::RE noenc1_header_re = app_pcre_re("/^\\s*#\\s+Ch#/mi");
+	const pcrecpp::RE noenc2_header_re = app_pcre_re("/^\\s*#\\s+ModelName/mi");
+	const pcrecpp::RE exp_header_re = app_pcre_re("/^\\s*#\\s+Enc#/mi");
 
 	FormatType format_type = FormatType::Unknown;
 	for (const auto& line : lines) {
@@ -430,11 +430,11 @@ inline std::string areca_cli_get_drives(const std::string& cli_binary, const std
 	}
 
 	// Note: These may not match the full model, but just the first part is sufficient for comparison with "N.A.".
-	pcrecpp::RE noexp1_port_re = app_pcre_re("/^\\s*[0-9]+\\s+([0-9]+)\\s+([^\\s]+)/mi");  // matches port, model.
-	pcrecpp::RE noexp2_port_re = app_pcre_re("/^\\s*([0-9]+)\\s+([^\\s]+)/mi");  // matches port, model.
-	pcrecpp::RE exp_port_re = app_pcre_re("/^\\s*[0-9]+\\s+([0-9]+)\\s+(?:Slot#|SLOT\\s+)([0-9]+)\\s+([^\\s]+)/mi");  // matches enclosure, port, model.
+	const pcrecpp::RE noexp1_port_re = app_pcre_re("/^\\s*[0-9]+\\s+([0-9]+)\\s+([^\\s]+)/mi");  // matches port, model.
+	const pcrecpp::RE noexp2_port_re = app_pcre_re("/^\\s*([0-9]+)\\s+([^\\s]+)/mi");  // matches port, model.
+	const pcrecpp::RE exp_port_re = app_pcre_re("/^\\s*[0-9]+\\s+([0-9]+)\\s+(?:Slot#|SLOT\\s+)([0-9]+)\\s+([^\\s]+)/mi");  // matches enclosure, port, model.
 
-	bool has_enclosure = (format_type == FormatType::Enc);
+	const bool has_enclosure = (format_type == FormatType::Enc);
 	if (has_enclosure) {
 		debug_out_dump("app", "Areca controller seems to have enclosures.\n");
 	} else {
@@ -447,18 +447,18 @@ inline std::string areca_cli_get_drives(const std::string& cli_binary, const std
 			std::string enclosure_str;
 			if (exp_port_re.PartialMatch(hz::string_trim_copy(line), &enclosure_str, &port_str, &model_str)) {
 				if (model_str != "N.A.") {
-					int port = hz::string_to_number_nolocale<int>(port_str);
-					int enclosure = hz::string_to_number_nolocale<int>(enclosure_str);
+					const int port = hz::string_to_number_nolocale<int>(port_str);
+					const int enclosure = hz::string_to_number_nolocale<int>(enclosure_str);
 					drives.emplace_back(std::make_shared<StorageDevice>(dev,
 							"areca," + hz::number_to_string_nolocale(port) + "/" + hz::number_to_string_nolocale(enclosure)));
 					debug_out_info("app", "Added Areca drive " << drives.back()->get_device_with_type() << ".\n");
 				}
 			}
 		} else {  // no enclosures
-			pcrecpp::RE port_re = (format_type == FormatType::NoEnc1 ? noexp1_port_re : noexp2_port_re);
+			const pcrecpp::RE port_re = (format_type == FormatType::NoEnc1 ? noexp1_port_re : noexp2_port_re);
 			if (port_re.PartialMatch(hz::string_trim_copy(line), &port_str, &model_str)) {
 				if (model_str != "N.A.") {
-					int port = hz::string_to_number_nolocale<int>(port_str);
+					const int port = hz::string_to_number_nolocale<int>(port_str);
 					drives.emplace_back(std::make_shared<StorageDevice>(dev, "areca," + hz::number_to_string_nolocale(port)));
 					debug_out_info("app", "Added Areca drive " << drives.back()->get_device_with_type() << ".\n");
 				}
@@ -508,7 +508,7 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDevicePtr>& driv
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives behind Areca controller(s)...\n");
 
-	int scan_controllers = rconfig::get_data<int>("system/win32_areca_scan_controllers");
+	const int scan_controllers = rconfig::get_data<int>("system/win32_areca_scan_controllers");
 	if (scan_controllers == 0) {  // disabled
 		debug_out_info("app", "Areca controller scanning is disabled through config.\n");
 		return {};
@@ -551,7 +551,7 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDevicePtr>& driv
 		debug_out_dump("app", "Areca CLI installation found at: \"" << cli_inst_path << "\".\n");
 	}
 
-	bool cli_found = !cli_inst_path.empty();
+	const bool cli_found = !cli_inst_path.empty();
 
 	int use_cli = rconfig::get_data<int>("system/win32_areca_use_cli");
 	bool scan_detect = (use_cli != 1);  // Whether to detect using sequential port scanning. Only do that if CLI is not forced.
@@ -582,8 +582,8 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDevicePtr>& driv
 		debug_out_dump("app", "Testing Areca controller presence using smartctl...\n");
 
 		auto drive = std::make_shared<StorageDevice>("/dev/arcmsr0", "areca,1");
-		std::string error_message = drive->fetch_basic_data_and_parse(smartctl_ex);
-		std::string output = drive->get_info_output();
+		const std::string error_message = drive->fetch_basic_data_and_parse(smartctl_ex);
+		const std::string output = drive->get_info_output();
 		if (app_pcre_match("/No Areca controller found/mi", output)
 				|| app_pcre_match("/Smartctl open device: .* failed: No such device/mi", output) ) {
 			use_cli = 0;
@@ -594,9 +594,9 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDevicePtr>& driv
 
 	if (use_cli != 0) {
 		debug_out_info("app", "Scanning Areca drives using CLI...\n");
-		int cli_max_controllers = 1;  // TODO controller # with CLI.
+		const int cli_max_controllers = 1;  // TODO controller # with CLI.
 		for (int controller_no = 0; controller_no < cli_max_controllers; ++controller_no) {
-			std::string error_message = areca_cli_get_drives(cli_binary.string(),
+			const std::string error_message = areca_cli_get_drives(cli_binary.string(),
 					"/dev/arcmsr" + hz::number_to_string_nolocale(controller_no), controller_no, drives, ex_factory);
 			// If we get an error on controller 0, fall back to no-cli detection.
 			if (!error_message.empty() && controller_no == 0) {
@@ -613,7 +613,7 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDevicePtr>& driv
 	if (use_cli == 0 && scan_detect) {
 		debug_out_info("app", "Manually scanning Areca controllers and ports...\n");
 
-		int max_controllers = rconfig::get_data<int>("system/win32_areca_max_controllers");
+		const int max_controllers = rconfig::get_data<int>("system/win32_areca_max_controllers");
 		int max_noenc_ports = rconfig::get_data<int>("system/win32_areca_neonc_max_scan_port");
 		max_noenc_ports = std::max(1, std::min(24, max_noenc_ports));  // 1-24 sanity check
 		int max_enc_ports = rconfig::get_data<int>("system/win32_areca_enc_max_scan_port");
@@ -622,13 +622,13 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDevicePtr>& driv
 		max_enclosures = std::max(1, std::min(8, max_enclosures));  // 1-8 sanity check
 
 		for (int controller_no = 0; controller_no < max_controllers; ++controller_no) {
-			std::string dev = std::string("/dev/arcmsr") + hz::number_to_string_nolocale(controller_no);
+			const std::string dev = std::string("/dev/arcmsr") + hz::number_to_string_nolocale(controller_no);
 
 			// First, scan using the areca,N format.
 			debug_out_dump("app", "Starting brute-force port scan (no-enclosure) on 1-" << max_noenc_ports << " ports, device \"" << dev
 					<< "\". Change the maximum by setting \"system/win32_areca_neonc_max_scan_port\" config key.\n");
 
-			std::size_t old_drive_count = drives.size();
+			const std::size_t old_drive_count = drives.size();
 			std::string last_output;
 			std::string error_message = smartctl_scan_drives_sequentially(dev, "areca,%d", 1, max_noenc_ports, drives, ex_factory, last_output);
 			// If the scan stopped because of no controller, stop it all.
@@ -676,7 +676,7 @@ std::string detect_drives_win32(std::vector<StorageDevicePtr>& drives, const Com
 
 	// Construct drive letter map
 	debug_out_info("app", "Checking which drive corresponds to which \\\\.\\PhysicalDriveN device...\n");
-	std::map<char, DriveLetterInfo> drive_letter_map = win32_get_drive_letter_map();
+	const std::map<char, DriveLetterInfo> drive_letter_map = win32_get_drive_letter_map();
 
 
 	std::shared_ptr<CommandExecutor> smartctl_ex = ex_factory->create_executor(CommandExecutorFactory::ExecutorType::Smartctl);
@@ -690,26 +690,26 @@ std::string detect_drives_win32(std::vector<StorageDevicePtr>& drives, const Com
 		error_msgs.push_back(error_message);
 	}
 
-	bool multiport_found = !drives.empty();
+	const bool multiport_found = !drives.empty();
 	bool areca_open_found = false;  // whether areca devices were found at --scan-open time.
 
 	// Find out their serial numbers and whether there are Arecas there.
 	std::map<std::string, StorageDevicePtr> serials;
 	for (auto& drive : drives) {
-		std::string local_error = drive->fetch_basic_data_and_parse(smartctl_ex);
+		const std::string local_error = drive->fetch_basic_data_and_parse(smartctl_ex);
 		if (!local_error.empty()) {
 			debug_out_info("app", "Smartctl returned with an error: " << local_error << "\n");
 			// Don't exit, just report it.
 		}
 		if (!drive->get_serial_number().empty()) {
 			// add model as well, who knows, there may be duplicates across vendors
-			std::string drive_serial_id = drive->get_model_name() + "_" + drive->get_serial_number();
+			const std::string drive_serial_id = drive->get_model_name() + "_" + drive->get_serial_number();
 			serials[drive_serial_id] = drive;
 		}
 
 		// See if there are any areca devices. This is not implemented yet by smartctl (as of 6.0),
 		// but if it ever is, we can skip our own detection below.
-		std::string type_arg = drive->get_type_argument();
+		const std::string type_arg = drive->get_type_argument();
 		if (type_arg.find("areca") != std::string::npos) {
 			areca_open_found = true;
 		}
@@ -730,7 +730,7 @@ std::string detect_drives_win32(std::vector<StorageDevicePtr>& drives, const Com
 			continue;
 		}
 
-		std::string phys_name = hz::string_sprintf("\\\\.\\PhysicalDrive%d", drive_num);
+		const std::string phys_name = hz::string_sprintf("\\\\.\\PhysicalDrive%d", drive_num);
 
 #ifdef _WIN32
 		// If the drive is openable, then it's there. Yes, CreateFile() is open, not create.
@@ -771,13 +771,13 @@ std::string detect_drives_win32(std::vector<StorageDevicePtr>& drives, const Com
 		// they contain more information.
 		// The only way to detect these duplicates is to compare them using serial numbers.
 		if (!serials.empty()) {
-			std::string local_error = drive->fetch_basic_data_and_parse(smartctl_ex);
+			const std::string local_error = drive->fetch_basic_data_and_parse(smartctl_ex);
 			if (!local_error.empty()) {
 				debug_out_info("app", "Smartctl returned with an error: " << local_error << "\n");
 				// Don't exit, just report it.
 			}
 
-			std::string drive_serial_id = drive->get_model_name() + "_" + drive->get_serial_number();
+			const std::string drive_serial_id = drive->get_model_name() + "_" + drive->get_serial_number();
 			// A serial may be empty if "-q noserial" was given to smartctl.
 			if (!drive->get_serial_number().empty() && serials.count(drive_serial_id) > 0) {
 				debug_out_info("app", "Skipping drive due to duplicate S/N: model: \"" << drive->get_model_name()
@@ -809,7 +809,7 @@ std::string detect_drives_win32(std::vector<StorageDevicePtr>& drives, const Com
 			std::vector<int> controllers;
 			error_message = tw_cli_get_controllers(ex_factory, controllers);
 			// ignore the error message above, it's of no use.
-			for (int controller : controllers) {
+			for (const int controller : controllers) {
 				// don't specify device, it's ignored in tw_cli mode
 				tw_cli_get_drives("", controller, drives, ex_factory, true);
 			}

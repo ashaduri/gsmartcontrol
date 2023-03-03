@@ -70,7 +70,7 @@ bool CommandExecutor::execute()
 {
 	set_error_msg("");  // clear old error if present
 
-	bool slot_connected = !(signal_execute_tick().slots().begin() == signal_execute_tick().slots().end());
+	const bool slot_connected = !(signal_execute_tick().slots().begin() == signal_execute_tick().slots().end());
 
 	if (slot_connected && !signal_execute_tick().emit(TickStatus::starting))
 		return false;

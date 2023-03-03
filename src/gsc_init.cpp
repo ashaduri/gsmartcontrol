@@ -16,12 +16,14 @@ Copyright:
 #include <string>
 // #include <locale.h>  // _configthreadlocale (win32)
 #include <stdexcept>  // std::runtime_error
-#include <cstdio>  // std::printf
 #include <vector>
 #include <sstream>
 #include <limits>
 #include <memory>
 #include <cmath>
+#include <iostream>
+
+
 
 #ifdef _WIN32
 	#include <windows.h>
@@ -119,7 +121,7 @@ namespace {
 
 		} else {
 			// create the parent directories of the config file
-			hz::fs::path config_loc = get_home_config_file().parent_path();
+			const hz::fs::path config_loc = get_home_config_file().parent_path();
 			if (!hz::fs::exists(config_loc, ec)) {
 				hz::fs::create_directories(config_loc, ec);
 				hz::fs::permissions(config_loc, hz::fs::perms::owner_all, ec);
@@ -131,7 +133,7 @@ namespace {
 		rconfig::dump_config();
 
 		rconfig::autosave_set_config_file(get_home_config_file());
-		int autosave_timeout_sec = rconfig::get_data<int>("system/config_autosave_timeout_sec");
+		const int autosave_timeout_sec = rconfig::get_data<int>("system/config_autosave_timeout_sec");
 		if (autosave_timeout_sec > 0) {
 			rconfig::autosave_start(std::chrono::seconds(autosave_timeout_sec));
 		}
@@ -253,7 +255,7 @@ namespace {
 
 		// The command-line parser stops at the first unknown option. Since this
 		// is kind of inconsistent, we abort altogether.
-		bool parsed = static_cast<bool>(g_option_context_parse(context, &argc, &argv, &error));
+		const bool parsed = static_cast<bool>(g_option_context_parse(context, &argc, &argv, &error));
 
 		if (error) {
 			std::string error_text = "\n" + Glib::ustring::compose(_("Error parsing command-line options: %1"), (error->message ? error->message : "invalid error"));
@@ -266,7 +268,7 @@ namespace {
 				g_free(help_text);
 			}
 
-			std::fprintf(stderr, "%s", error_text.c_str());
+			std::cerr << error_text;
 		}
 		g_option_context_free(context);
 
@@ -278,7 +280,7 @@ namespace {
 	/// Print application version information
 	inline void app_print_version_info()
 	{
-		std::string versiontext = "\n" + Glib::ustring::compose(_("GSmartControl version %1"), BuildEnv::package_version()) + "\n";
+		const std::string versiontext = "\n" + Glib::ustring::compose(_("GSmartControl version %1"), BuildEnv::package_version()) + "\n";
 
 		std::string warningtext = std::string("\n") + _("Warning: GSmartControl comes with ABSOLUTELY NO WARRANTY.\n"
 				"See LICENSE.txt file for details.") + "\n\n";
@@ -286,7 +288,7 @@ namespace {
 		warningtext += Glib::ustring::compose(_("Copyright (C) %1 Alexander Shaduri %2"), "2008 - 2021",
 				"<ashaduri@gmail.com>") + "\n\n";
 
-		std::fprintf(stdout, "%s%s", versiontext.c_str(), warningtext.c_str());
+		std::cout << versiontext << warningtext;
 	}
 
 }
@@ -360,7 +362,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 			load_virtuals.emplace_back(entry);
 		}
 	}
-	std::string load_virtuals_str = hz::string_join(load_virtuals, ", ");  // for display purposes only
+	const std::string load_virtuals_str = hz::string_join(load_virtuals, ", ");  // for display purposes only
 
 	std::vector<std::string> load_devices;
 	if (args.arg_add_device) {
@@ -369,7 +371,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 			load_devices.emplace_back(entry);
 		}
 	}
-	std::string load_devices_str = hz::string_join(load_devices, "; ");  // for display purposes only
+	const std::string load_devices_str = hz::string_join(load_devices, "; ");  // for display purposes only
 
 
 	// it's here because earlier there are no domains
@@ -415,7 +417,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 
 	// Save the locale
-	std::locale final_loc_cpp = hz::locale_cpp_get<std::locale>();
+	const std::locale final_loc_cpp = hz::locale_cpp_get<std::locale>();
 
 	// Initialize GTK+ (it's already initialized by command-line parser,
 	// so this doesn't do much).
@@ -452,7 +454,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 	auto application_dir = hz::fs_get_application_dir();
 	debug_out_info("app", "Application directory: " << application_dir << "\n");
 
-	bool is_from_source = !application_dir.empty() && hz::fs::exists((application_dir / "src"));  // this covers standard cmake builds, but not VS.
+	const bool is_from_source = !application_dir.empty() && hz::fs::exists((application_dir / "src"));  // this covers standard cmake builds, but not VS.
 
 	// Add data file search paths
 	if (is_from_source) {
@@ -488,7 +490,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 	{
 		Glib::RefPtr<Gtk::Settings> gtk_settings = Gtk::Settings::get_default();
 		if (gtk_settings) {
-			Glib::ustring theme_name = gtk_settings->property_gtk_theme_name().get_value();
+			const Glib::ustring theme_name = gtk_settings->property_gtk_theme_name().get_value();
 			debug_out_dump("app", "Current GTK theme: " << theme_name << "\n");
 			bool windows_is_using_classic_theme = false;
 		#ifdef _WIN32

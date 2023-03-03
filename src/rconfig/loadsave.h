@@ -52,7 +52,7 @@ inline bool load_from_file(const hz::fs::path& file)
 /// Save the config branch to a file.
 inline bool save_to_file(const hz::fs::path& file)
 {
-	std::string json_str = get_config_branch().dump(4);
+	const std::string json_str = get_config_branch().dump(4);
 
 	auto ec = hz::fs_file_put_contents(file, json_str);
 	if (ec) {

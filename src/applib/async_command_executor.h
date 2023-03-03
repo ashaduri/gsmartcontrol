@@ -94,7 +94,7 @@ class AsyncCommandExecutor : public hz::ErrorHolder {
 		/// Returns true if command has stopped.
 		/// Call repeatedly in a waiting function, after execute().
 		/// When it returns true, call stopped_cleanup().
-		bool stopped_cleanup_needed();
+		bool stopped_cleanup_needed() const;
 
 
 		/// Check if the process is running. Note that if this returns false, it doesn't mean that

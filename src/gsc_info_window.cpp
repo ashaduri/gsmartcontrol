@@ -81,7 +81,7 @@ namespace {
 
 			// add one label per element
 			for (const auto& label_string : label_strings) {
-				std::string label_text = (label_string.markup ? Glib::ustring(label_string.label) : Glib::Markup::escape_text(
+				const std::string label_text = (label_string.markup ? Glib::ustring(label_string.label) : Glib::Markup::escape_text(
 						label_string.label));
 				Gtk::Label* label = Gtk::manage(new Gtk::Label());
 				label->set_markup(label_text);
@@ -140,9 +140,9 @@ namespace {
 		auto* textview = window->lookup_widget<Gtk::TextView*>("error_log_textview");
 		Glib::RefPtr<Gtk::TextBuffer> buffer;
 		if (treeview != nullptr && textview != nullptr && (buffer = textview->get_buffer())) {
-			Gtk::TreeModel::iterator iter = treeview->get_selection()->get_selected();
+			auto iter = treeview->get_selection()->get_selected();
 			if (iter) {
-				Glib::RefPtr<Gtk::TextMark> mark = buffer->get_mark((*iter)[mark_name_column]);
+				auto mark = buffer->get_mark((*iter)[mark_name_column]);
 				if (mark)
 					textview->scroll_to(mark, 0., 0., 0.);
 			}
@@ -161,8 +161,8 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 {
 	// Size
 	{
-		int def_size_w = rconfig::get_data<int>("gui/info_window/default_size_w");
-		int def_size_h = rconfig::get_data<int>("gui/info_window/default_size_h");
+		const int def_size_w = rconfig::get_data<int>("gui/info_window/default_size_w");
+		const int def_size_h = rconfig::get_data<int>("gui/info_window/default_size_h");
 		if (def_size_w > 0 && def_size_h > 0) {
 			set_default_size(def_size_w, def_size_h);
 		}
@@ -348,7 +348,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		if (scan) {
 			std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 			ex->create_running_dialog(this, Glib::ustring::compose(_("Running {command} on %1..."), drive->get_device_with_type()));
-			std::string error_msg = drive->fetch_data_and_parse(ex);  // run it with GUI support
+			const std::string error_msg = drive->fetch_data_and_parse(ex);  // run it with GUI support
 
 			if (!error_msg.empty()) {
 				gsc_executor_error_dialog_show(_("Cannot retrieve SMART data"), error_msg, this);
@@ -370,25 +370,25 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 	// hide all tabs except the first if smart is disabled, because they may contain
 	// completely random data (smartctl does that sometimes).
 	if (get_startup_settings().hide_tabs_on_smart_disabled) {
-		bool smart_enabled = (drive->get_smart_status() == StorageDevice::Status::enabled);
+		const bool smart_enabled = (drive->get_smart_status() == StorageDevice::Status::enabled);
 		Gtk::Widget* note_page_box = nullptr;
 
-		if ((note_page_box = lookup_widget("attributes_tab_vbox")) != nullptr) {
+		if (note_page_box = lookup_widget("attributes_tab_vbox"); note_page_box != nullptr) {
 			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
 		}
-		if ((note_page_box = lookup_widget("statistics_tab_vbox")) != nullptr) {
+		if (note_page_box = lookup_widget("statistics_tab_vbox"); note_page_box != nullptr) {
 			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
 		}
-		if ((note_page_box = lookup_widget("test_tab_vbox")) != nullptr) {
+		if (note_page_box = lookup_widget("test_tab_vbox"); note_page_box != nullptr) {
 			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
 		}
-		if ((note_page_box = lookup_widget("error_log_tab_vbox")) != nullptr) {
+		if (note_page_box = lookup_widget("error_log_tab_vbox"); note_page_box != nullptr) {
 			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
 		}
-		if ((note_page_box = lookup_widget("temperature_log_tab_vbox")) != nullptr) {
+		if (note_page_box = lookup_widget("temperature_log_tab_vbox"); note_page_box != nullptr) {
 			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
 		}
-		if ((note_page_box = lookup_widget("advanced_tab_vbox")) != nullptr) {
+		if (note_page_box = lookup_widget("advanced_tab_vbox"); note_page_box != nullptr) {
 			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
 		}
 		if (auto* notebook = lookup_widget<Gtk::Notebook*>("main_notebook")) {
@@ -398,9 +398,9 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 	// Top label - short device information
 	{
-		std::string device = Glib::Markup::escape_text(drive->get_device_with_type());
-		std::string model = Glib::Markup::escape_text(drive->get_model_name().empty() ? _("Unknown model") : drive->get_model_name());
-		std::string drive_letters = Glib::Markup::escape_text(drive->format_drive_letters(false));
+		const std::string device = Glib::Markup::escape_text(drive->get_device_with_type());
+		const std::string model = Glib::Markup::escape_text(drive->get_model_name().empty() ? _("Unknown model") : drive->get_model_name());
+		const std::string drive_letters = Glib::Markup::escape_text(drive->format_drive_letters(false));
 
 		/// Translators: %1 is device name, %2 is device model.
 		this->set_title(Glib::ustring::compose(_("Device Information - %1: %2 - GSmartControl"), device, model));
@@ -430,13 +430,13 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 	fill_ui_temperature_log(props);
 
 	// Advanced tab
-	WarningLevel caps_warning_level = fill_ui_capabilities(props);
-	WarningLevel errc_warning_level = fill_ui_error_recovery(props);
-	WarningLevel selective_warning_level = fill_ui_selective_self_test_log(props);
-	WarningLevel dir_warning_level = fill_ui_directory(props);
-	WarningLevel phy_warning_level = fill_ui_physical(props);
+	auto caps_warning_level = fill_ui_capabilities(props);
+	auto errc_warning_level = fill_ui_error_recovery(props);
+	auto selective_warning_level = fill_ui_selective_self_test_log(props);
+	auto dir_warning_level = fill_ui_directory(props);
+	auto phy_warning_level = fill_ui_physical(props);
 
-	WarningLevel max_advanced_tab_warning = std::max({
+	auto max_advanced_tab_warning = std::max({
 		caps_warning_level,
 		errc_warning_level,
 		selective_warning_level,
@@ -467,7 +467,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		auto* identity_table = lookup_widget<Gtk::Grid*>("identity_table");
 		if (identity_table) {
 			// manually remove all children. without this visual corruption occurs.
-			std::vector<Gtk::Widget*> children = identity_table->get_children();
+			auto children = identity_table->get_children();
 			for (auto& widget : children) {
 				identity_table->remove(*widget);
 			}
@@ -696,7 +696,7 @@ void GscInfoWindow::on_view_output_button_clicked()
 
 	win->set_text_from_command(_("Smartctl Output"), output);
 
-	std::string filename = drive->get_save_filename();
+	const std::string filename = drive->get_save_filename();
 	if (!filename.empty())
 		win->set_save_filename(filename);
 
@@ -713,7 +713,7 @@ void GscInfoWindow::on_save_info_button_clicked()
 	}
 	int result = 0;
 
-	std::string filename = drive->get_save_filename();
+	const std::string filename = drive->get_save_filename();
 
 	Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
 	specific_filter->set_name(_("Text Files"));
@@ -786,7 +786,7 @@ void GscInfoWindow::on_save_info_button_clicked()
 			if (data.empty()) {
 				data = this->drive->get_info_output();
 			}
-			std::error_code ec = hz::fs_file_put_contents(file, data);
+			const std::error_code ec = hz::fs_file_put_contents(file, data);
 			if (ec) {
 				gui_show_error_dialog(_("Cannot save SMART data to file"), ec.message(), this);
 			}
@@ -1926,8 +1926,8 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 			break;
 		}
 
-		int8_t rem_percent = self->current_test->get_remaining_percent();
-		std::string rem_percent_str = (rem_percent == -1 ? C_("value", "Unknown") : hz::number_to_string_locale(100 - rem_percent));
+		const int8_t rem_percent = self->current_test->get_remaining_percent();
+		const std::string rem_percent_str = (rem_percent == -1 ? C_("value", "Unknown") : hz::number_to_string_locale(100 - rem_percent));
 
 		auto poll_in = self->current_test->get_poll_in_seconds();  // sec
 
@@ -1944,7 +1944,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 				auto rem_seconds = self->current_test->get_remaining_seconds();
 
 				if (test_completion_progressbar) {
-					std::string rem_seconds_str = (rem_seconds == std::chrono::seconds(-1) ? C_("duration", "Unknown") : hz::format_time_length(rem_seconds));
+					const std::string rem_seconds_str = (rem_seconds == std::chrono::seconds(-1) ? C_("duration", "Unknown") : hz::format_time_length(rem_seconds));
 
 					Glib::ustring bar_str;
 
@@ -2004,7 +2004,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 	self->test_timer_poll.stop();  // just in case
 	self->test_timer_bar.stop();  // just in case
 
-	AtaStorageSelftestEntry::Status status = self->current_test->get_status();
+	auto status = self->current_test->get_status();
 
 	bool aborted = false;
 	AtaStorageSelftestEntry::StatusSeverity severity = AtaStorageSelftestEntry::StatusSeverity::none;
@@ -2097,7 +2097,7 @@ void GscInfoWindow::on_test_execute_button_clicked()
 	std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 	ex->create_running_dialog(this);
 
-	std::string error_msg = test->start(ex);  // this runs update() too.
+	const std::string error_msg = test->start(ex);  // this runs update() too.
 	if (!error_msg.empty()) {
 		/// Translators: %1 is test name
 		gui_show_error_dialog(Glib::ustring::compose(_("Cannot run %1"), SelfTest::get_test_displayable_name(test->get_test_type())), error_msg, this);
@@ -2159,7 +2159,7 @@ void GscInfoWindow::on_test_stop_button_clicked()
 	std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 	ex->create_running_dialog(this);
 
-	std::string error_msg = current_test->force_stop(ex);
+	const std::string error_msg = current_test->force_stop(ex);
 	if (!error_msg.empty()) {
 		/// Translators: %1 is test name
 		gui_show_error_dialog(Glib::ustring::compose(_("Cannot stop %1"), SelfTest::get_test_displayable_name(current_test->get_test_type())), error_msg, this);
@@ -2180,7 +2180,7 @@ void GscInfoWindow::on_drive_changed([[maybe_unused]] StorageDevice* pdrive)
 {
 	if (!drive)
 		return;
-	bool test_active = drive->get_test_is_active();
+	const bool test_active = drive->get_test_is_active();
 
 	// disable refresh button if test is active or if it's a virtual drive
 	if (auto* refresh_info_button = lookup_widget<Gtk::Button*>("refresh_info_button"))
@@ -2201,7 +2201,7 @@ void GscInfoWindow::on_drive_changed([[maybe_unused]] StorageDevice* pdrive)
 bool GscInfoWindow::on_treeview_button_press_event(GdkEventButton* button_event, Gtk::Menu* menu, Gtk::TreeView* treeview)
 {
 	if (button_event->type == GDK_BUTTON_PRESS && button_event->button == 3) {
-		bool selection_empty = treeview->get_selection()->get_selected_rows().empty();
+		const bool selection_empty = treeview->get_selection()->get_selected_rows().empty();
 		std::vector<Widget*> children = menu->get_children();
 		for (auto& child : children) {
 			child->set_sensitive(!selection_empty);
@@ -2233,7 +2233,7 @@ void GscInfoWindow::on_treeview_menu_copy_clicked(Gtk::TreeView* treeview)
 		Gtk::TreeRow row = *(list_store->get_iter(path));
 
 		for (int j = 0; j < num_cols; ++j) {  // gather data only from tree columns, not model columns (like tooltips and helper data)
-			GType type = list_store->get_column_type(j);
+			const GType type = list_store->get_column_type(j);
 			if (type == G_TYPE_INT) {
 				int32_t value = 0;
 				row.get_value(j, value);

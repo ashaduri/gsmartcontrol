@@ -185,7 +185,7 @@ pcrecpp::RE_Options app_pcre_get_options(std::string_view modifiers)
 	pcrecpp::RE_Options options;
 #endif
 
-	for (char c : modifiers) {
+	for (const char c : modifiers) {
 		switch (c) {
 			// Note: Most of these are from pcretest man page.
 			// Perl lacks some of them.
@@ -212,15 +212,15 @@ pcrecpp::RE app_pcre_re(const std::string& perl_pattern)
 	if (perl_pattern.size() >= 2 && perl_pattern[0] == '/') {
 
 		// find the separator
-		std::string::size_type endpos = perl_pattern.rfind('/');
+		const std::string::size_type endpos = perl_pattern.rfind('/');
 		DBG_ASSERT(endpos != std::string::npos);  // shouldn't happen
 
 		// no need to unescape slashes in pattern - pcre seems to not mind.
-		return pcrecpp::RE(perl_pattern.substr(1, endpos - 1),
-				app_pcre_get_options(perl_pattern.substr(endpos + 1)));
+		return {perl_pattern.substr(1, endpos - 1),
+				app_pcre_get_options(perl_pattern.substr(endpos + 1))};
 	}
 
-	return pcrecpp::RE(perl_pattern, app_pcre_get_options({}));
+	return {perl_pattern, app_pcre_get_options({})};
 }
 
 

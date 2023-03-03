@@ -132,7 +132,7 @@ bool AsyncCommandExecutor::execute()
 	str_stderr_.clear();
 
 
-	std::string cmd = command_exec_ + " " + command_args_;
+	const std::string cmd = command_exec_ + " " + command_args_;
 
 
 	// Make command vector
@@ -161,7 +161,7 @@ bool AsyncCommandExecutor::execute()
 	if (change_lang) {
 		child_env.reset(g_environ_setenv(child_env.release(), "LC_ALL", "C", TRUE));
 	}
-	std::vector<std::string> envp = Glib::ArrayHandler<std::string>::array_to_vector(child_env.release(),
+	const std::vector<std::string> envp = Glib::ArrayHandler<std::string>::array_to_vector(child_env.release(),
 			Glib::OWNERSHIP_DEEP);
 
 	// Set the current directory to application directory so CWD does not interfere with finding binaries.
@@ -215,7 +215,7 @@ bool AsyncCommandExecutor::execute()
 	// If using locales, call g_locale_to_utf8() or g_convert() afterwards.
 
 	// blocking writes if the pipe is full helps for small-pipe systems (see man 7 pipe).
-	int channel_flags = ~G_IO_FLAG_NONBLOCK;
+	const int channel_flags = ~G_IO_FLAG_NONBLOCK;
 
 	// Note about GError's here:
 	// What do we do? The command is already running, so let's ignore these
@@ -239,7 +239,7 @@ bool AsyncCommandExecutor::execute()
 
 	auto cond = GIOCondition(G_IO_IN | G_IO_PRI | G_IO_HUP | G_IO_ERR | G_IO_NVAL);
 	// Channel reader callback must be called before other stuff so that the loss is minimal.
-	gint io_priority = G_PRIORITY_HIGH;
+	const int io_priority = G_PRIORITY_HIGH;
 
 	this->event_source_id_stdout_ = g_io_add_watch_full(channel_stdout_, io_priority, cond,
 			&cmdex_on_channel_io_stdout, this, nullptr);
@@ -349,18 +349,18 @@ void AsyncCommandExecutor::stopped_cleanup()
 
 	// various statuses (see waitpid (2)):
 	if (WIFEXITED(waitpid_status_)) {  // exited normally
-		int exit_status = WEXITSTATUS(waitpid_status_);
+		const int exit_status = WEXITSTATUS(waitpid_status_);
 
 		if (exit_status != 0) {
 			// translate the exit_code into a message
-			std::string msg = (translator_func_ ? translator_func_(exit_status)
+			const std::string msg = (translator_func_ ? translator_func_(exit_status)
 					: "[no translator function, exit code: " + std::to_string(exit_status));
 			push_error(Error<int>("exit", ErrorLevel::warn, exit_status, msg));
 		}
 
 	} else {
 		if (WIFSIGNALED(waitpid_status_)) {  // exited by signal
-			int sig_num = WTERMSIG(waitpid_status_);
+			const int sig_num = WTERMSIG(waitpid_status_);
 
 			// If it's not our signal, treat as error.
 			// Note: they will never match under win32
@@ -473,7 +473,7 @@ gboolean AsyncCommandExecutor::on_channel_io(GIOChannel* channel,
 	do {
 		GError* channel_error = nullptr;
 		gsize bytes_read = 0;
-		GIOStatus status = g_io_channel_read_chars(channel, buf.data(), count, &bytes_read, &channel_error);
+		const GIOStatus status = g_io_channel_read_chars(channel, buf.data(), count, &bytes_read, &channel_error);
 		if (bytes_read != 0)
 			output_str->append(buf.data(), bytes_read);
 
@@ -498,7 +498,7 @@ gboolean AsyncCommandExecutor::on_channel_io(GIOChannel* channel,
 
 
 
-bool AsyncCommandExecutor::stopped_cleanup_needed()
+bool AsyncCommandExecutor::stopped_cleanup_needed() const
 {
 	return (child_watch_handler_called_);
 }

@@ -183,8 +183,8 @@ class GscMainWindowIconView : public Gtk::IconView {
 				int layout_w = 0, layout_h = 0;
 				layout->get_pixel_size(layout_w, layout_h);
 
-				int pos_x = (get_allocation().get_width() - layout_w) / 2;
-				int pos_y = (get_allocation().get_height() - layout_h) / 2;
+				const int pos_x = (get_allocation().get_width() - layout_w) / 2;
+				const int pos_y = (get_allocation().get_height() - layout_h) / 2;
 				cr->move_to(pos_x, pos_y);
 
 				layout->show_in_cairo_context(cr);
@@ -243,7 +243,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 			drive->signal_changed().connect(sigc::mem_fun(this, &GscMainWindowIconView::on_drive_changed));
 
 			if (scroll_to_it) {
-				Gtk::TreeModel::Path tpath(row);
+				const Gtk::TreeModel::Path tpath(row);
 				// scroll_to_path() and set/get_cursor() are since gtkmm 2.8.
 
 				this->scroll_to_path(tpath, true, 0.5, 0.5);
@@ -297,7 +297,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 			name += (drive->get_model_name().empty() ? Glib::ustring("Unknown model") : Glib::Markup::escape_text(drive->get_model_name()));
 			if (rconfig::get_data<bool>("gui/icons_show_device_name")) {
 				if (!drive->get_is_virtual()) {
-					std::string dev = Glib::Markup::escape_text(drive->get_device_with_type());
+					const std::string dev = Glib::Markup::escape_text(drive->get_device_with_type());
 					if constexpr(BuildEnv::is_kernel_family_windows()) {
 						name += "\n" + Glib::ustring::compose(_("%1 (%2)"), dev, drive_letters);
 					} else {
@@ -321,7 +321,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 			std::vector<std::string> tooltip_strs;
 
 			if (drive->get_is_virtual()) {
-				std::string vfile = drive->get_virtual_filename();
+				const std::string vfile = drive->get_virtual_filename();
 				tooltip_strs.push_back(Glib::ustring::compose(_("Loaded from: %1"), (vfile.empty() ? (Glib::ustring("[") + C_("name", "empty") + "]") : Glib::Markup::escape_text(vfile))));
 				if (!scan_time_prop.empty() && !scan_time_prop.get_value<std::string>().empty()) {
 					tooltip_strs.push_back(Glib::ustring::compose(_("Scanned on: "), Glib::Markup::escape_text(scan_time_prop.get_value<std::string>())));
@@ -357,15 +357,15 @@ class GscMainWindowIconView : public Gtk::IconView {
 					break;
 			}
 
-			AtaStorageProperty health_prop = drive->get_health_property();
+			const AtaStorageProperty health_prop = drive->get_health_property();
 			if (health_prop.warning_level != WarningLevel::none && health_prop.generic_name == "smart_status/passed") {
 				if (icon) {
 					icon = icon->copy();  // work on a copy
 					if (icon->get_colorspace() == Gdk::COLORSPACE_RGB && icon->get_bits_per_sample() == 8) {
-						std::ptrdiff_t n_channels = icon->get_n_channels();
-						std::ptrdiff_t icon_width = icon->get_width();
-						std::ptrdiff_t icon_height = icon->get_height();
-						std::ptrdiff_t rowstride = icon->get_rowstride();
+						const std::ptrdiff_t n_channels = icon->get_n_channels();
+						const std::ptrdiff_t icon_width = icon->get_width();
+						const std::ptrdiff_t icon_height = icon->get_height();
+						const std::ptrdiff_t rowstride = icon->get_rowstride();
 						guint8* pixels = icon->get_pixels();
 
 						for (std::ptrdiff_t y = 0; y < icon_height; ++y) {
@@ -403,7 +403,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 		/// Remove drive entry
 		void remove_entry(const Gtk::TreePath& model_path)
 		{
-			Gtk::TreeModel::Row row = *(ref_list_model->get_iter(model_path));
+			const Gtk::TreeModel::Row row = *(ref_list_model->get_iter(model_path));
 			ref_list_model->erase(row);
 		}
 
@@ -414,7 +414,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 		{
 			const auto& selected_items = this->get_selected_items();
 			if (!selected_items.empty()) {
-				Gtk::TreePath model_path = *(selected_items.begin());
+				const Gtk::TreePath model_path = *(selected_items.begin());
 				this->remove_entry(model_path);
 			}
 		}
@@ -429,7 +429,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 			// this is needed to update the label from "disabled" to "scanning"
 			if (this->get_realized()) {
-				Gdk::Rectangle rect = this->get_allocation();
+				const Gdk::Rectangle rect = this->get_allocation();
 				Glib::RefPtr<Gdk::Window> win = this->get_window();
 				win->invalidate_rect(rect, true);  // force expose event
 				win->process_updates(false);  // update immediately
@@ -444,8 +444,8 @@ class GscMainWindowIconView : public Gtk::IconView {
 			StorageDevicePtr drive;
 			const auto& selected_items = this->get_selected_items();
 			if (!selected_items.empty()) {
-				Gtk::TreePath model_path = *(selected_items.begin());
-				Gtk::TreeModel::Row row = *(ref_list_model->get_iter(model_path));
+				const Gtk::TreePath model_path = *(selected_items.begin());
+				const Gtk::TreeModel::Row row = *(ref_list_model->get_iter(model_path));
 				drive = row[col_drive_ptr];
 			}
 			return drive;
@@ -456,7 +456,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 		/// Get tree path by a drive
 		Gtk::TreePath get_path_by_drive(StorageDevice* drive)
 		{
-			Gtk::TreeNodeChildren children = ref_list_model->children();
+			const Gtk::TreeNodeChildren children = ref_list_model->children();
 			for (const auto& row : children) {
 				// convert iter to row (iter is row's base, but can we cast it?)
 				if (drive == row.get_value(col_drive_ptr).get())
@@ -475,8 +475,8 @@ class GscMainWindowIconView : public Gtk::IconView {
 				main_window->set_drive_menu_status(nullptr);
 
 			} else {  // enable drives menu, set proper smart toggles
-				Gtk::TreePath model_path = *(this->get_selected_items().begin());
-				Gtk::TreeModel::Row row = *(ref_list_model->get_iter(model_path));
+				const Gtk::TreePath model_path = *(this->get_selected_items().begin());
+				const Gtk::TreeModel::Row row = *(ref_list_model->get_iter(model_path));
 				if (!row[col_populated]) {  // protect against using incomplete model entry
 					return;
 				}
@@ -494,7 +494,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 			if (!main_window)
 				return;
 
-			Gtk::TreeModel::Row row = *(ref_list_model->get_iter(model_path));
+			const Gtk::TreeModel::Row row = *(ref_list_model->get_iter(model_path));
 			if (!row[col_populated]) {  // protect against using incomplete model entry
 				return;
 			}
@@ -539,7 +539,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 					// select the icon
 					this->select_path(tpath);
 
-					Gtk::TreeModel::Row row = *(ref_list_model->get_iter(tpath));
+					const Gtk::TreeModel::Row row = *(ref_list_model->get_iter(tpath));
 					drive = row[col_drive_ptr];
 
 				} else {
@@ -562,7 +562,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 		/// Callback attached to StorageDevice, updates its view.
 		void on_drive_changed(StorageDevice* drive)
 		{
-			Gtk::TreePath model_path = this->get_path_by_drive(drive);
+			const Gtk::TreePath model_path = this->get_path_by_drive(drive);
 			this->decorate_entry(model_path);
 			this->update_menu_actions();
 			main_window->update_status_widgets();

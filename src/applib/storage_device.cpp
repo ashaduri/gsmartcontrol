@@ -219,7 +219,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 
 	std::string rpm_str;
 	if (app_pcre_match("/^Rotation Rate:[ \\t]*(.*)$/mi", info_output_, &rpm_str)) {
-		int rpm = hz::string_to_number_nolocale<int>(rpm_str, false);
+		const int rpm = hz::string_to_number_nolocale<int>(rpm_str, false);
 		hdd_ = rpm > 0;
 	}
 
@@ -543,7 +543,7 @@ std::string StorageDevice::get_device_base() const
 	if (is_virtual_)
 		return "";
 
-	std::string::size_type pos = device_.rfind('/');  // find basename
+	const std::string::size_type pos = device_.rfind('/');  // find basename
 	if (pos == std::string::npos)
 		return device_;  // fall back
 	return device_.substr(pos+1, std::string::npos);
@@ -554,7 +554,7 @@ std::string StorageDevice::get_device_base() const
 std::string StorageDevice::get_device_with_type() const
 {
 	if (this->get_is_virtual()) {
-		std::string vf = this->get_virtual_filename();
+		const std::string vf = this->get_virtual_filename();
 		/// Translators: %1 is filename
 		std::string ret = Glib::ustring::compose(C_("filename", "Virtual (%1)"), (vf.empty() ? (std::string("[") + C_("filename", "empty") + "]") : vf));
 		return ret;
@@ -773,9 +773,9 @@ bool StorageDevice::get_test_is_active() const
 
 std::string StorageDevice::get_save_filename() const
 {
-	std::string model = this->get_model_name();  // may be empty
-	std::string serial = this->get_serial_number();
-	std::string date = hz::format_date("%Y-%m-%d_%H%M", true);
+	const std::string model = this->get_model_name();  // may be empty
+	const std::string serial = this->get_serial_number();
+	const std::string date = hz::format_date("%Y-%m-%d_%H%M", true);
 
 	auto filename_format = rconfig::get_data<std::string>("gui/smartctl_output_filename_format");
 	hz::string_replace(filename_format, "{serial}", serial);

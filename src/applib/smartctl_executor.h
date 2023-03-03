@@ -127,7 +127,7 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 				return;
 
 			// import the error only if it's relevant.
-			std::string error_type = e->get_type();
+			const std::string error_type = e->get_type();
 			// accept all errors by default, except:
 
 			// Treat most exit codes as non-errors.
