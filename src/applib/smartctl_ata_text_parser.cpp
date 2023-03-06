@@ -318,7 +318,7 @@ bool SmartctlAtaTextParser::parse_section_info(const std::string& body)
 {
 	this->set_data_section_info(body);
 
-	AtaStorageProperty::Section section = AtaStorageProperty::Section::info;
+	const AtaStorageProperty::Section section = AtaStorageProperty::Section::info;
 
 	// split by lines.
 	// e.g. Device Model:     ST3500630AS

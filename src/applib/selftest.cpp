@@ -227,7 +227,7 @@ std::string SelfTest::force_stop(const std::shared_ptr<CommandExecutor>& smartct
 
 
 // update status variables. note: the returned error is an error in logic,
-// not an hw defect error.
+// not a hw defect error.
 std::string SelfTest::update(const std::shared_ptr<CommandExecutor>& smartctl_ex)
 {
 	using namespace std::literals;
