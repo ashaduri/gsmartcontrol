@@ -270,17 +270,26 @@ std::string StorageDevice::fetch_data_and_parse(const std::shared_ptr<CommandExe
 	std::string output;
 	std::string error_msg;
 
+	const SmartctlParserSettingType default_parser_type = SmartctlParserSettingType::Text;
+
 	// instead of -x, we use all the individual options -x encompasses, so that
 	// an addition to default -x output won't affect us.
 	if (this->get_type_argument() == "scsi") {  // not sure about correctness... FIXME probably fails with RAID/scsi
 		// This doesn't do much yet, but just in case...
 		// SCSI equivalent of -x:
 		error_msg = execute_device_smartctl("--health --info --attributes --log=error --log=selftest --log=background --log=sasphy", smartctl_ex, output);
+
 	} else {
-		// ATA equivalent of -x:
-		error_msg = execute_device_smartctl("--health --info --get=all --capabilities --attributes --format=brief --log=xerror,50,error --log=xselftest,50,selftest --log=selective --log=directory --log=scttemp --log=scterc --log=devstat --log=sataphy",
-				smartctl_ex, output, true);  // set type to invalid if needed
+		// ATA equivalent of -x.
+		std::string command_options = "--health --info --get=all --capabilities --attributes --format=brief --log=xerror,50,error --log=xselftest,50,selftest --log=selective --log=directory --log=scttemp --log=scterc --log=devstat --log=sataphy";
+		if (default_parser_type == SmartctlParserSettingType::Json) {
+			// --json flags: o means include original output (just in case).
+			command_options += " --json=o";
+		}
+
+		error_msg = execute_device_smartctl(command_options, smartctl_ex, output, true);  // set type to invalid if needed
 	}
+
 	// See notes above (in fetch_basic_data_and_parse()).
 	if (get_detected_type() == DetectedType::invalid && get_type_argument().empty()) {
 		debug_out_info("app", "The device seems to be of different type than auto-detected, trying again with scsi.\n");
@@ -308,7 +317,28 @@ std::string StorageDevice::parse_data()
 		disk_type = hdd_.value() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
 	}
 
-	auto parser = SmartctlParser::create(SmartctlParserType::Text);
+	std::string error_msg;
+	auto parser_type = leaf::try_handle_some(
+		[this]() -> leaf::result<SmartctlParserType>
+		{
+			return SmartctlParser::detect_output_type(this->full_output_);
+		},
+		[&error_msg](leaf::match<SmartctlParserError, SmartctlParserError::EmptyInput>) -> SmartctlParserType
+		{
+			error_msg = "Empty input while trying to detect smartctl output format.";
+			return SmartctlParserType::Text;
+		},
+		[&error_msg](leaf::match<SmartctlParserError, SmartctlParserError::UnsupportedFormat>) -> SmartctlParserType
+		{
+			error_msg = "Unsupported format while trying to detect smartctl output format.";
+			return SmartctlParserType::Text;
+		}
+	);
+	if (!error_msg.empty()) {
+		return error_msg;
+	}
+
+	auto parser = SmartctlParser::create(parser_type.value());
 	DBG_ASSERT_RETURN(parser, "Cannot create parser");
 
 	if (parser->parse_full(this->full_output_)) {  // try to parse it (parse only, set the properties after basic parsing).

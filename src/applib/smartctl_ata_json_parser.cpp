@@ -10,6 +10,13 @@ Copyright:
 /// @{
 
 #include "smartctl_ata_json_parser.h"
+#include "json/json.hpp"
+#include "hz/debug.h"
+#include "hz/string_algo.h"
+#include "smartctl_version_parser.h"
+#include "hz/string_num.h"
+
+
 
 /*
 Information not printed in JSON yet:
@@ -48,7 +55,7 @@ Information not printed in JSON yet:
 	_text_only/power_mode
 
 - Automatic Offline Data Collection toggle support
-	text_only/aodc_support
+	_text_only/aodc_support
 
  - Directory log supported
  	We don't use this.
@@ -68,11 +75,131 @@ _custom/smart_enabled
 */
 
 
+namespace {
 
-bool SmartctlAtaJsonParser::parse_full(const std::string& full)
+
+/// Get json node data. The path is slash-separated string.
+/// \throws std::runtime_error If not found or one of the paths is not an object
+template<typename T>
+T get_node_data(const nlohmann::json& root, const std::string& path)
 {
-	// TODO
-	return false;
+	using namespace std::literals;
+
+	std::vector<std::string> components;
+	hz::string_split(path, '/', components, true);
+
+	const auto* curr = &root;
+	for (std::size_t comp_index = 0; comp_index < components.size(); ++comp_index) {
+		const std::string& comp_name = components[comp_index];
+
+		if (!curr->is_object()) {  // we can't have non-object values in the middle of a path
+			throw std::runtime_error("Cannot get node data \""s + path + "\", component \"" + comp_name + "\" is not an object.");
+		}
+		if (auto iter = curr->find(comp_name); iter != curr->end()) {  // path component exists
+			const auto& jval = iter.value();
+			if (comp_index + 1 == components.size()) {  // it's the "value" component
+				try {
+					return jval.get<T>();  // may throw json::type_error
+				}
+				catch (nlohmann::json::type_error& ex) {
+					throw std::runtime_error(ex.what());
+				}
+			}
+			// continue to the next component
+			curr = &jval;
+
+		} else {  // path component doesn't exist
+			throw std::runtime_error("Cannot get node data \""s + path + "\", component \"" + comp_name + "\" does not exist.");
+		}
+	}
+
+	throw std::runtime_error("Cannot get node data \""s + path + "\": Internal error.");
+}
+
+
+/// Get json node data. The path is slash-separated string.
+/// If an error is found, the default value is returned.
+template<typename T>
+T get_node_data(const nlohmann::json& root, const std::string& path, const T& default_value)
+{
+	try {
+		return get_node_data<T>(root, path);
+	}
+	catch (std::runtime_error& ex) {
+		return default_value;
+	}
+}
+
+
+}
+
+
+
+bool SmartctlAtaJsonParser::parse_full(const std::string& json_data_full)
+{
+	this->set_data_full(json_data_full);
+
+	if (hz::string_trim_copy(json_data_full).empty()) {
+		set_error_msg("Smartctl data is empty.");
+		debug_out_warn("app", DBG_FUNC_MSG << "Empty string passed as an argument. Returning.\n");
+		return false;
+	}
+
+	try {
+		const nlohmann::json root_node = nlohmann::json::parse(json_data_full);
+
+		{
+			AtaStorageProperty p;
+			p.set_name("Smartctl version", "smartctl/version/_merged", "Smartctl Version");
+			auto json_ver = get_node_data<std::vector<int>>(root_node, "smartctl/version", {});
+			if (json_ver.size() >= 2) {
+				p.reported_value = hz::number_to_string_nolocale(json_ver.at(0)) + "." + hz::number_to_string_nolocale(json_ver.at(1));
+			}
+			p.value = p.reported_value;  // string-type value
+			p.section = AtaStorageProperty::Section::info;  // add to info section
+			add_property(p);
+		}
+		// {
+		// 	AtaStorageProperty p;
+		// 	p.set_name("Smartctl version", "smartctl/version/_merged_full", "Smartctl Version");
+		// 	p.reported_value = version_full;
+		// 	p.value = p.reported_value;  // string-type value
+		// 	p.section = AtaStorageProperty::Section::info;  // add to info section
+		// 	add_property(p);
+		// }
+
+		// if (!SmartctlVersionParser::check_parsed_version(SmartctlParserType::Text, version)) {
+		// 	set_error_msg("Incompatible smartctl version.");
+		// 	debug_out_warn("app", DBG_FUNC_MSG << "Incompatible smartctl version. Returning.\n");
+		// 	return false;
+		// }
+
+		const std::unordered_map<std::string, std::string> info_keys = {
+				{"model_family", _("Model Family")},
+		};
+
+		for (const auto& [key, jval] : root_node.items()) {
+			if (auto found = info_keys.find(key); found != info_keys.end()) {
+				AtaStorageProperty p;
+				p.section = AtaStorageProperty::Section::info;
+				p.set_name(key, key, found->second);
+				p.reported_value = jval.get<std::string>();
+				p.value = p.reported_value;  // string-type value
+
+				// parse_section_info_property(p);  // set type and the typed value. may change generic_name too.
+
+				add_property(p);
+			}
+		}
+
+
+	}
+	catch (const nlohmann::json::parse_error& e) {
+		debug_out_warn("app", DBG_FUNC_MSG << "Error parsing smartctl output as JSON. Returning.\n");
+		return false;
+	}
+
+	return true;
 }
 
 
