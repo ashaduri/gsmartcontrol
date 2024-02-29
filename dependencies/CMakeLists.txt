@@ -19,7 +19,7 @@ find_package(PkgConfig REQUIRED)  # pkg_check_modules()
 
 # Gtkmm.
 # Don't make it REQUIRED, we may want to build only the parsers
-pkg_check_modules(Gtkmm IMPORTED_TARGET GLOBAL "gtkmm-3.0>=3.0")
+pkg_check_modules(Gtkmm REQUIRED IMPORTED_TARGET GLOBAL "gtkmm-3.0>=3.0")
 add_library(app_gtkmm_interface INTERFACE)
 target_link_libraries(app_gtkmm_interface
 	INTERFACE
