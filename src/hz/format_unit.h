@@ -156,7 +156,7 @@ inline std::string format_time_length(std::chrono::seconds secs)
 	using day_unit = std::chrono::duration
 			<int, std::ratio_multiply<std::ratio<24>, std::chrono::hours::period>>;
 
-	// don't use uints here - there bring bugs.
+	// don't use uints here - they bring bugs.
 	const int64_t min_size = 60;
 	const int64_t hour_size = min_size * 60;
 	const int64_t day_size = hour_size * 24;
