@@ -33,7 +33,7 @@ std::unique_ptr<SmartctlParser> SmartctlParser::create(SmartctlParserType type)
 
 
 
-leaf::result<SmartctlParserType> SmartctlParser::detect_output_type(const std::string& output)
+std::expected<SmartctlParserType, SmartctlParserError> SmartctlParser::detect_output_type(const std::string& output)
 {
 	// Look for the first non-whitespace symbol
 	auto first_symbol = std::find_if(output.begin(), output.end(), [&](char c) {
@@ -46,9 +46,9 @@ leaf::result<SmartctlParserType> SmartctlParser::detect_output_type(const std::s
 		if (output.rfind("smartctl", static_cast<std::size_t>(first_symbol - output.begin())) == 0) {
 			return SmartctlParserType::Text;
 		}
-		return leaf::new_error(SmartctlParserError::UnsupportedFormat);
+		return std::unexpected(SmartctlParserError::UnsupportedFormat);
 	}
-	return leaf::new_error(SmartctlParserError::EmptyInput);
+	return std::unexpected(SmartctlParserError::EmptyInput);
 }
 
 

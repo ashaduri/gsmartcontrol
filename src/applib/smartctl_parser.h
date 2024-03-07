@@ -15,8 +15,8 @@ Copyright:
 #include <string>
 #include <vector>
 #include <memory>
+#include <expected>
 
-#include "leaf_ns.h"
 #include "ata_storage_property.h"
 #include "smartctl_parser_types.h"
 
@@ -73,7 +73,7 @@ class SmartctlParser {
 
 
 		/// Detect smartctl output type (text, json).
-		[[nodiscard]] static leaf::result<SmartctlParserType> detect_output_type(const std::string& output);
+		[[nodiscard]] static std::expected<SmartctlParserType, SmartctlParserError> detect_output_type(const std::string& output);
 
 
 		/// Get "full" data, as passed to parse_full().

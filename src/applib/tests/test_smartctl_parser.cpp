@@ -15,20 +15,15 @@ Copyright:
 // Catch2 v2
 #include "catch2/catch.hpp"
 
-#include "test_helpers/test_helpers.h"
 #include "applib/smartctl_parser.h"
 
 
 
 TEST_CASE("SmartctlFormatDetection", "[app][parser]")
 {
-	REQUIRE( try_expect_errors([] {
-		return SmartctlParser::detect_output_type({});
-	}, SmartctlParserError::EmptyInput) );
+	REQUIRE(SmartctlParser::detect_output_type({}).error() == SmartctlParserError::EmptyInput);
 
-	REQUIRE( try_expect_errors([] {
-		return SmartctlParser::detect_output_type("smart");
-	}, SmartctlParserError::UnsupportedFormat) );
+	REQUIRE(SmartctlParser::detect_output_type("smart").error() == SmartctlParserError::UnsupportedFormat);
 
 	REQUIRE(SmartctlParser::detect_output_type("{  }").value() == SmartctlParserType::Json);
 

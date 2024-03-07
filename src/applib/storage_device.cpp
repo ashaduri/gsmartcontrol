@@ -318,22 +318,20 @@ std::string StorageDevice::parse_data()
 	}
 
 	std::string error_msg;
-	auto parser_type = leaf::try_handle_some(
-		[this]() -> leaf::result<SmartctlParserType>
-		{
-			return SmartctlParser::detect_output_type(this->full_output_);
-		},
-		[&error_msg](leaf::match<SmartctlParserError, SmartctlParserError::EmptyInput>) -> SmartctlParserType
-		{
-			error_msg = "Empty input while trying to detect smartctl output format.";
-			return SmartctlParserType::Text;
-		},
-		[&error_msg](leaf::match<SmartctlParserError, SmartctlParserError::UnsupportedFormat>) -> SmartctlParserType
-		{
-			error_msg = "Unsupported format while trying to detect smartctl output format.";
-			return SmartctlParserType::Text;
+	auto parser_type = SmartctlParser::detect_output_type(this->full_output_);
+
+	if (!parser_type.has_value()) {
+		switch(parser_type.error()) {
+			case SmartctlParserError::EmptyInput:
+				error_msg = "Empty input while trying to detect smartctl output format.";
+				break;
+			case SmartctlParserError::UnsupportedFormat:
+				error_msg = "Unsupported format while trying to detect smartctl output format.";
+				break;
 		}
-	);
+		parser_type = SmartctlParserType::Text;
+	}
+
 	if (!error_msg.empty()) {
 		return error_msg;
 	}

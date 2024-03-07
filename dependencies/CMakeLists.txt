@@ -77,6 +77,5 @@ find_package(Gettext REQUIRED)
 
 
 add_subdirectory(catch2)
-add_subdirectory(leaf)
 add_subdirectory(nlohmann_json)
 add_subdirectory(whereami)
