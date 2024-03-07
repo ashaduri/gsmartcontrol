@@ -180,7 +180,7 @@ void GscAddDeviceWindow::on_device_name_browse_button_clicked()
 			&g_object_unref);
 
 	if (path.is_absolute())
-		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog.get()), path.u8string().c_str());
+		gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog.get()), hz::fs_path_to_string(path).c_str());
 
 	result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
 
@@ -194,7 +194,7 @@ void GscAddDeviceWindow::on_device_name_browse_button_clicked()
 
 	// Note: This works on absolute paths only (otherwise it's gtk warning).
 	if (path.is_absolute())
-		dialog.set_filename(path.u8string());  // change to its dir and select it if exists.
+		dialog.set_filename(hz::fs_path_to_string(path));  // change to its dir and select it if exists.
 
 	// Show the dialog and wait for a user response
 	result = dialog.run();  // the main cycle blocks here

@@ -1,7 +1,7 @@
 ###############################################################################
 # License: BSD Zero Clause License file
 # Copyright:
-#   (C) 2021 Alexander Shaduri <ashaduri@gmail.com>
+#   (C) 2021 - 2024 Alexander Shaduri <ashaduri@gmail.com>
 ###############################################################################
 
 # This file is included from root CMakeLists.txt
@@ -10,7 +10,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/data/cmake/")
 
 
 # --- Set the default C++ standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # C++17 filesystem (including experimental)

@@ -685,7 +685,7 @@ hz::fs::path StorageDevice::get_virtual_file() const
 
 std::string StorageDevice::get_virtual_filename() const
 {
-	return (is_virtual_ ? virtual_file_.filename().u8string() : std::string());
+	return (is_virtual_ ? hz::fs_path_to_string(virtual_file_.filename()) : std::string());
 }
 
 

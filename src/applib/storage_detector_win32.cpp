@@ -206,7 +206,7 @@ std::string get_scan_open_multiport_devices(std::vector<StorageDevicePtr>& drive
 	if (!smartctl_def_options.empty())
 		smartctl_def_options += " ";
 
-	smartctl_ex->set_command(Glib::shell_quote(smartctl_binary.u8string()),
+	smartctl_ex->set_command(Glib::shell_quote(hz::fs_path_to_string(smartctl_binary)),
 			smartctl_def_options + "--scan-open");
 
 	if (!smartctl_ex->execute() || !smartctl_ex->get_error_msg().empty()) {

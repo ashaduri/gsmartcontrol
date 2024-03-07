@@ -41,6 +41,7 @@ Copyright:
 
 #include "fs_ns.h"
 #include "whereami.h"
+#include "string_algo.h"
 
 
 /// \def HAVE_POSIX_OFF_T_FUNCS
@@ -94,6 +95,25 @@ namespace hz {
 #else
 	using platform_file_size_t = long;  // fseek() and friends use long. win32 doesn't have off_t.
 #endif
+
+
+
+/// Same as std::filesystem::path::u8string(), but returns std::string with UTF-8 data.
+/// This is needed because since C++20, std::filesystem::path::u8string() returns std::u8string
+/// instead of std::string, which is what is often desired for compatibility.
+inline std::string fs_path_to_string(const fs::path& p)
+{
+	return u8string_to_string(p.u8string());
+}
+
+
+
+/// Same as std::filesystem::u8path(std::string), which is deprecated since C++20.
+inline fs::path fs_path_from_string(std::string_view u8str)
+{
+	return fs::path(u8string_from_string(u8str));
+}
+
 
 
 

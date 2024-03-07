@@ -84,7 +84,7 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 	bool show_output_button = true;
 
 	do {
-		std::string smartctl_binary = get_smartctl_binary().u8string();
+		std::string smartctl_binary = hz::fs_path_to_string(get_smartctl_binary());
 
 		// Don't use default options here - they are used when invoked
 		// with a device option.
@@ -1088,7 +1088,7 @@ void GscMainWindow::run_update_drivedb()
 	if (smartctl_binary.is_absolute()) {
 		update_binary_path = smartctl_binary.parent_path() / update_binary_path;
 	}
-	std::string update_binary = Glib::shell_quote(update_binary_path.u8string());
+	std::string update_binary = Glib::shell_quote(hz::fs_path_to_string(update_binary_path));
 
 	if constexpr(!BuildEnv::is_kernel_family_windows()) {  // X11
 		update_binary = "xterm -hold -e " + update_binary;
@@ -1356,7 +1356,7 @@ void GscMainWindow::show_load_virtual_file_chooser()
 			files = dialog.get_filenames();  // in fs encoding
 #endif
 			if (!files.empty()) {
-				last_dir = hz::fs::u8path(files.front()).parent_path().u8string();
+				last_dir = hz::fs_path_to_string(hz::fs_path_from_string(files.front()).parent_path());
 			}
 			rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
 			for (const auto& file : files) {

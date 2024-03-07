@@ -140,7 +140,7 @@ std::shared_ptr<Child> AppBuilderWidget<Child, MultiInstance, WidgetType>::creat
 
 	auto ui_path = hz::data_file_find("ui", std::string(Child::ui_name) + ".glade");
 	try {
-		auto ui = Gtk::Builder::create_from_file(ui_path.u8string());  // may throw
+		auto ui = Gtk::Builder::create_from_file(hz::fs_path_to_string(ui_path));  // may throw
 
 		Child* raw_obj = nullptr;
 		ui->get_widget_derived({Child::ui_name.data(), Child::ui_name.size()}, raw_obj);  // Calls Child's constructor

@@ -105,9 +105,9 @@ namespace {
 			global_config_file = hz::fs::u8path(BuildEnv::package_sysconf_dir()) / "gsmartcontrol2.conf";
 		}
 
-		debug_out_dump("app", DBG_FUNC_MSG << "Global config file: \"" << global_config_file.u8string() << "\"\n");
+		debug_out_dump("app", DBG_FUNC_MSG << "Global config file: \"" << hz::fs_path_to_string(global_config_file) << "\"\n");
 		debug_out_dump("app",
-				DBG_FUNC_MSG << "Local config file: \"" << get_home_config_file().u8string() << "\"\n");
+				DBG_FUNC_MSG << "Local config file: \"" << hz::fs_path_to_string(get_home_config_file()) << "\"\n");
 
 		// load global first
 		std::error_code ec;

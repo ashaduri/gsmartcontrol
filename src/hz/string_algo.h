@@ -22,6 +22,30 @@ namespace hz {
 
 
 
+// --------------------------------------------- UTF8
+
+/// Since C++20, std::filesystem::path::u8string() returns std::u8string instead of std::string.
+/// This introduces incompatibility. We always assume that std::string contains utf-8 data,
+/// So these conversion functions assume the same.
+
+
+/// Convert std::u8string_view to UTF-8-containing std::string
+inline std::string u8string_to_string(std::u8string_view u8str)
+{
+	return std::string(reinterpret_cast<const char*>(u8str.data()), u8str.size());
+}
+
+
+/// Convert UTF-8-containing std::string to std::u8string
+inline std::u8string u8string_from_string(const std::string_view& str)
+{
+	return std::u8string(reinterpret_cast<const char8_t*>(str.data()), str.size());
+}
+
+
+
+
+
 // --------------------------------------------- Split
 
 

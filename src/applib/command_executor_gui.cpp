@@ -18,7 +18,7 @@ Copyright:
 #include "hz/string_algo.h"
 #include "hz/fs_ns.h"
 #include "command_executor_gui.h"
-
+#include "hz/fs.h"
 
 
 
@@ -134,7 +134,7 @@ void CommandExecutorGui::set_running_dialog_abort_mode(bool aborting)
 
 	} else if (!aborting) {
 		std::string msg = hz::string_replace_copy(get_running_msg(), "{command}",
-				hz::fs::u8path(this->get_command_name()).filename().u8string());
+				hz::fs_path_to_string(hz::fs::u8path(this->get_command_name()).filename()));
 		running_dialog_->set_message("\n     " + msg + "     ");
 		// running_dialog_->set_response_sensitive(Gtk::RESPONSE_CANCEL, true);
 

@@ -115,7 +115,7 @@ std::string execute_smartctl(const std::string& device, const std::string& devic
 		device_specific_options += " ";
 
 
-	smartctl_ex->set_command(Glib::shell_quote(smartctl_binary.u8string()),
+	smartctl_ex->set_command(Glib::shell_quote(hz::fs_path_to_string(smartctl_binary)),
 			smartctl_def_options + device_specific_options + command_options
 			+ " " + Glib::shell_quote(device));
 
