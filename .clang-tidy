@@ -2,10 +2,12 @@
 
 # Exceptions:
 # bugprone-branch-clone is too noisy in parsing code.
+# bugprone-easily-swappable-parameters is too noisy.
 # cert-dcl50-cpp is triggered by hz::string_sprintf()'s C style.
 # clang-analyzer-deadcode.DeadStores is too noisy.
 # clang-analyzer-cplusplus.NewDeleteLeaks doesn't understand Gtkmm memory management.
 # cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers is triggered by attribute database.
+# cppcoreguidelines-avoid-do-while is triggered in DBG macros.
 # cppcoreguidelines-owning-memory doesn't support deleting Gtkmm objects.
 # cppcoreguidelines-pro-type-cstyle-cast needed by GTK C casts.
 # cppcoreguidelines-pro-type-reinterpret-cast is needed by WinAPI-facing functions
@@ -28,6 +30,7 @@ Checks:          >
   -boost-*,
   bugprone-*,
   -bugprone-branch-clone,
+  -bugprone-easily-swappable-parameters,
   cert-*,
   -cert-dcl50-cpp,
   clang-analyzer-*,
@@ -36,6 +39,7 @@ Checks:          >
   concurrency-*,
   cppcoreguidelines-*,
   -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-avoid-do-while,
   -cppcoreguidelines-owning-memory,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
   -cppcoreguidelines-pro-type-cstyle-cast,
