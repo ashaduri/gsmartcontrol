@@ -111,7 +111,7 @@ inline std::string fs_path_to_string(const fs::path& p)
 /// Same as std::filesystem::u8path(std::string), which is deprecated since C++20.
 inline fs::path fs_path_from_string(std::string_view u8str)
 {
-	return fs::path(u8string_from_string(u8str));
+	return {u8string_from_string(u8str)};
 }
 
 

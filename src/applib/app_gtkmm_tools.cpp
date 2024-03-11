@@ -141,7 +141,7 @@ Glib::ustring app_make_valid_utf8(const Glib::ustring& str)
 
 Glib::ustring app_make_valid_utf8_from_command_output(const std::string& str)
 {
-	if constexpr(BuildEnv::is_kernel_family_windows()) {
+	if (BuildEnv::is_kernel_family_windows()) {
 		try {
 			return Glib::locale_to_utf8(str);  // detects invalid utf-8 sequences
 		} catch (Glib::ConvertError& e) {

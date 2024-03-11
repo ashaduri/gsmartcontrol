@@ -44,14 +44,14 @@ std::chrono::seconds SelfTest::get_remaining_seconds() const
 {
 	using namespace std::literals;
 
-	std::chrono::seconds total = get_min_duration_seconds();
+	const std::chrono::seconds total = get_min_duration_seconds();
 	if (total <= 0s)
 		return -1s;  // unknown
 
-	double gran = (double(total.count()) / 9.);  // seconds per 10%
+	const double gran = (double(total.count()) / 9.);  // seconds per 10%
 	// since remaining_percent_ may be manually set to 100, we limit from the above.
-	double rem_seconds_at_last_change = std::min(double(total.count()), gran * remaining_percent_ / 10.);
-	double rem = rem_seconds_at_last_change - timer_.elapsed();
+	const double rem_seconds_at_last_change = std::min(double(total.count()), gran * remaining_percent_ / 10.);
+	const double rem = rem_seconds_at_last_change - timer_.elapsed();
 	return std::chrono::seconds(std::max(int64_t(0), (int64_t)std::round(rem)));  // don't return negative values.
 }
 
@@ -76,7 +76,7 @@ std::chrono::seconds SelfTest::get_min_duration_seconds() const
 		case TestType::conveyance: prop_name = "ata_smart_data/self_test/polling_minutes/conveyance"; break;
 	}
 
-	AtaStorageProperty p = drive_->lookup_property(prop_name,
+	const AtaStorageProperty p = drive_->lookup_property(prop_name,
 			AtaStorageProperty::Section::data, AtaStorageProperty::SubSection::capabilities);
 
 	// p stores it as uint64_t
@@ -103,7 +103,7 @@ bool SelfTest::is_supported() const
 		case TestType::conveyance: prop_name = "ata_smart_data/capabilities/conveyance_self_test_supported"; break;
 	}
 
-	AtaStorageProperty p = drive_->lookup_property(prop_name, AtaStorageProperty::Section::internal);
+	const AtaStorageProperty p = drive_->lookup_property(prop_name, AtaStorageProperty::Section::internal);
 	return (!p.empty() && p.get_value<bool>());
 }
 
@@ -185,7 +185,7 @@ std::string SelfTest::force_stop(const std::shared_ptr<CommandExecutor>& smartct
 	// any command (e.g. "--abort") will abort it. If it has "Suspend Offline...",
 	// there's no way to abort such test.
 	if (type_ == TestType::immediate_offline) {
-		AtaStorageProperty p = drive_->lookup_property(
+		const AtaStorageProperty p = drive_->lookup_property(
 				"ata_smart_data/capabilities/offline_is_aborted_upon_new_cmd", AtaStorageProperty::Section::internal);
 		if (!p.empty() && p.get_value<bool>()) {  // if empty, give a chance to abort anyway.
 			return _("Aborting this test is unsupported by the drive.");

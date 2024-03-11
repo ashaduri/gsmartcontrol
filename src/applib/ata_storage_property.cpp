@@ -396,7 +396,7 @@ bool AtaStorageProperty::empty() const
 
 void AtaStorageProperty::dump(std::ostream& os, std::size_t internal_offset) const
 {
-	std::string offset(internal_offset, ' ');
+	const std::string offset(internal_offset, ' ');
 
 	os << offset << "[" << get_section_name(section)
 			<< (section == Section::data ? (", " + get_subsection_name(subsection)) : "") << "]"

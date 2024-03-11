@@ -773,7 +773,7 @@ bool StorageDevice::get_is_manually_added() const
 
 void StorageDevice::set_test_is_active(bool b)
 {
-	bool changed = (test_is_active_ != b);
+	const bool changed = (test_is_active_ != b);
 	test_is_active_ = b;
 	if (changed) {
 		signal_changed().emit(this);  // so that everybody stops any test-aborting operations.

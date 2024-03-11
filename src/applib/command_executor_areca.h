@@ -12,6 +12,8 @@ Copyright:
 #ifndef COMMAND_EXECUTOR_ARECA_H
 #define COMMAND_EXECUTOR_ARECA_H
 
+#include <ranges>
+
 #include "local_glibmm.h"
 
 #include "async_command_executor.h"
@@ -87,10 +89,10 @@ void ArecaCliExecutorGeneric<ExecutorPolicy>::import_error()
 
 	hz::ErrorBase* e = nullptr;
 	// find the last relevant error.
-	for (auto iter = errors.crbegin(); iter != errors.crend(); ++iter) {
+	for (const auto& error : std::ranges::reverse_view(errors)) {
 		// ignore iochannel errors, they may mask the real errors
-		if ((*iter)->get_type() != "giochannel" && (*iter)->get_type() != "custom") {
-			e = (*iter)->clone();
+		if (error->get_type() != "giochannel" && error->get_type() != "custom") {
+			e = error->clone();
 			break;
 		}
 	}
@@ -111,7 +113,7 @@ void ArecaCliExecutorGeneric<ExecutorPolicy>::on_error_warn(hz::ErrorBase* e)
 		return;
 
 	// import the error only if it's relevant.
-	std::string error_type = e->get_type();
+	const std::string error_type = e->get_type();
 
 	// ignore giochannel errors - higher level errors will be triggered, and they more user-friendly.
 	if (error_type == "giochannel" || error_type == "custom") {

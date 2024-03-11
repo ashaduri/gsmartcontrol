@@ -1434,11 +1434,11 @@ namespace {
 
 		std::string humanized_reported_name;
 		std::string ssd_hdd_str;
-		bool known_by_smartctl = !app_pcre_match("/Unknown_(HDD|SSD)_?Attr.*/i", p.reported_name, &ssd_hdd_str);
+		const bool known_by_smartctl = !app_pcre_match("/Unknown_(HDD|SSD)_?Attr.*/i", p.reported_name, &ssd_hdd_str);
 		if (known_by_smartctl) {
 			humanized_reported_name = " " + p.reported_name + " ";  // spaces are for easy replacements
 
-			static std::unordered_map<std::string, std::string> replacement_map = {
+			static const std::unordered_map<std::string, std::string> replacement_map = {
 					{"_", " "},
 					{"/", " / "},
 					{" Ct ", " Count "},
@@ -1492,7 +1492,7 @@ namespace {
 				std::string match = " " + humanized_reported_name + " ";
 				std::string against = " " + attr.displayable_name + " ";
 
-				static std::unordered_map<std::string, std::string> replacement_map = {
+				static const std::unordered_map<std::string, std::string> replacement_map = {
 						{" Percent ", " % "},
 						{"-", 	""},
 						{"(", 	""},
@@ -1507,7 +1507,7 @@ namespace {
 
 			std::string descr =  std::string("<b>") + Glib::Markup::escape_text(attr.displayable_name) + "</b>";
 			if (!same_names) {
-				std::string reported_name_for_descr = Glib::Markup::escape_text(hz::string_replace_copy(p.reported_name, '_', ' '));
+				const std::string reported_name_for_descr = Glib::Markup::escape_text(hz::string_replace_copy(p.reported_name, '_', ' '));
 				descr += "\n<small>Reported by smartctl as <b>\"" + reported_name_for_descr + "\"</b></small>\n";
 			}
 			descr += "\n";
@@ -1529,9 +1529,9 @@ namespace {
 	{
 		StatisticDescription sd = get_devstat_db().find(p.reported_name);
 
-		std::string displayable_name = (sd.displayable_name.empty() ? sd.reported_name : sd.displayable_name);
+		const std::string displayable_name = (sd.displayable_name.empty() ? sd.reported_name : sd.displayable_name);
 
-		bool found = !sd.description.empty();
+		const bool found = !sd.description.empty();
 		if (!found) {
 			sd.description = "No description is available for this attribute.";
 
@@ -1909,7 +1909,7 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 					if (!eb.reported_types.empty()) {
 						WarningLevel error_block_warning = WarningLevel::none;
 						for (const auto& reported_type : eb.reported_types) {
-							WarningLevel individual_warning = AtaStorageErrorBlock::get_warning_level_for_error_type(reported_type);
+							const WarningLevel individual_warning = AtaStorageErrorBlock::get_warning_level_for_error_type(reported_type);
 							if (individual_warning > error_block_warning) {
 								error_block_warning = WarningLevel(individual_warning);
 							}

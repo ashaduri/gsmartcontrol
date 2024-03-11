@@ -24,7 +24,7 @@ int main()
 		GPid pid = {};
 		int fd_stdout = 0, fd_stderr = 0;
 
-		std::string cmd = "iexplore";
+		const std::string cmd = "iexplore";
 	// 	std::vector<std::string> child_argv = Glib::shell_parse_argv(cmd);
 
 		gchar* curr_dir = g_get_current_dir();
@@ -54,7 +54,7 @@ int main()
 	#endif
 
 		// blocking writes if the pipe is full helps for small-pipe systems (see man 7 pipe).
-		int channel_flags = ~G_IO_FLAG_NONBLOCK;
+		const int channel_flags = ~G_IO_FLAG_NONBLOCK;
 
 		if (channel_stdout) {
 			g_io_channel_set_encoding(channel_stdout, nullptr, nullptr);  // binary IO

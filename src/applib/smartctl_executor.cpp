@@ -24,7 +24,7 @@ hz::fs::path get_smartctl_binary()
 {
 	auto smartctl_binary = hz::fs_path_from_string(rconfig::get_data<std::string>("system/smartctl_binary"));
 
-	if constexpr(BuildEnv::is_kernel_family_windows()) {
+	if (BuildEnv::is_kernel_family_windows()) {
 		// Look in smartmontools installation directory.
 		hz::fs::path system_binary;
 		do {
@@ -85,7 +85,7 @@ std::string execute_smartctl(const std::string& device, const std::string& devic
 		std::shared_ptr<CommandExecutor> smartctl_ex, std::string& smartctl_output)
 {
 	// win32 doesn't have slashes in devices names. For others, check that slash is present.
-	if constexpr(!BuildEnv::is_kernel_family_windows()) {
+	if (!BuildEnv::is_kernel_family_windows()) {
 		const std::string::size_type pos = device.rfind('/');  // find basename
 		if (pos == std::string::npos) {
 			debug_out_error("app", DBG_FUNC_MSG << "Invalid device name \"" << device << "\".\n");

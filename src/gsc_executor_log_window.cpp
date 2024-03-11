@@ -48,7 +48,7 @@ GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, Glib::RefPtr
 
 	// Accelerators
 
-	Glib::RefPtr<Gtk::AccelGroup> accel_group = this->get_accel_group();
+	const Glib::RefPtr<Gtk::AccelGroup> accel_group = this->get_accel_group();
 	if (window_close_button) {
 		window_close_button->add_accelerator("clicked", accel_group, GDK_KEY_Escape,
 				Gdk::ModifierType(0), Gtk::AccelFlags(0));
@@ -117,7 +117,7 @@ void GscExecutorLogWindow::show_last()
 
 	if (treeview != nullptr && !list_store->children().empty()) {
 // 		Gtk::TreeRow row = *(list_store->children().rbegin());  // this causes invalid read error in valgrind
-		Gtk::TreeRow row = *(--(list_store->children().end()));
+		const Gtk::TreeRow row = *(--(list_store->children().end()));
 		selection->select(row);
 		// you would think that scroll_to_row would accept a TreeRow for a change (shock!)
 		treeview->scroll_to_row(list_store->get_path(row));
@@ -136,7 +136,7 @@ void GscExecutorLogWindow::clear_view_widgets()
 
 	auto* output_textview = this->lookup_widget<Gtk::TextView*>("output_textview");
 	if (output_textview) {
-		Glib::RefPtr<Gtk::TextBuffer> buffer = output_textview->get_buffer();
+		const Glib::RefPtr<Gtk::TextBuffer> buffer = output_textview->get_buffer();
 		buffer->set_text("");
 	}
 
@@ -153,7 +153,7 @@ void GscExecutorLogWindow::on_command_output_received(const CommandExecutorResul
 	entries.push_back(entry);
 
 	// update tree model
-	Gtk::TreeRow row = *(list_store->append());
+	const Gtk::TreeRow row = *(list_store->append());
 	row[col_num] = entries.size();
 	row[col_command] = info.command + " " + info.parameters;
 	row[col_entry] = entry;
@@ -187,8 +187,8 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 	if (selection->count_selected_rows() == 0)
 		return;
 
-	Gtk::TreeIter iter = selection->get_selected();
-	std::shared_ptr<CommandExecutorResult> entry = (*iter)[col_entry];
+	const Gtk::TreeIter iter = selection->get_selected();
+	const std::shared_ptr<CommandExecutorResult> entry = (*iter)[col_entry];
 
 	static std::string last_dir;
 	if (last_dir.empty()) {
@@ -196,16 +196,16 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 	}
 	int result = 0;
 
-	Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
+	const Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
 	specific_filter->set_name(_("Text Files"));
 	specific_filter->add_pattern("*.txt");
 
-	Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
+	const Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
 	all_filter->set_name(_("All Files"));
 	all_filter->add_pattern("*");
 
 #if GTK_CHECK_VERSION(3, 20, 0)
-	std::unique_ptr<GtkFileChooserNative, decltype(&g_object_unref)> dialog(gtk_file_chooser_native_new(
+	const std::unique_ptr<GtkFileChooserNative, decltype(&g_object_unref)> dialog(gtk_file_chooser_native_new(
 			_("Save Data As..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr),
 			&g_object_unref);
 
@@ -314,16 +314,16 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 	}
 	int result = 0;
 
-	Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
+	const Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
 	specific_filter->set_name(_("Text Files"));
 	specific_filter->add_pattern("*.txt");
 
-	Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
+	const Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
 	all_filter->set_name(_("All Files"));
 	all_filter->add_pattern("*");
 
 #if GTK_CHECK_VERSION(3, 20, 0)
-	std::unique_ptr<GtkFileChooserNative, decltype(&g_object_unref)> dialog(gtk_file_chooser_native_new(
+	const std::unique_ptr<GtkFileChooserNative, decltype(&g_object_unref)> dialog(gtk_file_chooser_native_new(
 			_("Save Data As..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr),
 			&g_object_unref);
 
@@ -412,18 +412,18 @@ void GscExecutorLogWindow::on_tree_selection_changed()
 	this->clear_view_widgets();
 
 	if (selection->count_selected_rows() > 0) {
-		Gtk::TreeIter iter = selection->get_selected();
-		Gtk::TreeRow row = *iter;
+		const Gtk::TreeIter iter = selection->get_selected();
+		const Gtk::TreeRow& row = *iter;
 
-		std::shared_ptr<CommandExecutorResult> entry = row[col_entry];
+		const std::shared_ptr<CommandExecutorResult> entry = row[col_entry];
 
 		if (auto* output_textview = this->lookup_widget<Gtk::TextView*>("output_textview")) {
-			Glib::RefPtr<Gtk::TextBuffer> buffer = output_textview->get_buffer();
+			const Glib::RefPtr<Gtk::TextBuffer> buffer = output_textview->get_buffer();
 			if (buffer) {
 				buffer->set_text(app_make_valid_utf8_from_command_output(entry->std_output));
 
 				Glib::RefPtr<Gtk::TextTag> tag;
-				Glib::RefPtr<Gtk::TextTagTable> table = buffer->get_tag_table();
+				const Glib::RefPtr<Gtk::TextTagTable> table = buffer->get_tag_table();
 				if (table)
 					tag = table->lookup("font");
 				if (!tag)
@@ -435,7 +435,7 @@ void GscExecutorLogWindow::on_tree_selection_changed()
 		}
 
 		if (auto* command_entry = this->lookup_widget<Gtk::Entry*>("command_entry")) {
-			std::string cmd_text = entry->command + " " + entry->parameters;
+			const std::string cmd_text = entry->command + " " + entry->parameters;
 			command_entry->set_text(app_make_valid_utf8_from_command_output(cmd_text));
 		}
 

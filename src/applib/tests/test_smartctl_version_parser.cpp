@@ -54,7 +54,7 @@ TEST_CASE("SmartctlVersionParser", "[app][parser]")
 	}
 
 	SECTION("Parse full output (SVN)") {
-		std::string output =
+		const std::string output =
 R"(smartctl 7.2 2020-12-30 r5155 [x86_64-linux-5.3.18-lp152.66-default] (SUSE RPM)
 Copyright (C) 2002-20, Bruce Allen, Christian Franke, www.smartmontools.org
 
@@ -76,7 +76,7 @@ smartmontools configure arguments: '--host=x86_64-suse-linux-gnu' '--build=x86_6
 	}
 
 	SECTION("Parse full output (git)") {
-		std::string output =
+		const std::string output =
 R"(smartctl 7.3 (build date Feb 11 2022) [x86_64-linux-5.3.18-lp152.66-default] (local build)
 Copyright (C) 2002-22, Bruce Allen, Christian Franke, www.smartmontools.org
 

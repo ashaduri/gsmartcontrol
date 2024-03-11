@@ -13,6 +13,7 @@ Copyright:
 #define SMARTCTL_EXECUTOR_H
 
 #include "local_glibmm.h"
+#include <ranges>
 #include <vector>
 
 #include "async_command_executor.h"
@@ -102,10 +103,10 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 
 			hz::ErrorBase* e = nullptr;
 			// find the last relevant error.
-			for (auto iter = errors.crbegin(); iter != errors.crend(); ++iter) {
+			for (const auto& error : std::ranges::reverse_view(errors)) {
 				// ignore iochannel errors, they may mask the real errors
-				if ((*iter)->get_type() != "giochannel" && (*iter)->get_type() != "custom") {
-					e = (*iter)->clone();
+				if (error->get_type() != "giochannel" && error->get_type() != "custom") {
+					e = error->clone();
 					break;
 				}
 			}

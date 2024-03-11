@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 
 	const hz::fs::path file(argv[1]);  // native encoding
 	std::string contents;
-	auto ec = hz::fs_file_get_contents(file, contents, 10*1024*1024);  // 10M
+	auto ec = hz::fs_file_get_contents(file, contents, 10LLU*1024*1024);  // 10M
 	if (ec) {
 		debug_out_error("app", ec.message() << "\n");
 		return EXIT_FAILURE;

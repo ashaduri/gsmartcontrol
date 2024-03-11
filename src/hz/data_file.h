@@ -47,7 +47,7 @@ inline void data_file_add_search_directory(const std::string& domain, fs::path p
 /// Get currently registered search directories (a copy is returned)
 inline std::vector<fs::path> data_file_get_search_directories(const std::string& domain)
 {
-	if (DataFileStaticHolder::search_directories.count(domain) > 0) {
+	if (DataFileStaticHolder::search_directories.contains(domain)) {
 		return DataFileStaticHolder::search_directories.at(domain);
 	}
 	return {};

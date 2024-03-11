@@ -248,7 +248,7 @@ inline std::string read_proc_scsi_scsi_file(std::vector< std::pair<int, std::str
 	}
 
 	int last_scsi_host = -1;
-	pcrecpp::RE host_re = app_pcre_re("^Host: scsi([0-9]+)");
+	const pcrecpp::RE host_re = app_pcre_re("^Host: scsi([0-9]+)");
 
 	for (auto line : lines) {
 		hz::string_trim(line);

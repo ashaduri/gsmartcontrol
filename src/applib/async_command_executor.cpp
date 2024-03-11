@@ -299,7 +299,7 @@ bool AsyncCommandExecutor::try_kill()
 void AsyncCommandExecutor::set_stop_timeouts(std::chrono::milliseconds term_timeout_msec, std::chrono::milliseconds kill_timeout_msec)
 {
 	DBG_FUNCTION_ENTER_MSG;
-	DBG_ASSERT(term_timeout_msec.count() == 0 || kill_timeout_msec.count() == 0 || kill_timeout_msec > term_timeout_msec);
+	DBG_ASSERT(term_timeout_msec.count() == 0 || kill_timeout_msec.count() == 0 || (kill_timeout_msec > term_timeout_msec));
 
 	if (!this->running_)  // process not running
 		return;
