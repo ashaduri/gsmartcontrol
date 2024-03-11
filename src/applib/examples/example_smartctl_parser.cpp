@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
 	}
 	debug_register_domain("app");
 
-	hz::fs::path file(argv[1]);  // native encoding
+	const hz::fs::path file(argv[1]);  // native encoding
 	std::string contents;
 	auto ec = hz::fs_file_get_contents(file, contents, 10*1024*1024);  // 10M
 	if (ec) {
@@ -43,8 +43,8 @@ int main(int argc, char* argv[])
 	}
 
 	SmartctlAtaTextParser parser;
-	if (!parser.parse_full(contents)) {
-		debug_out_error("app", "Cannot parse file contents: " << parser.get_error_msg() << "\n");
+	if (const auto parse_status = parser.parse_full(contents); !parse_status.has_value()) {
+		debug_out_error("app", "Cannot parse file contents: " << parse_status.error().message() << "\n");
 		return EXIT_FAILURE;
 	}
 

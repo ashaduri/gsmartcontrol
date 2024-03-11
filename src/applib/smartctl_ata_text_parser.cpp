@@ -12,6 +12,7 @@ Copyright:
 // #include "local_glibmm.h"
 #include <clocale>  // localeconv
 #include <cstdint>
+#include <utility>
 
 // #include "hz/locale_tools.h"  // ScopedCLocale, locale_c_get().
 #include "hz/string_algo.h"  // string_*
@@ -68,20 +69,19 @@ namespace {
 
 
 // Parse full "smartctl -x" output
-bool SmartctlAtaTextParser::parse_full(const std::string& full)
+hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_full(const std::string& full)
 {
 	this->set_data_full(full);
 
 
-	// -------------------- Fix the output so it doesn't interfere with proper parsing
+	// -------------------- Fix the output, so it doesn't interfere with proper parsing
 
 	// perform any2unix
 	std::string s = hz::string_trim_copy(hz::string_any_to_unix_copy(full));
 
 	if (s.empty()) {
-		set_error_msg("Smartctl data is empty.");
 		debug_out_warn("app", DBG_FUNC_MSG << "Empty string passed as an argument. Returning.\n");
-		return false;
+		return hz::Unexpected(SmartctlParserError::EmptyInput, "Smartctl data is empty.");
 	}
 
 
@@ -205,9 +205,8 @@ bool SmartctlAtaTextParser::parse_full(const std::string& full)
 
 	std::string version, version_full;
 	if (!SmartctlVersionParser::parse_version(s, version, version_full)) {
-		set_error_msg("Cannot extract smartctl version information.");
 		debug_out_warn("app", DBG_FUNC_MSG << "Cannot extract version information. Returning.\n");
-		return false;
+		return hz::Unexpected(SmartctlParserError::NoVersion, "Cannot extract smartctl version information.");
 	}
 
 	{
@@ -228,9 +227,8 @@ bool SmartctlAtaTextParser::parse_full(const std::string& full)
 	}
 
 	if (!SmartctlVersionParser::check_parsed_version(SmartctlParserType::Text, version)) {
-		set_error_msg("Incompatible smartctl version.");
 		debug_out_warn("app", DBG_FUNC_MSG << "Incompatible smartctl version. Returning.\n");
-		return false;
+		return hz::Unexpected(SmartctlParserError::IncompatibleVersion, "Incompatible smartctl version.");
 	}
 
 
@@ -261,18 +259,17 @@ bool SmartctlAtaTextParser::parse_full(const std::string& full)
 	}
 
 	if (!status) {
-		set_error_msg("No ATA sections could be parsed.");
 		debug_out_warn("app", DBG_FUNC_MSG << "No ATA sections could be parsed. Returning.\n");
-		return false;
+		return hz::Unexpected(SmartctlParserError::NoSections, "No ATA sections could be parsed.");
 	}
 
-	return true;
+	return {};
 }
 
 
 
 // Parse the section part (with "=== .... ===" header) - info or data sections.
-bool SmartctlAtaTextParser::parse_section(const std::string& header, const std::string& body)
+hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section(const std::string& header, const std::string& body)
 {
 	if (app_pcre_match("/START OF INFORMATION SECTION/mi", header)) {
 		return parse_section_info(body);
@@ -287,17 +284,17 @@ bool SmartctlAtaTextParser::parse_section(const std::string& header, const std::
 
 	// example contents: "SMART Enabled.".
 	if (app_pcre_match("/START OF READ SMART DATA SECTION/mi", header)) {
-		return true;
+		return {};
 	}
 
 	// We don't parse this - it's parsed by the respective command issuer.
 	if (app_pcre_match("/START OF ENABLE/DISABLE COMMANDS SECTION/mi", header)) {
-		return true;
+		return {};
 	}
 
 	// This is printed when executing "-t long", etc... . Parsed by respective command issuer.
 	if (app_pcre_match("/START OF OFFLINE IMMEDIATE AND SELF-TEST SECTION/mi", header)) {
-		return true;
+		return {};
 	}
 
 	debug_out_warn("app", DBG_FUNC_MSG << "Unknown section encountered.\n");
@@ -305,7 +302,7 @@ bool SmartctlAtaTextParser::parse_section(const std::string& header, const std::
 	debug_out_dump("app", header << "\n");
 	debug_out_dump("app", "----------------- End unknown section header dump -----------------\n");
 
-	return false;  // unknown section
+	return hz::Unexpected(SmartctlParserError::UnknownSection, "Unknown section encountered.");
 }
 
 
@@ -314,7 +311,7 @@ bool SmartctlAtaTextParser::parse_section(const std::string& header, const std::
 // ------------------------------------------------ INFO SECTION
 
 
-bool SmartctlAtaTextParser::parse_section_info(const std::string& body)
+hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_info(const std::string& body)
 {
 	this->set_data_section_info(body);
 
@@ -406,9 +403,12 @@ http://knowledge.seagate.com/articles/en_US/FAQ/213891en
 			p.set_name(name);
 			p.reported_value = value;
 
-			parse_section_info_property(p);  // set type and the typed value. may change generic_name too.
-
+			auto result = parse_section_info_property(p);  // set type and the typed value. may change generic_name too.
+			if (!result.has_value()) {  // internal error
+				return result;
+			}
 			add_property(p);
+
 		} else {
 			debug_out_warn("app", DBG_FUNC_MSG << "Unknown Info line encountered.\n");
 			debug_out_dump("app", "---------------- Begin unknown Info line ----------------\n");
@@ -417,19 +417,18 @@ http://knowledge.seagate.com/articles/en_US/FAQ/213891en
 		}
 	}
 
-	return true;
+	return {};
 }
 
 
 
 // Parse a component (one line) of the info section
-bool SmartctlAtaTextParser::parse_section_info_property(AtaStorageProperty& p)
+hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_info_property(AtaStorageProperty& p)
 {
 	// ---- Info
 	if (p.section != AtaStorageProperty::Section::info) {
-		set_error_msg("Internal parser error.");  // set this so we have something to display
 		debug_out_error("app", DBG_FUNC_MSG << "Called with non-info section!\n");
-		return false;
+		return hz::Unexpected(SmartctlParserError::InternalError, "Internal parser error.");
 	}
 
 
@@ -604,7 +603,7 @@ bool SmartctlAtaTextParser::parse_section_info_property(AtaStorageProperty& p)
 		p.value = p.reported_value;  // string-type value
 	}
 
-	return true;
+	return {};
 }
 
 
@@ -614,7 +613,7 @@ bool SmartctlAtaTextParser::parse_section_info_property(AtaStorageProperty& p)
 
 
 // Parse the Data section (without "===" header)
-bool SmartctlAtaTextParser::parse_section_data(const std::string& body)
+hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data(const std::string& body)
 {
 	this->set_data_section_data(body);
 
@@ -661,13 +660,13 @@ bool SmartctlAtaTextParser::parse_section_data(const std::string& body)
 			continue;
 
 		if (app_pcre_match("/^SMART overall-health self-assessment/mi", sub)) {
-			status = parse_section_data_subsection_health(sub) || status;
+			status = parse_section_data_subsection_health(sub).has_value() || status;
 
 		} else if (app_pcre_match("/^General SMART Values/mi", sub)) {
-			status = parse_section_data_subsection_capabilities(sub) || status;
+			status = parse_section_data_subsection_capabilities(sub).has_value() || status;
 
 		} else if (app_pcre_match("/^SMART Attributes Data Structure/mi", sub)) {
-			status = parse_section_data_subsection_attributes(sub) || status;
+			status = parse_section_data_subsection_attributes(sub).has_value() || status;
 
 		} else if (app_pcre_match("/^General Purpose Log Directory Version/mi", sub)  // -l directory
 				|| app_pcre_match("/^General Purpose Log Directory not supported/mi", sub)
@@ -676,14 +675,14 @@ bool SmartctlAtaTextParser::parse_section_data(const std::string& body)
 				|| app_pcre_match("/^Log Directories not read due to '-F nologdir' option/mi", sub)
 				|| app_pcre_match("/^Read SMART Log Directory failed/mi", sub)
 				|| app_pcre_match("/^SMART Log Directory Version/mi", sub) ) {  // old smartctl
-			status = parse_section_data_subsection_directory_log(sub) || status;
+			status = parse_section_data_subsection_directory_log(sub).has_value() || status;
 
 		} else if (app_pcre_match("/^SMART Error Log Version/mi", sub)  // -l error
 				|| app_pcre_match("/^SMART Extended Comprehensive Error Log Version/mi", sub)  // -l xerror
 				|| app_pcre_match("/^Warning: device does not support Error Logging/mi", sub)  // -l error
 				|| app_pcre_match("/^SMART Error Log not supported/mi", sub)  // -l error
 				|| app_pcre_match("/^Read SMART Error Log failed/mi", sub) ) {  // -l error
-			status = parse_section_data_subsection_error_log(sub) || status;
+			status = parse_section_data_subsection_error_log(sub).has_value() || status;
 
 		} else if (app_pcre_match("/^SMART Extended Comprehensive Error Log \\(GP Log 0x03\\) not supported/mi", sub)  // -l xerror
 				|| app_pcre_match("/^SMART Extended Comprehensive Error Log size (.*) not supported/mi", sub)
@@ -697,7 +696,7 @@ bool SmartctlAtaTextParser::parse_section_data(const std::string& body)
 				|| app_pcre_match("/^Warning: device does not support Self Test Logging/mi", sub)  // -l selftest
 				|| app_pcre_match("/^Read SMART Self-test Log failed/mi", sub)  // -l selftest
 				|| app_pcre_match("/^SMART Self-test Log not supported/mi", sub)) {  // -l selftest
-			status = parse_section_data_subsection_selftest_log(sub) || status;
+			status = parse_section_data_subsection_selftest_log(sub).has_value() || status;
 
 		} else if (app_pcre_match("/^SMART Extended Self-test Log \\(GP Log 0x07\\) not supported/mi", sub)  // -l xselftest
 				|| app_pcre_match("/^SMART Extended Self-test Log size [0-9-]+ not supported/mi", sub)  // -l xselftest
@@ -710,7 +709,7 @@ bool SmartctlAtaTextParser::parse_section_data(const std::string& body)
 				|| app_pcre_match("/^Device does not support Selective Self Tests\\/Logging/mi", sub)
 				|| app_pcre_match("/^Selective Self-tests\\/Logging not supported/mi", sub)
 				|| app_pcre_match("/^Read SMART Selective Self-test Log failed/mi", sub) ) {
-			status = parse_section_data_subsection_selective_selftest_log(sub) || status;
+			status = parse_section_data_subsection_selective_selftest_log(sub).has_value() || status;
 
 		} else if (app_pcre_match("/^SCT Status Version/mi", sub)
 				// "SCT Commands not supported"
@@ -722,7 +721,7 @@ bool SmartctlAtaTextParser::parse_section_data(const std::string& body)
 				|| app_pcre_match("/^Error unknown SCT Temperature History Format Version/mi", sub)
 				|| app_pcre_match("/^Another SCT command is executing, abort Read Data Table/mi", sub)
 				|| app_pcre_match("/^Warning: device does not support SCT Commands/mi", sub) ) {  // old smartctl
-			status = parse_section_data_subsection_scttemp_log(sub) || status;
+			status = parse_section_data_subsection_scttemp_log(sub).has_value() || status;
 
 		} else if (app_pcre_match("/^SCT Error Recovery Control/mi", sub)
 				// Can be the same "SCT Commands not supported" as scttemp.
@@ -731,12 +730,12 @@ bool SmartctlAtaTextParser::parse_section_data(const std::string& body)
 				|| app_pcre_match("/^SCT \\(Get\\) Error Recovery Control command failed/mi", sub)
 				|| app_pcre_match("/^Another SCT command is executing, abort Error Recovery Control/mi", sub)
 				|| app_pcre_match("/^Warning: device does not support SCT \\(Get\\) Error Recovery Control/mi", sub) ) {  // old smartctl
-			status = parse_section_data_subsection_scterc_log(sub) || status;
+			status = parse_section_data_subsection_scterc_log(sub).has_value() || status;
 
 		} else if (app_pcre_match("/^Device Statistics \\([^)]+\\)$/mi", sub)  // -l devstat
 				|| app_pcre_match("/^Device Statistics \\([^)]+\\) not supported/mi", sub)
 				|| app_pcre_match("/^Read Device Statistics page (?:.+) failed/mi", sub) ) {
-			status = parse_section_data_subsection_devstat(sub) || status;
+			status = parse_section_data_subsection_devstat(sub).has_value() || status;
 
 		// "Device Statistics (GP Log 0x04) supported pages"
 		} else if (app_pcre_match("/^Device Statistics \\([^)]+\\) supported pages/mi", sub) ) {  // not sure where it came from
@@ -747,7 +746,7 @@ bool SmartctlAtaTextParser::parse_section_data(const std::string& body)
 				|| app_pcre_match("/^SATA Phy Event Counters \\(GP Log 0x11\\) not supported/mi", sub)
 				|| app_pcre_match("/^SATA Phy Event Counters with [0-9-]+ sectors not supported/mi", sub)
 				|| app_pcre_match("/^Read SATA Phy Event Counters failed/mi", sub) ) {
-			status = parse_section_data_subsection_sataphy(sub) || status;
+			status = parse_section_data_subsection_sataphy(sub).has_value() || status;
 
 		} else {
 			debug_out_warn("app", DBG_FUNC_MSG << "Unknown Data subsection encountered.\n");
@@ -757,7 +756,7 @@ bool SmartctlAtaTextParser::parse_section_data(const std::string& body)
 		}
 	}
 
-	return status;
+	return hz::Unexpected(SmartctlParserError::NoSubsectionsParsed, "No subsections could be parsed.");
 }
 
 
@@ -765,7 +764,7 @@ bool SmartctlAtaTextParser::parse_section_data(const std::string& body)
 
 // -------------------- Health
 
-bool SmartctlAtaTextParser::parse_section_data_subsection_health(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_health(const std::string& sub)
 {
 	// Health section data (--info and --get=all):
 /*
@@ -797,10 +796,10 @@ Device is:        In smartctl database [for details use: -P show]
 			add_property(pt);
 		}
 
-		return true;
+		return {};
 	}
 
-	return false;
+	return hz::Unexpected(SmartctlParserError::DataError, "Empty health subsection.");
 }
 
 
@@ -808,7 +807,7 @@ Device is:        In smartctl database [for details use: -P show]
 
 // -------------------- Capabilities
 
-bool SmartctlAtaTextParser::parse_section_data_subsection_capabilities(const std::string& sub_initial)
+hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_capabilities(const std::string& sub_initial)
 {
 	// Capabilities section data:
 /*
@@ -941,10 +940,10 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 			p.value = std::chrono::seconds(numvalue);  // always in seconds
 
 			// Set some generic names on the recognized ones
-			parse_section_data_internal_capabilities(p);
-
-			add_property(p);
-			cap_found = true;
+			if (parse_section_data_internal_capabilities(p).has_value()) {
+				add_property(p);
+				cap_found = true;
+			}
 
 
 		// AtaStorageCapability properties (capabilities are flag lists)
@@ -969,18 +968,18 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 			p.value = cap;  // Capability-type value
 
 			// find some special capabilities we're interested in and add them. p is unmodified.
-			parse_section_data_internal_capabilities(p);
-
-			add_property(p);
-			cap_found = true;
+			if (parse_section_data_internal_capabilities(p)) {
+				add_property(p);
+				cap_found = true;
+			}
 		}
 
 	}
 
 	if (!cap_found)
-		set_error_msg("No capabilities found in Capabilities section.");
+		return hz::Unexpected(SmartctlParserError::DataError, "No capabilities found in Capabilities section.");
 
-	return cap_found;
+	return {};
 }
 
 
@@ -988,7 +987,7 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 
 
 // Check the capabilities for internal properties we can use.
-bool SmartctlAtaTextParser::parse_section_data_internal_capabilities(AtaStorageProperty& cap_prop)
+hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_internal_capabilities(AtaStorageProperty& cap_prop)
 {
 	// Some special capabilities we're interested in.
 
@@ -1033,7 +1032,7 @@ bool SmartctlAtaTextParser::parse_section_data_internal_capabilities(AtaStorageP
 
 	if (cap_prop.section != AtaStorageProperty::Section::data || cap_prop.subsection != AtaStorageProperty::SubSection::capabilities) {
 		debug_out_error("app", DBG_FUNC_MSG << "Non-capability property passed.\n");
-		return false;
+		return hz::Unexpected(SmartctlParserError::DataError, "Non-capability property passed.");
 	}
 
 
@@ -1136,7 +1135,7 @@ bool SmartctlAtaTextParser::parse_section_data_internal_capabilities(AtaStorageP
 
 		add_property(p);
 
-		return true;
+		return {};
 	}
 
 
@@ -1158,7 +1157,7 @@ bool SmartctlAtaTextParser::parse_section_data_internal_capabilities(AtaStorageP
 			cap_prop.generic_name = "ata_smart_data/self_test/polling_minutes/conveyance";
 		}
 
-		return true;
+		return {};
 	}
 
 
@@ -1231,12 +1230,12 @@ bool SmartctlAtaTextParser::parse_section_data_internal_capabilities(AtaStorageP
 				add_property(p);
 		}
 
-		return true;
+		return {};
 	}
 
 	debug_out_error("app", DBG_FUNC_MSG << "Capability-section property has invalid value type.\n");
 
-	return false;
+	return hz::Unexpected(SmartctlParserError::DataError, "Capability-section property has invalid value type.");
 }
 
 
@@ -1245,7 +1244,7 @@ bool SmartctlAtaTextParser::parse_section_data_internal_capabilities(AtaStorageP
 
 // -------------------- Attributes
 
-bool SmartctlAtaTextParser::parse_section_data_subsection_attributes(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_attributes(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -1457,15 +1456,16 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 
 	}
 
-	if (!attr_found)
-		set_error_msg("No attributes found in Attributes section.");
+	if (!attr_found) {
+		return hz::Unexpected(SmartctlParserError::DataError, "No attributes found in Attributes section.");
+	}
 
-	return attr_found;
+	return {};
 }
 
 
 
-bool SmartctlAtaTextParser::parse_section_data_subsection_directory_log(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_directory_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -1512,12 +1512,12 @@ Address    Access  R/W   Size  Description
 	}
 
 //	return data_found;
-	return true;
+	return {};
 }
 
 
 
-bool SmartctlAtaTextParser::parse_section_data_subsection_error_log(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_error_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -1702,7 +1702,11 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 	// We may further split this subsection by Error blocks, but it's unnecessary -
 	// the data is too advanced to be of any use if parsed.
 
-	return data_found;
+	if (!data_found) {
+		return hz::Unexpected(SmartctlParserError::DataError, "No error log entries found in Error Log section.");
+	}
+
+	return {};
 }
 
 
@@ -1710,7 +1714,7 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 
 // -------------------- Selftest Log
 
-bool SmartctlAtaTextParser::parse_section_data_subsection_selftest_log(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_selftest_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -1877,8 +1881,11 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 		}
 	}
 
+	if (!data_found) {
+		return hz::Unexpected(SmartctlParserError::DataError, "No self-test log entries found in Self-test Log section.");
+	}
 
-	return data_found;
+	return {};
 }
 
 
@@ -1886,7 +1893,7 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 
 // -------------------- Selective Selftest Log
 
-bool SmartctlAtaTextParser::parse_section_data_subsection_selective_selftest_log(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_selective_selftest_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -1934,12 +1941,16 @@ If Selective self-test is pending on power-up, resume after 0 minute delay.
 		}
 	}
 
-	return data_found;
+	if (!data_found) {
+		return hz::Unexpected(SmartctlParserError::DataError, "No selective self-test log entries found in Selective Self-test Log section.");
+	}
+
+	return {};
 }
 
 
 
-bool SmartctlAtaTextParser::parse_section_data_subsection_scttemp_log(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_scttemp_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -2020,12 +2031,16 @@ Index    Estimated Time   Temperature Celsius
 		}
 	}
 
-	return data_found;
+	if (!data_found) {
+		return hz::Unexpected(SmartctlParserError::DataError, "No temperature log entries found in SCT Temperature Log section.");
+	}
+
+	return {};
 }
 
 
 
-bool SmartctlAtaTextParser::parse_section_data_subsection_scterc_log(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_scterc_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -2065,12 +2080,16 @@ SCT Error Recovery Control:
 		}
 	}
 
-	return data_found;
+	if (!data_found) {
+		return hz::Unexpected(SmartctlParserError::DataError, "No entries found in SCT ERC Log section.");
+	}
+
+	return {};
 }
 
 
 
-bool SmartctlAtaTextParser::parse_section_data_subsection_devstat(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_devstat(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -2132,7 +2151,7 @@ Page Offset Size         Value  Description
 	}
 
 	if (!supported) {
-		return false;
+		return hz::Unexpected(SmartctlParserError::DataError, "Device statistics not supported.");
 	}
 
 	bool entries_found = false;  // at least one entry was found
@@ -2232,15 +2251,16 @@ Page Offset Size         Value  Description
 		entries_found = true;
 	}
 
-	if (!entries_found)
-		set_error_msg("No entries found in Statistics section.");
+	if (!entries_found) {
+		return hz::Unexpected(SmartctlParserError::DataError, "No entries found in Device Statistics section.");
+	}
 
-	return entries_found;
+	return {};
 }
 
 
 
-bool SmartctlAtaTextParser::parse_section_data_subsection_sataphy(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_sataphy(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -2289,21 +2309,25 @@ ID      Size     Value  Description
 		}
 	}
 
-	return data_found;
+	if (!data_found) {
+		return hz::Unexpected(SmartctlParserError::DataError, "No entries found in SATA Phy Event Counters section.");
+	}
+
+	return {};
 }
 
 
 
-void SmartctlAtaTextParser::set_data_section_info(const std::string& s)
+void SmartctlAtaTextParser::set_data_section_info(std::string s)
 {
-	data_section_info_ = s;
+	data_section_info_ = std::move(s);
 }
 
 
 
-void SmartctlAtaTextParser::set_data_section_data(const std::string& s)
+void SmartctlAtaTextParser::set_data_section_data(std::string s)
 {
-	data_section_data_ = s;
+	data_section_data_ = std::move(s);
 }
 
 

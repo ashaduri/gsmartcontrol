@@ -317,29 +317,18 @@ std::string StorageDevice::parse_data()
 		disk_type = hdd_.value() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
 	}
 
-	std::string error_msg;
 	auto parser_type = SmartctlParser::detect_output_type(this->full_output_);
 
 	if (!parser_type.has_value()) {
-		switch(parser_type.error()) {
-			case SmartctlParserError::EmptyInput:
-				error_msg = "Empty input while trying to detect smartctl output format.";
-				break;
-			case SmartctlParserError::UnsupportedFormat:
-				error_msg = "Unsupported format while trying to detect smartctl output format.";
-				break;
-		}
-		parser_type = SmartctlParserType::Text;
-	}
-
-	if (!error_msg.empty()) {
-		return error_msg;
+		return parser_type.error().message();
 	}
 
 	auto parser = SmartctlParser::create(parser_type.value());
 	DBG_ASSERT_RETURN(parser, "Cannot create parser");
 
-	if (parser->parse_full(this->full_output_)) {  // try to parse it (parse only, set the properties after basic parsing).
+	// Try to parse it (parse only, set the properties after basic parsing).
+	const auto parse_status = parser->parse_full(this->full_output_);
+	if (parse_status.has_value()) {
 
 		// refresh basic info too
 		this->info_output_ = parser->get_data_full();  // put data including version information
@@ -369,7 +358,8 @@ std::string StorageDevice::parse_data()
 	// proper parsing failed. try to at least extract info section
 	this->info_output_ = this->full_output_;  // complete output here. sometimes it's only the info section
 	if (!this->parse_basic_data(true).empty()) {  // will add some properties too. this will emit signal_changed().
-		return parser->get_error_msg();  // return full parser's error messages - they are more detailed.
+		// return full parser's error messages - they are more detailed.
+		return Glib::ustring::compose(_("Cannot parse smartctl output: %1"), parse_status.error().message());
 	}
 
 	return {};  // return ok if at least the info was ok.

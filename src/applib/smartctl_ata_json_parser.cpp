@@ -135,14 +135,13 @@ T get_node_data(const nlohmann::json& root, const std::string& path, const T& de
 
 
 
-bool SmartctlAtaJsonParser::parse_full(const std::string& json_data_full)
+hz::ExpectedVoid<SmartctlParserError> SmartctlAtaJsonParser::parse_full(const std::string& json_data_full)
 {
 	this->set_data_full(json_data_full);
 
 	if (hz::string_trim_copy(json_data_full).empty()) {
-		set_error_msg("Smartctl data is empty.");
 		debug_out_warn("app", DBG_FUNC_MSG << "Empty string passed as an argument. Returning.\n");
-		return false;
+		return hz::Unexpected(SmartctlParserError::EmptyInput, "Smartctl data is empty.");
 	}
 
 	try {
@@ -195,11 +194,9 @@ bool SmartctlAtaJsonParser::parse_full(const std::string& json_data_full)
 
 	}
 	catch (const nlohmann::json::parse_error& e) {
-		debug_out_warn("app", DBG_FUNC_MSG << "Error parsing smartctl output as JSON. Returning.\n");
-		return false;
+		debug_out_warn("app", DBG_FUNC_MSG << "Error parsing smartctl output as JSON: " << e.what() << "\n");
+		return hz::Unexpected(SmartctlParserError::SyntaxError, std::string("Invalid JSON data: ") + e.what());
 	}
-
-	return true;
 }
 
 

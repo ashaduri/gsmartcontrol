@@ -17,7 +17,7 @@ Copyright:
 #include <chrono>
 #include <utility>
 
-#include "hz/error.h"
+#include "hz/error_holder.h"
 #include "hz/process_signal.h"  // hz::SIGNAL_*
 
 #include "async_command_executor.h"

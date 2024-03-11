@@ -21,9 +21,9 @@ Copyright:
 
 TEST_CASE("SmartctlFormatDetection", "[app][parser]")
 {
-	REQUIRE(SmartctlParser::detect_output_type({}).error() == SmartctlParserError::EmptyInput);
+	REQUIRE(SmartctlParser::detect_output_type({}).error().data() == SmartctlParserError::EmptyInput);
 
-	REQUIRE(SmartctlParser::detect_output_type("smart").error() == SmartctlParserError::UnsupportedFormat);
+	REQUIRE(SmartctlParser::detect_output_type("smart").error().data() == SmartctlParserError::UnsupportedFormat);
 
 	REQUIRE(SmartctlParser::detect_output_type("{  }").value() == SmartctlParserType::Json);
 

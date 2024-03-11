@@ -29,7 +29,7 @@ class SmartctlAtaJsonParser : public SmartctlParser {
 		SmartctlAtaJsonParser() = default;
 
 		// Overridden
-		bool parse_full(const std::string& json_data_full) override;
+		hz::ExpectedVoid<SmartctlParserError> parse_full(const std::string& json_data_full) override;
 
 
 };

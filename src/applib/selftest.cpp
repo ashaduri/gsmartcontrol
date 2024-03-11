@@ -242,12 +242,13 @@ std::string SelfTest::update(const std::shared_ptr<CommandExecutor>& smartctl_ex
 	if (!error_msg.empty())  // checks for empty output too
 		return error_msg;
 
-	AtaStorageAttribute::DiskType disk_type = drive_->get_is_hdd() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
+	const AtaStorageAttribute::DiskType disk_type = drive_->get_is_hdd() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
 	auto parser = SmartctlParser::create(SmartctlParserType::Text);
 	DBG_ASSERT_RETURN(parser, "Cannot create parser");
 
-	if (!parser->parse_full(output)) {  // try to parse it
-		return parser->get_error_msg();
+	auto parse_status = parser->parse_full(output);
+	if (!parse_status) {
+		return Glib::ustring::compose(_("Cannot parse smartctl output: %1"), parse_status.error().message());
 	}
 	auto properties = StoragePropertyProcessor::process_properties(parser->get_properties(), disk_type);
 
@@ -268,7 +269,7 @@ std::string SelfTest::update(const std::shared_ptr<CommandExecutor>& smartctl_ex
 		return _("The drive doesn't report the test status.");
 
 	status_ = p.get_value<AtaStorageSelftestEntry>().status;
-	bool active = (status_ == AtaStorageSelftestEntry::Status::in_progress);
+	const bool active = (status_ == AtaStorageSelftestEntry::Status::in_progress);
 
 
 	// Note that the test needs 90% to complete, not 100. It starts at 90%
@@ -281,14 +282,14 @@ std::string SelfTest::update(const std::shared_ptr<CommandExecutor>& smartctl_ex
 			timer_.start();  // restart the timer
 		}
 
-		std::chrono::seconds total = get_min_duration_seconds();
+		const std::chrono::seconds total = get_min_duration_seconds();
 
 		if (total <= 0s) {  // unknown
 			poll_in_seconds_ = 30s;  // just a guess
 
 		} else {
 			// seconds per 10%. use double, because e.g. 60sec test gives silly values with int.
-			double gran = (double(total.count()) / 9.);
+			const double gran = (double(total.count()) / 9.);
 
 			// Add 1/10 for disk load delays, etc... . Limit to 15sec, in case of very quick tests.
 			poll_in_seconds_ = std::chrono::seconds(std::max(int64_t(15), int64_t(gran / 3. + (gran / 10.))));

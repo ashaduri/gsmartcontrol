@@ -13,7 +13,7 @@ target_sources(hz INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}/debug.h
 	${CMAKE_CURRENT_SOURCE_DIR}/enum_helper.h
 	${CMAKE_CURRENT_SOURCE_DIR}/env_tools.h
-	${CMAKE_CURRENT_SOURCE_DIR}/error.h
+	${CMAKE_CURRENT_SOURCE_DIR}/error_container.h
 	${CMAKE_CURRENT_SOURCE_DIR}/error_holder.h
 	${CMAKE_CURRENT_SOURCE_DIR}/format_unit.h
 	${CMAKE_CURRENT_SOURCE_DIR}/fs.h

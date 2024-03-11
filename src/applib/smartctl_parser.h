@@ -19,12 +19,21 @@ Copyright:
 
 #include "ata_storage_property.h"
 #include "smartctl_parser_types.h"
+#include "hz/error_container.h"
 
 
 
 enum class SmartctlParserError {
 	EmptyInput,
 	UnsupportedFormat,
+	SyntaxError,
+	NoVersion,
+	IncompatibleVersion,
+	NoSections,
+	UnknownSection,  ///< Local parsing function error
+	InternalError,
+	NoSubsectionsParsed,
+	DataError,
 };
 
 
@@ -62,26 +71,17 @@ class SmartctlParser {
 		static std::unique_ptr<SmartctlParser> create(SmartctlParserType type);
 
 
-		/// Create an instance of this class.
-		/// \return nullptr if no such class exists
-		// static std::unique_ptr<SmartctlParser> detect_and_parse(SmartctlParserType type);
-
-
 		/// Parse full "smartctl -x" output.
 		/// Note: Once parsed, this function cannot be called again.
-		virtual bool parse_full(const std::string& full) = 0;
+		virtual hz::ExpectedVoid<SmartctlParserError> parse_full(const std::string& full) = 0;
 
 
 		/// Detect smartctl output type (text, json).
-		[[nodiscard]] static std::expected<SmartctlParserType, SmartctlParserError> detect_output_type(const std::string& output);
+		[[nodiscard]] static hz::ExpectedValue<SmartctlParserType, SmartctlParserError> detect_output_type(const std::string& output);
 
 
 		/// Get "full" data, as passed to parse_full().
 		[[nodiscard]] std::string get_data_full() const;
-
-		/// Get parse error message. Call this only if parsing doesn't succeed,
-		/// to get a friendly error message.
-		[[nodiscard]] std::string get_error_msg() const;
 
 		/// Get parse result properties
 		[[nodiscard]] const std::vector<AtaStorageProperty>& get_properties() const;
@@ -95,15 +95,11 @@ class SmartctlParser {
 		/// Set "full" data ("smartctl -x" output), json or text.
 		void set_data_full(const std::string& s);
 
-		/// Set error message
-		void set_error_msg(const std::string& s);
-
 
 	private:
 
 		std::vector<AtaStorageProperty> properties_;  ///< Parsed data properties
 		std::string data_full_;  ///< full data, filled by parse_full()
-		std::string error_msg_;  ///< This will be filled with some displayable message on error
 
 };
 

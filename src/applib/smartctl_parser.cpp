@@ -33,7 +33,7 @@ std::unique_ptr<SmartctlParser> SmartctlParser::create(SmartctlParserType type)
 
 
 
-std::expected<SmartctlParserType, SmartctlParserError> SmartctlParser::detect_output_type(const std::string& output)
+hz::ExpectedValue<SmartctlParserType, SmartctlParserError> SmartctlParser::detect_output_type(const std::string& output)
 {
 	// Look for the first non-whitespace symbol
 	auto first_symbol = std::find_if(output.begin(), output.end(), [&](char c) {
@@ -46,9 +46,9 @@ std::expected<SmartctlParserType, SmartctlParserError> SmartctlParser::detect_ou
 		if (output.rfind("smartctl", static_cast<std::size_t>(first_symbol - output.begin())) == 0) {
 			return SmartctlParserType::Text;
 		}
-		return std::unexpected(SmartctlParserError::UnsupportedFormat);
+		return hz::Unexpected(SmartctlParserError::UnsupportedFormat, "Unsupported format while trying to detect smartctl output format.");
 	}
-	return std::unexpected(SmartctlParserError::EmptyInput);
+	return hz::Unexpected(SmartctlParserError::EmptyInput, "Empty input while trying to detect smartctl output format.");
 }
 
 
@@ -56,13 +56,6 @@ std::expected<SmartctlParserType, SmartctlParserError> SmartctlParser::detect_ou
 std::string SmartctlParser::get_data_full() const
 {
 	return data_full_;
-}
-
-
-
-std::string SmartctlParser::get_error_msg() const
-{
-	return Glib::ustring::compose(_("Cannot parse smartctl output: %1"), error_msg_);
 }
 
 
@@ -87,15 +80,6 @@ void SmartctlParser::set_data_full(const std::string& s)
 {
 	data_full_ = s;
 }
-
-
-
-void SmartctlParser::set_error_msg(const std::string& s)
-{
-	error_msg_ = s;
-}
-
-
 
 
 
