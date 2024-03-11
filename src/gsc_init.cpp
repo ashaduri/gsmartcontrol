@@ -100,9 +100,9 @@ namespace {
 		// Default system-wide settings. This file is empty by default.
 		hz::fs::path global_config_file;
 		if constexpr(BuildEnv::is_kernel_family_windows()) {
-			global_config_file = hz::fs::u8path("gsmartcontrol2.conf");  // CWD, installation dir by default.
+			global_config_file = hz::fs_path_from_string("gsmartcontrol2.conf");  // CWD, installation dir by default.
 		} else {
-			global_config_file = hz::fs::u8path(BuildEnv::package_sysconf_dir()) / "gsmartcontrol2.conf";
+			global_config_file = hz::fs_path_from_string(BuildEnv::package_sysconf_dir()) / "gsmartcontrol2.conf";
 		}
 
 		debug_out_dump("app", DBG_FUNC_MSG << "Global config file: \"" << hz::fs_path_to_string(global_config_file) << "\"\n");
@@ -459,9 +459,9 @@ bool app_init_and_loop(int& argc, char**& argv)
 	// Add data file search paths
 	if (is_from_source) {
 		if constexpr(BuildEnv::debug_build()) {
-			hz::data_file_add_search_directory("icons", hz::fs::u8path(BuildEnv::package_top_source_dir()) / "data");
-			hz::data_file_add_search_directory("ui", hz::fs::u8path(BuildEnv::package_top_source_dir()) / "src/ui");
-			hz::data_file_add_search_directory("doc", hz::fs::u8path(BuildEnv::package_top_source_dir()) / "doc");
+			hz::data_file_add_search_directory("icons", hz::fs_path_from_string(BuildEnv::package_top_source_dir()) / "data");
+			hz::data_file_add_search_directory("ui", hz::fs_path_from_string(BuildEnv::package_top_source_dir()) / "src/ui");
+			hz::data_file_add_search_directory("doc", hz::fs_path_from_string(BuildEnv::package_top_source_dir()) / "doc");
 		} else {
 			// Assume the source is the parent directory (standard cmake build with the build directory as a subdirectory of source directory,
 			// and the executables placed directly in the build directory).
@@ -475,9 +475,9 @@ bool app_init_and_loop(int& argc, char**& argv)
 			hz::data_file_add_search_directory("ui", application_dir / "ui");
 			hz::data_file_add_search_directory("doc", application_dir / "doc");
 		} else {
-			hz::data_file_add_search_directory("icons", hz::fs::u8path(BuildEnv::package_pkgdata_dir()) / "icons");  // /usr/share/program_name/icons
-			hz::data_file_add_search_directory("ui", hz::fs::u8path(BuildEnv::package_pkgdata_dir()) / "ui");  // /usr/share/program_name/ui
-			hz::data_file_add_search_directory("doc", hz::fs::u8path(BuildEnv::package_doc_dir()));  // /usr/share/doc/[packages/]gsmartcontrol
+			hz::data_file_add_search_directory("icons", hz::fs_path_from_string(BuildEnv::package_pkgdata_dir()) / "icons");  // /usr/share/program_name/icons
+			hz::data_file_add_search_directory("ui", hz::fs_path_from_string(BuildEnv::package_pkgdata_dir()) / "ui");  // /usr/share/program_name/ui
+			hz::data_file_add_search_directory("doc", hz::fs_path_from_string(BuildEnv::package_doc_dir()));  // /usr/share/doc/[packages/]gsmartcontrol
 		}
 	}
 

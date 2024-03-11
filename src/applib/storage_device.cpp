@@ -64,7 +64,7 @@ StorageDevice::StorageDevice(std::string dev_or_vfile, bool is_virtual)
 		: is_virtual_(is_virtual)
 {
 	if (is_virtual_) {
-		virtual_file_ = hz::fs::u8path(dev_or_vfile);
+		virtual_file_ = hz::fs_path_from_string(dev_or_vfile);
 	} else {
 		device_ = std::move(dev_or_vfile);
 	}

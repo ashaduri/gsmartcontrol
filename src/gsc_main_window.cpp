@@ -1084,7 +1084,7 @@ void GscMainWindow::run_update_drivedb()
 		return;
 	}
 
-	hz::fs::path update_binary_path = hz::fs::u8path("update-smart-drivedb");
+	hz::fs::path update_binary_path = hz::fs_path_from_string("update-smart-drivedb");
 	if (smartctl_binary.is_absolute()) {
 		update_binary_path = smartctl_binary.parent_path() / update_binary_path;
 	}
@@ -1109,7 +1109,7 @@ bool GscMainWindow::add_device(const std::string& file, const std::string& type_
 	// win32 doesn't have device files, so skip the check in Windows.
 	if constexpr(!BuildEnv::is_kernel_family_windows()) {
 		std::error_code ec;
-		if (!hz::fs::exists(hz::fs::u8path(file), ec)) {
+		if (!hz::fs::exists(hz::fs_path_from_string(file), ec)) {
 			gui_show_error_dialog(_("Cannot add device"),
 					(ec.message().empty() ? Glib::ustring::compose(_("Device \"%1\" doesn't exist."), file).raw() : ec.message()), this);
 			return false;
@@ -1145,7 +1145,7 @@ bool GscMainWindow::add_virtual_drive(const std::string& file)
 {
 	std::string output;
 	const int max_size = 10*1024*1024;  // 10M
-	auto ec = hz::fs_file_get_contents(hz::fs::u8path(file), output, max_size);
+	auto ec = hz::fs_file_get_contents(hz::fs_path_from_string(file), output, max_size);
 	if (ec) {
 		debug_out_warn("app", "Cannot open virtual drive file \"" << file << "\": " << ec.message() << "\n");
 		gui_show_error_dialog(_("Cannot load data file"), ec.message(), this);
@@ -1361,7 +1361,7 @@ void GscMainWindow::show_load_virtual_file_chooser()
 			rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
 			for (const auto& file : files) {
 				std::error_code ec;
-				if (!hz::fs::is_directory(hz::fs::u8path(file), ec)) {  // file chooser returns selected directories as well, ignore them.
+				if (!hz::fs::is_directory(hz::fs_path_from_string(file), ec)) {  // file chooser returns selected directories as well, ignore them.
 					this->add_virtual_drive(file);
 				}
 			}

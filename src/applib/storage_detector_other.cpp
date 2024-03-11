@@ -49,7 +49,7 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives,
 		return _("Device directory path is not set.");
 	}
 
-	auto dir = hz::fs::u8path(dev_dir);
+	auto dir = hz::fs_path_from_string(dev_dir);
 	std::error_code dummy_ec;
 	if (!hz::fs::exists(dir, dummy_ec)) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Device directory doesn't exist.\n");

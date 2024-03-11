@@ -61,7 +61,7 @@ inline std::string detect_drives_linux_udev_byid(std::vector<std::string>& devic
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting through device scan directory /dev/disk/by-id...\n");
 
 	// this defaults to "/dev/disk/by-id"
-	auto dir = hz::fs::u8path(rconfig::get_data<std::string>("system/linux_udev_byid_path"));
+	auto dir = hz::fs_path_from_string(rconfig::get_data<std::string>("system/linux_udev_byid_path"));
 	if (dir.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Device directory path is not set.\n");
 		return "Device directory path is not set.";
@@ -177,7 +177,7 @@ inline std::error_code read_proc_file_lines(const hz::fs::path& file, std::vecto
 /// Read /proc/partitions file. Return error message on error.
 inline std::string read_proc_partitions_file(std::vector<std::string>& lines)
 {
-	auto file = hz::fs::u8path(rconfig::get_data<std::string>("system/linux_proc_partitions_path"));
+	auto file = hz::fs_path_from_string(rconfig::get_data<std::string>("system/linux_proc_partitions_path"));
 	if (file.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Partitions file path is not set.\n");
 		return _("Partitions file path is not set.");
@@ -202,7 +202,7 @@ inline std::string read_proc_partitions_file(std::vector<std::string>& lines)
 /// Read /proc/devices file. Return error message on error.
 inline std::string read_proc_devices_file(std::vector<std::string>& lines)
 {
-	auto file = hz::fs::u8path(rconfig::get_data<std::string>("system/linux_proc_devices_path"));
+	auto file = hz::fs_path_from_string(rconfig::get_data<std::string>("system/linux_proc_devices_path"));
 	if (file.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Devices file path is not set.\n");
 		return _("Devices file path is not set.");
@@ -229,7 +229,7 @@ inline std::string read_proc_devices_file(std::vector<std::string>& lines)
 /// Note that scsi host # is not unique.
 inline std::string read_proc_scsi_scsi_file(std::vector< std::pair<int, std::string> >& vendors_models)
 {
-	auto file = hz::fs::u8path(rconfig::get_data<std::string>("system/linux_proc_scsi_scsi_path"));
+	auto file = hz::fs_path_from_string(rconfig::get_data<std::string>("system/linux_proc_scsi_scsi_path"));
 	if (file.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "SCSI file path is not set.\n");
 		return _("SCSI file path is not set.");
@@ -276,7 +276,7 @@ inline std::string read_proc_scsi_scsi_file(std::vector< std::pair<int, std::str
 /// Each line index corresponds to N in /dev/sgN.
 inline std::string read_proc_scsi_sg_devices_file(std::vector<std::vector<int>>& sg_entries)
 {
-	auto file = hz::fs::u8path(rconfig::get_data<std::string>("system/linux_proc_scsi_sg_devices_path"));
+	auto file = hz::fs_path_from_string(rconfig::get_data<std::string>("system/linux_proc_scsi_sg_devices_path"));
 	if (file.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Sg devices file path is not set.\n");
 		return _("SCSI sg devices file path is not set.");
@@ -815,7 +815,7 @@ inline std::string detect_drives_linux_areca(std::vector<StorageDevicePtr>& driv
 				int max_ports = 0;
 
 				// Read the number of ports.
-				auto ports_file = hz::fs::u8path(hz::string_sprintf("/sys/bus/scsi/devices/host%d/scsi_host/host%d/host_fw_hd_channels", host_num, host_num));
+				auto ports_file = hz::fs_path_from_string(hz::string_sprintf("/sys/bus/scsi/devices/host%d/scsi_host/host%d/host_fw_hd_channels", host_num, host_num));
 				std::string ports_file_contents;
 				auto ec = read_proc_file(ports_file, ports_file_contents);
 				if (ec) {

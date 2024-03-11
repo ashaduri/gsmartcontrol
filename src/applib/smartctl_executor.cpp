@@ -22,7 +22,7 @@ Copyright:
 
 hz::fs::path get_smartctl_binary()
 {
-	auto smartctl_binary = hz::fs::u8path(rconfig::get_data<std::string>("system/smartctl_binary"));
+	auto smartctl_binary = hz::fs_path_from_string(rconfig::get_data<std::string>("system/smartctl_binary"));
 
 	if constexpr(BuildEnv::is_kernel_family_windows()) {
 		// Look in smartmontools installation directory.
@@ -56,7 +56,7 @@ hz::fs::path get_smartctl_binary()
 			debug_out_info("app", DBG_FUNC_MSG << "Smartmontools installation found at \"" << smt_inst_dir
 					<< "\", using \"" << smt_smartctl << "\".\n");
 
-			auto p = hz::fs::u8path(smt_inst_dir) / hz::fs::u8path(smt_smartctl);
+			auto p = hz::fs_path_from_string(smt_inst_dir) / hz::fs_path_from_string(smt_smartctl);
 
 			if (!hz::fs::exists(p) || !hz::fs::is_regular_file(p))
 				break;

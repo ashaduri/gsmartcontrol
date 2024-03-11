@@ -70,7 +70,7 @@ inline fs::path data_file_find(const std::string& domain, const std::string& fil
 	if (filename.empty())
 		return {};
 
-	if (fs::u8path(filename).is_absolute()) {  // shouldn't happen
+	if (fs_path_from_string(filename).is_absolute()) {  // shouldn't happen
 		debug_out_error("app", DBG_FUNC_MSG
 				<< "Data file \"" << filename << "\" must be relative.\n");
 		return {};
@@ -84,7 +84,7 @@ inline fs::path data_file_find(const std::string& domain, const std::string& fil
 	}
 
 	for (const auto& dir : dirs) {
-		auto file_path = dir / fs::u8path(filename);
+		auto file_path = dir / fs_path_from_string(filename);
 
 		std::error_code ec;
 		if (fs::exists(file_path, ec)) {

@@ -134,7 +134,7 @@ void CommandExecutorGui::set_running_dialog_abort_mode(bool aborting)
 
 	} else if (!aborting) {
 		std::string msg = hz::string_replace_copy(get_running_msg(), "{command}",
-				hz::fs_path_to_string(hz::fs::u8path(this->get_command_name()).filename()));
+				hz::fs_path_to_string(hz::fs_path_from_string(this->get_command_name()).filename()));
 		running_dialog_->set_message("\n     " + msg + "     ");
 		// running_dialog_->set_response_sensitive(Gtk::RESPONSE_CANCEL, true);
 

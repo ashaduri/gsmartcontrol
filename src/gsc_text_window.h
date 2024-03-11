@@ -213,10 +213,10 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 				{
 					hz::fs::path file;
 #if GTK_CHECK_VERSION(3, 20, 0)
-					file = hz::fs::u8path(app_string_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get()))));
+					file = hz::fs_path_from_string(app_string_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get()))));
 					last_dir = hz::fs_path_to_string(file.parent_path());
 #else
-					file = hz::fs::u8path(dialog.get_filename());  // in fs encoding
+					file = hz::fs_path_from_string(dialog.get_filename());  // in fs encoding
 					last_dir = dialog.get_current_folder();  // save for the future
 #endif
 					rconfig::set_data("gui/drive_data_open_save_dir", last_dir);

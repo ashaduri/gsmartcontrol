@@ -393,7 +393,7 @@ inline fs::path fs_get_home_dir()
 		dir = win32_get_windows_directory();  // always returns something.
 	}
 
-	return fs::u8path(dir);
+	return fs_path_from_string(dir);
 
 #else  // linux, etc...
 	// We use $HOME to allow the user to override it.
@@ -423,7 +423,7 @@ inline fs::path fs_get_user_config_dir()
 
 #ifdef _WIN32
 	// that's "C:\documents and settings\username\application data".
-	path = fs::u8path(win32_get_special_folder(CSIDL_APPDATA));
+	path = fs_path_from_string(win32_get_special_folder(CSIDL_APPDATA));
 	if (path.empty()) {
 		path = fs_get_home_dir();  // fallback, always non-empty.
 	}

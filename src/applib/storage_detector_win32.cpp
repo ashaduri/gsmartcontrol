@@ -561,9 +561,9 @@ inline std::string detect_drives_win32_areca(std::vector<StorageDevicePtr>& driv
 
 	hz::fs::path cli_binary;
 	if (use_cli == 1) {
-		cli_binary = hz::fs::u8path(rconfig::get_data<std::string>("system/areca_cli_binary"));
+		cli_binary = hz::fs_path_from_string(rconfig::get_data<std::string>("system/areca_cli_binary"));
 		if (!cli_binary.is_absolute() && !cli_inst_path.empty()) {
-			cli_binary = hz::fs::u8path(cli_inst_path) / cli_binary;
+			cli_binary = hz::fs_path_from_string(cli_inst_path) / cli_binary;
 		}
 		if (cli_binary.is_absolute() && !hz::fs::exists(cli_binary)) {
 			use_cli = 0;
