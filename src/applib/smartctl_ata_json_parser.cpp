@@ -80,22 +80,37 @@ _custom/smart_enabled
 namespace {
 
 
+enum class AppJsonError {
+	UnexpectedObjectInPath,
+	PathNotFound,
+	TypeError,
+	EmptyPath,
+	InternalError,
+};
+
+
+
 /// Get json node data. The path is slash-separated string.
 /// \throws std::runtime_error If not found or one of the paths is not an object
 template<typename T>
-T get_node_data(const nlohmann::json& root, const std::string& path)
+[[nodiscard]] hz::ExpectedValue<T, AppJsonError> get_node_data(const nlohmann::json& root, const std::string& path)
 {
 	using namespace std::literals;
 
 	std::vector<std::string> components;
 	hz::string_split(path, '/', components, true);
 
+	if (components.empty()) {
+		return hz::Unexpected(AppJsonError::EmptyPath, "Cannot get node data: Empty path.");
+	}
+
 	const auto* curr = &root;
 	for (std::size_t comp_index = 0; comp_index < components.size(); ++comp_index) {
 		const std::string& comp_name = components[comp_index];
 
 		if (!curr->is_object()) {  // we can't have non-object values in the middle of a path
-			throw std::runtime_error(std::format("Cannot get node data \"{}\", component \"{}\" is not an object.", path, comp_name));
+			return hz::Unexpected(AppJsonError::UnexpectedObjectInPath,
+					std::format("Cannot get node data \"{}\", component \"{}\" is not an object.", path, comp_name));
 		}
 		if (auto iter = curr->find(comp_name); iter != curr->end()) {  // path component exists
 			const auto& jval = iter.value();
@@ -104,32 +119,44 @@ T get_node_data(const nlohmann::json& root, const std::string& path)
 					return jval.get<T>();  // may throw json::type_error
 				}
 				catch (nlohmann::json::type_error& ex) {
-					throw std::runtime_error(ex.what());
+					return hz::Unexpected(AppJsonError::TypeError,
+							std::format("Cannot get node data \"{}\", component \"{}\" has wrong type: {}.", path, comp_name, ex.what()));
 				}
 			}
 			// continue to the next component
 			curr = &jval;
 
 		} else {  // path component doesn't exist
-			throw std::runtime_error(std::format("Cannot get node data \"{}\", component \"{}\" does not exist.", path, comp_name));
+			return hz::Unexpected(AppJsonError::PathNotFound,
+					std::format("Cannot get node data \"{}\", component \"{}\" does not exist.", path, comp_name));
 		}
 	}
 
-	throw std::runtime_error("Cannot get node data \""s + path + "\": Internal error.");
+	return hz::Unexpected(AppJsonError::InternalError, "Internal error.");
 }
 
 
 /// Get json node data. The path is slash-separated string.
-/// If an error is found, the default value is returned.
+/// If the data is not is found, the default value is returned.
 template<typename T>
-T get_node_data(const nlohmann::json& root, const std::string& path, const T& default_value)
+[[nodiscard]] hz::ExpectedValue<T, AppJsonError> get_node_data(const nlohmann::json& root, const std::string& path, const T& default_value)
 {
-	try {
-		return get_node_data<T>(root, path);
+	auto expected_data = get_node_data<T>(root, path);
+
+	if (!expected_data.has_value()) {
+		switch(expected_data.error().data()) {
+			case AppJsonError::PathNotFound:
+				return default_value;
+
+			case AppJsonError::TypeError:
+			case AppJsonError::UnexpectedObjectInPath:
+			case AppJsonError::EmptyPath:
+			case AppJsonError::InternalError:
+				break;
+		}
 	}
-	catch (std::runtime_error& ex) {
-		return default_value;
-	}
+
+	return expected_data;
 }
 
 
@@ -146,58 +173,86 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlAtaJsonParser::parse_full(const st
 		return hz::Unexpected(SmartctlParserError::EmptyInput, "Smartctl data is empty.");
 	}
 
+	nlohmann::json root_node;
 	try {
-		const nlohmann::json root_node = nlohmann::json::parse(json_data_full);
+		root_node = nlohmann::json::parse(json_data_full);
+	} catch (const nlohmann::json::parse_error& e) {
+		debug_out_warn("app", DBG_FUNC_MSG << "Error parsing smartctl output as JSON: " << e.what() << "\n");
+		return hz::Unexpected(SmartctlParserError::SyntaxError, std::string("Invalid JSON data: ") + e.what());
+	}
+
+	// Version
+	std::string smartctl_version;
+	{
+		auto json_ver = get_node_data<std::vector<int>>(root_node, "smartctl/version");
+
+		if (!json_ver.has_value()) {
+			debug_out_warn("app", DBG_FUNC_MSG << "Smartctl version not found in JSON.\n");
+
+			if (json_ver.error().data() == AppJsonError::PathNotFound) {
+				return hz::Unexpected(SmartctlParserError::NoVersion, "Smartctl version not found in JSON data.");
+			}
+			if (json_ver->size() < 2) {
+				return hz::Unexpected(SmartctlParserError::DataError, "Error getting smartctl version from JSON data: Not enough version components.");
+			}
+			return hz::Unexpected(SmartctlParserError::DataError, std::format("Error getting smartctl version from JSON data: {}", json_ver.error().message()));
+		}
+
+		smartctl_version = std::format("{}.{}", json_ver->at(0), json_ver->at(1));
 
 		{
 			AtaStorageProperty p;
 			p.set_name("Smartctl version", "smartctl/version/_merged", "Smartctl Version");
-			auto json_ver = get_node_data<std::vector<int>>(root_node, "smartctl/version", {});
-			if (json_ver.size() >= 2) {
-				p.reported_value = hz::number_to_string_nolocale(json_ver.at(0)) + "." + hz::number_to_string_nolocale(json_ver.at(1));
-			}
+			p.reported_value = smartctl_version;
 			p.value = p.reported_value;  // string-type value
 			p.section = AtaStorageProperty::Section::info;  // add to info section
 			add_property(p);
 		}
-		// {
-		// 	AtaStorageProperty p;
-		// 	p.set_name("Smartctl version", "smartctl/version/_merged_full", "Smartctl Version");
-		// 	p.reported_value = version_full;
-		// 	p.value = p.reported_value;  // string-type value
-		// 	p.section = AtaStorageProperty::Section::info;  // add to info section
-		// 	add_property(p);
-		// }
-
-		// if (!SmartctlVersionParser::check_parsed_version(SmartctlParserType::Text, version)) {
-		// 	set_error_msg("Incompatible smartctl version.");
-		// 	debug_out_warn("app", DBG_FUNC_MSG << "Incompatible smartctl version. Returning.\n");
-		// 	return false;
-		// }
-
-		const std::unordered_map<std::string, std::string> info_keys = {
-				{"model_family", _("Model Family")},
-		};
-
-		for (const auto& [key, jval] : root_node.items()) {
-			if (auto found = info_keys.find(key); found != info_keys.end()) {
-				AtaStorageProperty p;
-				p.section = AtaStorageProperty::Section::info;
-				p.set_name(key, key, found->second);
-				p.reported_value = jval.get<std::string>();
-				p.value = p.reported_value;  // string-type value
-
-				// parse_section_info_property(p);  // set type and the typed value. may change generic_name too.
-
-				add_property(p);
-			}
+		{
+			AtaStorageProperty p;
+			p.set_name("Smartctl version", "smartctl/version/_merged_full", "Smartctl Version");
+			p.reported_value = std::format("{}.{} r{} {} {}", json_ver->at(0), json_ver->at(1),
+					get_node_data<std::string>(root_node, "smartctl/svn_revision", {}).value_or(std::string()),
+					get_node_data<std::string>(root_node, "smartctl/platform_info", {}).value_or(std::string()),
+					get_node_data<std::string>(root_node, "smartctl/build_info", {}).value_or(std::string())
+			);
+			p.value = p.reported_value;  // string-type value
+			p.section = AtaStorageProperty::Section::info;  // add to info section
+			add_property(p);
 		}
-
-
+		if (!SmartctlVersionParser::check_parsed_version(SmartctlParserType::Json, smartctl_version)) {
+			debug_out_warn("app", DBG_FUNC_MSG << "Incompatible smartctl version. Returning.\n");
+			return hz::Unexpected(SmartctlParserError::IncompatibleVersion, "Incompatible smartctl version.");
+		}
 	}
-	catch (const nlohmann::json::parse_error& e) {
-		debug_out_warn("app", DBG_FUNC_MSG << "Error parsing smartctl output as JSON: " << e.what() << "\n");
-		return hz::Unexpected(SmartctlParserError::SyntaxError, std::string("Invalid JSON data: ") + e.what());
+
+
+	// Info section
+	const std::unordered_map<std::string, std::string> info_keys = {
+			{"model_family", _("Model Family")},
+			{"model_name", _("Model Name")},
+			{"serial_number", _("Serial Number")},
+			{"firmware_version", _("Firmware Version")},
+			{"user_capacity", _("User Capacity")},
+			{"logical_block_size", _("Logical Block Size")},
+			{"physical_block_size", _("Physical Block Size")},
+			{"rotation_rate", _("Rotation Rate")},
+			{"in_smartctl_database", _("In Smartctl Database")},
+	};
+
+	for (const auto& [key, displayable_name] : info_keys) {
+		auto jval = get_node_data<std::string>(root_node, key);
+		// TODO Type error
+
+		if (jval.has_value()) {
+			AtaStorageProperty p;
+			p.section = AtaStorageProperty::Section::info;
+			p.set_name(key, key, displayable_name);
+			p.reported_value = jval.value();
+			p.value = p.reported_value;  // string-type value
+
+			add_property(p);
+		}
 	}
 
 	return {};
