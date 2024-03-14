@@ -47,7 +47,7 @@ class bad_cast_except : public std::exception {  // from <exception>
 		{
 			// Note: we do quite a lot of construction here, but since it's not
 			// an out-of-memory exception, what the heck.
-			std::string who = (self_name_.empty() ? "[unknown]" : self_name_);
+			const std::string who = (self_name_.empty() ? "[unknown]" : self_name_);
 
 			std::string from = (src_type_ == typeid(void) ? "[unknown]" : hz::type_name_demangle(src_type_.name()));
 			if (from.empty())

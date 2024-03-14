@@ -9,6 +9,8 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
+#include <format>
+
 #include "smartctl_ata_json_parser.h"
 #include "json/json.hpp"
 #include "hz/debug.h"
@@ -93,7 +95,7 @@ T get_node_data(const nlohmann::json& root, const std::string& path)
 		const std::string& comp_name = components[comp_index];
 
 		if (!curr->is_object()) {  // we can't have non-object values in the middle of a path
-			throw std::runtime_error("Cannot get node data \""s + path + "\", component \"" + comp_name + "\" is not an object.");
+			throw std::runtime_error(std::format("Cannot get node data \"{}\", component \"{}\" is not an object.", path, comp_name));
 		}
 		if (auto iter = curr->find(comp_name); iter != curr->end()) {  // path component exists
 			const auto& jval = iter.value();
@@ -109,7 +111,7 @@ T get_node_data(const nlohmann::json& root, const std::string& path)
 			curr = &jval;
 
 		} else {  // path component doesn't exist
-			throw std::runtime_error("Cannot get node data \""s + path + "\", component \"" + comp_name + "\" does not exist.");
+			throw std::runtime_error(std::format("Cannot get node data \"{}\", component \"{}\" does not exist.", path, comp_name));
 		}
 	}
 
@@ -197,6 +199,8 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlAtaJsonParser::parse_full(const st
 		debug_out_warn("app", DBG_FUNC_MSG << "Error parsing smartctl output as JSON: " << e.what() << "\n");
 		return hz::Unexpected(SmartctlParserError::SyntaxError, std::string("Invalid JSON data: ") + e.what());
 	}
+
+	return {};
 }
 
 

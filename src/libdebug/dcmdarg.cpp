@@ -91,7 +91,7 @@ static gboolean debug_internal_parse_levels([[maybe_unused]] const gchar* option
 	if (!value)
 		return FALSE;
 	auto* args = static_cast<debug_internal::DebugCmdArgs*>(data);
-	std::string levels = value;
+	const std::string levels = value;
 	hz::string_split(levels, ',', args->debug_levels, true);
 	// will filter out invalid ones later
 	return TRUE;
@@ -143,7 +143,7 @@ static gboolean debug_internal_post_parse_func([[maybe_unused]] GOptionContext* 
 		if (args->verbosity_level > 4) args->levels_enabled.set(debug_level::dump);
 	}
 
-	bool color_enabled = static_cast<bool>(args->debug_colorize);
+	const bool color_enabled = static_cast<bool>(args->debug_colorize);
 
 
 	debug_internal::DebugState::DomainMap& domain_map = debug_internal::get_debug_state_ref().get_domain_map_ref();

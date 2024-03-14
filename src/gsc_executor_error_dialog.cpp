@@ -56,7 +56,7 @@ namespace {
 		dialog.set_default_response(Gtk::RESPONSE_OK);
 
 
-		int response = dialog.run();  // blocks until the dialog is closed
+		const int response = dialog.run();  // blocks until the dialog is closed
 
 		return response;
 	}
@@ -70,7 +70,7 @@ namespace {
 void gsc_executor_error_dialog_show(const std::string& message, const std::string& sec_message,
 		Gtk::Window* parent, bool sec_msg_markup, bool show_output_button)
 {
-	int response = show_executor_dialog(Gtk::MESSAGE_ERROR, message, sec_message,
+	const int response = show_executor_dialog(Gtk::MESSAGE_ERROR, message, sec_message,
 			parent, sec_msg_markup, show_output_button);
 
 	if (response == Gtk::RESPONSE_HELP) {
@@ -87,7 +87,7 @@ void gsc_no_info_dialog_show(const std::string& message, const std::string& sec_
 		Gtk::Window* parent, bool sec_msg_markup, const std::string& output,
 		const std::string& output_window_title, const std::string& default_save_filename)
 {
-	int response = show_executor_dialog(Gtk::MESSAGE_WARNING, message, sec_message,
+	const int response = show_executor_dialog(Gtk::MESSAGE_WARNING, message, sec_message,
 			parent, sec_msg_markup, !output.empty());
 
 	if (response == Gtk::RESPONSE_HELP) {

@@ -85,7 +85,7 @@ namespace debug_internal {
 			{
 				if (inside_begin_.empty())
 					throw debug_usage_error("DebugState::pop_inside_begin(): Begin / End stack underflow! Mismatched begin()/end()?");
-				bool val = inside_begin_.top();
+				const bool val = inside_begin_.top();
 				inside_begin_.pop();
 				return val;
 			}

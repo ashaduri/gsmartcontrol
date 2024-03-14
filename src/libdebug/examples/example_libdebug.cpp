@@ -78,9 +78,9 @@ int main_impl()
 	));
 
 
-	std::string something = "some thing";
+	const std::string something = "some thing";
 	const char* obj = "obj";
-	int op = 5;
+	const int op = 5;
 
 
 	debug_out_dump("dom", "Dumping something: " << something << std::endl);

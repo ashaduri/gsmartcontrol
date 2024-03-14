@@ -163,13 +163,13 @@ inline std::string format_time_length(std::chrono::seconds secs)
 
 	if (secs >= 100h) {
 		day_unit days = std::chrono::round<day_unit>(secs);
-		std::chrono::seconds sec_diff = secs - days;  // difference between days and actual time (may be positive or negative)
+		const std::chrono::seconds sec_diff = secs - days;  // difference between days and actual time (may be positive or negative)
 
 		if (days.count() < 10) {  // if less than 10 days, display hours too
 
 			// if there's more than half an hour missing from complete day, add a day.
 			// then add half an hour and convert to hours.
-			int64_t hours = ((sec_diff.count() < (-hour_size / 2) ? sec_diff.count() + day_size : sec_diff.count()) + hour_size / 2) / hour_size;
+			const int64_t hours = ((sec_diff.count() < (-hour_size / 2) ? sec_diff.count() + day_size : sec_diff.count()) + hour_size / 2) / hour_size;
 		    if (hours > 0 && sec_diff.count() < (-hour_size / 2))
 		       days--;
 
@@ -185,10 +185,10 @@ inline std::string format_time_length(std::chrono::seconds secs)
 
 	if (secs >= 100min) {
 		auto hours = std::chrono::round<std::chrono::hours>(secs);
-		std::chrono::seconds sec_diff = secs - hours;
+		const std::chrono::seconds sec_diff = secs - hours;
 
 		if (hours.count() < 10) {  // if less than 10 hours, display minutes too
-			int64_t minutes = ((sec_diff.count() < (-min_size / 2) ? sec_diff.count() + hour_size : sec_diff.count()) + min_size / 2) / min_size;
+			const int64_t minutes = ((sec_diff.count() < (-min_size / 2) ? sec_diff.count() + hour_size : sec_diff.count()) + min_size / 2) / min_size;
 			if (minutes > 0 && sec_diff.count() < (-min_size / 2))
 				hours--;
 

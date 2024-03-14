@@ -210,7 +210,7 @@ inline std::error_code fs_file_get_contents_noalloc(const fs::path& file, unsign
 		}
 
 		// automatically allocate the buffer if buf_size is -1.
-		bool auto_alloc = (buf_size == static_cast<std::uintmax_t>(-1));
+		const bool auto_alloc = (buf_size == static_cast<std::uintmax_t>(-1));
 		if (!auto_alloc && buf_size < size) {
 			ec = std::make_error_code(std::errc::no_buffer_space);
 			break;  // goto cleanup
@@ -225,7 +225,7 @@ inline std::error_code fs_file_get_contents_noalloc(const fs::path& file, unsign
 		// We don't need large file support here because we read into memory,
 		// which is limited at 31 bits anyway (on 32-bit systems).
 		// I really hope this is not a byte-by-byte operation
-		std::size_t read_bytes = std::fread(buf, 1, static_cast<std::size_t>(size), f);
+		const std::size_t read_bytes = std::fread(buf, 1, static_cast<std::size_t>(size), f);
 		if (size != static_cast<std::uintmax_t>(read_bytes)) {
 			// Unexpected number of bytes read. Not sure if this is reflected in errno or not.
 			ec = std::error_code(errno, std::system_category());
@@ -274,7 +274,7 @@ inline std::error_code fs_file_get_contents(const fs::path& file, std::string& p
 {
 	std::uintmax_t size = 0;
 	unsigned char* buf = nullptr;
-	std::error_code ec = fs_file_get_contents(file, buf, size, max_size);
+	const std::error_code ec = fs_file_get_contents(file, buf, size, max_size);
 	if (ec)
 		return ec;
 
@@ -497,13 +497,13 @@ inline bool fs_path_is_writable(const fs::path& path, std::error_code& ec)
 	}
 
 	std::error_code ignored_ec;  // ignore this error
-	bool is_directory = fs::is_directory(path, ignored_ec);
-	bool path_exists = fs::exists(path, ec);
+	const bool is_directory = fs::is_directory(path, ignored_ec);
+	const bool path_exists = fs::exists(path, ec);
 	if (ec) {
 		return false;
 	}
 
-	fs::path dirname = (is_directory ? path : path.parent_path());
+	const fs::path dirname = (is_directory ? path : path.parent_path());
 
 #ifdef _WIN32  // win32 doesn't get access() (it just doesn't work with writing)
 

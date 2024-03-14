@@ -76,7 +76,7 @@ ArecaCliExecutorGeneric<ExecutorPolicy>::ArecaCliExecutorGeneric()
 template<class ExecutorPolicy>
 std::string ArecaCliExecutorGeneric<ExecutorPolicy>::translate_exit_status([[maybe_unused]] int status)
 {
-	return std::string();
+	return {};
 }
 
 

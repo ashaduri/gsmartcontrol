@@ -44,7 +44,7 @@ namespace debug_internal {
 		format_flags.set(debug_format::color);
 #endif
 
-		std::map<debug_level::flag, bool> levels = {
+		const std::map<debug_level::flag, bool> levels = {
 				{debug_level::dump, levels_enabled.test(debug_level::dump) },
 				{debug_level::info, levels_enabled.test(debug_level::info) },
 				{debug_level::warn, levels_enabled.test(debug_level::warn) },
@@ -102,7 +102,7 @@ bool debug_register_domain(const std::string& domain)
 			+ "\"): Domain \"default\" doesn't exist.").c_str());
 	}
 
-	DebugState::LevelMap& def_level_map = def_iter->second;
+	const DebugState::LevelMap& def_level_map = def_iter->second;
 
 	dm[domain] = DebugState::LevelMap();
 	DebugState::LevelMap& level_map = dm.find(domain)->second;

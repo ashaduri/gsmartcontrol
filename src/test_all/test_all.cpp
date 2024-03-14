@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 	debug_register_domain("hz");
 	debug_register_domain("rconfig");
 
-	int result = Catch::Session().run( argc, argv );
+	const int result = Catch::Session().run( argc, argv );
 	return result;
 }
 

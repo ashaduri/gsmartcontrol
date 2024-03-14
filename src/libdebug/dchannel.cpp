@@ -33,11 +33,11 @@ std::string debug_format_message(debug_level::flag level, const std::string& dom
 		}
 
 		if (format_flags.test(debug_format::level)) {  // print level name
-			bool use_color = format_flags.test(debug_format::color);
+			const bool use_color = format_flags.test(debug_format::color);
 			if (use_color)
 				ret += debug_level::get_color_start(level);
 
-			std::string level_name = std::string("<") + debug_level::get_name(level) + ">";
+			const std::string level_name = std::string("<") + debug_level::get_name(level) + ">";
 			ret += level_name + std::string(8 - level_name.size(), ' ');
 
 			if (use_color)
@@ -52,7 +52,7 @@ std::string debug_format_message(debug_level::flag level, const std::string& dom
 
 
 	if (format_flags.test(debug_format::indent)) {
-		std::string spaces(static_cast<std::size_t>(indent_level * 4), ' ');  // indentation spaces
+		const std::string spaces(static_cast<std::size_t>(indent_level * 4), ' ');  // indentation spaces
 
 		// replace all newlines with \n(indent-spaces) except for the last one.
 		std::string::size_type oldpos = 0, pos = 0;

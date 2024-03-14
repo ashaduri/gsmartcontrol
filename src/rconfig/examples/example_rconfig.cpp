@@ -48,7 +48,7 @@ int main()
 
 		rconfig::set_data("app/int_var", 11);  // override default.
 
-		int int_var = rconfig::get_data<int>("app/int_value");
+		const int int_var = rconfig::get_data<int>("app/int_value");
 		std::cerr << "app/int_value: " << int_var << "\n";
 
 		std::cerr << "app/some_string2: " << rconfig::get_data<std::string>("app/some_string2") << "\n";

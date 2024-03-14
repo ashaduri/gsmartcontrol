@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 
 		ex.execute();
 
-		std::string out_str = ex.get_stdout_str();
+		const std::string out_str = ex.get_stdout_str();
 	// 	std::cout << "OUT:\n" << out_str << "\n\n";
 		std::cerr << "OUT SIZE: " << out_str.size() << "\n";
 

@@ -29,13 +29,13 @@ std::ostream& debug_out(debug_level::flag level, const std::string& domain)
 	auto level_map = dm.find(domain);
 	if (level_map == dm.end()) {  // no such domain
 		// this is an internal error
-		std::string msg = "debug_out(): Debug state doesn't contain the requested domain: \"" + domain + "\".";
+		const std::string msg = "debug_out(): Debug state doesn't contain the requested domain: \"" + domain + "\".";
 		throw debug_internal_error(msg.c_str());
 	}
 
 	auto os = level_map->second.find(level);
 	if (level_map == dm.end()) {
-		std::string msg = std::string("debug_out(): Debug state doesn't contain the requested level ") +
+		const std::string msg = std::string("debug_out(): Debug state doesn't contain the requested level ") +
 				debug_level::get_name(level) + " in domain: \"" + domain + "\".";
 
 		// this is an internal error
@@ -110,7 +110,7 @@ namespace debug_internal {
 // increase indentation level for all debug levels
 void debug_indent_inc(int by)
 {
-	int curr = debug_internal::get_debug_state_ref().get_indent_level();
+	const int curr = debug_internal::get_debug_state_ref().get_indent_level();
 	debug_internal::get_debug_state_ref().set_indent_level(curr + by);
 }
 
