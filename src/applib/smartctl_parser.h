@@ -34,13 +34,12 @@ enum class SmartctlParserError {
 	InternalError,
 	NoSubsectionsParsed,
 	DataError,
+	KeyNotFound,
 };
 
 
 
-/// Smartctl (S)ATA text output parser.
-/// Note: ALL parse_* functions (except parse_full() and parse_version())
-/// expect data in unix-newline format!
+/// Smartctl output parser.
 class SmartctlParser {
 	protected:
 

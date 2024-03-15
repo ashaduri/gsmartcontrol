@@ -1702,7 +1702,7 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 
 		switch(p.subsection) {
 			case AtaStorageProperty::SubSection::health:
-				if (name_match(p, "smart_status/passed") && p.get_value<std::string>() != "PASSED") {
+				if (name_match(p, "smart_status/passed") && !p.get_value<bool>()) {
 					w = WarningLevel::alert;
 					reason = "The drive is reporting that it will FAIL very soon. Please back up as soon as possible!";
 				}

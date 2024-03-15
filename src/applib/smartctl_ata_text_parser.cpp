@@ -791,7 +791,7 @@ Device is:        In smartctl database [for details use: -P show]
 		if (app_pcre_match("/SMART overall-health self-assessment/mi", name)) {
 			pt.set_name(name, "smart_status/passed", "Overall Health Self-Assessment Test");
 			pt.reported_value = value;
-			pt.value = pt.reported_value;  // string-type value
+			pt.value = (pt.reported_value == "PASSED");  // bool
 
 			add_property(pt);
 		}

@@ -19,9 +19,7 @@ Copyright:
 
 
 
-/// Smartctl (S)ATA text output parser.
-/// Note: ALL parse_* functions (except parse_full() and parse_version())
-/// expect data in unix-newline format!
+/// Smartctl (S)ATA JSON output parser
 class SmartctlAtaJsonParser : public SmartctlParser {
 	public:
 

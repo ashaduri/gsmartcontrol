@@ -16,7 +16,7 @@ Copyright:
 #include "hz/debug.h"
 #include "hz/string_algo.h"
 #include "smartctl_version_parser.h"
-#include "hz/string_num.h"
+#include "hz/format_unit.h"
 
 
 
@@ -160,6 +160,66 @@ template<typename T>
 }
 
 
+using PropertyRetrievalFunc = std::function<
+		auto(const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
+				-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError> >;
+
+
+auto string_formatter()
+{
+	return [](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
+			-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+	{
+		if (auto jval = get_node_data<std::string>(root_node, key); jval) {
+			AtaStorageProperty p;
+			p.set_name(key, key, displayable_name);
+			// p.reported_value = jval.value();
+			p.readable_value = jval.value();
+			p.value = jval.value();
+			return p;
+		}
+		return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+	};
+}
+
+
+auto bool_formatter(const std::string_view& true_str, const std::string_view& false_str)
+{
+	return [true_str, false_str](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
+		-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+	{
+		if (auto jval = get_node_data<bool>(root_node, key); jval) {
+			AtaStorageProperty p;
+			p.set_name(key, key, displayable_name);
+			// p.reported_value = (jval.value() ? true_str : false_str);
+			p.readable_value = (jval.value() ? true_str : false_str);
+			p.value = jval.value();
+			return p;
+		}
+		return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+	};
+}
+
+
+template<typename Type>
+auto custom_string_formatter(std::function<std::string(Type value)> formatter)
+{
+	return [formatter](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
+			-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+	{
+		if (auto jval = get_node_data<Type>(root_node, key); jval) {
+			AtaStorageProperty p;
+			p.set_name(key, key, displayable_name);
+			// p.reported_value = formatter(jval.value());
+			p.readable_value = formatter(jval.value());
+			p.value = jval.value();
+			return p;
+		}
+		return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+	};
+}
+
+
 }
 
 
@@ -173,9 +233,9 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlAtaJsonParser::parse_full(const st
 		return hz::Unexpected(SmartctlParserError::EmptyInput, "Smartctl data is empty.");
 	}
 
-	nlohmann::json root_node;
+	nlohmann::json json_root_node;
 	try {
-		root_node = nlohmann::json::parse(json_data_full);
+		json_root_node = nlohmann::json::parse(json_data_full);
 	} catch (const nlohmann::json::parse_error& e) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Error parsing smartctl output as JSON: " << e.what() << "\n");
 		return hz::Unexpected(SmartctlParserError::SyntaxError, std::string("Invalid JSON data: ") + e.what());
@@ -184,7 +244,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlAtaJsonParser::parse_full(const st
 	// Version
 	std::string smartctl_version;
 	{
-		auto json_ver = get_node_data<std::vector<int>>(root_node, "smartctl/version");
+		auto json_ver = get_node_data<std::vector<int>>(json_root_node, "smartctl/version");
 
 		if (!json_ver.has_value()) {
 			debug_out_warn("app", DBG_FUNC_MSG << "Smartctl version not found in JSON.\n");
@@ -203,20 +263,21 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlAtaJsonParser::parse_full(const st
 		{
 			AtaStorageProperty p;
 			p.set_name("Smartctl version", "smartctl/version/_merged", "Smartctl Version");
-			p.reported_value = smartctl_version;
-			p.value = p.reported_value;  // string-type value
+			// p.reported_value = smartctl_version;
+			p.readable_value = smartctl_version;
+			p.value = smartctl_version;  // string-type value
 			p.section = AtaStorageProperty::Section::info;  // add to info section
 			add_property(p);
 		}
 		{
 			AtaStorageProperty p;
 			p.set_name("Smartctl version", "smartctl/version/_merged_full", "Smartctl Version");
-			p.reported_value = std::format("{}.{} r{} {} {}", json_ver->at(0), json_ver->at(1),
-					get_node_data<std::string>(root_node, "smartctl/svn_revision", {}).value_or(std::string()),
-					get_node_data<std::string>(root_node, "smartctl/platform_info", {}).value_or(std::string()),
-					get_node_data<std::string>(root_node, "smartctl/build_info", {}).value_or(std::string())
+			p.readable_value = std::format("{}.{} r{} {} {}", json_ver->at(0), json_ver->at(1),
+					get_node_data<std::string>(json_root_node, "smartctl/svn_revision", {}).value_or(std::string()),
+					get_node_data<std::string>(json_root_node, "smartctl/platform_info", {}).value_or(std::string()),
+					get_node_data<std::string>(json_root_node, "smartctl/build_info", {}).value_or(std::string())
 			);
-			p.value = p.reported_value;  // string-type value
+			p.value = p.readable_value;  // string-type value
 			p.section = AtaStorageProperty::Section::info;  // add to info section
 			add_property(p);
 		}
@@ -227,33 +288,140 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlAtaJsonParser::parse_full(const st
 	}
 
 
-	// Info section
-	const std::unordered_map<std::string, std::string> info_keys = {
-			{"model_family", _("Model Family")},
-			{"model_name", _("Model Name")},
-			{"serial_number", _("Serial Number")},
-			{"firmware_version", _("Firmware Version")},
-			{"user_capacity", _("User Capacity")},
-			{"logical_block_size", _("Logical Block Size")},
-			{"physical_block_size", _("Physical Block Size")},
-			{"rotation_rate", _("Rotation Rate")},
-			{"in_smartctl_database", _("In Smartctl Database")},
-	};
+	// Info Section
+	{
 
-	for (const auto& [key, displayable_name] : info_keys) {
-		auto jval = get_node_data<std::string>(root_node, key);
-		// TODO Type error
+		const std::vector<std::tuple<std::string, std::string, PropertyRetrievalFunc>> info_keys = {
+				{"model_family", _("Model Family"), string_formatter()},
+				{"model_name", _("Device Model"), string_formatter()},
+				{"serial_number", _("Serial Number"), string_formatter()},
 
-		if (jval.has_value()) {
-			AtaStorageProperty p;
-			p.section = AtaStorageProperty::Section::info;
-			p.set_name(key, key, displayable_name);
-			p.reported_value = jval.value();
-			p.value = p.reported_value;  // string-type value
+				{"wwn/_merged", _("World Wide Name"),
+					[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
+							-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+					{
+						auto jval1 = get_node_data<int64_t>(root_node, "wwn/naa");
+						auto jval2 = get_node_data<int64_t>(root_node, "wwn/oui");
+						auto jval3 = get_node_data<int64_t>(root_node, "wwn/id");
 
-			add_property(p);
+						if (jval1 && jval2 && jval3) {
+							AtaStorageProperty p;
+							p.set_name(key, key, displayable_name);
+							// p.readable_value = std::format("{:X} {:X} {:X}", jval1.value(), jval2.value(), jval3.value());
+							p.readable_value = std::format("{:X}-{:06X}-{:08X}", jval1.value(), jval2.value(), jval3.value());
+							p.value = p.readable_value;  // string-type value
+							return p;
+						}
+						return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+					}
+				},
+
+				{"firmware_version", _("Firmware Version"), string_formatter()},
+
+				{"user_capacity/bytes", _("Capacity"),
+					custom_string_formatter<int64_t>([](int64_t value)
+					{
+						return std::format("{} [{}; {} bytes]",
+							hz::format_size(static_cast<uint64_t>(value), true),
+							hz::format_size(static_cast<uint64_t>(value), false),
+							hz::number_to_string_locale(value));
+					})
+				},
+
+				{"physical_block_size/_and/logical_block_size", _("Sector Size"),
+					[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
+							-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+					{
+						std::vector<std::string> values;
+						if (auto jval1 = get_node_data<int64_t>(root_node, "logical_block_size"); jval1) {
+							values.emplace_back(std::format("{} bytes logical", jval1.value()));
+						}
+						if (auto jval2 = get_node_data<int64_t>(root_node, "physical_block_size"); jval2) {
+							values.emplace_back(std::format("{} bytes physical", jval2.value()));
+						}
+						if (!values.empty()) {
+							AtaStorageProperty p;
+							p.set_name(key, key, displayable_name);
+							p.readable_value = hz::string_join(values, ", ");
+							p.value = p.readable_value;
+							return p;
+						}
+						return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+					}
+				},
+
+				{"rotation_rate", _("Rotation Rate"),
+					custom_string_formatter<int64_t>([](int64_t value)
+					{
+						return std::format("{} RPM", value);
+					})
+				},
+
+				{"form_factor/name", _("Form Factor"), string_formatter()},
+				{"trim/supported", _("TRIM Supported"), bool_formatter(_("Yes"), _("No"))},
+				{"in_smartctl_database", _("In Smartctl Database"), bool_formatter(_("Yes"), _("No"))},
+				{"ata_version/string", _("ATA Version"), string_formatter()},
+				{"sata_version/string", _("SATA Version"), string_formatter()},
+
+				{"interface_speed/_merged", _("Interface Speed"),
+					[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
+							-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+					{
+						std::vector<std::string> values;
+						if (auto jval1 = get_node_data<std::string>(root_node, "interface_speed/max/string"); jval1) {
+							values.emplace_back(std::format("Max: {}", jval1.value()));
+						}
+						if (auto jval2 = get_node_data<std::string>(root_node, "interface_speed/current/string"); jval2) {
+							values.emplace_back(std::format("Current: {}", jval2.value()));
+						}
+						if (!values.empty()) {
+							AtaStorageProperty p;
+							p.set_name(key, key, displayable_name);
+							p.readable_value = hz::string_join(values, ", ");
+							p.value = p.readable_value;
+							return p;
+						}
+						return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+					}
+				},
+
+				{"local_time/asctime", _("Scanned on"), string_formatter()},
+				{"read_lookahead/enabled", _("Read Look-Ahead"), bool_formatter(_("Enabled"), _("Disabled"))},
+				{"write_cache/enabled", _("Write Cache"), bool_formatter(_("Enabled"), _("Disabled"))},
+				{"ata_dsn/enabled", _("DSN Feature"), bool_formatter(_("Enabled"), _("Disabled"))},
+				{"ata_security/string", _("ATA Security"), string_formatter()},
+		};
+
+		for (const auto& [key, displayable_name, retrieval_func] : info_keys) {
+			DBG_ASSERT(retrieval_func != nullptr);
+
+			auto p = retrieval_func(json_root_node, key, displayable_name);
+			if (p.has_value()) {  // ignore if not found
+				p->section = AtaStorageProperty::Section::info;
+				add_property(p.value());
+			}
 		}
 	}
+
+
+	// Health Section
+	{
+		const std::vector<std::tuple<std::string, std::string, PropertyRetrievalFunc>> health_keys = {
+				{"smart_status/passed", _("Overall Health Self-Assessment Test"), bool_formatter(_("PASSED"), _("FAILED"))},
+		};
+
+		for (const auto& [key, displayable_name, retrieval_func] : health_keys) {
+			DBG_ASSERT(retrieval_func != nullptr);
+
+			auto p = retrieval_func(json_root_node, key, displayable_name);
+			if (p.has_value()) {  // ignore if not found
+				p->section = AtaStorageProperty::Section::data;
+				p->subsection = AtaStorageProperty::SubSection::health;
+				add_property(p.value());
+			}
+		}
+	}
+
 
 	return {};
 }

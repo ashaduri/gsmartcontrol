@@ -45,8 +45,8 @@ std::string SmartctlTextParserHelper::parse_byte_size(const std::string& str, in
 		// startup, so set it now (temporarily). Otherwise, just use the current locale's
 		// thousands separator.
 		{
-			std::string old_locale = hz::locale_c_get();
-			hz::ScopedCLocale loc("", old_locale == "C");  // set system locale if the current one is C
+			const std::string old_locale = hz::locale_c_get();
+			const hz::ScopedCLocale loc("", old_locale == "C");  // set system locale if the current one is C
 
 			struct lconv* lc = std::localeconv();
 			if (lc && lc->thousands_sep && lc->thousands_sep[0] != '\0') {
