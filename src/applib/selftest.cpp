@@ -16,7 +16,7 @@ Copyright:
 
 #include "app_pcrecpp.h"
 #include "ata_storage_property.h"
-#include "smartctl_ata_text_parser.h"
+#include "smartctl_text_ata_parser.h"
 #include "selftest.h"
 #include "ata_storage_property_descr.h"
 

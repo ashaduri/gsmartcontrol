@@ -32,14 +32,15 @@ target_sources(applib PRIVATE
 	selftest.h
 	smartctl_parser.cpp
 	smartctl_parser.h
-	smartctl_ata_json_parser.cpp
-	smartctl_ata_json_parser.h
-	smartctl_ata_text_parser.cpp
-	smartctl_ata_text_parser.h
+	smartctl_json_ata_parser.cpp
+	smartctl_json_ata_parser.h
+	smartctl_json_parser_helpers.h
 	smartctl_executor.cpp
 	smartctl_executor_gui.h
 	smartctl_executor.h
 	smartctl_parser_types.h
+	smartctl_text_ata_parser.cpp
+	smartctl_text_ata_parser.h
 	smartctl_text_parser_helper.cpp
 	smartctl_text_parser_helper.h
 	smartctl_version_parser.cpp

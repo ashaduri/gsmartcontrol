@@ -9,8 +9,8 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#ifndef SMARTCTL_ATA_TEXT_PARSER_H
-#define SMARTCTL_ATA_TEXT_PARSER_H
+#ifndef SMARTCTL_TEXT_ATA_PARSER_H
+#define SMARTCTL_TEXT_ATA_PARSER_H
 
 #include <string>
 #include <vector>

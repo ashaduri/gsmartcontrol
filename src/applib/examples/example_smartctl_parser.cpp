@@ -21,7 +21,7 @@ Copyright:
 #include "libdebug/libdebug.h"
 #include "hz/fs.h"
 #include "applib/ata_storage_property.h"
-#include "applib/smartctl_ata_text_parser.h"
+#include "applib/smartctl_text_ata_parser.h"
 
 
 

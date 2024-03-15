@@ -19,7 +19,7 @@ Copyright:
 
 #include "app_pcrecpp.h"
 #include "storage_device.h"
-#include "smartctl_ata_text_parser.h"
+#include "smartctl_text_ata_parser.h"
 #include "storage_settings.h"
 #include "smartctl_executor.h"
 #include "smartctl_version_parser.h"
@@ -270,7 +270,7 @@ std::string StorageDevice::fetch_data_and_parse(const std::shared_ptr<CommandExe
 	std::string output;
 	std::string error_msg;
 
-	const SmartctlParserSettingType default_parser_type = SmartctlParserSettingType::Text;
+	const SmartctlParserSettingType default_parser_type = SmartctlParserSettingType::Json;
 
 	// instead of -x, we use all the individual options -x encompasses, so that
 	// an addition to default -x output won't affect us.

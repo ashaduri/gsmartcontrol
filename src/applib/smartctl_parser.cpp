@@ -13,8 +13,8 @@ Copyright:
 #include <cctype>  // isspace
 
 #include "smartctl_parser.h"
-#include "smartctl_ata_text_parser.h"
-#include "smartctl_ata_json_parser.h"
+#include "smartctl_text_ata_parser.h"
+#include "smartctl_json_ata_parser.h"
 #include "ata_storage_property_descr.h"
 #include "warning_colors.h"
 

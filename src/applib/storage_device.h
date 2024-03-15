@@ -20,7 +20,7 @@ Copyright:
 
 #include "hz/fs_ns.h"
 #include "ata_storage_property.h"
-#include "smartctl_ata_text_parser.h"  // prop_list_t
+#include "smartctl_text_ata_parser.h"  // prop_list_t
 #include "smartctl_executor.h"
 
 

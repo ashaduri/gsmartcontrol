@@ -15,7 +15,6 @@ Copyright:
 #include <string>
 #include <vector>
 #include <memory>
-#include <expected>
 
 #include "ata_storage_property.h"
 #include "smartctl_parser_types.h"

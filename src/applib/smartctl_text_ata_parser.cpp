@@ -20,7 +20,7 @@ Copyright:
 #include "hz/debug.h"  // debug_*
 
 #include "app_pcrecpp.h"
-#include "smartctl_ata_text_parser.h"
+#include "smartctl_text_ata_parser.h"
 #include "ata_storage_property_descr.h"
 // #include "warning_colors.h"
 #include "smartctl_version_parser.h"
@@ -254,7 +254,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_full(const st
 			section_body_str = hz::string_trim_copy(s.substr(tmp_pos,
 					(section_end_pos == std::string::npos ? section_end_pos : section_end_pos - tmp_pos)));
 		}
-		status = parse_section(section_header, section_body_str) || status;
+		status = parse_section(section_header, section_body_str).has_value() || status;
 		section_start_pos = (tmp_pos == std::string::npos ? std::string::npos : section_end_pos);
 	}
 
