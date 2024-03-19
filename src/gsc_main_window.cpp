@@ -118,7 +118,7 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 		}
 
 		std::string version, version_full;
-		if (!SmartctlVersionParser::parse_version(output, version, version_full)) {
+		if (!SmartctlVersionParser::parse_version_text(output, version, version_full)) {
 			error_msg = _("Smartctl returned invalid output.");
 			break;
 		}

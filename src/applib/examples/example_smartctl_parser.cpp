@@ -42,8 +42,8 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	SmartctlAtaTextParser parser;
-	if (const auto parse_status = parser.parse_full(contents); !parse_status.has_value()) {
+	SmartctlTextAtaParser parser;
+	if (const auto parse_status = parser.parse(contents); !parse_status.has_value()) {
 		debug_out_error("app", "Cannot parse file contents: " << parse_status.error().message() << "\n");
 		return EXIT_FAILURE;
 	}

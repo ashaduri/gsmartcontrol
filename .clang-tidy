@@ -17,6 +17,7 @@
 # misc-no-recursion is too noisy.
 # modernize-raw-string-literal is very noisy.
 # modernize-use-trailing-return-type is contrary to our style.
+# performance-enum-size is too noisy.
 # readability-avoid-unconditional-preprocessor-if is triggered on platform-specific code
 # readability-convert-member-functions-to-static is triggered for many callbacks.
 # readability-function-cognitive-complexity needed by UI constructors.
@@ -63,6 +64,7 @@ Checks:          >
   -objc-*,
   openmp-*,
   performance-*,
+  -performance-enum-size,
   portability-*,
   readability-*,
   -readability-avoid-unconditional-preprocessor-if,

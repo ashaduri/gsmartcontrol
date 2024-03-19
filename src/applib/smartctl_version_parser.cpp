@@ -21,7 +21,7 @@ Copyright:
 
 
 
-bool SmartctlVersionParser::parse_version(const std::string& s, std::string& version_only, std::string& version_full)
+bool SmartctlVersionParser::parse_version_text(const std::string& s, std::string& version_only, std::string& version_full)
 {
 	// e.g.
 	// "smartctl version 5.37"
@@ -57,9 +57,11 @@ bool SmartctlVersionParser::check_parsed_version(SmartctlParserType parser_type,
 {
 	if (auto numeric_version = get_numeric_version(version_only); numeric_version.has_value()) {
 		switch(parser_type) {
-			case SmartctlParserType::Json:
+			case SmartctlParserType::JsonBasic:
+			case SmartctlParserType::JsonAta:
 				return numeric_version.value() >= minimum_req_json_version;
-			case SmartctlParserType::Text:
+			case SmartctlParserType::TextBasic:
+			case SmartctlParserType::TextAta:
 				return numeric_version.value() >= minimum_req_text_version;
 		}
 	}
@@ -70,11 +72,10 @@ bool SmartctlVersionParser::check_parsed_version(SmartctlParserType parser_type,
 
 std::optional<SmartctlParserType> SmartctlVersionParser::detect_supported_parser_type(const std::string& version_only)
 {
-	if (check_parsed_version(SmartctlParserType::Json, version_only)) {
-		return SmartctlParserType::Json;
-	}
-	if (check_parsed_version(SmartctlParserType::Text, version_only)) {
-		return SmartctlParserType::Text;
+	for (auto type : SmartctlParserTypeExt::getAllValues()) {
+		if (check_parsed_version(type, version_only)) {
+			return type;
+		}
 	}
 	return std::nullopt;
 }

@@ -236,7 +236,7 @@ inline bool string_trim(std::string& s, const std::string& trim_chars = " \t\r\n
 
 /// Trim a string s from both sides (not modifying s), returning the changed string.
 /// Trimming removes all trim_chars that occur on either side of the string s.
-inline std::string string_trim_copy(const std::string& s, const std::string& trim_chars = " \t\r\n")
+inline std::string string_trim_copy(std::string_view s, const std::string& trim_chars = " \t\r\n")
 {
 	std::string ret(s);
 	string_trim(ret, trim_chars);
@@ -268,7 +268,7 @@ inline bool string_trim_left(std::string& s, const std::string& trim_chars = " \
 
 /// Trim a string s from the left (not modifying s), returning the changed string.
 /// Trimming removes all trim_chars that occur on the left side of the string s.
-inline std::string string_trim_left_copy(const std::string& s, const std::string& trim_chars = " \t\r\n")
+inline std::string string_trim_left_copy(std::string_view s, const std::string& trim_chars = " \t\r\n")
 {
 	std::string ret(s);
 	string_trim_left(ret, trim_chars);
@@ -297,7 +297,7 @@ inline bool string_trim_right(std::string& s, const std::string& trim_chars = " 
 
 /// Trim a string s from the right (not modifying s), returning the changed string.
 /// Trimming removes all trim_chars that occur on the right side of the string s.
-inline std::string string_trim_right_copy(const std::string& s, const std::string& trim_chars = " \t\r\n")
+inline std::string string_trim_right_copy(std::string_view s, const std::string& trim_chars = " \t\r\n")
 {
 	std::string ret(s);
 	string_trim_right(ret, trim_chars);
@@ -756,7 +756,7 @@ std::string string_replace_array_copy(const std::string& s,
 
 
 /// Check whether a string begins with another string
-inline bool string_begins_with(const std::string& str, const std::string& substr)
+inline bool string_begins_with(std::string_view str, const std::string& substr)
 {
 	if (str.length() >= substr.length()) {
 		return (str.compare(0, substr.length(), substr) == 0);
@@ -767,7 +767,7 @@ inline bool string_begins_with(const std::string& str, const std::string& substr
 
 
 /// Check whether a string begins with a character
-inline bool string_begins_with(const std::string& str, char ch)
+inline bool string_begins_with(std::string_view str, char ch)
 {
 	return !str.empty() && str[0] == ch;
 }
@@ -775,7 +775,7 @@ inline bool string_begins_with(const std::string& str, char ch)
 
 
 /// Check whether a string ends with another string
-inline bool string_ends_with(const std::string& str, const std::string& substr)
+inline bool string_ends_with(std::string_view str, const std::string& substr)
 {
 	if (str.length() >= substr.length()) {
 		return (str.compare(str.length() - substr.length(), substr.length(), substr) == 0);
@@ -786,7 +786,7 @@ inline bool string_ends_with(const std::string& str, const std::string& substr)
 
 
 /// Check whether a string ends with a character
-inline bool string_ends_with(const std::string& str, char ch)
+inline bool string_ends_with(std::string_view str, char ch)
 {
 	return !str.empty() && str[str.size() - 1] == ch;
 }
@@ -810,7 +810,7 @@ inline bool string_any_to_unix(std::string& s)
 
 /// Auto-detect and convert mac/dos/unix newline formats in s to unix format.
 /// Returns the result string.
-inline std::string string_any_to_unix_copy(const std::string& s)
+inline std::string string_any_to_unix_copy(std::string_view s)
 {
 	std::string ret(s);
 	string_any_to_unix(ret);
@@ -831,7 +831,7 @@ inline bool string_any_to_dos(std::string& s)
 
 /// Auto-detect and convert mac/dos/unix newline formats in s to dos format.
 /// Returns the result string.
-inline std::string string_any_to_dos_copy(const std::string& s)
+inline std::string string_any_to_dos_copy(std::string_view s)
 {
 	std::string ret(s);
 	string_any_to_dos(ret);
@@ -853,7 +853,7 @@ inline std::string::size_type string_to_lower(std::string& s)
 
 
 /// Convert s to lowercase, not modifying s, returning the changed string.
-inline std::string string_to_lower_copy(const std::string& s)
+inline std::string string_to_lower_copy(std::string_view s)
 {
 	std::string ret(s);
 	string_to_lower(ret);
@@ -875,7 +875,7 @@ inline std::string::size_type string_to_upper(std::string& s)
 
 
 /// Convert s to uppercase, not modifying s, returning the changed string.
-inline std::string string_to_upper_copy(const std::string& s)
+inline std::string string_to_upper_copy(std::string_view s)
 {
 	std::string ret(s);
 	string_to_upper(ret);

@@ -80,20 +80,18 @@ _custom/smart_enabled
 
 
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaJsonParser::parse_full(const std::string& json_data_full)
+hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse(std::string_view smartctl_output)
 {
 	using namespace SmartctlJsonParserHelpers;
 
-	this->set_data_full(json_data_full);
-
-	if (hz::string_trim_copy(json_data_full).empty()) {
+	if (hz::string_trim_copy(smartctl_output).empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Empty string passed as an argument. Returning.\n");
 		return hz::Unexpected(SmartctlParserError::EmptyInput, "Smartctl data is empty.");
 	}
 
 	nlohmann::json json_root_node;
 	try {
-		json_root_node = nlohmann::json::parse(json_data_full);
+		json_root_node = nlohmann::json::parse(smartctl_output);
 	} catch (const nlohmann::json::parse_error& e) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Error parsing smartctl output as JSON: " << e.what() << "\n");
 		return hz::Unexpected(SmartctlParserError::SyntaxError, std::string("Invalid JSON data: ") + e.what());
@@ -112,7 +110,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlAtaJsonParser::parse_full(const st
 
 
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaJsonParser::parse_version(const nlohmann::json& json_root_node)
+hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_version(const nlohmann::json& json_root_node)
 {
 	using namespace SmartctlJsonParserHelpers;
 
@@ -155,7 +153,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlAtaJsonParser::parse_version(const
 		p.section = AtaStorageProperty::Section::info;  // add to info section
 		add_property(p);
 	}
-	if (!SmartctlVersionParser::check_parsed_version(SmartctlParserType::Json, smartctl_version)) {
+	if (!SmartctlVersionParser::check_parsed_version(SmartctlParserType::JsonAta, smartctl_version)) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Incompatible smartctl version. Returning.\n");
 		return hz::Unexpected(SmartctlParserError::IncompatibleVersion, "Incompatible smartctl version.");
 	}
@@ -165,7 +163,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlAtaJsonParser::parse_version(const
 
 
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaJsonParser::parse_section_info(const nlohmann::json& json_root_node)
+hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_info(const nlohmann::json& json_root_node)
 {
 	using namespace SmartctlJsonParserHelpers;
 
@@ -285,7 +283,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlAtaJsonParser::parse_section_info(
 
 
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaJsonParser::parse_section_health(const nlohmann::json& json_root_node)
+hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_health(const nlohmann::json& json_root_node)
 {
 	using namespace SmartctlJsonParserHelpers;
 

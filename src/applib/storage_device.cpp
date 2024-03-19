@@ -146,7 +146,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	}
 
 	std::string version, version_full;
-	if (!SmartctlVersionParser::parse_version(this->info_output_, version, version_full))  // is this smartctl data at all?
+	if (!SmartctlVersionParser::parse_version_text(this->info_output_, version, version_full))  // is this smartctl data at all?
 		return _("Cannot get smartctl version information.");
 
 	// Detect type. note: we can't distinguish between sata and scsi (on linux, for -d ata switch).
@@ -174,10 +174,10 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 		smart_enabled_ = false;
 
 	} else {
-		// Note: We don't use SmartctlAtaTextParser here, because this information
+		// Note: We don't use SmartctlTextAtaParser here, because this information
 		// may be in some other format. If this information is valid, only then it's
-		// passed to SmartctlAtaTextParser.
-		// Compared to SmartctlAtaTextParser, this one is much looser.
+		// passed to SmartctlTextAtaParser.
+		// Compared to SmartctlTextAtaParser, this one is much looser.
 
 		// Don't put complete messages here - they change across smartctl versions.
 		if (app_pcre_match("/^SMART support is:[ \\t]*Unavailable/mi", info_output_)  // cdroms output this
@@ -241,10 +241,10 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 			disk_type = hdd_.value() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
 		}
 
-		auto parser = SmartctlParser::create(SmartctlParserType::Text);
+		auto parser = SmartctlParser::create(SmartctlParserType::TextAta);
 		DBG_ASSERT_RETURN(parser, "Cannot create parser");
 
-		if (parser->parse_full(this->info_output_)) {  // try to parse it
+		if (parser->parse(this->info_output_)) {  // try to parse it
 			this->set_properties(StoragePropertyProcessor::process_properties(parser->get_properties(), disk_type));  // copy to our drive, overwriting old data
 		}
 	}
@@ -317,24 +317,30 @@ std::string StorageDevice::parse_data()
 		disk_type = hdd_.value() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
 	}
 
-	auto parser_type = SmartctlParser::detect_output_type(this->full_output_);
+	auto parser_format = SmartctlParser::detect_output_format(this->full_output_);
 
-	if (!parser_type.has_value()) {
-		return parser_type.error().message();
+	if (!parser_format.has_value()) {
+		return parser_format.error().message();
 	}
 
-	auto parser = SmartctlParser::create(parser_type.value());
+	// TODO Choose format according to device type
+	SmartctlParserType parser_type = SmartctlParserType::TextAta;
+	if (parser_format == SmartctlParserFormat::Json) {
+		parser_type = SmartctlParserType::JsonAta;
+	}
+
+	auto parser = SmartctlParser::create(parser_type);
 	DBG_ASSERT_RETURN(parser, "Cannot create parser");
 
 	// Try to parse it (parse only, set the properties after basic parsing).
-	const auto parse_status = parser->parse_full(this->full_output_);
+	const auto parse_status = parser->parse(this->full_output_);
 	if (parse_status.has_value()) {
 
 		// refresh basic info too
-		this->info_output_ = parser->get_data_full();  // put data including version information
+		this->info_output_ = this->full_output_;  // put data including version information
 
 		// note: this will clear the non-basic properties!
-		// this will parse some info that is already parsed by SmartctlAtaTextParser::parse_full(),
+		// this will parse some info that is already parsed by SmartctlAtaTextParser::parse(),
 		// but this one sets the StorageDevice class members, not properties.
 		this->parse_basic_data(false, false);  // don't emit signal, we're not complete yet.
 

@@ -34,6 +34,8 @@ target_sources(applib PRIVATE
 	smartctl_parser.h
 	smartctl_json_ata_parser.cpp
 	smartctl_json_ata_parser.h
+	smartctl_json_basic_parser.cpp
+	smartctl_json_basic_parser.h
 	smartctl_json_parser_helpers.h
 	smartctl_executor.cpp
 	smartctl_executor_gui.h
@@ -41,6 +43,8 @@ target_sources(applib PRIVATE
 	smartctl_parser_types.h
 	smartctl_text_ata_parser.cpp
 	smartctl_text_ata_parser.h
+	smartctl_text_basic_parser.cpp
+	smartctl_text_basic_parser.h
 	smartctl_text_parser_helper.cpp
 	smartctl_text_parser_helper.h
 	smartctl_version_parser.cpp

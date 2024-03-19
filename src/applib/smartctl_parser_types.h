@@ -19,8 +19,10 @@ Copyright:
 
 
 enum class SmartctlParserType {
-	Json,
-	Text,
+	JsonBasic,  ///< Info only
+	JsonAta,
+	TextBasic,  ///< Info only
+	TextAta,
 };
 
 
@@ -32,18 +34,26 @@ struct SmartctlParserTypeExt
 				SmartctlParserTypeExt,
 		        Glib::ustring>
 {
-	static constexpr inline SmartctlParserType default_value = SmartctlParserType::Json;
+	static constexpr inline SmartctlParserType default_value = SmartctlParserType::JsonAta;
 
 	static std::unordered_map<EnumType, std::pair<std::string, Glib::ustring>> build_enum_map()
 	{
 		return {
-			{SmartctlParserType::Json, {"json", _("JSON")}},
-			{SmartctlParserType::Text, {"text", _("Text")}},
+				{SmartctlParserType::JsonBasic, {"json_basic", _("JSON Basic")}},
+				{SmartctlParserType::JsonAta, {"json_ata", _("JSON ATA")}},
+				{SmartctlParserType::TextBasic, {"text_basic", _("Text Basic")}},
+				{SmartctlParserType::TextAta, {"text_ata", _("Text ATA")}},
 		};
 	}
 
 };
 
+
+
+enum class SmartctlParserFormat {
+	Json,
+	Text,
+};
 
 
 

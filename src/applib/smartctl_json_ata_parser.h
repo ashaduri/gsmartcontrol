@@ -20,14 +20,14 @@ Copyright:
 
 
 /// Smartctl (S)ATA JSON output parser
-class SmartctlAtaJsonParser : public SmartctlParser {
+class SmartctlJsonAtaParser : public SmartctlParser {
 	public:
 
 		// Defaulted, used by make_unique.
-		SmartctlAtaJsonParser() = default;
+		SmartctlJsonAtaParser() = default;
 
 		// Overridden
-		hz::ExpectedVoid<SmartctlParserError> parse_full(const std::string& json_data_full) override;
+		hz::ExpectedVoid<SmartctlParserError> parse(std::string_view smartctl_output) override;
 
 	private:
 

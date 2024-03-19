@@ -69,15 +69,12 @@ namespace {
 
 
 // Parse full "smartctl -x" output
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_full(const std::string& full)
+hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse(std::string_view smartctl_output)
 {
-	this->set_data_full(full);
-
-
 	// -------------------- Fix the output, so it doesn't interfere with proper parsing
 
 	// perform any2unix
-	std::string s = hz::string_trim_copy(hz::string_any_to_unix_copy(full));
+	std::string s = hz::string_trim_copy(hz::string_any_to_unix_copy(smartctl_output));
 
 	if (s.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Empty string passed as an argument. Returning.\n");
@@ -204,7 +201,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_full(const st
 	// version info
 
 	std::string version, version_full;
-	if (!SmartctlVersionParser::parse_version(s, version, version_full)) {
+	if (!SmartctlVersionParser::parse_version_text(s, version, version_full)) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Cannot extract version information. Returning.\n");
 		return hz::Unexpected(SmartctlParserError::NoVersion, "Cannot extract smartctl version information.");
 	}
@@ -226,7 +223,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_full(const st
 		add_property(p);
 	}
 
-	if (!SmartctlVersionParser::check_parsed_version(SmartctlParserType::Text, version)) {
+	if (!SmartctlVersionParser::check_parsed_version(SmartctlParserType::TextAta, version)) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Incompatible smartctl version. Returning.\n");
 		return hz::Unexpected(SmartctlParserError::IncompatibleVersion, "Incompatible smartctl version.");
 	}
@@ -269,7 +266,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_full(const st
 
 
 // Parse the section part (with "=== .... ===" header) - info or data sections.
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section(const std::string& header, const std::string& body)
+hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section(const std::string& header, const std::string& body)
 {
 	if (app_pcre_match("/START OF INFORMATION SECTION/mi", header)) {
 		return parse_section_info(body);
@@ -311,7 +308,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section(const
 // ------------------------------------------------ INFO SECTION
 
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_info(const std::string& body)
+hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_info(const std::string& body)
 {
 	this->set_data_section_info(body);
 
@@ -423,7 +420,7 @@ http://knowledge.seagate.com/articles/en_US/FAQ/213891en
 
 
 // Parse a component (one line) of the info section
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_info_property(AtaStorageProperty& p)
+hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_info_property(AtaStorageProperty& p)
 {
 	// ---- Info
 	if (p.section != AtaStorageProperty::Section::info) {
@@ -613,7 +610,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_info_
 
 
 // Parse the Data section (without "===" header)
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data(const std::string& body)
+hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data(const std::string& body)
 {
 	this->set_data_section_data(body);
 
@@ -764,7 +761,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data(
 
 // -------------------- Health
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_health(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_health(const std::string& sub)
 {
 	// Health section data (--info and --get=all):
 /*
@@ -807,7 +804,7 @@ Device is:        In smartctl database [for details use: -P show]
 
 // -------------------- Capabilities
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_capabilities(const std::string& sub_initial)
+hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_capabilities(const std::string& sub_initial)
 {
 	// Capabilities section data:
 /*
@@ -987,7 +984,7 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 
 
 // Check the capabilities for internal properties we can use.
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_internal_capabilities(AtaStorageProperty& cap_prop)
+hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_internal_capabilities(AtaStorageProperty& cap_prop)
 {
 	// Some special capabilities we're interested in.
 
@@ -1244,7 +1241,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_
 
 // -------------------- Attributes
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_attributes(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_attributes(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -1465,7 +1462,7 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 
 
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_directory_log(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_directory_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -1517,7 +1514,7 @@ Address    Access  R/W   Size  Description
 
 
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_error_log(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_error_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -1714,7 +1711,7 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 
 // -------------------- Selftest Log
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_selftest_log(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_selftest_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -1893,7 +1890,7 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 
 // -------------------- Selective Selftest Log
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_selective_selftest_log(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_selective_selftest_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -1950,7 +1947,7 @@ If Selective self-test is pending on power-up, resume after 0 minute delay.
 
 
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_scttemp_log(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_scttemp_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -2040,7 +2037,7 @@ Index    Estimated Time   Temperature Celsius
 
 
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_scterc_log(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_scterc_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -2089,7 +2086,7 @@ SCT Error Recovery Control:
 
 
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_devstat(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_devstat(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -2260,7 +2257,7 @@ Page Offset Size         Value  Description
 
 
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlAtaTextParser::parse_section_data_subsection_sataphy(const std::string& sub)
+hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_sataphy(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
 	pt.section = AtaStorageProperty::Section::data;
@@ -2318,14 +2315,14 @@ ID      Size     Value  Description
 
 
 
-void SmartctlAtaTextParser::set_data_section_info(std::string s)
+void SmartctlTextAtaParser::set_data_section_info(std::string s)
 {
 	data_section_info_ = std::move(s);
 }
 
 
 
-void SmartctlAtaTextParser::set_data_section_data(std::string s)
+void SmartctlTextAtaParser::set_data_section_data(std::string s)
 {
 	data_section_data_ = std::move(s);
 }

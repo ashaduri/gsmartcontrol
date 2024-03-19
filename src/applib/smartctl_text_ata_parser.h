@@ -20,16 +20,16 @@ Copyright:
 
 
 /// Smartctl (S)ATA text output parser.
-/// Note: ALL parse_* functions (except parse_full() and parse_version())
+/// Note: ALL parse_* functions (except parse())
 /// expect data in unix-newline format!
-class SmartctlAtaTextParser : public SmartctlParser {
+class SmartctlTextAtaParser : public SmartctlParser {
 	public:
 
 		// Defaulted, used by make_unique.
-		SmartctlAtaTextParser() = default;
+		SmartctlTextAtaParser() = default;
 
 		// Overridden
-		hz::ExpectedVoid<SmartctlParserError> parse_full(const std::string& full) override;
+		hz::ExpectedVoid<SmartctlParserError> parse(std::string_view smartctl_output) override;
 
 
 	protected:

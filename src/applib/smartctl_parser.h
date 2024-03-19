@@ -12,7 +12,7 @@ Copyright:
 #ifndef SMARTCTL_PARSER_H
 #define SMARTCTL_PARSER_H
 
-#include <string>
+#include <string_view>
 #include <vector>
 #include <memory>
 
@@ -71,15 +71,12 @@ class SmartctlParser {
 
 		/// Parse full "smartctl -x" output.
 		/// Note: Once parsed, this function cannot be called again.
-		virtual hz::ExpectedVoid<SmartctlParserError> parse_full(const std::string& full) = 0;
+		virtual hz::ExpectedVoid<SmartctlParserError> parse(std::string_view smartctl_output) = 0;
 
 
 		/// Detect smartctl output type (text, json).
-		[[nodiscard]] static hz::ExpectedValue<SmartctlParserType, SmartctlParserError> detect_output_type(const std::string& output);
+		[[nodiscard]] static hz::ExpectedValue<SmartctlParserFormat, SmartctlParserError> detect_output_format(std::string_view smartctl_output);
 
-
-		/// Get "full" data, as passed to parse_full().
-		[[nodiscard]] std::string get_data_full() const;
 
 		/// Get parse result properties
 		[[nodiscard]] const std::vector<AtaStorageProperty>& get_properties() const;
@@ -90,14 +87,10 @@ class SmartctlParser {
 		/// Add a property into property list, look up and set its description
 		void add_property(AtaStorageProperty p);
 
-		/// Set "full" data ("smartctl -x" output), json or text.
-		void set_data_full(const std::string& s);
-
 
 	private:
 
 		std::vector<AtaStorageProperty> properties_;  ///< Parsed data properties
-		std::string data_full_;  ///< full data, filled by parse_full()
 
 };
 

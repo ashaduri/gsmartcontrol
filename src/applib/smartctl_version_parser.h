@@ -28,15 +28,15 @@ class SmartctlVersionParser {
 
 		/// Supply any text (not JSON) output of smartctl here, the smartctl version will be retrieved.
 		/// The text does not have to be in Unix newline format.
-		/// \param command_output "smartctl -V" command output.
+		/// \param s "smartctl -V" command output.
 		/// \param[out] version_only A string similar to "7.2"
 		/// \param[out] version_full A string similar to "smartctl 7.2 2020-12-30 r5155"
 		/// \return false if the version could not be parsed.
-		static bool parse_version(const std::string& command_output, std::string& version_only, std::string& version_full);
+		static bool parse_version_text(const std::string& s, std::string& version_only, std::string& version_full);
 
 
 		/// Get numeric version as a double from a parsed version.
-		/// \param version_only A string similar to "7.2", as parsed by parse_version().
+		/// \param version_only A string similar to "7.2", as parsed by parse_version_text().
 		/// \return Numeric version as a double, e.g. 7.2. std::nullopt if the version could not be parsed.
 		static std::optional<double> get_numeric_version(const std::string& version_only);
 

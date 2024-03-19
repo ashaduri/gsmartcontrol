@@ -15,47 +15,49 @@ Copyright:
 #include "smartctl_parser.h"
 #include "smartctl_text_ata_parser.h"
 #include "smartctl_json_ata_parser.h"
-#include "ata_storage_property_descr.h"
-#include "warning_colors.h"
+#include "smartctl_json_basic_parser.h"
+#include "smartctl_text_basic_parser.h"
+//#include "ata_storage_property_descr.h"
 
 
 
 std::unique_ptr<SmartctlParser> SmartctlParser::create(SmartctlParserType type)
 {
 	switch(type) {
-		case SmartctlParserType::Json:
-			return std::make_unique<SmartctlAtaJsonParser>();
-		case SmartctlParserType::Text:
-			return std::make_unique<SmartctlAtaTextParser>();
+		case SmartctlParserType::JsonBasic:
+			return std::make_unique<SmartctlJsonBasicParser>();
+			break;
+		case SmartctlParserType::JsonAta:
+			return std::make_unique<SmartctlJsonAtaParser>();
+			break;
+		case SmartctlParserType::TextBasic:
+			return std::make_unique<SmartctlTextBasicParser>();
+			break;
+		case SmartctlParserType::TextAta:
+			return std::make_unique<SmartctlTextAtaParser>();
+			break;
 	}
 	return nullptr;
 }
 
 
 
-hz::ExpectedValue<SmartctlParserType, SmartctlParserError> SmartctlParser::detect_output_type(const std::string& output)
+hz::ExpectedValue<SmartctlParserFormat, SmartctlParserError> SmartctlParser::detect_output_format(std::string_view smartctl_output)
 {
 	// Look for the first non-whitespace symbol
-	auto first_symbol = std::find_if(output.begin(), output.end(), [&](char c) {
+	const auto* first_symbol = std::find_if(smartctl_output.begin(), smartctl_output.end(), [&](char c) {
 		return !std::isspace(c, std::locale::classic());
 	});
-	if (first_symbol != output.end()) {
+	if (first_symbol != smartctl_output.end()) {
 		if (*first_symbol == '{') {
-			return SmartctlParserType::Json;
+			return SmartctlParserFormat::Json;
 		}
-		if (output.rfind("smartctl", static_cast<std::size_t>(first_symbol - output.begin())) == 0) {
-			return SmartctlParserType::Text;
+		if (smartctl_output.rfind("smartctl", static_cast<std::size_t>(first_symbol - smartctl_output.begin())) == 0) {
+			return SmartctlParserFormat::Text;
 		}
 		return hz::Unexpected(SmartctlParserError::UnsupportedFormat, "Unsupported format while trying to detect smartctl output format.");
 	}
 	return hz::Unexpected(SmartctlParserError::EmptyInput, "Empty input while trying to detect smartctl output format.");
-}
-
-
-
-std::string SmartctlParser::get_data_full() const
-{
-	return data_full_;
 }
 
 
@@ -72,13 +74,6 @@ const std::vector<AtaStorageProperty>& SmartctlParser::get_properties() const
 void SmartctlParser::add_property(AtaStorageProperty p)
 {
 	properties_.push_back(std::move(p));
-}
-
-
-
-void SmartctlParser::set_data_full(const std::string& s)
-{
-	data_full_ = s;
 }
 
 
