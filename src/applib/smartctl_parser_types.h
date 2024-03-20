@@ -19,45 +19,22 @@ Copyright:
 
 
 enum class SmartctlParserType {
-	JsonBasic,  ///< Info only
-	JsonAta,
-	TextBasic,  ///< Info only
-	TextAta,
+	Basic,  ///< Info only, supports all types of devices
+	Ata,  ///< (S)ATA
+	Nvme,  ///< NVMe
+//	Scsi,  ///< SCSI
 };
 
 
 
-/// Helper structure for enum-related functions
-struct SmartctlParserTypeExt
-		: public hz::EnumHelper<
-				SmartctlParserType,
-				SmartctlParserTypeExt,
-		        Glib::ustring>
-{
-	static constexpr inline SmartctlParserType default_value = SmartctlParserType::JsonAta;
-
-	static std::unordered_map<EnumType, std::pair<std::string, Glib::ustring>> build_enum_map()
-	{
-		return {
-				{SmartctlParserType::JsonBasic, {"json_basic", _("JSON Basic")}},
-				{SmartctlParserType::JsonAta, {"json_ata", _("JSON ATA")}},
-				{SmartctlParserType::TextBasic, {"text_basic", _("Text Basic")}},
-				{SmartctlParserType::TextAta, {"text_ata", _("Text ATA")}},
-		};
-	}
-
-};
-
-
-
-enum class SmartctlParserFormat {
+enum class SmartctlOutputFormat {
 	Json,
 	Text,
 };
 
 
 
-enum class SmartctlParserSettingType {
+enum class SmartctlParserPreferenceType {
 	Auto,
 	Json,
 	Text,
@@ -66,20 +43,20 @@ enum class SmartctlParserSettingType {
 
 
 /// Helper structure for enum-related functions
-struct SmartctlParserSettingTypeExt
+struct SmartctlParserPreferenceTypeExt
 		: public hz::EnumHelper<
-				SmartctlParserSettingType,
-				SmartctlParserSettingTypeExt,
+				SmartctlParserPreferenceType,
+				SmartctlParserPreferenceTypeExt,
 		        Glib::ustring>
 {
-	static constexpr inline SmartctlParserSettingType default_value = SmartctlParserSettingType::Auto;
+	static constexpr inline SmartctlParserPreferenceType default_value = SmartctlParserPreferenceType::Auto;
 
 	static std::unordered_map<EnumType, std::pair<std::string, Glib::ustring>> build_enum_map()
 	{
 		return {
-			{SmartctlParserSettingType::Auto, {"auto", _("Automatic")}},
-			{SmartctlParserSettingType::Json, {"json", _("JSON")}},
-			{SmartctlParserSettingType::Text, {"text", _("Text")}},
+			{SmartctlParserPreferenceType::Auto, {"auto", _("Automatic")}},
+			{SmartctlParserPreferenceType::Json, {"json", _("JSON")}},
+			{SmartctlParserPreferenceType::Text, {"text", _("Text")}},
 		};
 	}
 

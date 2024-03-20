@@ -42,11 +42,11 @@ class SmartctlVersionParser {
 
 
 		/// Check that the version of smartctl output can be parsed with a parser.
-		static bool check_parsed_version(SmartctlParserType parser_type, const std::string& version_only);
+		static bool check_format_supported(SmartctlOutputFormat format, const std::string& version_only);
 
 
-		/// Detect smartctl parser type based on smartctl version
-		static std::optional<SmartctlParserType> detect_supported_parser_type(const std::string& version_only);
+		/// Get default output format for a parser type.
+		static SmartctlOutputFormat get_default_format(SmartctlParserType parser_type);
 
 
 	private:

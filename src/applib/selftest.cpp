@@ -19,7 +19,7 @@ Copyright:
 #include "smartctl_text_ata_parser.h"
 #include "selftest.h"
 #include "ata_storage_property_descr.h"
-
+#include "smartctl_version_parser.h"
 
 
 
@@ -243,7 +243,7 @@ std::string SelfTest::update(const std::shared_ptr<CommandExecutor>& smartctl_ex
 		return error_msg;
 
 	const AtaStorageAttribute::DiskType disk_type = drive_->get_is_hdd() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
-	auto parser = SmartctlParser::create(SmartctlParserType::TextAta);
+	auto parser = SmartctlParser::create(SmartctlParserType::Ata, SmartctlVersionParser::get_default_format(SmartctlParserType::Ata));
 	DBG_ASSERT_RETURN(parser, "Cannot create parser");
 
 	auto parse_status = parser->parse(output);

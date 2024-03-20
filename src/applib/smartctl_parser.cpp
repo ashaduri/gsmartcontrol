@@ -21,20 +21,31 @@ Copyright:
 
 
 
-std::unique_ptr<SmartctlParser> SmartctlParser::create(SmartctlParserType type)
+std::unique_ptr<SmartctlParser> SmartctlParser::create(SmartctlParserType type, SmartctlOutputFormat format)
 {
 	switch(type) {
-		case SmartctlParserType::JsonBasic:
-			return std::make_unique<SmartctlJsonBasicParser>();
+		case SmartctlParserType::Basic:
+			switch(format) {
+				case SmartctlOutputFormat::Json:
+					return std::make_unique<SmartctlJsonBasicParser>();
+					break;
+				case SmartctlOutputFormat::Text:
+					return std::make_unique<SmartctlTextBasicParser>();
+					break;
+			}
 			break;
-		case SmartctlParserType::JsonAta:
-			return std::make_unique<SmartctlJsonAtaParser>();
+		case SmartctlParserType::Ata:
+			switch(format) {
+				case SmartctlOutputFormat::Json:
+					return std::make_unique<SmartctlJsonAtaParser>();
+					break;
+				case SmartctlOutputFormat::Text:
+					return std::make_unique<SmartctlTextAtaParser>();
+					break;
+			}
 			break;
-		case SmartctlParserType::TextBasic:
-			return std::make_unique<SmartctlTextBasicParser>();
-			break;
-		case SmartctlParserType::TextAta:
-			return std::make_unique<SmartctlTextAtaParser>();
+		case SmartctlParserType::Nvme:
+			// TODO
 			break;
 	}
 	return nullptr;
@@ -42,7 +53,7 @@ std::unique_ptr<SmartctlParser> SmartctlParser::create(SmartctlParserType type)
 
 
 
-hz::ExpectedValue<SmartctlParserFormat, SmartctlParserError> SmartctlParser::detect_output_format(std::string_view smartctl_output)
+hz::ExpectedValue<SmartctlOutputFormat, SmartctlParserError> SmartctlParser::detect_output_format(std::string_view smartctl_output)
 {
 	// Look for the first non-whitespace symbol
 	const auto* first_symbol = std::find_if(smartctl_output.begin(), smartctl_output.end(), [&](char c) {
@@ -50,10 +61,10 @@ hz::ExpectedValue<SmartctlParserFormat, SmartctlParserError> SmartctlParser::det
 	});
 	if (first_symbol != smartctl_output.end()) {
 		if (*first_symbol == '{') {
-			return SmartctlParserFormat::Json;
+			return SmartctlOutputFormat::Json;
 		}
 		if (smartctl_output.rfind("smartctl", static_cast<std::size_t>(first_symbol - smartctl_output.begin())) == 0) {
-			return SmartctlParserFormat::Text;
+			return SmartctlOutputFormat::Text;
 		}
 		return hz::Unexpected(SmartctlParserError::UnsupportedFormat, "Unsupported format while trying to detect smartctl output format.");
 	}

@@ -53,16 +53,14 @@ std::optional<double> SmartctlVersionParser::get_numeric_version(const std::stri
 
 
 
-bool SmartctlVersionParser::check_parsed_version(SmartctlParserType parser_type, const std::string& version_only)
+bool SmartctlVersionParser::check_format_supported(SmartctlOutputFormat format, const std::string& version_only)
 {
 	if (auto numeric_version = get_numeric_version(version_only); numeric_version.has_value()) {
-		switch(parser_type) {
-			case SmartctlParserType::JsonBasic:
-			case SmartctlParserType::JsonAta:
-				return numeric_version.value() >= minimum_req_json_version;
-			case SmartctlParserType::TextBasic:
-			case SmartctlParserType::TextAta:
+		switch(format) {
+			case SmartctlOutputFormat::Text:
 				return numeric_version.value() >= minimum_req_text_version;
+			case SmartctlOutputFormat::Json:
+				return numeric_version.value() >= minimum_req_json_version;
 		}
 	}
 	return false;
@@ -70,14 +68,17 @@ bool SmartctlVersionParser::check_parsed_version(SmartctlParserType parser_type,
 
 
 
-std::optional<SmartctlParserType> SmartctlVersionParser::detect_supported_parser_type(const std::string& version_only)
+SmartctlOutputFormat SmartctlVersionParser::get_default_format(SmartctlParserType parser_type)
 {
-	for (auto type : SmartctlParserTypeExt::getAllValues()) {
-		if (check_parsed_version(type, version_only)) {
-			return type;
-		}
+	switch (parser_type) {
+		case SmartctlParserType::Basic:
+			return SmartctlOutputFormat::Json;
+		case SmartctlParserType::Ata:
+			return SmartctlOutputFormat::Json;
+		case SmartctlParserType::Nvme:
+			return SmartctlOutputFormat::Json;
 	}
-	return std::nullopt;
+	return SmartctlOutputFormat::Json;
 }
 
 

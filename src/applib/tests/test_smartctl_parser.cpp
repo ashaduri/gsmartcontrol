@@ -25,17 +25,17 @@ TEST_CASE("SmartctlFormatDetection", "[app][parser]")
 
 	REQUIRE(SmartctlParser::detect_output_format("smart").error().data() == SmartctlParserError::UnsupportedFormat);
 
-	REQUIRE(SmartctlParser::detect_output_format("{  }").value() == SmartctlParserFormat::Json);
+	REQUIRE(SmartctlParser::detect_output_format("{  }").value() == SmartctlOutputFormat::Json);
 
-	REQUIRE(SmartctlParser::detect_output_format(" \n {  } ").value() == SmartctlParserFormat::Json);
+	REQUIRE(SmartctlParser::detect_output_format(" \n {  } ").value() == SmartctlOutputFormat::Json);
 
-	REQUIRE(SmartctlParser::detect_output_format("smartctl").value() == SmartctlParserFormat::Text);
+	REQUIRE(SmartctlParser::detect_output_format("smartctl").value() == SmartctlOutputFormat::Text);
 
 	REQUIRE(SmartctlParser::detect_output_format(
 R"(smartctl 7.2 2020-12-30 r5155 [x86_64-linux-5.3.18-lp152.66-default] (SUSE RPM)
 Copyright (C) 2002-20, Bruce Allen, Christian Franke, www.smartmontools.org
 
-)").value() == SmartctlParserFormat::Text);
+)").value() == SmartctlOutputFormat::Text);
 
 }
 

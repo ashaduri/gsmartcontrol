@@ -223,7 +223,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse(std::string_v
 		add_property(p);
 	}
 
-	if (!SmartctlVersionParser::check_parsed_version(SmartctlParserType::TextAta, version)) {
+	if (!SmartctlVersionParser::check_format_supported(SmartctlOutputFormat::Text, version)) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Incompatible smartctl version. Returning.\n");
 		return hz::Unexpected(SmartctlParserError::IncompatibleVersion, "Incompatible smartctl version.");
 	}

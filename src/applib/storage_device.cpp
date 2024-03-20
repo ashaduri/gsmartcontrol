@@ -23,7 +23,7 @@ Copyright:
 #include "storage_settings.h"
 #include "smartctl_executor.h"
 #include "smartctl_version_parser.h"
-#include "smartctl_text_parser_helper.h"
+//#include "smartctl_text_parser_helper.h"
 #include "ata_storage_property_descr.h"
 
 
@@ -143,7 +143,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	AtaStorageAttribute::DiskType disk_type = AtaStorageAttribute::DiskType::Any;
 
 	// Try the basic parser first. If it succeeds, use the specialized parser.
-	auto basic_parser = SmartctlParser::create(SmartctlParserType::TextBasic);
+	auto basic_parser = SmartctlParser::create(SmartctlParserType::Basic, SmartctlOutputFormat::Json);
 	DBG_ASSERT_RETURN(basic_parser, "Cannot create parser");
 
 	auto parse_status = basic_parser->parse(this->get_info_output());
@@ -200,7 +200,7 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	// Note that this may try to parse data the second time (it may already have
 	// been parsed by parse_data() which failed at it).
 	if (do_set_properties) {
-		auto parser = SmartctlParser::create(SmartctlParserType::TextAta);
+		auto parser = SmartctlParser::create(SmartctlParserType::Ata, SmartctlOutputFormat::Json);
 		DBG_ASSERT_RETURN(parser, "Cannot create parser");
 
 		if (parser->parse(this->info_output_)) {  // try to parse it
@@ -230,19 +230,25 @@ std::string StorageDevice::fetch_data_and_parse(const std::shared_ptr<CommandExe
 	std::string output;
 	std::string error_msg;
 
-	const SmartctlParserSettingType default_parser_type = SmartctlParserSettingType::Json;
-
 	// instead of -x, we use all the individual options -x encompasses, so that
 	// an addition to default -x output won't affect us.
 	if (this->get_type_argument() == "scsi") {  // not sure about correctness... FIXME probably fails with RAID/scsi
+		const auto default_parser_type = SmartctlVersionParser::get_default_format(SmartctlParserType::Basic);
 		// This doesn't do much yet, but just in case...
 		// SCSI equivalent of -x:
-		error_msg = execute_device_smartctl("--health --info --attributes --log=error --log=selftest --log=background --log=sasphy", smartctl_ex, output);
+		std::string command_options = "--health --info --attributes --log=error --log=selftest --log=background --log=sasphy";
+		if (default_parser_type == SmartctlOutputFormat::Json) {
+			// --json flags: o means include original output (just in case).
+			command_options += " --json=o";
+		}
+
+		error_msg = execute_device_smartctl(command_options, smartctl_ex, output);
 
 	} else {
+		const auto default_parser_type = SmartctlVersionParser::get_default_format(SmartctlParserType::Ata);
 		// ATA equivalent of -x.
 		std::string command_options = "--health --info --get=all --capabilities --attributes --format=brief --log=xerror,50,error --log=xselftest,50,selftest --log=selective --log=directory --log=scttemp --log=scterc --log=devstat --log=sataphy";
-		if (default_parser_type == SmartctlParserSettingType::Json) {
+		if (default_parser_type == SmartctlOutputFormat::Json) {
 			// --json flags: o means include original output (just in case).
 			command_options += " --json=o";
 		}
@@ -284,12 +290,9 @@ std::string StorageDevice::parse_data()
 	}
 
 	// TODO Choose format according to device type
-	SmartctlParserType parser_type = SmartctlParserType::TextAta;
-	if (parser_format == SmartctlParserFormat::Json) {
-		parser_type = SmartctlParserType::JsonAta;
-	}
+	SmartctlParserType parser_type = SmartctlParserType::Ata;
 
-	auto parser = SmartctlParser::create(parser_type);
+	auto parser = SmartctlParser::create(parser_type, parser_format.value());
 	DBG_ASSERT_RETURN(parser, "Cannot create parser");
 
 	// Try to parse it (parse only, set the properties after basic parsing).

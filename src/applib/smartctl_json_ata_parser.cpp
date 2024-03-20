@@ -153,7 +153,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_version(const
 		p.section = AtaStorageProperty::Section::info;  // add to info section
 		add_property(p);
 	}
-	if (!SmartctlVersionParser::check_parsed_version(SmartctlParserType::JsonAta, smartctl_version)) {
+	if (!SmartctlVersionParser::check_format_supported(SmartctlOutputFormat::Json, smartctl_version)) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Incompatible smartctl version. Returning.\n");
 		return hz::Unexpected(SmartctlParserError::IncompatibleVersion, "Incompatible smartctl version.");
 	}
