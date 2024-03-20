@@ -417,7 +417,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 	// Fill the tabs with info
 
 	// we need reference here - we take addresses of the elements
-	const auto& props = drive->get_properties();  // it's a vector
+	const auto& props = drive->get_property_repository().get_properties();  // it's a vector
 
 	fill_ui_general(props);
 	fill_ui_attributes(props);

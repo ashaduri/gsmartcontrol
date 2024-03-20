@@ -22,7 +22,7 @@ Copyright:
 #include "ata_storage_property.h"
 #include "smartctl_text_ata_parser.h"  // prop_list_t
 #include "smartctl_executor.h"
-
+#include "storage_property_repository.h"
 
 
 class StorageDevice;
@@ -90,7 +90,7 @@ class StorageDevice {
 		/// Note: this will clear the non-basic properties!
 		std::string parse_basic_data(bool do_set_properties = true, bool emit_signal = true);
 
-		/// Execute smartctl --all (all sections), get output, parse it (basic data too), fill properties.
+		/// Execute smartctl --all / -x (all sections), get output, parse it (basic data too), fill properties.
 		std::string fetch_data_and_parse(const std::shared_ptr<CommandExecutor>& smartctl_ex);  // returns error message on error.
 
 		// Parses full info. If failed, try to parse it as basic info.
@@ -111,122 +111,116 @@ class StorageDevice {
 
 
 		/// Get SMART status
-		Status get_smart_status() const;
+		[[nodiscard]] Status get_smart_status() const;
 
 		/// Get AODC status
-		Status get_aodc_status() const;
+		[[nodiscard]] Status get_aodc_status() const;
 
 
 		/// Get format size string, or an empty string on error.
-		std::string get_device_size_str() const;
+		[[nodiscard]] std::string get_device_size_str() const;
 
 		/// Get the overall health property
-		AtaStorageProperty get_health_property() const;
+		[[nodiscard]] AtaStorageProperty get_health_property() const;
 
 
 		/// Get device name (e.g. /dev/sda)
-		std::string get_device() const;
+		[[nodiscard]] std::string get_device() const;
 
 		/// Get device name without path. For example, "sda".
-		std::string get_device_base() const;
+		[[nodiscard]] std::string get_device_base() const;
 
 		/// Get device name for display purposes (with a type argument in parentheses)
-		std::string get_device_with_type() const;
+		[[nodiscard]] std::string get_device_with_type() const;
 
 
 		/// Set detected type
 		void set_detected_type(DetectedType t);
 
 		/// Get detected type
-		DetectedType get_detected_type() const;
+		[[nodiscard]] DetectedType get_detected_type() const;
 
 
 		/// Set argument for "-d" smartctl parameter
 		void set_type_argument(std::string arg);
 
 		/// Get argument for "-d" smartctl parameter
-		std::string get_type_argument() const;
+		[[nodiscard]] std::string get_type_argument() const;
 
 
 		/// Set extra arguments smartctl
 		void set_extra_arguments(std::string args);
 
 		/// Get extra arguments smartctl
-		std::string get_extra_arguments() const;
+		[[nodiscard]] std::string get_extra_arguments() const;
 
 
 		/// Set windows drive letters for this drive
 		void set_drive_letters(std::map<char, std::string> letters_volnames);
 
 		/// Get windows drive letters for this drive
-		const std::map<char, std::string>& get_drive_letters() const;
+		[[nodiscard]] const std::map<char, std::string>& get_drive_letters() const;
 
 		/// Get comma-separated win32 drive letters (if present)
-		std::string format_drive_letters(bool with_volnames) const;
+		[[nodiscard]] std::string format_drive_letters(bool with_volnames) const;
 
 
 		/// Get "virtual" status
-		bool get_is_virtual() const;
+		[[nodiscard]] bool get_is_virtual() const;
 
 		/// If the device is virtual, return its file
-		hz::fs::path get_virtual_file() const;
+		[[nodiscard]] hz::fs::path get_virtual_file() const;
 
 		/// Get only the filename portion of a virtual file
-		std::string get_virtual_filename() const;
+		[[nodiscard]] std::string get_virtual_filename() const;
 
 
-		/// Get all detected properties
-		const std::vector<AtaStorageProperty>& get_properties() const;
-
-
-		/// Find a property
-		AtaStorageProperty lookup_property(const std::string& generic_name,
-				AtaStorageProperty::Section section = AtaStorageProperty::Section::unknown,  // if unknown, search in all.
-				AtaStorageProperty::SubSection subsection = AtaStorageProperty::SubSection::unknown) const;
+		/// Get properties
+		[[nodiscard]] const StoragePropertyRepository& get_property_repository() const;
 
 
 		/// Get model name.
 		/// \return empty string if not found
-		std::string get_model_name() const;
+		[[nodiscard]] std::string get_model_name() const;
 
 		/// Get family name.
 		/// \return empty string if not found
-		std::string get_family_name() const;
+		[[nodiscard]] std::string get_family_name() const;
 
 		/// Get serial number.
 		/// \return empty string if not found
-		std::string get_serial_number() const;
+		[[nodiscard]] std::string get_serial_number() const;
 
 		/// Check whether this drive is a rotational HDD.
-		bool get_is_hdd() const;
+		[[nodiscard]] bool get_is_hdd() const;
 
 
 		/// Set "info" output to parse
 		void set_info_output(std::string s);
 
 		/// Get "info" output to parse
-		std::string get_info_output() const;
+		[[nodiscard]] std::string get_info_output() const;
 
 
 		/// Set "full" output to parse
 		void set_full_output(std::string s);
 
 		/// Get "full" output to parse
-		std::string get_full_output() const;
+		[[nodiscard]] std::string get_full_output() const;
 
 
 		/// Set "manually added" flag
 		void set_is_manually_added(bool b);
 
 		/// Get "manually added" flag
-		bool get_is_manually_added() const;
+		[[nodiscard]] bool get_is_manually_added() const;
 
 
 		/// Set "test is active" flag, emit the "changed" signal if needed.
 		void set_test_is_active(bool b);
 
 		/// Get "test is active" flag
-		bool get_test_is_active() const;
+		[[nodiscard]] bool get_test_is_active() const;
 
 
 		/// Get the recommended filename to save output to. Includes model and date.
@@ -234,7 +228,7 @@ class StorageDevice {
 
 
 		/// Get final smartctl options for this device from config and type info.
-		std::string get_device_options() const;
+		[[nodiscard]] std::string get_device_options() const;
 
 
 		/// Execute smartctl on this device. Nothing is modified in this class.
@@ -244,7 +238,7 @@ class StorageDevice {
 
 
 		/// Emitted whenever new information is available
-		sigc::signal<void, StorageDevice*>& signal_changed();
+		[[nodiscard]] sigc::signal<void, StorageDevice*>& signal_changed();
 
 
 	protected:
@@ -252,8 +246,8 @@ class StorageDevice {
 		/// Set the "fully parsed" flag
 		void set_parse_status(ParseStatus value);
 
-		/// Set parsed properties
-		void set_properties(std::vector<AtaStorageProperty> props);
+		/// Set properties
+		void set_property_repository(StoragePropertyRepository repository);
 
 
 	private:
@@ -289,7 +283,7 @@ class StorageDevice {
 		std::optional<bool> hdd_;  ///< Whether it's a rotational drive (HDD) or something else (SSD, flash, etc...)
 		mutable std::optional<AtaStorageProperty> health_property_;  ///< Cached health property.
 
-		std::vector<AtaStorageProperty> properties_;  ///< Smart properties. Detected through full output.
+		StoragePropertyRepository property_repository_;  ///< Parsed data properties
 
 		/// Emitted whenever new information is available
 		sigc::signal<void, StorageDevice*> signal_changed_;

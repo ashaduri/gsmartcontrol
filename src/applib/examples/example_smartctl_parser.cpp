@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	const std::vector<AtaStorageProperty>& props = parser.get_properties();
+	const std::vector<AtaStorageProperty>& props = parser.get_property_repository().get_properties();
 	for(const auto& prop : props) {
 		debug_out_dump("app", prop << "\n");
 	}

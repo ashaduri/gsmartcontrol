@@ -12,15 +12,15 @@ Copyright:
 #ifndef ATA_STORAGE_PROPERTY_DESCR_H
 #define ATA_STORAGE_PROPERTY_DESCR_H
 
-#include "ata_storage_property.h"
-
+#include "storage_property_repository.h"
 
 
 class StoragePropertyProcessor {
 	public:
 
 		/// Set descriptions, warnings, etc... on properties, and return them.
-		static std::vector<AtaStorageProperty> process_properties(std::vector<AtaStorageProperty> properties, AtaStorageAttribute::DiskType disk_type);
+		static StoragePropertyRepository process_properties(StoragePropertyRepository properties,
+				AtaStorageAttribute::DiskType disk_type);
 
 };
 

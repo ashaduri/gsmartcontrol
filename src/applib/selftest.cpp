@@ -76,7 +76,7 @@ std::chrono::seconds SelfTest::get_min_duration_seconds() const
 		case TestType::conveyance: prop_name = "ata_smart_data/self_test/polling_minutes/conveyance"; break;
 	}
 
-	const AtaStorageProperty p = drive_->lookup_property(prop_name,
+	const AtaStorageProperty p = drive_->get_property_repository().lookup_property(prop_name,
 			AtaStorageProperty::Section::data, AtaStorageProperty::SubSection::capabilities);
 
 	// p stores it as uint64_t
@@ -103,7 +103,7 @@ bool SelfTest::is_supported() const
 		case TestType::conveyance: prop_name = "ata_smart_data/capabilities/conveyance_self_test_supported"; break;
 	}
 
-	const AtaStorageProperty p = drive_->lookup_property(prop_name, AtaStorageProperty::Section::internal);
+	const AtaStorageProperty p = drive_->get_property_repository().lookup_property(prop_name, AtaStorageProperty::Section::internal);
 	return (!p.empty() && p.get_value<bool>());
 }
 
@@ -185,7 +185,7 @@ std::string SelfTest::force_stop(const std::shared_ptr<CommandExecutor>& smartct
 	// any command (e.g. "--abort") will abort it. If it has "Suspend Offline...",
 	// there's no way to abort such test.
 	if (type_ == TestType::immediate_offline) {
-		const AtaStorageProperty p = drive_->lookup_property(
+		const AtaStorageProperty p = drive_->get_property_repository().lookup_property(
 				"ata_smart_data/capabilities/offline_is_aborted_upon_new_cmd", AtaStorageProperty::Section::internal);
 		if (!p.empty() && p.get_value<bool>()) {  // if empty, give a chance to abort anyway.
 			return _("Aborting this test is unsupported by the drive.");
@@ -250,13 +250,13 @@ std::string SelfTest::update(const std::shared_ptr<CommandExecutor>& smartctl_ex
 	if (!parse_status) {
 		return Glib::ustring::compose(_("Cannot parse smartctl output: %1"), parse_status.error().message());
 	}
-	auto properties = StoragePropertyProcessor::process_properties(parser->get_properties(), disk_type);
+	auto property_repo = StoragePropertyProcessor::process_properties(parser->get_property_repository(), disk_type);
 
 	// Note: Since the self-test log is sometimes late
 	// and in undetermined order (sorting by hours is too rough),
 	// we use the "self-test status" capability.
 	AtaStorageProperty p;
-	for (const auto& e : properties) {
+	for (const auto& e : property_repo.get_properties()) {
 // 		if (e.section != AtaStorageProperty::Section::data || e.subsection != AtaStorageProperty::SubSection::selftest_log
 		if (e.section != AtaStorageProperty::Section::internal
 				|| !e.is_value_type<AtaStorageSelftestEntry>() || e.get_value<AtaStorageSelftestEntry>().test_num != 0

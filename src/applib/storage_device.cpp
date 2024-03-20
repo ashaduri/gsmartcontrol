@@ -95,7 +95,7 @@ void StorageDevice::clear_fetched(bool including_outputs) {
 	size_.reset();
 	health_property_.reset();
 
-	properties_.clear();
+	property_repository_.clear();
 }
 
 
@@ -140,95 +140,59 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 {
 	this->clear_fetched(false);  // clear everything fetched before, except outputs
 
-	if (this->info_output_.empty()) {
-		debug_out_error("app", DBG_FUNC_MSG << "String to parse is empty.\n");
-		return _("Cannot read information from an empty string.");
+	AtaStorageAttribute::DiskType disk_type = AtaStorageAttribute::DiskType::Any;
+
+	// Try the basic parser first. If it succeeds, use the specialized parser.
+	auto basic_parser = SmartctlParser::create(SmartctlParserType::TextBasic);
+	DBG_ASSERT_RETURN(basic_parser, "Cannot create parser");
+
+	auto parse_status = basic_parser->parse(this->get_info_output());
+	if (!parse_status) {
+		return Glib::ustring::compose(_("Cannot parse smartctl output: %1"), parse_status.error().message());
 	}
 
-	std::string version, version_full;
-	if (!SmartctlVersionParser::parse_version_text(this->info_output_, version, version_full))  // is this smartctl data at all?
-		return _("Cannot get smartctl version information.");
+	auto basic_property_repo = basic_parser->get_property_repository();
 
-	// Detect type. note: we can't distinguish between sata and scsi (on linux, for -d ata switch).
-	// Sample output line 1 (encountered on a CDRW drive):
-	// SMART support is: Unavailable - Packet Interface Devices [this device: CD/DVD] don't support ATA SMART
-	// Sample output line 2 (encountered on a BDRW drive):
-	// Device type:          CD/DVD
-	// NOTE: CD/DVD detection does not work in "-d scsi" mode.
-	if (app_pcre_match("/this device: CD\\/DVD/mi", info_output_)
-			|| app_pcre_match("/^Device type:\\s+CD\\/DVD/mi", info_output_)) {
-		debug_out_dump("app", "Drive " << get_device_with_type() << " seems to be a CD/DVD device.\n");
-		this->set_detected_type(DetectedType::cddvd);
-
-	// This was encountered on a csmi soft-raid under windows with pd0.
-	// The device reported that it had smart supported and enabled.
-	// Product:              Raid 5 Volume
-	} else if (app_pcre_match("/Product:[ \\t]*Raid/mi", info_output_)) {
-		debug_out_dump("app", "Drive " << get_device_with_type() << " seems to be a RAID volume/controller.\n");
-		this->set_detected_type(DetectedType::raid);
-	}
-
-	// RAID volume may report that it has SMART, but it obviously doesn't.
-	if (get_detected_type() == DetectedType::raid) {
-		smart_supported_ = false;
-		smart_enabled_ = false;
-
-	} else {
-		// Note: We don't use SmartctlTextAtaParser here, because this information
-		// may be in some other format. If this information is valid, only then it's
-		// passed to SmartctlTextAtaParser.
-		// Compared to SmartctlTextAtaParser, this one is much looser.
-
-		// Don't put complete messages here - they change across smartctl versions.
-		if (app_pcre_match("/^SMART support is:[ \\t]*Unavailable/mi", info_output_)  // cdroms output this
-				|| app_pcre_match("/Device does not support SMART/mi", info_output_)  // usb flash drives, non-smart hds
-				|| app_pcre_match("/Device Read Identity Failed/mi", info_output_)) {  // solaris scsi, unsupported by smartctl (maybe others?)
-			smart_supported_ = false;
-			smart_enabled_ = false;
-
-		} else if (app_pcre_match("/^SMART support is:[ \\t]*Available/mi", info_output_)
-				|| app_pcre_match("/^SMART support is:[ \\t]*Ambiguous/mi", info_output_)) {
-			smart_supported_ = true;
-
-			if (app_pcre_match("/^SMART support is:[ \\t]*Enabled/mi", info_output_)) {
-				smart_enabled_ = true;
-			} else if (app_pcre_match("/^SMART support is:[ \\t]*Disabled/mi", info_output_)) {
-				smart_enabled_ = false;
-			}
+	auto drive_type_prop = basic_property_repo.lookup_property("_custom/drive_type");
+	if (!drive_type_prop.empty()) {
+		const auto& drive_type = drive_type_prop.get_value<std::string>();
+		if (drive_type == "CD/DVD") {
+			debug_out_dump("app", "Drive " << get_device_with_type() << " seems to be a CD/DVD device.\n");
+			this->set_detected_type(DetectedType::cddvd);
+		} else if (drive_type == "RAID") {
+			debug_out_dump("app", "Drive " << get_device_with_type() << " seems to be a RAID volume/controller.\n");
+			this->set_detected_type(DetectedType::raid);
 		}
 	}
 
-	std::string model;
-	if (app_pcre_match("/^Device Model:[ \\t]*(.*)$/mi", info_output_, &model)) {  // HD's and cdroms
-		model_name_ = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(model), ' ');
-
-	} else if (app_pcre_match("/^(?:Device|Product):[ \\t]*(.*)$/mi", info_output_, &model)) {  // usb flash drives
-		model_name_ = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(model), ' ');
+	{
+		auto rpm_prop = basic_property_repo.lookup_property("rotation_rate");
+		if (!rpm_prop.empty()) {
+			auto rpm = rpm_prop.get_value<int64_t>();
+			this->hdd_ = rpm > 0;
+		}
+		if (hdd_.has_value()) {
+			disk_type = hdd_.value() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
+		}
 	}
 
-
-	std::string family;  // this is from smartctl's database
-	if (app_pcre_match("/^Model Family:[ \\t]*(.*)$/mi", info_output_, &family)) {
-		family_name_ = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(family), ' ');
+	if (auto prop = basic_property_repo.lookup_property("_text_only/smart_supported"); !prop.empty()) {
+		smart_supported_ = prop.get_value<bool>();
 	}
-
-	std::string serial;
-	if (app_pcre_match("/^Serial Number:[ \\t]*(.*)$/mi", info_output_, &serial)) {
-		serial_number_ = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(serial), ' ');
+	if (auto prop = basic_property_repo.lookup_property("_text_only/smart_enabled"); !prop.empty()) {
+		smart_enabled_ = prop.get_value<bool>();
 	}
-
-	std::string rpm_str;
-	if (app_pcre_match("/^Rotation Rate:[ \\t]*(.*)$/mi", info_output_, &rpm_str)) {
-		const int rpm = hz::string_to_number_nolocale<int>(rpm_str, false);
-		hdd_ = rpm > 0;
+	if (auto prop = basic_property_repo.lookup_property("model_name"); !prop.empty()) {
+		model_name_ = prop.get_value<std::string>();
 	}
-
-
-	// Note: this property is present since 5.33.
-	std::string size;
-	if (app_pcre_match("/^User Capacity:[ \\t]*(.*)$/mi", info_output_, &size)) {
-		int64_t bytes = 0;
-		size_ = SmartctlTextParserHelper::parse_byte_size(size, bytes, false);
+	if (auto prop = basic_property_repo.lookup_property("model_family"); !prop.empty()) {
+		family_name_ = prop.get_value<std::string>();
+	}
+	if (auto prop = basic_property_repo.lookup_property("serial_number"); !prop.empty()) {
+		serial_number_ = prop.get_value<std::string>();
+	}
+	if (auto prop = basic_property_repo.lookup_property("user_capacity/bytes"); !prop.empty()) {
+		size_ = prop.readable_value;
 	}
 
 
@@ -236,16 +200,12 @@ std::string StorageDevice::parse_basic_data(bool do_set_properties, bool emit_si
 	// Note that this may try to parse data the second time (it may already have
 	// been parsed by parse_data() which failed at it).
 	if (do_set_properties) {
-		AtaStorageAttribute::DiskType disk_type = AtaStorageAttribute::DiskType::Any;
-		if (hdd_.has_value()) {
-			disk_type = hdd_.value() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
-		}
-
 		auto parser = SmartctlParser::create(SmartctlParserType::TextAta);
 		DBG_ASSERT_RETURN(parser, "Cannot create parser");
 
 		if (parser->parse(this->info_output_)) {  // try to parse it
-			this->set_properties(StoragePropertyProcessor::process_properties(parser->get_properties(), disk_type));  // copy to our drive, overwriting old data
+			this->set_property_repository(
+					StoragePropertyProcessor::process_properties(parser->get_property_repository(), disk_type));  // copy to our drive, overwriting old data
 		}
 	}
 
@@ -349,7 +309,7 @@ std::string StorageDevice::parse_data()
 
 		// set the full properties.
 		// copy to our drive, overwriting old data.
-		this->set_properties(StoragePropertyProcessor::process_properties(parser->get_properties(), disk_type));
+		this->set_property_repository(StoragePropertyProcessor::process_properties(parser->get_property_repository(), disk_type));
 
 		signal_changed().emit(this);  // notify listeners
 
@@ -503,7 +463,7 @@ StorageDevice::Status StorageDevice::get_aodc_status() const
 	bool aodc_supported = false;
 	int found = 0;
 
-	for (const auto& p : properties_) {
+	for (const auto& p : property_repository_.get_properties()) {
 		if (p.section == AtaStorageProperty::Section::internal) {
 			if (p.generic_name == "ata_smart_data/offline_data_collection/status/value/_parsed") {  // if this is not present at all, we set the unknown status.
 				status = (p.get_value<bool>() ? Status::enabled : Status::disabled);
@@ -545,7 +505,7 @@ AtaStorageProperty StorageDevice::get_health_property() const
 	if (health_property_.has_value())  // cached return value
 		return health_property_.value();
 
-	AtaStorageProperty p = this->lookup_property("smart_status/passed",
+	AtaStorageProperty p = property_repository_.lookup_property("smart_status/passed",
 			AtaStorageProperty::Section::data, AtaStorageProperty::SubSection::health);
 	if (!p.empty())
 		health_property_ = p;  // store to cache
@@ -684,25 +644,9 @@ std::string StorageDevice::get_virtual_filename() const
 
 
 
-const std::vector<AtaStorageProperty>& StorageDevice::get_properties() const
+const StoragePropertyRepository& StorageDevice::get_property_repository() const
 {
-	return properties_;
-}
-
-
-
-AtaStorageProperty StorageDevice::lookup_property(const std::string& generic_name, AtaStorageProperty::Section section, AtaStorageProperty::SubSection subsection) const
-{
-	for (const auto& p : properties_) {
-		if (section != AtaStorageProperty::Section::unknown && p.section != section)
-			continue;
-		if (subsection != AtaStorageProperty::SubSection::unknown && p.subsection != subsection)
-			continue;
-
-		if (p.generic_name == generic_name)
-			return p;
-	}
-	return {};  // check with .empty()
+	return property_repository_;
 }
 
 
@@ -890,10 +834,9 @@ void StorageDevice::set_parse_status(ParseStatus value)
 }
 
 
-
-void StorageDevice::set_properties(std::vector<AtaStorageProperty> props)
+void StorageDevice::set_property_repository(StoragePropertyRepository repository)
 {
-	properties_ = std::move(props);
+	property_repository_ = std::move(repository);
 }
 
 

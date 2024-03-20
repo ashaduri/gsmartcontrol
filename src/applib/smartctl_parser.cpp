@@ -62,7 +62,7 @@ hz::ExpectedValue<SmartctlParserFormat, SmartctlParserError> SmartctlParser::det
 
 
 
-const std::vector<AtaStorageProperty>& SmartctlParser::get_properties() const
+const StoragePropertyRepository& SmartctlParser::get_property_repository() const
 {
 	return properties_;
 }
@@ -73,7 +73,7 @@ const std::vector<AtaStorageProperty>& SmartctlParser::get_properties() const
 // Yes, there's no place for this in the Parser, but whatever...
 void SmartctlParser::add_property(AtaStorageProperty p)
 {
-	properties_.push_back(std::move(p));
+	properties_.add_property(std::move(p));
 }
 
 

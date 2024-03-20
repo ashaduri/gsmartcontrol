@@ -19,7 +19,7 @@ Copyright:
 #include "ata_storage_property.h"
 #include "smartctl_parser_types.h"
 #include "hz/error_container.h"
-
+#include "storage_property_repository.h"
 
 
 enum class SmartctlParserError {
@@ -78,8 +78,8 @@ class SmartctlParser {
 		[[nodiscard]] static hz::ExpectedValue<SmartctlParserFormat, SmartctlParserError> detect_output_format(std::string_view smartctl_output);
 
 
-		/// Get parse result properties
-		[[nodiscard]] const std::vector<AtaStorageProperty>& get_properties() const;
+		/// Get parsed properties.
+		[[nodiscard]] const StoragePropertyRepository& get_property_repository() const;
 
 
 	protected:
@@ -90,7 +90,7 @@ class SmartctlParser {
 
 	private:
 
-		std::vector<AtaStorageProperty> properties_;  ///< Parsed data properties
+		StoragePropertyRepository properties_;  ///< Parsed data properties
 
 };
 

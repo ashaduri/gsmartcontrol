@@ -495,7 +495,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_info_
 
 	} else if (app_pcre_match("/^Rotation Rate$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "rotation_rate", "Rotation Rate");
-		p.value = p.reported_value;  // string-type value
+		p.value = hz::string_to_number_nolocale<int64_t>(p.reported_value, false);
 
 	} else if (app_pcre_match("/^Form Factor$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "form_factor/name", "Form Factor");

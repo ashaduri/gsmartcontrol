@@ -312,7 +312,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 			}
 			AtaStorageProperty scan_time_prop;
 			if (drive->get_is_virtual()) {
-				scan_time_prop = drive->lookup_property("local_time/asctime");
+				scan_time_prop = drive->get_property_repository().lookup_property("local_time/asctime");
 				if (!scan_time_prop.empty() && !scan_time_prop.get_value<std::string>().empty()) {
 					name += "\n" + Glib::Markup::escape_text(scan_time_prop.get_value<std::string>());
 				}

@@ -1978,9 +1978,10 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 
 
 
-std::vector<AtaStorageProperty> StoragePropertyProcessor::process_properties(std::vector<AtaStorageProperty> properties, AtaStorageAttribute::DiskType disk_type)
+StoragePropertyRepository StoragePropertyProcessor::process_properties(
+		StoragePropertyRepository properties, AtaStorageAttribute::DiskType disk_type)
 {
-	for (auto& p : properties) {
+	for (auto& p : properties.get_properties_ref()) {
 		ata_storage_property_autoset_description(p, disk_type);
 		ata_storage_property_autoset_warning(p);
 		storage_property_autoset_warning_descr(p);  // append warning to description

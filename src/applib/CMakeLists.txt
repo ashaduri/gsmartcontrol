@@ -60,6 +60,8 @@ target_sources(applib PRIVATE
 	storage_detector_win32.h
 	storage_device.cpp
 	storage_device.h
+	storage_property_repository.cpp
+	storage_property_repository.h
 	storage_settings.h
 	warning_colors.h
 	warning_level.h
