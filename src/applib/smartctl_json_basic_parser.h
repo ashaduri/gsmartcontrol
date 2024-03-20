@@ -29,6 +29,11 @@ class SmartctlJsonBasicParser : public SmartctlParser {
 		// Overridden
 		hz::ExpectedVoid<SmartctlParserError> parse(std::string_view smartctl_output) override;
 
+
+	private:
+
+		hz::ExpectedVoid<SmartctlParserError> parse_section_basic_info(const nlohmann::json& json_root_node);
+
 };
 
 

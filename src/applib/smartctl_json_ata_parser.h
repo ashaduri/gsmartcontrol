@@ -31,9 +31,6 @@ class SmartctlJsonAtaParser : public SmartctlParser {
 
 	private:
 
-		/// Parse the version, filling in the properties
-		hz::ExpectedVoid<SmartctlParserError> parse_version(const nlohmann::json& json_root_node);
-
 		/// Parse the info section (root node), filling in the properties
 		hz::ExpectedVoid<SmartctlParserError> parse_section_info(const nlohmann::json& json_root_node);
 

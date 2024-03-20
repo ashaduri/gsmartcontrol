@@ -22,20 +22,6 @@ Copyright:
 #include "storage_property_repository.h"
 
 
-enum class SmartctlParserError {
-	EmptyInput,
-	UnsupportedFormat,
-	SyntaxError,
-	NoVersion,
-	IncompatibleVersion,
-	NoSections,
-	UnknownSection,  ///< Local parsing function error
-	InternalError,
-	NoSubsectionsParsed,
-	DataError,
-	KeyNotFound,
-};
-
 
 
 /// Smartctl output parser.

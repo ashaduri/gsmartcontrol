@@ -20,6 +20,9 @@ Copyright:
 #include "hz/string_algo.h"
 #include "smartctl_version_parser.h"
 #include "hz/format_unit.h"
+#include "hz/error_container.h"
+#include "ata_storage_property.h"
+
 
 
 enum class SmartctlJsonParserError {
@@ -29,6 +32,7 @@ enum class SmartctlJsonParserError {
 	EmptyPath,
 	InternalError,
 };
+
 
 
 namespace SmartctlJsonParserHelpers {
@@ -80,6 +84,7 @@ template<typename T>
 }
 
 
+
 /// Get json node data. The path is slash-separated string.
 /// If the data is not is found, the default value is returned.
 template<typename T>
@@ -104,12 +109,16 @@ template<typename T>
 }
 
 
+
+/// A signature for a property retrieval function.
 using PropertyRetrievalFunc = std::function<
 		auto(const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
 				-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError> >;
 
 
-auto string_formatter()
+
+/// Return a lambda which retrieves a key value as a string, and sets it as a property.
+inline auto string_formatter()
 {
 	return [](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
 			-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
@@ -127,7 +136,9 @@ auto string_formatter()
 }
 
 
-auto bool_formatter(const std::string_view& true_str, const std::string_view& false_str)
+
+/// Return a lambda which retrieves a key value as a bool (formatted according to parameters), and sets it as a property.
+inline auto bool_formatter(const std::string_view& true_str, const std::string_view& false_str)
 {
 	return [true_str, false_str](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
 		-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
@@ -145,6 +156,8 @@ auto bool_formatter(const std::string_view& true_str, const std::string_view& fa
 }
 
 
+
+/// Return a lambda which retrieves a key value as a string (formatted using another lambda), and sets it as a property.
 template<typename Type>
 auto custom_string_formatter(std::function<std::string(Type value)> formatter)
 {
@@ -162,6 +175,58 @@ auto custom_string_formatter(std::function<std::string(Type value)> formatter)
 		return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
 	};
 }
+
+
+
+/// Parse version from json output, returning 2 properties.
+inline hz::ExpectedVoid<SmartctlParserError> parse_version(const nlohmann::json& json_root_node,
+		AtaStorageProperty& merged_property, AtaStorageProperty& full_property)
+{
+	using namespace SmartctlJsonParserHelpers;
+
+	std::string smartctl_version;
+
+	auto json_ver = get_node_data<std::vector<int>>(json_root_node, "smartctl/version");
+
+	if (!json_ver.has_value()) {
+		debug_out_warn("app", DBG_FUNC_MSG << "Smartctl version not found in JSON.\n");
+
+		if (json_ver.error().data() == SmartctlJsonParserError::PathNotFound) {
+			return hz::Unexpected(SmartctlParserError::NoVersion, "Smartctl version not found in JSON data.");
+		}
+		if (json_ver->size() < 2) {
+			return hz::Unexpected(SmartctlParserError::DataError, "Error getting smartctl version from JSON data: Not enough version components.");
+		}
+		return hz::Unexpected(SmartctlParserError::DataError, std::format("Error getting smartctl version from JSON data: {}", json_ver.error().message()));
+	}
+
+	smartctl_version = std::format("{}.{}", json_ver->at(0), json_ver->at(1));
+
+	{
+		merged_property.set_name("Smartctl version", "smartctl/version/_merged", "Smartctl Version");
+		// p.reported_value = smartctl_version;
+		merged_property.readable_value = smartctl_version;
+		merged_property.value = smartctl_version;  // string-type value
+		merged_property.section = AtaStorageProperty::Section::info;  // add to info section
+	}
+	{
+		full_property.set_name("Smartctl version", "smartctl/version/_merged_full", "Smartctl Version");
+		full_property.readable_value = std::format("{}.{} r{} {} {}", json_ver->at(0), json_ver->at(1),
+				get_node_data<std::string>(json_root_node, "smartctl/svn_revision", {}).value_or(std::string()),
+				get_node_data<std::string>(json_root_node, "smartctl/platform_info", {}).value_or(std::string()),
+				get_node_data<std::string>(json_root_node, "smartctl/build_info", {}).value_or(std::string())
+		);
+		full_property.value = full_property.readable_value;  // string-type value
+		full_property.section = AtaStorageProperty::Section::info;  // add to info section
+	}
+	if (!SmartctlVersionParser::check_format_supported(SmartctlOutputFormat::Json, smartctl_version)) {
+		debug_out_warn("app", DBG_FUNC_MSG << "Incompatible smartctl version. Returning.\n");
+		return hz::Unexpected(SmartctlParserError::IncompatibleVersion, "Incompatible smartctl version.");
+	}
+
+	return {};
+}
+
 
 
 

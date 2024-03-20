@@ -78,7 +78,8 @@ StorageDevice::StorageDevice(std::string dev, std::string type_arg)
 
 
 
-void StorageDevice::clear_fetched(bool including_outputs) {
+void StorageDevice::clear_fetched(bool including_outputs)
+{
 	if (including_outputs) {
 		info_output_.clear();
 		full_output_.clear();
@@ -109,7 +110,14 @@ std::string StorageDevice::fetch_basic_data_and_parse(const std::shared_ptr<Comm
 
 	// We don't use "--all" - it may cause really screwed up the output (tests, etc...).
 	// This looks just like "--info" only on non-smart devices.
-	std::string error_msg = execute_device_smartctl("--info --health --capabilities", smartctl_ex, this->info_output_, true);  // set type to invalid if needed
+	const auto default_parser_type = SmartctlVersionParser::get_default_format(SmartctlParserType::Basic);
+	std::string command_options = "--info --health --capabilities";
+	if (default_parser_type == SmartctlOutputFormat::Json) {
+		// --json flags: o means include original output (just in case).
+		command_options += " --json=o";
+	}
+
+	std::string error_msg = execute_device_smartctl(command_options, smartctl_ex, this->info_output_, true);  // set type to invalid if needed
 
 	// Smartctl 5.39 cvs/svn version defaults to usb type on at least linux and windows.
 	// This means that the old SCSI identify command isn't executed by default,

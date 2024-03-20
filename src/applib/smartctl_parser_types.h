@@ -17,6 +17,21 @@ Copyright:
 #include "hz/enum_helper.h"
 
 
+enum class SmartctlParserError {
+	EmptyInput,
+	UnsupportedFormat,
+	SyntaxError,
+	NoVersion,
+	IncompatibleVersion,
+	NoSections,
+	UnknownSection,  ///< Local parsing function error
+	InternalError,
+	NoSubsectionsParsed,
+	DataError,
+	KeyNotFound,
+};
+
+
 
 enum class SmartctlParserType {
 	Basic,  ///< Info only, supports all types of devices

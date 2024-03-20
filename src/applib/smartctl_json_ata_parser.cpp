@@ -82,8 +82,6 @@ _custom/smart_enabled
 
 hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse(std::string_view smartctl_output)
 {
-	using namespace SmartctlJsonParserHelpers;
-
 	if (hz::string_trim_copy(smartctl_output).empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Empty string passed as an argument. Returning.\n");
 		return hz::Unexpected(SmartctlParserError::EmptyInput, "Smartctl data is empty.");
@@ -97,66 +95,16 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse(std::string_v
 		return hz::Unexpected(SmartctlParserError::SyntaxError, std::string("Invalid JSON data: ") + e.what());
 	}
 
-	auto version_parse_status = parse_version(json_root_node);
+	AtaStorageProperty merged_property, full_property;
+	auto version_parse_status = SmartctlJsonParserHelpers::parse_version(json_root_node, merged_property, full_property);
 	if (!version_parse_status) {
 		return version_parse_status;
 	}
+	add_property(merged_property);
+	add_property(full_property);
 
 	auto info_parse_status = parse_section_info(json_root_node);
 	auto health_parse_status = parse_section_health(json_root_node);
-
-	return {};
-}
-
-
-
-hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_version(const nlohmann::json& json_root_node)
-{
-	using namespace SmartctlJsonParserHelpers;
-
-	std::string smartctl_version;
-
-	auto json_ver = get_node_data<std::vector<int>>(json_root_node, "smartctl/version");
-
-	if (!json_ver.has_value()) {
-		debug_out_warn("app", DBG_FUNC_MSG << "Smartctl version not found in JSON.\n");
-
-		if (json_ver.error().data() == SmartctlJsonParserError::PathNotFound) {
-			return hz::Unexpected(SmartctlParserError::NoVersion, "Smartctl version not found in JSON data.");
-		}
-		if (json_ver->size() < 2) {
-			return hz::Unexpected(SmartctlParserError::DataError, "Error getting smartctl version from JSON data: Not enough version components.");
-		}
-		return hz::Unexpected(SmartctlParserError::DataError, std::format("Error getting smartctl version from JSON data: {}", json_ver.error().message()));
-	}
-
-	smartctl_version = std::format("{}.{}", json_ver->at(0), json_ver->at(1));
-
-	{
-		AtaStorageProperty p;
-		p.set_name("Smartctl version", "smartctl/version/_merged", "Smartctl Version");
-		// p.reported_value = smartctl_version;
-		p.readable_value = smartctl_version;
-		p.value = smartctl_version;  // string-type value
-		p.section = AtaStorageProperty::Section::info;  // add to info section
-		add_property(p);
-	}
-	{
-		AtaStorageProperty p;
-		p.set_name("Smartctl version", "smartctl/version/_merged_full", "Smartctl Version");
-		p.readable_value = std::format("{}.{} r{} {} {}", json_ver->at(0), json_ver->at(1),
-				get_node_data<std::string>(json_root_node, "smartctl/svn_revision", {}).value_or(std::string()),
-				get_node_data<std::string>(json_root_node, "smartctl/platform_info", {}).value_or(std::string()),
-				get_node_data<std::string>(json_root_node, "smartctl/build_info", {}).value_or(std::string())
-		);
-		p.value = p.readable_value;  // string-type value
-		p.section = AtaStorageProperty::Section::info;  // add to info section
-		add_property(p);
-	}
-	if (!SmartctlVersionParser::check_format_supported(SmartctlOutputFormat::Json, smartctl_version)) {
-		debug_out_warn("app", DBG_FUNC_MSG << "Incompatible smartctl version. Returning.\n");
-		return hz::Unexpected(SmartctlParserError::IncompatibleVersion, "Incompatible smartctl version.");
-	}
 
 	return {};
 }
