@@ -55,7 +55,7 @@ Copyright:
 namespace {
 
 	/// Config file in user's HOME
-	inline const hz::fs::path& get_home_config_file()
+	[[nodiscard]] inline const hz::fs::path& get_home_config_file()
 	{
 		static hz::fs::path home_config_file = hz::fs_get_user_config_dir() / "gsmartcontrol" / "gsmartcontrol2.conf";
 		return home_config_file;
@@ -64,7 +64,7 @@ namespace {
 
 
 	/// Libdebug channel buffer stream
-	inline std::ostringstream& get_debug_buf_channel_stream()
+	[[nodiscard]] inline std::ostringstream& get_debug_buf_channel_stream()
 	{
 		static std::ostringstream stream;
 		return stream;
@@ -72,7 +72,7 @@ namespace {
 
 
 	/// Get libdebug buffer channel (create new one if unavailable).
-	inline DebugChannelBasePtr get_debug_buf_channel()
+	[[nodiscard]] inline DebugChannelBasePtr get_debug_buf_channel()
 	{
 		static DebugChannelBasePtr channel = std::make_shared<DebugChannelOStream>(get_debug_buf_channel_stream());
 		return channel;

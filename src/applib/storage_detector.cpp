@@ -28,28 +28,28 @@ Copyright:
 
 
 
-std::string StorageDetector::detect(std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory)
+hz::ExpectedVoid<StorageDetectorError> StorageDetector::detect(std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Starting drive detection.\n");
 
 	std::vector<StorageDevicePtr> all_detected;
-	std::string error_message;
+	hz::ExpectedVoid<StorageDetectorError> detect_status;
 
 	// Try each one and move to next if it fails.
 
 	if constexpr(BuildEnv::is_kernel_linux()) {
-		error_message = detect_drives_linux(all_detected, ex_factory);  // linux /proc/partitions as fallback.
+		detect_status = detect_drives_linux(all_detected, ex_factory);  // linux /proc/partitions as fallback.
 
 	} else if constexpr(BuildEnv::is_kernel_family_windows()) {
-		error_message = detect_drives_win32(all_detected, ex_factory);  // win32
+		detect_status = detect_drives_win32(all_detected, ex_factory);  // win32
 
 	} else {  // freebsd, etc...
-		error_message = detect_drives_other(all_detected, ex_factory);  // bsd, etc... . scans /dev.
+		detect_status = detect_drives_other(all_detected, ex_factory);  // bsd, etc... . scans /dev.
 	}
 
 	if (all_detected.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Cannot detect drives: None of the drive detection methods returned any drives.\n");
-		return error_message;  // last error message should be ok.
+		return detect_status;
 	}
 
 	for (auto& drive : all_detected) {
@@ -86,12 +86,12 @@ std::string StorageDetector::detect(std::vector<StorageDevicePtr>& drives, const
 	std::sort(drives.begin(), drives.end());
 
 	debug_out_info("app", DBG_FUNC_MSG << "Drive detection finished.\n");
-	return std::string();
+	return {};
 }
 
 
 
-std::string StorageDetector::fetch_basic_data(std::vector<StorageDevicePtr>& drives,
+hz::ExpectedVoid<StorageDetectorError> StorageDetector::fetch_basic_data(std::vector<StorageDevicePtr>& drives,
 		const CommandExecutorFactoryPtr& ex_factory, bool return_first_error)
 {
 	fetch_data_errors_.clear();
@@ -107,21 +107,22 @@ std::string StorageDetector::fetch_basic_data(std::vector<StorageDevicePtr>& dri
 		// don't show any errors here - we don't want a screen flood.
 		// no need for gui-based executors here, we already show the message in
 		// iconview background (if called from main window)
-		std::string error_msg;
-		if (drive->get_info_output().empty()) {  // if not fetched during detection
-			error_msg = drive->fetch_basic_data_and_parse(smartctl_ex);
+		hz::ExpectedVoid<StorageDeviceError> fetch_status;
+		if (drive->get_basic_output().empty()) {  // if not fetched during detection
+			fetch_status = drive->fetch_basic_data_and_parse(smartctl_ex);
 		}
 
 		// normally we skip drives with errors - possibly scsi, etc...
-		if (return_first_error && !error_msg.empty())
-			return error_msg;
+		if (return_first_error && !fetch_status) {
+			return hz::Unexpected(StorageDetectorError::StorageDeviceError, fetch_status.error().message());
+		}
 
-		if (!error_msg.empty()) {
+		if (!fetch_status) {
 			// use original executor error if present (permits matches by our users).
 			// if (!smartctl_ex->get_error_msg().empty())
 			//	error_message = smartctl_ex->get_error_msg();
 
-			fetch_data_errors_.push_back(error_msg);
+			fetch_data_errors_.push_back(fetch_status.error().message());
 			fetch_data_error_outputs_.push_back(smartctl_ex->get_stdout_str());
 		}
 
@@ -134,20 +135,22 @@ std::string StorageDetector::fetch_basic_data(std::vector<StorageDevicePtr>& dri
 
 	}
 
-	return std::string();
+	return {};
 }
 
 
 
-std::string StorageDetector::detect_and_fetch_basic_data(std::vector<StorageDevicePtr>& put_drives_here,
+hz::ExpectedVoid<StorageDetectorError> StorageDetector::detect_and_fetch_basic_data(std::vector<StorageDevicePtr>& put_drives_here,
 		const CommandExecutorFactoryPtr& ex_factory)
 {
-	std::string error_msg = detect(put_drives_here, ex_factory);
+	auto detect_status = detect(put_drives_here, ex_factory);
 
-	if (error_msg.empty())
-		fetch_basic_data(put_drives_here, ex_factory, false);  // ignore its errors, there may be plenty of them.
+	if (!detect_status) {
+		// ignore its errors, there may be plenty of them.
+		[[maybe_unused]] auto fetch_status = fetch_basic_data(put_drives_here, ex_factory, false);
+	}
 
-	return error_msg;
+	return detect_status;
 }
 
 

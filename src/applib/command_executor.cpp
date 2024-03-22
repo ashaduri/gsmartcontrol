@@ -72,7 +72,7 @@ bool CommandExecutor::execute()
 
 	const bool slot_connected = !(signal_execute_tick().slots().begin() == signal_execute_tick().slots().end());
 
-	if (slot_connected && !signal_execute_tick().emit(TickStatus::starting))
+	if (slot_connected && !signal_execute_tick().emit(TickStatus::Starting))
 		return false;
 
 	if (!cmdex_.execute()) {  // try to execute
@@ -84,7 +84,7 @@ bool CommandExecutor::execute()
 				get_command_args(), get_stdout_str(), get_stderr_str(), get_error_msg()));
 
 		if (slot_connected)
-			signal_execute_tick().emit(TickStatus::failed);
+			signal_execute_tick().emit(TickStatus::Failed);
 		return false;
 	}
 
@@ -96,7 +96,7 @@ bool CommandExecutor::execute()
 		if (!stop_requested) {  // running and no stop requested yet
 			// call the tick function with "running" periodically.
 			// if it returns false, try to stop.
-			if (slot_connected && !signal_execute_tick().emit(TickStatus::running)) {
+			if (slot_connected && !signal_execute_tick().emit(TickStatus::Running)) {
 				debug_out_info("app", DBG_FUNC_MSG << "execute_tick slot returned false, trying to stop the program.\n");
 				stop_requested = true;
 			}
@@ -119,7 +119,7 @@ bool CommandExecutor::execute()
 
 		// alert the tick function
 		if (stop_requested && slot_connected) {
-			signal_execute_tick().emit(TickStatus::stopping);  // ignore returned value here
+			signal_execute_tick().emit(TickStatus::Stopping);  // ignore returned value here
 		}
 
 
@@ -144,7 +144,7 @@ bool CommandExecutor::execute()
 			get_command_args(), get_stdout_str(), get_stderr_str(), get_error_msg()));
 
 	if (slot_connected)
-		signal_execute_tick().emit(TickStatus::stopped);  // last call
+		signal_execute_tick().emit(TickStatus::Stopped);  // last call
 
 	return true;
 }

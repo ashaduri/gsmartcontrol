@@ -165,7 +165,7 @@ inline bool init_root()
 
 
 /// Get the config branch node
-inline json& get_config_branch()
+[[nodiscard]] inline json& get_config_branch()
 {
 	init_root();
 	return *impl::config_node;
@@ -174,7 +174,7 @@ inline json& get_config_branch()
 
 
 /// Get the default branch node
-inline json& get_default_branch()
+[[nodiscard]] inline json& get_default_branch()
 {
 	init_root();
 	return *impl::default_node;
@@ -212,7 +212,7 @@ void set_default_data(const std::string& path, T data)
 
 /// Get the data from config. If no such node exists, look it up in defaults.
 template<typename T>
-T get_data(const std::string& path)
+[[nodiscard]] T get_data(const std::string& path)
 {
 	T data = {};
 	bool found = false;
@@ -235,7 +235,7 @@ T get_data(const std::string& path)
 
 /// Get the data from defaults.
 template<typename T>
-T get_default_data(const std::string& path)
+[[nodiscard]] T get_default_data(const std::string& path)
 {
 	T data = {};
 	// This can throw only for errors within the program.

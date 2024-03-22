@@ -36,22 +36,22 @@ namespace {
 	inline AtaStorageProperty app_get_checksum_error_property(const std::string& name)
 	{
 		AtaStorageProperty p;
-		p.section = AtaStorageProperty::Section::data;
+		p.section = AtaStorageProperty::Section::Data;
 
 		if (name == "Attribute Data") {
-			p.subsection = AtaStorageProperty::SubSection::attributes;
+			p.subsection = AtaStorageProperty::SubSection::Attributes;
 			p.set_name(name, "_text_only/attribute_data_checksum_error");
 
 		} else if (name == "Attribute Thresholds") {
-			p.subsection = AtaStorageProperty::SubSection::attributes;
+			p.subsection = AtaStorageProperty::SubSection::Attributes;
 			p.set_name(name, "_text_only/attribute_thresholds_checksum_error");
 
 		} else if (name == "ATA Error Log") {
-			p.subsection = AtaStorageProperty::SubSection::error_log;
+			p.subsection = AtaStorageProperty::SubSection::ErrorLog;
 			p.set_name(name, "_text_only/ata_error_log_checksum_error");
 
 		} else if (name == "Self-Test Log") {
-			p.subsection = AtaStorageProperty::SubSection::selftest_log;
+			p.subsection = AtaStorageProperty::SubSection::SelftestLog;
 			p.set_name(name, "_text_only/selftest_log_checksum_error");
 		}
 
@@ -211,7 +211,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse(std::string_v
 		p.set_name("Smartctl version", "smartctl/version/_merged", "Smartctl Version");
 		p.reported_value = version;
 		p.value = p.reported_value;  // string-type value
-		p.section = AtaStorageProperty::Section::info;  // add to info section
+		p.section = AtaStorageProperty::Section::Info;  // add to info section
 		add_property(p);
 	}
 	{
@@ -219,7 +219,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse(std::string_v
 		p.set_name("Smartctl version", "smartctl/version/_merged_full", "Smartctl Version");
 		p.reported_value = version_full;
 		p.value = p.reported_value;  // string-type value
-		p.section = AtaStorageProperty::Section::info;  // add to info section
+		p.section = AtaStorageProperty::Section::Info;  // add to info section
 		add_property(p);
 	}
 
@@ -312,7 +312,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_info(
 {
 	this->set_data_section_info(body);
 
-	const AtaStorageProperty::Section section = AtaStorageProperty::Section::info;
+	const AtaStorageProperty::Section section = AtaStorageProperty::Section::Info;
 
 	// split by lines.
 	// e.g. Device Model:     ST3500630AS
@@ -423,7 +423,7 @@ http://knowledge.seagate.com/articles/en_US/FAQ/213891en
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_info_property(AtaStorageProperty& p)
 {
 	// ---- Info
-	if (p.section != AtaStorageProperty::Section::info) {
+	if (p.section != AtaStorageProperty::Section::Info) {
 		debug_out_error("app", DBG_FUNC_MSG << "Called with non-info section!\n");
 		return hz::Unexpected(SmartctlParserError::InternalError, "Internal parser error.");
 	}
@@ -776,8 +776,8 @@ Device is:        In smartctl database [for details use: -P show]
 */
 
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::data;
-	pt.subsection = AtaStorageProperty::SubSection::health;
+	pt.section = AtaStorageProperty::Section::Data;
+	pt.subsection = AtaStorageProperty::SubSection::Health;
 
 	std::string name, value;
 	if (app_pcre_match("/^([^:\\n]+):[ \\t]*(.*)$/mi", sub, &name, &value)) {
@@ -842,8 +842,8 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 */
 
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::data;
-	pt.subsection = AtaStorageProperty::SubSection::capabilities;
+	pt.section = AtaStorageProperty::Section::Data;
+	pt.subsection = AtaStorageProperty::SubSection::Capabilities;
 
 	std::string sub = sub_initial;
 
@@ -1027,7 +1027,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 	const pcrecpp::RE re_selftest_long_time = app_pcre_re("/^(Extended self-test routine recommended polling time)/mi");
 	const pcrecpp::RE re_conv_selftest_time = app_pcre_re("/^(Conveyance self-test routine recommended polling time)/mi");
 
-	if (cap_prop.section != AtaStorageProperty::Section::data || cap_prop.subsection != AtaStorageProperty::SubSection::capabilities) {
+	if (cap_prop.section != AtaStorageProperty::Section::Data || cap_prop.subsection != AtaStorageProperty::SubSection::Capabilities) {
 		debug_out_error("app", DBG_FUNC_MSG << "Non-capability property passed.\n");
 		return hz::Unexpected(SmartctlParserError::DataError, "Non-capability property passed.");
 	}
@@ -1061,7 +1061,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 		// The last self-test status. break up into pieces.
 
 		AtaStorageProperty p;
-		p.section = AtaStorageProperty::Section::internal;
+		p.section = AtaStorageProperty::Section::Internal;
 		p.set_name("ata_smart_data/self_test/status/passed");
 
 		AtaStorageSelftestEntry sse;
@@ -1079,52 +1079,52 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 
 			} else if (app_pcre_match("/^(The previous self-test routine completed without error or no .*)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = AtaStorageSelftestEntry::Status::completed_no_error;
+				sse.status = AtaStorageSelftestEntry::Status::CompletedNoError;
 
 			} else if (app_pcre_match("/^(The self-test routine was aborted by the host)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = AtaStorageSelftestEntry::Status::aborted_by_host;
+				sse.status = AtaStorageSelftestEntry::Status::AbortedByHost;
 
 			} else if (app_pcre_match("/^(The self-test routine was interrupted by the host with a hard.*)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = AtaStorageSelftestEntry::Status::interrupted;
+				sse.status = AtaStorageSelftestEntry::Status::Interrupted;
 
 			} else if (app_pcre_match("/^(A fatal error or unknown test error occurred while the device was executing its .*)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = AtaStorageSelftestEntry::Status::fatal_or_unknown;
+				sse.status = AtaStorageSelftestEntry::Status::FatalOrUnknown;
 
 			} else if (app_pcre_match("/^(The previous self-test completed having a test element that failed and the test element that failed is not known)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = AtaStorageSelftestEntry::Status::compl_unknown_failure;
+				sse.status = AtaStorageSelftestEntry::Status::ComplUnknownFailure;
 
 			} else if (app_pcre_match("/^(The previous self-test completed having the electrical element of the test failed)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = AtaStorageSelftestEntry::Status::compl_electrical_failure;
+				sse.status = AtaStorageSelftestEntry::Status::ComplElectricalFailure;
 
 			} else if (app_pcre_match("/^(The previous self-test completed having the servo .*)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = AtaStorageSelftestEntry::Status::compl_servo_failure;
+				sse.status = AtaStorageSelftestEntry::Status::ComplServoFailure;
 
 			} else if (app_pcre_match("/^(The previous self-test completed having the read element of the test failed)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = AtaStorageSelftestEntry::Status::compl_read_failure;
+				sse.status = AtaStorageSelftestEntry::Status::ComplReadFailure;
 
 			} else if (app_pcre_match("/^(The previous self-test completed having a test element that failed and the device is suspected of having handling damage)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = AtaStorageSelftestEntry::Status::compl_handling_damage;
+				sse.status = AtaStorageSelftestEntry::Status::ComplHandlingDamage;
 
 			// samsung bug (?), as per smartctl sources.
 			} else if (app_pcre_match("/^(The previous self-test routine completed with unknown result or self-test .*)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = AtaStorageSelftestEntry::Status::compl_unknown_failure;  // we'll use this again (correct?)
+				sse.status = AtaStorageSelftestEntry::Status::ComplUnknownFailure;  // we'll use this again (correct?)
 
 			} else if (app_pcre_match("/^(Self-test routine in progress)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = AtaStorageSelftestEntry::Status::in_progress;
+				sse.status = AtaStorageSelftestEntry::Status::InProgress;
 
 			} else if (app_pcre_match("/^(Reserved)/mi", sv, &value)) {
 				sse.status_str = value;
-				sse.status = AtaStorageSelftestEntry::Status::reserved;
+				sse.status = AtaStorageSelftestEntry::Status::Reserved;
 			}
 		}
 
@@ -1167,7 +1167,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 			// debug_out_dump("app", "Looking for internal capability in: \"" << sv << "\"\n");
 
 			AtaStorageProperty p;
-			p.section = AtaStorageProperty::Section::internal;
+			p.section = AtaStorageProperty::Section::Internal;
 			// Note: We don't set reported_value on internal properties.
 
 			std::string name, value;
@@ -1244,8 +1244,8 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_attributes(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::data;
-	pt.subsection = AtaStorageProperty::SubSection::attributes;
+	pt.section = AtaStorageProperty::Section::Data;
+	pt.subsection = AtaStorageProperty::SubSection::Attributes;
 
 	// split to lines
 	std::vector<std::string> lines;
@@ -1406,37 +1406,37 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 			}
 
 			if (attr_format_style == FormatStyleBrief) {
-				attr.attr_type = app_pcre_match("/P/", attr.flag) ? AtaStorageAttribute::AttributeType::prefail : AtaStorageAttribute::AttributeType::old_age;
+				attr.attr_type = app_pcre_match("/P/", attr.flag) ? AtaStorageAttribute::AttributeType::Prefail : AtaStorageAttribute::AttributeType::OldAge;
 			} else {
 				if (attr_type == "Pre-fail") {
-					attr.attr_type = AtaStorageAttribute::AttributeType::prefail;
+					attr.attr_type = AtaStorageAttribute::AttributeType::Prefail;
 				} else if (attr_type == "Old_age") {
-					attr.attr_type = AtaStorageAttribute::AttributeType::old_age;
+					attr.attr_type = AtaStorageAttribute::AttributeType::OldAge;
 				} else {
-					attr.attr_type = AtaStorageAttribute::AttributeType::unknown;
+					attr.attr_type = AtaStorageAttribute::AttributeType::Unknown;
 				}
 			}
 
 			if (attr_format_style == FormatStyleBrief) {
-				attr.update_type = app_pcre_match("/O/", attr.flag) ? AtaStorageAttribute::UpdateType::always : AtaStorageAttribute::UpdateType::offline;
+				attr.update_type = app_pcre_match("/O/", attr.flag) ? AtaStorageAttribute::UpdateType::Always : AtaStorageAttribute::UpdateType::Offline;
 			} else {
 				if (update_type == "Always") {
-					attr.update_type = AtaStorageAttribute::UpdateType::always;
+					attr.update_type = AtaStorageAttribute::UpdateType::Always;
 				} else if (update_type == "Offline") {
-					attr.update_type = AtaStorageAttribute::UpdateType::offline;
+					attr.update_type = AtaStorageAttribute::UpdateType::Offline;
 				} else {
-					attr.update_type = AtaStorageAttribute::UpdateType::unknown;
+					attr.update_type = AtaStorageAttribute::UpdateType::Unknown;
 				}
 			}
 
-			attr.when_failed = AtaStorageAttribute::FailTime::unknown;
+			attr.when_failed = AtaStorageAttribute::FailTime::Unknown;
 			hz::string_trim(when_failed);
 			if (when_failed == "-") {
-				attr.when_failed = AtaStorageAttribute::FailTime::none;
+				attr.when_failed = AtaStorageAttribute::FailTime::None;
 			} else if (when_failed == "In_the_past" || when_failed == "Past") {  // the second one if from brief format
-				attr.when_failed = AtaStorageAttribute::FailTime::past;
+				attr.when_failed = AtaStorageAttribute::FailTime::Past;
 			} else if (when_failed == "FAILING_NOW" || when_failed == "NOW") {  // the second one if from brief format
-				attr.when_failed = AtaStorageAttribute::FailTime::now;
+				attr.when_failed = AtaStorageAttribute::FailTime::Now;
 			}
 
 			attr.raw_value = hz::string_trim_copy(raw_value);
@@ -1465,8 +1465,8 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_directory_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::data;
-	pt.subsection = AtaStorageProperty::SubSection::directory_log;
+	pt.section = AtaStorageProperty::Section::Data;
+	pt.subsection = AtaStorageProperty::SubSection::DirectoryLog;
 
 	// Directory log contains:
 /*
@@ -1517,8 +1517,8 @@ Address    Access  R/W   Size  Description
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_error_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::data;
-	pt.subsection = AtaStorageProperty::SubSection::error_log;
+	pt.section = AtaStorageProperty::Section::Data;
+	pt.subsection = AtaStorageProperty::SubSection::ErrorLog;
 
 	// Note: The format of this section was changed somewhere between 5.0-x and 5.30.
 	// The old format is doesn't really give any useful info, and whatever's left is somewhat
@@ -1714,8 +1714,8 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_selftest_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::data;
-	pt.subsection = AtaStorageProperty::SubSection::selftest_log;
+	pt.section = AtaStorageProperty::Section::Data;
+	pt.subsection = AtaStorageProperty::SubSection::SelftestLog;
 
 	// Self-test log contains:
 	// * structure revision number
@@ -1823,31 +1823,31 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 				sse.lba_of_first_error = "-";
 
 			hz::string_trim(status_str);
-			AtaStorageSelftestEntry::Status status = AtaStorageSelftestEntry::Status::unknown;
+			AtaStorageSelftestEntry::Status status = AtaStorageSelftestEntry::Status::Unknown;
 
 			// don't match end - some of them are not complete here
 			if (app_pcre_match("/^Completed without error/mi", status_str)) {
-				status = AtaStorageSelftestEntry::Status::completed_no_error;
+				status = AtaStorageSelftestEntry::Status::CompletedNoError;
 			} else if (app_pcre_match("/^Aborted by host/mi", status_str)) {
-				status = AtaStorageSelftestEntry::Status::aborted_by_host;
+				status = AtaStorageSelftestEntry::Status::AbortedByHost;
 			} else if (app_pcre_match("/^Interrupted \\(host reset\\)/mi", status_str)) {
-				status = AtaStorageSelftestEntry::Status::interrupted;
+				status = AtaStorageSelftestEntry::Status::Interrupted;
 			} else if (app_pcre_match("/^Fatal or unknown error/mi", status_str)) {
-				status = AtaStorageSelftestEntry::Status::fatal_or_unknown;
+				status = AtaStorageSelftestEntry::Status::FatalOrUnknown;
 			} else if (app_pcre_match("/^Completed: unknown failure/mi", status_str)) {
-				status = AtaStorageSelftestEntry::Status::compl_unknown_failure;
+				status = AtaStorageSelftestEntry::Status::ComplUnknownFailure;
 			} else if (app_pcre_match("/^Completed: electrical failure/mi", status_str)) {
-				status = AtaStorageSelftestEntry::Status::compl_electrical_failure;
+				status = AtaStorageSelftestEntry::Status::ComplElectricalFailure;
 			} else if (app_pcre_match("/^Completed: servo\\/seek failure/mi", status_str)) {
-				status = AtaStorageSelftestEntry::Status::compl_servo_failure;
+				status = AtaStorageSelftestEntry::Status::ComplServoFailure;
 			} else if (app_pcre_match("/^Completed: read failure/mi", status_str)) {
-				status = AtaStorageSelftestEntry::Status::compl_read_failure;
+				status = AtaStorageSelftestEntry::Status::ComplReadFailure;
 			} else if (app_pcre_match("/^Completed: handling damage/mi", status_str)) {
-				status = AtaStorageSelftestEntry::Status::compl_handling_damage;
+				status = AtaStorageSelftestEntry::Status::ComplHandlingDamage;
 			} else if (app_pcre_match("/^Self-test routine in progress/mi", status_str)) {
-				status = AtaStorageSelftestEntry::Status::in_progress;
+				status = AtaStorageSelftestEntry::Status::InProgress;
 			} else if (app_pcre_match("/^Unknown\\/reserved test status/mi", status_str)) {
-				status = AtaStorageSelftestEntry::Status::reserved;
+				status = AtaStorageSelftestEntry::Status::Reserved;
 			}
 
 			sse.status_str = status_str;
@@ -1893,8 +1893,8 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_selective_selftest_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::data;
-	pt.subsection = AtaStorageProperty::SubSection::selective_selftest_log;
+	pt.section = AtaStorageProperty::Section::Data;
+	pt.subsection = AtaStorageProperty::SubSection::SelectiveSelftestLog;
 
 	// Selective self-test log contains:
 /*
@@ -1950,8 +1950,8 @@ If Selective self-test is pending on power-up, resume after 0 minute delay.
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_scttemp_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::data;
-	pt.subsection = AtaStorageProperty::SubSection::temperature_log;
+	pt.section = AtaStorageProperty::Section::Data;
+	pt.subsection = AtaStorageProperty::SubSection::TemperatureLog;
 
 	// scttemp log contains:
 /*
@@ -2017,8 +2017,8 @@ Index    Estimated Time   Temperature Celsius
 		std::string name, value;
 		if (app_pcre_match("/^(Current Temperature):[ \\t]+(.*) Celsius$/mi", sub, &name, &value)) {
 			AtaStorageProperty p;
-			p.section = AtaStorageProperty::Section::data;
-			p.subsection = AtaStorageProperty::SubSection::temperature_log;
+			p.section = AtaStorageProperty::Section::Data;
+			p.subsection = AtaStorageProperty::SubSection::TemperatureLog;
 			p.set_name("Current Temperature", "ata_sct_status/temperature/current");
 			p.reported_value = value;
 			p.value = hz::string_to_number_nolocale<int64_t>(value);  // integer
@@ -2040,8 +2040,8 @@ Index    Estimated Time   Temperature Celsius
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_scterc_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::data;
-	pt.subsection = AtaStorageProperty::SubSection::erc_log;
+	pt.section = AtaStorageProperty::Section::Data;
+	pt.subsection = AtaStorageProperty::SubSection::ErcLog;
 
 	// scterc log contains:
 /*
@@ -2089,8 +2089,8 @@ SCT Error Recovery Control:
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_devstat(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::data;
-	pt.subsection = AtaStorageProperty::SubSection::devstat;
+	pt.section = AtaStorageProperty::Section::Data;
+	pt.subsection = AtaStorageProperty::SubSection::Devstat;
 
 	// devstat log contains:
 /*
@@ -2260,8 +2260,8 @@ Page Offset Size         Value  Description
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_sataphy(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::data;
-	pt.subsection = AtaStorageProperty::SubSection::phy_log;
+	pt.section = AtaStorageProperty::Section::Data;
+	pt.subsection = AtaStorageProperty::SubSection::PhyLog;
 
 	// sataphy log contains:
 /*

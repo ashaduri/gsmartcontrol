@@ -58,7 +58,7 @@ namespace debug_internal {
 
 
 	/// Get libdebug command-line arguments
-	inline DebugCmdArgs* get_debug_get_args_holder()
+	[[nodiscard]] inline DebugCmdArgs* get_debug_get_args_holder()
 	{
 		static DebugCmdArgs args;
 		return &args;

@@ -123,11 +123,11 @@ class AsyncCommandExecutor : public hz::ErrorHolder {
 		/// If stdout_make_str_as_available_ is false, call this after stopped_cleanup(),
 		/// before next execute(). If it's true, you may call this before the command has
 		/// stopped, but it will decrease performance significantly.
-		std::string get_stdout_str(bool clear_existing = false);
+		[[nodiscard]] std::string get_stdout_str(bool clear_existing = false);
 
 
 		/// See notes for \ref get_stdout_str().
-		std::string get_stderr_str(bool clear_existing = false);
+		[[nodiscard]] std::string get_stderr_str(bool clear_existing = false);
 
 
 		/// Return execution time, in seconds. Call this after execute().
@@ -149,8 +149,8 @@ class AsyncCommandExecutor : public hz::ErrorHolder {
 
 		/// Channel type, for passing to callbacks
 		enum class Channel {
-			standard_output,
-			standard_error
+			StandardOutput,
+			StandardError
 		};
 
 

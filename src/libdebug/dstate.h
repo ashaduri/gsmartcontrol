@@ -121,7 +121,7 @@ namespace debug_internal {
 
 
 	/// Get global libdebug state
-	DebugState& get_debug_state_ref();
+	[[nodiscard]] DebugState& get_debug_state_ref();
 
 
 

@@ -42,9 +42,9 @@ std::ostream& operator<< (std::ostream& os, const AtaStorageCapability& p)
 std::string AtaStorageAttribute::get_attr_type_name(AtaStorageAttribute::AttributeType type)
 {
 	static const std::unordered_map<AttributeType, std::string> m {
-			{AttributeType::unknown, "[unknown]"},
-			{AttributeType::prefail, "pre-failure"},
-			{AttributeType::old_age, "old age"},
+			{AttributeType::Unknown, "[unknown]"},
+			{AttributeType::Prefail, "pre-failure"},
+			{AttributeType::OldAge,  "old age"},
 	};
 	if (auto iter = m.find(type); iter != m.end()) {
 		return iter->second;
@@ -57,9 +57,9 @@ std::string AtaStorageAttribute::get_attr_type_name(AtaStorageAttribute::Attribu
 std::string AtaStorageAttribute::get_update_type_name(AtaStorageAttribute::UpdateType type)
 {
 	static const std::unordered_map<UpdateType, std::string> m {
-			{UpdateType::unknown, "[unknown]"},
-			{UpdateType::always, "continuously"},
-			{UpdateType::offline, "on offline data collect."},
+			{UpdateType::Unknown, "[unknown]"},
+			{UpdateType::Always,  "continuously"},
+			{UpdateType::Offline, "on offline data collect."},
 	};
 	if (auto iter = m.find(type); iter != m.end()) {
 		return iter->second;
@@ -72,10 +72,10 @@ std::string AtaStorageAttribute::get_update_type_name(AtaStorageAttribute::Updat
 std::string AtaStorageAttribute::get_fail_time_name(AtaStorageAttribute::FailTime type)
 {
 	static const std::unordered_map<FailTime, std::string> m {
-			{FailTime::unknown, "[unknown]"},
-			{FailTime::none, "never"},
-			{FailTime::past, "in the past"},
-			{FailTime::now, "now"},
+			{FailTime::Unknown, "[unknown]"},
+			{FailTime::None,    "never"},
+			{FailTime::Past,    "in the past"},
+			{FailTime::Now,     "now"},
 	};
 	if (auto iter = m.find(type); iter != m.end()) {
 		return iter->second;
@@ -192,26 +192,26 @@ std::string AtaStorageErrorBlock::get_displayable_error_types(const std::vector<
 WarningLevel AtaStorageErrorBlock::get_warning_level_for_error_type(const std::string& type)
 {
 	static const std::map<std::string, WarningLevel> m = {
-		{"ABRT", WarningLevel::none},
-		{"AMNF", WarningLevel::alert},
-		{"CCTO", WarningLevel::warning},
-		{"EOM", WarningLevel::warning},
-		{"ICRC", WarningLevel::warning},
-		{"IDNF", WarningLevel::alert},
-		{"ILI", WarningLevel::notice},
-		{"MC", WarningLevel::none},
-		{"MCR", WarningLevel::none},
-		{"NM", WarningLevel::none},
-		{"obs", WarningLevel::none},
-		{"TK0NF", WarningLevel::alert},
-		{"UNC", WarningLevel::alert},
-		{"WP", WarningLevel::none},
+		{"ABRT", WarningLevel::None},
+		{"AMNF", WarningLevel::Alert},
+		{"CCTO", WarningLevel::Warning},
+		{"EOM", WarningLevel::Warning},
+		{"ICRC", WarningLevel::Warning},
+		{"IDNF", WarningLevel::Alert},
+		{"ILI", WarningLevel::Notice},
+		{"MC", WarningLevel::None},
+		{"MCR", WarningLevel::None},
+		{"NM", WarningLevel::None},
+		{"obs", WarningLevel::None},
+		{"TK0NF", WarningLevel::Alert},
+		{"UNC", WarningLevel::Alert},
+		{"WP", WarningLevel::None},
 	};
 
 	if (m.find(type) != m.end()) {
 		return m.at(type);
 	}
-	return WarningLevel::none;  // unknown error
+	return WarningLevel::None;  // unknown error
 }
 
 
@@ -244,18 +244,18 @@ std::ostream& operator<< (std::ostream& os, const AtaStorageErrorBlock& b)
 std::string AtaStorageSelftestEntry::get_status_displayable_name(AtaStorageSelftestEntry::Status s)
 {
 	static const std::unordered_map<Status, std::string> m {
-			{Status::unknown, "[unknown]"},
-			{Status::completed_no_error, "Completed without error"},
-			{Status::aborted_by_host, "Manually aborted"},
-			{Status::interrupted, "Interrupted (host reset)"},
-			{Status::fatal_or_unknown, "Fatal or unknown error"},
-			{Status::compl_unknown_failure, "Completed with unknown failure"},
-			{Status::compl_electrical_failure, "Completed with electrical failure"},
-			{Status::compl_servo_failure, "Completed with servo/seek failure"},
-			{Status::compl_read_failure, "Completed with read failure"},
-			{Status::compl_handling_damage, "Completed: handling damage"},
-			{Status::in_progress, "In progress"},
-			{Status::reserved, "Unknown / reserved state"},
+			{Status::Unknown,                "[unknown]"},
+			{Status::CompletedNoError,       "Completed without error"},
+			{Status::AbortedByHost,          "Manually aborted"},
+			{Status::Interrupted,            "Interrupted (host reset)"},
+			{Status::FatalOrUnknown,         "Fatal or unknown error"},
+			{Status::ComplUnknownFailure,    "Completed with unknown failure"},
+			{Status::ComplElectricalFailure, "Completed with electrical failure"},
+			{Status::ComplServoFailure,      "Completed with servo/seek failure"},
+			{Status::ComplReadFailure,       "Completed with read failure"},
+			{Status::ComplHandlingDamage,    "Completed: handling damage"},
+			{Status::InProgress,             "In progress"},
+			{Status::Reserved,               "Unknown / reserved state"},
 	};
 	if (auto iter = m.find(s); iter != m.end()) {
 		return iter->second;
@@ -268,30 +268,30 @@ std::string AtaStorageSelftestEntry::get_status_displayable_name(AtaStorageSelft
 AtaStorageSelftestEntry::StatusSeverity AtaStorageSelftestEntry::get_status_severity(AtaStorageSelftestEntry::Status s)
 {
 	static const std::unordered_map<Status, StatusSeverity> m {
-			{Status::unknown, StatusSeverity::none},
-			{Status::completed_no_error, StatusSeverity::none},
-			{Status::aborted_by_host, StatusSeverity::warning},
-			{Status::interrupted, StatusSeverity::warning},
-			{Status::fatal_or_unknown, StatusSeverity::error},
-			{Status::compl_unknown_failure, StatusSeverity::error},
-			{Status::compl_electrical_failure, StatusSeverity::error},
-			{Status::compl_servo_failure, StatusSeverity::error},
-			{Status::compl_read_failure, StatusSeverity::error},
-			{Status::compl_handling_damage, StatusSeverity::error},
-			{Status::in_progress, StatusSeverity::none},
-			{Status::reserved, StatusSeverity::none},
+			{Status::Unknown,                StatusSeverity::None},
+			{Status::CompletedNoError,       StatusSeverity::None},
+			{Status::AbortedByHost,          StatusSeverity::Warning},
+			{Status::Interrupted,            StatusSeverity::Warning},
+			{Status::FatalOrUnknown,         StatusSeverity::Error},
+			{Status::ComplUnknownFailure,    StatusSeverity::Error},
+			{Status::ComplElectricalFailure, StatusSeverity::Error},
+			{Status::ComplServoFailure,      StatusSeverity::Error},
+			{Status::ComplReadFailure,       StatusSeverity::Error},
+			{Status::ComplHandlingDamage,    StatusSeverity::Error},
+			{Status::InProgress,             StatusSeverity::None},
+			{Status::Reserved,               StatusSeverity::None},
 	};
 	if (auto iter = m.find(s); iter != m.end()) {
 		return iter->second;
 	}
-	return StatusSeverity::none;
+	return StatusSeverity::None;
 }
 
 
 
 std::string AtaStorageSelftestEntry::get_status_str() const
 {
-	return (status == Status::unknown ? status_str : get_status_displayable_name(status));
+	return (status == Status::Unknown ? status_str : get_status_displayable_name(status));
 }
 
 
@@ -323,10 +323,10 @@ std::ostream& operator<< (std::ostream& os, const AtaStorageSelftestEntry& b)
 std::string AtaStorageProperty::get_section_name(AtaStorageProperty::Section s)
 {
 	static const std::unordered_map<Section, std::string> m {
-			{Section::unknown, "unknown"},
-			{Section::info, "info"},
-			{Section::data, "data"},
-			{Section::internal, "internal"},
+			{Section::Unknown,  "unknown"},
+			{Section::Info,     "info"},
+			{Section::Data,     "data"},
+			{Section::Internal, "internal"},
 	};
 	if (auto iter = m.find(s); iter != m.end()) {
 		return iter->second;
@@ -339,18 +339,18 @@ std::string AtaStorageProperty::get_section_name(AtaStorageProperty::Section s)
 std::string AtaStorageProperty::get_subsection_name(AtaStorageProperty::SubSection s)
 {
 	static const std::unordered_map<SubSection, std::string> m {
-			{SubSection::unknown, "unknown"},
-			{SubSection::health, "health"},
-			{SubSection::capabilities, "capabilities"},
-			{SubSection::attributes, "attributes"},
-			{SubSection::devstat, "devstat"},
-			{SubSection::error_log, "error_log"},
-			{SubSection::selftest_log, "selftest_log"},
-			{SubSection::selective_selftest_log, "selective_selftest_log"},
-			{SubSection::temperature_log, "temperature_log"},
-			{SubSection::erc_log, "erc_log"},
-			{SubSection::phy_log, "phy_log"},
-			{SubSection::directory_log, "directory_log"},
+			{SubSection::Unknown,              "unknown"},
+			{SubSection::Health,               "health"},
+			{SubSection::Capabilities,         "capabilities"},
+			{SubSection::Attributes,           "attributes"},
+			{SubSection::Devstat,              "devstat"},
+			{SubSection::ErrorLog,             "error_log"},
+			{SubSection::SelftestLog,          "selftest_log"},
+			{SubSection::SelectiveSelftestLog, "selective_selftest_log"},
+			{SubSection::TemperatureLog,       "temperature_log"},
+			{SubSection::ErcLog,               "erc_log"},
+			{SubSection::PhyLog,               "phy_log"},
+			{SubSection::DirectoryLog,         "directory_log"},
 	};
 	if (auto iter = m.find(s); iter != m.end()) {
 		return iter->second;
@@ -399,7 +399,7 @@ void AtaStorageProperty::dump(std::ostream& os, std::size_t internal_offset) con
 	const std::string offset(internal_offset, ' ');
 
 	os << offset << "[" << get_section_name(section)
-			<< (section == Section::data ? (", " + get_subsection_name(subsection)) : "") << "]"
+			<< (section == Section::Data ? (", " + get_subsection_name(subsection)) : "") << "]"
 			<< " " << generic_name
 			// << (generic_name == reported_name ? "" : (" (" + reported_name + ")"))
 			<< ": [" << get_value_type_name() << "] ";

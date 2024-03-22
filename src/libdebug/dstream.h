@@ -29,15 +29,15 @@ namespace debug_internal {
 
 
 	/// Get null streambuf - a streambuf which does nothing.
-	std::streambuf& get_null_streambuf();
+	[[nodiscard]] std::streambuf& get_null_streambuf();
 
 	/// Get null ostream - an ostream which does nothing.
-	std::ostream& get_null_stream();
+	[[nodiscard]] std::ostream& get_null_stream();
 
 
 	// state.h includes us, so we need these forward declarations
 // 	class DebugState;
-// 	DebugState& get_debug_state();
+// 	[[nodiscard]] DebugState& get_debug_state();
 
 
 
@@ -234,7 +234,7 @@ namespace debug_internal {
 			}
 
 			/// Get channel list
-			std::vector<DebugChannelBasePtr>& get_channels()
+			[[nodiscard]] std::vector<DebugChannelBasePtr>& get_channels()
 			{
 				return channels_;
 			}

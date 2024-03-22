@@ -27,7 +27,7 @@ class SmartctlTextBasicParser : public SmartctlParser {
 		SmartctlTextBasicParser() = default;
 
 		// Overridden
-		hz::ExpectedVoid<SmartctlParserError> parse(std::string_view smartctl_output) override;
+		[[nodiscard]] hz::ExpectedVoid<SmartctlParserError> parse(std::string_view smartctl_output) override;
 
 };
 

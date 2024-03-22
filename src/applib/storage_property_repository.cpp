@@ -27,9 +27,9 @@ AtaStorageProperty StoragePropertyRepository::lookup_property(
 		const std::string& generic_name, AtaStorageProperty::Section section, AtaStorageProperty::SubSection subsection) const
 {
 	for (const auto& p : properties_) {
-		if (section != AtaStorageProperty::Section::unknown && p.section != section)
+		if (section != AtaStorageProperty::Section::Unknown && p.section != section)
 			continue;
-		if (subsection != AtaStorageProperty::SubSection::unknown && p.subsection != subsection)
+		if (subsection != AtaStorageProperty::SubSection::Unknown && p.subsection != subsection)
 			continue;
 
 		if (p.generic_name == generic_name)

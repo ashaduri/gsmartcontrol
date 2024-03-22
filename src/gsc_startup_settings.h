@@ -27,7 +27,7 @@ struct GscStartupSettings {
 
 
 /// Get startup settings
-inline GscStartupSettings& get_startup_settings()
+[[nodiscard]] inline GscStartupSettings& get_startup_settings()
 {
 	static GscStartupSettings startup_settings;
 	return startup_settings;

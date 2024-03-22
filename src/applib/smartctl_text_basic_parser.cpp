@@ -50,7 +50,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		p.set_name("Smartctl version", "smartctl/version/_merged", "Smartctl Version");
 		p.reported_value = version;
 		p.value = p.reported_value;  // string-type value
-		p.section = AtaStorageProperty::Section::info;  // add to info section
+		p.section = AtaStorageProperty::Section::Info;  // add to info section
 		add_property(p);
 	}
 	{
@@ -58,7 +58,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		p.set_name("Smartctl version", "smartctl/version/_merged_full", "Smartctl Version");
 		p.reported_value = version_full;
 		p.value = p.reported_value;  // string-type value
-		p.section = AtaStorageProperty::Section::info;  // add to info section
+		p.section = AtaStorageProperty::Section::Info;  // add to info section
 		add_property(p);
 	}
 
@@ -76,7 +76,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		p.set_name("Drive type", "_custom/disk_type", "Drive Type");
 		p.reported_value = "CD/DVD";
 		p.value = p.reported_value;  // TODO canonicalize
-		p.section = AtaStorageProperty::Section::info;  // add to info section
+		p.section = AtaStorageProperty::Section::Info;  // add to info section
 		add_property(p);
 
 	// This was encountered on a csmi soft-raid under windows with pd0.
@@ -87,7 +87,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		p.set_name("Drive type", "_custom/disk_type", "Drive Type");
 		p.reported_value = "RAID";
 		p.value = p.reported_value;  // TODO canonicalize
-		p.section = AtaStorageProperty::Section::info;  // add to info section
+		p.section = AtaStorageProperty::Section::Info;  // add to info section
 		add_property(p);
 
 		is_raid = true;
@@ -130,14 +130,14 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		AtaStorageProperty p;
 		p.set_name("SMART Supported", "_text_only/smart_supported", "SMART Supported");
 		p.value = smart_supported;
-		p.section = AtaStorageProperty::Section::info;  // add to info section
+		p.section = AtaStorageProperty::Section::Info;  // add to info section
 		add_property(p);
 	}
 	{
 		AtaStorageProperty p;
 		p.set_name("SMART Enabled", "_text_only/smart_enabled", "SMART Enabled");
 		p.value = smart_enabled;
-		p.section = AtaStorageProperty::Section::info;  // add to info section
+		p.section = AtaStorageProperty::Section::Info;  // add to info section
 		add_property(p);
 	}
 
@@ -183,7 +183,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		p.set_name("Rotation Rate", "rotation_rate", "Rotation Rate");
 		p.reported_value = rpm_str;
 		p.value = hz::string_to_number_nolocale<int>(rpm_str, false);
-		p.section = AtaStorageProperty::Section::info;  // add to info section
+		p.section = AtaStorageProperty::Section::Info;  // add to info section
 		add_property(p);
 	}
 
@@ -198,7 +198,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		p.reported_value = size;
 		p.value = bytes;
 		p.readable_value = readable_size;
-		p.section = AtaStorageProperty::Section::info;  // add to info section
+		p.section = AtaStorageProperty::Section::Info;  // add to info section
 		add_property(p);
 	}
 

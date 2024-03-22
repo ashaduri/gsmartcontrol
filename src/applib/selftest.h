@@ -22,6 +22,21 @@ Copyright:
 #include "command_executor.h"
 
 
+enum class SelfTestError {
+	InternalError,
+	AlreadyRunning,
+	UnsupportedTest,
+	InvalidTestType,
+	CommandFailed,
+	CommandUnknownError,
+	NotRunning,
+	StopUnsupported,
+	UpdateError,
+	ParseError,
+	ReportUnsupported,
+};
+
+
 
 /// SMART self-test runner.
 class SelfTest {
@@ -29,15 +44,15 @@ class SelfTest {
 
 		/// Test type
 		enum class TestType {
-			immediate_offline,  ///< Immediate offline, not supported
-			short_test,  ///< Short self-test
-			long_test,  ///< Extended (a.k.a. long) self-test
-			conveyance  ///< Conveyance self-test
+			ImmediateOffline,  ///< Immediate offline, not supported
+			ShortTest,  ///< Short self-test
+			LongTest,  ///< Extended (a.k.a. long) self-test
+			Conveyance  ///< Conveyance self-test
 		};
 
 
 		/// Get displayable name for a test type
-		static std::string get_test_displayable_name(TestType type);
+		[[nodiscard]] static std::string get_test_displayable_name(TestType type);
 
 
 		/// Constructor. \c drive must have the capabilities present in its properties.
@@ -47,15 +62,15 @@ class SelfTest {
 
 
 		/// Check if the test is currently active
-		bool is_active() const
+		[[nodiscard]] bool is_active() const
 		{
-			return (status_ == AtaStorageSelftestEntry::Status::in_progress);
+			return (status_ == AtaStorageSelftestEntry::Status::InProgress);
 		}
 
 
 		/// Get remaining time percent until the test completion.
 		/// \return -1 if N/A or unknown.
-		int8_t get_remaining_percent() const
+		[[nodiscard]] int8_t get_remaining_percent() const
 		{
 			return remaining_percent_;
 		}
@@ -63,61 +78,61 @@ class SelfTest {
 
 		/// Get estimated time of completion for the test.
 		/// \return -1 if N/A or unknown. Note that 0 is a valid value.
-		std::chrono::seconds get_remaining_seconds() const;
+		[[nodiscard]] std::chrono::seconds get_remaining_seconds() const;
 
 
 		/// Get test type
-		TestType get_test_type() const
+		[[nodiscard]] TestType get_test_type() const
 		{
 			return type_;
 		}
 
 
 		/// Get test status
-		AtaStorageSelftestEntry::Status get_status() const
+		[[nodiscard]] AtaStorageSelftestEntry::Status get_status() const
 		{
 			return status_;
 		}
 
 
 		/// Get the number of seconds after which the caller should call update().
-		std::chrono::seconds get_poll_in_seconds() const
+		[[nodiscard]] 	std::chrono::seconds get_poll_in_seconds() const
 		{
 			return poll_in_seconds_;
 		}
 
 
 		/// Get a constant "test duration during idle" capability drive's stored capabilities. -1 if N/A.
-		std::chrono::seconds get_min_duration_seconds() const;
+		[[nodiscard]] std::chrono::seconds get_min_duration_seconds() const;
 
 
 		/// Gets the current test type support status from drive's stored capabilities.
-		bool is_supported() const;
+		[[nodiscard]] bool is_supported() const;
 
 
 		/// Start the test. Note that this object is not reusable, start() must be called
 		/// only on newly constructed objects.
 		/// \return error message on error, empty string on success.
-		std::string start(const std::shared_ptr<CommandExecutor>& smartctl_ex = nullptr);
+		hz::ExpectedVoid<SelfTestError> start(const std::shared_ptr<CommandExecutor>& smartctl_ex = nullptr);
 
 
 		/// Abort the running test.
 		/// \return error message on error, empty string on success.
-		std::string force_stop(const std::shared_ptr<CommandExecutor>& smartctl_ex = nullptr);
+		hz::ExpectedVoid<SelfTestError> force_stop(const std::shared_ptr<CommandExecutor>& smartctl_ex = nullptr);
 
 
 		/// Update status variables. The user should call this every get_poll_in_seconds() seconds.
 		/// \return error message on error, empty string on success.
-		std::string update(const std::shared_ptr<CommandExecutor>& smartctl_ex = nullptr);
+		hz::ExpectedVoid<SelfTestError> update(const std::shared_ptr<CommandExecutor>& smartctl_ex = nullptr);
 
 
 	private:
 
 		StorageDevicePtr drive_;  ///< Drive to run the tests on
-		TestType type_ = TestType::short_test;  ///< Test type
+		TestType type_ = TestType::ShortTest;  ///< Test type
 
 		// status variables:
-		AtaStorageSelftestEntry::Status status_ = AtaStorageSelftestEntry::Status::unknown;  ///< Current status of the test as reported by the drive
+		AtaStorageSelftestEntry::Status status_ = AtaStorageSelftestEntry::Status::Unknown;  ///< Current status of the test as reported by the drive
 		int8_t remaining_percent_ = -1;  ///< Remaining %. 0 means unknown, -1 means N/A. This is set to 100 on start.
 		int8_t last_seen_percent_ = -1;  ///< Last reported %, to detect changes in percentage (needed for timer update).
 		mutable std::chrono::seconds total_duration_ = std::chrono::seconds(-1);  ///< Total duration needed for the test, as reported by the drive. Constant. This variable acts as a cache.

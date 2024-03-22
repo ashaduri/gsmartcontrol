@@ -36,7 +36,7 @@ class EnumHelper {
 
 
 		/// Return storable name of an enum member
-		static std::string get_storable_name(EnumType enum_value)
+		[[nodiscard]] static std::string get_storable_name(EnumType enum_value)
 		{
 			const auto& m = get_enum_static_map();
 			// Iterator: enum -> pair{storable, displayable}
@@ -46,7 +46,7 @@ class EnumHelper {
 
 
 		/// Return an enum member by its storable name
-		static EnumType get_by_storable_name(const std::string& storable_name,
+		[[nodiscard]] static EnumType get_by_storable_name(const std::string& storable_name,
 				EnumType default_value = EnumExtClass::default_value)
 		{
 			const auto& m = get_storable_enum_static_map();
@@ -57,7 +57,7 @@ class EnumHelper {
 
 
 		/// Return displayable name of an enum member
-		static DisplayableStringType get_displayable_name(EnumType enum_value)
+		[[nodiscard]] static DisplayableStringType get_displayable_name(EnumType enum_value)
 		{
 			const auto& m = get_enum_static_map();
 			// Iterator: enum -> pair{storable, displayable}
@@ -67,7 +67,7 @@ class EnumHelper {
 
 
 		/// Return all possible members of an enum
-		static std::vector<EnumType> getAllValues()
+		[[nodiscard]] static std::vector<EnumType> getAllValues()
 		{
 			static const auto v = build_enum_value_list();
 			return v;
@@ -77,7 +77,7 @@ class EnumHelper {
 	private:
 
 		/// Get a static map of storable names to enum values.
-		static const EnumMapType& get_enum_static_map()
+		[[nodiscard]] static const EnumMapType& get_enum_static_map()
 		{
 			static const auto m = EnumExtClass::build_enum_map();
 			return m;
@@ -85,7 +85,7 @@ class EnumHelper {
 
 
 		/// Get a static map of storable names to enum values.
-		static const std::unordered_map<std::string, EnumType>& get_storable_enum_static_map()
+		[[nodiscard]] static const std::unordered_map<std::string, EnumType>& get_storable_enum_static_map()
 		{
 			static const auto m = build_storable_enum_map();
 			return m;

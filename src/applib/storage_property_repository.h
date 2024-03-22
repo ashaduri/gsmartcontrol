@@ -23,8 +23,8 @@ class StoragePropertyRepository {
 
 		/// Find a property
 		[[nodiscard]] AtaStorageProperty lookup_property(const std::string& generic_name,
-				AtaStorageProperty::Section section = AtaStorageProperty::Section::unknown,  // if unknown, search in all.
-				AtaStorageProperty::SubSection subsection = AtaStorageProperty::SubSection::unknown) const;
+				AtaStorageProperty::Section section = AtaStorageProperty::Section::Unknown,  // if unknown, search in all.
+				AtaStorageProperty::SubSection subsection = AtaStorageProperty::SubSection::Unknown) const;
 
 
 		/// Set properties

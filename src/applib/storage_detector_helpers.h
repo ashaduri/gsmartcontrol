@@ -23,12 +23,14 @@ Copyright:
 #include "rconfig/rconfig.h"
 #include "app_pcrecpp.h"
 #include "hz/string_num.h"
+#include "storage_detector.h"
 
 
 
 /// Find and execute tw_cli with specified options, return its output through \c output.
 /// \return error message
-inline std::string execute_tw_cli(const CommandExecutorFactoryPtr& ex_factory, const std::string& command_options, std::string& output)
+inline hz::ExpectedVoid<StorageDetectorError> execute_tw_cli(const CommandExecutorFactoryPtr& ex_factory,
+		const std::string& command_options, std::string& output)
 {
 	std::shared_ptr<CommandExecutor> executor = ex_factory->create_executor(CommandExecutorFactory::ExecutorType::TwCli);
 
@@ -36,7 +38,8 @@ inline std::string execute_tw_cli(const CommandExecutorFactoryPtr& ex_factory, c
 
 	if (binary.empty()) {
 		debug_out_error("app", DBG_FUNC_MSG << "tw_cli binary is not set in config.\n");
-		return Glib::ustring::compose(_("%1 binary is not specified in configuration."), "tw_cli");
+		return hz::Unexpected(StorageDetectorError::NoHelperBinary,
+				_("tw_cli binary is not specified in configuration."));
 	}
 
 	std::vector<std::string> binaries;  // binaries to try
@@ -62,7 +65,8 @@ inline std::string execute_tw_cli(const CommandExecutorFactoryPtr& ex_factory, c
 	output = hz::string_trim_copy(hz::string_any_to_unix_copy(executor->get_stdout_str()));
 	if (output.empty()) {
 		debug_out_error("app", DBG_FUNC_MSG << "tw_cli returned an empty output.\n");
-		return _("tw_cli returned an empty output.");
+		return hz::Unexpected(StorageDetectorError::EmptyCommandOutput,
+				_("tw_cli returned an empty output."));
 	}
 
 	return {};
@@ -72,15 +76,15 @@ inline std::string execute_tw_cli(const CommandExecutorFactoryPtr& ex_factory, c
 
 /// Get the drives on a 3ware controller using tw_cli.
 /// Note that the drives are inserted in the order they are detected.
-inline std::string tw_cli_get_drives(const std::string& dev, int controller,
+inline hz::ExpectedVoid<StorageDetectorError> tw_cli_get_drives(const std::string& dev, int controller,
 		std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory, bool use_tw_cli_dev)
 {
 	debug_out_info("app", "Getting available 3ware drives (ports) for controller " << controller << " through tw_cli...\n");
 
 	std::string output;
-	std::string error = execute_tw_cli(ex_factory, hz::string_sprintf("/c%d show all", controller), output);
-	if (!error.empty()) {
-		return error;
+	auto exec_status = execute_tw_cli(ex_factory, hz::string_sprintf("/c%d show all", controller), output);
+	if (!exec_status) {
+		return exec_status;
 	}
 
 	// split to lines
@@ -114,14 +118,15 @@ inline std::string tw_cli_get_drives(const std::string& dev, int controller,
 
 /// Return 3ware SCSI host numbers (same as /c switch to tw_cli).
 /// \return error string on error
-inline std::string tw_cli_get_controllers(const CommandExecutorFactoryPtr& ex_factory, std::vector<int>& controllers)
+inline hz::ExpectedVoid<StorageDetectorError> tw_cli_get_controllers(
+		const CommandExecutorFactoryPtr& ex_factory, std::vector<int>& controllers)
 {
 	debug_out_info("app", "Getting available 3ware controllers through tw_cli...\n");
 
 	std::string output;
-	std::string error = execute_tw_cli(ex_factory, "show", output);
-	if (!error.empty()) {
-		return error;
+	auto exec_status = execute_tw_cli(ex_factory, "show", output);
+	if (!exec_status) {
+		return exec_status;
 	}
 
 	// split to lines
@@ -152,7 +157,7 @@ inline std::string tw_cli_get_controllers(const CommandExecutorFactoryPtr& ex_fa
 /// Get number of ports by sequentially running smartctl on each port, until
 /// one of the gives an error. \c type contains a printf-formatted string with %d.
 /// \return an error message on error.
-inline std::string smartctl_scan_drives_sequentially(const std::string& dev, const std::string& type,
+inline hz::ExpectedVoid<StorageDetectorError> smartctl_scan_drives_sequentially(const std::string& dev, const std::string& type,
 	  int from, int to, std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory, std::string& last_output)
 {
 	std::shared_ptr<CommandExecutor> smartctl_ex = ex_factory->create_executor(CommandExecutorFactory::ExecutorType::Smartctl);
@@ -167,8 +172,8 @@ inline std::string smartctl_scan_drives_sequentially(const std::string& dev, con
 		// "Read Device Identity failed: Input/output error"
 		// or
 		// "Read Device Identity failed: empty IDENTIFY data"
-		std::string error_msg = drive->fetch_basic_data_and_parse(smartctl_ex);
-		last_output = drive->get_info_output();
+		auto fetch_status = drive->fetch_basic_data_and_parse(smartctl_ex);
+		last_output = drive->get_basic_output();
 
 		// If we've reached smartctl port limit (older versions may have smaller limits), abort.
 		if (app_pcre_match("/VALID ARGUMENTS ARE/mi", last_output)) {
@@ -182,8 +187,8 @@ inline std::string smartctl_scan_drives_sequentially(const std::string& dev, con
 			break;
 		}
 
-		if (!error_msg.empty()) {
-			debug_out_info("app", "Smartctl returned with an error: " << error_msg << "\n");
+		if (!fetch_status) {
+			debug_out_info("app", "Smartctl returned with an error: " << fetch_status.error().message() << "\n");
 			debug_out_dump("app", "Skipping drive " << drive->get_device_with_type() << " due to smartctl error.\n");
 		} else {
 			drives.push_back(drive);

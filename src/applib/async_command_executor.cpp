@@ -53,14 +53,14 @@ extern "C" {
 	/// Child process stdout handler callback
 	inline gboolean cmdex_on_channel_io_stdout(GIOChannel* source, GIOCondition cond, gpointer data)
 	{
-		return AsyncCommandExecutor::on_channel_io(source, cond, static_cast<AsyncCommandExecutor*>(data), AsyncCommandExecutor::Channel::standard_output);
+		return AsyncCommandExecutor::on_channel_io(source, cond, static_cast<AsyncCommandExecutor*>(data), AsyncCommandExecutor::Channel::StandardOutput);
 	}
 
 
 	/// Child process stderr handler callback
 	inline gboolean cmdex_on_channel_io_stderr(GIOChannel* source, GIOCondition cond, gpointer data)
 	{
-		return AsyncCommandExecutor::on_channel_io(source, cond, static_cast<AsyncCommandExecutor*>(data), AsyncCommandExecutor::Channel::standard_error);
+		return AsyncCommandExecutor::on_channel_io(source, cond, static_cast<AsyncCommandExecutor*>(data), AsyncCommandExecutor::Channel::StandardError);
 	}
 
 
@@ -142,7 +142,7 @@ bool AsyncCommandExecutor::execute()
 	}
 	catch(Glib::ShellError& e)
 	{
-		push_error(Error<void>("gshell", ErrorLevel::error, e.what()));
+		push_error(Error<void>("gshell", ErrorLevel::Error, e.what()));
 		return false;
 	}
 
@@ -184,7 +184,7 @@ bool AsyncCommandExecutor::execute()
 	}
 	catch(Glib::SpawnError& e) {
 		// no data is returned to &-parameters on error.
-		push_error(Error<void>("gspawn", ErrorLevel::error, e.what()));
+		push_error(Error<void>("gspawn", ErrorLevel::Error, e.what()));
 		// Restore CWD
 		if (path_changed) {
 			std::error_code dummy_ec;
@@ -280,7 +280,7 @@ bool AsyncCommandExecutor::try_stop(hz::Signal sig)
 	}
 
 	// Possible: EPERM (no permissions), ESRCH (no such process, or zombie)
-	push_error(Error<int>("errno", ErrorLevel::error, errno));
+	push_error(Error<int>("errno", ErrorLevel::Error, errno));
 
 	DBG_FUNCTION_EXIT_MSG;
 	return false;
@@ -355,7 +355,7 @@ void AsyncCommandExecutor::stopped_cleanup()
 			// translate the exit_code into a message
 			const std::string msg = (translator_func_ ? translator_func_(exit_status)
 					: "[no translator function, exit code: " + std::to_string(exit_status));
-			push_error(Error<int>("exit", ErrorLevel::warn, exit_status, msg));
+			push_error(Error<int>("exit", ErrorLevel::Warn, exit_status, msg));
 		}
 
 	} else {
@@ -365,9 +365,9 @@ void AsyncCommandExecutor::stopped_cleanup()
 			// If it's not our signal, treat as error.
 			// Note: they will never match under win32
 			if (sig_num != this->kill_signal_sent_) {
-				push_error(Error<int>("signal", ErrorLevel::error, sig_num));
+				push_error(Error<int>("signal", ErrorLevel::Error, sig_num));
 			} else {  // it's our signal, treat as warning
-				push_error(Error<int>("signal", ErrorLevel::warn, sig_num));
+				push_error(Error<int>("signal", ErrorLevel::Warn, sig_num));
 			}
 		}
 	}
@@ -395,10 +395,10 @@ void AsyncCommandExecutor::on_child_watch_handler([[maybe_unused]] GPid arg_pid,
 
 	// These are needed because Windows doesn't read the remaining data otherwise.
 	g_io_channel_flush(self->channel_stdout_, nullptr);
-	on_channel_io(self->channel_stdout_, GIOCondition(0), self, Channel::standard_output);
+	on_channel_io(self->channel_stdout_, GIOCondition(0), self, Channel::StandardOutput);
 
 	g_io_channel_flush(self->channel_stderr_, nullptr);
-	on_channel_io(self->channel_stderr_, GIOCondition(0), self, Channel::standard_error);
+	on_channel_io(self->channel_stderr_, GIOCondition(0), self, Channel::StandardError);
 
 	if (self->channel_stdout_) {
 		g_io_channel_shutdown(self->channel_stdout_, FALSE, nullptr);
@@ -452,7 +452,7 @@ gboolean AsyncCommandExecutor::on_channel_io(GIOChannel* channel,
 		continue_events = false;  // there'll be no more data
 	}
 
-	DBG_ASSERT_RETURN(channel_type == Channel::standard_output || channel_type == Channel::standard_error, false);
+	DBG_ASSERT_RETURN(channel_type == Channel::StandardOutput || channel_type == Channel::StandardError, false);
 
 // 	const gsize count = 4 * 1024;
 	// read the bytes one by one. without this, a buffered iochannel hangs while waiting for data.
@@ -461,9 +461,9 @@ gboolean AsyncCommandExecutor::on_channel_io(GIOChannel* channel,
 	std::array<gchar, count> buf = {0};
 
 	std::string* output_str = nullptr;
-	if (channel_type == Channel::standard_output) {
+	if (channel_type == Channel::StandardOutput) {
 		output_str = &self->str_stdout_;
-	} else if (channel_type == Channel::standard_error) {
+	} else if (channel_type == Channel::StandardError) {
 		output_str = &self->str_stderr_;
 	}
 	DBG_ASSERT_RETURN(output_str, false);
@@ -478,7 +478,7 @@ gboolean AsyncCommandExecutor::on_channel_io(GIOChannel* channel,
 			output_str->append(buf.data(), bytes_read);
 
 		if (channel_error) {
-			self->push_error(Error<void>("giochannel", ErrorLevel::error, channel_error->message));
+			self->push_error(Error<void>("giochannel", ErrorLevel::Error, channel_error->message));
 			g_error_free(channel_error);
 			break;  // stop on next invocation (is this correct?)
 		}

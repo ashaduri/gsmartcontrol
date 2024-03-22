@@ -88,11 +88,11 @@ class CommandExecutor : public sigc::trackable {
 
 
 		/// Get command to execute
-		std::string get_command_name() const;
+		[[nodiscard]] std::string get_command_name() const;
 
 
 		/// Get command arguments
-		std::string get_command_args() const;
+		[[nodiscard]] std::string get_command_args() const;
 
 
 		/// Execute the command. The function will return only after the command exits.
@@ -136,10 +136,10 @@ class CommandExecutor : public sigc::trackable {
 		void set_buffer_sizes(gsize stdout_buffer_size = 0, gsize stderr_buffer_size = 0);
 
 		/// See AsyncCommandExecutor::get_stdout_str() for details.
-		std::string get_stdout_str(bool clear_existing = false);
+		[[nodiscard]] std::string get_stdout_str(bool clear_existing = false);
 
 		/// See AsyncCommandExecutor::get_stderr_str() for details.
-		std::string get_stderr_str(bool clear_existing = false);
+		[[nodiscard]] std::string get_stderr_str(bool clear_existing = false);
 
 		/// See AsyncCommandExecutor::set_exit_status_translator() for details.
 		void set_exit_status_translator(AsyncCommandExecutor::exit_status_translator_func_t func);
@@ -147,7 +147,7 @@ class CommandExecutor : public sigc::trackable {
 
 		/// Get command execution error message. If \c with_header
 		/// is true, a header set using set_error_header() will be displayed first.
-		std::string get_error_msg(bool with_header = false) const;
+		[[nodiscard]] std::string get_error_msg(bool with_header = false) const;
 
 
 		/// Set a message to display when running. "{command}" in \c msg will be replaced by the command.
@@ -159,7 +159,7 @@ class CommandExecutor : public sigc::trackable {
 
 
 		/// Get error header string. See get_error_msg()
-		std::string get_error_header();
+		[[nodiscard]] std::string get_error_header();
 
 
 		// ----------------- Signals
@@ -167,11 +167,11 @@ class CommandExecutor : public sigc::trackable {
 
 		/// Status flags for signal_execute_tick slots, along with possible return values.
 		enum class TickStatus {
-			starting,  ///< Return status will indicate whether to proceed with the execution
-			failed,  ///< The execution failed
-			running,  ///< Return status will indicate whether to abort the execution
-			stopping,  ///< The child has been sent a signal
-			stopped  ///< The child exited
+			Starting,  ///< Return status will indicate whether to proceed with the execution
+			Failed,  ///< The execution failed
+			Running,  ///< Return status will indicate whether to abort the execution
+			Stopping,  ///< The child has been sent a signal
+			Stopped  ///< The child exited
 		};
 
 
@@ -195,11 +195,11 @@ class CommandExecutor : public sigc::trackable {
 
 
 		/// Get "running" message
-		std::string get_running_msg() const;
+		[[nodiscard]] std::string get_running_msg() const;
 
 
 		/// Get command executor object
-		AsyncCommandExecutor& get_async_executor();
+		[[nodiscard]] AsyncCommandExecutor& get_async_executor();
 
 
 	private:

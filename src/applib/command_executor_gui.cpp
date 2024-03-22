@@ -146,7 +146,7 @@ void CommandExecutorGui::set_running_dialog_abort_mode(bool aborting)
 
 bool CommandExecutorGui::execute_tick_func(TickStatus status)
 {
-	if (status == TickStatus::starting) {
+	if (status == TickStatus::Starting) {
 		if (execution_running_)
 			return false;  // already running, abort the new one (?)
 
@@ -166,7 +166,7 @@ bool CommandExecutorGui::execute_tick_func(TickStatus status)
 	}
 
 
-	if (status == TickStatus::failed) {
+	if (status == TickStatus::Failed) {
 
 		// close the dialog
 		this->show_hide_dialog(false);
@@ -179,7 +179,7 @@ bool CommandExecutorGui::execute_tick_func(TickStatus status)
 	}
 
 
-	if (status == TickStatus::running) {
+	if (status == TickStatus::Running) {
 
 		while (Gtk::Main::events_pending()) {
 			// Gtk::Main::iteration() returns true if Gtk::Main::quit() has been called, or if there's no Main yet.
@@ -204,7 +204,7 @@ bool CommandExecutorGui::execute_tick_func(TickStatus status)
 	}
 
 
-	if (status == TickStatus::stopping) {
+	if (status == TickStatus::Stopping) {
 		if (Gtk::Main::iteration(false) && Gtk::Main::level() > 0) {
 			return false;  // we're exiting from the main loop, so return early
 		}
@@ -215,7 +215,7 @@ bool CommandExecutorGui::execute_tick_func(TickStatus status)
 	}
 
 
-	if (status == TickStatus::stopped) {
+	if (status == TickStatus::Stopped) {
 		// close the dialog.
 		this->show_hide_dialog(false);
 

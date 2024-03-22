@@ -56,9 +56,9 @@ class AtaStorageAttribute {
 
 		/// Attribute pre-failure / old-age type
 		enum class AttributeType {
-			unknown,  ///< Unknown
-			prefail,  ///< Pre-failure (reported: Pre-fail)
-			old_age  ///< Old age (reported: Old_age)
+			Unknown,  ///< Unknown
+			Prefail,  ///< Pre-failure (reported: Pre-fail)
+			OldAge  ///< Old age (reported: Old_age)
 		};
 
 		/// Get readable attribute type name
@@ -67,9 +67,9 @@ class AtaStorageAttribute {
 
 		/// Attribute when-updated type
 		enum class UpdateType {
-			unknown,  ///< Unknown
-			always,  ///< Continuously (reported: Always)
-			offline  ///< Only during offline data collection (reported: Offline)
+			Unknown,  ///< Unknown
+			Always,  ///< Continuously (reported: Always)
+			Offline  ///< Only during offline data collection (reported: Offline)
 		};
 
 		/// Get readable when-updated type name
@@ -78,10 +78,10 @@ class AtaStorageAttribute {
 
 		/// Attribute when-failed type
 		enum class FailTime {
-			unknown,  ///< Unknown
-			none,  ///< Never (reported: -)
-			past,  ///< In the past (reported: In_the_past)
-			now  ///< Now (reported: FAILING_NOW)
+			Unknown,  ///< Unknown
+			None,  ///< Never (reported: -)
+			Past,  ///< In the past (reported: In_the_past)
+			Now  ///< Now (reported: FAILING_NOW)
 		};
 
 		/// Get a readable when-failed type name
@@ -97,9 +97,9 @@ class AtaStorageAttribute {
 		std::optional<uint8_t> value;  ///< Normalized value. May be unset ("---").
 		std::optional<uint8_t> worst;  ///< Worst ever value. May be unset ("---").
 		std::optional<uint8_t> threshold;  ///< Threshold for normalized value. May be unset ("---").
-		AttributeType attr_type = AttributeType::unknown;  ///< Attribute pre-fail / old-age type
-		UpdateType update_type = UpdateType::unknown;  ///< When-updated type
-		FailTime when_failed = FailTime::unknown;  ///< When-failed type
+		AttributeType attr_type = AttributeType::Unknown;  ///< Attribute pre-fail / old-age type
+		UpdateType update_type = UpdateType::Unknown;  ///< When-updated type
+		FailTime when_failed = FailTime::Unknown;  ///< When-failed type
 		std::string raw_value;  ///< Raw value as a string, as presented by smartctl (formatted).
 		int64_t raw_value_int = 0;  ///< Same as raw_value, but parsed as int64. original value is 6 bytes I think.
 
@@ -141,10 +141,10 @@ class AtaStorageErrorBlock {
 	public:
 
 		/// Get readable error types from reported types
-		static std::string get_displayable_error_types(const std::vector<std::string>& types);
+		[[nodiscard]] static std::string get_displayable_error_types(const std::vector<std::string>& types);
 
 		/// Get warning level (Warning) for an error type
-		static WarningLevel get_warning_level_for_error_type(const std::string& type);
+		[[nodiscard]] static WarningLevel get_warning_level_for_error_type(const std::string& type);
 
 		/// Format lifetime hours with comma
 		[[nodiscard]] std::string format_lifetime_hours() const;
@@ -170,25 +170,25 @@ class AtaStorageSelftestEntry {
 
 		/// Self-test log entry status
 		enum class Status {
-			unknown,  ///< Initial state
-			completed_no_error,  ///< Completed with no error, or no test was run
-			aborted_by_host,  ///< Aborted by host
-			interrupted,  ///< Interrupted by user
-			fatal_or_unknown,  ///< Fatal or unknown error. Treated as test failure.
-			compl_unknown_failure,  ///< Completed with unknown error. Treated as test failure.
-			compl_electrical_failure,  ///< Completed with electrical error. Treated as test failure.
-			compl_servo_failure,  ///< Completed with servo error. Treated as test failure.
-			compl_read_failure,  ///< Completed with read error. Treated as test failure.
-			compl_handling_damage,  ///< Completed with handling damage error. Treated as test failure.
-			in_progress,  ///< Test in progress
-			reserved  ///< Reserved
+			Unknown,  ///< Initial state
+			CompletedNoError,  ///< Completed with no error, or no test was run
+			AbortedByHost,  ///< Aborted by host
+			Interrupted,  ///< Interrupted by user
+			FatalOrUnknown,  ///< Fatal or unknown error. Treated as test failure.
+			ComplUnknownFailure,  ///< Completed with unknown error. Treated as test failure.
+			ComplElectricalFailure,  ///< Completed with electrical error. Treated as test failure.
+			ComplServoFailure,  ///< Completed with servo error. Treated as test failure.
+			ComplReadFailure,  ///< Completed with read error. Treated as test failure.
+			ComplHandlingDamage,  ///< Completed with handling damage error. Treated as test failure.
+			InProgress,  ///< Test in progress
+			Reserved  ///< Reserved
 		};
 
 		/// Self-test error severity
 		enum class StatusSeverity {
-			none,
-			warning,
-			error
+			None,
+			Warning,
+			Error
 		};
 
 		/// Get log entry status displayable name
@@ -209,7 +209,7 @@ class AtaStorageSelftestEntry {
 		uint32_t test_num = 0;  ///< Test number. always starts from 1. larger means older or newer, depending on model. 0 for capability.
 		std::string type;  ///< Extended offline, Short offline, Conveyance offline, etc... . capability: unused.
 		std::string status_str;  ///< Self-test routine in progress, Completed without error, etc... (as reported by log or capability)
-		Status status = Status::unknown;  ///< same as status_str, but from enum
+		Status status = Status::Unknown;  ///< same as status_str, but from enum
 		int8_t remaining_percent = -1;  ///< Remaining %. 0% for completed, 90% for started. -1 if n/a.
 		uint32_t lifetime_hours = 0;  ///< When the test happened (in lifetime hours). capability: unused.
 		std::string lba_of_first_error;  ///< LBA of the first error. "-" or value (format? usually hex). capability: unused.
@@ -228,10 +228,10 @@ class AtaStorageProperty {
 
 		/// Sections in output
 		enum class Section {
-			unknown,  ///< Used when searching in all sections
-			info,  ///< Short info (--info)
-			data,  ///< SMART DATA
-			internal  ///< Internal application-specific data
+			Unknown,  ///< Used when searching in all sections
+			Info,  ///< Short info (--info)
+			Data,  ///< SMART DATA
+			Internal  ///< Internal application-specific data
 		};
 
 		/// Get displayable section type name
@@ -240,18 +240,18 @@ class AtaStorageProperty {
 
 		/// Subsections in smart data section
 		enum class SubSection {
-			unknown,  ///< Used when searching in all subsections
-			health,  ///< Overall-health (-H, --health)
-			capabilities,  ///< General SMART Values, aka Capabilities (-c, --capabilities)
-			attributes,  ///< Attributes (-A, --attributes). These need decoding.
-			devstat,  ///< Device statistics (--log=devstat). These need decoding.
-			error_log,  ///< Error Log (--log=error)
-			selftest_log,  ///< Self-test log (--log=selftest)
-			selective_selftest_log,  ///< Selective self-test log (--log=selective)
-			temperature_log,  ///< SCT temperature (current and history) (--log=scttemp)
-			erc_log,  ///< SCT Error Recovery Control settings (--log=scterc)
-			phy_log,  ///< Phy log (--log=sataphy)
-			directory_log,  ///< Directory log (--log=directory)
+			Unknown,  ///< Used when searching in all subsections
+			Health,  ///< Overall-health (-H, --health)
+			Capabilities,  ///< General SMART Values, aka Capabilities (-c, --capabilities)
+			Attributes,  ///< Attributes (-A, --attributes). These need decoding.
+			Devstat,  ///< Device statistics (--log=devstat). These need decoding.
+			ErrorLog,  ///< Error Log (--log=error)
+			SelftestLog,  ///< Self-test log (--log=selftest)
+			SelectiveSelftestLog,  ///< Selective self-test log (--log=selective)
+			TemperatureLog,  ///< SCT temperature (current and history) (--log=scttemp)
+			ErcLog,  ///< SCT Error Recovery Control settings (--log=scterc)
+			PhyLog,  ///< Phy log (--log=sataphy)
+			DirectoryLog,  ///< Directory log (--log=directory)
 		};
 
 		/// Get displayable subsection type name
@@ -276,7 +276,7 @@ class AtaStorageProperty {
 
 		/// Get value of type T
 		template<typename T>
-		const T& get_value() const;
+		[[nodiscard]] const T& get_value() const;
 
 
 		/// Check if value is of type T
@@ -302,8 +302,8 @@ class AtaStorageProperty {
 
 		std::string description;  ///< Property description (for tooltips, etc...). May contain markup.
 
-		Section section = Section::unknown;  ///< Section this property belongs to
-		SubSection subsection = SubSection::unknown;  ///< Subsection this property belongs to
+		Section section = Section::Unknown;  ///< Section this property belongs to
+		SubSection subsection = SubSection::Unknown;  ///< Subsection this property belongs to
 
 		std::string reported_value;  ///< String representation of the value as reported
 		std::string readable_value;  ///< User-friendly readable representation of value. if empty, use the other members.
@@ -321,7 +321,7 @@ class AtaStorageProperty {
 			AtaStorageSelftestEntry  ///< Value (if it's a self-test entry)
 		> value;
 
-		WarningLevel warning_level = WarningLevel::none;  ///< Warning severity for this property
+		WarningLevel warning_level = WarningLevel::None;  ///< Warning severity for this property
 		std::string warning_reason;  // Warning reason (displayable)
 
 		bool show_in_ui = true;  ///< Whether to show this property in UI or not

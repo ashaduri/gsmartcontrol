@@ -110,7 +110,7 @@ namespace hz {
 	}
 
 
-	inline std::type_info* get_current_exception_type()
+	[[nodiscard]] inline std::type_info* get_current_exception_type()
 	{
 		return ::abi::__cxa_current_exception_type();
 	}
@@ -129,7 +129,7 @@ namespace hz {
 	}
 
 
-	inline std::type_info* get_current_exception_type()
+	[[nodiscard]] inline std::type_info* get_current_exception_type()
 	{
 		return nullptr;
 	}

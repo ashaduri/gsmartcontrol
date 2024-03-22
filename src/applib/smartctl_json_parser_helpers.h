@@ -179,7 +179,7 @@ auto custom_string_formatter(std::function<std::string(Type value)> formatter)
 
 
 /// Parse version from json output, returning 2 properties.
-inline hz::ExpectedVoid<SmartctlParserError> parse_version(const nlohmann::json& json_root_node,
+[[nodiscard]] inline hz::ExpectedVoid<SmartctlParserError> parse_version(const nlohmann::json& json_root_node,
 		AtaStorageProperty& merged_property, AtaStorageProperty& full_property)
 {
 	using namespace SmartctlJsonParserHelpers;
@@ -207,7 +207,7 @@ inline hz::ExpectedVoid<SmartctlParserError> parse_version(const nlohmann::json&
 		// p.reported_value = smartctl_version;
 		merged_property.readable_value = smartctl_version;
 		merged_property.value = smartctl_version;  // string-type value
-		merged_property.section = AtaStorageProperty::Section::info;  // add to info section
+		merged_property.section = AtaStorageProperty::Section::Info;  // add to info section
 	}
 	{
 		full_property.set_name("Smartctl version", "smartctl/version/_merged_full", "Smartctl Version");
@@ -217,7 +217,7 @@ inline hz::ExpectedVoid<SmartctlParserError> parse_version(const nlohmann::json&
 				get_node_data<std::string>(json_root_node, "smartctl/build_info", {}).value_or(std::string())
 		);
 		full_property.value = full_property.readable_value;  // string-type value
-		full_property.section = AtaStorageProperty::Section::info;  // add to info section
+		full_property.section = AtaStorageProperty::Section::Info;  // add to info section
 	}
 	if (!SmartctlVersionParser::check_format_supported(SmartctlOutputFormat::Json, smartctl_version)) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Incompatible smartctl version. Returning.\n");

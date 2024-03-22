@@ -19,6 +19,9 @@ Copyright:
 #include "async_command_executor.h"
 #include "command_executor.h"
 #include "hz/fs_ns.h"
+#include "hz/error_container.h"
+
+
 
 
 
@@ -162,12 +165,22 @@ using SmartctlExecutor = SmartctlExecutorGeneric<CommandExecutor>;
 
 
 /// Get smartctl binary (from config, etc...). Returns an empty string if not found.
-hz::fs::path get_smartctl_binary();
+[[nodiscard]] hz::fs::path get_smartctl_binary();
+
+
+
+enum class SmartctlExecutorError {
+	InvalidDevice,  ///< Device name is invalid
+	NoBinary,  ///< Smartctl binary is not specified in configuration
+	PermissionDenied,  ///< Permission denied while opening device
+	ExecutionError,  ///< Error executing smartctl
+	EmptyOutput,  ///< Smartctl returned an empty output
+};
 
 
 /// Execute smartctl on device \c device.
 /// \return error message on error, empty string on success.
-std::string execute_smartctl(const std::string& device, const std::string& device_opts,
+[[nodiscard]] hz::ExpectedVoid<SmartctlExecutorError> execute_smartctl(const std::string& device, const std::string& device_opts,
 		const std::string& command_options,
 		std::shared_ptr<CommandExecutor> smartctl_ex, std::string& smartctl_output);
 

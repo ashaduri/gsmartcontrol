@@ -73,14 +73,14 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 		AtaStorageProperty p;
 		p.set_name("SMART Supported", "_text_only/smart_supported", "SMART Supported");
 		p.value = smart_supported;
-		p.section = AtaStorageProperty::Section::info;  // add to info section
+		p.section = AtaStorageProperty::Section::Info;  // add to info section
 		add_property(p);
 	}
 	{
 		AtaStorageProperty p;
 		p.set_name("SMART Enabled", "_text_only/smart_enabled", "SMART Enabled");
 		p.value = smart_enabled;
-		p.section = AtaStorageProperty::Section::info;  // add to info section
+		p.section = AtaStorageProperty::Section::Info;  // add to info section
 		add_property(p);
 	}
 
@@ -177,7 +177,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 
 		auto p = retrieval_func(json_root_node, key, displayable_name);
 		if (p.has_value()) {  // ignore if not found
-			p->section = AtaStorageProperty::Section::info;
+			p->section = AtaStorageProperty::Section::Info;
 			add_property(p.value());
 		}
 	}

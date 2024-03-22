@@ -20,11 +20,13 @@ Copyright:
 
 #include "command_executor_factory.h"
 #include "storage_device.h"
+#include "storage_detector.h"
 
 
 
 /// Detect drives in Linux
-std::string detect_drives_linux(std::vector<StorageDevicePtr>& drives, const CommandExecutorFactoryPtr& ex_factory);
+[[nodiscard]] hz::ExpectedVoid<StorageDetectorError> detect_drives_linux(std::vector<StorageDevicePtr>& drives,
+		const CommandExecutorFactoryPtr& ex_factory);
 
 
 

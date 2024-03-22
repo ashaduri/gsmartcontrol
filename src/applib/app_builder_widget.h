@@ -31,7 +31,7 @@ Copyright:
 #define APP_BUILDER_CONNECT(ui_element, signal_name, callback) \
 	if (true) { \
 		if (!(ui_element)) \
-			 this->lookup_widget(#ui_element, ui_element); \
+			[[maybe_unused]] bool found = this->lookup_widget(#ui_element, ui_element); \
 		if (ui_element) { \
 			(ui_element)->signal_ ## signal_name ().connect(sigc::mem_fun(*this, &std::remove_reference_t<decltype(*this)>::callback)); \
 		} \
@@ -85,24 +85,24 @@ class AppBuilderWidget : public WidgetType, public WindowInstanceManager<Child, 
 
 
 		/// Get UI resource
-		Glib::RefPtr<Gtk::Builder> get_ui();
+		[[nodiscard]] Glib::RefPtr<Gtk::Builder> get_ui();
 
 
 		/// Find a widget in UI and return it.
 		/// \return nullptr if widget was not found.
-		Gtk::Widget* lookup_widget(const Glib::ustring& name);
+		[[nodiscard]] Gtk::Widget* lookup_widget(const Glib::ustring& name);
 
 
 		/// Find a widget in UI and return it.
 		/// \return nullptr if widget was not found.
 		template<typename WidgetPtr>
-		WidgetPtr lookup_widget(const Glib::ustring& name);
+		[[nodiscard]] WidgetPtr lookup_widget(const Glib::ustring& name);
 
 
 		/// Find a widget in UI and return it in \ref w.
 		/// \return false if widget was not found.
 		template<typename Widget>
-		bool lookup_widget(const Glib::ustring& name, Widget*& w);
+		[[nodiscard]] bool lookup_widget(const Glib::ustring& name, Widget*& w);
 
 
 	protected:

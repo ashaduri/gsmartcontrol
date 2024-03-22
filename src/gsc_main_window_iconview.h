@@ -39,12 +39,12 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 		/// Message type to show
 		enum class Message {
-			none,  ///< No message
-			scan_disabled,  ///< Scanning is disabled
-			scanning,  ///< Scanning drives...
-			no_drives_found,  ///< No drives found
-			no_smartctl,  ///< No smartctl installed
-			please_rescan,  ///< Re-scan to see the drives
+			None,  ///< No message
+			ScanDisabled,  ///< Scanning is disabled
+			Scanning,  ///< Scanning drives...
+			NoDrivesFound,  ///< No drives found
+			NoSmartctl,  ///< No smartctl installed
+			PleaseRescan,  ///< Re-scan to see the drives
 		};
 
 
@@ -52,12 +52,12 @@ class GscMainWindowIconView : public Gtk::IconView {
 		static std::string get_message_string(Message type)
 		{
 			static const std::unordered_map<Message, std::string> m {
-					{Message::none, _("[error - invalid message]")},
-					{Message::scan_disabled, _("Automatic scanning is disabled.\nPress Ctrl+R to scan manually.")},
-					{Message::scanning, _("Scanning system, please wait...")},
-					{Message::no_drives_found, _("No drives found.")},
-					{Message::no_smartctl, _("Please specify the correct smartctl binary in\nPreferences and press Ctrl-R to re-scan.")},
-					{Message::please_rescan, _("Preferences changed.\nPress Ctrl-R to re-scan.")},
+					{Message::None,          _("[error - invalid message]")},
+					{Message::ScanDisabled,  _("Automatic scanning is disabled.\nPress Ctrl+R to scan manually.")},
+					{Message::Scanning,      _("Scanning system, please wait...")},
+					{Message::NoDrivesFound, _("No drives found.")},
+					{Message::NoSmartctl,    _("Please specify the correct smartctl binary in\nPreferences and press Ctrl-R to re-scan.")},
+					{Message::PleaseRescan,  _("Preferences changed.\nPress Ctrl-R to re-scan.")},
 			};
 			if (auto iter = m.find(type); iter != m.end()) {
 				return iter->second;
@@ -175,7 +175,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 			if (in_destruction()) {
 				return true;
 			}
-			if (empty_view_message != Message::none && this->num_icons == 0) {  // no icons
+			if (empty_view_message != Message::None && this->num_icons == 0) {  // no icons
 				Glib::RefPtr<Pango::Layout> layout = this->create_pango_layout("");
 				layout->set_alignment(Pango::ALIGN_CENTER);
 				layout->set_markup(get_message_string(empty_view_message));
@@ -347,18 +347,18 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 			Glib::RefPtr<Gdk::Pixbuf> icon;
 			switch(drive->get_detected_type()) {
-				case StorageDevice::DetectedType::cddvd:
+				case StorageDevice::DetectedType::CdDvd:
 					icon = cddvd_icon;
 					break;
-				case StorageDevice::DetectedType::unknown:  // standard HD icon
-				case StorageDevice::DetectedType::invalid:
-				case StorageDevice::DetectedType::raid:  // TODO a separate icon for this
+				case StorageDevice::DetectedType::Unknown:  // standard HD icon
+				case StorageDevice::DetectedType::Invalid:
+				case StorageDevice::DetectedType::Raid:  // TODO a separate icon for this
 					icon = hd_icon;
 					break;
 			}
 
 			const AtaStorageProperty health_prop = drive->get_health_property();
-			if (health_prop.warning_level != WarningLevel::none && health_prop.generic_name == "smart_status/passed") {
+			if (health_prop.warning_level != WarningLevel::None && health_prop.generic_name == "smart_status/passed") {
 				if (icon) {
 					icon = icon->copy();  // work on a copy
 					if (icon->get_colorspace() == Gdk::COLORSPACE_RGB && icon->get_bits_per_sample() == 8) {
@@ -589,7 +589,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 		GscMainWindow* main_window = nullptr;  ///< The main window, our parent
 
-		Message empty_view_message = Message::none;  ///< Message type to display when not showing any icons
+		Message empty_view_message = Message::None;  ///< Message type to display when not showing any icons
 
 };
 

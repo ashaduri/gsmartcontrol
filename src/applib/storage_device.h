@@ -33,6 +33,16 @@ using StorageDevicePtr = std::shared_ptr<StorageDevice>;
 
 
 
+enum class StorageDeviceError {
+	TestRunning,  ///< A test is running, so the device cannot perform this operation.
+	CannotExecuteOnVirtual,  ///< Cannot execute this operation on a virtual device.
+	ExecutionError,  ///< Error executing the command.
+	CommandFailed,  ///< SMART command (e.g. enable/disable SMART) failed.
+	CommandUnknownError,  ///< Unknown error from the command.
+	ParseError,  ///< Error parsing the output.
+};
+
+
 /// This class represents a single drive
 class StorageDevice {
 	public:
@@ -40,34 +50,34 @@ class StorageDevice {
 		/// These may be used to force smartctl to a special type, as well as
 		/// to display the correct icon
 		enum class DetectedType {
-			unknown,  // Unknown. Will be autodetected by smartctl.
-			invalid,  // This is set by smartctl executor if it detects invalid type (but not if it's scsi).
-			cddvd,  // CD/DVD/Blu-Ray. Unsupported by smartctl, only basic info is given.
-			raid,  // RAID controller or volume. Unsupported by smartctl, only basic info is given.
+			Unknown,  // Unknown. Will be autodetected by smartctl.
+			Invalid,  // This is set by smartctl executor if it detects invalid type (but not if it's scsi).
+			CdDvd,  // CD/DVD/Blu-Ray. Unsupported by smartctl, only basic info is given.
+			Raid,  // RAID controller or volume. Unsupported by smartctl, only basic info is given.
 		};
 
 
 		/// This gives a string which can be displayed in outputs
-		static std::string get_type_storable_name(DetectedType type);
+		[[nodiscard]] static std::string get_type_storable_name(DetectedType type);
 
 
 		/// Statuses of various states
 		enum class Status {
-			enabled,  ///< SMART, AODC
-			disabled,  ///< SMART, AODC
-			unsupported,  ///< SMART, AODC
-			unknown  ///< AODC - supported but unknown if it's enabled or not.
+			Enabled,  ///< SMART, AODC
+			Disabled,  ///< SMART, AODC
+			Unsupported,  ///< SMART, AODC
+			Unknown  ///< AODC - supported but unknown if it's enabled or not.
 		};
 
 		/// Get displayable name for Status.
-		static std::string get_status_displayable_name(Status status);
+		[[nodiscard]] static std::string get_status_displayable_name(Status status);
 
 
 		/// Statuses of various parse states
 		enum class ParseStatus {
-			full,  ///< Fully parsed
-			info,  ///< Only info section available
-			none,  ///< No data
+			Full,  ///< Fully parsed
+			Basic,  ///< Only info section available
+			None,  ///< No data
 		};
 
 
@@ -83,31 +93,30 @@ class StorageDevice {
 
 		/// Calls "smartctl -i -H -c" (info section, health, capabilities), then parse_basic_data().
 		/// Called during drive detection.
-		/// Note: this will clear the non-basic properties!
-		std::string fetch_basic_data_and_parse(const std::shared_ptr<CommandExecutor>& smartctl_ex = nullptr);
+		/// Note: this will clear all previous properties!
+		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> fetch_basic_data_and_parse(
+				const std::shared_ptr<CommandExecutor>& smartctl_ex = nullptr);
 
 		/// Detects type, smart support, smart status (on / off).
-		/// Note: this will clear the non-basic properties!
-		std::string parse_basic_data(bool do_set_properties = true, bool emit_signal = true);
+		/// Note: this will clear all previous properties!
+		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> parse_basic_data(bool do_set_properties = true, bool emit_signal = true);
+
 
 		/// Execute smartctl --all / -x (all sections), get output, parse it (basic data too), fill properties.
-		std::string fetch_data_and_parse(const std::shared_ptr<CommandExecutor>& smartctl_ex);  // returns error message on error.
+		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> fetch_full_data_and_parse(const std::shared_ptr<CommandExecutor>& smartctl_ex);
 
-		// Parses full info. If failed, try to parse it as basic info.
-		/// \return error message on error.
-		std::string parse_data();
+		/// Parse full info. If failed, try to parse it as basic info.
+		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> try_parse_data();
 
 		/// Get the "fully parsed" flag
-		ParseStatus get_parse_status() const;
+		[[nodiscard]] ParseStatus get_parse_status() const;
 
 
 		/// Try to enable SMART.
-		/// \return error message on error, empty string on success
-		std::string set_smart_enabled(bool b, const std::shared_ptr<CommandExecutor>&);
+		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> set_smart_enabled(bool b, const std::shared_ptr<CommandExecutor>& smartctl_ex);
 
 		/// Try to enable Automatic Offline Data Collection.
-		/// \return error message on error, empty string on success
-		std::string set_aodc_enabled(bool b, const std::shared_ptr<CommandExecutor>&);
+		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> set_aodc_enabled(bool b, const std::shared_ptr<CommandExecutor>& smartctl_ex);
 
 
 		/// Get SMART status
@@ -199,7 +208,7 @@ class StorageDevice {
 		void set_info_output(std::string s);
 
 		/// Get "info" output to parse
-		[[nodiscard]] std::string get_info_output() const;
+		[[nodiscard]] std::string get_basic_output() const;
 
 
 		/// Set "full" output to parse
@@ -224,7 +233,7 @@ class StorageDevice {
 
 
 		/// Get the recommended filename to save output to. Includes model and date.
-		std::string get_save_filename() const;
+		[[nodiscard]] std::string get_save_filename() const;
 
 
 		/// Get final smartctl options for this device from config and type info.
@@ -232,8 +241,7 @@ class StorageDevice {
 
 
 		/// Execute smartctl on this device. Nothing is modified in this class.
-		/// \return error message on error, empty string on success
-		std::string execute_device_smartctl(const std::string& command_options,
+		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> execute_device_smartctl(const std::string& command_options,
 				const std::shared_ptr<CommandExecutor>& smartctl_ex, std::string& output, bool check_type = false);
 
 
@@ -252,8 +260,8 @@ class StorageDevice {
 
 	private:
 
-		std::string info_output_;  ///< "smartctl --info" output
-		std::string full_output_;  ///< "smartctl --all" output
+		std::string basic_output_;  ///< "smartctl --info" output
+		std::string full_output_;  ///< "smartctl --all" or "-x" output
 
 		std::string device_;  ///< e.g. /dev/sda or pd0. empty if virtual.
 		std::string type_arg_;  ///< Device type (for -d smartctl parameter), as specified when adding the device.
@@ -265,14 +273,14 @@ class StorageDevice {
 		hz::fs::path virtual_file_;  ///< A file (smartctl data) the virtual device was loaded from
 		bool is_manually_added_ = false;  ///< StorageDevice doesn't use it, but it's useful for its users.
 
-		ParseStatus parse_status_ = ParseStatus::none;  ///< "Fully parsed" flag
+		ParseStatus parse_status_ = ParseStatus::None;  ///< "Fully parsed" flag
 
 		/// Sort of a "lock". If true, the device is not allowed to perform any commands
 		/// except "-l selftest" and maybe "--capabilities" and "--info" (not sure).
 		bool test_is_active_ = false;
 
 		// Note: These are detected through info output
-		DetectedType detected_type_ = DetectedType::unknown;  ///< e.g. type_unknown
+		DetectedType detected_type_ = DetectedType::Unknown;  ///< e.g. type_unknown
 		std::optional<bool> smart_supported_;  ///< SMART support status
 		std::optional<bool> smart_enabled_;  ///< SMART enabled status
 		mutable std::optional<Status> aodc_status_;  ///< Cached aodc status.

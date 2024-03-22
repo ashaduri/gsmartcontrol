@@ -1151,7 +1151,7 @@ namespace {
 
 
 	/// Get program-wide attribute description database
-	inline const AttributeDatabase& get_attribute_db()
+	[[nodiscard]] inline const AttributeDatabase& get_attribute_db()
 	{
 		static const AttributeDatabase attribute_db;
 		return attribute_db;
@@ -1387,7 +1387,7 @@ namespace {
 
 
 	/// Get program-wide devstat description database
-	inline const StatisticsDatabase& get_devstat_db()
+	[[nodiscard]] inline const StatisticsDatabase& get_devstat_db()
 	{
 		static const StatisticsDatabase devstat_db;
 		return devstat_db;
@@ -1571,7 +1571,7 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, AtaStorageA
 		found = true;
 
 	// Section Info
-	} else if (p.section == AtaStorageProperty::Section::info) {
+	} else if (p.section == AtaStorageProperty::Section::Info) {
 		found = auto_set(p, "model_family", "Model family (from smartctl database)")
 		|| auto_set(p, "model_name", "Device model")
 		|| auto_set(p, "serial_number", "Serial number, unique to each physical drive")
@@ -1593,15 +1593,15 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, AtaStorageA
 			found = true;
 		}
 
-	} else if (p.section == AtaStorageProperty::Section::data) {
+	} else if (p.section == AtaStorageProperty::Section::Data) {
 
 		switch (p.subsection) {
-			case AtaStorageProperty::SubSection::health:
+			case AtaStorageProperty::SubSection::Health:
 				found = auto_set(p, "smart_status/passed", "Overall health self-assessment test result. Note: If the drive passes this test, it doesn't mean it's OK. "
 						"However, if the drive doesn't pass it, then it's either already dead, or it's predicting its own failure within the next 24 hours. In this case do a backup immediately!");
 				break;
 
-			case AtaStorageProperty::SubSection::capabilities:
+			case AtaStorageProperty::SubSection::Capabilities:
 				found = auto_set(p, "ata_smart_data/offline_data_collection/status/_group", "Offline Data Collection (a.k.a. Offline test) is usually automatically performed when the device is idle or every fixed amount of time. "
 						"This should show if Automatic Offline Data Collection is enabled.")
 				|| auto_set(p, "ata_smart_data/offline_data_collection/completion_seconds", "Offline Data Collection (a.k.a. Offline test) is usually automatically performed when the device is idle or every fixed amount of time. "
@@ -1617,7 +1617,7 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, AtaStorageA
 				|| auto_set(p, "ata_sct_capabilities/_group", "Drive properties related to temperature information.");
 				break;
 
-			case AtaStorageProperty::SubSection::attributes:
+			case AtaStorageProperty::SubSection::Attributes:
 				found = auto_set(p, "ata_smart_attributes/revision", p.displayable_name.c_str());
 				if (!found) {
 					auto_set_attr(p, disk_type);
@@ -1625,11 +1625,11 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, AtaStorageA
 				}
 				break;
 
-			case AtaStorageProperty::SubSection::devstat:
+			case AtaStorageProperty::SubSection::Devstat:
 				found = auto_set_statistic(p);
 				break;
 
-			case AtaStorageProperty::SubSection::error_log:
+			case AtaStorageProperty::SubSection::ErrorLog:
 				found = auto_set(p, "ata_smart_error_log/extended/revision", p.displayable_name.c_str())
 				|| auto_set(p, "ata_smart_error_log/extended/count", "Number of errors in error log. Note: Some manufacturers may list completely harmless errors in this log "
 					"(e.g., command invalid, not implemented, etc...).");
@@ -1642,24 +1642,24 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, AtaStorageA
 				}
 				break;
 
-			case AtaStorageProperty::SubSection::selftest_log:
+			case AtaStorageProperty::SubSection::SelftestLog:
 				found = auto_set(p, "ata_smart_self_test_log/extended/revision", p.displayable_name.c_str())
 				|| auto_set(p, "ata_smart_self_test_log/extended/table/count", "Number of tests in selftest log. Note: The number of entries may be limited to the newest manual tests.");
 		// 		|| auto_set(p, "ata_smart_self_test_log/_present", "This device does not support self-test logging.");  // the property text already says that
 				break;
 
-			case AtaStorageProperty::SubSection::selective_selftest_log:
+			case AtaStorageProperty::SubSection::SelectiveSelftestLog:
 				// nothing here
 				break;
 
-			case AtaStorageProperty::SubSection::temperature_log:
+			case AtaStorageProperty::SubSection::TemperatureLog:
 				found = auto_set(p, "ata_sct_status/_not_present", "SCT support is needed for SCT temperature logging.");
 				break;
 
-			case AtaStorageProperty::SubSection::erc_log:
-			case AtaStorageProperty::SubSection::phy_log:
-			case AtaStorageProperty::SubSection::directory_log:
-			case AtaStorageProperty::SubSection::unknown:
+			case AtaStorageProperty::SubSection::ErcLog:
+			case AtaStorageProperty::SubSection::PhyLog:
+			case AtaStorageProperty::SubSection::DirectoryLog:
+			case AtaStorageProperty::SubSection::Unknown:
 				// nothing
 				break;
 		}
@@ -1673,46 +1673,46 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, AtaStorageA
 
 WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 {
-	WarningLevel w = WarningLevel::none;
+	WarningLevel w = WarningLevel::None;
 	std::string reason;
 
 	// checksum errors first
 	if (p.generic_name.find("_checksum_error") != std::string::npos) {
-		w = WarningLevel::warning;
+		w = WarningLevel::Warning;
 		reason = "The drive may have a broken implementation of SMART, or it's failing.";
 
 
 	// Section Info
-	} else if (p.section == AtaStorageProperty::Section::info) {
+	} else if (p.section == AtaStorageProperty::Section::Info) {
 		if (name_match(p, "_custom/smart_supported") && !p.get_value<bool>()) {
-			w = WarningLevel::notice;
+			w = WarningLevel::Notice;
 			reason = "SMART is not supported. You won't be able to read any SMART information from this drive.";
 
 		} else if (name_match(p, "_custom/smart_enabled") && !p.get_value<bool>()) {
-			w = WarningLevel::notice;
+			w = WarningLevel::Notice;
 			reason = "SMART is disabled. You should enable it to read any SMART information from this drive. "
 					"Additionally, some drives do not log useful data with SMART disabled, so it's advisable to keep it always enabled.";
 
 		} else if (name_match(p, "_text_only/info_warning")) {
-			w = WarningLevel::notice;
+			w = WarningLevel::Notice;
 			reason = "Your drive may be affected by the warning, please see the details.";
 		}
 
-	} else if (p.section == AtaStorageProperty::Section::data) {
+	} else if (p.section == AtaStorageProperty::Section::Data) {
 
 		switch(p.subsection) {
-			case AtaStorageProperty::SubSection::health:
+			case AtaStorageProperty::SubSection::Health:
 				if (name_match(p, "smart_status/passed") && !p.get_value<bool>()) {
-					w = WarningLevel::alert;
+					w = WarningLevel::Alert;
 					reason = "The drive is reporting that it will FAIL very soon. Please back up as soon as possible!";
 				}
 				break;
 
-			case AtaStorageProperty::SubSection::capabilities:
+			case AtaStorageProperty::SubSection::Capabilities:
 				// nothing
 				break;
 
-			case AtaStorageProperty::SubSection::attributes:
+			case AtaStorageProperty::SubSection::Attributes:
 			{
 				if (p.is_value_type<AtaStorageAttribute>()) {
 
@@ -1723,86 +1723,86 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 
 					// Reallocated Sector Count
 					if (attr_match(p, "attr_reallocated_sector_count") && attr.raw_value_int > 0) {
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. "
 								"This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					// Spin-up Retry Count
 					} else if (attr_match(p, "attr_spin_up_retry_count") && attr.raw_value_int > 0) {
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. "
 								"Your drive may have problems spinning up, which could lead to a complete mechanical failure. Please back up.";
 
 					// Soft Read Error Rate
 					} else if (attr_match(p, "attr_soft_read_error_rate") && attr.raw_value_int > 0) {
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. "
 								"This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					// Temperature (for some it may be 10xTemp, so limit the upper bound.)
 					} else if (attr_match(p, "attr_temperature_celsius")
 							&& attr.raw_value_int > 50 && attr.raw_value_int <= 120) {  // 50C
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The temperature of the drive is higher than 50 degrees Celsius. "
 								"This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 
 					// Temperature (for some it may be 10xTemp, so limit the upper bound.)
 					} else if (attr_match(p, "attr_temperature_celsius_x10") && attr.raw_value_int > 500) {  // 50C
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The temperature of the drive is higher than 50 degrees Celsius. "
 								"This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 
 					// Reallocation Event Count
 					} else if (attr_match(p, "attr_reallocation_event_count") && attr.raw_value_int > 0) {
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. "
 								"This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					// Current Pending Sector Count
 					} else if ((attr_match(p, "attr_current_pending_sector_count") || attr_match(p, "attr_total_pending_sectors"))
 								&& attr.raw_value_int > 0) {
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. "
 								"This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					// Uncorrectable Sector Count
 					} else if ((attr_match(p, "attr_offline_uncorrectable") || attr_match(p, "attr_total_attr_offline_uncorrectable"))
 								&& attr.raw_value_int > 0) {
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The drive has a non-zero Raw value, but there is no SMART warning yet. "
 								"This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					// SSD Life Left (%)
 					} else if ((attr_match(p, "attr_ssd_life_left"))
 								&& attr.value.value() < 50) {
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The drive has less than half of its estimated life left.";
 
 					// SSD Life Used (%)
 					} else if ((attr_match(p, "attr_ssd_life_used"))
 								&& attr.raw_value_int >= 50) {
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The drive has less than half of its estimated life left.";
 					}
 
 					// Now override this with reported SMART attribute failure warnings / errors
 
-					if (attr.when_failed == AtaStorageAttribute::FailTime::now) {  // NOW
+					if (attr.when_failed == AtaStorageAttribute::FailTime::Now) {  // NOW
 
-						if (attr.attr_type == AtaStorageAttribute::AttributeType::old_age) {  // old-age
-							w = WarningLevel::warning;
+						if (attr.attr_type == AtaStorageAttribute::AttributeType::OldAge) {  // old-age
+							w = WarningLevel::Warning;
 							reason = "The drive has a failing old-age attribute. Usually this indicates a wear-out. You should consider replacing the drive.";
 						} else {  // pre-fail
-							w = WarningLevel::alert;
+							w = WarningLevel::Alert;
 							reason = "The drive has a failing pre-fail attribute. Usually this indicates a that the drive will FAIL soon. Please back up immediately!";
 						}
 
-					} else if (attr.when_failed == AtaStorageAttribute::FailTime::past) {  // PAST
+					} else if (attr.when_failed == AtaStorageAttribute::FailTime::Past) {  // PAST
 
-						if (attr.attr_type == AtaStorageAttribute::AttributeType::old_age) {  // old-age
+						if (attr.attr_type == AtaStorageAttribute::AttributeType::OldAge) {  // old-age
 							// nothing. we don't warn about e.g. temperature increase in the past
 						} else {  // pre-fail
-							w = WarningLevel::warning;  // there was a problem, it got corrected (hopefully)
+							w = WarningLevel::Warning;  // there was a problem, it got corrected (hopefully)
 							reason = "The drive had a failing pre-fail attribute, but it has been restored to a normal value. "
 									"This may be a serious problem, you should consider replacing the drive.";
 						}
@@ -1811,13 +1811,13 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 				break;
 			}
 
-			case AtaStorageProperty::SubSection::devstat:
+			case AtaStorageProperty::SubSection::Devstat:
 			{
 				if (p.is_value_type<AtaStorageStatistic>()) {
 					const auto& statistic = p.get_value<AtaStorageStatistic>();
 
 					if (name_match(p, "Pending Error Count") && statistic.value_int > 0) {
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					// "Workload Utilization" is either normalized, or encodes several values, so we can't use it.
@@ -1832,54 +1832,54 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 	*/
 
 					} else if (name_match(p, "Utilization Usage Rate") && statistic.value_int >= 50) {
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The drive has less than half of its estimated life left.";
 
 					} else if (name_match(p, "Utilization Usage Rate") && statistic.value_int >= 100) {
-						w = WarningLevel::warning;
+						w = WarningLevel::Warning;
 						reason = "The drive is past its estimated lifespan.";
 
 					} else if (name_match(p, "Number of Reallocated Logical Sectors") && !statistic.is_normalized() && statistic.value_int > 0) {
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					} else if (name_match(p, "Number of Reallocated Logical Sectors") && statistic.is_normalized() && statistic.value_int <= 0) {
-						w = WarningLevel::warning;
+						w = WarningLevel::Warning;
 						reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					} else if (name_match(p, "Number of Mechanical Start Failures") && statistic.value_int > 0) {
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The drive is reporting mechanical errors.";
 
 					} else if (name_match(p, "Number of Realloc. Candidate Logical Sectors") && statistic.value_int > 0) {
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					} else if (name_match(p, "Number of Reported Uncorrectable Errors") && statistic.value_int > 0) {
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The drive is reporting surface errors. This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 					} else if (name_match(p, "Current Temperature") && statistic.value_int > 50) {
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The temperature of the drive is higher than 50 degrees Celsius. "
 								"This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 
 					} else if (name_match(p, "Time in Over-Temperature") && statistic.value_int > 0) {
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The temperature of the drive is or was over the manufacturer-specified maximum. "
 								"This may have shortened its lifespan and caused damage. Please install a cooling solution.";
 
 					} else if (name_match(p, "Time in Under-Temperature") && statistic.value_int > 0) {
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The temperature of the drive is or was under the manufacturer-specified minimum. "
 								"This may have shortened its lifespan and caused damage. Please operate the drive within manufacturer-specified temperature range.";
 
 					} else if (name_match(p, "Percentage Used Endurance Indicator") && statistic.value_int >= 50) {
-						w = WarningLevel::notice;
+						w = WarningLevel::Notice;
 						reason = "The drive has less than half of its estimated life left.";
 
 					} else if (name_match(p, "Percentage Used Endurance Indicator") && statistic.value_int >= 100) {
-						w = WarningLevel::warning;
+						w = WarningLevel::Warning;
 						reason = "The drive is past its estimated lifespan.";
 					}
 				}
@@ -1887,19 +1887,19 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 				break;
 			}
 
-			case AtaStorageProperty::SubSection::error_log:
+			case AtaStorageProperty::SubSection::ErrorLog:
 			{
 				// Note: The error list table doesn't display any descriptions, so if any
 				// error-entry related descriptions are added here, don't forget to enable
 				// the tooltips.
 
 				if (name_match(p, "ata_smart_error_log/extended/count") && p.get_value<int64_t>() > 0) {
-					w = WarningLevel::notice;
+					w = WarningLevel::Notice;
 					reason = "The drive is reporting internal errors. Usually this means uncorrectable data loss and similar severe errors. "
 							"Check the actual errors for details.";
 
 				} else if (name_match(p, "ata_smart_error_log/_not_present")) {
-					w = WarningLevel::notice;
+					w = WarningLevel::Notice;
 					reason = "The drive does not support error logging. This means that SMART error history is unavailable.";
 				}
 
@@ -1907,14 +1907,14 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 				if (p.is_value_type<AtaStorageErrorBlock>()) {
 					const auto& eb = p.get_value<AtaStorageErrorBlock>();
 					if (!eb.reported_types.empty()) {
-						WarningLevel error_block_warning = WarningLevel::none;
+						WarningLevel error_block_warning = WarningLevel::None;
 						for (const auto& reported_type : eb.reported_types) {
 							const WarningLevel individual_warning = AtaStorageErrorBlock::get_warning_level_for_error_type(reported_type);
 							if (individual_warning > error_block_warning) {
 								error_block_warning = WarningLevel(individual_warning);
 							}
 						}
-						if (error_block_warning > WarningLevel::none) {
+						if (error_block_warning > WarningLevel::None) {
 							w = error_block_warning;
 							reason = "The drive is reporting internal errors. Your data may be at risk depending on error severity.";
 						}
@@ -1924,7 +1924,7 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 				break;
 			}
 
-			case AtaStorageProperty::SubSection::selftest_log:
+			case AtaStorageProperty::SubSection::SelftestLog:
 			{
 				// Note: The error list table doesn't display any descriptions, so if any
 				// error-entry related descriptions are added here, don't forget to enable
@@ -1934,17 +1934,17 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 				// Self-tests are carried manually anyway, so the user is expected to check their status anyway.
 
 				if (name_match(p, "ata_smart_self_test_log/_present")) {
-					w = WarningLevel::notice;
+					w = WarningLevel::Notice;
 					reason = "The drive does not support self-test logging. This means that SMART test results won't be logged.";
 				}
 				break;
 			}
 
-			case AtaStorageProperty::SubSection::selective_selftest_log:
+			case AtaStorageProperty::SubSection::SelectiveSelftestLog:
 				// nothing here
 				break;
 
-			case AtaStorageProperty::SubSection::temperature_log:
+			case AtaStorageProperty::SubSection::TemperatureLog:
 				// Don't highlight SCT Unsupported as warning, it's harmless.
 // 				if (name_match(p, "ata_sct_status/_not_present") && p.value_bool) {
 // 					w = WarningLevel::notice;
@@ -1952,16 +1952,16 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 // 				}
 				// Current temperature
 				if (name_match(p, "ata_sct_status/temperature/current") && p.get_value<int64_t>() > 50) {  // 50C
-					w = WarningLevel::notice;
+					w = WarningLevel::Notice;
 					reason = "The temperature of the drive is higher than 50 degrees Celsius. "
 							"This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 				}
 				break;
 
-			case AtaStorageProperty::SubSection::erc_log:
-			case AtaStorageProperty::SubSection::phy_log:
-			case AtaStorageProperty::SubSection::directory_log:
-			case AtaStorageProperty::SubSection::unknown:
+			case AtaStorageProperty::SubSection::ErcLog:
+			case AtaStorageProperty::SubSection::PhyLog:
+			case AtaStorageProperty::SubSection::DirectoryLog:
+			case AtaStorageProperty::SubSection::Unknown:
 				// nothing here
 				break;
 		}

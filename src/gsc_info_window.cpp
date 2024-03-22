@@ -120,7 +120,7 @@ namespace {
 		if (!label)
 			return;
 
-		if (warning == WarningLevel::none) {
+		if (warning == WarningLevel::None) {
 			label->set_markup_with_mnemonic(original_label);
 			return;
 		}
@@ -348,10 +348,10 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		if (scan) {
 			std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 			ex->create_running_dialog(this, Glib::ustring::compose(_("Running {command} on %1..."), drive->get_device_with_type()));
-			const std::string error_msg = drive->fetch_data_and_parse(ex);  // run it with GUI support
+			auto fetch_status = drive->fetch_full_data_and_parse(ex);  // run it with GUI support
 
-			if (!error_msg.empty()) {
-				gsc_executor_error_dialog_show(_("Cannot retrieve SMART data"), error_msg, this);
+			if (!fetch_status) {
+				gsc_executor_error_dialog_show(_("Cannot retrieve SMART data"), fetch_status.error().message(), this);
 				return;
 			}
 		}
@@ -370,7 +370,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 	// hide all tabs except the first if smart is disabled, because they may contain
 	// completely random data (smartctl does that sometimes).
 	if (get_startup_settings().hide_tabs_on_smart_disabled) {
-		const bool smart_enabled = (drive->get_smart_status() == StorageDevice::Status::enabled);
+		const bool smart_enabled = (drive->get_smart_status() == StorageDevice::Status::Enabled);
 		Gtk::Widget* note_page_box = nullptr;
 
 		if (note_page_box = lookup_widget("attributes_tab_vbox"); note_page_box != nullptr) {
@@ -474,7 +474,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("general_tab_label"), WarningLevel::none, tab_identity_name);
+		app_highlight_tab_label(lookup_widget("general_tab_label"), WarningLevel::None, tab_identity_name);
 	}
 
 	{
@@ -490,7 +490,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("attributes_tab_label"), WarningLevel::none, tab_attributes_name);
+		app_highlight_tab_label(lookup_widget("attributes_tab_label"), WarningLevel::None, tab_attributes_name);
 	}
 
 	{
@@ -503,7 +503,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("statistics_tab_label"), WarningLevel::none, tab_statistics_name);
+		app_highlight_tab_label(lookup_widget("statistics_tab_label"), WarningLevel::None, tab_statistics_name);
 	}
 
 	{
@@ -554,7 +554,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("test_tab_label"), WarningLevel::none, tab_test_name);
+		app_highlight_tab_label(lookup_widget("test_tab_label"), WarningLevel::None, tab_test_name);
 	}
 
 	{
@@ -578,7 +578,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("error_log_tab_label"), WarningLevel::none, tab_error_log_name);
+		app_highlight_tab_label(lookup_widget("error_log_tab_label"), WarningLevel::None, tab_error_log_name);
 	}
 
 	{
@@ -589,11 +589,11 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("temperature_log_tab_label"), WarningLevel::none, tab_temperature_name);
+		app_highlight_tab_label(lookup_widget("temperature_log_tab_label"), WarningLevel::None, tab_temperature_name);
 	}
 
 	// tab label
-	app_highlight_tab_label(lookup_widget("advanced_tab_label"), WarningLevel::none, tab_advanced_name);
+	app_highlight_tab_label(lookup_widget("advanced_tab_label"), WarningLevel::None, tab_advanced_name);
 
 	{
 		if (auto* treeview = lookup_widget<Gtk::TreeView*>("capabilities_treeview")) {
@@ -607,7 +607,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("capabilities_tab_label"), WarningLevel::none, tab_capabilities_name);
+		app_highlight_tab_label(lookup_widget("capabilities_tab_label"), WarningLevel::None, tab_capabilities_name);
 	}
 
 	{
@@ -616,7 +616,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("erc_tab_label"), WarningLevel::none, tab_erc_name);
+		app_highlight_tab_label(lookup_widget("erc_tab_label"), WarningLevel::None, tab_erc_name);
 	}
 
 	{
@@ -625,7 +625,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("selective_selftest_tab_label"), WarningLevel::none, tab_selective_selftest_name);
+		app_highlight_tab_label(lookup_widget("selective_selftest_tab_label"), WarningLevel::None, tab_selective_selftest_name);
 	}
 
 	{
@@ -634,7 +634,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("phy_tab_label"), WarningLevel::none, tab_phy_name);
+		app_highlight_tab_label(lookup_widget("phy_tab_label"), WarningLevel::None, tab_phy_name);
 	}
 
 	{
@@ -643,7 +643,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("directory_tab_label"), WarningLevel::none, tab_directory_name);
+		app_highlight_tab_label(lookup_widget("directory_tab_label"), WarningLevel::None, tab_directory_name);
 	}
 }
 
@@ -691,7 +691,7 @@ void GscInfoWindow::on_view_output_button_clicked()
 
 	std::string output = this->drive->get_full_output();
 	if (output.empty()) {
-		output = this->drive->get_info_output();
+		output = this->drive->get_basic_output();
 	}
 
 	win->set_text_from_command(_("Smartctl Output"), output);
@@ -784,7 +784,7 @@ void GscInfoWindow::on_save_info_button_clicked()
 
 			std::string data = this->drive->get_full_output();
 			if (data.empty()) {
-				data = this->drive->get_info_output();
+				data = this->drive->get_basic_output();
 			}
 			const std::error_code ec = hz::fs_file_put_contents(file, data);
 			if (ec) {
@@ -845,7 +845,7 @@ void GscInfoWindow::fill_ui_general(const std::vector<AtaStorageProperty>& props
 	std::vector<AtaStorageProperty> id_props, version_props, health_props;
 
 	for (auto&& p : props) {
-		if (p.section == AtaStorageProperty::Section::info) {
+		if (p.section == AtaStorageProperty::Section::Info) {
 			if (p.generic_name == "smartctl/version/_merged_full") {
 				version_props.push_back(p);
 			} else if (p.generic_name == "smartctl/version/_merged") {
@@ -853,7 +853,7 @@ void GscInfoWindow::fill_ui_general(const std::vector<AtaStorageProperty>& props
 			} else {
 				id_props.push_back(p);
 			}
-		} else if (p.section == AtaStorageProperty::Section::data && p.subsection == AtaStorageProperty::SubSection::health) {
+		} else if (p.section == AtaStorageProperty::Section::Data && p.subsection == AtaStorageProperty::SubSection::Health) {
 			health_props.push_back(p);
 		}
 	}
@@ -871,7 +871,7 @@ void GscInfoWindow::fill_ui_general(const std::vector<AtaStorageProperty>& props
 
 	identity_table->hide();
 
-	WarningLevel max_tab_warning = WarningLevel::none;
+	WarningLevel max_tab_warning = WarningLevel::None;
 	int row = 0;
 
 	for (auto&& p : id_props) {
@@ -1007,11 +1007,11 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<AtaStorageProperty>& pr
 	}
 
 
-	WarningLevel max_tab_warning = WarningLevel::none;
+	WarningLevel max_tab_warning = WarningLevel::None;
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (const auto& p : props) {
-		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::attributes)
+		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::Attributes)
 			continue;
 
 		// add non-attribute-type properties to label above
@@ -1098,11 +1098,11 @@ void GscInfoWindow::fill_ui_statistics(const std::vector<AtaStorageProperty>& pr
 				sigc::bind(sigc::mem_fun(*this, &GscInfoWindow::cell_renderer_for_statistics), i));
 	}
 
-	WarningLevel max_tab_warning = WarningLevel::none;
+	WarningLevel max_tab_warning = WarningLevel::None;
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (const auto& p : props) {
-		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::devstat)
+		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::Devstat)
 			continue;
 
 		// add non-entry-type properties to label above
@@ -1164,10 +1164,10 @@ void GscInfoWindow::fill_ui_self_test_info()
 
 	Gtk::TreeModel::Row row;
 
-	auto test_ioffline = std::make_shared<SelfTest>(drive, SelfTest::TestType::immediate_offline);
+	auto test_ioffline = std::make_shared<SelfTest>(drive, SelfTest::TestType::ImmediateOffline);
 	if (test_ioffline->is_supported()) {
 		row = *(test_combo_model->append());
-		row[test_combo_columns.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::immediate_offline);
+		row[test_combo_columns.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::ImmediateOffline);
 		row[test_combo_columns.description] =
 				_("Immediate Offline Test (also known as Immediate Offline Data Collection)"
 				" is the manual version of Automatic Offline Data Collection, which, if enabled, is automatically run"
@@ -1176,10 +1176,10 @@ void GscInfoWindow::fill_ui_self_test_info()
 		row[test_combo_columns.self_test] = test_ioffline;
 	}
 
-	auto test_short = std::make_shared<SelfTest>(drive, SelfTest::TestType::short_test);
+	auto test_short = std::make_shared<SelfTest>(drive, SelfTest::TestType::ShortTest);
 	if (test_short->is_supported()) {
 		row = *(test_combo_model->append());
-		row[test_combo_columns.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::short_test);
+		row[test_combo_columns.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::ShortTest);
 		row[test_combo_columns.description] =
 				_("Short self-test consists of a collection of test routines that have the highest chance"
 				" of detecting drive problems. Its result is reported in the Self-Test Log."
@@ -1190,20 +1190,20 @@ void GscInfoWindow::fill_ui_self_test_info()
 		row[test_combo_columns.self_test] = test_short;
 	}
 
-	auto test_long = std::make_shared<SelfTest>(drive, SelfTest::TestType::long_test);
+	auto test_long = std::make_shared<SelfTest>(drive, SelfTest::TestType::LongTest);
 	if (test_long->is_supported()) {
 		row = *(test_combo_model->append());
-		row[test_combo_columns.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::long_test);
+		row[test_combo_columns.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::LongTest);
 		row[test_combo_columns.description] =
 				_("Extended self-test examines complete disk surface and performs various test routines"
 				" built into the drive. Its result is reported in the Self-Test Log.");
 		row[test_combo_columns.self_test] = test_long;
 	}
 
-	auto test_conveyance = std::make_shared<SelfTest>(drive, SelfTest::TestType::conveyance);
+	auto test_conveyance = std::make_shared<SelfTest>(drive, SelfTest::TestType::Conveyance);
 	if (test_conveyance->is_supported()) {
 		row = *(test_combo_model->append());
-		row[test_combo_columns.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::conveyance);
+		row[test_combo_columns.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::Conveyance);
 		row[test_combo_columns.description] =
 				_("Conveyance self-test is intended to identify damage incurred during transporting of the drive.");
 		row[test_combo_columns.self_test] = test_conveyance;
@@ -1276,11 +1276,11 @@ void GscInfoWindow::fill_ui_self_test_log(const std::vector<AtaStorageProperty>&
 	}
 
 
-	WarningLevel max_tab_warning = WarningLevel::none;
+	WarningLevel max_tab_warning = WarningLevel::None;
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::selftest_log)
+		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::SelftestLog)
 			continue;
 
 		if (p.generic_name == "ata_smart_self_test_log/_merged")  // the whole section, we don't need it
@@ -1373,11 +1373,11 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<AtaStorageProperty>& pro
 	}
 
 
-	WarningLevel max_tab_warning = WarningLevel::none;
+	WarningLevel max_tab_warning = WarningLevel::None;
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::error_log)
+		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::ErrorLog)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1453,7 +1453,7 @@ void GscInfoWindow::fill_ui_temperature_log(const std::vector<AtaStorageProperty
 {
 	auto* textview = lookup_widget<Gtk::TextView*>("temperature_log_textview");
 
-	WarningLevel max_tab_warning = WarningLevel::none;
+	WarningLevel max_tab_warning = WarningLevel::None;
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	std::string temperature;
@@ -1484,7 +1484,7 @@ void GscInfoWindow::fill_ui_temperature_log(const std::vector<AtaStorageProperty
 			temp_prop_source = temp_attr2;
 		}
 
-		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::temperature_log)
+		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::TemperatureLog)
 			continue;
 
 		if (p.generic_name == "ata_sct_status/_not_present" && p.get_value<bool>()) {  // only show if unsupported
@@ -1567,11 +1567,11 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<AtaStoragePro
 	}
 
 
-	WarningLevel max_tab_warning = WarningLevel::none;
+	WarningLevel max_tab_warning = WarningLevel::None;
 	int index = 1;
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::capabilities)
+		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::Capabilities)
 			continue;
 
 		std::string flag_value;
@@ -1611,10 +1611,10 @@ WarningLevel GscInfoWindow::fill_ui_error_recovery(const std::vector<AtaStorageP
 {
 	auto* textview = lookup_widget<Gtk::TextView*>("erc_log_textview");
 
-	WarningLevel max_tab_warning = WarningLevel::none;
+	WarningLevel max_tab_warning = WarningLevel::None;
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::erc_log)
+		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::ErcLog)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1641,10 +1641,10 @@ WarningLevel GscInfoWindow::fill_ui_selective_self_test_log(const std::vector<At
 {
 	auto* textview = lookup_widget<Gtk::TextView*>("selective_selftest_log_textview");
 
-	WarningLevel max_tab_warning = WarningLevel::none;
+	WarningLevel max_tab_warning = WarningLevel::None;
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::selective_selftest_log)
+		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::SelectiveSelftestLog)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1671,10 +1671,10 @@ WarningLevel GscInfoWindow::fill_ui_physical(const std::vector<AtaStoragePropert
 {
 	auto* textview = lookup_widget<Gtk::TextView*>("phy_log_textview");
 
-	WarningLevel max_tab_warning = WarningLevel::none;
+	WarningLevel max_tab_warning = WarningLevel::None;
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::phy_log)
+		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::PhyLog)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1701,10 +1701,10 @@ WarningLevel GscInfoWindow::fill_ui_directory(const std::vector<AtaStorageProper
 {
 	auto* textview = lookup_widget<Gtk::TextView*>("directory_log_textview");
 
-	WarningLevel max_tab_warning = WarningLevel::none;
+	WarningLevel max_tab_warning = WarningLevel::None;
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::data || p.subsection != AtaStorageProperty::SubSection::directory_log)
+		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::DirectoryLog)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1759,14 +1759,14 @@ void GscInfoWindow::cell_renderer_for_attributes(Gtk::CellRenderer* cr,
 			crt->property_weight() = Pango::WEIGHT_BOLD;
 		}
 		if (column_index == attribute_table_columns.type.index()) {
-			if (attribute.attr_type == AtaStorageAttribute::AttributeType::prefail) {
+			if (attribute.attr_type == AtaStorageAttribute::AttributeType::Prefail) {
 				crt->property_weight() = Pango::WEIGHT_BOLD;
 			} else {  // reset to default value if reloading
 				crt->property_weight().reset_value();
 			}
 		}
 		if (column_index == attribute_table_columns.when_failed.index()) {
-			if (attribute.when_failed != AtaStorageAttribute::FailTime::none) {
+			if (attribute.when_failed != AtaStorageAttribute::FailTime::None) {
 				crt->property_weight() = Pango::WEIGHT_BOLD;
 			} else {  // reset to default value if reloading
 				// Do not use WEIGHT_NORMAL here, it interferes with cell markup
@@ -1978,7 +1978,8 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 			std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 			ex->create_running_dialog(self);
 
-			self->test_error_msg = self->current_test->update(ex);
+			auto test_status = self->current_test->update(ex);
+			self->test_error_msg = (test_status ? test_status.error().message() : "");
 			if (!self->test_error_msg.empty()) {
 // 				gui_show_error_dialog("Cannot monitor test progress", self->test_error_msg, this);  // better show in progressbar.
 				self->current_test->force_stop(ex);  // what else can we do?
@@ -2007,17 +2008,17 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 	auto status = self->current_test->get_status();
 
 	bool aborted = false;
-	AtaStorageSelftestEntry::StatusSeverity severity = AtaStorageSelftestEntry::StatusSeverity::none;
+	AtaStorageSelftestEntry::StatusSeverity severity = AtaStorageSelftestEntry::StatusSeverity::None;
 	std::string result_msg;
 
 	if (!self->test_error_msg.empty()) {
 		aborted = true;
-		severity = AtaStorageSelftestEntry::StatusSeverity::error;
+		severity = AtaStorageSelftestEntry::StatusSeverity::Error;
 		result_msg = Glib::ustring::compose(_("<b>Test aborted:</b> %1"), Glib::Markup::escape_text(self->test_error_msg));
 
 	} else {
 		severity = AtaStorageSelftestEntry::get_status_severity(status);
-		if (status == AtaStorageSelftestEntry::Status::aborted_by_host) {
+		if (status == AtaStorageSelftestEntry::Status::AbortedByHost) {
 			aborted = true;
 			result_msg = "<b>"s + _("Test was manually aborted.") + "</b>";  // it's a StatusSeverity::none message
 
@@ -2031,7 +2032,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 		}
 	}
 
-	if (severity != AtaStorageSelftestEntry::StatusSeverity::none) {
+	if (severity != AtaStorageSelftestEntry::StatusSeverity::None) {
 		result_msg += "\n"s + _("Check the Self-Test Log for more information.");
 	}
 
@@ -2049,9 +2050,9 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 		test_stop_button->set_sensitive(false);
 
 	Gtk::StockID stock_id = Gtk::Stock::DIALOG_ERROR;
-	if (severity == AtaStorageSelftestEntry::StatusSeverity::none) {
+	if (severity == AtaStorageSelftestEntry::StatusSeverity::None) {
 		stock_id = Gtk::Stock::DIALOG_INFO;
-	} else if (severity == AtaStorageSelftestEntry::StatusSeverity::warning) {
+	} else if (severity == AtaStorageSelftestEntry::StatusSeverity::Warning) {
 		stock_id = Gtk::Stock::DIALOG_WARNING;
 	}
 
@@ -2097,10 +2098,11 @@ void GscInfoWindow::on_test_execute_button_clicked()
 	std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 	ex->create_running_dialog(this);
 
-	const std::string error_msg = test->start(ex);  // this runs update() too.
-	if (!error_msg.empty()) {
+	auto test_status = test->start(ex);  // this runs update() too.
+	if (!test_status) {
 		/// Translators: %1 is test name
-		gui_show_error_dialog(Glib::ustring::compose(_("Cannot run %1"), SelfTest::get_test_displayable_name(test->get_test_type())), error_msg, this);
+		gui_show_error_dialog(Glib::ustring::compose(_("Cannot run %1"),
+				SelfTest::get_test_displayable_name(test->get_test_type())), test_status.error().message(), this);
 		return;
 	}
 
@@ -2159,10 +2161,11 @@ void GscInfoWindow::on_test_stop_button_clicked()
 	std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 	ex->create_running_dialog(this);
 
-	const std::string error_msg = current_test->force_stop(ex);
-	if (!error_msg.empty()) {
+	auto test_status = current_test->force_stop(ex);
+	if (!test_status) {
 		/// Translators: %1 is test name
-		gui_show_error_dialog(Glib::ustring::compose(_("Cannot stop %1"), SelfTest::get_test_displayable_name(current_test->get_test_type())), error_msg, this);
+		gui_show_error_dialog(Glib::ustring::compose(_("Cannot stop %1"),
+				SelfTest::get_test_displayable_name(current_test->get_test_type())), test_status.error().message(), this);
 		return;
 	}
 

@@ -164,7 +164,7 @@ GscMainWindow::~GscMainWindow()
 void GscMainWindow::populate_iconview(bool smartctl_valid)
 {
 	if (!smartctl_valid) {
-		iconview_->set_empty_view_message(GscMainWindowIconView::Message::no_smartctl);
+		iconview_->set_empty_view_message(GscMainWindowIconView::Message::NoSmartctl);
 		iconview_->clear_all();  // the message won't be shown without invalidating the region.
 		while (Gtk::Main::events_pending())  // give expose event the time it needs
 			Gtk::Main::iteration();
@@ -174,7 +174,7 @@ void GscMainWindow::populate_iconview(bool smartctl_valid)
 		rescan_devices();  // scan for devices and fill the iconview
 
 	} else {
-		iconview_->set_empty_view_message(GscMainWindowIconView::Message::scan_disabled);
+		iconview_->set_empty_view_message(GscMainWindowIconView::Message::ScanDisabled);
 		iconview_->clear_all();  // the message won't be shown without invalidating the region.
 		while (Gtk::Main::events_pending())  // give expose event the time it needs
 			Gtk::Main::iteration();
@@ -638,22 +638,22 @@ void GscMainWindow::on_action_enable_smart_toggled(Gtk::ToggleAction* action)
 		return;
 
 	StorageDevice::Status status = drive->get_smart_status();
-	if (status == StorageDevice::Status::unsupported)  // this shouldn't happen
+	if (status == StorageDevice::Status::Unsupported)  // this shouldn't happen
 		return;
 
 	bool toggle_active = action->get_active();
 
-	if ( (toggle_active && status == StorageDevice::Status::disabled)
-			|| (!toggle_active && status == StorageDevice::Status::enabled) ) {
+	if ( (toggle_active && status == StorageDevice::Status::Disabled)
+			|| (!toggle_active && status == StorageDevice::Status::Enabled) ) {
 
 		std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 		ex->create_running_dialog(this);
 
-		std::string error_msg = drive->set_smart_enabled(toggle_active, ex);  // run it with GUI support
+		auto command_status = drive->set_smart_enabled(toggle_active, ex);  // run it with GUI support
 
-		if (!error_msg.empty()) {
+		if (!command_status) {
 			std::string error_header = (toggle_active ? _("Cannot enable SMART") : _("Cannot disable SMART"));
-			gsc_executor_error_dialog_show(error_header, error_msg, this);
+			gsc_executor_error_dialog_show(error_header, command_status.error().message(), this);
 		}
 
 		on_action_reread_device_data();  // reread if changed
@@ -676,10 +676,10 @@ void GscMainWindow::on_action_enable_aodc_toggled(Gtk::ToggleAction* action)
 		return;
 
 	StorageDevice::Status status = drive->get_aodc_status();
-	if (status == StorageDevice::Status::unsupported)  // this shouldn't happen
+	if (status == StorageDevice::Status::Unsupported)  // this shouldn't happen
 		return;
 
-	if (status == StorageDevice::Status::unknown) {
+	if (status == StorageDevice::Status::Unknown) {
 		// it's supported, but we don't know if it's enabled or not. ask the user.
 
 		int response = 0;
@@ -730,12 +730,12 @@ void GscMainWindow::on_action_enable_aodc_toggled(Gtk::ToggleAction* action)
 		std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 		ex->create_running_dialog(this);
 
-		std::string error_msg = drive->set_aodc_enabled(enable_aodc, ex);  // run it with GUI support
+		auto command_status = drive->set_aodc_enabled(enable_aodc, ex);  // run it with GUI support
 
-		if (!error_msg.empty()) {
+		if (!command_status) {
 			std::string error_header = (enable_aodc ? _("Cannot enable Automatic Offline Data Collection")
 					: _("Cannot disable Automatic Offline Data Collection"));
-			gsc_executor_error_dialog_show(error_header, error_msg, this);
+			gsc_executor_error_dialog_show(error_header, command_status.error().message(), this);
 
 		} else {  // tell the user, because there's no other feedback
 			gui_show_info_dialog((enable_aodc ? _("Automatic Offline Data Collection enabled.")
@@ -748,18 +748,18 @@ void GscMainWindow::on_action_enable_aodc_toggled(Gtk::ToggleAction* action)
 
 	bool toggle_active = action->get_active();
 
-	if ( (toggle_active && status == StorageDevice::Status::disabled)
-			|| (!toggle_active && status == StorageDevice::Status::enabled) ) {
+	if ( (toggle_active && status == StorageDevice::Status::Disabled)
+			|| (!toggle_active && status == StorageDevice::Status::Enabled) ) {
 
 		std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 		ex->create_running_dialog(this);
 
-		std::string error_msg = drive->set_aodc_enabled(toggle_active, ex);  // run it with GUI support
+		auto command_status = drive->set_aodc_enabled(toggle_active, ex);  // run it with GUI support
 
-		if (!error_msg.empty()) {
+		if (!command_status) {
 			std::string error_header = (toggle_active ? _("Cannot enable Automatic Offline Data Collection")
 					: _("Cannot disable Automatic Offline Data Collection"));
-			gsc_executor_error_dialog_show(error_header, error_msg, this);
+			gsc_executor_error_dialog_show(error_header, command_status.error().message(), this);
 		}
 
 		on_action_reread_device_data();  // reread if changed
@@ -780,11 +780,11 @@ void GscMainWindow::on_action_reread_device_data()
 		ex->create_running_dialog(this);
 
 		// note: this will clear the non-basic properties!
-		std::string error_msg = drive->fetch_basic_data_and_parse(ex);  // run it with GUI support
+		auto fetch_status = drive->fetch_basic_data_and_parse(ex);  // run it with GUI support
 
 		// the icon will be updated through drive's signal_changed callback.
-		if (!error_msg.empty()) {
-			gsc_executor_error_dialog_show(_("Cannot retrieve SMART data"), error_msg, this);
+		if (!fetch_status) {
+			gsc_executor_error_dialog_show(_("Cannot retrieve SMART data"), fetch_status.error().message(), this);
 		}
 	}
 }
@@ -822,8 +822,8 @@ void GscMainWindow::set_drive_menu_status(const StorageDevicePtr& drive)
 
 		bool is_virtual = (drive && drive->get_is_virtual());
 
-		StorageDevice::Status smart_status = StorageDevice::Status::unsupported;
-		StorageDevice::Status aodc_status = StorageDevice::Status::unsupported;
+		StorageDevice::Status smart_status = StorageDevice::Status::Unsupported;
+		StorageDevice::Status aodc_status = StorageDevice::Status::Unsupported;
 
 		if (drive && !is_virtual) {
 			smart_status = drive->get_smart_status();
@@ -837,7 +837,7 @@ void GscMainWindow::set_drive_menu_status(const StorageDevicePtr& drive)
 			Glib::RefPtr<Gtk::Action> action;
 
 			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_perform_tests))))
-				action->set_sensitive(smart_status == StorageDevice::Status::enabled);
+				action->set_sensitive(smart_status == StorageDevice::Status::Enabled);
 			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_reread_device_data))))
 				action->set_visible(drive && !is_virtual);
 			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_remove_device)))) {
@@ -847,10 +847,10 @@ void GscMainWindow::set_drive_menu_status(const StorageDevicePtr& drive)
 			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_remove_virtual_device))))
 				action->set_visible(drive && is_virtual);
 			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_enable_smart)))) {
-				action->set_sensitive(smart_status != StorageDevice::Status::unsupported);
+				action->set_sensitive(smart_status != StorageDevice::Status::Unsupported);
 			}
 			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_enable_aodc))))
-				action->set_sensitive(aodc_status != StorageDevice::Status::unsupported);
+				action->set_sensitive(aodc_status != StorageDevice::Status::Unsupported);
 		}
 
 
@@ -859,7 +859,7 @@ void GscMainWindow::set_drive_menu_status(const StorageDevicePtr& drive)
 			Gtk::ToggleAction* action = dynamic_cast<Gtk::ToggleAction*>(
 					actiongroup_device_->get_action(APP_ACTION_NAME(action_enable_smart)).operator->());
 			if (action) {
-				action->set_active(smart_status == StorageDevice::Status::enabled);
+				action->set_active(smart_status == StorageDevice::Status::Enabled);
 			}
 		}
 
@@ -878,14 +878,14 @@ void GscMainWindow::set_drive_menu_status(const StorageDevicePtr& drive)
 
 				// true if supported, but unknown whether it's enabled or not.
 				if (dev_odc_item)
-					dev_odc_item->set_inconsistent(aodc_status == StorageDevice::Status::unknown);
+					dev_odc_item->set_inconsistent(aodc_status == StorageDevice::Status::Unknown);
 				if (popup_odc_item)
-					popup_odc_item->set_inconsistent(aodc_status == StorageDevice::Status::unknown);
+					popup_odc_item->set_inconsistent(aodc_status == StorageDevice::Status::Unknown);
 				if (status_aodc_check)
-					status_aodc_check->set_inconsistent(aodc_status == StorageDevice::Status::unknown);
+					status_aodc_check->set_inconsistent(aodc_status == StorageDevice::Status::Unknown);
 
 				// for unknown it doesn't really matter what state it's in.
-				action->set_active(aodc_status == StorageDevice::Status::enabled);
+				action->set_active(aodc_status == StorageDevice::Status::Enabled);
 			}
 		}
 
@@ -955,7 +955,7 @@ void GscMainWindow::update_status_widgets()
 			// unless it's failing.
 			// app_gtkmm_set_widget_tooltip(*health_label, health_prop.get_description(), true);
 
-			if (health_prop.warning_level != WarningLevel::none) {
+			if (health_prop.warning_level != WarningLevel::None) {
 				std::string tooltip_str = storage_property_get_warning_reason(health_prop)
 						+ "\n\n" + _("View details for more information.");
 				app_gtkmm_set_widget_tooltip(*health_label_, tooltip_str, true);
@@ -1013,7 +1013,7 @@ void GscMainWindow::rescan_devices()
 // 	hz::string_split(match_str, ';', match_patterns, true);
 	hz::string_split(blacklist_str, ';', blacklist_patterns, true);
 
-	iconview_->set_empty_view_message(GscMainWindowIconView::Message::scanning);
+	iconview_->set_empty_view_message(GscMainWindowIconView::Message::Scanning);
 
 	iconview_->clear_all();  // clear previous icons, invalidate region to update the message.
 	while (Gtk::Main::events_pending())  // give expose event the time it needs
@@ -1029,7 +1029,7 @@ void GscMainWindow::rescan_devices()
 
 	auto ex_factory = std::make_shared<CommandExecutorFactory>(true, this);  // run it with GUI support
 
-	std::string error_msg = sd.detect_and_fetch_basic_data(drives_, ex_factory);
+	auto fetch_status = sd.detect_and_fetch_basic_data(drives_, ex_factory);
 
 	bool error = false;
 
@@ -1047,10 +1047,10 @@ void GscMainWindow::rescan_devices()
 		}
 	}
 
-	if (!error && !error_msg.empty()) {  // generic scan error. smartctl errors are not reported during scan at all.
+	if (!error && !fetch_status) {  // generic scan error. smartctl errors are not reported during scan at all.
 		// we don't show output button here
 		gsc_executor_error_dialog_show(_("An error occurred while scanning the system"),
-				error_msg, this, false, false);
+				fetch_status.error().message(), this, false, false);
 		// error = true;
 
 	// add them anyway, in case the error was only on one drive.
@@ -1058,7 +1058,7 @@ void GscMainWindow::rescan_devices()
 		// add them to iconview
 		for (auto& drive : drives_) {
 			if (rconfig::get_data<bool>("gui/show_smart_capable_only")) {
-				if (drive->get_smart_status() != StorageDevice::Status::unsupported)
+				if (drive->get_smart_status() != StorageDevice::Status::Unsupported)
 					iconview_->add_entry(drive);
 			} else {
 				iconview_->add_entry(drive);
@@ -1068,7 +1068,7 @@ void GscMainWindow::rescan_devices()
 
 	// in case there are no drives in the system.
 	if (iconview_->get_num_icons() == 0)
-		iconview_->set_empty_view_message(GscMainWindowIconView::Message::no_drives_found);
+		iconview_->set_empty_view_message(GscMainWindowIconView::Message::NoDrivesFound);
 
 	this->scanning_ = false;
 }
@@ -1127,9 +1127,9 @@ bool GscMainWindow::add_device(const std::string& file, const std::string& type_
 	tmp_drives.push_back(drive);
 
 	StorageDetector sd;
-	std::string error_msg = sd.fetch_basic_data(tmp_drives, ex_factory, true);  // return its first error
-	if (!error_msg.empty()) {
-		gsc_executor_error_dialog_show(_("An error occurred while adding the device"), error_msg, this);
+	auto fetch_error = sd.fetch_basic_data(tmp_drives, ex_factory, true);  // return its first error
+	if (!fetch_error) {
+		gsc_executor_error_dialog_show(_("An error occurred while adding the device"), fetch_error.error().message(), this);
 
 	} else {
 		this->drives_.push_back(drive);
@@ -1159,9 +1159,9 @@ bool GscMainWindow::add_virtual_drive(const std::string& file)
 	drive->set_full_output(output);
 	drive->set_info_output(output);  // info can be parsed from full output string too.
 
-	std::string error_msg = drive->parse_data();  // this will set the type and add the properties
-	if (!error_msg.empty()) {
-		gui_show_error_dialog(_("Cannot interpret SMART data"), error_msg, this);
+	auto parse_error = drive->try_parse_data();  // this will set the type and add the properties
+	if (!parse_error) {
+		gui_show_error_dialog(_("Cannot interpret SMART data"), parse_error.error().message(), this);
 		return false;
 	}
 
@@ -1199,7 +1199,7 @@ std::shared_ptr<GscInfoWindow> GscMainWindow::show_device_info_window(const Stor
 	}
 
 	// ask to enable SMART if it's supported but disabled
-	if (!drive->get_is_virtual() && (drive->get_smart_status() == StorageDevice::Status::disabled)) {
+	if (!drive->get_is_virtual() && (drive->get_smart_status() == StorageDevice::Status::Disabled)) {
 
 		int status = 0;
 
@@ -1218,10 +1218,10 @@ std::shared_ptr<GscInfoWindow> GscMainWindow::show_device_info_window(const Stor
 		if (status == Gtk::RESPONSE_YES) {
 			std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 			ex->create_running_dialog(this, Glib::ustring::compose(_("Running {command} on %1..."), drive->get_device_with_type()));
-			std::string error_msg = drive->set_smart_enabled(true, ex);  // run it with GUI support
+			auto command_status = drive->set_smart_enabled(true, ex);  // run it with GUI support
 
-			if (!error_msg.empty()) {
-				gsc_executor_error_dialog_show(_("Cannot enable SMART"), error_msg, this);
+			if (!command_status) {
+				gsc_executor_error_dialog_show(_("Cannot enable SMART"), command_status.error().message(), this);
 			}
 		}
 	}
@@ -1229,13 +1229,13 @@ std::shared_ptr<GscInfoWindow> GscMainWindow::show_device_info_window(const Stor
 
 	// Virtual drives are parsed at load time.
 	// Parse non-virtual, smart-supporting drives here.
-	if (!drive->get_is_virtual() && drive->get_smart_status() != StorageDevice::Status::unsupported) {
+	if (!drive->get_is_virtual() && drive->get_smart_status() != StorageDevice::Status::Unsupported) {
 		std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 		ex->create_running_dialog(this, Glib::ustring::compose(_("Running {command} on %1..."), drive->get_device_with_type()));
-		std::string error_msg = drive->fetch_data_and_parse(ex);  // run it with GUI support
+		auto command_status = drive->fetch_full_data_and_parse(ex);  // run it with GUI support
 
-		if (!error_msg.empty()) {
-			gsc_executor_error_dialog_show(_("Cannot retrieve SMART data"), error_msg, this);
+		if (!command_status) {
+			gsc_executor_error_dialog_show(_("Cannot retrieve SMART data"), command_status.error().message(), this);
 			return nullptr;
 		}
 	}
@@ -1244,9 +1244,9 @@ std::shared_ptr<GscInfoWindow> GscMainWindow::show_device_info_window(const Stor
 	// If the drive output wasn't fully parsed (happens with e.g. scsi and
 	// usb devices), only very basic info is available and there's no point
 	// in showing this window. - for both virtual and non-virtual.
-	if (drive->get_parse_status() == StorageDevice::ParseStatus::none) {
+	if (drive->get_parse_status() == StorageDevice::ParseStatus::None) {
 		gsc_no_info_dialog_show(_("No additional information is available for this drive."),
-				"", this, false, drive->get_info_output(), _("Smartctl Output"), drive->get_save_filename());
+				"", this, false, drive->get_basic_output(), _("Smartctl Output"), drive->get_save_filename());
 		return nullptr;
 	}
 
@@ -1267,7 +1267,7 @@ std::shared_ptr<GscInfoWindow> GscMainWindow::show_device_info_window(const Stor
 
 void GscMainWindow::show_prefs_updated_message()
 {
-	iconview_->set_empty_view_message(GscMainWindowIconView::Message::please_rescan);
+	iconview_->set_empty_view_message(GscMainWindowIconView::Message::PleaseRescan);
 	iconview_->clear_all();  // the message won't be shown without invalidating the region.
 	while (Gtk::Main::events_pending())  // give expose event the time it needs
 		Gtk::Main::iteration();

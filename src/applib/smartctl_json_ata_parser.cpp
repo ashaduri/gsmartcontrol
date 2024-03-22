@@ -221,7 +221,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_info(
 
 		auto p = retrieval_func(json_root_node, key, displayable_name);
 		if (p.has_value()) {  // ignore if not found
-			p->section = AtaStorageProperty::Section::info;
+			p->section = AtaStorageProperty::Section::Info;
 			add_property(p.value());
 		}
 	}
@@ -244,8 +244,8 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_healt
 
 		auto p = retrieval_func(json_root_node, key, displayable_name);
 		if (p.has_value()) {  // ignore if not found
-			p->section = AtaStorageProperty::Section::data;
-			p->subsection = AtaStorageProperty::SubSection::health;
+			p->section = AtaStorageProperty::Section::Data;
+			p->subsection = AtaStorageProperty::SubSection::Health;
 			add_property(p.value());
 		}
 	}

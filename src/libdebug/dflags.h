@@ -29,20 +29,20 @@ namespace debug_level {
 	using flags = std::bitset<bits>;  ///< Combination of debug level flags
 
 	/// Get bitset with all flags enabled
-	const flags& get_all_flags();
+	[[nodiscard]] const flags& get_all_flags();
 
 	/// Get debug level name
-	const char* get_name(flag level);
+	[[nodiscard]] const char* get_name(flag level);
 
 	/// Get color start sequence for debug level (for colorizing the output)
-	const char* get_color_start(flag level);
+	[[nodiscard]] const char* get_color_start(flag level);
 
 	/// Get color stop sequence for debug level (for colorizing the output)
-	const char* get_color_stop(flag level);
+	[[nodiscard]] const char* get_color_stop(flag level);
 
 
 	/// Convert ORed flags into a vector of flags
-	template<class Container> inline
+	template<class Container>
 	void get_matched_levels_array(const flags& levels, Container& put_here)
 	{
 		for (auto level : {

@@ -52,12 +52,12 @@ class SmartctlParser {
 
 		/// Create an instance of this class.
 		/// \return nullptr if no such class exists
-		static std::unique_ptr<SmartctlParser> create(SmartctlParserType type, SmartctlOutputFormat format);
+		[[nodiscard]] static std::unique_ptr<SmartctlParser> create(SmartctlParserType type, SmartctlOutputFormat format);
 
 
 		/// Parse full "smartctl -x" output.
 		/// Note: Once parsed, this function cannot be called again.
-		virtual hz::ExpectedVoid<SmartctlParserError> parse(std::string_view smartctl_output) = 0;
+		[[nodiscard]] virtual hz::ExpectedVoid<SmartctlParserError> parse(std::string_view smartctl_output) = 0;
 
 
 		/// Detect smartctl output type (text, json).

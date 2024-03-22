@@ -16,10 +16,10 @@ Copyright:
 
 /// Warning type
 enum class WarningLevel {
-	none,  ///< No warning
-	notice,  ///< A known attribute is somewhat disturbing, but no smart error
-	warning,  ///< SMART warning is raised by old-age attribute
-	alert  ///< SMART warning is raised by pre-fail attribute, and similar errors
+	None,  ///< No warning
+	Notice,  ///< A known attribute is somewhat disturbing, but no smart error
+	Warning,  ///< SMART warning is raised by old-age attribute
+	Alert  ///< SMART warning is raised by pre-fail attribute, and similar errors
 };
 
 

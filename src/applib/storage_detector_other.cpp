@@ -28,7 +28,7 @@ Copyright:
 
 
 
-std::string detect_drives_other(std::vector<StorageDevicePtr>& drives,
+hz::ExpectedVoid<StorageDetectorError> detect_drives_other(std::vector<StorageDevicePtr>& drives,
 		[[maybe_unused]] const CommandExecutorFactoryPtr& ex_factory)
 {
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives through /dev...\n");
@@ -46,14 +46,14 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives,
 	auto dev_dir = rconfig::get_data<std::string>(sdev_config_path);
 	if (dev_dir.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Device directory path is not set.\n");
-		return _("Device directory path is not set.");
+		return hz::Unexpected(StorageDetectorError::ConfigError, _("Device directory path is not set."));
 	}
 
 	auto dir = hz::fs_path_from_string(dev_dir);
 	std::error_code dummy_ec;
 	if (!hz::fs::exists(dir, dummy_ec)) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Device directory doesn't exist.\n");
-		return _("Device directory does not exist.");
+		return hz::Unexpected(StorageDetectorError::ConfigError, _("Device directory does not exist."));
 	}
 
 	std::vector<std::string> whitelist;
@@ -201,7 +201,8 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives,
 	}
 	if (ec) {
 		debug_out_error("app", DBG_FUNC_MSG << "Cannot list device directory entries.\n");
-		return Glib::ustring::compose(_("Cannot list device directory entries: %1"), ec.message());
+		return hz::Unexpected(StorageDetectorError::DevOpenError,
+				std::vformat(_("Cannot list device directory entries: {}"), std::make_format_args(ec.message())));
 	}
 
 
@@ -235,7 +236,7 @@ std::string detect_drives_other(std::vector<StorageDevicePtr>& drives,
 					continue;
 				}
 				if (fp) {
-					std::fclose(fp);
+					[[maybe_unused]] auto close_status = std::fclose(fp);
 				}
 				debug_out_info("app", DBG_FUNC_MSG << "Device \"" << dev.string() << "\" opened successfully, adding to device list.\n");
 			}

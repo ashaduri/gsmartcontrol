@@ -38,12 +38,12 @@ Predefined error types are: "errno", "signal" (child exited with signal).
 
 /// Error level (severity)
 enum class ErrorLevel {
-	none = 0,  ///< No error
-	dump = 1 << 0,  ///< Dump
-	info = 1 << 1,  ///< Informational (default)
-	warn = 1 << 2,  ///< Warning
-	error = 1 << 3,  ///< Error
-	fatal = 1 << 4  ///< Fatal
+	None = 0,  ///< No error
+	Dump = 1 << 0,  ///< Dump
+	Info = 1 << 1,  ///< Informational (default)
+	Warn = 1 << 2,  ///< Warning
+	Error = 1 << 3,  ///< Error
+	Fatal = 1 << 4  ///< Fatal
 };
 
 
@@ -104,7 +104,7 @@ class ErrorBase {
 
 		/// Get error code of type \c CodeMemberType
 		template<class CodeMemberType>
-		CodeMemberType get_code() const  // this may throw on bad cast!
+		[[nodiscard]] CodeMemberType get_code() const  // this may throw on bad cast!
 		{
 			if (get_code_type_info() != typeid(CodeMemberType))
 				throw type_mismatch(get_code_type_info(), typeid(CodeMemberType));
@@ -113,7 +113,7 @@ class ErrorBase {
 
 		/// Get error code of type \c CodeMemberType
 		template<class CodeMemberType>
-		bool get_code(CodeMemberType& put_it_here) const  // this doesn't throw
+		[[nodiscard]] bool get_code(CodeMemberType& put_it_here) const  // this doesn't throw
 		{
 			if (get_code_type_info() != typeid(CodeMemberType))
 				return false;
@@ -125,7 +125,7 @@ class ErrorBase {
 		/// Increase the level (severity) of the error
 		ErrorLevel level_inc()
 		{
-			if (level_ == ErrorLevel::fatal)
+			if (level_ == ErrorLevel::Fatal)
 				return level_;
 			return (level_ = static_cast<ErrorLevel>(static_cast<int>(level_) << 1));
 		}
@@ -133,7 +133,7 @@ class ErrorBase {
 		/// Decrease the level (severity) of the error
 		ErrorLevel level_dec()
 		{
-			if (level_ == ErrorLevel::none)
+			if (level_ == ErrorLevel::None)
 				return level_;
 			return (level_ = static_cast<ErrorLevel>(static_cast<int>(level_) >> 1));
 		}
@@ -184,7 +184,7 @@ class ErrorBase {
 	private:
 
 		std::string type_;  ///< Error type
-		ErrorLevel level_ = ErrorLevel::none;  ///< Error severity
+		ErrorLevel level_ = ErrorLevel::None;  ///< Error severity
 		std::string message_;  ///< Error message
 
 };
@@ -422,12 +422,12 @@ class ErrorHolder {
 
 			// use debug macros, not functions (to allow complete removal through preprocessor).
 			switch (level) {
-				case ErrorLevel::none: break;
-				case ErrorLevel::dump: debug_out_dump("hz", msg); break;
-				case ErrorLevel::info: debug_out_info("hz", msg); break;
-				case ErrorLevel::warn: debug_out_warn("hz", "Warning: " << msg); break;
-				case ErrorLevel::error: debug_out_error("hz", "Error: " << msg); break;
-				case ErrorLevel::fatal: debug_out_fatal("hz", "Fatal: " << msg); break;
+				case ErrorLevel::None: break;
+				case ErrorLevel::Dump: debug_out_dump("hz", msg); break;
+				case ErrorLevel::Info: debug_out_info("hz", msg); break;
+				case ErrorLevel::Warn: debug_out_warn("hz", "Warning: " << msg); break;
+				case ErrorLevel::Error: debug_out_error("hz", "Error: " << msg); break;
+				case ErrorLevel::Fatal: debug_out_fatal("hz", "Fatal: " << msg); break;
 			}
 		}
 
