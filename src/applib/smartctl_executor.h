@@ -137,7 +137,7 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 			// Treat most exit codes as non-errors.
 			if (error_type == "exit") {
 				int exit_code = 0;
-				e->get_code(exit_code);
+				[[maybe_unused]] const bool status = e->get_code(exit_code);
 				// Ignore everyone except this.
 				// Note that we don't treat exit_open_failed as failure because:
 				// * It may be returned from a DVD that returns product info but has no disk inside;

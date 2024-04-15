@@ -16,6 +16,7 @@ Copyright:
 #include <string>
 #include <gtkmm.h>
 #include <memory>
+#include <utility>
 
 #include "hz/debug.h"
 #include "hz/data_file.h"
@@ -179,7 +180,7 @@ template<typename WidgetPtr>
 WidgetPtr AppBuilderWidget<Child, MultiInstance, WidgetType>::lookup_widget(const Glib::ustring& name)
 {
 	WidgetPtr w = nullptr;
-	lookup_widget(name, w);
+	[[maybe_unused]] bool success = lookup_widget(name, w);
 	return w;
 }
 
