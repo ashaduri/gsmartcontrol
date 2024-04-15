@@ -853,7 +853,7 @@ void GscInfoWindow::fill_ui_general(const std::vector<AtaStorageProperty>& props
 			} else {
 				id_props.push_back(p);
 			}
-		} else if (p.section == AtaStorageProperty::Section::Data && p.subsection == AtaStorageProperty::SubSection::Health) {
+		} else if (p.section == AtaStorageProperty::Section::Health) {
 			health_props.push_back(p);
 		}
 	}
@@ -1011,7 +1011,7 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<AtaStorageProperty>& pr
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (const auto& p : props) {
-		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::Attributes)
+		if (p.section != AtaStorageProperty::Section::Attributes)
 			continue;
 
 		// add non-attribute-type properties to label above
@@ -1033,9 +1033,11 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<AtaStorageProperty>& pr
 		row[attribute_table_columns.worst] = Glib::Markup::escape_text(attr.worst.has_value() ? hz::number_to_string_locale(attr.worst.value()) : "-");
 		row[attribute_table_columns.threshold] = Glib::Markup::escape_text(attr.threshold.has_value() ? hz::number_to_string_locale(attr.threshold.value()) : "-");
 		row[attribute_table_columns.raw] = Glib::Markup::escape_text(attr.format_raw_value());
-		row[attribute_table_columns.type] = Glib::Markup::escape_text(AtaStorageAttribute::get_attr_type_name(attr.attr_type));
+		row[attribute_table_columns.type] = Glib::Markup::escape_text(
+				AtaStorageAttribute::get_readable_attribute_type_name(attr.attr_type));
 // 		row[attribute_table_columns.updated] = Glib::Markup::escape_text(AtaStorageAttribute::get_update_type_name(attr.update_type));
-		row[attribute_table_columns.when_failed] = Glib::Markup::escape_text(AtaStorageAttribute::get_fail_time_name(attr.when_failed));
+		row[attribute_table_columns.when_failed] = Glib::Markup::escape_text(
+				AtaStorageAttribute::get_readable_fail_time_name(attr.when_failed));
 		row[attribute_table_columns.tooltip] = p.get_description();  // markup
 		row[attribute_table_columns.storage_property] = &p;
 
@@ -1102,7 +1104,7 @@ void GscInfoWindow::fill_ui_statistics(const std::vector<AtaStorageProperty>& pr
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (const auto& p : props) {
-		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::Devstat)
+		if (p.section != AtaStorageProperty::Section::Devstat)
 			continue;
 
 		// add non-entry-type properties to label above
@@ -1280,7 +1282,7 @@ void GscInfoWindow::fill_ui_self_test_log(const std::vector<AtaStorageProperty>&
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::SelftestLog)
+		if (p.section != AtaStorageProperty::Section::SelftestLog)
 			continue;
 
 		if (p.generic_name == "ata_smart_self_test_log/_merged")  // the whole section, we don't need it
@@ -1301,7 +1303,7 @@ void GscInfoWindow::fill_ui_self_test_log(const std::vector<AtaStorageProperty>&
 
 		row[self_test_log_table_columns.log_entry_index] = sse.test_num;
 		row[self_test_log_table_columns.type] = Glib::Markup::escape_text(sse.type);
-		row[self_test_log_table_columns.status] = Glib::Markup::escape_text(sse.get_status_str());
+		row[self_test_log_table_columns.status] = Glib::Markup::escape_text(sse.get_readable_status());
 		row[self_test_log_table_columns.percent] = Glib::Markup::escape_text(hz::number_to_string_locale(100 - sse.remaining_percent) + "%");
 		row[self_test_log_table_columns.hours] = Glib::Markup::escape_text(sse.format_lifetime_hours());
 		row[self_test_log_table_columns.lba] = Glib::Markup::escape_text(sse.lba_of_first_error);
@@ -1377,7 +1379,7 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<AtaStorageProperty>& pro
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::ErrorLog)
+		if (p.section != AtaStorageProperty::Section::ErrorLog)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1429,7 +1431,8 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<AtaStorageProperty>& pro
 			row[error_log_table_columns.log_entry_index] = eb.error_num;
 			row[error_log_table_columns.hours] = Glib::Markup::escape_text(eb.format_lifetime_hours());
 			row[error_log_table_columns.state] = Glib::Markup::escape_text(eb.device_state);
-			row[error_log_table_columns.type] = Glib::Markup::escape_text(AtaStorageErrorBlock::get_displayable_error_types(eb.reported_types));
+			row[error_log_table_columns.type] = Glib::Markup::escape_text(
+					AtaStorageErrorBlock::format_readable_error_types(eb.reported_types));
 			row[error_log_table_columns.details] = Glib::Markup::escape_text(type_details.empty() ? "-" : type_details);  // e.g. OBS has no details
 			row[error_log_table_columns.tooltip] = p.get_description();  // markup
 			row[error_log_table_columns.storage_property] = &p;
@@ -1484,7 +1487,7 @@ void GscInfoWindow::fill_ui_temperature_log(const std::vector<AtaStorageProperty
 			temp_prop_source = temp_attr2;
 		}
 
-		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::TemperatureLog)
+		if (p.section != AtaStorageProperty::Section::TemperatureLog)
 			continue;
 
 		if (p.generic_name == "ata_sct_status/_not_present" && p.get_value<bool>()) {  // only show if unsupported
@@ -1571,7 +1574,7 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<AtaStoragePro
 	int index = 1;
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::Capabilities)
+		if (p.section != AtaStorageProperty::Section::Capabilities)
 			continue;
 
 		std::string flag_value;
@@ -1614,7 +1617,7 @@ WarningLevel GscInfoWindow::fill_ui_error_recovery(const std::vector<AtaStorageP
 	WarningLevel max_tab_warning = WarningLevel::None;
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::ErcLog)
+		if (p.section != AtaStorageProperty::Section::ErcLog)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1644,11 +1647,11 @@ WarningLevel GscInfoWindow::fill_ui_selective_self_test_log(const std::vector<At
 	WarningLevel max_tab_warning = WarningLevel::None;
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::SelectiveSelftestLog)
+		if (p.section != AtaStorageProperty::Section::SelectiveSelftestLog)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-		if (p.generic_name == "SubSection::ata_smart_selective_self_test_log/_merged") {
+		if (p.generic_name == "ata_smart_selective_self_test_log/_merged") {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 			buffer->set_text("\n" + Glib::ustring::compose(_("Complete selective self-test log: %1"), "\n\n" + p.get_value<std::string>()));
 
@@ -1674,7 +1677,7 @@ WarningLevel GscInfoWindow::fill_ui_physical(const std::vector<AtaStoragePropert
 	WarningLevel max_tab_warning = WarningLevel::None;
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::PhyLog)
+		if (p.section != AtaStorageProperty::Section::PhyLog)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1704,7 +1707,7 @@ WarningLevel GscInfoWindow::fill_ui_directory(const std::vector<AtaStorageProper
 	WarningLevel max_tab_warning = WarningLevel::None;
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::Data || p.subsection != AtaStorageProperty::SubSection::DirectoryLog)
+		if (p.section != AtaStorageProperty::Section::DirectoryLog)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1909,7 +1912,7 @@ void GscInfoWindow::cell_renderer_for_capabilities(Gtk::CellRenderer* cr,
 gboolean GscInfoWindow::test_idle_callback(void* data)
 {
 	auto* self = static_cast<GscInfoWindow*>(data);
-	DBG_ASSERT(self);
+	DBG_ASSERT_RETURN(self, false);
 
 	if (!self->current_test)  // shouldn't happen
 		return FALSE;  // stop
@@ -2024,7 +2027,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 
 		} else {
 			result_msg = Glib::ustring::compose(_("<b>Test result:</b> %1."),
-					Glib::Markup::escape_text(AtaStorageSelftestEntry::get_status_displayable_name(status)));
+					Glib::Markup::escape_text(AtaStorageSelftestEntry::get_readable_status_name(status)));
 
 			// It may not reach 100% somehow, so do it manually.
 			if (test_completion_progressbar)

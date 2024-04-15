@@ -15,7 +15,6 @@ Copyright:
 #include "local_glibmm.h"
 
 #include <string>
-#include <vector>
 #include <optional>
 
 #include "smartctl_parser_types.h"

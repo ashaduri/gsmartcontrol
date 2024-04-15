@@ -36,22 +36,21 @@ namespace {
 	inline AtaStorageProperty app_get_checksum_error_property(const std::string& name)
 	{
 		AtaStorageProperty p;
-		p.section = AtaStorageProperty::Section::Data;
 
 		if (name == "Attribute Data") {
-			p.subsection = AtaStorageProperty::SubSection::Attributes;
+			p.section = AtaStorageProperty::Section::Attributes;
 			p.set_name(name, "_text_only/attribute_data_checksum_error");
 
 		} else if (name == "Attribute Thresholds") {
-			p.subsection = AtaStorageProperty::SubSection::Attributes;
+			p.section = AtaStorageProperty::Section::Attributes;
 			p.set_name(name, "_text_only/attribute_thresholds_checksum_error");
 
 		} else if (name == "ATA Error Log") {
-			p.subsection = AtaStorageProperty::SubSection::ErrorLog;
+			p.section = AtaStorageProperty::Section::ErrorLog;
 			p.set_name(name, "_text_only/ata_error_log_checksum_error");
 
 		} else if (name == "Self-Test Log") {
-			p.subsection = AtaStorageProperty::SubSection::SelftestLog;
+			p.section = AtaStorageProperty::Section::SelftestLog;
 			p.set_name(name, "_text_only/selftest_log_checksum_error");
 		}
 
@@ -776,8 +775,7 @@ Device is:        In smartctl database [for details use: -P show]
 */
 
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::Data;
-	pt.subsection = AtaStorageProperty::SubSection::Health;
+	pt.section = AtaStorageProperty::Section::Health;
 
 	std::string name, value;
 	if (app_pcre_match("/^([^:\\n]+):[ \\t]*(.*)$/mi", sub, &name, &value)) {
@@ -842,8 +840,7 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 */
 
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::Data;
-	pt.subsection = AtaStorageProperty::SubSection::Capabilities;
+	pt.section = AtaStorageProperty::Section::Capabilities;
 
 	std::string sub = sub_initial;
 
@@ -1027,7 +1024,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 	const pcrecpp::RE re_selftest_long_time = app_pcre_re("/^(Extended self-test routine recommended polling time)/mi");
 	const pcrecpp::RE re_conv_selftest_time = app_pcre_re("/^(Conveyance self-test routine recommended polling time)/mi");
 
-	if (cap_prop.section != AtaStorageProperty::Section::Data || cap_prop.subsection != AtaStorageProperty::SubSection::Capabilities) {
+	if (cap_prop.section != AtaStorageProperty::Section::Capabilities) {
 		debug_out_error("app", DBG_FUNC_MSG << "Non-capability property passed.\n");
 		return hz::Unexpected(SmartctlParserError::DataError, "Non-capability property passed.");
 	}
@@ -1244,8 +1241,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_attributes(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::Data;
-	pt.subsection = AtaStorageProperty::SubSection::Attributes;
+	pt.section = AtaStorageProperty::Section::Attributes;
 
 	// split to lines
 	std::vector<std::string> lines;
@@ -1465,8 +1461,7 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_directory_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::Data;
-	pt.subsection = AtaStorageProperty::SubSection::DirectoryLog;
+	pt.section = AtaStorageProperty::Section::DirectoryLog;
 
 	// Directory log contains:
 /*
@@ -1517,8 +1512,7 @@ Address    Access  R/W   Size  Description
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_error_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::Data;
-	pt.subsection = AtaStorageProperty::SubSection::ErrorLog;
+	pt.section = AtaStorageProperty::Section::ErrorLog;
 
 	// Note: The format of this section was changed somewhere between 5.0-x and 5.30.
 	// The old format is doesn't really give any useful info, and whatever's left is somewhat
@@ -1714,8 +1708,7 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_selftest_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::Data;
-	pt.subsection = AtaStorageProperty::SubSection::SelftestLog;
+	pt.section = AtaStorageProperty::Section::SelftestLog;
 
 	// Self-test log contains:
 	// * structure revision number
@@ -1893,8 +1886,7 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_selective_selftest_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::Data;
-	pt.subsection = AtaStorageProperty::SubSection::SelectiveSelftestLog;
+	pt.section = AtaStorageProperty::Section::SelectiveSelftestLog;
 
 	// Selective self-test log contains:
 /*
@@ -1950,8 +1942,7 @@ If Selective self-test is pending on power-up, resume after 0 minute delay.
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_scttemp_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::Data;
-	pt.subsection = AtaStorageProperty::SubSection::TemperatureLog;
+	pt.section = AtaStorageProperty::Section::TemperatureLog;
 
 	// scttemp log contains:
 /*
@@ -2017,8 +2008,7 @@ Index    Estimated Time   Temperature Celsius
 		std::string name, value;
 		if (app_pcre_match("/^(Current Temperature):[ \\t]+(.*) Celsius$/mi", sub, &name, &value)) {
 			AtaStorageProperty p;
-			p.section = AtaStorageProperty::Section::Data;
-			p.subsection = AtaStorageProperty::SubSection::TemperatureLog;
+			p.section = AtaStorageProperty::Section::TemperatureLog;
 			p.set_name("Current Temperature", "ata_sct_status/temperature/current");
 			p.reported_value = value;
 			p.value = hz::string_to_number_nolocale<int64_t>(value);  // integer
@@ -2040,8 +2030,7 @@ Index    Estimated Time   Temperature Celsius
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_scterc_log(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::Data;
-	pt.subsection = AtaStorageProperty::SubSection::ErcLog;
+	pt.section = AtaStorageProperty::Section::ErcLog;
 
 	// scterc log contains:
 /*
@@ -2089,8 +2078,7 @@ SCT Error Recovery Control:
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_devstat(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::Data;
-	pt.subsection = AtaStorageProperty::SubSection::Devstat;
+	pt.section = AtaStorageProperty::Section::Devstat;
 
 	// devstat log contains:
 /*
@@ -2260,8 +2248,7 @@ Page Offset Size         Value  Description
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_sataphy(const std::string& sub)
 {
 	AtaStorageProperty pt;  // template for easy copying
-	pt.section = AtaStorageProperty::Section::Data;
-	pt.subsection = AtaStorageProperty::SubSection::PhyLog;
+	pt.section = AtaStorageProperty::Section::PhyLog;
 
 	// sataphy log contains:
 /*

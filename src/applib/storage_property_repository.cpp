@@ -4,6 +4,8 @@ Copyright:
 	(C) 2008 - 2024 Alexander Shaduri <ashaduri@gmail.com>
 ******************************************************************************/
 
+#include <string>
+
 #include "storage_property_repository.h"
 
 
@@ -24,12 +26,10 @@ std::vector<AtaStorageProperty>& StoragePropertyRepository::get_properties_ref()
 
 
 AtaStorageProperty StoragePropertyRepository::lookup_property(
-		const std::string& generic_name, AtaStorageProperty::Section section, AtaStorageProperty::SubSection subsection) const
+		const std::string& generic_name, AtaStorageProperty::Section section) const
 {
 	for (const auto& p : properties_) {
 		if (section != AtaStorageProperty::Section::Unknown && p.section != section)
-			continue;
-		if (subsection != AtaStorageProperty::SubSection::Unknown && p.subsection != subsection)
 			continue;
 
 		if (p.generic_name == generic_name)

@@ -10,17 +10,19 @@ Copyright:
 /// @{
 
 #include "local_glibmm.h"
+#include <ios>
 #include <map>
 #include <ostream>  // not iosfwd - it doesn't work
 #include <sstream>
-#include <iomanip>
 #include <locale>
+#include <stdexcept>
+#include <unordered_map>
+
 
 #include "hz/string_num.h"  // number_to_string
 #include "hz/stream_cast.h"  // stream_cast<>
 #include "hz/format_unit.h"  // format_time_length
 #include "hz/string_algo.h"  // string_join
-#include "hz/string_num.h"  // number_to_string
 
 #include "ata_storage_property.h"
 
@@ -39,7 +41,7 @@ std::ostream& operator<< (std::ostream& os, const AtaStorageCapability& p)
 
 
 
-std::string AtaStorageAttribute::get_attr_type_name(AtaStorageAttribute::AttributeType type)
+std::string AtaStorageAttribute::get_readable_attribute_type_name(AttributeType type)
 {
 	static const std::unordered_map<AttributeType, std::string> m {
 			{AttributeType::Unknown, "[unknown]"},
@@ -54,7 +56,7 @@ std::string AtaStorageAttribute::get_attr_type_name(AtaStorageAttribute::Attribu
 
 
 
-std::string AtaStorageAttribute::get_update_type_name(AtaStorageAttribute::UpdateType type)
+std::string AtaStorageAttribute::get_readable_update_type_name(UpdateType type)
 {
 	static const std::unordered_map<UpdateType, std::string> m {
 			{UpdateType::Unknown, "[unknown]"},
@@ -69,7 +71,7 @@ std::string AtaStorageAttribute::get_update_type_name(AtaStorageAttribute::Updat
 
 
 
-std::string AtaStorageAttribute::get_fail_time_name(AtaStorageAttribute::FailTime type)
+std::string AtaStorageAttribute::get_readable_fail_time_name(FailTime type)
 {
 	static const std::unordered_map<FailTime, std::string> m {
 			{FailTime::Unknown, "[unknown]"},
@@ -152,7 +154,7 @@ std::ostream& operator<<(std::ostream& os, const AtaStorageStatistic& p)
 
 
 
-std::string AtaStorageErrorBlock::get_displayable_error_types(const std::vector<std::string>& types)
+std::string AtaStorageErrorBlock::format_readable_error_types(const std::vector<std::string>& types)
 {
 	static const std::map<std::string, std::string> m = {
 		{"ABRT", _("Command aborted")},
@@ -176,9 +178,9 @@ std::string AtaStorageErrorBlock::get_displayable_error_types(const std::vector<
 		if (m.find(type) != m.end()) {
 			sv.push_back(m.at(type));
 		} else {
-			std::string name = _("Uknown type");
+			std::string name = _("Unknown type");
 			if (!type.empty()) {
-				name = Glib::ustring::compose(_("Uknown type: %1"), type);
+				name = Glib::ustring::compose(_("Unknown type: %1"), type);
 			}
 			sv.push_back(name);
 		}
@@ -235,13 +237,13 @@ std::ostream& operator<< (std::ostream& os, const AtaStorageErrorBlock& b)
 {
 	os << "Error number " << b.error_num << ": "
 		<< hz::string_join(b.reported_types, ", ")
-		<< " [" << AtaStorageErrorBlock::get_displayable_error_types(b.reported_types) << "]";
+		<< " [" << AtaStorageErrorBlock::format_readable_error_types(b.reported_types) << "]";
 	return os;
 }
 
 
 
-std::string AtaStorageSelftestEntry::get_status_displayable_name(AtaStorageSelftestEntry::Status s)
+std::string AtaStorageSelftestEntry::get_readable_status_name(Status s)
 {
 	static const std::unordered_map<Status, std::string> m {
 			{Status::Unknown,                "[unknown]"},
@@ -289,9 +291,9 @@ AtaStorageSelftestEntry::StatusSeverity AtaStorageSelftestEntry::get_status_seve
 
 
 
-std::string AtaStorageSelftestEntry::get_status_str() const
+std::string AtaStorageSelftestEntry::get_readable_status() const
 {
-	return (status == Status::Unknown ? status_str : get_status_displayable_name(status));
+	return (status == Status::Unknown ? status_str : get_readable_status_name(status));
 }
 
 
@@ -314,18 +316,28 @@ std::string AtaStorageSelftestEntry::format_lifetime_hours() const
 std::ostream& operator<< (std::ostream& os, const AtaStorageSelftestEntry& b)
 {
 	os << "Test entry " << b.test_num << ": "
-		<< b.type << ", status: " << b.get_status_str() << ", remaining: " << int(b.remaining_percent);
+		<< b.type << ", status: " << b.get_readable_status() << ", remaining: " << int(b.remaining_percent);
 	return os;
 }
 
 
 
-std::string AtaStorageProperty::get_section_name(AtaStorageProperty::Section s)
+std::string AtaStorageProperty::get_readable_section_name(Section s)
 {
 	static const std::unordered_map<Section, std::string> m {
 			{Section::Unknown,  "unknown"},
 			{Section::Info,     "info"},
-			{Section::Data,     "data"},
+			{Section::Health,               "health"},
+			{Section::Capabilities,         "capabilities"},
+			{Section::Attributes,           "attributes"},
+			{Section::Devstat,              "devstat"},
+			{Section::ErrorLog,             "error_log"},
+			{Section::SelftestLog,          "selftest_log"},
+			{Section::SelectiveSelftestLog, "selective_selftest_log"},
+			{Section::TemperatureLog,       "temperature_log"},
+			{Section::ErcLog,               "erc_log"},
+			{Section::PhyLog,               "phy_log"},
+			{Section::DirectoryLog,         "directory_log"},
 			{Section::Internal, "internal"},
 	};
 	if (auto iter = m.find(s); iter != m.end()) {
@@ -336,31 +348,7 @@ std::string AtaStorageProperty::get_section_name(AtaStorageProperty::Section s)
 
 
 
-std::string AtaStorageProperty::get_subsection_name(AtaStorageProperty::SubSection s)
-{
-	static const std::unordered_map<SubSection, std::string> m {
-			{SubSection::Unknown,              "unknown"},
-			{SubSection::Health,               "health"},
-			{SubSection::Capabilities,         "capabilities"},
-			{SubSection::Attributes,           "attributes"},
-			{SubSection::Devstat,              "devstat"},
-			{SubSection::ErrorLog,             "error_log"},
-			{SubSection::SelftestLog,          "selftest_log"},
-			{SubSection::SelectiveSelftestLog, "selective_selftest_log"},
-			{SubSection::TemperatureLog,       "temperature_log"},
-			{SubSection::ErcLog,               "erc_log"},
-			{SubSection::PhyLog,               "phy_log"},
-			{SubSection::DirectoryLog,         "directory_log"},
-	};
-	if (auto iter = m.find(s); iter != m.end()) {
-		return iter->second;
-	}
-	return "[internal_error]";
-}
-
-
-
-std::string AtaStorageProperty::get_value_type_name() const
+std::string AtaStorageProperty::get_storable_value_type_name() const
 {
 	if (std::holds_alternative<std::monostate>(value))
 		return "empty";
@@ -398,11 +386,10 @@ void AtaStorageProperty::dump(std::ostream& os, std::size_t internal_offset) con
 {
 	const std::string offset(internal_offset, ' ');
 
-	os << offset << "[" << get_section_name(section)
-			<< (section == Section::Data ? (", " + get_subsection_name(subsection)) : "") << "]"
+	os << offset << "[" << get_readable_section_name(section) << "]"
 			<< " " << generic_name
 			// << (generic_name == reported_name ? "" : (" (" + reported_name + ")"))
-			<< ": [" << get_value_type_name() << "] ";
+			<< ": [" << get_storable_value_type_name() << "] ";
 
 	// if (!readable_value.empty())
 	// 	os << readable_value;

@@ -12,6 +12,7 @@ Copyright:
 #ifndef ATA_STORAGE_PROPERTY_H
 #define ATA_STORAGE_PROPERTY_H
 
+#include <cstddef>  // std::size_t
 #include <string>
 #include <vector>
 #include <iosfwd>
@@ -19,7 +20,6 @@ Copyright:
 #include <optional>
 #include <chrono>
 #include <variant>
-#include <unordered_map>
 
 #include "warning_level.h"
 
@@ -62,7 +62,7 @@ class AtaStorageAttribute {
 		};
 
 		/// Get readable attribute type name
-		[[nodiscard]] static std::string get_attr_type_name(AttributeType type);
+		[[nodiscard]] static std::string get_readable_attribute_type_name(AttributeType type);
 
 
 		/// Attribute when-updated type
@@ -73,7 +73,7 @@ class AtaStorageAttribute {
 		};
 
 		/// Get readable when-updated type name
-		[[nodiscard]] static std::string get_update_type_name(UpdateType type);
+		[[nodiscard]] static std::string get_readable_update_type_name(UpdateType type);
 
 
 		/// Attribute when-failed type
@@ -85,7 +85,7 @@ class AtaStorageAttribute {
 		};
 
 		/// Get a readable when-failed type name
-		[[nodiscard]] static std::string get_fail_time_name(FailTime type);
+		[[nodiscard]] static std::string get_readable_fail_time_name(FailTime type);
 
 
 		/// Format raw value with commas (if it's a number)
@@ -141,7 +141,7 @@ class AtaStorageErrorBlock {
 	public:
 
 		/// Get readable error types from reported types
-		[[nodiscard]] static std::string get_displayable_error_types(const std::vector<std::string>& types);
+		[[nodiscard]] static std::string format_readable_error_types(const std::vector<std::string>& types);
 
 		/// Get warning level (Warning) for an error type
 		[[nodiscard]] static WarningLevel get_warning_level_for_error_type(const std::string& type);
@@ -192,14 +192,14 @@ class AtaStorageSelftestEntry {
 		};
 
 		/// Get log entry status displayable name
-		[[nodiscard]] static std::string get_status_displayable_name(Status s);
+		[[nodiscard]] static std::string get_readable_status_name(Status s);
 
 		/// Get severity of error status
 		[[nodiscard]] static StatusSeverity get_status_severity(Status s);
 
 
 		/// Get error status as a string
-		[[nodiscard]] std::string get_status_str() const;
+		[[nodiscard]] std::string get_readable_status() const;
 
 
 		/// Format lifetime hours with comma
@@ -230,17 +230,6 @@ class AtaStorageProperty {
 		enum class Section {
 			Unknown,  ///< Used when searching in all sections
 			Info,  ///< Short info (--info)
-			Data,  ///< SMART DATA
-			Internal  ///< Internal application-specific data
-		};
-
-		/// Get displayable section type name
-		[[nodiscard]] static std::string get_section_name(Section s);
-
-
-		/// Subsections in smart data section
-		enum class SubSection {
-			Unknown,  ///< Used when searching in all subsections
 			Health,  ///< Overall-health (-H, --health)
 			Capabilities,  ///< General SMART Values, aka Capabilities (-c, --capabilities)
 			Attributes,  ///< Attributes (-A, --attributes). These need decoding.
@@ -252,14 +241,15 @@ class AtaStorageProperty {
 			ErcLog,  ///< SCT Error Recovery Control settings (--log=scterc)
 			PhyLog,  ///< Phy log (--log=sataphy)
 			DirectoryLog,  ///< Directory log (--log=directory)
+			Internal  ///< Internal application-specific data
 		};
 
-		/// Get displayable subsection type name
-		[[nodiscard]] static std::string get_subsection_name(SubSection s);
+		/// Get displayable section type name
+		[[nodiscard]] static std::string get_readable_section_name(Section s);
 
 
 		/// Get displayable value type name
-		[[nodiscard]] std::string get_value_type_name() const;
+		[[nodiscard]] std::string get_storable_value_type_name() const;
 
 
 		/// Check if this is an empty object with no value set.
@@ -303,7 +293,6 @@ class AtaStorageProperty {
 		std::string description;  ///< Property description (for tooltips, etc...). May contain markup.
 
 		Section section = Section::Unknown;  ///< Section this property belongs to
-		SubSection subsection = SubSection::Unknown;  ///< Subsection this property belongs to
 
 		std::string reported_value;  ///< String representation of the value as reported
 		std::string readable_value;  ///< User-friendly readable representation of value. if empty, use the other members.

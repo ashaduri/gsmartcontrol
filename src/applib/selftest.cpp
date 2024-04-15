@@ -77,7 +77,7 @@ std::chrono::seconds SelfTest::get_min_duration_seconds() const
 	}
 
 	const AtaStorageProperty p = drive_->get_property_repository().lookup_property(prop_name,
-			AtaStorageProperty::Section::Data, AtaStorageProperty::SubSection::Capabilities);
+			AtaStorageProperty::Section::Capabilities);
 
 	// p stores it as uint64_t
 	return (total_duration_ = (p.empty() ? 0s : p.get_value<std::chrono::seconds>()));
@@ -272,7 +272,6 @@ hz::ExpectedVoid<SelfTestError> SelfTest::update(const std::shared_ptr<CommandEx
 	// we use the "self-test status" capability.
 	AtaStorageProperty p;
 	for (const auto& e : property_repo.get_properties()) {
-// 		if (e.section != AtaStorageProperty::Section::data || e.subsection != AtaStorageProperty::SubSection::selftest_log
 		if (e.section != AtaStorageProperty::Section::Internal
 				|| !e.is_value_type<AtaStorageSelftestEntry>() || e.get_value<AtaStorageSelftestEntry>().test_num != 0
 				|| e.generic_name != "ata_smart_data/self_test/status/passed")

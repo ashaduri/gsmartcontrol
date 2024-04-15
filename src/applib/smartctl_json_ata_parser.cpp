@@ -244,8 +244,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_healt
 
 		auto p = retrieval_func(json_root_node, key, displayable_name);
 		if (p.has_value()) {  // ignore if not found
-			p->section = AtaStorageProperty::Section::Data;
-			p->subsection = AtaStorageProperty::SubSection::Health;
+			p->section = AtaStorageProperty::Section::Health;
 			add_property(p.value());
 		}
 	}

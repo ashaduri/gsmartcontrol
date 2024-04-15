@@ -532,7 +532,7 @@ AtaStorageProperty StorageDevice::get_health_property() const
 		return health_property_.value();
 
 	AtaStorageProperty p = property_repository_.lookup_property("smart_status/passed",
-			AtaStorageProperty::Section::Data, AtaStorageProperty::SubSection::Health);
+			AtaStorageProperty::Section::Health);
 	if (!p.empty())
 		health_property_ = p;  // store to cache
 
