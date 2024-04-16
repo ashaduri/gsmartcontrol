@@ -39,7 +39,7 @@ target_link_libraries(hz
 		libdebug  # debug.h
 		whereami  # whereami.h
 		tl_expected  # error_container.h
-		std::filesystem  # fs_ns.h, linking to stdc++fs / c++fs if needed
+#		std::filesystem  # fs_ns.h, linking to stdc++fs / c++fs if needed
 )
 
 # Support <experimental/filesystem> if needed

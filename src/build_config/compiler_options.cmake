@@ -14,7 +14,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # C++17 filesystem (including experimental)
-find_package(Filesystem REQUIRED COMPONENTS Experimental Final)
+#find_package(Filesystem REQUIRED COMPONENTS Experimental Final)
 
 
 # Enable PIC, required on many systems
