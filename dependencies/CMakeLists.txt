@@ -1,7 +1,7 @@
 ###############################################################################
 # License: BSD Zero Clause License file
 # Copyright:
-#   (C) 2021 Alexander Shaduri <ashaduri@gmail.com>
+#   (C) 2021 - 2024 Alexander Shaduri <ashaduri@gmail.com>
 ###############################################################################
 
 # Disable all warnings
@@ -79,3 +79,4 @@ find_package(Gettext REQUIRED)
 add_subdirectory(catch2)
 add_subdirectory(nlohmann_json)
 add_subdirectory(whereami)
+add_subdirectory(tl_expected)

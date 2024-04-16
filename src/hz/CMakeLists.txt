@@ -38,6 +38,7 @@ target_link_libraries(hz
 		app_gettext_interface  # format_unit.h uses this
 		libdebug  # debug.h
 		whereami  # whereami.h
+		tl_expected  # error_container.h
 		std::filesystem  # fs_ns.h, linking to stdc++fs / c++fs if needed
 )
 

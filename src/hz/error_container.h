@@ -12,10 +12,9 @@ Copyright:
 #ifndef HZ_ERROR_H
 #define HZ_ERROR_H
 
-#include <string_view>
 #include <source_location>
 #include <string>
-#include <expected>
+#include <tl/expected.hpp>
 // #include <stacktrace>
 
 
@@ -96,11 +95,11 @@ class ErrorContainer {
 
 
 template<typename ValueType, typename ErrorType>
-using ExpectedValue = std::expected<ValueType, ErrorContainer<ErrorType>>;
+using ExpectedValue = tl::expected<ValueType, ErrorContainer<ErrorType>>;
 
 
 template<typename ErrorType>
-using ExpectedVoid = std::expected<void, ErrorContainer<ErrorType>>;
+using ExpectedVoid = tl::expected<void, ErrorContainer<ErrorType>>;
 
 
 template<typename ErrorData>
@@ -109,7 +108,7 @@ auto Unexpected(ErrorData&& data, std::string error_message,
 		// std::stacktrace trace = std::stacktrace::current()
 	)
 {
-	return std::unexpected(ErrorContainer<ErrorData>(std::forward<ErrorData>(data),
+	return tl::unexpected(ErrorContainer<ErrorData>(std::forward<ErrorData>(data),
 	        std::move(error_message),
 			loc
 			// trace
