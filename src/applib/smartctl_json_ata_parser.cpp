@@ -13,6 +13,7 @@ Copyright:
 
 #include <cstdint>
 #include <format>
+#include <optional>
 #include <tuple>
 #include <vector>
 #include <chrono>
@@ -514,7 +515,58 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_capab
 
 hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_attributes(const nlohmann::json& json_root_node)
 {
-	return hz::ExpectedVoid<SmartctlParserError>();
+	using namespace SmartctlJsonParserHelpers;
+
+	std::string attrs_array_key = "ata_smart_attributes/table";
+	auto attrs_node = get_node(json_root_node, attrs_array_key);
+	if (!attrs_node) {
+		return hz::Unexpected(SmartctlParserError::KeyNotFound, attrs_node.error().message());
+	}
+	if (!attrs_node->is_array()) {
+		return hz::Unexpected(SmartctlParserError::DataError, std::format("Node {} is not an array.", attrs_array_key));
+	}
+
+	// Revision
+	{
+		AtaStorageProperty p;
+		p.set_name("ata_smart_attributes/revision", "ata_smart_attributes/revision", _("Data structure revision number"));
+		p.section = AtaStorageProperty::Section::Attributes;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_attributes/revision").value_or(0);
+		add_property(p);
+	}
+
+	// Attributes
+	for (const auto& attr : attrs_node.value()) {
+		AtaStorageAttribute a;
+
+		a.id = get_node_data<int32_t>(attr, "id").value_or(0);
+		a.flag = get_node_data<std::string>(attr, "flags/string").value_or("");
+		a.value = (get_node_exists(attr, "value").value_or(false) ? std::optional<uint8_t>(get_node_data<uint8_t>(attr, "value").value_or(0)) : std::nullopt);
+		a.worst = (get_node_exists(attr, "worst").value_or(false) ? std::optional<uint8_t>(get_node_data<uint8_t>(attr, "worst").value_or(0)) : std::nullopt);
+		a.threshold = (get_node_exists(attr, "thresh").value_or(false) ? std::optional<uint8_t>(get_node_data<uint8_t>(attr, "thresh").value_or(0)) : std::nullopt);
+		a.attr_type = get_node_data<bool>(attr, "flags/prefailure").value_or(false) ? AtaStorageAttribute::AttributeType::Prefail : AtaStorageAttribute::AttributeType::OldAge;
+		a.update_type = get_node_data<bool>(attr, "flags/updated_online").value_or(false) ? AtaStorageAttribute::UpdateType::Always : AtaStorageAttribute::UpdateType::Offline;
+
+		const std::string when_failed = get_node_data<std::string>(attr, "when_failed").value_or(std::string());
+		if (when_failed == "now") {
+			a.when_failed = AtaStorageAttribute::FailTime::Now;
+		} else if (when_failed == "past") {
+			a.when_failed = AtaStorageAttribute::FailTime::Past;
+		} else {  // ""
+			a.when_failed = AtaStorageAttribute::FailTime::None;
+		}
+
+		a.raw_value = get_node_data<std::string>(attr, "raw/string").value_or(std::string());
+		a.raw_value_int = get_node_data<int64_t>(attr, "raw/value").value_or(0);
+
+		AtaStorageProperty p;
+		p.set_name(get_node_data<std::string>(attr, "name").value_or(std::string()));
+		p.section = AtaStorageProperty::Section::Attributes;
+		p.value = a;
+		add_property(p);
+	}
+
+	return {};
 }
 
 
