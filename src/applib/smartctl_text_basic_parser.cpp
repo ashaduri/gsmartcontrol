@@ -9,30 +9,34 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
+#include "smartctl_text_basic_parser.h"
+
 // #include "local_glibmm.h"
-//#include <clocale>  // localeconv
 //#include <cstdint>
 //#include <utility>
+#include <cstdint>
+#include <string>
+#include <string_view>
 
 // #include "hz/locale_tools.h"  // ScopedCLocale, locale_c_get().
+#include "ata_storage_property.h"
 #include "hz/string_algo.h"  // string_*
-//#include "hz/string_num.h"  // string_is_numeric, number_to_string
+#include "hz/string_num.h"  // string_is_numeric, number_to_string
 //#include "hz/debug.h"  // debug_*
 
 #include "app_pcrecpp.h"
-//#include "smartctl_text_ata_parser.h"
 //#include "ata_storage_property_descr.h"
 // #include "warning_colors.h"
+#include "smartctl_parser_types.h"
 #include "smartctl_version_parser.h"
-#include "smartctl_text_basic_parser.h"
-#include "hz/string_num.h"
 #include "smartctl_text_parser_helper.h"
+
 
 
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string_view smartctl_output)
 {
 	// perform any2unix
-	std::string output = hz::string_trim_copy(hz::string_any_to_unix_copy(smartctl_output));
+	const std::string output = hz::string_trim_copy(hz::string_any_to_unix_copy(smartctl_output));
 
 	if (output.empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Empty string passed as an argument. Returning.\n");
@@ -192,7 +196,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	std::string size;
 	if (app_pcre_match("/^User Capacity:[ \\t]*(.*)$/mi", output, &size)) {
 		int64_t bytes = 0;
-		std::string readable_size = SmartctlTextParserHelper::parse_byte_size(size, bytes, false);
+		const std::string readable_size = SmartctlTextParserHelper::parse_byte_size(size, bytes, false);
 		AtaStorageProperty p;
 		p.set_name("User Capacity", "user_capacity/bytes", "Capacity");
 		p.reported_value = size;

@@ -15,6 +15,7 @@ Copyright:
 #include <source_location>
 #include <string>
 #include <tl/expected.hpp>
+#include <utility>
 // #include <stacktrace>
 
 
@@ -94,14 +95,25 @@ class ErrorContainer {
 
 
 
+/// ExpectedValue is a wrapper around tl::expected that uses ErrorContainer as the error type.
 template<typename ValueType, typename ErrorType>
 using ExpectedValue = tl::expected<ValueType, ErrorContainer<ErrorType>>;
 
 
+/// ExpectedVoid is a wrapper around tl::expected that uses ErrorContainer as the error type and void as value.
 template<typename ErrorType>
 using ExpectedVoid = tl::expected<void, ErrorContainer<ErrorType>>;
 
 
+/// Unexpected creates an unexpected value with an ErrorContainer as error.
+template<typename ErrorContainerWithData>
+auto UnexpectedFromContainer(const ErrorContainerWithData& container)
+{
+	return tl::unexpected(container);
+}
+
+
+/// Unexpected creates an unexpected value with an ErrorContainer.
 template<typename ErrorData>
 auto Unexpected(ErrorData&& data, std::string error_message,
 		const std::source_location& loc = std::source_location::current()
@@ -109,10 +121,19 @@ auto Unexpected(ErrorData&& data, std::string error_message,
 	)
 {
 	return tl::unexpected(ErrorContainer<ErrorData>(std::forward<ErrorData>(data),
-	        std::move(error_message),
+			std::move(error_message),
 			loc
 			// trace
 	));
+}
+
+
+/// UnexpectedFrom creates an unexpected value from ExpectedValue or ExpectedVoid
+/// containing an error.
+template<typename ExpectedValueT>
+auto UnexpectedFrom(ExpectedValueT unexpected_value)
+{
+	return tl::unexpected(unexpected_value.error());
 }
 
 

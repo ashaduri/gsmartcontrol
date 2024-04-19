@@ -1613,7 +1613,7 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, AtaStorageA
 				|| auto_set(p, "ata_smart_data/self_test/status/_group", "Status of the last self-test run.")
 				|| auto_set(p, "ata_smart_data/offline_data_collection/_group", "Drive properties related to Offline Data Collection and self-tests.")
 				|| auto_set(p, "ata_smart_data/capabilities/_group", "Drive properties related to SMART handling.")
-				|| auto_set(p, "ata_smart_data/capabilities/error_logging_supported", "Drive properties related to error logging.")
+				|| auto_set(p, "ata_smart_data/capabilities/error_logging_supported/_group", "Drive properties related to error logging.")
 				|| auto_set(p, "ata_sct_capabilities/_group", "Drive properties related to temperature information.");
 				break;
 

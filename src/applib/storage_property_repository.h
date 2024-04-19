@@ -6,6 +6,7 @@ Copyright:
 #ifndef STORAGE_PROPERTY_REPOSITORY_H
 #define STORAGE_PROPERTY_REPOSITORY_H
 
+#include <string>
 #include <vector>
 #include "ata_storage_property.h"
 

@@ -248,6 +248,29 @@ class AtaStorageProperty {
 		[[nodiscard]] static std::string get_readable_section_name(Section s);
 
 
+		using ValueVariantType = std::variant<
+			std::monostate,  ///< None
+			std::string,  ///< Value (if it's a string)
+			int64_t,   ///< Value (if it's an integer)
+			bool,  ///< Value (if it's bool)
+			std::chrono::seconds,  ///< Value in seconds (if it's time interval)
+			AtaStorageCapability,  ///< Value (if it's a capability)
+			AtaStorageAttribute,  ///< Value (if it's an attribute)
+			AtaStorageStatistic,  ///< Value (if it's a statistic from devstat)
+			AtaStorageErrorBlock,  ///< Value (if it's a error block)
+			AtaStorageSelftestEntry  ///< Value (if it's a self-test entry)
+		>;
+
+
+		/// Constructor
+		AtaStorageProperty() = default;
+
+		/// Constructor
+		AtaStorageProperty(Section section_, ValueVariantType value_)
+				: section(section_), value(std::move(value_))
+		{ }
+
+
 		/// Get displayable value type name
 		[[nodiscard]] std::string get_storable_value_type_name() const;
 
@@ -297,18 +320,7 @@ class AtaStorageProperty {
 		std::string reported_value;  ///< String representation of the value as reported
 		std::string readable_value;  ///< User-friendly readable representation of value. if empty, use the other members.
 
-		std::variant<
-			std::monostate,  ///< None
-			std::string,  ///< Value (if it's a string)
-			int64_t,   ///< Value (if it's an integer)
-			bool,  ///< Value (if it's bool)
-			std::chrono::seconds,  ///< Value in seconds (if it's time interval)
-			AtaStorageCapability,  ///< Value (if it's a capability)
-			AtaStorageAttribute,  ///< Value (if it's an attribute)
-			AtaStorageStatistic,  ///< Value (if it's a statistic from devstat)
-			AtaStorageErrorBlock,  ///< Value (if it's a error block)
-			AtaStorageSelftestEntry  ///< Value (if it's a self-test entry)
-		> value;
+		ValueVariantType value;  ///< Stored value
 
 		WarningLevel warning_level = WarningLevel::None;  ///< Warning severity for this property
 		std::string warning_reason;  // Warning reason (displayable)

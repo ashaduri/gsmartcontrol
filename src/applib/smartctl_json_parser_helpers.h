@@ -12,12 +12,17 @@ Copyright:
 #ifndef SMARTCTL_JSON_PARSER_HELPERS_H
 #define SMARTCTL_JSON_PARSER_HELPERS_H
 
+#include <cstddef>
+#include <format>
+#include <functional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "json/json.hpp"
 #include "hz/debug.h"
 #include "hz/string_algo.h"
+#include "smartctl_parser_types.h"
 #include "smartctl_version_parser.h"
 #include "hz/format_unit.h"
 #include "hz/error_container.h"
@@ -38,10 +43,9 @@ enum class SmartctlJsonParserError {
 namespace SmartctlJsonParserHelpers {
 
 
-/// Get json node data. The path is slash-separated string.
-/// \throws std::runtime_error If not found or one of the paths is not an object
-template<typename T>
-[[nodiscard]] hz::ExpectedValue<T, SmartctlJsonParserError> get_node_data(const nlohmann::json& root, const std::string& path)
+/// Get node from json data. The path is slash-separated string.
+[[nodiscard]] inline hz::ExpectedValue<nlohmann::json, SmartctlJsonParserError>
+get_node(const nlohmann::json& root, std::string_view path)
 {
 	using namespace std::literals;
 
@@ -63,13 +67,7 @@ template<typename T>
 		if (auto iter = curr->find(comp_name); iter != curr->end()) {  // path component exists
 			const auto& jval = iter.value();
 			if (comp_index + 1 == components.size()) {  // it's the "value" component
-				try {
-					return jval.get<T>();  // may throw json::type_error
-				}
-				catch (nlohmann::json::type_error& ex) {
-					return hz::Unexpected(SmartctlJsonParserError::TypeError,
-							std::format("Cannot get node data \"{}\", component \"{}\" has wrong type: {}.", path, comp_name, ex.what()));
-				}
+				return jval;
 			}
 			// continue to the next component
 			curr = &jval;
@@ -85,10 +83,32 @@ template<typename T>
 
 
 
+
+/// Get json node data. The path is slash-separated string.
+/// \return SmartctlJsonParserError on error.
+template<typename T>
+[[nodiscard]] hz::ExpectedValue<T, SmartctlJsonParserError> get_node_data(const nlohmann::json& root, std::string_view path)
+{
+	auto node_result = get_node(root, path);
+	if (!node_result) {
+		return hz::UnexpectedFrom(node_result);
+	}
+
+	try {
+		return node_result.value().get<T>();  // may throw json::type_error
+	}
+	catch (nlohmann::json::type_error& ex) {
+		return hz::Unexpected(SmartctlJsonParserError::TypeError,
+				std::format("Cannot get node data \"{}\", component has wrong type: {}.", path, ex.what()));
+	}
+}
+
+
+
 /// Get json node data. The path is slash-separated string.
 /// If the data is not is found, the default value is returned.
 template<typename T>
-[[nodiscard]] hz::ExpectedValue<T, SmartctlJsonParserError> get_node_data(const nlohmann::json& root, const std::string& path, const T& default_value)
+[[nodiscard]] hz::ExpectedValue<T, SmartctlJsonParserError> get_node_data(const nlohmann::json& root, std::string_view path, const T& default_value)
 {
 	auto expected_data = get_node_data<T>(root, path);
 
@@ -106,6 +126,31 @@ template<typename T>
 	}
 
 	return expected_data;
+}
+
+
+
+/// Check if json node exists. The path is slash-separated string.
+[[nodiscard]] inline hz::ExpectedValue<bool, SmartctlJsonParserError>
+get_node_exists(const nlohmann::json& root, std::string_view path)
+{
+	auto node_result = get_node(root, path);
+	if (node_result.has_value()) {
+		return true;
+	}
+
+	switch (node_result.error().data()) {
+		case SmartctlJsonParserError::PathNotFound:
+			return false;
+
+		case SmartctlJsonParserError::UnexpectedObjectInPath:
+		case SmartctlJsonParserError::EmptyPath:
+		case SmartctlJsonParserError::InternalError:
+		case SmartctlJsonParserError::TypeError:
+			break;
+	}
+
+	return hz::UnexpectedFrom(node_result);
 }
 
 
@@ -132,6 +177,30 @@ inline auto string_formatter()
 			return p;
 		}
 		return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+	};
+}
+
+
+
+/// Return a lambda which returns a return_property if conditional_path exists.
+/// If the path doesn't exist, an error is returned.
+inline auto conditional_formatter(const std::string_view conditional_path, AtaStorageProperty return_property)
+{
+	return [conditional_path, return_property](const nlohmann::json& root_node, const std::string& key, [[maybe_unused]] const std::string& displayable_name) mutable
+			-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+	{
+		auto node_exists_result = get_node_exists(root_node, conditional_path);
+		if (!node_exists_result.has_value()) {
+			return hz::Unexpected(SmartctlParserError::DataError, node_exists_result.error().message());
+		}
+
+		if (node_exists_result.value()) {
+			return_property.generic_name = key;
+			return_property.displayable_name = displayable_name;
+			return return_property;
+		}
+
+		return hz::Unexpected(SmartctlParserError::InternalError, std::format("Error getting key {} from JSON data.", key));
 	};
 }
 

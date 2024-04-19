@@ -9,20 +9,26 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
+#include "smartctl_text_ata_parser.h"
+
 // #include "local_glibmm.h"
 #include <clocale>  // localeconv
 #include <cstdint>
+#include <string>
+#include <string_view>
 #include <utility>
+#include <vector>
 
 // #include "hz/locale_tools.h"  // ScopedCLocale, locale_c_get().
+#include "ata_storage_property.h"
 #include "hz/string_algo.h"  // string_*
 #include "hz/string_num.h"  // string_is_numeric, number_to_string
 #include "hz/debug.h"  // debug_*
 
 #include "app_pcrecpp.h"
-#include "smartctl_text_ata_parser.h"
-#include "ata_storage_property_descr.h"
+//#include "ata_storage_property_descr.h"
 // #include "warning_colors.h"
+#include "smartctl_parser_types.h"
 #include "smartctl_version_parser.h"
 #include "smartctl_text_parser_helper.h"
 
@@ -1042,7 +1048,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 			cap_prop.generic_name = "ata_smart_data/capabilities/_group";
 
 		} else if (re_error_log_cap_group.PartialMatch(cap_prop.reported_name)) {
-			cap_prop.generic_name = "ata_smart_data/capabilities/error_logging_supported";
+			cap_prop.generic_name = "ata_smart_data/capabilities/error_logging_supported/_group";
 
 		} else if (re_sct_cap_group.PartialMatch(cap_prop.reported_name)) {
 			cap_prop.generic_name = "ata_sct_capabilities/_group";
@@ -1059,7 +1065,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 
 		AtaStorageProperty p;
 		p.section = AtaStorageProperty::Section::Internal;
-		p.set_name("ata_smart_data/self_test/status/passed");
+		p.set_name("ata_smart_data/self_test/status/_merged");
 
 		AtaStorageSelftestEntry sse;
 		sse.test_num = 0;

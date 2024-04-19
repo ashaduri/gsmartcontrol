@@ -274,7 +274,7 @@ hz::ExpectedVoid<SelfTestError> SelfTest::update(const std::shared_ptr<CommandEx
 	for (const auto& e : property_repo.get_properties()) {
 		if (e.section != AtaStorageProperty::Section::Internal
 				|| !e.is_value_type<AtaStorageSelftestEntry>() || e.get_value<AtaStorageSelftestEntry>().test_num != 0
-				|| e.generic_name != "ata_smart_data/self_test/status/passed")
+				|| e.generic_name != "ata_smart_data/self_test/status/_merged")
 			continue;
 		p = e;
 	}

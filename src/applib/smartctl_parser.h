@@ -13,7 +13,6 @@ Copyright:
 #define SMARTCTL_PARSER_H
 
 #include <string_view>
-#include <vector>
 #include <memory>
 
 #include "ata_storage_property.h"

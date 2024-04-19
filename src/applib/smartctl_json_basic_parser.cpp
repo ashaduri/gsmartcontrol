@@ -9,22 +9,30 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
+#include "smartctl_json_basic_parser.h"
+
 // #include "local_glibmm.h"
 //#include <clocale>  // localeconv
-//#include <cstdint>
-//#include <utility>
+#include <cstdint>
+#include <format>
+#include <string_view>
+#include <tuple>
+#include <vector>
 
 // #include "hz/locale_tools.h"  // ScopedCLocale, locale_c_get().
-//#include "hz/string_algo.h"  // string_*
-//#include "hz/string_num.h"  // string_is_numeric, number_to_string
+#include "hz/string_algo.h"  // string_*
+#include "hz/string_num.h"  // string_is_numeric, number_to_string
 //#include "hz/debug.h"  // debug_*
+#include "json/json.hpp"
+#include "hz/error_container.h"
 
 //#include "app_pcrecpp.h"
 //#include "smartctl_text_ata_parser.h"
 //#include "ata_storage_property_descr.h"
+#include "ata_storage_property.h"
 #include "smartctl_json_parser_helpers.h"
+#include "smartctl_parser_types.h"
 //#include "smartctl_version_parser.h"
-#include "smartctl_json_basic_parser.h"
 
 
 
