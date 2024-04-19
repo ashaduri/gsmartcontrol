@@ -55,11 +55,11 @@ inline std::u8string u8string_from_string(const std::string_view& str)
 /// If "limit" is more than 0, only put a maximum of "limit" number of
 /// elements into vector, with the last one containing the rest of the string.
 template<class Container>
-void string_split(const std::string& str, char delimiter,
+void string_split(std::string_view str, char delimiter,
 		Container& append_here, bool skip_empty = false, typename Container::difference_type limit = 0)
 {
 	std::string::size_type curr = 0, last = 0;
-	std::string::size_type end = str.size();
+	const std::string::size_type end = str.size();
 	typename Container::difference_type num = 0;  // number inserted
 
 	while (true) {
@@ -73,10 +73,10 @@ void string_split(const std::string& str, char delimiter,
 
 		if (!skip_empty || (curr != last)) {
 			if (++num == limit) {
-				append_here.push_back(str.substr(last, std::string::npos));
+				append_here.emplace_back(str.substr(last, std::string::npos));
 				break;
 			}
-			append_here.push_back(str.substr(last, (curr == std::string::npos ? curr : (curr - last))));
+			append_here.emplace_back(str.substr(last, (curr == std::string::npos ? curr : (curr - last))));
 		}
 
 		if (curr == std::string::npos)
@@ -94,17 +94,17 @@ void string_split(const std::string& str, char delimiter,
 /// If "limit" is more than 0, only put a maximum of "limit" number of
 /// elements into vector, with the last one containing the rest of the string.
 template<class Container>
-void string_split(const std::string& str, const std::string& delimiter,
+void string_split(std::string_view str, const std::string& delimiter,
 		Container& append_here, bool skip_empty = false, typename Container::difference_type limit = 0)
 {
-	std::string::size_type skip_size = delimiter.size();
+	const std::string::size_type skip_size = delimiter.size();
 	if (str.size() < skip_size) {
-		append_here.push_back(str);
+		append_here.emplace_back(str);
 		return;
 	}
 
 	std::string::size_type curr = 0, last = 0;
-	std::string::size_type end = str.size();
+	const std::string::size_type end = str.size();
 	typename Container::difference_type num = 0;  // number inserted
 
 	while (true) {
@@ -115,14 +115,14 @@ void string_split(const std::string& str, const std::string& delimiter,
 		}
 
 		curr = str.find(delimiter, last);
-		std::string component(str, last, (curr == std::string::npos ? curr : (curr - last)));
+		std::string_view component = str.substr(last, (curr == std::string::npos ? curr : (curr - last)));
 
 		if (!skip_empty || !component.empty()) {
 			if (++num == limit) {
-				append_here.push_back(str.substr(last, std::string::npos));
+				append_here.emplace_back(str.substr(last, std::string::npos));
 				break;
 			}
-			append_here.push_back(component);
+			append_here.emplace_back(component);
 		}
 
 		if (curr == std::string::npos)
@@ -139,17 +139,17 @@ void string_split(const std::string& str, const std::string& delimiter,
 /// If "limit" is more than 0, only put a maximum of "limit" number of
 /// elements into vector, with the last one containing the rest of the string.
 template<class Container>
-void string_split_by_chars(const std::string& str, const std::string& delimiter_chars,
+void string_split_by_chars(std::string_view str, std::string_view delimiter_chars,
 		Container& append_here, bool skip_empty = false, typename Container::difference_type limit = 0)
 {
 	std::string::size_type curr = 0, last = 0;
-	std::string::size_type end = str.size();
+	const std::string::size_type end = str.size();
 	typename Container::difference_type num = 0;  // number inserted
 
 	while (true) {
 		if (last >= end) {  // last is past the end
 			if (!skip_empty)  // no need to check num here
-				append_here.push_back(std::string());
+				append_here.emplace_back({});
 			break;
 		}
 
@@ -193,7 +193,7 @@ std::string string_join(const Container& v, char glue)
 
 /// Join elements of container v into a string, using glue between them.
 template<class Container>
-std::string string_join(const Container& v, const std::string_view& glue)
+std::string string_join(const Container& v, std::string_view glue)
 {
 	std::string ret;
 	for (auto begin = v.cbegin(), iter = begin; iter != v.cend(); ++iter) {
