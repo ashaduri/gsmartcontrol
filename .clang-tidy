@@ -92,6 +92,8 @@ CheckOptions:
     value:           '0'
   - key:             misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
     value:          '1'
+  - key:             misc-include-cleaner.IgnoreHeaders
+    value:          'libdebug/*;local_glibmm.h;glib/*;gtk/*;gtkmm/*;glibmm/*'
   - key:             performance-unnecessary-value-param.AllowedTypes
     value:           'RefPtr;Ptr$'
   - key:             readability-braces-around-statements.ShortStatementLines
