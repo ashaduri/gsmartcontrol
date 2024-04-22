@@ -38,8 +38,8 @@ jobs:
       shell: bash
       working-directory: ${{github.workspace}}/build
       env:
-        CC: gcc-12
-        CXX: g++-12
+        CC: gcc-13
+        CXX: g++-13
       run: >
         cmake $GITHUB_WORKSPACE
         -DCMAKE_BUILD_TYPE=$BUILD_TYPE
