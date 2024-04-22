@@ -498,7 +498,7 @@ inline bool fs_path_is_writable(const fs::path& path, std::error_code& ec)
 
 	std::error_code ignored_ec;  // ignore this error
 	const bool is_directory = fs::is_directory(path, ignored_ec);
-	const bool path_exists = fs::exists(path, ec);
+	bool path_exists = fs::exists(path, ec);
 	if (ec) {
 		return false;
 	}
