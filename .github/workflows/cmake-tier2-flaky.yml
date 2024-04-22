@@ -19,7 +19,7 @@ jobs:
 #    variables to pass to VM
 #    MYTOKEN : ${{ secrets.MYTOKEN }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Build and test in FreeBSD
       id: test

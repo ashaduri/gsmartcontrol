@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Update Package Database
       run: sudo apt-get update
@@ -63,7 +63,7 @@ jobs:
       run: cpack -G TBZ2
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: Linux Packages
         path: ${{github.workspace}}/build/gsmartcontrol-*-Linux*.*
@@ -79,7 +79,7 @@ jobs:
         ]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: msys2/setup-msys2@v2
         # p7zip is needed to extract smartmontools
@@ -164,7 +164,7 @@ jobs:
         run: cpack -G NSIS
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Windows Packages
           path: ${{github.workspace}}/build/gsmartcontrol-*-win*.*
