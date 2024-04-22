@@ -13,6 +13,7 @@ Copyright:
 
 // #include "local_glibmm.h"
 #include <clocale>  // localeconv
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <string_view>

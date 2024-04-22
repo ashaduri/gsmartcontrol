@@ -14,6 +14,7 @@ Copyright:
 #include <cstdint>
 #include <format>
 #include <optional>
+#include <string>
 #include <tuple>
 #include <vector>
 #include <chrono>
@@ -517,15 +518,6 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_attri
 {
 	using namespace SmartctlJsonParserHelpers;
 
-	std::string attrs_array_key = "ata_smart_attributes/table";
-	auto attrs_node = get_node(json_root_node, attrs_array_key);
-	if (!attrs_node) {
-		return hz::Unexpected(SmartctlParserError::KeyNotFound, attrs_node.error().message());
-	}
-	if (!attrs_node->is_array()) {
-		return hz::Unexpected(SmartctlParserError::DataError, std::format("Node {} is not an array.", attrs_array_key));
-	}
-
 	// Revision
 	{
 		AtaStorageProperty p;
@@ -535,8 +527,17 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_attri
 		add_property(p);
 	}
 
+	std::string table_key = "ata_smart_attributes/table";
+	auto table_node = get_node(json_root_node, table_key);
+	if (!table_node) {
+		return hz::Unexpected(SmartctlParserError::KeyNotFound, table_node.error().message());
+	}
+	if (!table_node->is_array()) {
+		return hz::Unexpected(SmartctlParserError::DataError, std::format("Node {} is not an array.", table_key));
+	}
+
 	// Attributes
-	for (const auto& attr : attrs_node.value()) {
+	for (const auto& attr : table_node.value()) {
 		AtaStorageAttribute a;
 
 		a.id = get_node_data<int32_t>(attr, "id").value_or(0);
@@ -573,7 +574,83 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_attri
 
 hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_directory_log(const nlohmann::json& json_root_node)
 {
-	return hz::ExpectedVoid<SmartctlParserError>();
+	using namespace SmartctlJsonParserHelpers;
+	using namespace std::string_literals;
+
+	std::vector<std::string> lines;
+
+	{
+		AtaStorageProperty p;
+		p.set_name("ata_log_directory/gp_dir_version", "ata_log_directory/gp_dir_version", _("General purpose log directory version"));
+		p.section = AtaStorageProperty::Section::DirectoryLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_log_directory/gp_dir_version").value_or(0);
+		add_property(p);
+
+		lines.emplace_back(std::format("General Purpose Log Directory Version: {}", p.get_value<int64_t>()));
+	}
+	{
+		AtaStorageProperty p;
+		p.set_name("ata_log_directory/smart_dir_version", "ata_log_directory/smart_dir_version", _("SMART log directory version"));
+		p.section = AtaStorageProperty::Section::DirectoryLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_log_directory/smart_dir_version").value_or(0);
+		add_property(p);
+
+		lines.emplace_back(std::format("SMART Log Directory Version: {}", p.get_value<int64_t>()));
+	}
+	{
+		AtaStorageProperty p;
+		p.set_name("ata_log_directory/smart_dir_multi_sector", "ata_log_directory/smart_dir_multi_sector", _("Multi-sector log support"));
+		p.section = AtaStorageProperty::Section::DirectoryLog;
+		p.value = get_node_data<bool>(json_root_node, "ata_log_directory/smart_dir_multi_sector").value_or(0);
+		add_property(p);
+
+		lines.emplace_back(std::format("Multi-sector log support: {}", p.get_value<bool>() ? "Yes" : "No"));
+	}
+
+	// Table
+	std::string table_key = "ata_log_directory/table";
+	auto table_node = get_node(json_root_node, table_key);
+	if (!table_node) {
+		return hz::Unexpected(SmartctlParserError::KeyNotFound, table_node.error().message());
+	}
+	if (!table_node->is_array()) {
+		return hz::Unexpected(SmartctlParserError::DataError, std::format("Node {} is not an array.", table_key));
+	}
+
+	// Attributes
+	for (const auto& table_entry : table_node.value()) {
+		const uint64_t address = get_node_data<uint64_t>(table_entry, "address").value_or(0);
+		const std::string name = get_node_data<std::string>(table_entry, "name").value_or(std::string());
+		const bool read = get_node_data<bool>(table_entry, "read").value_or(false);
+		const bool write = get_node_data<bool>(table_entry, "write").value_or(false);
+		const uint64_t gp_sectors = get_node_data<uint64_t>(table_entry, "gp_sectors").value_or(0);
+		const uint64_t smart_sectors = get_node_data<uint64_t>(table_entry, "smart_sectors").value_or(0);
+
+		// Address, GPL/SL, RO/RW, Num Sectors (GPL, Smart) , Name
+		// 0x00       GPL,SL  R/O      1  Log Directory
+		lines.emplace_back(std::format(
+				"0x{:02X}    GPL Sectors: {:8}    SL Sectors: {:8}    {}{}    {}",
+				address,
+				gp_sectors == 0 ? "-" : std::to_string(gp_sectors),
+				smart_sectors == 0 ? "-" : std::to_string(smart_sectors),
+				(read ? "R" : "-"),
+				(write ? "W" : "-"),
+				name));
+	}
+
+	// The whole section
+	{
+		AtaStorageProperty p;
+		p.set_name("General Purpose Log Directory", "ata_log_directory/_merged");
+		p.section = AtaStorageProperty::Section::DirectoryLog;
+		p.reported_value = hz::string_join(lines, "\n");
+		p.value = p.reported_value;  // string-type value
+
+		add_property(p);
+	}
+
+
+	return {};
 }
 
 
