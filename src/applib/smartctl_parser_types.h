@@ -23,7 +23,7 @@ enum class SmartctlParserError {
 	SyntaxError,
 	NoVersion,
 	IncompatibleVersion,
-	NoSections,
+	NoSection,  ///< Returned by parser of each section if the section is not found
 	UnknownSection,  ///< Local parsing function error
 	InternalError,
 	NoSubsectionsParsed,

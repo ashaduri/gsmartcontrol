@@ -119,18 +119,84 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse(std::string_v
 		return info_parse_status;
 	}
 
-	// Ignore parse errors here, they are not critical.
-	[[maybe_unused]] auto health_parse_status = parse_section_health(json_root_node);
-	[[maybe_unused]] auto capabilities_parse_status = parse_section_capabilities(json_root_node);
-	[[maybe_unused]] auto attributes_parse_status = parse_section_attributes(json_root_node);
-	[[maybe_unused]] auto directory_log_parse_status = parse_section_directory_log(json_root_node);
-	[[maybe_unused]] auto error_log_parse_status = parse_section_error_log(json_root_node);
-	[[maybe_unused]] auto selftest_log_parse_status = parse_section_selftest_log(json_root_node);
-	[[maybe_unused]] auto selective_selftest_log_parse_status = parse_section_selective_selftest_log(json_root_node);
-	[[maybe_unused]] auto scttemp_log_parse_status = parse_section_scttemp_log(json_root_node);
-	[[maybe_unused]] auto scterc_log_parse_status = parse_section_scterc_log(json_root_node);
-	[[maybe_unused]] auto devstat_parse_status = parse_section_devstat(json_root_node);
-	[[maybe_unused]] auto sataphy_parse_status = parse_section_sataphy(json_root_node);
+	// Add properties for each parsed section so that the UI knows which tabs to show or hide
+	{
+		auto section_parse_status = parse_section_health(json_root_node);
+		AtaStorageProperty p;
+		p.section = AtaStorageProperty::Section::Health;
+		p.set_name("_parser/health_section_available");
+		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+	}
+	{
+		auto section_parse_status = parse_section_capabilities(json_root_node);
+		AtaStorageProperty p;
+		p.section = AtaStorageProperty::Section::Capabilities;
+		p.set_name("_parser/capabilities_section_available");
+		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+	}
+	{
+		auto section_parse_status = parse_section_attributes(json_root_node);
+		AtaStorageProperty p;
+		p.section = AtaStorageProperty::Section::Attributes;
+		p.set_name("_parser/attributes_section_available");
+		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+	}
+	{
+		auto section_parse_status = parse_section_directory_log(json_root_node);
+		AtaStorageProperty p;
+		p.section = AtaStorageProperty::Section::DirectoryLog;
+		p.set_name("_parser/directory_log_section_available");
+		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+	}
+	{
+		auto section_parse_status = parse_section_error_log(json_root_node);
+		AtaStorageProperty p;
+		p.section = AtaStorageProperty::Section::ErrorLog;
+		p.set_name("_parser/error_log_section_available");
+		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+	}
+	{
+		auto section_parse_status = parse_section_selftest_log(json_root_node);
+		AtaStorageProperty p;
+		p.section = AtaStorageProperty::Section::SelftestLog;
+		p.set_name("_parser/selftest_log_section_available");
+		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+	}
+	{
+		auto section_parse_status = parse_section_selective_selftest_log(json_root_node);
+		AtaStorageProperty p;
+		p.section = AtaStorageProperty::Section::SelectiveSelftestLog;
+		p.set_name("_parser/selective_selftest_log_section_available");
+		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+	}
+	{
+		auto section_parse_status = parse_section_scttemp_log(json_root_node);
+		AtaStorageProperty p;
+		p.section = AtaStorageProperty::Section::TemperatureLog;
+		p.set_name("_parser/temperature_log_section_available");
+		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+	}
+	{
+		auto section_parse_status = parse_section_scterc_log(json_root_node);
+		AtaStorageProperty p;
+		p.section = AtaStorageProperty::Section::ErcLog;
+		p.set_name("_parser/erc_log_section_available");
+		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+	}
+	{
+		auto section_parse_status = parse_section_devstat(json_root_node);
+		AtaStorageProperty p;
+		p.section = AtaStorageProperty::Section::Devstat;
+		p.set_name("_parser/devstat_section_available");
+		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+	}
+	{
+		auto section_parse_status = parse_section_sataphy(json_root_node);
+		AtaStorageProperty p;
+		p.section = AtaStorageProperty::Section::PhyLog;
+		p.set_name("_parser/phy_log_section_available");
+		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+	}
 
 	return {};
 }
@@ -516,13 +582,21 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_capab
 
 	};
 
+	bool section_properties_found = false;
+
 	for (const auto& [key, displayable_name, retrieval_func] : json_keys) {
 		DBG_ASSERT(retrieval_func != nullptr);
 		auto p = retrieval_func(json_root_node, key, displayable_name);
 		if (p.has_value()) {  // ignore if not found
 			p->section = AtaStorageProperty::Section::Capabilities;
 			add_property(p.value());
+			section_properties_found = true;
 		}
+	}
+
+	if (!section_properties_found) {
+		return hz::Unexpected(SmartctlParserError::NoSection,
+				std::format("No section {} parsed.", AtaStorageProperty::get_readable_section_name(AtaStorageProperty::Section::Capabilities)));
 	}
 
 	return {};
@@ -534,53 +608,59 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_attri
 {
 	using namespace SmartctlJsonParserHelpers;
 
+	bool section_properties_found = false;
+
 	// Revision
-	{
+	if (get_node_exists(json_root_node, "ata_smart_attributes/revision").value_or(false)) {
 		AtaStorageProperty p;
 		p.set_name("ata_smart_attributes/revision", "ata_smart_attributes/revision", _("Data structure revision number"));
 		p.section = AtaStorageProperty::Section::Attributes;
 		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_attributes/revision").value_or(0);
 		add_property(p);
+		section_properties_found = true;
 	}
 
-	std::string table_key = "ata_smart_attributes/table";
+	const std::string table_key = "ata_smart_attributes/table";
 	auto table_node = get_node(json_root_node, table_key);
-	if (!table_node) {
-		return hz::Unexpected(SmartctlParserError::KeyNotFound, table_node.error().message());
-	}
-	if (!table_node->is_array()) {
-		return hz::Unexpected(SmartctlParserError::DataError, std::format("Node {} is not an array.", table_key));
-	}
 
 	// Entries
-	for (const auto& table_entry : table_node.value()) {
-		AtaStorageAttribute a;
+	if (table_node.has_value() && table_node->is_array()) {
+		for (const auto& table_entry : table_node.value()) {
+			AtaStorageAttribute a;
 
-		a.id = get_node_data<int32_t>(table_entry, "id").value_or(0);
-		a.flag = get_node_data<std::string>(table_entry, "flags/string").value_or("");
-		a.value = (get_node_exists(table_entry, "value").value_or(false) ? std::optional<uint8_t>(get_node_data<uint8_t>(table_entry, "value").value_or(0)) : std::nullopt);
-		a.worst = (get_node_exists(table_entry, "worst").value_or(false) ? std::optional<uint8_t>(get_node_data<uint8_t>(table_entry, "worst").value_or(0)) : std::nullopt);
-		a.threshold = (get_node_exists(table_entry, "thresh").value_or(false) ? std::optional<uint8_t>(get_node_data<uint8_t>(table_entry, "thresh").value_or(0)) : std::nullopt);
-		a.attr_type = get_node_data<bool>(table_entry, "flags/prefailure").value_or(false) ? AtaStorageAttribute::AttributeType::Prefail : AtaStorageAttribute::AttributeType::OldAge;
-		a.update_type = get_node_data<bool>(table_entry, "flags/updated_online").value_or(false) ? AtaStorageAttribute::UpdateType::Always : AtaStorageAttribute::UpdateType::Offline;
+			a.id = get_node_data<int32_t>(table_entry, "id").value_or(0);
+			a.flag = get_node_data<std::string>(table_entry, "flags/string").value_or("");
+			a.value = (get_node_exists(table_entry, "value").value_or(false) ? std::optional<uint8_t>(get_node_data<uint8_t>(table_entry, "value").value_or(0)) : std::nullopt);
+			a.worst = (get_node_exists(table_entry, "worst").value_or(false) ? std::optional<uint8_t>(get_node_data<uint8_t>(table_entry, "worst").value_or(0)) : std::nullopt);
+			a.threshold = (get_node_exists(table_entry, "thresh").value_or(false) ? std::optional<uint8_t>(get_node_data<uint8_t>(table_entry, "thresh").value_or(0)) : std::nullopt);
+			a.attr_type = get_node_data<bool>(table_entry, "flags/prefailure").value_or(false) ? AtaStorageAttribute::AttributeType::Prefail : AtaStorageAttribute::AttributeType::OldAge;
+			a.update_type = get_node_data<bool>(table_entry, "flags/updated_online").value_or(false) ? AtaStorageAttribute::UpdateType::Always : AtaStorageAttribute::UpdateType::Offline;
 
-		const std::string when_failed = get_node_data<std::string>(table_entry, "when_failed").value_or(std::string());
-		if (when_failed == "now") {
-			a.when_failed = AtaStorageAttribute::FailTime::Now;
-		} else if (when_failed == "past") {
-			a.when_failed = AtaStorageAttribute::FailTime::Past;
-		} else {  // ""
-			a.when_failed = AtaStorageAttribute::FailTime::None;
+			const std::string when_failed = get_node_data<std::string>(table_entry, "when_failed").value_or(std::string());
+			if (when_failed == "now") {
+				a.when_failed = AtaStorageAttribute::FailTime::Now;
+			} else if (when_failed == "past") {
+				a.when_failed = AtaStorageAttribute::FailTime::Past;
+			} else {  // ""
+				a.when_failed = AtaStorageAttribute::FailTime::None;
+			}
+
+			a.raw_value = get_node_data<std::string>(table_entry, "raw/string").value_or(std::string());
+			a.raw_value_int = get_node_data<int64_t>(table_entry, "raw/value").value_or(0);
+
+			AtaStorageProperty p;
+			p.set_name(get_node_data<std::string>(table_entry, "name").value_or(std::string()));
+			p.section = AtaStorageProperty::Section::Attributes;
+			p.value = a;
+			add_property(p);
+
+			section_properties_found = true;
 		}
+	}
 
-		a.raw_value = get_node_data<std::string>(table_entry, "raw/string").value_or(std::string());
-		a.raw_value_int = get_node_data<int64_t>(table_entry, "raw/value").value_or(0);
-
-		AtaStorageProperty p;
-		p.set_name(get_node_data<std::string>(table_entry, "name").value_or(std::string()));
-		p.section = AtaStorageProperty::Section::Attributes;
-		p.value = a;
-		add_property(p);
+	if (!section_properties_found) {
+		return hz::Unexpected(SmartctlParserError::NoSection,
+				std::format("No section {} parsed.", AtaStorageProperty::get_readable_section_name(AtaStorageProperty::Section::Attributes)));
 	}
 
 	return {};
@@ -593,9 +673,11 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_direc
 	using namespace SmartctlJsonParserHelpers;
 	using namespace std::string_literals;
 
+	bool section_properties_found = false;
+
 	std::vector<std::string> lines;
 
-	{
+	if (get_node_exists(json_root_node, "ata_log_directory/gp_dir_version").value_or(false)) {
 		AtaStorageProperty p;
 		p.set_name("ata_log_directory/gp_dir_version", "ata_log_directory/gp_dir_version", _("General purpose log directory version"));
 		p.section = AtaStorageProperty::Section::DirectoryLog;
@@ -603,8 +685,9 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_direc
 		add_property(p);
 
 		lines.emplace_back(std::format("General Purpose Log Directory Version: {}", p.get_value<int64_t>()));
+		section_properties_found = true;
 	}
-	{
+	if (get_node_exists(json_root_node, "ata_log_directory/smart_dir_version").value_or(false)) {
 		AtaStorageProperty p;
 		p.set_name("ata_log_directory/smart_dir_version", "ata_log_directory/smart_dir_version", _("SMART log directory version"));
 		p.section = AtaStorageProperty::Section::DirectoryLog;
@@ -612,8 +695,9 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_direc
 		add_property(p);
 
 		lines.emplace_back(std::format("SMART Log Directory Version: {}", p.get_value<int64_t>()));
+		section_properties_found = true;
 	}
-	{
+	if (get_node_exists(json_root_node, "ata_log_directory/smart_dir_multi_sector").value_or(false)) {
 		AtaStorageProperty p;
 		p.set_name("ata_log_directory/smart_dir_multi_sector", "ata_log_directory/smart_dir_multi_sector", _("Multi-sector log support"));
 		p.section = AtaStorageProperty::Section::DirectoryLog;
@@ -621,50 +705,53 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_direc
 		add_property(p);
 
 		lines.emplace_back(std::format("Multi-sector log support: {}", p.get_value<bool>() ? "Yes" : "No"));
+		section_properties_found = true;
 	}
 
 	// Table
-	std::string table_key = "ata_log_directory/table";
+	const std::string table_key = "ata_log_directory/table";
 	auto table_node = get_node(json_root_node, table_key);
-	if (!table_node) {
-		return hz::Unexpected(SmartctlParserError::KeyNotFound, table_node.error().message());
-	}
-	if (!table_node->is_array()) {
-		return hz::Unexpected(SmartctlParserError::DataError, std::format("Node {} is not an array.", table_key));
-	}
 
 	// Entries
-	for (const auto& table_entry : table_node.value()) {
-		const uint64_t address = get_node_data<uint64_t>(table_entry, "address").value_or(0);
-		const std::string name = get_node_data<std::string>(table_entry, "name").value_or(std::string());
-		const bool read = get_node_data<bool>(table_entry, "read").value_or(false);
-		const bool write = get_node_data<bool>(table_entry, "write").value_or(false);
-		const uint64_t gp_sectors = get_node_data<uint64_t>(table_entry, "gp_sectors").value_or(0);
-		const uint64_t smart_sectors = get_node_data<uint64_t>(table_entry, "smart_sectors").value_or(0);
+	if (table_node.has_value() && table_node->is_array()) {
+		for (const auto& table_entry : table_node.value()) {
+			const uint64_t address = get_node_data<uint64_t>(table_entry, "address").value_or(0);
+			const std::string name = get_node_data<std::string>(table_entry, "name").value_or(std::string());
+			const bool read = get_node_data<bool>(table_entry, "read").value_or(false);
+			const bool write = get_node_data<bool>(table_entry, "write").value_or(false);
+			const uint64_t gp_sectors = get_node_data<uint64_t>(table_entry, "gp_sectors").value_or(0);
+			const uint64_t smart_sectors = get_node_data<uint64_t>(table_entry, "smart_sectors").value_or(0);
 
-		// Address, GPL/SL, RO/RW, Num Sectors (GPL, Smart) , Name
-		// 0x00       GPL,SL  R/O      1  Log Directory
-		lines.emplace_back(std::format(
-				"0x{:02X}    GPL Sectors: {:8}    SL Sectors: {:8}    {}{}    {}",
-				address,
-				gp_sectors == 0 ? "-" : std::to_string(gp_sectors),
-				smart_sectors == 0 ? "-" : std::to_string(smart_sectors),
-				(read ? "R" : "-"),
-				(write ? "W" : "-"),
-				name));
+			// Address, GPL/SL, RO/RW, Num Sectors (GPL, Smart) , Name
+			// 0x00       GPL,SL  R/O      1  Log Directory
+			lines.emplace_back(std::format(
+					"0x{:02X}    GPL Sectors: {:8}    SL Sectors: {:8}    {}{}    {}",
+					address,
+					gp_sectors == 0 ? "-" : std::to_string(gp_sectors),
+					smart_sectors == 0 ? "-" : std::to_string(smart_sectors),
+					(read ? "R" : "-"),
+					(write ? "W" : "-"),
+					name));
+		}
+
+		// The whole section
+		{
+			AtaStorageProperty p;
+			p.set_name("General Purpose Log Directory", "ata_log_directory/_merged");
+			p.section = AtaStorageProperty::Section::DirectoryLog;
+			p.reported_value = hz::string_join(lines, "\n");
+			p.value = p.reported_value;  // string-type value
+
+			add_property(p);
+		}
+
+		section_properties_found = true;
 	}
 
-	// The whole section
-	{
-		AtaStorageProperty p;
-		p.set_name("General Purpose Log Directory", "ata_log_directory/_merged");
-		p.section = AtaStorageProperty::Section::DirectoryLog;
-		p.reported_value = hz::string_join(lines, "\n");
-		p.value = p.reported_value;  // string-type value
-
-		add_property(p);
+	if (!section_properties_found) {
+		return hz::Unexpected(SmartctlParserError::NoSection,
+				std::format("No section {} parsed.", AtaStorageProperty::get_readable_section_name(AtaStorageProperty::Section::DirectoryLog)));
 	}
-
 
 	return {};
 }
@@ -675,47 +762,54 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_error
 {
 	using namespace SmartctlJsonParserHelpers;
 
+	bool section_properties_found = false;
+
 	// Revision
-	{
+	if (get_node_exists(json_root_node, "ata_smart_error_log/extended/revision").value_or(false)) {
 		AtaStorageProperty p;
 		p.set_name("ata_smart_error_log/extended/revision", "ata_smart_error_log/extended/revision", _("SMART extended comprehensive error log version"));
 		p.section = AtaStorageProperty::Section::ErrorLog;
 		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_error_log/extended/revision").value_or(0);
 		add_property(p);
+		section_properties_found = true;
 	}
 	// Count
-	{
+	if (get_node_exists(json_root_node, "ata_smart_error_log/extended/count").value_or(false)) {
 		AtaStorageProperty p;
 		p.set_name("ata_smart_error_log/extended/count", "ata_smart_error_log/extended/count", _("ATA error count"));
 		p.section = AtaStorageProperty::Section::ErrorLog;
 		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_error_log/extended/count").value_or(0);
 		add_property(p);
+		section_properties_found = true;
 	}
 
-	std::string table_key = "ata_smart_error_log/extended/table";
+	const std::string table_key = "ata_smart_error_log/extended/table";
 	auto table_node = get_node(json_root_node, table_key);
-	if (!table_node) {
-		return hz::Unexpected(SmartctlParserError::KeyNotFound, table_node.error().message());
-	}
-	if (!table_node->is_array()) {
-		return hz::Unexpected(SmartctlParserError::DataError, std::format("Node {} is not an array.", table_key));
-	}
 
 	// Entries
-	for (const auto& table_entry : table_node.value()) {
-		AtaStorageErrorBlock block;
-		block.error_num = get_node_data<uint32_t>(table_entry, "error_number").value_or(0);
-		block.log_index = get_node_data<uint64_t>(table_entry, "log_index").value_or(0);
-		block.lifetime_hours = get_node_data<uint32_t>(table_entry, "lifetime_hours").value_or(0);
-		block.device_state = get_node_data<std::string>(table_entry, "device_state/string").value_or(std::string());
-		block.lba = get_node_data<uint64_t>(table_entry, "completion_registers/lba").value_or(0);
-		block.type_more_info = get_node_data<std::string>(table_entry, "error_description").value_or(std::string());
+	if (table_node.has_value() && table_node->is_array()) {
+		for (const auto& table_entry : table_node.value()) {
+			AtaStorageErrorBlock block;
+			block.error_num = get_node_data<uint32_t>(table_entry, "error_number").value_or(0);
+			block.log_index = get_node_data<uint64_t>(table_entry, "log_index").value_or(0);
+			block.lifetime_hours = get_node_data<uint32_t>(table_entry, "lifetime_hours").value_or(0);
+			block.device_state = get_node_data<std::string>(table_entry, "device_state/string").value_or(std::string());
+			block.lba = get_node_data<uint64_t>(table_entry, "completion_registers/lba").value_or(0);
+			block.type_more_info = get_node_data<std::string>(table_entry, "error_description").value_or(std::string());
 
-		AtaStorageProperty p;
-		p.set_name(std::format("Error {}", block.error_num));
-		p.section = AtaStorageProperty::Section::ErrorLog;
-		p.value = block;
-		add_property(p);
+			AtaStorageProperty p;
+			p.set_name(std::format("Error {}", block.error_num));
+			p.section = AtaStorageProperty::Section::ErrorLog;
+			p.value = block;
+			add_property(p);
+		}
+
+		section_properties_found = true;
+	}
+
+	if (!section_properties_found) {
+		return hz::Unexpected(SmartctlParserError::NoSection,
+				std::format("No section {} parsed.", AtaStorageProperty::get_readable_section_name(AtaStorageProperty::Section::ErrorLog)));
 	}
 
 	return {};
@@ -727,13 +821,16 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_selft
 {
 	using namespace SmartctlJsonParserHelpers;
 
+	bool section_properties_found = false;
+
 	// Revision
-	{
+	if (get_node_exists(json_root_node, "ata_smart_self_test_log/extended/revision").value_or(false)) {
 		AtaStorageProperty p;
 		p.set_name("ata_smart_self_test_log/extended/revision", "ata_smart_self_test_log/extended/revision", _("SMART extended self-test log version"));
 		p.section = AtaStorageProperty::Section::SelftestLog;
 		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_self_test_log/extended/revision").value_or(0);
 		add_property(p);
+		section_properties_found = true;
 	}
 
 	std::vector<std::string> counts;
@@ -745,8 +842,8 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_selft
 		p.section = AtaStorageProperty::Section::SelftestLog;
 		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_self_test_log/extended/count").value_or(0);
 		p.show_in_ui = false;
-		counts.emplace_back(std::format("Self-test entries: {}", p.get_value<int64_t>()));
 		add_property(p);
+		counts.emplace_back(std::format("Self-test entries: {}", p.get_value<int64_t>()));
 	}
 	// Error Count
 	{
@@ -755,8 +852,8 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_selft
 		p.section = AtaStorageProperty::Section::SelftestLog;
 		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_self_test_log/extended/error_count_total").value_or(0);
 		p.show_in_ui = false;
-		counts.emplace_back(std::format("Total error count: {}", p.get_value<int64_t>()));
 		add_property(p);
+		counts.emplace_back(std::format("Total error count: {}", p.get_value<int64_t>()));
 	}
 	// Outdated Error Count
 	{
@@ -765,8 +862,8 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_selft
 		p.section = AtaStorageProperty::Section::SelftestLog;
 		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_self_test_log/extended/error_count_outdated").value_or(0);
 		p.show_in_ui = false;
-		counts.emplace_back(std::format("Outdated error count: {}", p.get_value<int64_t>()));
 		add_property(p);
+		counts.emplace_back(std::format("Outdated error count: {}", p.get_value<int64_t>()));
 	}
 
 	// Displayed Counts
@@ -776,48 +873,53 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_selft
 		p.section = AtaStorageProperty::Section::SelftestLog;
 		p.value = hz::string_join(counts, "; ");
 		add_property(p);
+
+		section_properties_found = true;
 	}
 
-	std::string table_key = "ata_smart_self_test_log/extended/table";
+	const std::string table_key = "ata_smart_self_test_log/extended/table";
 	auto table_node = get_node(json_root_node, table_key);
-	if (!table_node) {
-		return hz::Unexpected(SmartctlParserError::KeyNotFound, table_node.error().message());
-	}
-	if (!table_node->is_array()) {
-		return hz::Unexpected(SmartctlParserError::DataError, std::format("Node {} is not an array.", table_key));
-	}
 
 	// Entries
-	uint32_t entry_num = 1;
-	for (const auto& table_entry : table_node.value()) {
-		AtaStorageSelftestEntry entry;
-		entry.test_num = entry_num;
-		entry.type = get_node_data<std::string>(table_entry, "type/string").value_or(std::string());  // FIXME use type/value for i18n
-		entry.status_str = get_node_data<std::string>(table_entry, "status/string").value_or(std::string());
-		entry.remaining_percent = get_node_data<int8_t>(table_entry, "status/remaining_percent").value_or(0);
-		entry.lifetime_hours = get_node_data<uint32_t>(table_entry, "lifetime_hours").value_or(0);
-		entry.passed = get_node_data<bool>(table_entry, "status/passed").value_or(false);
+	if (table_node.has_value() && table_node->is_array()) {
+		uint32_t entry_num = 1;
+		for (const auto& table_entry : table_node.value()) {
+			AtaStorageSelftestEntry entry;
+			entry.test_num = entry_num;
+			entry.type = get_node_data<std::string>(table_entry, "type/string").value_or(std::string());  // FIXME use type/value for i18n
+			entry.status_str = get_node_data<std::string>(table_entry, "status/string").value_or(std::string());
+			entry.remaining_percent = get_node_data<int8_t>(table_entry, "status/remaining_percent").value_or(0);
+			entry.lifetime_hours = get_node_data<uint32_t>(table_entry, "lifetime_hours").value_or(0);
+			entry.passed = get_node_data<bool>(table_entry, "status/passed").value_or(false);
 
-		if (get_node_exists(table_entry, "lba").value_or(false)) {
-			entry.lba_of_first_error = std::format("0x{:X}", get_node_data<uint64_t>(table_entry, "lba").value_or(0));
-		} else {
-			entry.lba_of_first_error = "-";
+			if (get_node_exists(table_entry, "lba").value_or(false)) {
+				entry.lba_of_first_error = std::format("0x{:X}", get_node_data<uint64_t>(table_entry, "lba").value_or(0));
+			} else {
+				entry.lba_of_first_error = "-";
+			}
+
+			if (get_node_exists(table_entry, "status/value").value_or(false)) {
+				const uint8_t status_value = get_node_data<uint8_t>(table_entry, "status/value").value_or(0);
+				entry.status = static_cast<AtaStorageSelftestEntry::Status>(status_value >> 4);
+			} else {
+				entry.status = AtaStorageSelftestEntry::Status::Unknown;
+			}
+
+			AtaStorageProperty p;
+			p.set_name(std::format("Self-test entry {}", entry.test_num));
+			p.section = AtaStorageProperty::Section::SelftestLog;
+			p.value = entry;
+			add_property(p);
+
+			++entry_num;
 		}
 
-		if (get_node_exists(table_entry, "status/value").value_or(false)) {
-			const uint8_t status_value = get_node_data<uint8_t>(table_entry, "status/value").value_or(0);
-			entry.status = static_cast<AtaStorageSelftestEntry::Status>(status_value >> 4);
-		} else {
-			entry.status = AtaStorageSelftestEntry::Status::Unknown;
-		}
+		section_properties_found = true;
+	}
 
-		AtaStorageProperty p;
-		p.set_name(std::format("Self-test entry {}", entry.test_num));
-		p.section = AtaStorageProperty::Section::SelftestLog;
-		p.value = entry;
-		add_property(p);
-
-		++entry_num;
+	if (!section_properties_found) {
+		return hz::Unexpected(SmartctlParserError::NoSection,
+				std::format("No section {} parsed.", AtaStorageProperty::get_readable_section_name(AtaStorageProperty::Section::SelftestLog)));
 	}
 
 	return {};
@@ -827,28 +929,271 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_selft
 
 hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_selective_selftest_log(const nlohmann::json& json_root_node)
 {
-	return hz::ExpectedVoid<SmartctlParserError>();
+	using namespace SmartctlJsonParserHelpers;
+	using namespace std::string_literals;
+
+	bool section_properties_found = false;
+
+	std::vector<std::string> lines;
+
+	if (get_node_exists(json_root_node, "ata_smart_selective_self_test_log/revision").value_or(false)) {
+		AtaStorageProperty p;
+		p.set_name("ata_smart_selective_self_test_log/revision", "ata_smart_selective_self_test_log/revision", _("SMART Selective self-test log data structure revision number"));
+		p.section = AtaStorageProperty::Section::SelectiveSelftestLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_selective_self_test_log/revision").value_or(0);
+		add_property(p);
+		section_properties_found = true;
+	}
+	if (get_node_exists(json_root_node, "ata_smart_selective_self_test_log/power_up_scan_resume_minutes").value_or(false)) {
+		AtaStorageProperty p;
+		p.set_name("ata_smart_selective_self_test_log/power_up_scan_resume_minutes",
+				"ata_smart_selective_self_test_log/power_up_scan_resume_minutes",
+				_("If Selective self-test is pending on power-up, resume delay (minutes)"));
+		p.section = AtaStorageProperty::Section::SelectiveSelftestLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_selective_self_test_log/power_up_scan_resume_minutes").value_or(0);
+		add_property(p);
+		section_properties_found = true;
+	}
+	if (get_node_exists(json_root_node, "ata_smart_selective_self_test_log/remainder_scan_enabled").value_or(false)) {
+		AtaStorageProperty p;
+		p.set_name("ata_smart_selective_self_test_log/remainder_scan_enabled",
+				"ata_smart_selective_self_test_log/remainder_scan_enabled",
+				_("After scanning selected spans, scan remainder of the drive"));
+		p.section = AtaStorageProperty::Section::SelectiveSelftestLog;
+		p.value = get_node_data<bool>(json_root_node, "ata_smart_selective_self_test_log/remainder_scan_enabled").value_or(0);
+		add_property(p);
+		section_properties_found = true;
+	}
+
+	// Table
+	const std::string table_key = "ata_smart_selective_self_test_log/table";
+	auto table_node = get_node(json_root_node, table_key);
+
+	// Entries
+	if (table_node.has_value() && table_node->is_array()) {
+		int entry_num = 1;
+		for (const auto& table_entry : table_node.value()) {
+			const uint64_t lba_min = get_node_data<uint64_t>(table_entry, "lba_min").value_or(0);
+			const uint64_t lba_max = get_node_data<uint64_t>(table_entry, "lba_max").value_or(0);
+			const std::string status_str = get_node_data<std::string>(table_entry, "status/string").value_or(std::string());
+
+			lines.emplace_back(std::format(
+					"{:2}    Min/Max LBA: {:20}{:20}    Status: {}",
+					entry_num,
+					lba_min,
+					lba_max,
+					status_str));
+			++entry_num;
+		}
+
+		// The whole section
+		{
+			AtaStorageProperty p;
+			p.set_name("SMART selective self-test log", "ata_smart_selective_self_test_log/_merged");
+			p.section = AtaStorageProperty::Section::SelectiveSelftestLog;
+			p.reported_value = hz::string_join(lines, "\n");
+			p.value = p.reported_value;  // string-type value
+
+			add_property(p);
+		}
+
+		section_properties_found = true;
+	}
+
+	if (!section_properties_found) {
+		return hz::Unexpected(SmartctlParserError::NoSection,
+				std::format("No section {} parsed.", AtaStorageProperty::get_readable_section_name(AtaStorageProperty::Section::SelectiveSelftestLog)));
+	}
+
+	return {};
 }
 
 
 
 hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_scttemp_log(const nlohmann::json& json_root_node)
 {
-	return hz::ExpectedVoid<SmartctlParserError>();
+	using namespace SmartctlJsonParserHelpers;
+	using namespace std::string_literals;
+
+	bool section_properties_found = false;
+
+	std::vector<std::string> lines;
+
+	if (get_node_exists(json_root_node, "ata_sct_status/format_version").value_or(false)) {
+		lines.emplace_back(std::format("SCT status version: {}", get_node_data<int64_t>(json_root_node, "ata_sct_status/format_version").value_or(0)));
+	}
+	if (get_node_exists(json_root_node, "ata_sct_status/sct_version").value_or(false)) {
+		lines.emplace_back(std::format("SCT format version: {}", get_node_data<int64_t>(json_root_node, "ata_sct_status/sct_version").value_or(0)));
+	}
+	if (get_node_exists(json_root_node, "ata_sct_status/device_state").value_or(false)) {
+		lines.emplace_back(std::format("Device state: {}", get_node_data<std::string>(json_root_node, "ata_sct_status/device_state").value_or(std::string())));
+	}
+	if (get_node_exists(json_root_node, "ata_sct_status/temperature/current").value_or(false)) {
+		lines.emplace_back(std::format("Current temperature: {}° Celsius", get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/current").value_or(0)));
+	}
+	if (get_node_exists(json_root_node, "ata_sct_status/temperature/power_cycle_min").value_or(false)) {
+		lines.emplace_back(std::format("Power cycle min. temperature: {}° Celsius", get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/power_cycle_min").value_or(0)));
+	}
+	if (get_node_exists(json_root_node, "ata_sct_status/temperature/power_cycle_max").value_or(false)) {
+		lines.emplace_back(std::format("Power cycle max. temperature: {}° Celsius", get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/power_cycle_max").value_or(0)));
+	}
+	if (get_node_exists(json_root_node, "ata_sct_status/temperature/lifetime_min").value_or(false)) {
+		lines.emplace_back(std::format("Lifetime min. temperature: {}° Celsius", get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/lifetime_min").value_or(0)));
+	}
+	if (get_node_exists(json_root_node, "ata_sct_status/temperature/lifetime_max").value_or(false)) {
+		lines.emplace_back(std::format("Lifetime max. temperature: {}° Celsius", get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/lifetime_max").value_or(0)));
+	}
+	if (get_node_exists(json_root_node, "ata_sct_status/temperature/under_limit_count").value_or(false)) {
+		lines.emplace_back(std::format("Under limit count: {}", get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/under_limit_count").value_or(0)));
+	}
+	if (get_node_exists(json_root_node, "ata_sct_status/temperature/over_limit_count").value_or(false)) {
+		lines.emplace_back(std::format("Over limit count: {}", get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/over_limit_count").value_or(0)));
+	}
+	lines.emplace_back();
+	if (get_node_exists(json_root_node, "ata_sct_temperature_history/version").value_or(false)) {
+		lines.emplace_back(std::format("SCT temperature history version: {}", get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/version").value_or(0)));
+	}
+	if (get_node_exists(json_root_node, "ata_sct_temperature_history/sampling_period_minutes").value_or(false)) {
+		lines.emplace_back(std::format("Temperature sampling period: {} min.", get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/sampling_period_minutes").value_or(0)));
+	}
+	if (get_node_exists(json_root_node, "ata_sct_temperature_history/logging_interval_minutes").value_or(false)) {
+		lines.emplace_back(std::format("Temperature logging interval: {} min.", get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/logging_interval_minutes").value_or(0)));
+	}
+	if (get_node_exists(json_root_node, "ata_sct_temperature_history/temperature/op_limit_min").value_or(false)) {
+		lines.emplace_back(std::format("Recommended operating temperature (minimum): {}° Celsius",
+				get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/temperature/op_limit_min").value_or(0)));
+	}
+	if (get_node_exists(json_root_node, "ata_sct_temperature_history/temperature/op_limit_max").value_or(false)) {
+		lines.emplace_back(std::format("Recommended operating temperature (maximum): {}° Celsius",
+				get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/temperature/op_limit_max").value_or(0)));
+	}
+	if (get_node_exists(json_root_node, "ata_sct_temperature_history/temperature/limit_min").value_or(false)) {
+		lines.emplace_back(std::format("Allowed operating temperature (minimum): {}° Celsius",
+				get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/temperature/limit_min").value_or(0)));
+	}
+	if (get_node_exists(json_root_node, "ata_sct_temperature_history/temperature/limit_max").value_or(false)) {
+		lines.emplace_back(std::format("Allowed operating temperature (maximum): {}° Celsius",
+				get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/temperature/limit_max").value_or(0)));
+	}
+
+	// The whole section
+	if (!lines.empty()) {
+		AtaStorageProperty p;
+		p.set_name("Temperature log", "ata_sct_status/_merged");
+		p.section = AtaStorageProperty::Section::TemperatureLog;
+		p.reported_value = hz::string_join(lines, "\n");
+		p.value = p.reported_value;  // string-type value
+		add_property(p);
+
+		section_properties_found = true;
+	}
+
+	// TODO Temperature log graph
+
+	if (!section_properties_found) {
+		return hz::Unexpected(SmartctlParserError::NoSection,
+				std::format("No section {} parsed.", AtaStorageProperty::get_readable_section_name(AtaStorageProperty::Section::TemperatureLog)));
+	}
+
+	return {};
 }
 
 
 
 hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_scterc_log(const nlohmann::json& json_root_node)
 {
-	return hz::ExpectedVoid<SmartctlParserError>();
+	using namespace SmartctlJsonParserHelpers;
+	using namespace std::string_literals;
+
+	bool section_properties_found = false;
+
+	std::vector<std::string> lines;
+
+	if (get_node_exists(json_root_node, "ata_sct_erc/read/enabled").value_or(false)) {
+		lines.emplace_back(std::format("SCT error recovery control (read): {}, {:.2f} seconds",
+				(get_node_data<bool>(json_root_node, "ata_sct_erc/read/enabled").value_or(false) ? "enabled" : "disabled"),
+				get_node_data<double>(json_root_node, "ata_sct_erc/read/deciseconds").value_or(0.) / 10.));
+	}
+	if (get_node_exists(json_root_node, "ata_sct_erc/write/enabled").value_or(false)) {
+		lines.emplace_back(std::format("SCT error recovery control (write): {}, {:.2f} seconds",
+				(get_node_data<bool>(json_root_node, "ata_sct_erc/write/enabled").value_or(false) ? "enabled" : "disabled"),
+				get_node_data<double>(json_root_node, "ata_sct_erc/write/deciseconds").value_or(0.) / 10.));
+	}
+
+	// The whole section
+	if (!lines.empty()) {
+		AtaStorageProperty p;
+		p.set_name("SCT error recovery log", "ata_sct_erc/_merged");
+		p.section = AtaStorageProperty::Section::ErcLog;
+		p.reported_value = hz::string_join(lines, "\n");
+		p.value = p.reported_value;  // string-type value
+		add_property(p);
+
+		section_properties_found = true;
+	}
+
+	if (!section_properties_found) {
+		return hz::Unexpected(SmartctlParserError::NoSection,
+				std::format("No section {} parsed.", AtaStorageProperty::get_readable_section_name(AtaStorageProperty::Section::ErcLog)));
+	}
+
+	return {};
 }
 
 
 
 hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_devstat(const nlohmann::json& json_root_node)
 {
-	return hz::ExpectedVoid<SmartctlParserError>();
+	using namespace SmartctlJsonParserHelpers;
+
+	bool section_properties_found = false;
+
+	const std::string pages_key = "ata_device_statistics/pages";
+	auto page_node = get_node(json_root_node, pages_key);
+
+	// Entries
+	if (page_node.has_value() && page_node->is_array()) {
+		for (const auto& page_entry : page_node.value()) {
+			AtaStorageStatistic page_stat;
+			page_stat.is_header = true;
+			page_stat.page = get_node_data<int64_t>(page_entry, "number").value_or(0);
+
+			AtaStorageProperty page_prop;
+			page_prop.set_name(get_node_data<std::string>(page_entry, "name").value_or(std::string()));
+			page_prop.section = AtaStorageProperty::Section::Devstat;
+			page_prop.value = page_stat;
+			add_property(page_prop);
+
+			const std::string table_key = "table";
+			auto table_node = get_node(page_entry, table_key);
+
+			if (table_node.has_value() && table_node->is_array()) {
+				for (const auto& table_entry : table_node.value()) {
+					AtaStorageStatistic s;
+					s.page = page_stat.page;
+					s.flags = get_node_data<std::string>(table_entry, "flags/string").value_or(std::string());
+					s.value_int = get_node_data<int64_t>(table_entry, "value").value_or(0);
+					s.value = std::to_string(get_node_data<int64_t>(table_entry, "value").value_or(0));
+					s.offset = get_node_data<int64_t>(table_entry, "offset").value_or(0);
+
+					AtaStorageProperty p;
+					p.set_name(get_node_data<std::string>(table_entry, "name").value_or(std::string()));
+					p.section = AtaStorageProperty::Section::Devstat;
+					p.value = s;
+					add_property(p);
+				}
+			}
+
+			section_properties_found = true;
+		}
+	}
+
+	if (!section_properties_found) {
+		return hz::Unexpected(SmartctlParserError::NoSection,
+				std::format("No section {} parsed.", AtaStorageProperty::get_readable_section_name(AtaStorageProperty::Section::Devstat)));
+	}
+
+	return {};
 }
 
 

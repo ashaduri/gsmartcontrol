@@ -263,7 +263,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse(std::string_v
 
 	if (!status) {
 		debug_out_warn("app", DBG_FUNC_MSG << "No ATA sections could be parsed. Returning.\n");
-		return hz::Unexpected(SmartctlParserError::NoSections, "No ATA sections could be parsed.");
+		return hz::Unexpected(SmartctlParserError::NoSection, "No ATA sections could be parsed.");
 	}
 
 	return {};
@@ -1916,7 +1916,7 @@ If Selective self-test is pending on power-up, resume after 0 minute delay.
 	// the whole subsection
 	{
 		AtaStorageProperty p(pt);
-		p.set_name("SMART Selective self-test log", "ata_smart_selective_self_test_log/_merged");
+		p.set_name("SMART selective self-test log", "ata_smart_selective_self_test_log/_merged");
 		p.reported_value = sub;
 		p.value = p.reported_value;  // string-type value
 
