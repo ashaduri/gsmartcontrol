@@ -1065,7 +1065,8 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 		// The last self-test status. break up into pieces.
 
 		AtaStorageProperty p;
-		p.section = AtaStorageProperty::Section::Internal;
+//		p.section = AtaStorageProperty::Section::Internal;
+		p.section = AtaStorageProperty::Section::Capabilities;
 		p.set_name("ata_smart_data/self_test/status/_merged");
 
 		AtaStorageSelftestEntry sse;
@@ -1171,7 +1172,8 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 			// debug_out_dump("app", "Looking for internal capability in: \"" << sv << "\"\n");
 
 			AtaStorageProperty p;
-			p.section = AtaStorageProperty::Section::Internal;
+//			p.section = AtaStorageProperty::Section::Internal;
+			p.section = AtaStorageProperty::Section::Capabilities;
 			// Note: We don't set reported_value on internal properties.
 
 			std::string name, value;

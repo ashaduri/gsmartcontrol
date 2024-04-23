@@ -203,8 +203,10 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::parse_basic_data(bool do_set
 	if (auto prop = basic_property_repo.lookup_property("serial_number"); !prop.empty()) {
 		serial_number_ = prop.get_value<std::string>();
 	}
-	if (auto prop = basic_property_repo.lookup_property("user_capacity/bytes"); !prop.empty()) {
+	if (auto prop = basic_property_repo.lookup_property("user_capacity/bytes/_short"); !prop.empty()) {
 		size_ = prop.readable_value;
+	} else if (auto prop2 = basic_property_repo.lookup_property("user_capacity/bytes"); !prop.empty()) {
+		size_ = prop2.readable_value;
 	}
 
 
@@ -490,7 +492,7 @@ StorageDevice::Status StorageDevice::get_aodc_status() const
 	int found = 0;
 
 	for (const auto& p : property_repository_.get_properties()) {
-		if (p.section == AtaStorageProperty::Section::Internal) {
+//		if (p.section == AtaStorageProperty::Section::Internal) {
 			if (p.generic_name == "ata_smart_data/offline_data_collection/status/value/_parsed") {  // if this is not present at all, we set the unknown status.
 				status = (p.get_value<bool>() ? Status::Enabled : Status::Disabled);
 				//++found;
@@ -503,7 +505,7 @@ StorageDevice::Status StorageDevice::get_aodc_status() const
 			}
 			if (found >= 2)
 				break;
-		}
+//		}
 	}
 
 	if (!aodc_supported)

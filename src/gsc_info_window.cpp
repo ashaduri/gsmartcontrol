@@ -15,6 +15,7 @@ Copyright:
 #include <vector>  // better use vector, it's needed by others too
 #include <algorithm>  // std::min, std::max
 #include <memory>
+#include <string>
 
 #include "hz/string_num.h"  // number_to_string
 #include "hz/string_sprintf.h"  // string_sprintf
@@ -27,6 +28,7 @@ Copyright:
 #include "applib/warning_colors.h"
 #include "applib/gui_utils.h"  // gui_show_error_dialog
 #include "applib/smartctl_executor_gui.h"
+#include "applib/ata_storage_property.h"
 
 #include "gsc_text_window.h"
 #include "gsc_info_window.h"
@@ -1011,7 +1013,7 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<AtaStorageProperty>& pr
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (const auto& p : props) {
-		if (p.section != AtaStorageProperty::Section::Attributes)
+		if (p.section != AtaStorageProperty::Section::Attributes || !p.show_in_ui)
 			continue;
 
 		// add non-attribute-type properties to label above
@@ -1104,7 +1106,7 @@ void GscInfoWindow::fill_ui_statistics(const std::vector<AtaStorageProperty>& pr
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (const auto& p : props) {
-		if (p.section != AtaStorageProperty::Section::Devstat)
+		if (p.section != AtaStorageProperty::Section::Devstat || !p.show_in_ui)
 			continue;
 
 		// add non-entry-type properties to label above
@@ -1282,7 +1284,7 @@ void GscInfoWindow::fill_ui_self_test_log(const std::vector<AtaStorageProperty>&
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::SelftestLog)
+		if (p.section != AtaStorageProperty::Section::SelftestLog || !p.show_in_ui)
 			continue;
 
 		if (p.generic_name == "ata_smart_self_test_log/_merged")  // the whole section, we don't need it
@@ -1347,13 +1349,13 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<AtaStorageProperty>& pro
 	num_tree_col = app_gtkmm_create_tree_view_column(error_log_table_columns.state, *treeview,
 			C_("power", "State"), _("Power state of the drive when the error occurred"), false);
 
-	model_columns.add(error_log_table_columns.type);
-	num_tree_col = app_gtkmm_create_tree_view_column(error_log_table_columns.type, *treeview,
-			_("Type"), _("Type of error"), true);
+	model_columns.add(error_log_table_columns.lba);
+	num_tree_col = app_gtkmm_create_tree_view_column(error_log_table_columns.lba, *treeview,
+			_("LBA"), _("LBA Address"), true);
 
 	model_columns.add(error_log_table_columns.details);
 	num_tree_col = app_gtkmm_create_tree_view_column(error_log_table_columns.details, *treeview,
-			_("Details"), _("Additional details (e.g. LBA where the error occurred, etc...)"), true);
+			_("Details"), _("Additional details"), true);
 
 	model_columns.add(error_log_table_columns.tooltip);
 	treeview->set_tooltip_column(error_log_table_columns.tooltip.index());
@@ -1379,7 +1381,7 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<AtaStorageProperty>& pro
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::ErrorLog)
+		if (p.section != AtaStorageProperty::Section::ErrorLog || !p.show_in_ui)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1431,9 +1433,14 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<AtaStorageProperty>& pro
 			row[error_log_table_columns.log_entry_index] = eb.error_num;
 			row[error_log_table_columns.hours] = Glib::Markup::escape_text(eb.format_lifetime_hours());
 			row[error_log_table_columns.state] = Glib::Markup::escape_text(eb.device_state);
-			row[error_log_table_columns.type] = Glib::Markup::escape_text(
-					AtaStorageErrorBlock::format_readable_error_types(eb.reported_types));
-			row[error_log_table_columns.details] = Glib::Markup::escape_text(type_details.empty() ? "-" : type_details);  // e.g. OBS has no details
+
+			std::string details_str = eb.type_more_info;  // parsed in JSON
+			if (details_str.empty()) {
+				details_str = AtaStorageErrorBlock::format_readable_error_types(eb.reported_types);  // parsed in Text
+			}
+
+			row[error_log_table_columns.lba] = Glib::Markup::escape_text(std::to_string(eb.lba));
+			row[error_log_table_columns.details] = Glib::Markup::escape_text(details_str.empty() ? "-" : details_str);
 			row[error_log_table_columns.tooltip] = p.get_description();  // markup
 			row[error_log_table_columns.storage_property] = &p;
 			row[error_log_table_columns.mark_name] = Glib::ustring::compose(_("Error %1"), eb.error_num);
@@ -1487,7 +1494,7 @@ void GscInfoWindow::fill_ui_temperature_log(const std::vector<AtaStorageProperty
 			temp_prop_source = temp_attr2;
 		}
 
-		if (p.section != AtaStorageProperty::Section::TemperatureLog)
+		if (p.section != AtaStorageProperty::Section::TemperatureLog || !p.show_in_ui)
 			continue;
 
 		if (p.generic_name == "ata_sct_status/_not_present" && p.get_value<bool>()) {  // only show if unsupported
@@ -1574,7 +1581,7 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<AtaStoragePro
 	int index = 1;
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::Capabilities)
+		if (p.section != AtaStorageProperty::Section::Capabilities || !p.show_in_ui)
 			continue;
 
 		std::string flag_value;
@@ -1617,7 +1624,7 @@ WarningLevel GscInfoWindow::fill_ui_error_recovery(const std::vector<AtaStorageP
 	WarningLevel max_tab_warning = WarningLevel::None;
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::ErcLog)
+		if (p.section != AtaStorageProperty::Section::ErcLog || !p.show_in_ui)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1647,7 +1654,7 @@ WarningLevel GscInfoWindow::fill_ui_selective_self_test_log(const std::vector<At
 	WarningLevel max_tab_warning = WarningLevel::None;
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::SelectiveSelftestLog)
+		if (p.section != AtaStorageProperty::Section::SelectiveSelftestLog || !p.show_in_ui)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1677,7 +1684,7 @@ WarningLevel GscInfoWindow::fill_ui_physical(const std::vector<AtaStoragePropert
 	WarningLevel max_tab_warning = WarningLevel::None;
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::PhyLog)
+		if (p.section != AtaStorageProperty::Section::PhyLog || !p.show_in_ui)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1707,7 +1714,7 @@ WarningLevel GscInfoWindow::fill_ui_directory(const std::vector<AtaStorageProper
 	WarningLevel max_tab_warning = WarningLevel::None;
 
 	for (auto&& p : props) {
-		if (p.section != AtaStorageProperty::Section::DirectoryLog)
+		if (p.section != AtaStorageProperty::Section::DirectoryLog || !p.show_in_ui)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.

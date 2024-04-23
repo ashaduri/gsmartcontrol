@@ -116,6 +116,22 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 				})
 			},
 
+			{"user_capacity/bytes/_short", _("Capacity"),
+				[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
+						-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+				{
+					if (auto jval = get_node_data<int64_t>(root_node, "user_capacity/bytes"); jval) {
+						AtaStorageProperty p;
+						p.set_name(key, key, displayable_name);
+						p.readable_value = hz::format_size(static_cast<uint64_t>(jval.value()), true);
+						p.value = jval.value();
+						p.show_in_ui = false;
+						return p;
+					}
+					return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", "user_capacity/bytes"));
+				}
+			},
+
 			{"physical_block_size/_and/logical_block_size", _("Sector Size"),
 				[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
 						-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>

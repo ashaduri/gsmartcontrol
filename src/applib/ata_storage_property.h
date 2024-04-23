@@ -150,10 +150,12 @@ class AtaStorageErrorBlock {
 		[[nodiscard]] std::string format_lifetime_hours() const;
 
 		uint32_t error_num = 0;  ///< Error number
+		uint64_t log_index = 0;  ///< Log index
 		uint32_t lifetime_hours = 0;  ///< When the error occurred (in lifetime hours)
 		std::string device_state;  ///< Device state during the error - "active or idle", standby, etc...
 		std::vector<std::string> reported_types;  ///< Array of reported types (strings), e.g. "UNC".
 		std::string type_more_info;  ///< More info on error type (e.g. "at LBA = 0x0253eac0 = 39054016")
+		uint64_t lba = 0;  ///< LBA of the error
 };
 
 
@@ -168,20 +170,21 @@ std::ostream& operator<< (std::ostream& os, const AtaStorageErrorBlock& b);
 class AtaStorageSelftestEntry {
 	public:
 
-		/// Self-test log entry status
+		/// Self-test log entry status.
 		enum class Status {
-			Unknown,  ///< Initial state
-			CompletedNoError,  ///< Completed with no error, or no test was run
-			AbortedByHost,  ///< Aborted by host
-			Interrupted,  ///< Interrupted by user
-			FatalOrUnknown,  ///< Fatal or unknown error. Treated as test failure.
-			ComplUnknownFailure,  ///< Completed with unknown error. Treated as test failure.
-			ComplElectricalFailure,  ///< Completed with electrical error. Treated as test failure.
-			ComplServoFailure,  ///< Completed with servo error. Treated as test failure.
-			ComplReadFailure,  ///< Completed with read error. Treated as test failure.
-			ComplHandlingDamage,  ///< Completed with handling damage error. Treated as test failure.
-			InProgress,  ///< Test in progress
-			Reserved  ///< Reserved
+			Unknown = -1,  ///< Initial state
+			Reserved = -2,  ///< Reserved
+			// Values correspond to (ata_smart_self_test_log/extended/table/status/value >> 4).
+			CompletedNoError = 0x0,  ///< Completed with no error, or no test was run
+			AbortedByHost = 0x1,  ///< Aborted by host
+			Interrupted = 0x2,  ///< Interrupted by user
+			FatalOrUnknown = 0x3,  ///< Fatal or unknown error. Treated as test failure.
+			ComplUnknownFailure = 0x4,  ///< Completed with unknown error. Treated as test failure.
+			ComplElectricalFailure = 0x5,  ///< Completed with electrical error. Treated as test failure.
+			ComplServoFailure = 0x6,  ///< Completed with servo error. Treated as test failure.
+			ComplReadFailure = 0x7,  ///< Completed with read error. Treated as test failure.
+			ComplHandlingDamage = 0x8,  ///< Completed with handling damage error. Treated as test failure.
+			InProgress = 0xf,  ///< Test in progress
 		};
 
 		/// Self-test error severity
@@ -213,6 +216,7 @@ class AtaStorageSelftestEntry {
 		int8_t remaining_percent = -1;  ///< Remaining %. 0% for completed, 90% for started. -1 if n/a.
 		uint32_t lifetime_hours = 0;  ///< When the test happened (in lifetime hours). capability: unused.
 		std::string lba_of_first_error;  ///< LBA of the first error. "-" or value (format? usually hex). capability: unused.
+		bool passed = false;  ///< Test passed or not.
 };
 
 
@@ -241,7 +245,7 @@ class AtaStorageProperty {
 			ErcLog,  ///< SCT Error Recovery Control settings (--log=scterc)
 			PhyLog,  ///< Phy log (--log=sataphy)
 			DirectoryLog,  ///< Directory log (--log=directory)
-			Internal  ///< Internal application-specific data
+//			Internal  ///< Internal application-specific data
 		};
 
 		/// Get displayable section type name

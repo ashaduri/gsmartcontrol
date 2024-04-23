@@ -251,7 +251,7 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 			Gtk::TreeModelColumn<uint32_t> log_entry_index;
 			Gtk::TreeModelColumn<std::string> hours;
 			Gtk::TreeModelColumn<std::string> state;
-			Gtk::TreeModelColumn<Glib::ustring> type;
+			Gtk::TreeModelColumn<std::string> lba;
 			Gtk::TreeModelColumn<std::string> details;
 			Gtk::TreeModelColumn<Glib::ustring> tooltip;
 			Gtk::TreeModelColumn<const AtaStorageProperty*> storage_property;

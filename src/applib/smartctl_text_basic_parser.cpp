@@ -198,7 +198,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		int64_t bytes = 0;
 		const std::string readable_size = SmartctlTextParserHelper::parse_byte_size(size, bytes, false);
 		AtaStorageProperty p;
-		p.set_name("User Capacity", "user_capacity/bytes", "Capacity");
+		p.set_name("User Capacity", "user_capacity/bytes/_short", "Capacity");
 		p.reported_value = size;
 		p.value = bytes;
 		p.readable_value = readable_size;

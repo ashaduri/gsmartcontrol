@@ -1577,6 +1577,7 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, AtaStorageA
 				found = auto_set(p, "model_family", "Model family (from smartctl database)")
 				|| auto_set(p, "model_name", "Device model")
 				|| auto_set(p, "serial_number", "Serial number, unique to each physical drive")
+				|| auto_set(p, "user_capacity/bytes/_short", "User-serviceable drive capacity as reported to an operating system")
 				|| auto_set(p, "user_capacity/bytes", "User-serviceable drive capacity as reported to an operating system")
 				|| auto_set(p, "in_smartctl_database", "Whether the device is in smartctl database or not. "
 						"If it is, additional information may be provided; otherwise, Raw values of some attributes may be incorrectly formatted.")
@@ -1661,7 +1662,7 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, AtaStorageA
 			case AtaStorageProperty::Section::PhyLog:
 			case AtaStorageProperty::Section::DirectoryLog:
 			case AtaStorageProperty::Section::Unknown:
-			case AtaStorageProperty::Section::Internal:
+//			case AtaStorageProperty::Section::Internal:
 				// nothing
 				break;
 		}
@@ -1964,7 +1965,7 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 			case AtaStorageProperty::Section::PhyLog:
 			case AtaStorageProperty::Section::DirectoryLog:
 			case AtaStorageProperty::Section::Unknown:
-			case AtaStorageProperty::Section::Internal:
+//			case AtaStorageProperty::Section::Internal:
 				// nothing here
 				break;
 		}

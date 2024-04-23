@@ -104,7 +104,7 @@ bool SelfTest::is_supported() const
 		case TestType::Conveyance: prop_name = "ata_smart_data/capabilities/conveyance_self_test_supported"; break;
 	}
 
-	const AtaStorageProperty p = drive_->get_property_repository().lookup_property(prop_name, AtaStorageProperty::Section::Internal);
+	const AtaStorageProperty p = drive_->get_property_repository().lookup_property(prop_name);
 	return (!p.empty() && p.get_value<bool>());
 }
 
@@ -193,7 +193,7 @@ hz::ExpectedVoid<SelfTestError> SelfTest::force_stop(const std::shared_ptr<Comma
 	// there's no way to abort such test.
 	if (type_ == TestType::ImmediateOffline) {
 		const AtaStorageProperty p = drive_->get_property_repository().lookup_property(
-				"ata_smart_data/capabilities/offline_is_aborted_upon_new_cmd", AtaStorageProperty::Section::Internal);
+				"ata_smart_data/capabilities/offline_is_aborted_upon_new_cmd");
 		if (!p.empty() && p.get_value<bool>()) {  // if empty, give a chance to abort anyway.
 			return hz::Unexpected(SelfTestError::StopUnsupported, _("Aborting this test is unsupported by the drive."));
 		}
@@ -273,8 +273,7 @@ hz::ExpectedVoid<SelfTestError> SelfTest::update(const std::shared_ptr<CommandEx
 	// we use the "self-test status" capability.
 	AtaStorageProperty p;
 	for (const auto& e : property_repo.get_properties()) {
-		if (e.section != AtaStorageProperty::Section::Internal
-				|| !e.is_value_type<AtaStorageSelftestEntry>() || e.get_value<AtaStorageSelftestEntry>().test_num != 0
+		if (e.is_value_type<AtaStorageSelftestEntry>() || e.get_value<AtaStorageSelftestEntry>().test_num != 0
 				|| e.generic_name != "ata_smart_data/self_test/status/_merged")
 			continue;
 		p = e;

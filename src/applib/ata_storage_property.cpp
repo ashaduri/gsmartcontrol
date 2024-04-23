@@ -338,7 +338,7 @@ std::string AtaStorageProperty::get_readable_section_name(Section s)
 			{Section::ErcLog,               "erc_log"},
 			{Section::PhyLog,               "phy_log"},
 			{Section::DirectoryLog,         "directory_log"},
-			{Section::Internal, "internal"},
+//			{Section::Internal, "internal"},
 	};
 	if (auto iter = m.find(s); iter != m.end()) {
 		return iter->second;
