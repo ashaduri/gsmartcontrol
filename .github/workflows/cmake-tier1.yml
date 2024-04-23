@@ -130,8 +130,8 @@ jobs:
         working-directory: ${{github.workspace}}/build/smartmontools
         run: >
           7z -bb1 e $SMARTMONTOOLS_INSTALLER
-          bin64/smartctl.exe
-          bin64/smartctl-nc.exe
+          bin/smartctl.exe
+          bin/smartctl-nc.exe
           bin/update-smart-drivedb.ps1
           bin/drivedb.h
 
@@ -141,8 +141,8 @@ jobs:
         working-directory: ${{github.workspace}}/build/smartmontools
         run: >
           7z -bb1 e $SMARTMONTOOLS_INSTALLER
-          bin/smartctl.exe
-          bin/smartctl-nc.exe
+          bin32/smartctl.exe
+          bin32/smartctl-nc.exe
           bin/update-smart-drivedb.ps1
           bin/drivedb.h
 
