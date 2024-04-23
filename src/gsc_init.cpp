@@ -285,7 +285,7 @@ namespace {
 		std::string warningtext = std::string("\n") + _("Warning: GSmartControl comes with ABSOLUTELY NO WARRANTY.\n"
 				"See LICENSE.txt file for details.") + "\n\n";
 		/// %1 is years, %2 is email address
-		warningtext += Glib::ustring::compose(_("Copyright (C) %1 Alexander Shaduri %2"), "2008 - 2021",
+		warningtext += Glib::ustring::compose(_("Copyright (C) %1 Alexander Shaduri %2"), "2008 - 2024",
 				"<ashaduri@gmail.com>") + "\n\n";
 
 		std::cout << versiontext << warningtext;

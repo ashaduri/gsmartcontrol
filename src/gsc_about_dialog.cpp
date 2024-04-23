@@ -40,7 +40,7 @@ GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builde
 
 	// spammers go away
 	set_copyright(Glib::ustring::compose("Copyright (C) %1",
-			"2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>"));
+			"2008 - 2024 Alexander Shaduri <ashaduri@gmail.com>"));
 
 	// set_authors({"Alexander Shaduri <ashaduri@gmail.com>"});
 	// set_documenters({"Alexander Shaduri <ashaduri@gmail.com>"});

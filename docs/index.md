@@ -58,7 +58,7 @@ for more information.
 
 ## Copyright and Licensing
 
-GSmartControl is Copyright (C) 2008 - 2022 Alexander Shaduri [ashaduri@gmail.com](mailto:ashaduri@gmail.com) and contributors.
+GSmartControl is Copyright (C) 2008 - 2024 Alexander Shaduri [ashaduri@gmail.com](mailto:ashaduri@gmail.com) and contributors.
 
 GSmartControl is licensed under the terms of
 [GNU General Public License Version 3](https://www.gnu.org/licenses/gpl-3.0.en.html).
