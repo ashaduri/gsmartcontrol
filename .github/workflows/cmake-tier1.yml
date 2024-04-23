@@ -132,7 +132,7 @@ jobs:
           7z -bb1 e $SMARTMONTOOLS_INSTALLER
           bin64/smartctl.exe
           bin64/smartctl-nc.exe
-          bin/update-smart-drivedb.exe
+          bin/update-smart-drivedb.ps1
           bin/drivedb.h
 
       - name: Extract Package Requirements (32-bit)
@@ -143,7 +143,7 @@ jobs:
           7z -bb1 e $SMARTMONTOOLS_INSTALLER
           bin/smartctl.exe
           bin/smartctl-nc.exe
-          bin/update-smart-drivedb.exe
+          bin/update-smart-drivedb.ps1
           bin/drivedb.h
 
       - name: Package ZIP

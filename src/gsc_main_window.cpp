@@ -1085,6 +1085,9 @@ void GscMainWindow::run_update_drivedb()
 	}
 
 	hz::fs::path update_binary_path = hz::fs_path_from_string("update-smart-drivedb");
+	if constexpr (BuildEnv::is_kernel_family_windows()) {
+		update_binary_path += ".ps1";
+	}
 	if (smartctl_binary.is_absolute()) {
 		update_binary_path = smartctl_binary.parent_path() / update_binary_path;
 	}

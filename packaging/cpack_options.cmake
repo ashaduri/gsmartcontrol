@@ -57,7 +57,7 @@ set(CPACK_PACKAGE_VENDOR "Alexander Shaduri")
 #endif()
 
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE.txt")
-set(CPACK_STRIP_FILES FALSE)  # update-smart-drivedb doesn't like this
+set(CPACK_STRIP_FILES FALSE)  # update-smart-drivedb doesn't like this. TODO re-enable now that it's a script
 set(CPACK_SOURCE_STRIP_FILES FALSE)
 
 # Icon in Add/Remove Programs
@@ -120,7 +120,7 @@ set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "${CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS}
 # ---------------------------------------------- Windows Dependencies
 
 # Install GTK+ and other dependencies in Windows.
-# Requires installed smartctl-nc.exe, smartctl.exe, update-smart-drivedb.exe in bin subdirectory of sysroot.
+# Requires installed smartctl-nc.exe, smartctl.exe, update-smart-drivedb.ps1 in bin subdirectory of sysroot.
 # The following packages when cross-compiling from opensuse:
 # mingw64-cross-gcc-c++ mingw64-gtkmm3-devel mingw64-pcre-devel adwaita-icon-theme
 if (WIN32)
@@ -185,7 +185,7 @@ if (WIN32)
 		# GitHub extract location. The files are extracted without relative paths in archive (7z e).
 		install(FILES
 			"${CMAKE_BINARY_DIR}/smartmontools/drivedb.h"
-			"${CMAKE_BINARY_DIR}/smartmontools/update-smart-drivedb.exe"
+			"${CMAKE_BINARY_DIR}/smartmontools/update-smart-drivedb.ps1"
 			"${CMAKE_BINARY_DIR}/smartmontools/smartctl-nc.exe"
 			"${CMAKE_BINARY_DIR}/smartmontools/smartctl.exe"
 			DESTINATION .
@@ -196,7 +196,7 @@ if (WIN32)
 			"${APP_WINDOWS_SMARTCTL_ROOT}/bin/drivedb.h"
 			"${APP_WINDOWS_SMARTCTL_ROOT}/bin/smartctl-nc.exe"
 			"${APP_WINDOWS_SMARTCTL_ROOT}/bin/smartctl.exe"
-			"${APP_WINDOWS_SMARTCTL_ROOT}/bin/update-smart-drivedb.exe"
+			"${APP_WINDOWS_SMARTCTL_ROOT}/bin/update-smart-drivedb.ps1"
 			DESTINATION .
 		)
 	endif()

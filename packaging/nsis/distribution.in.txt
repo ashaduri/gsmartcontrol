@@ -15,9 +15,9 @@ This distribution includes:
 The binary was compiled against Gtkmm (http://www.gtkmm.org/), GTK+
 (http://gtk.org/) and related libraries, and PCRE (http://www.pcre.org/).
 
-* Smartctl binaries (from smartmontools 6.6, http://smartmontools.sf.net/)
+* Smartctl binaries (from smartmontools 7.4, http://smartmontools.sf.net/)
 - smartctl-nc.exe (compiled without console output), smartctl.exe (compiled
-with console output), update-smart-drivedb.exe (drive database updater).
+with console output), update-smart-drivedb.ps1 (drive database updater).
 
 
 The combined distribution is licensed under GNU GPL version 3.
