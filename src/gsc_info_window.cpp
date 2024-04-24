@@ -1628,7 +1628,7 @@ WarningLevel GscInfoWindow::fill_ui_error_recovery(const std::vector<AtaStorageP
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
-		if (p.generic_name == "ata_sct_erc") {
+		if (p.generic_name == "ata_sct_erc/_merged") {
 			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 			buffer->set_text("\n" + Glib::ustring::compose(_("Complete SCT Error Recovery Control settings: %1"), "\n\n" + p.get_value<std::string>()));
 

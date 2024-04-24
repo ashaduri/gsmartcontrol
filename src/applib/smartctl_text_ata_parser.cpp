@@ -2052,7 +2052,7 @@ SCT Error Recovery Control:
 	// the whole subsection
 	{
 		AtaStorageProperty p(pt);
-		p.set_name("SCT ERC log", "ata_sct_erc");
+		p.set_name("SCT ERC log", "ata_sct_erc/_merged");
 		p.reported_value = sub;
 		p.value = p.reported_value;  // string-type value
 

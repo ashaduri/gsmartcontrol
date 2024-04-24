@@ -754,6 +754,8 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_direc
 
 	// Entries
 	if (table_node.has_value() && table_node->is_array()) {
+		lines.emplace_back();
+
 		for (const auto& table_entry : table_node.value()) {
 			const uint64_t address = get_node_data<uint64_t>(table_entry, "address").value_or(0);
 			const std::string name = get_node_data<std::string>(table_entry, "name").value_or(std::string());
@@ -1018,7 +1020,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_selec
 			const std::string status_str = get_node_data<std::string>(table_entry, "status/string").value_or(std::string());
 
 			lines.emplace_back(std::format(
-					"{:2}    Min/Max LBA: {:20}{:20}    Status: {}",
+					"Span: {:2}    Min LBA: {:020}    Max LBA: {:020}    Status: {}",
 					entry_num,
 					lba_min,
 					lba_max,
@@ -1119,7 +1121,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_sctte
 	// The whole section
 	if (!lines.empty()) {
 		AtaStorageProperty p;
-		p.set_name("Temperature log", "ata_sct_status/_merged");
+		p.set_name("Temperature log", "ata_sct_status/_and/ata_sct_temperature_history/_merged");
 		p.section = AtaStorageProperty::Section::TemperatureLog;
 		p.reported_value = hz::string_join(lines, "\n");
 		p.value = p.reported_value;  // string-type value
@@ -1261,7 +1263,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_satap
 //			const bool overflow = get_node_data<bool>(table_entry, "overflow").value_or(false);
 
 			lines.emplace_back(std::format(
-					"ID: 0x{:02X}    Size: {:8}    Value: {:20} Description: {}",
+					"ID: 0x{:04X}    Size: {:8}    Value: {:20}    Description: {}",
 					id,
 					size,
 					value,
