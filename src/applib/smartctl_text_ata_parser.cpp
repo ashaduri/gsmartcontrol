@@ -532,25 +532,25 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_info_
 		// Don't put complete messages here - they change across smartctl versions.
 
 		if (app_pcre_match("/Available - device has/mi", p.reported_value)) {
-			p.set_name(p.reported_name, "_text_only/smart_supported", "SMART Supported");
+			p.set_name(p.reported_name, "smart_support/available", "SMART Supported");
 			p.value = true;
 
 		} else if (app_pcre_match("/Enabled/mi", p.reported_value)) {
-			p.set_name(p.reported_name, "_text_only/smart_enabled", "SMART Enabled");
+			p.set_name(p.reported_name, "smart_support/enabled", "SMART Enabled");
 			p.value = true;
 
 		} else if (app_pcre_match("/Disabled/mi", p.reported_value)) {
-			p.set_name(p.reported_name, "_text_only/smart_enabled", "SMART Enabled");
+			p.set_name(p.reported_name, "smart_support/enabled", "SMART Enabled");
 			p.value = false;
 
 		} else if (app_pcre_match("/Unavailable/mi", p.reported_value)) {
-			p.set_name(p.reported_name, "_text_only/smart_supported", "SMART Supported");
+			p.set_name(p.reported_name, "smart_support/available", "SMART Supported");
 			p.value = false;
 
 		// this should be the last - when ambiguous state is detected, usually smartctl
 		// retries with other methods and prints one of the above.
 		} else if (app_pcre_match("/Ambiguous/mi", p.reported_value)) {
-			p.set_name(p.reported_name, "_text_only/smart_supported", "SMART Supported");
+			p.set_name(p.reported_name, "smart_support/available", "SMART Supported");
 			p.value = true;  // let's be optimistic - just hope that it doesn't hurt.
 		}
 

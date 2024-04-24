@@ -62,8 +62,8 @@ Information not printed in JSON yet:
 	We ignore this in text parser.
 
 - SMART support and some other Info keys
-	_text_only/smart_supported
-	_text_only/smart_enabled
+	smart_support/available
+	smart_support/enabled
 	_text_only/write_cache_reorder
 	_text_only/power_mode
 
@@ -321,6 +321,46 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_info(
 			},
 
 			{"local_time/asctime", _("Scanned on"), string_formatter()},
+
+			{"smart_support/available", _("SMART Supported"), bool_formatter(_("Yes"), _("No"))},
+			{"smart_support/enabled", _("SMART Enabled"), bool_formatter(_("Yes"), _("No"))},
+
+			{"ata_aam/enabled", _("AAM Feature"), bool_formatter(_("Enabled"), _("Disabled"))},
+			{"ata_aam/level", _("AAM Level"),
+				[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
+						-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+				{
+					int64_t level = get_node_data<int64_t>(root_node, "ata_aam/level").value_or(0);
+					std::string level_string = get_node_data<std::string>(root_node, "ata_aam/string").value_or("");
+					AtaStorageProperty p;
+					p.set_name(key, key, displayable_name);
+					p.readable_value = std::format("{} ({})", level_string, level);
+					p.value = level;
+					return p;
+				}
+			},
+			{"ata_aam/recommended_level", _("AAM Recommended Level"),
+				custom_string_formatter<int64_t>([](int64_t value)
+				{
+					return std::format("{}", value);
+				})
+			},
+
+			{"ata_apm/enabled", _("APM Feature"), bool_formatter(_("Enabled"), _("Disabled"))},
+			{"ata_apm/level", _("APM Level"),
+				[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
+						-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+				{
+					int64_t level = get_node_data<int64_t>(root_node, "ata_apm/level").value_or(0);
+					std::string level_string = get_node_data<std::string>(root_node, "ata_apm/string").value_or("");
+					AtaStorageProperty p;
+					p.set_name(key, key, displayable_name);
+					p.readable_value = std::format("{} ({})", level_string, level);
+					p.value = level;
+					return p;
+				}
+			},
+
 			{"read_lookahead/enabled", _("Read Look-Ahead"), bool_formatter(_("Enabled"), _("Disabled"))},
 			{"write_cache/enabled", _("Write Cache"), bool_formatter(_("Enabled"), _("Disabled"))},
 			{"ata_dsn/enabled", _("DSN Feature"), bool_formatter(_("Enabled"), _("Disabled"))},
@@ -1200,14 +1240,54 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_devst
 
 hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_sataphy(const nlohmann::json& json_root_node)
 {
-	return hz::ExpectedVoid<SmartctlParserError>();
-}
+	using namespace SmartctlJsonParserHelpers;
+	using namespace std::string_literals;
 
+	bool section_properties_found = false;
 
+	std::vector<std::string> lines;
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_internal_capabilities(AtaStorageProperty& cap_prop)
-{
-	return hz::ExpectedVoid<SmartctlParserError>();
+	// Table
+	const std::string table_key = "sata_phy_event_counters/table";
+	auto table_node = get_node(json_root_node, table_key);
+
+	// Entries
+	if (table_node.has_value() && table_node->is_array()) {
+		for (const auto& table_entry : table_node.value()) {
+			const uint64_t id = get_node_data<uint64_t>(table_entry, "id").value_or(0);
+			const std::string name = get_node_data<std::string>(table_entry, "name").value_or(std::string());
+			const uint64_t size = get_node_data<uint64_t>(table_entry, "size").value_or(0);
+			const int64_t value = get_node_data<int64_t>(table_entry, "value").value_or(0);
+//			const bool overflow = get_node_data<bool>(table_entry, "overflow").value_or(false);
+
+			lines.emplace_back(std::format(
+					"ID: 0x{:02X}    Size: {:8}    Value: {:20} Description: {}",
+					id,
+					size,
+					value,
+					name));
+		}
+
+		// The whole section
+		{
+			AtaStorageProperty p;
+			p.set_name("SATA Phy Log", "sata_phy_event_counters/_merged");
+			p.section = AtaStorageProperty::Section::PhyLog;
+			p.reported_value = hz::string_join(lines, "\n");
+			p.value = p.reported_value;  // string-type value
+
+			add_property(p);
+		}
+
+		section_properties_found = true;
+	}
+
+	if (!section_properties_found) {
+		return hz::Unexpected(SmartctlParserError::NoSection,
+				std::format("No section {} parsed.", AtaStorageProperty::get_readable_section_name(AtaStorageProperty::Section::PhyLog)));
+	}
+
+	return {};
 }
 
 

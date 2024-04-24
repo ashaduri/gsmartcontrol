@@ -72,10 +72,6 @@ class SmartctlJsonAtaParser : public SmartctlParser {
 		hz::ExpectedVoid<SmartctlParserError> parse_section_sataphy(const nlohmann::json& json_root_node);
 
 
-		/// Check the capabilities for internal properties we can use.
-		hz::ExpectedVoid<SmartctlParserError> parse_section_internal_capabilities(AtaStorageProperty& cap_prop);
-
-
 };
 
 

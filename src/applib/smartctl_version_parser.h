@@ -57,8 +57,8 @@ class SmartctlVersionParser {
 		// Can't fully test 5.0-xx, they don't support sata, and I have only sata.
 		static constexpr double minimum_req_text_version = 5.0;
 
-		// JSON in 7.2 is still experimental, but we have to have some cut-off point.
-		static constexpr double minimum_req_json_version = 7.2;
+		// 7.3 adds "smart_support" section in json.
+		static constexpr double minimum_req_json_version = 7.3;
 
 
 };

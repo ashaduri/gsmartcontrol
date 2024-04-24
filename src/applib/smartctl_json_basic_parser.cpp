@@ -79,14 +79,14 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 
 	{
 		AtaStorageProperty p;
-		p.set_name("SMART Supported", "_text_only/smart_supported", "SMART Supported");
+		p.set_name("SMART Supported", "smart_support/available", "SMART Supported");
 		p.value = smart_supported;
 		p.section = AtaStorageProperty::Section::Info;  // add to info section
 		add_property(p);
 	}
 	{
 		AtaStorageProperty p;
-		p.set_name("SMART Enabled", "_text_only/smart_enabled", "SMART Enabled");
+		p.set_name("SMART Enabled", "smart_support/enabled", "SMART Enabled");
 		p.value = smart_enabled;
 		p.section = AtaStorageProperty::Section::Info;  // add to info section
 		add_property(p);

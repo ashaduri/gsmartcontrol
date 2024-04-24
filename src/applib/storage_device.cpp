@@ -188,10 +188,10 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::parse_basic_data(bool do_set
 		}
 	}
 
-	if (auto prop = basic_property_repo.lookup_property("_text_only/smart_supported"); !prop.empty()) {
+	if (auto prop = basic_property_repo.lookup_property("smart_support/available"); !prop.empty()) {
 		smart_supported_ = prop.get_value<bool>();
 	}
-	if (auto prop = basic_property_repo.lookup_property("_text_only/smart_enabled"); !prop.empty()) {
+	if (auto prop = basic_property_repo.lookup_property("smart_support/enabled"); !prop.empty()) {
 		smart_enabled_ = prop.get_value<bool>();
 	}
 	if (auto prop = basic_property_repo.lookup_property("model_name"); !prop.empty()) {
