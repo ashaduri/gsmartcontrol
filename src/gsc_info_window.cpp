@@ -1760,6 +1760,9 @@ void GscInfoWindow::cell_renderer_for_attributes(Gtk::CellRenderer* cr,
 		const Gtk::TreeModel::iterator& iter, [[maybe_unused]] int column_index) const
 {
 	const AtaStorageProperty* prop = (*iter)[this->attribute_table_columns.storage_property];
+	if (!prop) {
+		return;
+	}
 	const auto& attribute = prop->get_value<AtaStorageAttribute>();
 
 	if (auto* crt = dynamic_cast<Gtk::CellRendererText*>(cr)) {
@@ -1809,6 +1812,9 @@ void GscInfoWindow::cell_renderer_for_statistics(Gtk::CellRenderer* cr,
 		const Gtk::TreeModel::iterator& iter, [[maybe_unused]] int column_index) const
 {
 	const AtaStorageProperty* prop = (*iter)[this->statistics_table_columns.storage_property];
+	if (!prop) {
+		return;
+	}
 	const auto& statistic = prop->get_value<AtaStorageStatistic>();
 
 	if (auto* crt = dynamic_cast<Gtk::CellRendererText*>(cr)) {
@@ -1839,6 +1845,9 @@ void GscInfoWindow::cell_renderer_for_self_test_log(Gtk::CellRenderer* cr,
 		const Gtk::TreeModel::iterator& iter, [[maybe_unused]] int column_index) const
 {
 	const AtaStorageProperty* prop = (*iter)[this->self_test_log_table_columns.storage_property];
+	if (!prop) {
+		return;
+	}
 
 	if (auto* crt = dynamic_cast<Gtk::CellRendererText*>(cr)) {
 		cell_renderer_set_warning_fg_bg(crt, *prop);
@@ -1870,6 +1879,9 @@ void GscInfoWindow::cell_renderer_for_error_log(Gtk::CellRenderer* cr,
 		const Gtk::TreeModel::iterator& iter, [[maybe_unused]] int column_index) const
 {
 	const AtaStorageProperty* prop = (*iter)[this->error_log_table_columns.storage_property];
+	if (!prop) {
+		return;
+	}
 
 	if (auto* crt = dynamic_cast<Gtk::CellRendererText*>(cr)) {
 		cell_renderer_set_warning_fg_bg(crt, *prop);
@@ -1896,6 +1908,9 @@ void GscInfoWindow::cell_renderer_for_capabilities(Gtk::CellRenderer* cr,
 		const Gtk::TreeModel::iterator& iter, [[maybe_unused]] int column_index) const
 {
 	const AtaStorageProperty* prop = (*iter)[this->capabilities_table_columns.storage_property];
+	if (!prop) {
+		return;
+	}
 
 	if (auto* crt = dynamic_cast<Gtk::CellRendererText*>(cr)) {
 		cell_renderer_set_warning_fg_bg(crt, *prop);
@@ -2231,7 +2246,7 @@ void GscInfoWindow::on_treeview_menu_copy_clicked(Gtk::TreeView* treeview)
 {
 	std::string text;
 
-	int num_cols = static_cast<int>(treeview->get_n_columns());
+	const int num_cols = static_cast<int>(treeview->get_n_columns());
 	std::vector<std::string> col_texts;
 	for (int i = 0; i < num_cols; ++i) {
 		Gtk::TreeViewColumn* tcol = treeview->get_column(i);
