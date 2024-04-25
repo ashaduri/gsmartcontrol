@@ -25,4 +25,4 @@ Steps to reproduce the behavior:
 [If applicable, add screenshots to help explain your problem].
 
 **Additional Context**
-[Add any other context about the problem here (GTK+ version, etc...)]
+[Add any other context about the problem here (GTK+ version, etc.)]

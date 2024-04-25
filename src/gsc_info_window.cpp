@@ -1960,7 +1960,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 		// One update() is performed by start(), so do the timeout first.
 
 		// Wait until next poll (up to several minutes). Meanwhile, interpolate
-		// the remaining time, update the progressbar, etc...
+		// the remaining time, update the progressbar, etc.
 		if (self->test_timer_poll.elapsed() < static_cast<double>(poll_in.count())) {  // elapsed() is seconds in double.
 
 			// Update progress bar right after poll, plus every 5 seconds.

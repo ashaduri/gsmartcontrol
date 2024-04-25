@@ -32,7 +32,7 @@ all the available packages of GSmartControl.
 - allows enabling/disabling SMART;
 - supports configuration of global and per-drive options for smartctl;
 - performs SMART self-tests;
-- displays drive identity information, capabilities, attributes, device statistics, etc...;
+- displays drive identity information, capabilities, attributes, device statistics, etc.;
 - can read in smartctl output from a saved file, interpreting it as a read-only virtual device;
 - works on most smartctl-supported operating systems;
 - has extensive help information.

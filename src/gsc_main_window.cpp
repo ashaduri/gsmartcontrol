@@ -203,7 +203,7 @@ void GscMainWindow::populate_iconview(bool smartctl_valid)
 		}
 	}
 
-	// update the menus (group sensitiveness, etc...)
+	// update the menus (group sensitiveness, etc.)
 	iconview_->update_menu_actions();
 	this->update_status_widgets();
 }
@@ -806,7 +806,7 @@ Gtk::Menu* GscMainWindow::get_popup_menu(const StorageDevicePtr& drive)
 void GscMainWindow::set_drive_menu_status(const StorageDevicePtr& drive)
 {
 	// disable any action handling until we're out of here, else we'll get some
-	// bogus toggle actions, etc...
+	// bogus toggle actions, etc.
 	this->action_handling_enabled_ = false;
 
 	do {  // for quick skipping
@@ -987,7 +987,7 @@ void GscMainWindow::rescan_devices()
 		return;
 
 	// don't manipulate window sensitiveness here - it breaks things
-	// (cursors, gtk errors pop out, etc...)
+	// (cursors, gtk errors pop out, etc.)
 
 	// if at least one drive is having a test performed, disallow.
 	if (this->testing_active()) {

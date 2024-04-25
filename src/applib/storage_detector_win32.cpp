@@ -19,7 +19,7 @@ Copyright:
 #include <memory>
 
 #ifdef _WIN32
-	#include <windows.h>  // CreateFileA(), CloseHandle(), etc...
+	#include <windows.h>  // CreateFileA(), CloseHandle(), etc.
 #endif
 
 #include "hz/win32_tools.h"

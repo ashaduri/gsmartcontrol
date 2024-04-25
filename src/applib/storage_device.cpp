@@ -31,10 +31,10 @@ Copyright:
 std::string StorageDevice::get_type_storable_name(DetectedType type)
 {
 	static const std::unordered_map<DetectedType, std::string> m {
-			{DetectedType::Unknown, "unknown"},
-			{DetectedType::Invalid, "invalid"},
-			{DetectedType::CdDvd,   "cd/dvd"},
-			{DetectedType::Raid,    "raid"},
+			{DetectedType::Unknown,           "unknown"},
+			{DetectedType::NeedsExplicitType, "invalid"},
+			{DetectedType::CdDvd,             "cd/dvd"},
+			{DetectedType::Raid,              "raid"},
 	};
 	if (auto iter = m.find(type); iter != m.end()) {
 		return iter->second;
@@ -110,7 +110,7 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::fetch_basic_data_and_parse(
 
 	this->clear_fetched();  // clear everything fetched before, including outputs
 
-	// We don't use "--all" - it may cause really screwed up the output (tests, etc...).
+	// We don't use "--all" - it may cause really screwed up the output (tests, etc.).
 	// This looks just like "--info" only on non-smart devices.
 	const auto default_parser_type = SmartctlVersionParser::get_default_format(SmartctlParserType::Basic);
 	std::string command_options = "--info --health --capabilities";
@@ -123,10 +123,10 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::fetch_basic_data_and_parse(
 
 	// Smartctl 5.39 cvs/svn version defaults to usb type on at least linux and windows.
 	// This means that the old SCSI identify command isn't executed by default,
-	// and there is no information about the device manufacturer/etc... in the output.
+	// and there is no information about the device manufacturer/etc. in the output.
 	// We detect this and set the device type to scsi to at least have _some_ info.
 	if ((execute_status || execute_status.error().data() == StorageDeviceError::ExecutionError)
-		&& get_detected_type() == DetectedType::Invalid && get_type_argument().empty()) {
+		&& get_detected_type() == DetectedType::NeedsExplicitType && get_type_argument().empty()) {
 		debug_out_info("app", "The device seems to be of different type than auto-detected, trying again with scsi.\n");
 		this->set_type_argument("scsi");
 		return this->fetch_basic_data_and_parse(smartctl_ex);  // try again with scsi
@@ -141,7 +141,7 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::fetch_basic_data_and_parse(
 //		return execute_status;
 //	}
 
-	// Set some properties too - they are needed for e.g. AODC status, etc...
+	// Set some properties too - they are needed for e.g. AODC status, etc.
 	return this->parse_basic_data(true);
 }
 
@@ -277,7 +277,7 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::fetch_full_data_and_parse(
 
 	// See notes above (in fetch_basic_data_and_parse()).
 	if ((execute_status || execute_status.error().data() == StorageDeviceError::ExecutionError)
-		&& get_detected_type() == DetectedType::Invalid && get_type_argument().empty()) {
+		&& get_detected_type() == DetectedType::NeedsExplicitType && get_type_argument().empty()) {
 		debug_out_info("app", "The device seems to be of different type than auto-detected, trying again with scsi.\n");
 		this->set_type_argument("scsi");
 		return this->fetch_full_data_and_parse(smartctl_ex);  // try again with scsi
@@ -834,11 +834,11 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::execute_device_smartctl(cons
 
 		// Smartctl 5.39 cvs/svn version defaults to usb type on at least linux and windows.
 		// This means that the old SCSI identify command isn't executed by default,
-		// and there is no information about the device manufacturer/etc... in the output.
+		// and there is no information about the device manufacturer/etc. in the output.
 		// We detect this and set the device type to scsi to at least have _some_ info.
 		if (check_type && this->get_detected_type() == DetectedType::Unknown
 				&& app_pcre_match("/specify device type with the -d option/mi", smartctl_output)) {
-			this->set_detected_type(DetectedType::Invalid);
+			this->set_detected_type(DetectedType::NeedsExplicitType);
 		}
 
 		return hz::Unexpected(StorageDeviceError::ExecutionError, smartctl_status.error().message());

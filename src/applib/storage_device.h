@@ -288,7 +288,7 @@ class StorageDevice {
 		std::optional<std::string> family_name_;  ///< Family name
 		std::optional<std::string> serial_number_;  ///< Serial number
 		std::optional<std::string> size_;  ///< Formatted size
-		std::optional<bool> hdd_;  ///< Whether it's a rotational drive (HDD) or something else (SSD, flash, etc...)
+		std::optional<bool> hdd_;  ///< Whether it's a rotational drive (HDD) or something else (SSD, flash, etc.)
 		mutable std::optional<AtaStorageProperty> health_property_;  ///< Cached health property.
 
 		StoragePropertyRepository property_repository_;  ///< Parsed data properties

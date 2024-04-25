@@ -152,7 +152,7 @@ class AtaStorageErrorBlock {
 		uint32_t error_num = 0;  ///< Error number
 		uint64_t log_index = 0;  ///< Log index
 		uint32_t lifetime_hours = 0;  ///< When the error occurred (in lifetime hours)
-		std::string device_state;  ///< Device state during the error - "active or idle", standby, etc...
+		std::string device_state;  ///< Device state during the error - "active or idle", standby, etc.
 		std::vector<std::string> reported_types;  ///< Array of reported types (strings), e.g. "UNC".
 		std::string type_more_info;  ///< More info on error type (e.g. "at LBA = 0x0253eac0 = 39054016")
 		uint64_t lba = 0;  ///< LBA of the error
@@ -210,8 +210,8 @@ class AtaStorageSelftestEntry {
 
 
 		uint32_t test_num = 0;  ///< Test number. always starts from 1. larger means older or newer, depending on model. 0 for capability.
-		std::string type;  ///< Extended offline, Short offline, Conveyance offline, etc... . capability: unused.
-		std::string status_str;  ///< Self-test routine in progress, Completed without error, etc... (as reported by log or capability)
+		std::string type;  ///< Extended offline, Short offline, Conveyance offline, etc. . capability: unused.
+		std::string status_str;  ///< Self-test routine in progress, Completed without error, etc. (as reported by log or capability)
 		Status status = Status::Unknown;  ///< same as status_str, but from enum
 		int8_t remaining_percent = -1;  ///< Remaining %. 0% for completed, 90% for started. -1 if n/a.
 		uint32_t lifetime_hours = 0;  ///< When the test happened (in lifetime hours). capability: unused.
@@ -317,7 +317,7 @@ class AtaStorageProperty {
 		std::string generic_name;  ///< Generic (internal) name. May be same as reported_name, or something more program-identifiable.
 		std::string displayable_name;  ///< Readable property name. May be same as reported_name, or something more user-readable. Possibly translatable.
 
-		std::string description;  ///< Property description (for tooltips, etc...). May contain markup.
+		std::string description;  ///< Property description (for tooltips, etc.). May contain markup.
 
 		Section section = Section::Unknown;  ///< Section this property belongs to
 

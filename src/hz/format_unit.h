@@ -56,7 +56,7 @@ namespace hz {
 
 
 
-/// Format byte or bit size in human-readable way, e.g. KB, mb, etc...
+/// Format byte or bit size in human-readable way, e.g. KB, mb, etc.
 /// Note that kilobit always means 1000 bits, there's no confusion with that (as opposed to kilobyte).
 /// This function honors the SI rules, e.g. GiB for binary, GB for decimal (as defined by SI).
 inline std::string format_size(uint64_t size, bool use_decimal = false, bool size_is_bits = false)

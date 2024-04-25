@@ -22,7 +22,7 @@ Copyright:
 #include "storage_detector.h"
 
 
-/// Detect drives in FreeBSD, Solaris, etc... (all except Linux and Windows).
+/// Detect drives in FreeBSD, Solaris, etc. (all except Linux and Windows).
 [[nodiscard]] hz::ExpectedVoid<StorageDetectorError> detect_drives_other(std::vector<StorageDevicePtr>& drives,
 		const CommandExecutorFactoryPtr& ex_factory);
 

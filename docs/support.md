@@ -25,7 +25,7 @@ emulator (as `root`, using `sudo` or `su`):
 smartctl -x /dev/sda
 ```
 **Note:** If using Windows, the device name should be `/dev/pd1` for the
-second physical drive, etc... Run `cmd` as administrator first.
+second physical drive, etc. Run `cmd` as administrator first.
 
 If you still think it's a GSmartControl issue, please collect the following
 information about your system:

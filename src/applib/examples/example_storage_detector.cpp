@@ -24,7 +24,7 @@ int main()
 {
 	return hz::main_exception_wrapper([]()
 	{
-		// These settings contain device search paths, smartctl binary, etc...
+		// These settings contain device search paths, smartctl binary, etc.
 		init_default_settings();
 
 		std::vector<StorageDevicePtr> drives;

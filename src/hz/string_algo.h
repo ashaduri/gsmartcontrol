@@ -488,7 +488,7 @@ inline std::string string_replace_copy(const std::string& s,
 
 
 
-/// Replace from_chars[0] with to_chars[0], from_chars[1] with to_chars[1], etc... in s (modifying s).
+/// Replace from_chars[0] with to_chars[0], from_chars[1] with to_chars[1], etc. in s (modifying s).
 /// from_chars.size() must be equal to to_chars.size().
 /// Note: This is a multi-pass algorithm (there are from_chars.size() iterations).
 inline std::string::size_type string_replace_chars(std::string& s,
@@ -519,7 +519,7 @@ inline std::string::size_type string_replace_chars(std::string& s,
 }
 
 
-/// Replace from_chars[0] with to_chars[0], from_chars[1] with to_chars[1], etc... in s,
+/// Replace from_chars[0] with to_chars[0], from_chars[1] with to_chars[1], etc. in s,
 /// not modifying s, returning the changed string.
 /// from_chars.size() must be equal to to_chars.size().
 /// Note: This is a multi-pass algorithm (there are from_chars.size() iterations).
@@ -569,7 +569,7 @@ inline std::string string_replace_chars_copy(const std::string& s,
 
 
 
-/// Replace from_strings[0] with to_strings[0], from_strings[1] with to_strings[1], etc...
+/// Replace from_strings[0] with to_strings[0], from_strings[1] with to_strings[1], etc.
 /// in s (modifying s). Returns total number of replacements performed.
 /// from_strings.size() must be equal to to_strings.size().
 /// Note: This is a multi-pass algorithm (there are from_strings.size() iterations).
@@ -607,7 +607,7 @@ std::string::size_type string_replace_array(std::string& s,
 }
 
 
-/// Eeplace from_strings[0] with to_strings[0], from_strings[1] with to_strings[1], etc... in s,
+/// Eeplace from_strings[0] with to_strings[0], from_strings[1] with to_strings[1], etc. in s,
 /// not modifying s, returning the changed string.
 /// from_strings.size() must be equal to to_strings.size().
 /// Note: This is a multi-pass algorithm (there are from_strings.size() iterations).

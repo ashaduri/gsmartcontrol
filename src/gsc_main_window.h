@@ -104,7 +104,7 @@ class GscMainWindow : public AppBuilderWidget<GscMainWindow, false> {
 		/// Get popup menu for a drive
 		[[nodiscard]] Gtk::Menu* get_popup_menu(const StorageDevicePtr& drive);
 
-		/// Update status widgets (status area, etc...)
+		/// Update status widgets (status area, etc.)
 		void update_status_widgets();
 
 

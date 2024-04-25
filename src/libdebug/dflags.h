@@ -18,7 +18,7 @@ Copyright:
 /// Debug level enum and related functions
 namespace debug_level {
 	enum flag : std::size_t {  ///< Debug level (seriousness).
-		dump,  ///< Dump level (structure dumps, additional verbosity, etc...)
+		dump,  ///< Dump level (structure dumps, additional verbosity, etc.)
 		info,  ///< Information level (what the application is doing)
 		warn,  ///< Warning level (simple warnings)
 		error,  ///< Error level (recoverable errors)
@@ -81,7 +81,7 @@ namespace debug_format {
 namespace debug_pos {
 	enum flag : std::size_t {  ///< Position output flags
 		func_name,  ///< Print function name (only)
-		func,  ///< Print function name with namespaces, etc... (off by default).
+		func,  ///< Print function name with namespaces, etc. (off by default).
 		line,  ///< Print source code line
 		file,  ///< Print file path and name
 		// def = func_name | line | file,  ///< Default flags

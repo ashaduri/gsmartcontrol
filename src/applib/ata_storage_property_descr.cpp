@@ -1633,7 +1633,7 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, AtaStorageA
 			case AtaStorageProperty::Section::ErrorLog:
 				found = auto_set(p, "ata_smart_error_log/extended/revision", p.displayable_name.c_str())
 				|| auto_set(p, "ata_smart_error_log/extended/count", "Number of errors in error log. Note: Some manufacturers may list completely harmless errors in this log "
-					"(e.g., command invalid, not implemented, etc...).");
+					"(e.g., command invalid, not implemented, etc.).");
 // 				|| auto_set(p, "error_log_unsupported", "This device does not support error logging.");  // the property text already says that
 				if (p.is_value_type<AtaStorageErrorBlock>()) {
 					for (size_t i = 0; i < p.get_value<AtaStorageErrorBlock>().reported_types.size(); ++i) {

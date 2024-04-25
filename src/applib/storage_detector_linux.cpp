@@ -871,7 +871,7 @@ Call as: smartctl -a -d cciss,[0-127] /dev/cciss/c0d0
 To detect controller presence: cat /proc/devices, contains "cciss0"
 	for controller 0.
 	/proc/scsi/scsi contains no entries for it.
-/dev/cciss/c0d0p1 is the first ordinary partition (used in mount, etc...).
+/dev/cciss/c0d0p1 is the first ordinary partition (used in mount, etc.).
 
 The port limit had a brief regression in 5.39.x (limited to 15).
 5.39 doesn't seem to work at all (prereleases work with P400 controller)?

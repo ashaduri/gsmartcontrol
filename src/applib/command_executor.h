@@ -209,7 +209,7 @@ class CommandExecutor : public sigc::trackable {
 		std::string command_name_;  ///< Command name
 		std::string command_args_;  ///< Command arguments
 
-		std::string running_msg_;  ///< "Running" message (to show in the dialogs, etc...)
+		std::string running_msg_;  ///< "Running" message (to show in the dialogs, etc.)
 
 		std::chrono::milliseconds forced_kill_timeout_msec_ = std::chrono::seconds(3);  // 3 sec by default. Kill timeout in ms.
 

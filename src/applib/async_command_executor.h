@@ -49,7 +49,7 @@ class AsyncCommandExecutor : public hz::ErrorHolder {
 
 
 		/// Destructor. Don't destroy this object unless the child has exited. It will leak stuff
-		/// and possibly crash, etc... .
+		/// and possibly crash, etc. .
 		~AsyncCommandExecutor() override;
 
 

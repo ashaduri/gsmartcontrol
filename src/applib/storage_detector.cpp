@@ -43,8 +43,8 @@ hz::ExpectedVoid<StorageDetectorError> StorageDetector::detect(std::vector<Stora
 	} else if constexpr(BuildEnv::is_kernel_family_windows()) {
 		detect_status = detect_drives_win32(all_detected, ex_factory);  // win32
 
-	} else {  // freebsd, etc...
-		detect_status = detect_drives_other(all_detected, ex_factory);  // bsd, etc... . scans /dev.
+	} else {  // freebsd, etc.
+		detect_status = detect_drives_other(all_detected, ex_factory);  // bsd, etc. . scans /dev.
 	}
 
 	if (all_detected.empty()) {
@@ -112,7 +112,7 @@ hz::ExpectedVoid<StorageDetectorError> StorageDetector::fetch_basic_data(std::ve
 			fetch_status = drive->fetch_basic_data_and_parse(smartctl_ex);
 		}
 
-		// normally we skip drives with errors - possibly scsi, etc...
+		// normally we skip drives with errors - possibly scsi, etc.
 		if (return_first_error && !fetch_status) {
 			return hz::Unexpected(StorageDetectorError::StorageDeviceError, fetch_status.error().message());
 		}

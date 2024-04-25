@@ -30,7 +30,7 @@ Copyright:
 	#include <versionhelpers.h>
 #endif
 
-#include "libdebug/libdebug.h"  // include full libdebug here (to add domains, etc...)
+#include "libdebug/libdebug.h"  // include full libdebug here (to add domains, etc.)
 #include "rconfig/rconfig.h"
 #include "rconfig/loadsave.h"
 #include "rconfig/autosave.h"

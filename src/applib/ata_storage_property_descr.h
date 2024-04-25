@@ -18,7 +18,7 @@ Copyright:
 class StoragePropertyProcessor {
 	public:
 
-		/// Set descriptions, warnings, etc... on properties, and return them.
+		/// Set descriptions, warnings, etc. on properties, and return them.
 		static StoragePropertyRepository process_properties(StoragePropertyRepository properties,
 				AtaStorageAttribute::DiskType disk_type);
 

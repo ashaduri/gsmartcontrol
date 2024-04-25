@@ -395,7 +395,7 @@ inline fs::path fs_get_home_dir()
 
 	return fs_path_from_string(dir);
 
-#else  // linux, etc...
+#else  // linux, etc.
 	// We use $HOME to allow the user to override it.
 	// Other solutions involve getpwuid_r() to read from passwd.
 	std::string dir;

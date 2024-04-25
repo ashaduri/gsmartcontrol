@@ -260,7 +260,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 
-		/// Decorate a drive entry (colorize it if it has errors, etc...).
+		/// Decorate a drive entry (colorize it if it has errors, etc.).
 		/// This should be called to update the icon of already refreshed drive.
 		void decorate_entry(const Gtk::TreePath& model_path)
 		{
@@ -273,7 +273,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 
 
-		/// Decorate a drive entry (colorize it if it has errors, etc...).
+		/// Decorate a drive entry (colorize it if it has errors, etc.).
 		/// This should be called to update the icon of already refreshed drive.
 		void decorate_entry(Gtk::TreeModel::Row& row)
 		{
@@ -351,7 +351,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 					icon = cddvd_icon;
 					break;
 				case StorageDevice::DetectedType::Unknown:  // standard HD icon
-				case StorageDevice::DetectedType::Invalid:
+				case StorageDevice::DetectedType::NeedsExplicitType:
 				case StorageDevice::DetectedType::Raid:  // TODO a separate icon for this
 					icon = hd_icon;
 					break;
@@ -511,7 +511,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 			// properly before that.
 			this->update_menu_actions();
 
-			main_window->update_status_widgets();  // status area, etc...
+			main_window->update_status_widgets();  // status area, etc.
 		}
 
 

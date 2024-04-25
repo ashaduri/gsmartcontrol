@@ -92,7 +92,7 @@ endif()
 # Other mingw defines include: __WINNT, __WINNT__, __WIN32__, __i386, _X86_,
 # i386, __i386__, WIN32, __MINGW32__, WINNT (all equal to 1).
 
-# Windows 64: mingw64 defines the same stuff as 32-bit one, plus _WIN64, __MINGW64__, etc... .
+# Windows 64: mingw64 defines the same stuff as 32-bit one, plus _WIN64, __MINGW64__, etc. .
 # Keep in mind that if you're generating a 32-bit application, the kernel will
 # be windows32 even if you run it on 64-bit Windows.
 

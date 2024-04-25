@@ -121,7 +121,7 @@ hz::ExpectedVoid<SelfTestError> SelfTest::start(const std::shared_ptr<CommandExe
 		return hz::Unexpected(SelfTestError::AlreadyRunning, _("A test is already running on this drive."));
 	}
 	if (!this->is_supported()) {
-		// Translators: {} is a test name - Short test, etc...
+		// Translators: {} is a test name - Short test, etc.
 		return hz::Unexpected(SelfTestError::UnsupportedTest,
 				std::vformat(_("{} is unsupported by this drive."), std::make_format_args(get_test_displayable_name(type_))));
 	}
@@ -306,7 +306,7 @@ hz::ExpectedVoid<SelfTestError> SelfTest::update(const std::shared_ptr<CommandEx
 			// seconds per 10%. use double, because e.g. 60sec test gives silly values with int.
 			const double gran = (double(total.count()) / 9.);
 
-			// Add 1/10 for disk load delays, etc... . Limit to 15sec, in case of very quick tests.
+			// Add 1/10 for disk load delays, etc. . Limit to 15sec, in case of very quick tests.
 			poll_in_seconds_ = std::chrono::seconds(std::max(int64_t(15), int64_t(gran / 3. + (gran / 10.))));
 
 			// for long tests we don't want to make the user wait too much, so

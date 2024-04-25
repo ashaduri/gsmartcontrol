@@ -20,7 +20,7 @@ project(gsmartcontrol
 )
 
 
-# Provide DATADIR, etc...
+# Provide DATADIR, etc.
 include(GNUInstallDirs)
 
 message(STATUS "Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")

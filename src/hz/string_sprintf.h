@@ -49,7 +49,7 @@ Copyright:
 
 \note If using mingw runtime >= 3.15 and __USE_MINGW_ANSI_STDIO,
 mingw supports both C99/POSIX and msvcrt format specifiers.
-This includes proper printing of long double, %lld and %llu, etc...
+This includes proper printing of long double, %lld and %llu, etc.
 This does _not_ affect _snprintf() and similar non-standard functions.
 Note that you may still get warnings from gcc regarding non-MS
 format specifiers (see HZ_FUNC_PRINTF_CHECK).

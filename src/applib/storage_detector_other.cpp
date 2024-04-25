@@ -156,7 +156,7 @@ hz::ExpectedVoid<StorageDetectorError> detect_drives_other(std::vector<StorageDe
 
 
 	} else if constexpr(BuildEnv::is_kernel_darwin()) {
-		// Darwin has /dev/disk0, /dev/disk0s1, etc...
+		// Darwin has /dev/disk0, /dev/disk0s1, etc.
 		// Only real devices are present, so no need for additional checks.
 
 		whitelist = {
@@ -193,7 +193,7 @@ hz::ExpectedVoid<StorageDetectorError> detect_drives_other(std::vector<StorageDe
 			continue;
 
 		// In case these are links, check if the originals exists (solaris has dangling links, filter them out).
-		// We don't replace /dev files with real devices - it leads to really bad paths (pci ids for solaris, etc...).
+		// We don't replace /dev files with real devices - it leads to really bad paths (pci ids for solaris, etc.).
 		if (!hz::fs::exists(path)) {
 			continue;
 		}
@@ -211,7 +211,7 @@ hz::ExpectedVoid<StorageDetectorError> detect_drives_other(std::vector<StorageDe
 			|| BuildEnv::is_kernel_openbsd() || BuildEnv::is_kernel_netbsd()) {
 		// Since we may have encountered dummy devices, we should check
 		// if they really exist. Unfortunately, this involves opening them, which
-		// is not good with some media (e.g. it may hang on audio cd (freebsd, maybe others), etc...).
+		// is not good with some media (e.g. it may hang on audio cd (freebsd, maybe others), etc.).
 		// That's why we don't whitelist cd devices. Let's hope usb and others are
 		// ok with this. Dummy devices give errno ENXIO (6, Device not configured) on *bsd.
 		// In Linux ENXIO is (6, No such device or address).

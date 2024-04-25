@@ -15,7 +15,7 @@ and drives behind some RAID controllers are supported for now.
 The main reasons for this are:
   - We can't support drives which don't work with smartmontools.
   This affects drives which don't support SMART or don't export SMART data
-  correctly (e.g. some USB enclosures, RAIDs, etc...).
+  correctly (e.g. some USB enclosures, RAIDs, etc.).
   - Smartctl's output for SCSI drives is completely different compared to ATA.
   Also, SCSI drives are rarely found in desktop systems and the servers rarely
   have X11 / Gtkmm running, so this is a low priority task.
@@ -47,7 +47,7 @@ hardware to users with non-administrative privileges.
 In Windows, UAC is automatically invoked when you run it. In Linux / Unix operating
 systems, running `gsmartcontrol-root` (or using the desktop icon) will
 automatically launch GSmartControl using the system's preferred su
-mechanism - `PolKit`, `kdesu`, `gnomesu`, etc...
+mechanism - `PolKit`, `kdesu`, `gnomesu`, etc.
 
 Please **do not** set the `setuid` flag on smartctl binary. It is considered
 a security risk.

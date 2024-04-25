@@ -51,7 +51,7 @@ endif()
 # Mingw: This enables standards-compliant stdio behaviour (regarding printf and
 # friends), as opposed to msvc-compatible one. This is usually enabled
 # by default if one of the usual macros are encountered (_XOPEN_SOURCE,
-# _GNU_SOURCE, etc...).
+# _GNU_SOURCE, etc.).
 # See _mingw.h for details.
 if (WIN32)
 	# No effect in MSVC, doesn't hurt.

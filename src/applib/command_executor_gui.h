@@ -21,7 +21,7 @@ Copyright:
 
 
 /// Same as CommandExecutor, but with GTK UI support.
-/// This one is noncopyable, because we can't copy the dialogs, etc...
+/// This one is noncopyable, because we can't copy the dialogs, etc.
 class CommandExecutorGui : public CommandExecutor {
 	public:
 

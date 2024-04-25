@@ -295,7 +295,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section(const
 		return {};
 	}
 
-	// This is printed when executing "-t long", etc... . Parsed by respective command issuer.
+	// This is printed when executing "-t long", etc. . Parsed by respective command issuer.
 	if (app_pcre_match("/START OF OFFLINE IMMEDIATE AND SELF-TEST SECTION/mi", header)) {
 		return {};
 	}
@@ -999,7 +999,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 	// because we look for immediate/automatic anyway.
 
 	// "was never started", "was completed without error", "is in progress",
-	// "was suspended by an interrupting command from host", etc...
+	// "was suspended by an interrupting command from host", etc.
 	const pcrecpp::RE re_offline_status = app_pcre_re("/^(Off-?line data collection) activity (?:is|was) (.*)$/mi");
 	// "Enabled", "Disabled". May not show up on older smartctl (< 5.1.10), so no way of knowing there.
 	const pcrecpp::RE re_offline_enabled = app_pcre_re("/^(Auto Off-?line Data Collection):[ \\t]*(.*)$/mi");
@@ -2193,7 +2193,7 @@ Page Offset Size         Value  Description
 			continue;  // we don't need this line
 		}
 
-		if (re_flag_descr.PartialMatch(line)) {  // "    |||_ C monitored condition met", etc...
+		if (re_flag_descr.PartialMatch(line)) {  // "    |||_ C monitored condition met", etc.
 			continue;  // skip flag description lines
 		}
 

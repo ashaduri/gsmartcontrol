@@ -113,7 +113,7 @@ Version 0.8.6, released on 2011-06-12
 		included.
 	In-program help has been expanded considerably.
 	General improvements to user interface have been implemented (better GNOME
-		HIG compliance, better tooltips, dialogs, etc...).
+		HIG compliance, better tooltips, dialogs, etc.).
 	Added ability to show smartctl output for devices whose info could not be
 		parsed fully.
 	Attributes in "brief" format are supported now.

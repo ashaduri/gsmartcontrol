@@ -164,7 +164,7 @@ using SmartctlExecutor = SmartctlExecutorGeneric<CommandExecutor>;
 
 
 
-/// Get smartctl binary (from config, etc...). Returns an empty string if not found.
+/// Get smartctl binary (from config, etc.). Returns an empty string if not found.
 [[nodiscard]] hz::fs::path get_smartctl_binary();
 
 
