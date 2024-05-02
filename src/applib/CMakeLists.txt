@@ -36,6 +36,8 @@ target_sources(applib PRIVATE
 	smartctl_json_ata_parser.h
 	smartctl_json_basic_parser.cpp
 	smartctl_json_basic_parser.h
+	smartctl_json_nvme_parser.cpp
+	smartctl_json_nvme_parser.h
 	smartctl_json_parser_helpers.h
 	smartctl_executor.cpp
 	smartctl_executor_gui.h

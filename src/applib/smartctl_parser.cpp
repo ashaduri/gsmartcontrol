@@ -22,6 +22,7 @@ Copyright:
 #include "smartctl_json_basic_parser.h"
 #include "smartctl_text_basic_parser.h"
 #include "storage_property_repository.h"
+#include "smartctl_json_nvme_parser.h"
 //#include "ata_storage_property_descr.h"
 
 
@@ -43,17 +44,14 @@ std::unique_ptr<SmartctlParser> SmartctlParser::create(SmartctlParserType type, 
 			switch(format) {
 				case SmartctlOutputFormat::Json:
 					return std::make_unique<SmartctlJsonAtaParser>();
-					break;
 				case SmartctlOutputFormat::Text:
 					return std::make_unique<SmartctlTextAtaParser>();
-					break;
 			}
 			break;
 		case SmartctlParserType::Nvme:
 			switch(format) {
 				case SmartctlOutputFormat::Json:
-//					return std::make_unique<SmartctlJsonNvmeParser>();
-					break;
+					return std::make_unique<SmartctlJsonNvmeParser>();
 				case SmartctlOutputFormat::Text:
 					// nothing
 					break;

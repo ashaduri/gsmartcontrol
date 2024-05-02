@@ -20,6 +20,7 @@ Copyright:
 #include <vector>
 
 // #include "hz/locale_tools.h"  // ScopedCLocale, locale_c_get().
+#include "hz/format_unit.h"
 #include "hz/string_algo.h"  // string_*
 #include "hz/string_num.h"  // string_is_numeric, number_to_string
 //#include "hz/debug.h"  // debug_*
@@ -36,8 +37,6 @@ Copyright:
 
 
 
-
-// Parse full "smartctl -x" output
 hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse(std::string_view smartctl_output)
 {
 	using namespace SmartctlJsonParserHelpers;
@@ -72,38 +71,38 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 {
 	using namespace SmartctlJsonParserHelpers;
 
-	bool smart_supported = true;  // TODO
-	bool smart_enabled = true;  // TODO
-
-	{
-		AtaStorageProperty p;
-		p.set_name("SMART Supported", "smart_support/available", "SMART Supported");
-		p.value = smart_supported;
-		p.section = AtaStorageProperty::Section::Info;  // add to info section
-		add_property(p);
-	}
-	{
-		AtaStorageProperty p;
-		p.set_name("SMART Enabled", "smart_support/enabled", "SMART Enabled");
-		p.value = smart_enabled;
-		p.section = AtaStorageProperty::Section::Info;  // add to info section
-		add_property(p);
-	}
-
 	// Here we list the properties that are:
 	// 1. Essential for all devices, due to them being used in StorageDevice.
 	// 2. Present in devices for which we do not have specialized parsers (USB, etc.)
 	static const std::vector<std::tuple<std::string, std::string, PropertyRetrievalFunc>> info_keys = {
 
-			{"device/type", _("Smartctl Device Type"), string_formatter()},  // nvme, sat, etc.
+			{"device/type", _("Smartctl Device Type"),  // nvme, sat, etc.
+				[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
+						-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+				{
+					if (auto jval = get_node_data<std::string>(root_node, "device/type"); jval.has_value()) {
+						AtaStorageProperty p;
+						p.set_name(key, key, displayable_name);
+						p.value = jval.value();
+						p.show_in_ui = false;
+						return p;
+					}
+					return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+				}
+			},
 
 			{"vendor", _("Vendor"), string_formatter()},  // Flash drive
+			{"scsi_vendor", _("Vendor"), string_formatter()},  // Flash drive
 			{"product", _("Product"), string_formatter()},  // Flash drive
+			{"scsi_product", _("Product"), string_formatter()},  // Flash drive
 
 			{"model_family", _("Model Family"), string_formatter()},  // (S)ATA
 			{"model_name", _("Device Model"), string_formatter()},
+			{"scsi_model_name", _("Device Model"), string_formatter()},  // Flash drive
 
 			{"revision", _("Revision"), string_formatter()},  // Flash drive
+			{"scsi_revision", _("Revision"), string_formatter()},  // Flash drive
+
 			{"scsi_version", _("SCSI Version"), string_formatter()},  // Flash drive
 
 			{"user_capacity/bytes", _("Capacity"),
@@ -184,6 +183,11 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 			},
 
 			{"local_time/asctime", _("Scanned on"), string_formatter()},
+
+			{"smart_support/available", _("SMART Supported"), bool_formatter(_("Yes"), _("No"))},
+			{"smart_support/enabled", _("SMART Enabled"), bool_formatter(_("Yes"), _("No"))},
+
+			{"smart_status/passed", _("Overall Health Self-Assessment Test"), bool_formatter(_("PASSED"), _("FAILED"))},
 
 			{"rotation_rate", _("Rotation Rate"),  // (S)ATA, used to detect HDD vs SSD
 			 [](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)

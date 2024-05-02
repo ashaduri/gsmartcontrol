@@ -62,8 +62,6 @@ Information not printed in JSON yet:
 	We ignore this in text parser.
 
 - SMART support and some other Info keys
-	smart_support/available
-	smart_support/enabled
 	_text_only/write_cache_reorder
 	_text_only/power_mode
 
@@ -76,12 +74,6 @@ Information not printed in JSON yet:
 
 ata_smart_error_log/_not_present
 
-
-Keys:
-smartctl/version/_merged
- 	Looks like "7.2"
-smartctl/version/_merged_full
-	Looks like "smartctl 7.2 2020-12-30 r5155", formed from "/smartctl" subkeys.
 */
 
 
@@ -208,6 +200,22 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_info(
 	// one is only for ATA.
 
 	static const std::vector<std::tuple<std::string, std::string, PropertyRetrievalFunc>> json_keys = {
+
+			{"device/type", _("Smartctl Device Type"),  // nvme, sat, etc.
+				[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
+						-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+				{
+					if (auto jval = get_node_data<std::string>(root_node, "device/type"); jval.has_value()) {
+						AtaStorageProperty p;
+						p.set_name(key, key, displayable_name);
+						p.value = jval.value();
+						p.show_in_ui = false;
+						return p;
+					}
+					return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+				}
+			},
+
 			{"model_family", _("Model Family"), string_formatter()},
 			{"model_name", _("Device Model"), string_formatter()},
 			{"serial_number", _("Serial Number"), string_formatter()},
