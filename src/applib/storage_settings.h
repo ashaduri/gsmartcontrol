@@ -60,10 +60,12 @@ inline void from_json(const rconfig::json& j, AppDeviceOptionMap& devmap)
 {
 	for (const auto& obj : j) {
 		try {
-			devmap.value.insert_or_assign(
-				{obj.at("device").get<std::string>(), obj.at("type").get<std::string>()},
-				obj.at("options").get<std::string>()
-			);
+			if (obj.contains("device") && obj.contains("type") && obj.contains("options")) {
+				devmap.value.insert_or_assign(
+					{obj.at("device").get<std::string>(), obj.at("type").get<std::string>()},
+					obj.at("options").get<std::string>()
+				);
+			}
 		}
 		catch(std::exception& e) {
 			// ignore "not found"
