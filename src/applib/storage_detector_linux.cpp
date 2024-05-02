@@ -9,25 +9,36 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#include "build_config.h"
+#include "storage_detector_linux.h"
 
+#include "command_executor.h"
 #include "local_glibmm.h"
+
 #include <algorithm>  // std::find
 #include <cstdio>  // std::fgets(), std::FILE
 // #include <cerrno>  // ENXIO
+#include <memory>
+#include <pcrecpp.h>
+#include <filesystem>
 #include <set>
 #include <map>
+#include <system_error>
 #include <vector>
 #include <utility>  // std::pair
 #include <string>
 
+#include "build_config.h"
+#include "command_executor_factory.h"
+#include "hz/error_container.h"
+#include "hz/string_algo.h"
 #include "hz/debug.h"
 #include "hz/fs.h"
 #include "hz/string_num.h"
 #include "rconfig/rconfig.h"
 #include "app_pcrecpp.h"
-#include "storage_detector_linux.h"
+#include "storage_detector.h"
 #include "storage_detector_helpers.h"
+#include "storage_device.h"
 
 
 
@@ -298,7 +309,7 @@ inline std::string read_proc_scsi_sg_devices_file(std::vector<std::vector<int>>&
 			R"(^([0-9-]+)\s+([0-9-]+)\s+([0-9-]+)\s+([0-9-]+)\s+([0-9-]+)\s+([0-9-]+)\s+([0-9-]+)\s+([0-9-]+)\s+([0-9-]+))");
 
 	for (std::size_t i = 0; i < lines.size(); ++i) {
-		std::string trimmed = hz::string_trim_copy(lines[i]);
+		const std::string trimmed = hz::string_trim_copy(lines[i]);
 		std::vector<std::string> line(9);
 		if (parse_re.PartialMatch(trimmed, &line[0], &line[1], &line[2], &line[3], &line[4], &line[5], &line[6], &line[7], &line[8])) {
 			std::vector<int> line_num(line.size(), -1);
@@ -371,7 +382,7 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_proc_partition
 	debug_out_info("app", DBG_FUNC_MSG << "Detecting drives through partitions file (/proc/partitions by default; set \"system/linux_proc_partitions_path\" config key to override).\n");
 
 	std::vector<std::string> lines;
-	std::string error_msg = read_proc_partitions_file(lines);
+	const std::string error_msg = read_proc_partitions_file(lines);
 	if (!error_msg.empty()) {
 		return hz::Unexpected(StorageDetectorError::ProcReadError, error_msg);
 	}
@@ -410,7 +421,7 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_proc_partition
 		if (blacked)
 			continue;
 
-		std::string path = "/dev/" + dev;  // let's just hope it's really /dev.
+		const std::string path = "/dev/" + dev;  // let's just hope it's really /dev.
 		if (std::find(devices.begin(), devices.end(), path) == devices.end()) {  // there may be duplicates
 			devices.push_back(path);
 		}
@@ -525,7 +536,7 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_3ware(
 			continue;  // not a supported controller
 		}
 
-		int host_num = vendor_model.first;
+		const int host_num = vendor_model.first;
 
 		debug_out_dump("app", "Found LSI/AMCC/3ware controller in SCSI file, SCSI host " << host_num << ".\n");
 
@@ -557,7 +568,7 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_3ware(
 			// else we default to twl, twa, twe (in this order)
 		}
 
-		// We can't map twaX to scsiY, so lets assume the relative order is the same.
+		// We can't map twaX to scsiY, so let's assume the relative order is the same.
 		std::string dev = std::string("/dev/") + dev_base + hz::number_to_string_nolocale(device_numbers[dev_base]);
 		++device_numbers[dev_base];
 
@@ -651,7 +662,7 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_adaptec(
 		if (!app_pcre_match("/Vendor: Adaptec /i", vendors_model.second)) {
 			continue;  // not a supported controller
 		}
-		int host_num = vendors_model.first;
+		const int host_num = vendors_model.first;
 		debug_out_dump("app", "Found Adaptec controller in SCSI file, SCSI host " << host_num << ".\n");
 
 		// Skip additional adapters with the same host, since they are the same adapters
@@ -673,11 +684,11 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_adaptec(
 				continue;
 			}
 
-			std::string dev = std::string("/dev/sg") + hz::number_to_string_nolocale(sg_num);
+			const std::string dev = std::string("/dev/sg") + hz::number_to_string_nolocale(sg_num);
 			auto drive = std::make_shared<StorageDevice>(dev, std::string("sat"));
 
 			auto fetch_status = drive->fetch_basic_data_and_parse(smartctl_ex);
-			std::string output = drive->get_basic_output();
+			const std::string output = drive->get_basic_output();
 
 			// Note: Not sure about this, have to check with real SAS drives
 			if (app_pcre_match("/Device Read Identity Failed/mi", output)) {

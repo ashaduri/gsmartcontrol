@@ -34,6 +34,7 @@ Copyright:
 #include "smartctl_executor.h"
 #include "smartctl_version_parser.h"
 #include "ata_storage_property_descr.h"
+#include "build_config.h"
 //#include "smartctl_text_parser_helper.h"
 //#include "ata_storage_property_descr.h"
 
@@ -160,7 +161,7 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::parse_basic_data()
 	auto basic_parser = SmartctlParser::create(SmartctlParserType::Basic, SmartctlOutputFormat::Json);
 	DBG_ASSERT_RETURN(basic_parser, hz::Unexpected(StorageDeviceError::ParseError, _("Cannot create parser")));
 
-	// This also detects the drive type and adds it to "_custom/parser_detected_drive_type" property.
+	// This also fills the drive type properties.
 	auto parse_status = basic_parser->parse(this->get_basic_output());
 	if (!parse_status) {
 		return hz::Unexpected(StorageDeviceError::ParseError,
@@ -168,7 +169,7 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::parse_basic_data()
 	}
 
 	// See if we can narrow down the drive type from what was detected
-	// by StorageDetector and "_custom/parser_detected_drive_type" property set by Basic parser.
+	// by StorageDetector and properties set by Basic parser.
 	auto basic_property_repo = basic_parser->get_property_repository();
 
 	// Make detected type more exact.
@@ -584,39 +585,58 @@ void StorageDevice::read_common_properties()
 
 void StorageDevice::detect_drive_type_from_properties(const StoragePropertyRepository& property_repo)
 {
-	auto drive_type_prop = property_repo.lookup_property("_custom/parser_detected_drive_type");
-	if (!drive_type_prop.empty()) {
+	// This is set by Text parser
+	if (auto drive_type_prop = property_repo.lookup_property("_custom/parser_detected_drive_type"); !drive_type_prop.empty()) {
 		const auto& drive_type_storable_str = drive_type_prop.get_value<std::string>();
 		set_detected_type(StorageDeviceDetectedTypeExt::get_by_storable_name(drive_type_storable_str, StorageDeviceDetectedType::BasicScsi));
-	}
 
-	switch (get_detected_type()) {
-		case StorageDeviceDetectedType::Unknown:
-			set_detected_type(StorageDeviceDetectedType::BasicScsi);  // fall back to basic scsi parser
-			break;
-		case StorageDeviceDetectedType::AtaAny:
-			// Find out if it's SSD or HDD
-		{
+		// Find out if it's SSD or HDD
+		if (get_detected_type() == StorageDeviceDetectedType::AtaAny) {
 			auto rpm_prop = property_repo.lookup_property("rotation_rate");
 			if (rpm_prop.empty() || rpm_prop.get_value<std::int64_t>() == 0) {
 				set_detected_type(StorageDeviceDetectedType::AtaSsd);
 			} else {
 				set_detected_type(StorageDeviceDetectedType::AtaHdd);
 			}
-			break;
 		}
-		case StorageDeviceDetectedType::AtaHdd:
-		case StorageDeviceDetectedType::AtaSsd:
-		case StorageDeviceDetectedType::Nvme:
-		case StorageDeviceDetectedType::BasicScsi:
-		case StorageDeviceDetectedType::CdDvd:
-		case StorageDeviceDetectedType::UnsupportedRaid:
-			// leave as is
-			break;
-		case StorageDeviceDetectedType::NeedsExplicitType:
-			DBG_ASSERT(0);
-			break;
 	}
+
+	// This is set by JSON parser
+	if (auto device_type_prop = property_repo.lookup_property("device/type"); !device_type_prop.empty()) {
+		// Note: USB flash drives in non-scsi mode do not have this property.
+		const auto& smartctl_type = device_type_prop.get_value<std::string>();
+
+		if (smartctl_type == "scsi") {  // USB flash in scsi mode, optical, scsi, etc.
+			if (BuildEnv::is_kernel_linux() && get_device_base().starts_with("sr")) {
+				set_detected_type(StorageDeviceDetectedType::CdDvd);
+			} else {
+				set_detected_type(StorageDeviceDetectedType::BasicScsi);
+			}
+
+		} else if (smartctl_type == "sat") {  // (S)ATA, including behind supported RAID controllers
+			// Find out if it's SSD or HDD
+			auto rpm_prop = property_repo.lookup_property("rotation_rate");
+			if (rpm_prop.empty() || rpm_prop.get_value<std::int64_t>() == 0) {
+				set_detected_type(StorageDeviceDetectedType::AtaSsd);
+			} else {
+				set_detected_type(StorageDeviceDetectedType::AtaHdd);
+			}
+
+		} else if (smartctl_type == "nvme") {  // NVMe SSD
+			set_detected_type(StorageDeviceDetectedType::Nvme);
+
+		} else {
+			// TODO Detect unsupported RAID
+			debug_out_warn("app", "Unsupported type " << smartctl_type << " reported by smartctl for " << get_device_with_type() << "\n");
+		}
+	}
+
+	if (get_detected_type() == StorageDeviceDetectedType::Unknown) {
+		set_detected_type(StorageDeviceDetectedType::BasicScsi);  // fall back to basic scsi parser
+	}
+
+	debug_out_info("app", "Device " << get_device_with_type() << " detected after parser to be of type "
+			<< StorageDeviceDetectedTypeExt::get_storable_name(get_detected_type()) << "\n");
 }
 
 

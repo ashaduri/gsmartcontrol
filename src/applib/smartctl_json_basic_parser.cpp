@@ -72,8 +72,6 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 {
 	using namespace SmartctlJsonParserHelpers;
 
-	// TODO CD/DVD, RAID
-
 	bool smart_supported = true;  // TODO
 	bool smart_enabled = true;  // TODO
 
@@ -96,6 +94,8 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 	// 1. Essential for all devices, due to them being used in StorageDevice.
 	// 2. Present in devices for which we do not have specialized parsers (USB, etc.)
 	static const std::vector<std::tuple<std::string, std::string, PropertyRetrievalFunc>> info_keys = {
+
+			{"device/type", _("Smartctl Device Type"), string_formatter()},  // nvme, sat, etc.
 
 			{"vendor", _("Vendor"), string_formatter()},  // Flash drive
 			{"product", _("Product"), string_formatter()},  // Flash drive

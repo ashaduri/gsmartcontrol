@@ -12,6 +12,7 @@ Copyright:
 #include "local_glibmm.h"
 #include <gtkmm.h>  // compose()
 #include <algorithm>
+#include <memory>
 
 #include "build_config.h"
 
