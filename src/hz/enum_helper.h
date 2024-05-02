@@ -96,7 +96,7 @@ class EnumHelper {
 		static std::unordered_map<std::string, EnumType> build_storable_enum_map()
 		{
 			std::unordered_map<std::string, EnumType> m;
-			for (const auto& [data, enum_value] : EnumExtClass::get_enum_static_map()) {
+			for (const auto& [enum_value, data] : EnumExtClass::get_enum_static_map()) {
 				m.emplace(data.first, enum_value);
 			}
 			return m;
