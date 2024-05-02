@@ -23,6 +23,10 @@ Copyright:
 #include "smartctl_text_ata_parser.h"  // prop_list_t
 #include "smartctl_executor.h"
 #include "storage_property_repository.h"
+#include "storage_device_detected_type.h"
+
+
+
 
 
 class StorageDevice;
@@ -47,20 +51,6 @@ enum class StorageDeviceError {
 class StorageDevice {
 	public:
 
-		/// These may be used to force smartctl to a special type, as well as
-		/// to display the correct icon
-		enum class DetectedType {
-			Unknown,  // Unknown. Will be autodetected by smartctl.
-			Invalid,  // This is set by smartctl executor if it detects invalid type (but not if it's scsi).
-			CdDvd,  // CD/DVD/Blu-Ray. Unsupported by smartctl, only basic info is given.
-			Raid,  // RAID controller or volume. Unsupported by smartctl, only basic info is given.
-		};
-
-
-		/// This gives a string which can be displayed in outputs
-		[[nodiscard]] static std::string get_type_storable_name(DetectedType type);
-
-
 		/// Statuses of various states
 		enum class Status {
 			Enabled,  ///< SMART, AODC
@@ -75,8 +65,8 @@ class StorageDevice {
 
 		/// Statuses of various parse states
 		enum class ParseStatus {
-			Full,  ///< Fully parsed
-			Basic,  ///< Only info section available
+			Full,  ///< Parsed with specialized parser
+			Basic,  ///< Only info section available, parsed with Basic parser
 			None,  ///< No data
 		};
 
@@ -88,8 +78,12 @@ class StorageDevice {
 		StorageDevice(std::string dev, std::string type_arg);
 
 
-		// clear everything fetched before.
-		void clear_fetched(bool including_outputs = true);
+		/// Clear fetched smartctl outputs
+		void clear_outputs();
+
+		/// Clear common properties previously imported from repository.
+		void clear_parse_results();
+
 
 		/// Calls "smartctl -i -H -c" (info section, health, capabilities), then parse_basic_data().
 		/// Called during drive detection.
@@ -99,14 +93,20 @@ class StorageDevice {
 
 		/// Detects type, smart support, smart status (on / off).
 		/// Note: this will clear all previous properties!
-		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> parse_basic_data(bool do_set_properties = true, bool emit_signal = true);
+		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> parse_basic_data();
 
 
 		/// Execute smartctl --all / -x (all sections), get output, parse it (basic data too), fill properties.
 		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> fetch_full_data_and_parse(const std::shared_ptr<CommandExecutor>& smartctl_ex);
 
 		/// Parse full info. If failed, try to parse it as basic info.
-		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> try_parse_data();
+//		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> try_parse_data();
+
+		/// Parse full info.
+		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> parse_full_data(SmartctlParserType parser_type, SmartctlOutputFormat format);
+
+		/// Try to detect the data type and parse it. This is used when loading virtual drives.
+		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> parse_any_data_for_virtual();
 
 		/// Get the "fully parsed" flag
 		[[nodiscard]] ParseStatus get_parse_status() const;
@@ -117,6 +117,13 @@ class StorageDevice {
 
 		/// Try to enable Automatic Offline Data Collection.
 		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> set_aodc_enabled(bool b, const std::shared_ptr<CommandExecutor>& smartctl_ex);
+
+
+		/// Read common properties (smart supported, smart enabled, etc.) from the repository.
+		void read_common_properties();
+
+		/// Detect drive type based on parsed properties.
+		void detect_drive_type_from_properties(const StoragePropertyRepository& property_repo);
 
 
 		/// Get SMART status
@@ -144,10 +151,10 @@ class StorageDevice {
 
 
 		/// Set detected type
-		void set_detected_type(DetectedType t);
+		void set_detected_type(StorageDeviceDetectedType t);
 
 		/// Get detected type
-		[[nodiscard]] DetectedType get_detected_type() const;
+		[[nodiscard]] StorageDeviceDetectedType get_detected_type() const;
 
 
 		/// Set argument for "-d" smartctl parameter
@@ -199,9 +206,6 @@ class StorageDevice {
 		/// Get serial number.
 		/// \return empty string if not found
 		[[nodiscard]] std::string get_serial_number() const;
-
-		/// Check whether this drive is a rotational HDD.
-		[[nodiscard]] bool get_is_hdd() const;
 
 
 		/// Set "info" output to parse
@@ -260,9 +264,6 @@ class StorageDevice {
 
 	private:
 
-		std::string basic_output_;  ///< "smartctl --info" output
-		std::string full_output_;  ///< "smartctl --all" or "-x" output
-
 		std::string device_;  ///< e.g. /dev/sda or pd0. empty if virtual.
 		std::string type_arg_;  ///< Device type (for -d smartctl parameter), as specified when adding the device.
 		std::string extra_args_;  ///< Extra parameters for smartctl, as specified when adding the device.
@@ -273,14 +274,21 @@ class StorageDevice {
 		hz::fs::path virtual_file_;  ///< A file (smartctl data) the virtual device was loaded from
 		bool is_manually_added_ = false;  ///< StorageDevice doesn't use it, but it's useful for its users.
 
-		ParseStatus parse_status_ = ParseStatus::None;  ///< "Fully parsed" flag
-
 		/// Sort of a "lock". If true, the device is not allowed to perform any commands
 		/// except "-l selftest" and maybe "--capabilities" and "--info" (not sure).
 		bool test_is_active_ = false;
 
-		// Note: These are detected through info output
-		DetectedType detected_type_ = DetectedType::Unknown;  ///< e.g. type_unknown
+		// Outputs
+		std::string basic_output_;  ///< "smartctl --info" output
+		std::string full_output_;  ///< "smartctl --all" or "-x" output
+
+		StorageDeviceDetectedType detected_type_ = StorageDeviceDetectedType::Unknown;  ///< Detected by basic parser
+
+		ParseStatus parse_status_ = ParseStatus::None;  ///< "Fully parsed" flag
+
+		StoragePropertyRepository property_repository_;  ///< Parsed data properties
+
+		// Common properties
 		std::optional<bool> smart_supported_;  ///< SMART support status
 		std::optional<bool> smart_enabled_;  ///< SMART enabled status
 		mutable std::optional<Status> aodc_status_;  ///< Cached aodc status.
@@ -288,10 +296,8 @@ class StorageDevice {
 		std::optional<std::string> family_name_;  ///< Family name
 		std::optional<std::string> serial_number_;  ///< Serial number
 		std::optional<std::string> size_;  ///< Formatted size
-		std::optional<bool> hdd_;  ///< Whether it's a rotational drive (HDD) or something else (SSD, flash, etc.)
 		mutable std::optional<AtaStorageProperty> health_property_;  ///< Cached health property.
 
-		StoragePropertyRepository property_repository_;  ///< Parsed data properties
 
 		/// Emitted whenever new information is available
 		sigc::signal<void, StorageDevice*> signal_changed_;

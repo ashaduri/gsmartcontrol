@@ -62,7 +62,7 @@ struct SmartctlParserPreferenceTypeExt
 		: public hz::EnumHelper<
 				SmartctlParserPreferenceType,
 				SmartctlParserPreferenceTypeExt,
-		        Glib::ustring>
+				Glib::ustring>
 {
 	static constexpr inline SmartctlParserPreferenceType default_value = SmartctlParserPreferenceType::Auto;
 

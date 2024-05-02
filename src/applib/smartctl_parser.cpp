@@ -45,7 +45,14 @@ std::unique_ptr<SmartctlParser> SmartctlParser::create(SmartctlParserType type, 
 			}
 			break;
 		case SmartctlParserType::Nvme:
-			// TODO
+			switch(format) {
+				case SmartctlOutputFormat::Json:
+//					return std::make_unique<SmartctlJsonNvmeParser>();
+					break;
+				case SmartctlOutputFormat::Text:
+					// nothing
+					break;
+			}
 			break;
 	}
 	return nullptr;

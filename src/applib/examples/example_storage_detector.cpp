@@ -43,7 +43,7 @@ int main()
 		} else {
 			for (const auto& drive : drives) {
 				std::cerr << drive->get_device_with_type() <<
-						" (" << StorageDevice::get_type_storable_name(drive->get_detected_type()) << ")\n";
+						" (" << StorageDeviceDetectedTypeExt::get_storable_name(drive->get_detected_type()) << ")\n";
 			}
 		}
 		return EXIT_SUCCESS;

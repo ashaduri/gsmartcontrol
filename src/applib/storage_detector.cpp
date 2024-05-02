@@ -129,7 +129,7 @@ hz::ExpectedVoid<StorageDetectorError> StorageDetector::fetch_basic_data(std::ve
 		debug_out_dump("app", "Device information for " << drive->get_device()
 				<< " (type: \"" << drive->get_type_argument() << "\"):\n"
 				<< "\tModel: " << drive->get_model_name() << "\n"
-				<< "\tDetected type: " << StorageDevice::get_type_storable_name(drive->get_detected_type()) << "\n"
+				<< "\tDetected type: " << StorageDeviceDetectedTypeExt::get_displayable_name(drive->get_detected_type()) << "\n"
 				<< "\tSMART status: " << StorageDevice::get_status_displayable_name(drive->get_smart_status()) << "\n"
 				);
 

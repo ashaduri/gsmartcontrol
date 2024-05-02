@@ -48,11 +48,11 @@ class AtaStorageAttribute {
 	public:
 
 		/// Disk type the attribute may match
-		enum class DiskType {
-			Any,  ///< Any disk type
-			Hdd,  ///< HDD (rotational) only
-			Ssd  ///< SSD only
-		};
+//		enum class DiskType {
+//			Any,  ///< Any disk type
+//			Hdd,  ///< HDD (rotational) only
+//			Ssd  ///< SSD only
+//		};
 
 		/// Attribute pre-failure / old-age type
 		enum class AttributeType {

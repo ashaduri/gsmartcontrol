@@ -682,7 +682,8 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_adaptec(
 			// Note: Not sure about this, have to check with real SAS drives
 			if (app_pcre_match("/Device Read Identity Failed/mi", output)) {
 				// "-d sat" didn't work, default back to smartctl's "-d scsi"
-				drive->clear_fetched();
+				drive->clear_parse_results();
+				drive->clear_outputs();
 				drive->set_type_argument("");
 				fetch_status = drive->fetch_basic_data_and_parse(smartctl_ex);
 			}

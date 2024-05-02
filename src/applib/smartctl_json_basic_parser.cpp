@@ -186,10 +186,18 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 			{"local_time/asctime", _("Scanned on"), string_formatter()},
 
 			{"rotation_rate", _("Rotation Rate"),  // (S)ATA, used to detect HDD vs SSD
-				custom_string_formatter<int64_t>([](int64_t value)
+			 [](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
+						-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
 				{
-					return std::format("{} RPM", value);
-				})
+					if (auto jval = get_node_data<int64_t>(root_node, key); jval) {
+						AtaStorageProperty p;
+						p.set_name(key, key, displayable_name);
+						p.readable_value = std::format("{} RPM", jval.value());
+						p.value = jval.value();
+						return p;
+					}
+					return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+				}
 			},
 
 			{"form_factor/name", _("Form Factor"), string_formatter()},

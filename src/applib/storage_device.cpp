@@ -9,48 +9,43 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
+#include "storage_device.h"
+
 #include "local_glibmm.h"
+#include <cctype>
+#include <cstdint>
+#include <format>
+#include <memory>
 #include <unordered_map>
+#include <utility>
+#include <string>
+#include <vector>
 
 #include "rconfig/rconfig.h"
 #include "hz/string_algo.h"  // string_trim_copy, string_any_to_unix_copy
 #include "hz/fs.h"
 #include "hz/format_unit.h"  // hz::format_date
+#include "hz/error_container.h"
 
 #include "app_pcrecpp.h"
-#include "storage_device.h"
-#include "smartctl_text_ata_parser.h"
+#include "smartctl_parser_types.h"
+#include "storage_device_detected_type.h"
 #include "storage_settings.h"
 #include "smartctl_executor.h"
 #include "smartctl_version_parser.h"
-//#include "smartctl_text_parser_helper.h"
 #include "ata_storage_property_descr.h"
-
-
-
-std::string StorageDevice::get_type_storable_name(DetectedType type)
-{
-	static const std::unordered_map<DetectedType, std::string> m {
-			{DetectedType::Unknown,           "unknown"},
-			{DetectedType::NeedsExplicitType, "invalid"},
-			{DetectedType::CdDvd,             "cd/dvd"},
-			{DetectedType::Raid,              "raid"},
-	};
-	if (auto iter = m.find(type); iter != m.end()) {
-		return iter->second;
-	}
-	return "[internal_error]";
-}
+//#include "smartctl_text_parser_helper.h"
+//#include "ata_storage_property_descr.h"
 
 
 
 std::string StorageDevice::get_status_displayable_name(Status status)
 {
 	static const std::unordered_map<Status, std::string> m {
-			{Status::Enabled,     C_("status", "Enabled")},
-			{Status::Disabled,    C_("status", "Disabled")},
+			{Status::Enabled, C_("status", "Enabled")},
+			{Status::Disabled, C_("status", "Disabled")},
 			{Status::Unsupported, C_("status", "Unsupported")},
-			{Status::Unknown,     C_("status", "Unknown")},
+			{Status::Unknown, C_("status", "Unknown")},
 	};
 	if (auto iter = m.find(status); iter != m.end()) {
 		return iter->second;
@@ -78,15 +73,20 @@ StorageDevice::StorageDevice(std::string dev, std::string type_arg)
 
 
 
-void StorageDevice::clear_fetched(bool including_outputs)
+void StorageDevice::clear_outputs()
 {
-	if (including_outputs) {
-		basic_output_.clear();
-		full_output_.clear();
-	}
+	basic_output_.clear();
+	full_output_.clear();
+}
 
+
+
+void StorageDevice::clear_parse_results()
+{
 	parse_status_ = ParseStatus::None;
-	test_is_active_ = false;  // not sure
+//	test_is_active_ = false;  // not sure
+
+	property_repository_.clear();
 
 	smart_supported_.reset();
 	smart_enabled_.reset();
@@ -95,8 +95,6 @@ void StorageDevice::clear_fetched(bool including_outputs)
 	family_name_.reset();
 	size_.reset();
 	health_property_.reset();
-
-	property_repository_.clear();
 }
 
 
@@ -108,7 +106,9 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::fetch_basic_data_and_parse(
 		return hz::Unexpected(StorageDeviceError::TestRunning, _("A test is currently being performed on this drive."));
 	}
 
-	this->clear_fetched();  // clear everything fetched before, including outputs
+	// Clear everything fetched before, including outputs
+	this->clear_parse_results();
+	this->clear_outputs();
 
 	// We don't use "--all" - it may cause really screwed up the output (tests, etc.).
 	// This looks just like "--info" only on non-smart devices.
@@ -125,10 +125,14 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::fetch_basic_data_and_parse(
 	// This means that the old SCSI identify command isn't executed by default,
 	// and there is no information about the device manufacturer/etc. in the output.
 	// We detect this and set the device type to scsi to at least have _some_ info.
+
+	// Note: This match works even with JSON (the text output is included in --json=o).
 	if ((execute_status || execute_status.error().data() == StorageDeviceError::ExecutionError)
-		&& get_detected_type() == DetectedType::NeedsExplicitType && get_type_argument().empty()) {
+			&& get_detected_type() == StorageDeviceDetectedType::NeedsExplicitType
+			&& get_type_argument().empty() ) {
 		debug_out_info("app", "The device seems to be of different type than auto-detected, trying again with scsi.\n");
 		this->set_type_argument("scsi");
+		this->set_detected_type(StorageDeviceDetectedType::BasicScsi);
 		return this->fetch_basic_data_and_parse(smartctl_ex);  // try again with scsi
 	}
 
@@ -142,73 +146,44 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::fetch_basic_data_and_parse(
 //	}
 
 	// Set some properties too - they are needed for e.g. AODC status, etc.
-	return this->parse_basic_data(true);
+	return this->parse_basic_data();
 }
 
 
 
-hz::ExpectedVoid<StorageDeviceError> StorageDevice::parse_basic_data(bool do_set_properties, bool emit_signal)
+hz::ExpectedVoid<StorageDeviceError> StorageDevice::parse_basic_data()
 {
-	this->clear_fetched(false);  // clear everything fetched before, except outputs
+	// Clear everything fetched before, except outputs and type
+	this->clear_parse_results();
 
-	AtaStorageAttribute::DiskType disk_type = AtaStorageAttribute::DiskType::Any;
-
-	// Try the basic parser first. If it succeeds, use the specialized parser.
+	// Parse using Basic parser. This supports all drive types.
 	auto basic_parser = SmartctlParser::create(SmartctlParserType::Basic, SmartctlOutputFormat::Json);
 	DBG_ASSERT_RETURN(basic_parser, hz::Unexpected(StorageDeviceError::ParseError, _("Cannot create parser")));
 
+	// This also detects the drive type and adds it to "_custom/parser_detected_drive_type" property.
 	auto parse_status = basic_parser->parse(this->get_basic_output());
 	if (!parse_status) {
 		return hz::Unexpected(StorageDeviceError::ParseError,
 				std::vformat(_("Cannot parse smartctl output: {}"), std::make_format_args(parse_status.error().message())));
 	}
 
+	// See if we can narrow down the drive type from what was detected
+	// by StorageDetector and "_custom/parser_detected_drive_type" property set by Basic parser.
 	auto basic_property_repo = basic_parser->get_property_repository();
 
-	auto drive_type_prop = basic_property_repo.lookup_property("_custom/drive_type");
-	if (!drive_type_prop.empty()) {
-		const auto& drive_type = drive_type_prop.get_value<std::string>();
-		if (drive_type == "CD/DVD") {
-			debug_out_dump("app", "Drive " << get_device_with_type() << " seems to be a CD/DVD device.\n");
-			this->set_detected_type(DetectedType::CdDvd);
-		} else if (drive_type == "RAID") {
-			debug_out_dump("app", "Drive " << get_device_with_type() << " seems to be a RAID volume/controller.\n");
-			this->set_detected_type(DetectedType::Raid);
-		}
-	}
+	// Make detected type more exact.
+	detect_drive_type_from_properties(basic_property_repo);
 
-	{
-		auto rpm_prop = basic_property_repo.lookup_property("rotation_rate");
-		if (!rpm_prop.empty()) {
-			auto rpm = rpm_prop.get_value<int64_t>();
-			this->hdd_ = rpm > 0;
-		}
-		if (hdd_.has_value()) {
-			disk_type = hdd_.value() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
-		}
-	}
+	// A model field (and its aliases) is a good indication whether there was any data or not
+	set_parse_status(model_name_.has_value() ? ParseStatus::Basic : ParseStatus::None);
 
-	if (auto prop = basic_property_repo.lookup_property("smart_support/available"); !prop.empty()) {
-		smart_supported_ = prop.get_value<bool>();
-	}
-	if (auto prop = basic_property_repo.lookup_property("smart_support/enabled"); !prop.empty()) {
-		smart_enabled_ = prop.get_value<bool>();
-	}
-	if (auto prop = basic_property_repo.lookup_property("model_name"); !prop.empty()) {
-		model_name_ = prop.get_value<std::string>();
-	}
-	if (auto prop = basic_property_repo.lookup_property("model_family"); !prop.empty()) {
-		family_name_ = prop.get_value<std::string>();
-	}
-	if (auto prop = basic_property_repo.lookup_property("serial_number"); !prop.empty()) {
-		serial_number_ = prop.get_value<std::string>();
-	}
-	if (auto prop = basic_property_repo.lookup_property("user_capacity/bytes/_short"); !prop.empty()) {
-		size_ = prop.readable_value;
-	} else if (auto prop2 = basic_property_repo.lookup_property("user_capacity/bytes"); !prop.empty()) {
-		size_ = prop2.readable_value;
-	}
+	// Add property descriptions and set to the drive.
+	this->set_property_repository(StoragePropertyProcessor::process_properties(basic_property_repo, get_detected_type()));
 
+	debug_out_dump("app", "Drive " << get_device_with_type() << " set to be "
+			<< StorageDeviceDetectedTypeExt::get_displayable_name(get_detected_type()) << " device.\n");
+
+	read_common_properties();
 
 	// Try to parse the properties. ignore its errors - we already got what we came for.
 	// Note that this may try to parse data the second time (it may already have
@@ -222,15 +197,8 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::parse_basic_data(bool do_set
 //					StoragePropertyProcessor::process_properties(parser->get_property_repository(), disk_type));  // copy to our drive, overwriting old data
 //		}
 //	}
-	if (do_set_properties) {
-		this->set_property_repository(StoragePropertyProcessor::process_properties(basic_property_repo, disk_type));
-	}
 
-	// A model field (and its aliases) is a good indication whether there was any data or not
-	set_parse_status(model_name_.has_value() ? ParseStatus::Basic : ParseStatus::None);
-
-	if (emit_signal)
-		signal_changed().emit(this);  // notify listeners
+	signal_changed().emit(this);  // notify listeners
 
 	return {};
 }
@@ -244,70 +212,108 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::fetch_full_data_and_parse(
 		return hz::Unexpected(StorageDeviceError::TestRunning, _("A test is currently being performed on this drive."));
 	}
 
-	this->clear_fetched();  // clear everything fetched before, including outputs
+	// Drive type must be already set at this point, using fetch_basic_data_and_parse().
+	DBG_ASSERT(this->get_detected_type() != StorageDeviceDetectedType::Unknown);
+
+	// Clear everything fetched before, including outputs
+	this->clear_parse_results();
+	this->clear_outputs();
+
+	// Execute smartctl.
+
+	// Instead of -x, we use all the individual options -x encompasses, so that
+	// an addition to default -x output won't affect us.
+	std::string command_options;
+
+	// Type was detected by Basic parser
+	switch (this->get_detected_type()) {
+		case StorageDeviceDetectedType::Unknown:
+		case StorageDeviceDetectedType::NeedsExplicitType:
+			DBG_ASSERT(0);
+			break;
+		case StorageDeviceDetectedType::AtaAny:
+		case StorageDeviceDetectedType::AtaHdd:
+		case StorageDeviceDetectedType::AtaSsd:
+			command_options = "--health --info --get=all --capabilities --attributes --format=brief --log=xerror,50,error --log=xselftest,50,selftest --log=selective --log=directory --log=scttemp --log=scterc --log=devstat --log=sataphy";
+			break;
+		case StorageDeviceDetectedType::Nvme:
+			command_options = "--health --info --get=all --capabilities --attributes --format=brief --log=xerror,50,error --log=xselftest,50,selftest --log=selective --log=directory --log=scttemp --log=scterc --log=devstat --log=sataphy";
+			break;
+		case StorageDeviceDetectedType::BasicScsi:
+		case StorageDeviceDetectedType::CdDvd:
+		case StorageDeviceDetectedType::UnsupportedRaid:
+			// SCSI equivalent of -x:
+			command_options = "--health --info --attributes --log=error --log=selftest --log=background --log=sasphy";
+			break;
+	}
+
+	auto parser_type = SmartctlVersionParser::get_default_parser_type(this->get_detected_type());
+	auto parser_format = SmartctlVersionParser::get_default_format(parser_type);
+	if (parser_format == SmartctlOutputFormat::Json) {
+		// --json flags: o means include original output (just in case).
+		command_options += " --json=o";
+	}
 
 	std::string output;
-	hz::ExpectedVoid<StorageDeviceError> execute_status;
+	auto execute_status = execute_device_smartctl(command_options, smartctl_ex, output);
 
-	// instead of -x, we use all the individual options -x encompasses, so that
-	// an addition to default -x output won't affect us.
-	if (this->get_type_argument() == "scsi") {  // not sure about correctness... FIXME probably fails with RAID/scsi
-		const auto default_parser_type = SmartctlVersionParser::get_default_format(SmartctlParserType::Basic);
-		// This doesn't do much yet, but just in case...
-		// SCSI equivalent of -x:
-		std::string command_options = "--health --info --attributes --log=error --log=selftest --log=background --log=sasphy";
-		if (default_parser_type == SmartctlOutputFormat::Json) {
-			// --json flags: o means include original output (just in case).
-			command_options += " --json=o";
-		}
-
-		execute_status = execute_device_smartctl(command_options, smartctl_ex, output);
-
-	} else {
-		const auto default_parser_type = SmartctlVersionParser::get_default_format(SmartctlParserType::Ata);
-		// ATA equivalent of -x.
-		std::string command_options = "--health --info --get=all --capabilities --attributes --format=brief --log=xerror,50,error --log=xselftest,50,selftest --log=selective --log=directory --log=scttemp --log=scterc --log=devstat --log=sataphy";
-		if (default_parser_type == SmartctlOutputFormat::Json) {
-			// --json flags: o means include original output (just in case).
-			command_options += " --json=o";
-		}
-
-		execute_status = execute_device_smartctl(command_options, smartctl_ex, output, true);  // set type to invalid if needed
-	}
-
+//	if (this->get_type_argument() == "scsi") {  // not sure about correctness... FIXME probably fails with RAID/scsi
+//		const auto default_parser_type = SmartctlVersionParser::get_default_format(SmartctlParserType::Basic);
+//		// This doesn't do much yet, but just in case...
+//		// SCSI equivalent of -x:
+//		std::string command_options = "--health --info --attributes --log=error --log=selftest --log=background --log=sasphy";
+//		if (default_parser_type == SmartctlOutputFormat::Json) {
+//			// --json flags: o means include original output (just in case).
+//			command_options += " --json=o";
+//		}
+//
+//		execute_status = execute_device_smartctl(command_options, smartctl_ex, output);
+//
+//	} else {
+//		const auto default_parser_type = SmartctlVersionParser::get_default_format(SmartctlParserType::Ata);
+//		// ATA equivalent of -x.
+//		std::string command_options = "--health --info --get=all --capabilities --attributes --format=brief --log=xerror,50,error --log=xselftest,50,selftest --log=selective --log=directory --log=scttemp --log=scterc --log=devstat --log=sataphy";
+//		if (default_parser_type == SmartctlOutputFormat::Json) {
+//			// --json flags: o means include original output (just in case).
+//			command_options += " --json=o";
+//		}
+//
+//		execute_status = execute_device_smartctl(command_options, smartctl_ex, output, true);  // set type to invalid if needed
+//	}
 	// See notes above (in fetch_basic_data_and_parse()).
-	if ((execute_status || execute_status.error().data() == StorageDeviceError::ExecutionError)
-		&& get_detected_type() == DetectedType::NeedsExplicitType && get_type_argument().empty()) {
-		debug_out_info("app", "The device seems to be of different type than auto-detected, trying again with scsi.\n");
-		this->set_type_argument("scsi");
-		return this->fetch_full_data_and_parse(smartctl_ex);  // try again with scsi
-	}
-
+	// No need to do this: if the basic data was fetched, the type is already set.
+//	if ((execute_status || execute_status.error().data() == StorageDeviceError::ExecutionError)
+//			&& get_detected_type() == DetectedType::NeedsExplicitType && get_type_argument().empty()) {
+//		debug_out_info("app", "The device seems to be of different type than auto-detected, trying again with scsi.\n");
+//		this->set_type_argument("scsi");
+//		return this->fetch_full_data_and_parse(smartctl_ex);  // try again with scsi
+//	}
 	// Since the type error leads to "command line didn't parse" error here,
 	// we do this after the scsi stuff.
+
+
 	if (!execute_status)
 		return execute_status;
 
 	this->full_output_ = output;
-	return this->try_parse_data();
+	return this->parse_full_data(parser_type, parser_format);
 }
 
 
-
+/*
 hz::ExpectedVoid<StorageDeviceError> StorageDevice::try_parse_data()
 {
-	this->clear_fetched(false);  // clear everything fetched before, except outputs
-
-	AtaStorageAttribute::DiskType disk_type = AtaStorageAttribute::DiskType::Any;
-	if (hdd_.has_value()) {
-		disk_type = hdd_.value() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
-	}
+	this->clear_fetched(false);  // clear everything fetched before, except outputs and disk type
 
 	auto parser_format = SmartctlParser::detect_output_format(this->full_output_);
-
 	if (!parser_format.has_value()) {
 		return hz::Unexpected(StorageDeviceError::ParseError, parser_format.error().message());
 	}
+
+//	auto basic_parser = SmartctlParser::create(SmartctlParserType::Basic, parser_format.value());
+//	if (!basic_parser) {
+//		return hz::Unexpected(StorageDeviceError::ParseError, _("Cannot create parser"));
+//	}
 
 	// TODO Choose format according to device type
 	SmartctlParserType parser_type = SmartctlParserType::Ata;
@@ -354,6 +360,113 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::try_parse_data()
 	}
 
 	return {};  // return ok if at least the info was ok.
+}
+*/
+
+
+
+hz::ExpectedVoid<StorageDeviceError> StorageDevice::parse_full_data(SmartctlParserType parser_type, SmartctlOutputFormat format)
+{
+	// Clear everything fetched before, except outputs and disk type
+	clear_parse_results();
+
+	auto parser = SmartctlParser::create(parser_type, format);
+	DBG_ASSERT_RETURN(parser, hz::Unexpected(StorageDeviceError::ParseError, _("Cannot create parser")));
+
+	const auto parse_status = parser->parse(this->full_output_);
+	if (parse_status.has_value()) {
+		set_parse_status(parser_type == SmartctlParserType::Basic ? ParseStatus::Basic : ParseStatus::Full);
+
+		// Detect drive type based on parsed properties
+		detect_drive_type_from_properties(parser->get_property_repository());
+
+		// Set the full properties, overwriting old data.
+		set_property_repository(StoragePropertyProcessor::process_properties(parser->get_property_repository(), get_detected_type()));
+
+		// Read common properties from the repository.
+		read_common_properties();
+
+		signal_changed().emit(this);  // notify listeners
+
+		return {};
+	}
+
+	return hz::Unexpected(StorageDeviceError::ParseError,
+			std::vformat(_("Cannot parse smartctl output: {}"), std::make_format_args(parse_status.error().message())));
+}
+
+
+
+hz::ExpectedVoid<StorageDeviceError> StorageDevice::parse_any_data_for_virtual()
+{
+	// Clear everything fetched before, except outputs and disk type
+	this->clear_parse_results();
+
+	auto parser_format = SmartctlParser::detect_output_format(this->full_output_);
+	if (!parser_format.has_value()) {
+		return hz::Unexpected(StorageDeviceError::ParseError, parser_format.error().message());
+	}
+
+	auto basic_parser = SmartctlParser::create(SmartctlParserType::Basic, parser_format.value());
+	if (!basic_parser) {
+		return hz::Unexpected(StorageDeviceError::ParseError, _("Cannot create parser"));
+	}
+
+	// This will add some properties and emit signal_changed().
+	auto basic_parse_status = this->parse_basic_data();
+	if (!basic_parse_status) {
+		return hz::Unexpected(StorageDeviceError::ParseError,
+				std::vformat(_("Cannot parse smartctl output: {}"), std::make_format_args(basic_parse_status.error().message())));
+	}
+
+	auto basic_property_repo = basic_parser->get_property_repository();
+
+	// Make detected type more exact.
+	detect_drive_type_from_properties(basic_property_repo);
+
+	// Set properties from the basic parser.
+	set_property_repository(StoragePropertyProcessor::process_properties(basic_property_repo, get_detected_type()));
+
+	// Read common properties from the repository.
+	read_common_properties();
+
+
+	// Try to parse with a specialized parser based on drive type
+	auto parser_type = SmartctlVersionParser::get_default_parser_type(this->get_detected_type());
+
+	if (parser_type != SmartctlParserType::Basic) {
+		// Try specialized parser
+		auto parser = SmartctlParser::create(parser_type, parser_format.value());
+		DBG_ASSERT_RETURN(parser, hz::Unexpected(StorageDeviceError::ParseError, _("Cannot create parser.")));
+
+		const auto parse_status = parser->parse(this->full_output_);
+		if (parse_status.has_value()) {
+			// Call this after parse_basic_data(), since it sets parse status to "info".
+			set_parse_status(StorageDevice::ParseStatus::Full);
+
+			// set the full properties.
+			// copy to our drive, overwriting old data.
+			set_property_repository(StoragePropertyProcessor::process_properties(parser->get_property_repository(), get_detected_type()));
+		}
+	}
+
+	if (get_parse_status() != ParseStatus::Full) {
+		// Only basic data available
+		set_parse_status(ParseStatus::Basic);
+		set_property_repository(StoragePropertyProcessor::process_properties(basic_parser->get_property_repository(), get_detected_type()));
+	}
+
+	signal_changed().emit(this);  // notify listeners
+
+	// Don't show any GUI warnings on parse failure - it may just be an unsupported
+	// drive (e.g. usb flash disk). Plus, it may flood the string. The data will be
+	// parsed again in Info window, and we show the warnings there.
+//	debug_out_warn("app", DBG_FUNC_MSG << "Cannot parse smartctl output.\n");
+
+	// proper parsing failed. try to at least extract info section
+//	this->basic_output_ = this->full_output_;  // complete output here. sometimes it's only the info section
+
+	return {};
 }
 
 
@@ -439,6 +552,71 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 	}
 
 	return hz::Unexpected(StorageDeviceError::CommandUnknownError, _("Unknown error occurred."));
+}
+
+
+
+void StorageDevice::read_common_properties()
+{
+	if (auto prop = property_repository_.lookup_property("smart_support/available"); !prop.empty()) {
+		smart_supported_ = prop.get_value<bool>();
+	}
+	if (auto prop = property_repository_.lookup_property("smart_support/enabled"); !prop.empty()) {
+		smart_enabled_ = prop.get_value<bool>();
+	}
+	if (auto prop = property_repository_.lookup_property("model_name"); !prop.empty()) {
+		model_name_ = prop.get_value<std::string>();
+	}
+	if (auto prop = property_repository_.lookup_property("model_family"); !prop.empty()) {
+		family_name_ = prop.get_value<std::string>();
+	}
+	if (auto prop = property_repository_.lookup_property("serial_number"); !prop.empty()) {
+		serial_number_ = prop.get_value<std::string>();
+	}
+	if (auto prop = property_repository_.lookup_property("user_capacity/bytes/_short"); !prop.empty()) {
+		size_ = prop.readable_value;
+	} else if (auto prop2 = property_repository_.lookup_property("user_capacity/bytes"); !prop.empty()) {
+		size_ = prop2.readable_value;
+	}
+}
+
+
+
+void StorageDevice::detect_drive_type_from_properties(const StoragePropertyRepository& property_repo)
+{
+	auto drive_type_prop = property_repo.lookup_property("_custom/parser_detected_drive_type");
+	if (!drive_type_prop.empty()) {
+		const auto& drive_type_storable_str = drive_type_prop.get_value<std::string>();
+		set_detected_type(StorageDeviceDetectedTypeExt::get_by_storable_name(drive_type_storable_str, StorageDeviceDetectedType::BasicScsi));
+	}
+
+	switch (get_detected_type()) {
+		case StorageDeviceDetectedType::Unknown:
+			set_detected_type(StorageDeviceDetectedType::BasicScsi);  // fall back to basic scsi parser
+			break;
+		case StorageDeviceDetectedType::AtaAny:
+			// Find out if it's SSD or HDD
+		{
+			auto rpm_prop = property_repo.lookup_property("rotation_rate");
+			if (rpm_prop.empty() || rpm_prop.get_value<std::int64_t>() == 0) {
+				set_detected_type(StorageDeviceDetectedType::AtaSsd);
+			} else {
+				set_detected_type(StorageDeviceDetectedType::AtaHdd);
+			}
+			break;
+		}
+		case StorageDeviceDetectedType::AtaHdd:
+		case StorageDeviceDetectedType::AtaSsd:
+		case StorageDeviceDetectedType::Nvme:
+		case StorageDeviceDetectedType::BasicScsi:
+		case StorageDeviceDetectedType::CdDvd:
+		case StorageDeviceDetectedType::UnsupportedRaid:
+			// leave as is
+			break;
+		case StorageDeviceDetectedType::NeedsExplicitType:
+			DBG_ASSERT(0);
+			break;
+	}
 }
 
 
@@ -580,14 +758,14 @@ std::string StorageDevice::get_device_with_type() const
 
 
 
-void StorageDevice::set_detected_type(DetectedType t)
+void StorageDevice::set_detected_type(StorageDeviceDetectedType t)
 {
 	detected_type_ = t;
 }
 
 
 
-StorageDevice::DetectedType StorageDevice::get_detected_type() const
+StorageDeviceDetectedType StorageDevice::get_detected_type() const
 {
 	return detected_type_;
 }
@@ -696,13 +874,6 @@ std::string StorageDevice::get_family_name() const
 std::string StorageDevice::get_serial_number() const
 {
 	return (serial_number_.has_value() ? serial_number_.value() : "");
-}
-
-
-
-bool StorageDevice::get_is_hdd() const
-{
-	return hdd_.has_value() && hdd_.value();
 }
 
 
@@ -824,7 +995,7 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::execute_device_smartctl(cons
 		return hz::Unexpected(StorageDeviceError::CannotExecuteOnVirtual, _("Cannot execute smartctl on a virtual device."));
 	}
 
-	std::string device = get_device();
+	const std::string device = get_device();
 
 	auto smartctl_status = execute_smartctl(device, this->get_device_options(),
 			command_options, smartctl_ex, smartctl_output);
@@ -836,9 +1007,11 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::execute_device_smartctl(cons
 		// This means that the old SCSI identify command isn't executed by default,
 		// and there is no information about the device manufacturer/etc. in the output.
 		// We detect this and set the device type to scsi to at least have _some_ info.
-		if (check_type && this->get_detected_type() == DetectedType::Unknown
+
+		// Note: This match works even with JSON (the text output is included in --json=o).
+		if (check_type && this->get_detected_type() == StorageDeviceDetectedType::Unknown
 				&& app_pcre_match("/specify device type with the -d option/mi", smartctl_output)) {
-			this->set_detected_type(DetectedType::NeedsExplicitType);
+			this->set_detected_type(StorageDeviceDetectedType::NeedsExplicitType);
 		}
 
 		return hz::Unexpected(StorageDeviceError::ExecutionError, smartctl_status.error().message());

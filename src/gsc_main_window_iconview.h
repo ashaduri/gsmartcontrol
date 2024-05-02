@@ -347,12 +347,17 @@ class GscMainWindowIconView : public Gtk::IconView {
 
 			Glib::RefPtr<Gdk::Pixbuf> icon;
 			switch(drive->get_detected_type()) {
-				case StorageDevice::DetectedType::CdDvd:
+				case StorageDeviceDetectedType::CdDvd:
 					icon = cddvd_icon;
 					break;
-				case StorageDevice::DetectedType::Unknown:  // standard HD icon
-				case StorageDevice::DetectedType::NeedsExplicitType:
-				case StorageDevice::DetectedType::Raid:  // TODO a separate icon for this
+				case StorageDeviceDetectedType::Unknown:  // standard HD icon
+				case StorageDeviceDetectedType::NeedsExplicitType:
+				case StorageDeviceDetectedType::AtaAny:
+				case StorageDeviceDetectedType::AtaHdd:
+				case StorageDeviceDetectedType::AtaSsd:
+				case StorageDeviceDetectedType::Nvme:
+				case StorageDeviceDetectedType::BasicScsi:
+				case StorageDeviceDetectedType::UnsupportedRaid:  // TODO a separate icon
 					icon = hd_icon;
 					break;
 			}

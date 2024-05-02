@@ -82,9 +82,6 @@ smartctl/version/_merged
  	Looks like "7.2"
 smartctl/version/_merged_full
 	Looks like "smartctl 7.2 2020-12-30 r5155", formed from "/smartctl" subkeys.
-
-_custom/smart_enabled
- 	Not present in json?
 */
 
 
@@ -285,11 +282,19 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_info(
 				}
 			},
 
-			{"rotation_rate", _("Rotation Rate"),
-				custom_string_formatter<int64_t>([](int64_t value)
+			{"rotation_rate", _("Rotation Rate"),  // (S)ATA, used to detect HDD vs SSD
+			 [](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
+						-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
 				{
-					return std::format("{} RPM", value);
-				})
+					if (auto jval = get_node_data<int64_t>(root_node, key); jval) {
+						AtaStorageProperty p;
+						p.set_name(key, key, displayable_name);
+						p.readable_value = std::format("{} RPM", jval.value());
+						p.value = jval.value();
+						return p;
+					}
+					return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+				}
 			},
 
 			{"form_factor/name", _("Form Factor"), string_formatter()},

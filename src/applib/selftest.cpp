@@ -257,7 +257,6 @@ hz::ExpectedVoid<SelfTestError> SelfTest::update(const std::shared_ptr<CommandEx
 				std::vformat(_("Sending command to drive failed: {}"), std::make_format_args(execute_status.error().message())));
 	}
 
-	const AtaStorageAttribute::DiskType disk_type = drive_->get_is_hdd() ? AtaStorageAttribute::DiskType::Hdd : AtaStorageAttribute::DiskType::Ssd;
 	auto parser = SmartctlParser::create(SmartctlParserType::Ata, SmartctlVersionParser::get_default_format(SmartctlParserType::Ata));
 	DBG_ASSERT_RETURN(parser, hz::Unexpected(SelfTestError::ParseError, _("Cannot create parser.")));
 
@@ -266,7 +265,8 @@ hz::ExpectedVoid<SelfTestError> SelfTest::update(const std::shared_ptr<CommandEx
 		return hz::Unexpected(SelfTestError::ParseError,
 				std::vformat(_("Cannot parse smartctl output: {}"), std::make_format_args(parse_status.error().message())));
 	}
-	auto property_repo = StoragePropertyProcessor::process_properties(parser->get_property_repository(), disk_type);
+	auto property_repo = StoragePropertyProcessor::process_properties(
+			parser->get_property_repository(), drive_->get_detected_type());
 
 	// Note: Since the self-test log is sometimes late
 	// and in undetermined order (sorting by hours is too rough),

@@ -18,6 +18,9 @@ Copyright:
 #include <optional>
 
 #include "smartctl_parser_types.h"
+#include "ata_storage_property_descr.h"
+
+
 
 
 
@@ -46,6 +49,9 @@ class SmartctlVersionParser {
 
 		/// Get default output format for a parser type.
 		static SmartctlOutputFormat get_default_format(SmartctlParserType parser_type);
+
+		/// Get default output format for a parser type.
+		static SmartctlParserType get_default_parser_type(StorageDeviceDetectedType detected_type);
 
 
 	private:

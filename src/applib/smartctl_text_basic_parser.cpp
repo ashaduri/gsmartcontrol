@@ -30,6 +30,7 @@ Copyright:
 #include "smartctl_parser_types.h"
 #include "smartctl_version_parser.h"
 #include "smartctl_text_parser_helper.h"
+#include "storage_device.h"
 
 
 
@@ -77,9 +78,9 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	if (app_pcre_match("/this device: CD\\/DVD/mi", output)
 			|| app_pcre_match("/^Device type:\\s+CD\\/DVD/mi", output)) {
 		AtaStorageProperty p;
-		p.set_name("Drive type", "_custom/disk_type", "Drive Type");
+		p.set_name("Drive type", "_custom/parser_detected_drive_type", "Parser-Detected Drive Type");
 		p.reported_value = "CD/DVD";
-		p.value = p.reported_value;  // TODO canonicalize
+		p.value = StorageDeviceDetectedTypeExt::get_storable_name(StorageDeviceDetectedType::CdDvd);
 		p.section = AtaStorageProperty::Section::Info;  // add to info section
 		add_property(p);
 
@@ -88,9 +89,9 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	// Product:              Raid 5 Volume
 	} else if (app_pcre_match("/Product:[ \\t]*Raid/mi", output)) {
 		AtaStorageProperty p;
-		p.set_name("Drive type", "_custom/disk_type", "Drive Type");
+		p.set_name("Drive type", "_custom/parser_detected_drive_type", "Parser-Detected Drive Type");
 		p.reported_value = "RAID";
-		p.value = p.reported_value;  // TODO canonicalize
+		p.value = StorageDeviceDetectedTypeExt::get_storable_name(StorageDeviceDetectedType::UnsupportedRaid);
 		p.section = AtaStorageProperty::Section::Info;  // add to info section
 		add_property(p);
 

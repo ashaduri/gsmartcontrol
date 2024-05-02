@@ -13,6 +13,10 @@ Copyright:
 #define ATA_STORAGE_PROPERTY_DESCR_H
 
 #include "storage_property_repository.h"
+#include "storage_device_detected_type.h"
+
+
+
 
 
 class StoragePropertyProcessor {
@@ -20,7 +24,7 @@ class StoragePropertyProcessor {
 
 		/// Set descriptions, warnings, etc. on properties, and return them.
 		static StoragePropertyRepository process_properties(StoragePropertyRepository properties,
-				AtaStorageAttribute::DiskType disk_type);
+				StorageDeviceDetectedType device_type);
 
 };
 

@@ -83,6 +83,26 @@ SmartctlOutputFormat SmartctlVersionParser::get_default_format(SmartctlParserTyp
 
 
 
+SmartctlParserType SmartctlVersionParser::get_default_parser_type(StorageDeviceDetectedType detected_type)
+{
+	switch (detected_type) {
+		case StorageDeviceDetectedType::Unknown:
+		case StorageDeviceDetectedType::NeedsExplicitType:
+		case StorageDeviceDetectedType::BasicScsi:
+		case StorageDeviceDetectedType::CdDvd:
+		case StorageDeviceDetectedType::UnsupportedRaid:
+			break;
+		case StorageDeviceDetectedType::AtaAny:
+		case StorageDeviceDetectedType::AtaHdd:
+		case StorageDeviceDetectedType::AtaSsd:
+			return SmartctlParserType::Ata;
+		case StorageDeviceDetectedType::Nvme:
+			return SmartctlParserType::Nvme;
+	}
+	return SmartctlParserType::Basic;
+}
+
+
 
 
 /// @}

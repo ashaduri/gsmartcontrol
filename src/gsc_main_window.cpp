@@ -13,6 +13,7 @@ Copyright:
 #include <gtkmm.h>
 #include <vector>
 #include <memory>
+#include <algorithm>
 
 #include "hz/string_algo.h"  // string_split
 #include "hz/string_num.h"
@@ -1162,7 +1163,8 @@ bool GscMainWindow::add_virtual_drive(const std::string& file)
 	drive->set_full_output(output);
 	drive->set_info_output(output);  // info can be parsed from full output string too.
 
-	auto parse_error = drive->try_parse_data();  // this will set the type and add the properties
+	// this will set the type and add the properties
+	auto parse_error = drive->parse_any_data_for_virtual();
 	if (!parse_error) {
 		gui_show_error_dialog(_("Cannot interpret SMART data"), parse_error.error().message(), this);
 		return false;
