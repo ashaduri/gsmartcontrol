@@ -16,10 +16,10 @@ Copyright:
 #include <format>
 
 #include "app_pcrecpp.h"
-#include "ata_storage_property.h"
+#include "storage_property.h"
 #include "smartctl_text_ata_parser.h"
 #include "selftest.h"
-#include "ata_storage_property_descr.h"
+#include "storage_property_descr.h"
 #include "smartctl_version_parser.h"
 
 
@@ -77,8 +77,8 @@ std::chrono::seconds SelfTest::get_min_duration_seconds() const
 		case TestType::Conveyance: prop_name = "ata_smart_data/self_test/polling_minutes/conveyance"; break;
 	}
 
-	const AtaStorageProperty p = drive_->get_property_repository().lookup_property(prop_name,
-			AtaStorageProperty::Section::Capabilities);
+	const StorageProperty p = drive_->get_property_repository().lookup_property(prop_name,
+			StorageProperty::Section::Capabilities);
 
 	// p stores it as uint64_t
 	return (total_duration_ = (p.empty() ? 0s : p.get_value<std::chrono::seconds>()));
@@ -104,7 +104,7 @@ bool SelfTest::is_supported() const
 		case TestType::Conveyance: prop_name = "ata_smart_data/capabilities/conveyance_self_test_supported"; break;
 	}
 
-	const AtaStorageProperty p = drive_->get_property_repository().lookup_property(prop_name);
+	const StorageProperty p = drive_->get_property_repository().lookup_property(prop_name);
 	return (!p.empty() && p.get_value<bool>());
 }
 
@@ -192,7 +192,7 @@ hz::ExpectedVoid<SelfTestError> SelfTest::force_stop(const std::shared_ptr<Comma
 	// any command (e.g. "--abort") will abort it. If it has "Suspend Offline...",
 	// there's no way to abort such test.
 	if (type_ == TestType::ImmediateOffline) {
-		const AtaStorageProperty p = drive_->get_property_repository().lookup_property(
+		const StorageProperty p = drive_->get_property_repository().lookup_property(
 				"ata_smart_data/capabilities/offline_is_aborted_upon_new_cmd");
 		if (!p.empty() && p.get_value<bool>()) {  // if empty, give a chance to abort anyway.
 			return hz::Unexpected(SelfTestError::StopUnsupported, _("Aborting this test is unsupported by the drive."));
@@ -271,7 +271,7 @@ hz::ExpectedVoid<SelfTestError> SelfTest::update(const std::shared_ptr<CommandEx
 	// Note: Since the self-test log is sometimes late
 	// and in undetermined order (sorting by hours is too rough),
 	// we use the "self-test status" capability.
-	AtaStorageProperty p;
+	StorageProperty p;
 	for (const auto& e : property_repo.get_properties()) {
 		if (e.is_value_type<AtaStorageSelftestEntry>() || e.get_value<AtaStorageSelftestEntry>().test_num != 0
 				|| e.generic_name != "ata_smart_data/self_test/status/_merged")

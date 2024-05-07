@@ -58,40 +58,40 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 	protected:
 
 		/// fill_ui_with_info() helper
-		void fill_ui_general(const std::vector<AtaStorageProperty>& props);
+		void fill_ui_general(const std::vector<StorageProperty>& props);
 
 		/// fill_ui_with_info() helper
-		void fill_ui_attributes(const std::vector<AtaStorageProperty>& props);
+		void fill_ui_attributes(const std::vector<StorageProperty>& props);
 
 		/// fill_ui_with_info() helper
-		void fill_ui_statistics(const std::vector<AtaStorageProperty>& props);
+		void fill_ui_statistics(const std::vector<StorageProperty>& props);
 
 		/// fill_ui_with_info() helper
 		void fill_ui_self_test_info();
 
 		/// fill_ui_with_info() helper
-		void fill_ui_self_test_log(const std::vector<AtaStorageProperty>& props);
+		void fill_ui_self_test_log(const std::vector<StorageProperty>& props);
 
 		/// fill_ui_with_info() helper
-		void fill_ui_error_log(const std::vector<AtaStorageProperty>& props);
+		void fill_ui_error_log(const std::vector<StorageProperty>& props);
 
 		/// fill_ui_with_info() helper
-		void fill_ui_temperature_log(const std::vector<AtaStorageProperty>& props);
+		void fill_ui_temperature_log(const std::vector<StorageProperty>& props);
 
 		/// fill_ui_with_info() helper
-		WarningLevel fill_ui_capabilities(const std::vector<AtaStorageProperty>& props);
+		WarningLevel fill_ui_capabilities(const std::vector<StorageProperty>& props);
 
 		/// fill_ui_with_info() helper
-		WarningLevel fill_ui_error_recovery(const std::vector<AtaStorageProperty>& props);
+		WarningLevel fill_ui_error_recovery(const std::vector<StorageProperty>& props);
 
 		/// fill_ui_with_info() helper
-		WarningLevel fill_ui_selective_self_test_log(const std::vector<AtaStorageProperty>& props);
+		WarningLevel fill_ui_selective_self_test_log(const std::vector<StorageProperty>& props);
 
 		/// fill_ui_with_info() helper
-		WarningLevel fill_ui_physical(const std::vector<AtaStorageProperty>& props);
+		WarningLevel fill_ui_physical(const std::vector<StorageProperty>& props);
 
 		/// fill_ui_with_info() helper
-		WarningLevel fill_ui_directory(const std::vector<AtaStorageProperty>& props);
+		WarningLevel fill_ui_directory(const std::vector<StorageProperty>& props);
 
 
 		// ---------- Helpers
@@ -221,7 +221,7 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 			// Gtk::TreeModelColumn<Glib::ustring> updated;
 			Gtk::TreeModelColumn<std::string> flag_value;
 			Gtk::TreeModelColumn<Glib::ustring> tooltip;
-			Gtk::TreeModelColumn<const AtaStorageProperty*> storage_property;
+			Gtk::TreeModelColumn<const StorageProperty*> storage_property;
 		} attribute_table_columns;
 
 		/// Statistics table model columns
@@ -231,7 +231,7 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 			Gtk::TreeModelColumn<std::string> flags;
 			Gtk::TreeModelColumn<std::string> page_offset;
 			Gtk::TreeModelColumn<Glib::ustring> tooltip;
-			Gtk::TreeModelColumn<const AtaStorageProperty*> storage_property;
+			Gtk::TreeModelColumn<const StorageProperty*> storage_property;
 		} statistics_table_columns;
 
 		/// Self-test log table model columns
@@ -243,7 +243,7 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 			Gtk::TreeModelColumn<std::string> hours;
 			Gtk::TreeModelColumn<std::string> lba;
 			Gtk::TreeModelColumn<Glib::ustring> tooltip;
-			Gtk::TreeModelColumn<const AtaStorageProperty*> storage_property;
+			Gtk::TreeModelColumn<const StorageProperty*> storage_property;
 		} self_test_log_table_columns;
 
 		/// Error log table model columns
@@ -254,7 +254,7 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 			Gtk::TreeModelColumn<std::string> lba;
 			Gtk::TreeModelColumn<std::string> details;
 			Gtk::TreeModelColumn<Glib::ustring> tooltip;
-			Gtk::TreeModelColumn<const AtaStorageProperty*> storage_property;
+			Gtk::TreeModelColumn<const StorageProperty*> storage_property;
 			Gtk::TreeModelColumn<Glib::ustring> mark_name;
 		} error_log_table_columns;
 
@@ -265,7 +265,7 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 			Gtk::TreeModelColumn<std::string> flag_value;
 			Gtk::TreeModelColumn<Glib::ustring> str_values;
 			Gtk::TreeModelColumn<Glib::ustring> tooltip;
-			Gtk::TreeModelColumn<const AtaStorageProperty*> storage_property;
+			Gtk::TreeModelColumn<const StorageProperty*> storage_property;
 		} capabilities_table_columns;
 
 		// "Test type" combobox columns

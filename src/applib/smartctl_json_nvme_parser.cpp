@@ -22,7 +22,7 @@ Copyright:
 
 #include "json/json.hpp"
 
-#include "ata_storage_property.h"
+#include "storage_property.h"
 #include "hz/debug.h"
 #include "hz/string_algo.h"
 // #include "smartctl_version_parser.h"
@@ -49,7 +49,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse(std::string_
 		return hz::Unexpected(SmartctlParserError::SyntaxError, std::string("Invalid JSON data: ") + e.what());
 	}
 
-	AtaStorageProperty merged_property, full_property;
+	StorageProperty merged_property, full_property;
 	auto version_parse_status = SmartctlJsonParserHelpers::parse_version(json_root_node, merged_property, full_property);
 	if (!version_parse_status) {
 		return version_parse_status;
@@ -66,29 +66,29 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse(std::string_
 	// Add properties for each parsed section so that the UI knows which tabs to show or hide
 	{
 		auto section_parse_status = parse_section_health(json_root_node);
-		AtaStorageProperty p;
-		p.section = AtaStorageProperty::Section::Health;
+		StorageProperty p;
+		p.section = StorageProperty::Section::Health;
 		p.set_name("_parser/health_section_available");
 		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 	{
 		auto section_parse_status = parse_section_error_log(json_root_node);
-		AtaStorageProperty p;
-		p.section = AtaStorageProperty::Section::ErrorLog;
+		StorageProperty p;
+		p.section = StorageProperty::Section::ErrorLog;
 		p.set_name("_parser/error_log_section_available");
 		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 	{
 		auto section_parse_status = parse_section_selftest_log(json_root_node);
-		AtaStorageProperty p;
-		p.section = AtaStorageProperty::Section::SelftestLog;
+		StorageProperty p;
+		p.section = StorageProperty::Section::SelftestLog;
 		p.set_name("_parser/selftest_log_section_available");
 		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 	{
-		auto section_parse_status = parse_section_health_log(json_root_node);
-		AtaStorageProperty p;
-		p.section = AtaStorageProperty::Section::Devstat;
+		auto section_parse_status = parse_section_nvme_attributes(json_root_node);
+		StorageProperty p;
+		p.section = StorageProperty::Section::Devstat;
 		p.set_name("_parser/devstat_section_available");
 		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
@@ -109,10 +109,10 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_info
 
 			{"device/type", _("Smartctl Device Type"),  // nvme, sat, etc.
 				[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
-						-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+						-> hz::ExpectedValue<StorageProperty, SmartctlParserError>
 				{
 					if (auto jval = get_node_data<std::string>(root_node, "device/type"); jval.has_value()) {
-						AtaStorageProperty p;
+						StorageProperty p;
 						p.set_name(key, key, displayable_name);
 						p.value = jval.value();
 						p.show_in_ui = false;
@@ -158,10 +158,10 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_info
 
 			{"user_capacity/bytes/_short", _("Capacity"),
 				[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
-						-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+						-> hz::ExpectedValue<StorageProperty, SmartctlParserError>
 				{
 					if (auto jval = get_node_data<int64_t>(root_node, "user_capacity/bytes"); jval) {
-						AtaStorageProperty p;
+						StorageProperty p;
 						p.set_name(key, key, displayable_name);
 						p.readable_value = hz::format_size(static_cast<uint64_t>(jval.value()), true);
 						p.value = jval.value();
@@ -172,30 +172,12 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_info
 				}
 			},
 
-			{"logical_block_size", _("Logical Block Size"),
-				custom_string_formatter<int64_t>([](int64_t value)
-				{
-					return std::format("{} bytes", value);
-				})
-			},
-
-			{"power_cycle_count", _("Number of Power Cycles"), string_formatter()},
-			{"power_on_time/hours", _("Powered for"),
-				custom_string_formatter<int64_t>([](int64_t value)
-				{
-					return std::format("{} hours", value);
-				})
-			},
-
-			{"temperature/current", _("Current Temperature"),
-				custom_string_formatter<int64_t>([](int64_t value)
-				{
-					return std::format("{}° Celsius", value);
-				})
-			},
+			{"logical_block_size", _("Logical Block Size"), integer_formatter<int64_t>("{} bytes")},
+			{"power_cycle_count", _("Number of Power Cycles"), integer_formatter<int64_t>()},
+			{"power_on_time/hours", _("Powered for"), integer_formatter<int64_t>("{} hours")},
+			{"temperature/current", _("Current Temperature"), integer_formatter<int64_t>("{}° Celsius")},
 
 			{"nvme_version/string", _("NVMe Version"), string_formatter()},
-
 			{"local_time/asctime", _("Scanned on"), string_formatter()},
 
 			{"smart_support/available", _("SMART Supported"), bool_formatter(_("Yes"), _("No"))},
@@ -208,7 +190,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_info
 
 		auto p = retrieval_func(json_root_node, key, displayable_name);
 		if (p.has_value()) {  // ignore if not found
-			p->section = AtaStorageProperty::Section::Info;
+			p->section = StorageProperty::Section::Info;
 			add_property(p.value());
 			any_found = true;
 		}
@@ -226,8 +208,19 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_heal
 {
 	using namespace SmartctlJsonParserHelpers;
 
+	bool section_properties_found = false;
+
 	const std::vector<std::tuple<std::string, std::string, PropertyRetrievalFunc>> health_keys = {
 			{"smart_status/passed", _("Overall Health Self-Assessment Test"), bool_formatter(_("PASSED"), _("FAILED"))},
+
+			// These are included when smart_status/passed is false
+			{"smart_status/nvme/spare_below_threshold", _("Available Spare Fallen Below Threshold"), bool_formatter(_("Yes"), _("No"))},
+			{"smart_status/nvme/temperature_above_or_below_threshold", _("Temperature Outside Limits"), bool_formatter(_("Yes"), _("No"))},
+			{"smart_status/nvme/reliability_degraded", _("NVM Subsystem Reliability Degraded"), bool_formatter(_("Yes"), _("No"))},
+			{"smart_status/nvme/media_read_only", _("Media Placed in Read-Only Mode"), bool_formatter(_("Yes"), _("No"))},
+			{"smart_status/nvme/volatile_memory_backup_failed", _("Volatile Memory Backup Failed"), bool_formatter(_("Yes"), _("No"))},
+			{"smart_status/nvme/persistent_memory_region_unreliable", _("Persistent Memory Region Is Read-Only or Unreliable"), bool_formatter(_("Yes"), _("No"))},
+			{"smart_status/nvme/other", _("Unknown Critical Warnings"), bool_formatter(_("Yes"), _("No"))},
 	};
 
 	for (const auto& [key, displayable_name, retrieval_func] : health_keys) {
@@ -235,9 +228,16 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_heal
 
 		auto p = retrieval_func(json_root_node, key, displayable_name);
 		if (p.has_value()) {  // ignore if not found
-			p->section = AtaStorageProperty::Section::Health;
+			p->section = StorageProperty::Section::Health;
 			add_property(p.value());
+
+			section_properties_found = true;
 		}
+	}
+
+	if (!section_properties_found) {
+		return hz::Unexpected(SmartctlParserError::NoSection,
+				std::format("No section {} parsed.", StorageProperty::get_readable_section_name(StorageProperty::Section::Health)));
 	}
 
 	return {};
@@ -256,7 +256,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_erro
 
 	if (!section_properties_found) {
 		return hz::Unexpected(SmartctlParserError::NoSection,
-				std::format("No section {} parsed.", AtaStorageProperty::get_readable_section_name(AtaStorageProperty::Section::ErrorLog)));
+				std::format("No section {} parsed.", StorageProperty::get_readable_section_name(StorageProperty::Section::ErrorLog)));
 	}
 
 	return {};
@@ -272,91 +272,92 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_self
 
 	bool section_properties_found = false;
 
-	// Revision
-	if (get_node_exists(json_root_node, "ata_smart_self_test_log/extended/revision").value_or(false)) {
-		AtaStorageProperty p;
-		p.set_name("ata_smart_self_test_log/extended/revision", "ata_smart_self_test_log/extended/revision", _("SMART extended self-test log version"));
-		p.section = AtaStorageProperty::Section::SelftestLog;
-		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_self_test_log/extended/revision").value_or(0);
-		add_property(p);
-		section_properties_found = true;
-	}
-
-	std::vector<std::string> counts;
-
-	// Count
 	{
-		AtaStorageProperty p;
-		p.set_name("ata_smart_self_test_log/extended/count", "ata_smart_self_test_log/extended/count", _("Self-test count"));
-		p.section = AtaStorageProperty::Section::SelftestLog;
-		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_self_test_log/extended/count").value_or(0);
-		p.show_in_ui = false;
-		add_property(p);
-		counts.emplace_back(std::format("Self-test entries: {}", p.get_value<int64_t>()));
+		StorageProperty p;
+		p.set_name("nvme_self_test_log/current_self_test_operation/value/_decoded",
+				"nvme_self_test_log/current_self_test_operation/value/_decoded", _("Current Self-Test Operation"));
+		p.section = StorageProperty::Section::SelftestLog;
+
+		auto value_val = get_node_data<uint8_t>(json_root_node, "nvme_self_test_log/current_self_test_operation/value");
+		NvmeSelfTestCurrentOperationType operation = NvmeSelfTestCurrentOperationType::Unknown;
+		if (value_val.has_value()) {
+			switch (value_val.value()) {
+				// Data from smartmontools/nvmeprint.cpp
+				case 0x0: operation = NvmeSelfTestCurrentOperationType::None; break;
+				case 0x1: operation = NvmeSelfTestCurrentOperationType::ShortInProgress; break;
+				case 0x2: operation = NvmeSelfTestCurrentOperationType::ExtendedInProgress; break;
+				case 0xe: operation = NvmeSelfTestCurrentOperationType::VendorSpecificInProgress; break;
+				default: break;  // Unknown
+			}
+			p.value = NvmeSelfTestCurrentOperationTypeExt::get_storable_name(operation);
+			p.readable_value = NvmeSelfTestCurrentOperationTypeExt::get_displayable_name(operation);
+			add_property(p);
+
+			section_properties_found = true;
+		}
 	}
-	// Error Count
+
 	{
-		AtaStorageProperty p;
-		p.set_name("ata_smart_self_test_log/extended/error_count_total", "ata_smart_self_test_log/extended/error_count_total", _("Total error count"));
-		p.section = AtaStorageProperty::Section::SelftestLog;
-		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_self_test_log/extended/error_count_total").value_or(0);
-		p.show_in_ui = false;
-		add_property(p);
-		counts.emplace_back(std::format("Total error count: {}", p.get_value<int64_t>()));
-	}
-	// Outdated Error Count
-	{
-		AtaStorageProperty p;
-		p.set_name("ata_smart_self_test_log/extended/error_count_outdated", "ata_smart_self_test_log/extended/error_count_outdated", _("Outdated error count"));
-		p.section = AtaStorageProperty::Section::SelftestLog;
-		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_self_test_log/extended/error_count_outdated").value_or(0);
-		p.show_in_ui = false;
-		add_property(p);
-		counts.emplace_back(std::format("Outdated error count: {}", p.get_value<int64_t>()));
+		StorageProperty p;
+		p.set_name("nvme_self_test_log/current_self_test_operation/current_self_test_completion_percent",
+				"nvme_self_test_log/current_self_test_operation/current_self_test_completion_percent", _("Current Self-Test Completion Percentage"));
+		p.section = StorageProperty::Section::SelftestLog;
+
+		auto value_val = get_node_data<uint8_t>(json_root_node, "nvme_self_test_log/current_self_test_operation/current_self_test_completion_percent");
+		if (value_val.has_value()) {
+			p.value = value_val.value();
+			p.readable_value = std::format("{} %", value_val.value());
+			add_property(p);
+		}
 	}
 
-	// Displayed Counts
-	if (!counts.empty()) {
-		AtaStorageProperty p;
-		p.set_name("ata_smart_self_test_log/extended/_counts", "ata_smart_self_test_log/extended/_counts", _("Entries"));
-		p.section = AtaStorageProperty::Section::SelftestLog;
-		p.value = hz::string_join(counts, "; ");
-		add_property(p);
-
-		section_properties_found = true;
-	}
-
-	const std::string table_key = "ata_smart_self_test_log/extended/table";
+	const std::string table_key = "nvme_self_test_log/table";
 	auto table_node = get_node(json_root_node, table_key);
 
 	// Entries
 	if (table_node.has_value() && table_node->is_array()) {
 		uint32_t entry_num = 1;
 		for (const auto& table_entry : table_node.value()) {
-			AtaStorageSelftestEntry entry;
+			NvmeStorageSelftestEntry entry;
 			entry.test_num = entry_num;
-			entry.type = get_node_data<std::string>(table_entry, "type/string").value_or(std::string());  // FIXME use type/value for i18n
-			entry.status_str = get_node_data<std::string>(table_entry, "status/string").value_or(std::string());
-			entry.remaining_percent = get_node_data<int8_t>(table_entry, "status/remaining_percent").value_or(0);
-			entry.lifetime_hours = get_node_data<uint32_t>(table_entry, "lifetime_hours").value_or(0);
-			entry.passed = get_node_data<bool>(table_entry, "status/passed").value_or(false);
 
-			if (get_node_exists(table_entry, "lba").value_or(false)) {
-				entry.lba_of_first_error = std::format("0x{:X}", get_node_data<uint64_t>(table_entry, "lba").value_or(0));
-			} else {
-				entry.lba_of_first_error = "-";
+			NvmeSelfTestType test_type = NvmeSelfTestType::Unknown;
+			if (get_node_exists(table_entry, "self_test_code/value").value_or(false)) {
+				const int32_t type_value = get_node_data<int32_t>(table_entry, "self_test_code/value").value_or(int(NvmeSelfTestType::Unknown));
+				switch(type_value) {
+					case 0x1: test_type = NvmeSelfTestType::Short; break;
+					case 0x2: test_type = NvmeSelfTestType::Extended; break;
+					case 0xe: test_type = NvmeSelfTestType::VendorSpecific; break;
+					default: break;  // Unknown
+				}
 			}
 
-			if (get_node_exists(table_entry, "status/value").value_or(false)) {
-				const uint8_t status_value = get_node_data<uint8_t>(table_entry, "status/value").value_or(0);
-				entry.status = static_cast<AtaStorageSelftestEntry::Status>(status_value >> 4);
-			} else {
-				entry.status = AtaStorageSelftestEntry::Status::Unknown;
+			NvmeSelfTestResultType test_result = NvmeSelfTestResultType::Unknown;
+			if (get_node_exists(table_entry, "self_test_code/value").value_or(false)) {
+				const int32_t type_value = get_node_data<int32_t>(table_entry, "self_test_code/value").value_or(int(NvmeSelfTestType::Unknown));
+				switch(type_value) {
+					case 0x0: test_result = NvmeSelfTestResultType::CompletedNoError; break;
+					case 0x1: test_result = NvmeSelfTestResultType::AbortedSelfTestCommand; break;
+					case 0x2: test_result = NvmeSelfTestResultType::AbortedControllerReset; break;
+					case 0x3: test_result = NvmeSelfTestResultType::AbortedNamespaceRemoved; break;
+					case 0x4: test_result = NvmeSelfTestResultType::AbortedFormatNvmCommand; break;
+					case 0x5: test_result = NvmeSelfTestResultType::FatalOrUnknownTestError; break;
+					case 0x6: test_result = NvmeSelfTestResultType::CompletedUnknownFailedSegment; break;
+					case 0x7: test_result = NvmeSelfTestResultType::CompletedFailedSegments; break;
+					case 0x8: test_result = NvmeSelfTestResultType::AbortedUnknownReason; break;
+					case 0x9: test_result = NvmeSelfTestResultType::AbortedSanitizeOperation; break;
+					default: break;  // Unknown
+				}
 			}
 
-			AtaStorageProperty p;
+			entry.type = test_type;
+			entry.result = test_result;
+			entry.power_on_hours = get_node_data<uint32_t>(table_entry, "power_on_hours").value_or(0);
+			entry.lba = get_node_data<uint64_t>(table_entry, "lba").value_or(0);
+
+			StorageProperty p;
 			p.set_name(std::format("Self-test entry {}", entry.test_num));
-			p.section = AtaStorageProperty::Section::SelftestLog;
+			p.section = StorageProperty::Section::SelftestLog;
 			p.value = entry;
 			add_property(p);
 
@@ -368,7 +369,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_self
 
 	if (!section_properties_found) {
 		return hz::Unexpected(SmartctlParserError::NoSection,
-				std::format("No section {} parsed.", AtaStorageProperty::get_readable_section_name(AtaStorageProperty::Section::SelftestLog)));
+				std::format("No section {} parsed.", StorageProperty::get_readable_section_name(StorageProperty::Section::SelftestLog)));
 	}
 
 	return {};
@@ -376,49 +377,37 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_self
 
 
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_health_log(const nlohmann::json& json_root_node)
+hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme_attributes(const nlohmann::json& json_root_node)
 {
-	// nvme_smart_health_information_log
-
 	using namespace SmartctlJsonParserHelpers;
 
 	bool section_properties_found = false;
 
-	const std::string pages_key = "ata_device_statistics/pages";
-	auto page_node = get_node(json_root_node, pages_key);
+	const std::vector<std::tuple<std::string, std::string, PropertyRetrievalFunc>> health_keys = {
+			{"nvme_smart_health_information_log/available_spare", _("Available Spare"), integer_formatter<int64_t>("{}%")},
+			{"nvme_smart_health_information_log/available_spare_threshold", _("Available Spare Threshold"), integer_formatter<int64_t>("{}%")},
+			{"nvme_smart_health_information_log/percentage_used", _("Percentage Used"), integer_formatter<int64_t>("{}%")},
+			{"nvme_smart_health_information_log/data_units_read", _("Data Units Read"), integer_formatter<int64_t>()},
+			{"nvme_smart_health_information_log/data_units_written", _("Data Units Written"), integer_formatter<int64_t>()},
+			{"nvme_smart_health_information_log/host_reads", _("Host Read Commands"), integer_formatter<int64_t>()},
+			{"nvme_smart_health_information_log/host_writes", _("Host Write Commands"), integer_formatter<int64_t>()},
+			{"nvme_smart_health_information_log/controller_busy_time", _("Controller Busy Time"), integer_formatter<int64_t>()},
+			{"nvme_smart_health_information_log/power_cycles", _("Power Cycles"), integer_formatter<int64_t>()},
+			{"nvme_smart_health_information_log/power_on_hours", _("Power On Hours"), integer_formatter<int64_t>()},
+			{"nvme_smart_health_information_log/unsafe_shutdowns", _("Unsafe Shutdowns"), integer_formatter<int64_t>()},
+			{"nvme_smart_health_information_log/media_errors", _("Media and Data Integrity Errors"), integer_formatter<int64_t>()},
+			{"nvme_smart_health_information_log/num_err_log_entries", _("Error Information Log Entries"), integer_formatter<int64_t>()},
+			{"nvme_smart_health_information_log/warning_temp_time", _("Warning  Comp. Temperature Time"), integer_formatter<int64_t>()},
+			{"nvme_smart_health_information_log/critical_comp_time", _("Critical Comp. Temperature Time"), integer_formatter<int64_t>()},
+	};
 
-	// Entries
-	if (page_node.has_value() && page_node->is_array()) {
-		for (const auto& page_entry : page_node.value()) {
-			AtaStorageStatistic page_stat;
-			page_stat.is_header = true;
-			page_stat.page = get_node_data<int64_t>(page_entry, "number").value_or(0);
+	for (const auto& [key, displayable_name, retrieval_func] : health_keys) {
+		DBG_ASSERT(retrieval_func != nullptr);
 
-			AtaStorageProperty page_prop;
-			page_prop.set_name(get_node_data<std::string>(page_entry, "name").value_or(std::string()));
-			page_prop.section = AtaStorageProperty::Section::Devstat;
-			page_prop.value = page_stat;
-			add_property(page_prop);
-
-			const std::string table_key = "table";
-			auto table_node = get_node(page_entry, table_key);
-
-			if (table_node.has_value() && table_node->is_array()) {
-				for (const auto& table_entry : table_node.value()) {
-					AtaStorageStatistic s;
-					s.page = page_stat.page;
-					s.flags = get_node_data<std::string>(table_entry, "flags/string").value_or(std::string());
-					s.value_int = get_node_data<int64_t>(table_entry, "value").value_or(0);
-					s.value = std::to_string(get_node_data<int64_t>(table_entry, "value").value_or(0));
-					s.offset = get_node_data<int64_t>(table_entry, "offset").value_or(0);
-
-					AtaStorageProperty p;
-					p.set_name(get_node_data<std::string>(table_entry, "name").value_or(std::string()));
-					p.section = AtaStorageProperty::Section::Devstat;
-					p.value = s;
-					add_property(p);
-				}
-			}
+		auto p = retrieval_func(json_root_node, key, displayable_name);
+		if (p.has_value()) {  // ignore if not found
+			p->section = StorageProperty::Section::NvmeAttributes;
+			add_property(p.value());
 
 			section_properties_found = true;
 		}
@@ -426,7 +415,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_heal
 
 	if (!section_properties_found) {
 		return hz::Unexpected(SmartctlParserError::NoSection,
-				std::format("No section {} parsed.", AtaStorageProperty::get_readable_section_name(AtaStorageProperty::Section::Devstat)));
+				std::format("No section {} parsed.", StorageProperty::get_readable_section_name(StorageProperty::Section::NvmeAttributes)));
 	}
 
 	return {};

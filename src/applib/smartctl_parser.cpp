@@ -15,7 +15,7 @@ Copyright:
 #include <string_view>
 
 #include "smartctl_parser.h"
-#include "ata_storage_property.h"
+#include "storage_property.h"
 #include "hz/error_container.h"
 #include "smartctl_text_ata_parser.h"
 #include "smartctl_json_ata_parser.h"
@@ -92,7 +92,7 @@ const StoragePropertyRepository& SmartctlParser::get_property_repository() const
 
 // adds a property into property list, looks up and sets its description.
 // Yes, there's no place for this in the Parser, but whatever...
-void SmartctlParser::add_property(AtaStorageProperty p)
+void SmartctlParser::add_property(StorageProperty p)
 {
 	properties_.add_property(std::move(p));
 }

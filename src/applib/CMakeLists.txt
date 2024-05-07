@@ -13,10 +13,6 @@ target_sources(applib PRIVATE
 	app_gtkmm_tools.cpp
 	app_gtkmm_tools.h
 	app_pcrecpp.h
-	ata_storage_property.cpp
-	ata_storage_property.h
-	ata_storage_property_descr.cpp
-	ata_storage_property_descr.h
 	command_executor.h
 	command_executor.cpp
 	command_executor_3ware.h
@@ -62,6 +58,10 @@ target_sources(applib PRIVATE
 	storage_detector_win32.h
 	storage_device.cpp
 	storage_device.h
+	storage_property.cpp
+	storage_property.h
+	storage_property_descr.cpp
+	storage_property_descr.h
 	storage_property_repository.cpp
 	storage_property_repository.h
 	storage_settings.h

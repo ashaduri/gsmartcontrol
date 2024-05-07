@@ -14,7 +14,7 @@ Copyright:
 
 #include "local_glibmm.h"
 
-#include "ata_storage_property.h"
+#include "storage_property.h"
 
 
 
@@ -62,7 +62,7 @@ inline bool app_property_get_label_highlight_color(WarningLevel warning, std::st
 
 
 /// Format warning text, but without description
-inline std::string storage_property_get_warning_reason(const AtaStorageProperty& p)
+inline std::string storage_property_get_warning_reason(const StorageProperty& p)
 {
 	std::string fg, start = "<b>", stop = "</b>";
 	if (app_property_get_label_highlight_color(p.warning_level, fg)) {
@@ -92,7 +92,7 @@ inline std::string storage_property_get_warning_reason(const AtaStorageProperty&
 
 
 /// Append warning text to description and set it on the property
-inline void storage_property_autoset_warning_descr(AtaStorageProperty& p)
+inline void storage_property_autoset_warning_descr(StorageProperty& p)
 {
 	std::string reason = storage_property_get_warning_reason(p);
 	p.set_description(p.get_description() + (reason.empty() ? "" : "\n\n" + reason));

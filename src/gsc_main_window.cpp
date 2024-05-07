@@ -943,7 +943,7 @@ void GscMainWindow::update_status_widgets()
 		app_gtkmm_set_widget_tooltip(*name_label_, info_str, false);  // in case it doesn't fit
 	}
 
-	AtaStorageProperty health_prop = drive->get_health_property();
+	StorageProperty health_prop = drive->get_health_property();
 
 	if (health_label_) {
 		if (health_prop.generic_name == "smart_status/passed") {

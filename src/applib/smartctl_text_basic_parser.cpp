@@ -19,7 +19,7 @@ Copyright:
 #include <string_view>
 
 // #include "hz/locale_tools.h"  // ScopedCLocale, locale_c_get().
-#include "ata_storage_property.h"
+#include "storage_property.h"
 #include "hz/string_algo.h"  // string_*
 #include "hz/string_num.h"  // string_is_numeric, number_to_string
 //#include "hz/debug.h"  // debug_*
@@ -51,19 +51,19 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		return hz::Unexpected(SmartctlParserError::NoVersion, "Cannot extract smartctl version information.");
 	}
 	{
-		AtaStorageProperty p;
+		StorageProperty p;
 		p.set_name("Smartctl version", "smartctl/version/_merged", "Smartctl Version");
 		p.reported_value = version;
 		p.value = p.reported_value;  // string-type value
-		p.section = AtaStorageProperty::Section::Info;  // add to info section
+		p.section = StorageProperty::Section::Info;  // add to info section
 		add_property(p);
 	}
 	{
-		AtaStorageProperty p;
+		StorageProperty p;
 		p.set_name("Smartctl version", "smartctl/version/_merged_full", "Smartctl Version");
 		p.reported_value = version_full;
 		p.value = p.reported_value;  // string-type value
-		p.section = AtaStorageProperty::Section::Info;  // add to info section
+		p.section = StorageProperty::Section::Info;  // add to info section
 		add_property(p);
 	}
 
@@ -77,22 +77,22 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	// NOTE: CD/DVD detection does not work in "-d scsi" mode.
 	if (app_pcre_match("/this device: CD\\/DVD/mi", output)
 			|| app_pcre_match("/^Device type:\\s+CD\\/DVD/mi", output)) {
-		AtaStorageProperty p;
+		StorageProperty p;
 		p.set_name("Drive type", "_custom/parser_detected_drive_type", "Parser-Detected Drive Type");
 		p.reported_value = "CD/DVD";
 		p.value = StorageDeviceDetectedTypeExt::get_storable_name(StorageDeviceDetectedType::CdDvd);
-		p.section = AtaStorageProperty::Section::Info;  // add to info section
+		p.section = StorageProperty::Section::Info;  // add to info section
 		add_property(p);
 
 	// This was encountered on a csmi soft-raid under windows with pd0.
 	// The device reported that it had smart supported and enabled.
 	// Product:              Raid 5 Volume
 	} else if (app_pcre_match("/Product:[ \\t]*Raid/mi", output)) {
-		AtaStorageProperty p;
+		StorageProperty p;
 		p.set_name("Drive type", "_custom/parser_detected_drive_type", "Parser-Detected Drive Type");
 		p.reported_value = "RAID";
 		p.value = StorageDeviceDetectedTypeExt::get_storable_name(StorageDeviceDetectedType::UnsupportedRaid);
-		p.section = AtaStorageProperty::Section::Info;  // add to info section
+		p.section = StorageProperty::Section::Info;  // add to info section
 		add_property(p);
 
 		is_raid = true;
@@ -132,17 +132,17 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	}
 
 	{
-		AtaStorageProperty p;
+		StorageProperty p;
 		p.set_name("SMART Supported", "smart_support/available", "SMART Supported");
 		p.value = smart_supported;
-		p.section = AtaStorageProperty::Section::Info;  // add to info section
+		p.section = StorageProperty::Section::Info;  // add to info section
 		add_property(p);
 	}
 	{
-		AtaStorageProperty p;
+		StorageProperty p;
 		p.set_name("SMART Enabled", "smart_support/enabled", "SMART Enabled");
 		p.value = smart_enabled;
-		p.section = AtaStorageProperty::Section::Info;  // add to info section
+		p.section = StorageProperty::Section::Info;  // add to info section
 		add_property(p);
 	}
 
@@ -150,14 +150,14 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	std::string model;
 	if (app_pcre_match("/^Device Model:[ \\t]*(.*)$/mi", output, &model)) {  // HDDs and CDROMs
 		model = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(model), ' ');
-		AtaStorageProperty p;
+		StorageProperty p;
 		p.set_name("Device Model", "model_name", "Device Model");
 		p.value = p.reported_value;  // string-type value
 		add_property(p);
 
 	} else if (app_pcre_match("/^(?:Device|Product):[ \\t]*(.*)$/mi", output, &model)) {  // usb flash drives
 		model = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(model), ' ');
-		AtaStorageProperty p;
+		StorageProperty p;
 		p.set_name("Device Model", "model_name", "Device Model");
 		p.value = model;
 		add_property(p);
@@ -167,7 +167,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	std::string family;  // this is from smartctl's database
 	if (app_pcre_match("/^Model Family:[ \\t]*(.*)$/mi", output, &family)) {
 		family = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(family), ' ');
-		AtaStorageProperty p;
+		StorageProperty p;
 		p.set_name("Model Family", "model_family", "Model Family");
 		p.value = family;
 		add_property(p);
@@ -176,7 +176,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	std::string serial;
 	if (app_pcre_match("/^Serial Number:[ \\t]*(.*)$/mi", output, &serial)) {
 		serial = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(serial), ' ');
-		AtaStorageProperty p;
+		StorageProperty p;
 		p.set_name("Serial Number", "serial_number", "Serial Number");
 		p.value = serial;
 		add_property(p);
@@ -184,11 +184,11 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 
 	std::string rpm_str;
 	if (app_pcre_match("/^Rotation Rate:[ \\t]*(.*)$/mi", output, &rpm_str)) {
-		AtaStorageProperty p;
+		StorageProperty p;
 		p.set_name("Rotation Rate", "rotation_rate", "Rotation Rate");
 		p.reported_value = rpm_str;
 		p.value = hz::string_to_number_nolocale<int>(rpm_str, false);
-		p.section = AtaStorageProperty::Section::Info;  // add to info section
+		p.section = StorageProperty::Section::Info;  // add to info section
 		add_property(p);
 	}
 
@@ -198,12 +198,12 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	if (app_pcre_match("/^User Capacity:[ \\t]*(.*)$/mi", output, &size)) {
 		int64_t bytes = 0;
 		const std::string readable_size = SmartctlTextParserHelper::parse_byte_size(size, bytes, false);
-		AtaStorageProperty p;
+		StorageProperty p;
 		p.set_name("User Capacity", "user_capacity/bytes/_short", "Capacity");
 		p.reported_value = size;
 		p.value = bytes;
 		p.readable_value = readable_size;
-		p.section = AtaStorageProperty::Section::Info;  // add to info section
+		p.section = StorageProperty::Section::Info;  // add to info section
 		add_property(p);
 	}
 

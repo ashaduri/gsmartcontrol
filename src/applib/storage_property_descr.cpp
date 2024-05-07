@@ -18,7 +18,7 @@ Copyright:
 #include "hz/string_algo.h"  // string_replace_copy
 #include "applib/app_pcrecpp.h"
 
-#include "ata_storage_property_descr.h"
+#include "storage_property_descr.h"
 #include "warning_colors.h"
 
 
@@ -1396,7 +1396,7 @@ namespace {
 
 
 	/// Check if a property matches a name (generic or reported)
-	inline bool name_match(AtaStorageProperty& p, const std::string& name)
+	inline bool name_match(StorageProperty& p, const std::string& name)
 	{
 		if (p.generic_name.empty()) {
 			return hz::string_to_lower_copy(p.reported_name) == hz::string_to_lower_copy(name);
@@ -1407,7 +1407,7 @@ namespace {
 
 	/// Check if a property matches a name (generic or reported) and if it does,
 	/// set a description on it.
-	inline bool auto_set(AtaStorageProperty& p, const std::string& name, const char* descr)
+	inline bool auto_set(StorageProperty& p, const std::string& name, const char* descr)
 	{
 		if (name_match(p, name)) {
 			p.set_description(descr);
@@ -1419,7 +1419,7 @@ namespace {
 
 
 	/// Check if a property is an attribute and matches a generic name
-	inline bool attr_match(AtaStorageProperty& p, const std::string& generic_name)
+	inline bool attr_match(StorageProperty& p, const std::string& generic_name)
 	{
 		return (p.is_value_type<AtaStorageAttribute>() && p.generic_name == generic_name);
 	}
@@ -1428,7 +1428,7 @@ namespace {
 
 	/// Find a property's attribute in the attribute database and fill the property
 	/// with all the readable information we can gather.
-	inline void auto_set_attr(AtaStorageProperty& p, StorageDeviceDetectedType drive_type)
+	inline void auto_set_attr(StorageProperty& p, StorageDeviceDetectedType drive_type)
 	{
 		AttributeDescription attr = get_attribute_db().find(p.reported_name, p.get_value<AtaStorageAttribute>().id, drive_type);
 
@@ -1525,7 +1525,7 @@ namespace {
 
 	/// Find a property's statistic in the statistics database and fill the property
 	/// with all the readable information we can gather.
-	inline bool auto_set_statistic(AtaStorageProperty& p)
+	inline bool auto_set_statistic(StorageProperty& p)
 	{
 		StatisticDescription sd = get_devstat_db().find(p.reported_name);
 
@@ -1560,7 +1560,7 @@ namespace {
 
 
 
-bool ata_storage_property_autoset_description(AtaStorageProperty& p, StorageDeviceDetectedType device_type)
+bool ata_storage_property_autoset_description(StorageProperty& p, StorageDeviceDetectedType device_type)
 {
 	bool found = false;
 
@@ -1573,7 +1573,7 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, StorageDevi
 	// Section Info
 	} else {
 		switch (p.section) {
-			case AtaStorageProperty::Section::Info:
+			case StorageProperty::Section::Info:
 				found = auto_set(p, "model_family", "Model family (from smartctl database)")
 				|| auto_set(p, "model_name", "Device model")
 				|| auto_set(p, "serial_number", "Serial number, unique to each physical drive")
@@ -1597,12 +1597,12 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, StorageDevi
 				}
 				break;
 
-			case AtaStorageProperty::Section::Health:
+			case StorageProperty::Section::Health:
 				found = auto_set(p, "smart_status/passed", "Overall health self-assessment test result. Note: If the drive passes this test, it doesn't mean it's OK. "
 						"However, if the drive doesn't pass it, then it's either already dead, or it's predicting its own failure within the next 24 hours. In this case do a backup immediately!");
 				break;
 
-			case AtaStorageProperty::Section::Capabilities:
+			case StorageProperty::Section::Capabilities:
 				found = auto_set(p, "ata_smart_data/offline_data_collection/status/_group", "Offline Data Collection (a.k.a. Offline test) is usually automatically performed when the device is idle or every fixed amount of time. "
 						"This should show if Automatic Offline Data Collection is enabled.")
 				|| auto_set(p, "ata_smart_data/offline_data_collection/completion_seconds", "Offline Data Collection (a.k.a. Offline test) is usually automatically performed when the device is idle or every fixed amount of time. "
@@ -1618,7 +1618,7 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, StorageDevi
 				|| auto_set(p, "ata_sct_capabilities/_group", "Drive properties related to temperature information.");
 				break;
 
-			case AtaStorageProperty::Section::Attributes:
+			case StorageProperty::Section::Attributes:
 				found = auto_set(p, "ata_smart_attributes/revision", p.displayable_name.c_str());
 				if (!found) {
 					auto_set_attr(p, device_type);
@@ -1626,11 +1626,11 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, StorageDevi
 				}
 				break;
 
-			case AtaStorageProperty::Section::Devstat:
+			case StorageProperty::Section::Devstat:
 				found = auto_set_statistic(p);
 				break;
 
-			case AtaStorageProperty::Section::ErrorLog:
+			case StorageProperty::Section::ErrorLog:
 				found = auto_set(p, "ata_smart_error_log/extended/revision", p.displayable_name.c_str())
 				|| auto_set(p, "ata_smart_error_log/extended/count", "Number of errors in error log. Note: Some manufacturers may list completely harmless errors in this log "
 					"(e.g., command invalid, not implemented, etc.).");
@@ -1644,24 +1644,24 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, StorageDevi
 				}
 				break;
 
-			case AtaStorageProperty::Section::SelftestLog:
+			case StorageProperty::Section::SelftestLog:
 				found = auto_set(p, "ata_smart_self_test_log/extended/revision", p.displayable_name.c_str())
 				|| auto_set(p, "ata_smart_self_test_log/extended/table/count", "Number of tests in selftest log. Note: The number of entries may be limited to the newest manual tests.");
 		// 		|| auto_set(p, "ata_smart_self_test_log/_present", "This device does not support self-test logging.");  // the property text already says that
 				break;
 
-			case AtaStorageProperty::Section::SelectiveSelftestLog:
+			case StorageProperty::Section::SelectiveSelftestLog:
 				// nothing here
 				break;
 
-			case AtaStorageProperty::Section::TemperatureLog:
+			case StorageProperty::Section::TemperatureLog:
 				found = auto_set(p, "ata_sct_status/_not_present", "SCT support is needed for SCT temperature logging.");
 				break;
 
-			case AtaStorageProperty::Section::ErcLog:
-			case AtaStorageProperty::Section::PhyLog:
-			case AtaStorageProperty::Section::DirectoryLog:
-			case AtaStorageProperty::Section::Unknown:
+			case StorageProperty::Section::ErcLog:
+			case StorageProperty::Section::PhyLog:
+			case StorageProperty::Section::DirectoryLog:
+			case StorageProperty::Section::Unknown:
 //			case AtaStorageProperty::Section::Internal:
 				// nothing
 				break;
@@ -1674,7 +1674,7 @@ bool ata_storage_property_autoset_description(AtaStorageProperty& p, StorageDevi
 
 
 
-WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
+WarningLevel ata_storage_property_autoset_warning(StorageProperty& p)
 {
 	WarningLevel w = WarningLevel::None;
 	std::string reason;
@@ -1688,7 +1688,7 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 	// Section Info
 	} else {
 		switch (p.section) {
-			case AtaStorageProperty::Section::Info:
+			case StorageProperty::Section::Info:
 				if (name_match(p, "smart_support/available") && !p.get_value<bool>()) {
 					w = WarningLevel::Notice;
 					reason = "SMART is not supported. You won't be able to read any SMART information from this drive.";
@@ -1704,18 +1704,18 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 				}
 				break;
 
-			case AtaStorageProperty::Section::Health:
+			case StorageProperty::Section::Health:
 				if (name_match(p, "smart_status/passed") && !p.get_value<bool>()) {
 					w = WarningLevel::Alert;
 					reason = "The drive is reporting that it will FAIL very soon. Please back up as soon as possible!";
 				}
 				break;
 
-			case AtaStorageProperty::Section::Capabilities:
+			case StorageProperty::Section::Capabilities:
 				// nothing
 				break;
 
-			case AtaStorageProperty::Section::Attributes:
+			case StorageProperty::Section::Attributes:
 			{
 				if (p.is_value_type<AtaStorageAttribute>()) {
 
@@ -1814,7 +1814,7 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 				break;
 			}
 
-			case AtaStorageProperty::Section::Devstat:
+			case StorageProperty::Section::Devstat:
 			{
 				if (p.is_value_type<AtaStorageStatistic>()) {
 					const auto& statistic = p.get_value<AtaStorageStatistic>();
@@ -1890,7 +1890,7 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 				break;
 			}
 
-			case AtaStorageProperty::Section::ErrorLog:
+			case StorageProperty::Section::ErrorLog:
 			{
 				// Note: The error list table doesn't display any descriptions, so if any
 				// error-entry related descriptions are added here, don't forget to enable
@@ -1927,7 +1927,7 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 				break;
 			}
 
-			case AtaStorageProperty::Section::SelftestLog:
+			case StorageProperty::Section::SelftestLog:
 			{
 				// Note: The error list table doesn't display any descriptions, so if any
 				// error-entry related descriptions are added here, don't forget to enable
@@ -1943,11 +1943,11 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 				break;
 			}
 
-			case AtaStorageProperty::Section::SelectiveSelftestLog:
+			case StorageProperty::Section::SelectiveSelftestLog:
 				// nothing here
 				break;
 
-			case AtaStorageProperty::Section::TemperatureLog:
+			case StorageProperty::Section::TemperatureLog:
 				// Don't highlight SCT Unsupported as warning, it's harmless.
 // 				if (name_match(p, "ata_sct_status/_not_present") && p.value_bool) {
 // 					w = WarningLevel::notice;
@@ -1961,10 +1961,10 @@ WarningLevel ata_storage_property_autoset_warning(AtaStorageProperty& p)
 				}
 				break;
 
-			case AtaStorageProperty::Section::ErcLog:
-			case AtaStorageProperty::Section::PhyLog:
-			case AtaStorageProperty::Section::DirectoryLog:
-			case AtaStorageProperty::Section::Unknown:
+			case StorageProperty::Section::ErcLog:
+			case StorageProperty::Section::PhyLog:
+			case StorageProperty::Section::DirectoryLog:
+			case StorageProperty::Section::Unknown:
 //			case AtaStorageProperty::Section::Internal:
 				// nothing here
 				break;

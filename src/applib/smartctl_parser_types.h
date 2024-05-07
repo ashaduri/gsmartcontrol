@@ -64,7 +64,7 @@ struct SmartctlParserPreferenceTypeExt
 				SmartctlParserPreferenceTypeExt,
 				Glib::ustring>
 {
-	static constexpr inline SmartctlParserPreferenceType default_value = SmartctlParserPreferenceType::Auto;
+	static constexpr SmartctlParserPreferenceType default_value = SmartctlParserPreferenceType::Auto;
 
 	static std::unordered_map<EnumType, std::pair<std::string, Glib::ustring>> build_enum_map()
 	{

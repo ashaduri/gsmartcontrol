@@ -15,7 +15,7 @@ Copyright:
 #include <string_view>
 #include <memory>
 
-#include "ata_storage_property.h"
+#include "storage_property.h"
 #include "smartctl_parser_types.h"
 #include "hz/error_container.h"
 #include "storage_property_repository.h"
@@ -70,7 +70,7 @@ class SmartctlParser {
 	protected:
 
 		/// Add a property into property list, look up and set its description
-		void add_property(AtaStorageProperty p);
+		void add_property(StorageProperty p);
 
 
 	private:

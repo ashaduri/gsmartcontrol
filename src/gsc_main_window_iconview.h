@@ -310,7 +310,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 			if (rconfig::get_data<bool>("gui/icons_show_serial_number") && !drive->get_serial_number().empty()) {
 				name += "\n" + Glib::Markup::escape_text(drive->get_serial_number());
 			}
-			AtaStorageProperty scan_time_prop;
+			StorageProperty scan_time_prop;
 			if (drive->get_is_virtual()) {
 				scan_time_prop = drive->get_property_repository().lookup_property("local_time/asctime");
 				if (!scan_time_prop.empty() && !scan_time_prop.get_value<std::string>().empty()) {
@@ -362,7 +362,7 @@ class GscMainWindowIconView : public Gtk::IconView {
 					break;
 			}
 
-			const AtaStorageProperty health_prop = drive->get_health_property();
+			const StorageProperty health_prop = drive->get_health_property();
 			if (health_prop.warning_level != WarningLevel::None && health_prop.generic_name == "smart_status/passed") {
 				if (icon) {
 					icon = icon->copy();  // work on a copy

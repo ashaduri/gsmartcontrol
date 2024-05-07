@@ -11,25 +11,25 @@ Copyright:
 
 
 
-const std::vector<AtaStorageProperty>& StoragePropertyRepository::get_properties() const
+const std::vector<StorageProperty>& StoragePropertyRepository::get_properties() const
 {
 	return properties_;
 }
 
 
 
-std::vector<AtaStorageProperty>& StoragePropertyRepository::get_properties_ref()
+std::vector<StorageProperty>& StoragePropertyRepository::get_properties_ref()
 {
 	return properties_;
 }
 
 
 
-AtaStorageProperty StoragePropertyRepository::lookup_property(
-		const std::string& generic_name, AtaStorageProperty::Section section) const
+StorageProperty StoragePropertyRepository::lookup_property(
+		const std::string& generic_name, StorageProperty::Section section) const
 {
 	for (const auto& p : properties_) {
-		if (section != AtaStorageProperty::Section::Unknown && p.section != section)
+		if (section != StorageProperty::Section::Unknown && p.section != section)
 			continue;
 
 		if (p.generic_name == generic_name)
@@ -40,14 +40,14 @@ AtaStorageProperty StoragePropertyRepository::lookup_property(
 
 
 
-void StoragePropertyRepository::set_properties(std::vector<AtaStorageProperty> properties)
+void StoragePropertyRepository::set_properties(std::vector<StorageProperty> properties)
 {
 	properties_ = std::move(properties);
 }
 
 
 
-void StoragePropertyRepository::add_property(AtaStorageProperty property)
+void StoragePropertyRepository::add_property(StorageProperty property)
 {
 	properties_.push_back(std::move(property));
 }

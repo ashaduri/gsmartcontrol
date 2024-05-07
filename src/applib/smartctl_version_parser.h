@@ -18,7 +18,7 @@ Copyright:
 #include <optional>
 
 #include "smartctl_parser_types.h"
-#include "ata_storage_property_descr.h"
+#include "storage_property_descr.h"
 #include "storage_device_detected_type.h"
 
 

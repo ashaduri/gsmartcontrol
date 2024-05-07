@@ -19,7 +19,7 @@ Copyright:
 #include <sigc++/sigc++.h>
 
 #include "hz/fs_ns.h"
-#include "ata_storage_property.h"
+#include "storage_property.h"
 #include "smartctl_text_ata_parser.h"  // prop_list_t
 #include "smartctl_executor.h"
 #include "storage_property_repository.h"
@@ -137,7 +137,7 @@ class StorageDevice {
 		[[nodiscard]] std::string get_device_size_str() const;
 
 		/// Get the overall health property
-		[[nodiscard]] AtaStorageProperty get_health_property() const;
+		[[nodiscard]] StorageProperty get_health_property() const;
 
 
 		/// Get device name (e.g. /dev/sda)
@@ -296,7 +296,7 @@ class StorageDevice {
 		std::optional<std::string> family_name_;  ///< Family name
 		std::optional<std::string> serial_number_;  ///< Serial number
 		std::optional<std::string> size_;  ///< Formatted size
-		mutable std::optional<AtaStorageProperty> health_property_;  ///< Cached health property.
+		mutable std::optional<StorageProperty> health_property_;  ///< Cached health property.
 
 
 		/// Emitted whenever new information is available

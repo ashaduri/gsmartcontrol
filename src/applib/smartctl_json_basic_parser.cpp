@@ -30,7 +30,7 @@ Copyright:
 //#include "app_pcrecpp.h"
 //#include "smartctl_text_ata_parser.h"
 //#include "ata_storage_property_descr.h"
-#include "ata_storage_property.h"
+#include "storage_property.h"
 #include "smartctl_json_parser_helpers.h"
 #include "smartctl_parser_types.h"
 //#include "smartctl_version_parser.h"
@@ -54,7 +54,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse(std::string
 		return hz::Unexpected(SmartctlParserError::SyntaxError, std::string("Invalid JSON data: ") + e.what());
 	}
 
-	AtaStorageProperty merged_property, full_property;
+	StorageProperty merged_property, full_property;
 	auto version_parse_status = SmartctlJsonParserHelpers::parse_version(json_root_node, merged_property, full_property);
 	if (!version_parse_status) {
 		return version_parse_status;
@@ -78,10 +78,10 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 
 			{"device/type", _("Smartctl Device Type"),  // nvme, sat, etc.
 				[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
-						-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+						-> hz::ExpectedValue<StorageProperty, SmartctlParserError>
 				{
 					if (auto jval = get_node_data<std::string>(root_node, "device/type"); jval.has_value()) {
-						AtaStorageProperty p;
+						StorageProperty p;
 						p.set_name(key, key, displayable_name);
 						p.value = jval.value();
 						p.show_in_ui = false;
@@ -117,10 +117,10 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 
 			{"user_capacity/bytes/_short", _("Capacity"),
 				[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
-						-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+						-> hz::ExpectedValue<StorageProperty, SmartctlParserError>
 				{
 					if (auto jval = get_node_data<int64_t>(root_node, "user_capacity/bytes"); jval) {
-						AtaStorageProperty p;
+						StorageProperty p;
 						p.set_name(key, key, displayable_name);
 						p.readable_value = hz::format_size(static_cast<uint64_t>(jval.value()), true);
 						p.value = jval.value();
@@ -133,7 +133,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 
 			{"physical_block_size/_and/logical_block_size", _("Sector Size"),
 				[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
-						-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+						-> hz::ExpectedValue<StorageProperty, SmartctlParserError>
 				{
 					std::vector<std::string> values;
 					if (auto jval1 = get_node_data<int64_t>(root_node, "logical_block_size"); jval1) {
@@ -143,7 +143,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 						values.emplace_back(std::format("{} bytes physical", jval2.value()));
 					}
 					if (!values.empty()) {
-						AtaStorageProperty p;
+						StorageProperty p;
 						p.set_name(key, key, displayable_name);
 						p.readable_value = hz::string_join(values, ", ");
 						p.value = p.readable_value;
@@ -162,7 +162,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 
 			{"interface_speed/_merged", _("Interface Speed"),
 				[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
-						-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+						-> hz::ExpectedValue<StorageProperty, SmartctlParserError>
 				{
 					std::vector<std::string> values;
 					if (auto jval1 = get_node_data<std::string>(root_node, "interface_speed/max/string"); jval1) {
@@ -172,7 +172,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 						values.emplace_back(std::format("Current: {}", jval2.value()));
 					}
 					if (!values.empty()) {
-						AtaStorageProperty p;
+						StorageProperty p;
 						p.set_name(key, key, displayable_name);
 						p.readable_value = hz::string_join(values, ", ");
 						p.value = p.readable_value;
@@ -189,23 +189,10 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 
 			{"smart_status/passed", _("Overall Health Self-Assessment Test"), bool_formatter(_("PASSED"), _("FAILED"))},
 
-			{"rotation_rate", _("Rotation Rate"),  // (S)ATA, used to detect HDD vs SSD
-			 [](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
-						-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
-				{
-					if (auto jval = get_node_data<int64_t>(root_node, key); jval) {
-						AtaStorageProperty p;
-						p.set_name(key, key, displayable_name);
-						p.readable_value = std::format("{} RPM", jval.value());
-						p.value = jval.value();
-						return p;
-					}
-					return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
-				}
-			},
+			// (S)ATA, used to detect HDD vs SSD
+			{"rotation_rate", _("Rotation Rate"), integer_formatter<int64_t>("{} RPM")},
 
 			{"form_factor/name", _("Form Factor"), string_formatter()},
-
 	};
 
 	for (const auto& [key, displayable_name, retrieval_func] : info_keys) {
@@ -213,7 +200,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 
 		auto p = retrieval_func(json_root_node, key, displayable_name);
 		if (p.has_value()) {  // ignore if not found
-			p->section = AtaStorageProperty::Section::Info;
+			p->section = StorageProperty::Section::Info;
 			add_property(p.value());
 		}
 	}

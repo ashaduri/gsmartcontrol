@@ -20,7 +20,7 @@ Copyright:
 
 #include "libdebug/libdebug.h"
 #include "hz/fs.h"
-#include "applib/ata_storage_property.h"
+#include "applib/storage_property.h"
 #include "applib/smartctl_text_ata_parser.h"
 
 
@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	const std::vector<AtaStorageProperty>& props = parser.get_property_repository().get_properties();
+	const std::vector<StorageProperty>& props = parser.get_property_repository().get_properties();
 	for(const auto& prop : props) {
 		debug_out_dump("app", prop << "\n");
 	}

@@ -9,8 +9,8 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#ifndef ATA_STORAGE_PROPERTY_DESCR_H
-#define ATA_STORAGE_PROPERTY_DESCR_H
+#ifndef STORAGE_PROPERTY_DESCR_H
+#define STORAGE_PROPERTY_DESCR_H
 
 #include "storage_property_repository.h"
 #include "storage_device_detected_type.h"

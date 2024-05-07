@@ -43,7 +43,7 @@ class SmartctlTextAtaParser : public SmartctlParser {
 		hz::ExpectedVoid<SmartctlParserError> parse_section_info(const std::string& body);
 
 		/// Parse a component (one line) of the info section
-		hz::ExpectedVoid<SmartctlParserError> parse_section_info_property(AtaStorageProperty& p);
+		hz::ExpectedVoid<SmartctlParserError> parse_section_info_property(StorageProperty& p);
 
 
 		/// Parse the Data section (without "===" header)
@@ -63,7 +63,7 @@ class SmartctlTextAtaParser : public SmartctlParser {
 		hz::ExpectedVoid<SmartctlParserError> parse_section_data_subsection_sataphy(const std::string& sub);
 
 		/// Check the capabilities for internal properties we can use.
-		hz::ExpectedVoid<SmartctlParserError> parse_section_data_internal_capabilities(AtaStorageProperty& cap_prop);
+		hz::ExpectedVoid<SmartctlParserError> parse_section_data_internal_capabilities(StorageProperty& cap_prop);
 
 
 		/// Set "info" section data ("smartctl -i" output, or the first part of "smartctl -x" output)

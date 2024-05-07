@@ -33,7 +33,7 @@ Copyright:
 #include "storage_settings.h"
 #include "smartctl_executor.h"
 #include "smartctl_version_parser.h"
-#include "ata_storage_property_descr.h"
+#include "storage_property_descr.h"
 #include "build_config.h"
 //#include "smartctl_text_parser_helper.h"
 //#include "ata_storage_property_descr.h"
@@ -238,13 +238,16 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::fetch_full_data_and_parse(
 			command_options = "--health --info --get=all --capabilities --attributes --format=brief --log=xerror,50,error --log=xselftest,50,selftest --log=selective --log=directory --log=scttemp --log=scterc --log=devstat --log=sataphy";
 			break;
 		case StorageDeviceDetectedType::Nvme:
-			command_options = "--health --info --get=all --capabilities --attributes --format=brief --log=xerror,50,error --log=xselftest,50,selftest --log=selective --log=directory --log=scttemp --log=scterc --log=devstat --log=sataphy";
+			// We don't care if something is added to json output.
+			// Same as: --health --info --capabilities --attributes --log=error --log=selftest
+			command_options = "--xall";
 			break;
 		case StorageDeviceDetectedType::BasicScsi:
 		case StorageDeviceDetectedType::CdDvd:
 		case StorageDeviceDetectedType::UnsupportedRaid:
 			// SCSI equivalent of -x:
-			command_options = "--health --info --attributes --log=error --log=selftest --log=background --log=sasphy";
+			// command_options = "--health --info --attributes --log=error --log=selftest --log=background --log=sasphy";
+			command_options = "--xall";
 			break;
 	}
 
@@ -726,13 +729,13 @@ std::string StorageDevice::get_device_size_str() const
 
 
 
-AtaStorageProperty StorageDevice::get_health_property() const
+StorageProperty StorageDevice::get_health_property() const
 {
 	if (health_property_.has_value())  // cached return value
 		return health_property_.value();
 
-	AtaStorageProperty p = property_repository_.lookup_property("smart_status/passed",
-			AtaStorageProperty::Section::Health);
+	StorageProperty p = property_repository_.lookup_property("smart_status/passed",
+			StorageProperty::Section::Health);
 	if (!p.empty())
 		health_property_ = p;  // store to cache
 

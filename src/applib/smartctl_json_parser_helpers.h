@@ -26,7 +26,7 @@ Copyright:
 #include "smartctl_version_parser.h"
 #include "hz/format_unit.h"
 #include "hz/error_container.h"
-#include "ata_storage_property.h"
+#include "storage_property.h"
 
 
 
@@ -158,7 +158,7 @@ get_node_exists(const nlohmann::json& root, std::string_view path)
 /// A signature for a property retrieval function.
 using PropertyRetrievalFunc = std::function<
 		auto(const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
-				-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError> >;
+				-> hz::ExpectedValue<StorageProperty, SmartctlParserError> >;
 
 
 
@@ -166,10 +166,10 @@ using PropertyRetrievalFunc = std::function<
 inline auto string_formatter()
 {
 	return [](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
-			-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+			-> hz::ExpectedValue<StorageProperty, SmartctlParserError>
 	{
 		if (auto jval = get_node_data<std::string>(root_node, key); jval) {
-			AtaStorageProperty p;
+			StorageProperty p;
 			p.set_name(key, key, displayable_name);
 			// p.reported_value = jval.value();
 			p.readable_value = jval.value();
@@ -184,10 +184,10 @@ inline auto string_formatter()
 
 /// Return a lambda which returns a return_property if conditional_path exists.
 /// If the path doesn't exist, an error is returned.
-inline auto conditional_formatter(const std::string_view conditional_path, AtaStorageProperty return_property)
+inline auto conditional_formatter(const std::string_view conditional_path, StorageProperty return_property)
 {
 	return [conditional_path, return_property](const nlohmann::json& root_node, const std::string& key, [[maybe_unused]] const std::string& displayable_name) mutable
-			-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+			-> hz::ExpectedValue<StorageProperty, SmartctlParserError>
 	{
 		auto node_exists_result = get_node_exists(root_node, conditional_path);
 		if (!node_exists_result.has_value()) {
@@ -210,13 +210,35 @@ inline auto conditional_formatter(const std::string_view conditional_path, AtaSt
 inline auto bool_formatter(const std::string_view& true_str, const std::string_view& false_str)
 {
 	return [true_str, false_str](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
-		-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+		-> hz::ExpectedValue<StorageProperty, SmartctlParserError>
 	{
 		if (auto jval = get_node_data<bool>(root_node, key); jval) {
-			AtaStorageProperty p;
+			StorageProperty p;
 			p.set_name(key, key, displayable_name);
 			// p.reported_value = (jval.value() ? true_str : false_str);
 			p.readable_value = (jval.value() ? true_str : false_str);
+			p.value = jval.value();
+			return p;
+		}
+		return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+	};
+}
+
+
+
+/// Return a lambda which retrieves a key value as an integer of type IntegerType
+/// and formats it using locale, placing it in format_string.
+template<typename IntegerType>
+auto integer_formatter(const std::string& format_string = "{}")
+{
+	return [format_string](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
+		-> hz::ExpectedValue<StorageProperty, SmartctlParserError>
+	{
+		if (auto jval = get_node_data<IntegerType>(root_node, key); jval) {
+			StorageProperty p;
+			p.set_name(key, key, displayable_name);
+			// p.reported_value = (jval.value() ? true_str : false_str);
+			p.readable_value = std::vformat(format_string, std::make_format_args(hz::number_to_string_locale(jval.value())));
 			p.value = jval.value();
 			return p;
 		}
@@ -231,10 +253,10 @@ template<typename Type>
 auto custom_string_formatter(std::function<std::string(Type value)> formatter)
 {
 	return [formatter](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
-			-> hz::ExpectedValue<AtaStorageProperty, SmartctlParserError>
+			-> hz::ExpectedValue<StorageProperty, SmartctlParserError>
 	{
 		if (auto jval = get_node_data<Type>(root_node, key); jval) {
-			AtaStorageProperty p;
+			StorageProperty p;
 			p.set_name(key, key, displayable_name);
 			// p.reported_value = formatter(jval.value());
 			p.readable_value = formatter(jval.value());
@@ -249,7 +271,7 @@ auto custom_string_formatter(std::function<std::string(Type value)> formatter)
 
 /// Parse version from json output, returning 2 properties.
 [[nodiscard]] inline hz::ExpectedVoid<SmartctlParserError> parse_version(const nlohmann::json& json_root_node,
-		AtaStorageProperty& merged_property, AtaStorageProperty& full_property)
+		StorageProperty& merged_property, StorageProperty& full_property)
 {
 	using namespace SmartctlJsonParserHelpers;
 
@@ -276,7 +298,7 @@ auto custom_string_formatter(std::function<std::string(Type value)> formatter)
 		// p.reported_value = smartctl_version;
 		merged_property.readable_value = smartctl_version;
 		merged_property.value = smartctl_version;  // string-type value
-		merged_property.section = AtaStorageProperty::Section::Info;  // add to info section
+		merged_property.section = StorageProperty::Section::Info;  // add to info section
 	}
 	{
 		full_property.set_name("Smartctl version", "smartctl/version/_merged_full", "Smartctl Version");
@@ -286,7 +308,7 @@ auto custom_string_formatter(std::function<std::string(Type value)> formatter)
 				get_node_data<std::string>(json_root_node, "smartctl/build_info", {}).value_or(std::string())
 		);
 		full_property.value = full_property.readable_value;  // string-type value
-		full_property.section = AtaStorageProperty::Section::Info;  // add to info section
+		full_property.section = StorageProperty::Section::Info;  // add to info section
 	}
 	if (!SmartctlVersionParser::check_format_supported(SmartctlOutputFormat::Json, smartctl_version)) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Incompatible smartctl version. Returning.\n");

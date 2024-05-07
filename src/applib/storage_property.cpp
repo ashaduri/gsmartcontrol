@@ -24,7 +24,7 @@ Copyright:
 #include "hz/format_unit.h"  // format_time_length
 #include "hz/string_algo.h"  // string_join
 
-#include "ata_storage_property.h"
+#include "storage_property.h"
 
 
 
@@ -218,21 +218,6 @@ WarningLevel AtaStorageErrorBlock::get_warning_level_for_error_type(const std::s
 
 
 
-std::string AtaStorageErrorBlock::format_lifetime_hours() const
-{
-	std::stringstream ss;
-	try {
-		ss.imbue(std::locale(""));
-	}
-	catch (const std::runtime_error& e) {
-		// something is wrong with system locale, can't do anything here.
-	}
-	ss << std::fixed << lifetime_hours;
-	return ss.str();
-}
-
-
-
 std::ostream& operator<< (std::ostream& os, const AtaStorageErrorBlock& b)
 {
 	os << "Error number " << b.error_num << ": "
@@ -298,21 +283,6 @@ std::string AtaStorageSelftestEntry::get_readable_status() const
 
 
 
-std::string AtaStorageSelftestEntry::format_lifetime_hours() const
-{
-	std::stringstream ss;
-	try {
-		ss.imbue(std::locale(""));
-	}
-	catch (const std::runtime_error& e) {
-		// something is wrong with system locale, can't do anything here.
-	}
-	ss << std::fixed << lifetime_hours;
-	return ss.str();
-}
-
-
-
 std::ostream& operator<< (std::ostream& os, const AtaStorageSelftestEntry& b)
 {
 	os << "Test entry " << b.test_num << ": "
@@ -322,7 +292,18 @@ std::ostream& operator<< (std::ostream& os, const AtaStorageSelftestEntry& b)
 
 
 
-std::string AtaStorageProperty::get_readable_section_name(Section s)
+std::ostream& operator<<(std::ostream& os, const NvmeStorageSelftestEntry& b)
+{
+	return os << "Test entry " << b.test_num << ": "
+		<< NvmeSelfTestTypeExt::get_storable_name(b.type)
+		<< ", result: " << NvmeSelfTestResultTypeExt::get_storable_name(b.result)
+		<< ", power on hours: " << int(b.power_on_hours)
+		<< ", lba: " << int(b.lba);
+}
+
+
+
+std::string StorageProperty::get_readable_section_name(Section s)
 {
 	static const std::unordered_map<Section, std::string> m {
 			{Section::Unknown,  "unknown"},
@@ -348,7 +329,7 @@ std::string AtaStorageProperty::get_readable_section_name(Section s)
 
 
 
-std::string AtaStorageProperty::get_storable_value_type_name() const
+std::string StorageProperty::get_storable_value_type_name() const
 {
 	if (std::holds_alternative<std::monostate>(value))
 		return "empty";
@@ -369,20 +350,22 @@ std::string AtaStorageProperty::get_storable_value_type_name() const
 	if (std::holds_alternative<AtaStorageErrorBlock>(value))
 		return "error_block";
 	if (std::holds_alternative<AtaStorageSelftestEntry>(value))
-		return "selftest_entry";
+		return "ata_selftest_entry";
+	if (std::holds_alternative<NvmeStorageSelftestEntry>(value))
+		return "nvme_selftest_entry";
 	return "[internal_error]";
 }
 
 
 
-bool AtaStorageProperty::empty() const
+bool StorageProperty::empty() const
 {
 	return std::holds_alternative<std::monostate>(value);
 }
 
 
 
-void AtaStorageProperty::dump(std::ostream& os, std::size_t internal_offset) const
+void StorageProperty::dump(std::ostream& os, std::size_t internal_offset) const
 {
 	const std::string offset(internal_offset, ' ');
 
@@ -414,12 +397,14 @@ void AtaStorageProperty::dump(std::ostream& os, std::size_t internal_offset) con
 		os << std::get<AtaStorageErrorBlock>(value);
 	} else if (std::holds_alternative<AtaStorageSelftestEntry>(value)) {
 		os << std::get<AtaStorageSelftestEntry>(value);
+	} else if (std::holds_alternative<NvmeStorageSelftestEntry>(value)) {
+		os << std::get<NvmeStorageSelftestEntry>(value);
 	}
 }
 
 
 
-std::string AtaStorageProperty::format_value(bool add_reported_too) const
+std::string StorageProperty::format_value(bool add_reported_too) const
 {
 	if (!readable_value.empty())
 		return readable_value;
@@ -444,13 +429,15 @@ std::string AtaStorageProperty::format_value(bool add_reported_too) const
 		return hz::stream_cast<std::string>(std::get<AtaStorageErrorBlock>(value));
 	if (std::holds_alternative<AtaStorageSelftestEntry>(value))
 		return hz::stream_cast<std::string>(std::get<AtaStorageSelftestEntry>(value));
+	if (std::holds_alternative<NvmeStorageSelftestEntry>(value))
+		return hz::stream_cast<std::string>(std::get<NvmeStorageSelftestEntry>(value));
 
 	return "[internal_error]";
 }
 
 
 
-std::string AtaStorageProperty::get_description(bool clean) const
+std::string StorageProperty::get_description(bool clean) const
 {
 	if (clean)
 		return this->description;
@@ -459,14 +446,14 @@ std::string AtaStorageProperty::get_description(bool clean) const
 
 
 
-void AtaStorageProperty::set_description(const std::string& descr)
+void StorageProperty::set_description(const std::string& descr)
 {
 	this->description = descr;
 }
 
 
 
-void AtaStorageProperty::set_name(const std::string& rep_name, const std::string& gen_name, const std::string& read_name)
+void StorageProperty::set_name(const std::string& rep_name, const std::string& gen_name, const std::string& read_name)
 {
 	this->reported_name = rep_name;
 	this->generic_name = (gen_name.empty() ? this->reported_name : gen_name);
@@ -475,7 +462,7 @@ void AtaStorageProperty::set_name(const std::string& rep_name, const std::string
 
 
 
-std::ostream& operator<<(std::ostream& os, const AtaStorageProperty& p)
+std::ostream& operator<<(std::ostream& os, const StorageProperty& p)
 {
 	p.dump(os);
 	return os;

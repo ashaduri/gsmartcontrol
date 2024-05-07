@@ -39,7 +39,7 @@ struct StorageDeviceDetectedTypeExt
 				StorageDeviceDetectedTypeExt,
 				Glib::ustring>
 {
-	static constexpr inline StorageDeviceDetectedType default_value = StorageDeviceDetectedType::Unknown;
+	static constexpr StorageDeviceDetectedType default_value = StorageDeviceDetectedType::Unknown;
 
 	static std::unordered_map<EnumType, std::pair<std::string, Glib::ustring>> build_enum_map()
 	{

@@ -9,11 +9,14 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#ifndef ATA_STORAGE_PROPERTY_H
-#define ATA_STORAGE_PROPERTY_H
+#ifndef STORAGE_PROPERTY_H
+#define STORAGE_PROPERTY_H
+
+#include "local_glibmm.h"
 
 #include <cstddef>  // std::size_t
 #include <string>
+#include <utility>
 #include <vector>
 #include <iosfwd>
 #include <cstdint>
@@ -22,11 +25,12 @@ Copyright:
 #include <variant>
 
 #include "warning_level.h"
+#include "hz/enum_helper.h"
 
 
 
-/// Holds one block of "capabilities" subsection
-/// (only for non-time-interval blocks).
+/// Holds one block of "capabilities" subsection (only for non-time-interval blocks).
+/// ATA only.
 class AtaStorageCapability {
 	public:
 		std::string reported_flag_value;  ///< original flag value as a string
@@ -43,7 +47,8 @@ std::ostream& operator<< (std::ostream& os, const AtaStorageCapability& p);
 
 
 
-/// Holds one line of "attributes" subsection
+/// Holds one line of "attributes" subsection.
+/// ATA only.
 class AtaStorageAttribute {
 	public:
 
@@ -112,7 +117,8 @@ std::ostream& operator<< (std::ostream& os, const AtaStorageAttribute& p);
 
 
 
-/// Holds one line of "devstat" subsection
+/// Holds one line of "devstat" subsection.
+/// ATA only.
 class AtaStorageStatistic {
 	public:
 
@@ -136,7 +142,8 @@ std::ostream& operator<< (std::ostream& os, const AtaStorageStatistic& p);
 
 
 
-/// Holds one error block of "error log" subsection
+/// Holds one error block of "error log" subsection.
+/// ATA only.
 class AtaStorageErrorBlock {
 	public:
 
@@ -146,8 +153,6 @@ class AtaStorageErrorBlock {
 		/// Get warning level (Warning) for an error type
 		[[nodiscard]] static WarningLevel get_warning_level_for_error_type(const std::string& type);
 
-		/// Format lifetime hours with comma
-		[[nodiscard]] std::string format_lifetime_hours() const;
 
 		uint32_t error_num = 0;  ///< Error number
 		uint64_t log_index = 0;  ///< Log index
@@ -167,6 +172,7 @@ std::ostream& operator<< (std::ostream& os, const AtaStorageErrorBlock& b);
 
 /// Holds one entry of selftest_log subsection.
 /// Also, holds "Self-test execution status" capability's "internal" section version.
+/// ATA only.
 class AtaStorageSelftestEntry {
 	public:
 
@@ -205,10 +211,6 @@ class AtaStorageSelftestEntry {
 		[[nodiscard]] std::string get_readable_status() const;
 
 
-		/// Format lifetime hours with comma
-		[[nodiscard]] std::string format_lifetime_hours() const;
-
-
 		uint32_t test_num = 0;  ///< Test number. always starts from 1. larger means older or newer, depending on model. 0 for capability.
 		std::string type;  ///< Extended offline, Short offline, Conveyance offline, etc. . capability: unused.
 		std::string status_str;  ///< Self-test routine in progress, Completed without error, etc. (as reported by log or capability)
@@ -226,8 +228,147 @@ std::ostream& operator<< (std::ostream& os, const AtaStorageSelftestEntry& b);
 
 
 
+/// Decoded of nvme_self_test_log/current_self_test_operation/value
+enum class NvmeSelfTestCurrentOperationType {
+	Unknown = -1,
+	None = 0x0,
+	ShortInProgress = 0x1,
+	ExtendedInProgress = 0x2,
+	VendorSpecificInProgress = 0xe,
+};
+
+
+
+/// Helper structure for enum-related functions
+struct NvmeSelfTestCurrentOperationTypeExt
+		: public hz::EnumHelper<
+				NvmeSelfTestCurrentOperationType,
+				NvmeSelfTestCurrentOperationTypeExt,
+				Glib::ustring>
+{
+	static constexpr NvmeSelfTestCurrentOperationType default_value = NvmeSelfTestCurrentOperationType::Unknown;
+
+	static std::unordered_map<EnumType, std::pair<std::string, Glib::ustring>> build_enum_map()
+	{
+		return {
+			{NvmeSelfTestCurrentOperationType::Unknown, {"unknown", _("Unknown")}},
+			{NvmeSelfTestCurrentOperationType::None, {"none", _("None")}},
+			{NvmeSelfTestCurrentOperationType::ShortInProgress, {"shortInProgress", _("Short Test in Progress")}},
+			{NvmeSelfTestCurrentOperationType::ExtendedInProgress, {"extendedInProgress", _("Extended Test in Progress")}},
+			{NvmeSelfTestCurrentOperationType::VendorSpecificInProgress, {"vendorSpecificInProgress", _("Vendor-Specific Test in Progress")}},
+		};
+	}
+};
+
+
+
+/// Self-test types in log
+enum class NvmeSelfTestType {
+	Unknown = -1,
+	Short = 0x1,
+	Extended = 0x2,
+	VendorSpecific = 0xe,  ///< Can be encountered in log
+};
+
+
+
+/// Helper structure for enum-related functions
+struct NvmeSelfTestTypeExt
+		: public hz::EnumHelper<
+				NvmeSelfTestType,
+				NvmeSelfTestTypeExt,
+				Glib::ustring>
+{
+	static constexpr NvmeSelfTestType default_value = NvmeSelfTestType::Unknown;
+
+	static std::unordered_map<EnumType, std::pair<std::string, Glib::ustring>> build_enum_map()
+	{
+		return {
+			{NvmeSelfTestType::Unknown, {"unknown", _("Unknown")}},
+			{NvmeSelfTestType::Short, {"short", _("Short Test")}},
+			{NvmeSelfTestType::Extended, {"extended", _("Extended Test")}},
+			{NvmeSelfTestType::VendorSpecific, {"vendorSpecific", _("Vendor-Specific Test")}},
+		};
+	}
+};
+
+
+
+/// Self-test log entry status.
+enum class NvmeSelfTestResultType {
+	Unknown = -1,  ///< Unknown result
+	// Values correspond to "nvme_self_test_log/table/self_test_result/value".
+	CompletedNoError = 0x0,  ///< Completed with no error
+	AbortedSelfTestCommand = 0x1,  ///< Aborted: Self-test command (manually aborted)
+	AbortedControllerReset = 0x2,  ///< Aborted: Controller Reset
+	AbortedNamespaceRemoved = 0x3,  ///< Aborted: Namespace removed
+	AbortedFormatNvmCommand = 0x4,  ///< Aborted: Format NVM command
+	FatalOrUnknownTestError = 0x5,  ///< Fatal or unknown test error
+	CompletedUnknownFailedSegment = 0x6,  ///< Completed: unknown failed segment
+	CompletedFailedSegments = 0x7,  ///< Completed: failed segments
+	AbortedUnknownReason = 0x8,  ///< Aborted: unknown reason
+	AbortedSanitizeOperation = 0x9,  ///< Aborted: sanitize operation
+};
+
+
+
+/// Helper structure for enum-related functions
+struct NvmeSelfTestResultTypeExt
+		: public hz::EnumHelper<
+				NvmeSelfTestResultType,
+				NvmeSelfTestResultTypeExt,
+				Glib::ustring>
+{
+	static constexpr NvmeSelfTestResultType default_value = NvmeSelfTestResultType::Unknown;
+
+	static std::unordered_map<EnumType, std::pair<std::string, Glib::ustring>> build_enum_map()
+	{
+		return {
+			{NvmeSelfTestResultType::Unknown, {"unknown", _("Unknown")}},
+			{NvmeSelfTestResultType::CompletedNoError, {"completedNoError", _("Completed with No Error")}},
+			{NvmeSelfTestResultType::AbortedSelfTestCommand, {"abortedSelfTestCommand", _("Aborted: Self-Test Command")}},
+			{NvmeSelfTestResultType::AbortedControllerReset, {"abortedControllerReset", _("Aborted: Controller Reset")}},
+			{NvmeSelfTestResultType::AbortedNamespaceRemoved, {"abortedNamespaceRemoved", _("Aborted: Namespace Removed")}},
+			{NvmeSelfTestResultType::AbortedFormatNvmCommand, {"abortedFormatNvmCommand", _("Aborted: Format NVM Command")}},
+			{NvmeSelfTestResultType::FatalOrUnknownTestError, {"fatalOrUnknownTestError", _("Fatal or Unknown Test Error")}},
+			{NvmeSelfTestResultType::CompletedUnknownFailedSegment, {"completedUnknownFailedSegment", _("Completed: Unknown Failed Segment")}},
+			{NvmeSelfTestResultType::CompletedFailedSegments, {"completedFailedSegments", _("Completed: Failed Segments")}},
+			{NvmeSelfTestResultType::AbortedUnknownReason, {"abortedUnknownReason", _("Aborted: Unknown Reason")}},
+			{NvmeSelfTestResultType::AbortedSanitizeOperation, {"abortedSanitizeOperation", _("Aborted: Sanitize Operation")}},
+		};
+	}
+};
+
+
+
+/// Holds one entry of nvme_self_test_log section.
+/// NVMe only.
+class NvmeStorageSelftestEntry {
+	public:
+
+		/// Self-test error severity
+		enum class StatusSeverity {
+			None,
+			Warning,
+			Error
+		};
+
+		uint32_t test_num = 0;  ///< Test number, auto-generated
+		NvmeSelfTestType type = NvmeSelfTestType::Unknown;  ///< Test type
+		NvmeSelfTestResultType result = NvmeSelfTestResultType::Unknown;  ///< Test result
+		uint32_t power_on_hours = 0;  ///< When the test happened (in power-on hours).
+		uint64_t lba = 0;  ///< LBA of the first error.
+};
+
+
+/// Output operator for debug purposes
+std::ostream& operator<< (std::ostream& os, const NvmeStorageSelftestEntry& b);
+
+
+
+
 /// A single parser-extracted property
-class AtaStorageProperty {
+class StorageProperty {
 	public:
 
 		/// Sections in output
@@ -245,6 +386,7 @@ class AtaStorageProperty {
 			ErcLog,  ///< SCT Error Recovery Control settings (--log=scterc)
 			PhyLog,  ///< Phy log (--log=sataphy)
 			DirectoryLog,  ///< Directory log (--log=directory)
+			NvmeAttributes,  ///< NVMe attributes (health log) (-A, --attributes)
 //			Internal  ///< Internal application-specific data
 		};
 
@@ -262,15 +404,16 @@ class AtaStorageProperty {
 			AtaStorageAttribute,  ///< Value (if it's an attribute)
 			AtaStorageStatistic,  ///< Value (if it's a statistic from devstat)
 			AtaStorageErrorBlock,  ///< Value (if it's a error block)
-			AtaStorageSelftestEntry  ///< Value (if it's a self-test entry)
+			AtaStorageSelftestEntry,  ///< Value (if it's ATA self-test log entry)
+			NvmeStorageSelftestEntry  ///< Value (if it's NVMe self-test log entry)
 		>;
 
 
 		/// Constructor
-		AtaStorageProperty() = default;
+		StorageProperty() = default;
 
 		/// Constructor
-		AtaStorageProperty(Section section_, ValueVariantType value_)
+		StorageProperty(Section section_, ValueVariantType value_)
 				: section(section_), value(std::move(value_))
 		{ }
 
@@ -313,7 +456,7 @@ class AtaStorageProperty {
 		void set_name(const std::string& rep_name, const std::string& gen_name = "", const std::string& read_name = "");
 
 
-		std::string reported_name;  ///< Property name as reported by smartctl.
+		std::string reported_name;  ///< Property name as reported by smartctl. Mainly used by Text parser.
 		std::string generic_name;  ///< Generic (internal) name. May be same as reported_name, or something more program-identifiable.
 		std::string displayable_name;  ///< Readable property name. May be same as reported_name, or something more user-readable. Possibly translatable.
 
@@ -337,7 +480,7 @@ class AtaStorageProperty {
 
 
 /// Output operator for debug purposes
-std::ostream& operator<< (std::ostream& os, const AtaStorageProperty& p);
+std::ostream& operator<< (std::ostream& os, const StorageProperty& p);
 
 
 
@@ -348,7 +491,7 @@ std::ostream& operator<< (std::ostream& os, const AtaStorageProperty& p);
 
 
 template<typename T>
-const T& AtaStorageProperty::get_value() const
+const T& StorageProperty::get_value() const
 {
 	return std::get<T>(value);
 }
@@ -356,7 +499,7 @@ const T& AtaStorageProperty::get_value() const
 
 
 template<typename T>
-bool AtaStorageProperty::is_value_type() const
+bool StorageProperty::is_value_type() const
 {
 	return std::holds_alternative<T>(value);
 }
