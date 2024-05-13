@@ -175,16 +175,16 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::parse_basic_data()
 	// Make detected type more exact.
 	detect_drive_type_from_properties(basic_property_repo);
 
-	// A model field (and its aliases) is a good indication whether there was any data or not
-	set_parse_status(model_name_.has_value() ? ParseStatus::Basic : ParseStatus::None);
-
 	// Add property descriptions and set to the drive.
 	this->set_property_repository(StoragePropertyProcessor::process_properties(basic_property_repo, get_detected_type()));
 
 	debug_out_dump("app", "Drive " << get_device_with_type() << " set to be "
 			<< StorageDeviceDetectedTypeExt::get_displayable_name(get_detected_type()) << " device.\n");
 
-	read_common_properties();
+	read_common_properties();  // sets model_name_, etc.
+
+	// A model field (and its aliases) is a good indication whether there was any data or not
+	set_parse_status(model_name_.has_value() ? ParseStatus::Basic : ParseStatus::None);
 
 	// Try to parse the properties. ignore its errors - we already got what we came for.
 	// Note that this may try to parse data the second time (it may already have
@@ -570,8 +570,12 @@ void StorageDevice::read_common_properties()
 	}
 	if (auto prop = property_repository_.lookup_property("model_name"); !prop.empty()) {
 		model_name_ = prop.get_value<std::string>();
+	} else if (prop = property_repository_.lookup_property("scsi_model_name"); !prop.empty()) {  // USB flash
+		model_name_ = prop.get_value<std::string>();
 	}
 	if (auto prop = property_repository_.lookup_property("model_family"); !prop.empty()) {
+		family_name_ = prop.get_value<std::string>();
+	} else if (prop = property_repository_.lookup_property("scsi_vendor"); !prop.empty()) {  // USB flash
 		family_name_ = prop.get_value<std::string>();
 	}
 	if (auto prop = property_repository_.lookup_property("serial_number"); !prop.empty()) {
