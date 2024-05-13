@@ -298,7 +298,7 @@ auto custom_string_formatter(std::function<std::string(Type value)> formatter)
 		// p.reported_value = smartctl_version;
 		merged_property.readable_value = smartctl_version;
 		merged_property.value = smartctl_version;  // string-type value
-		merged_property.section = StorageProperty::Section::Info;  // add to info section
+		merged_property.section = StoragePropertySection::Info;  // add to info section
 	}
 	{
 		full_property.set_name("Smartctl version", "smartctl/version/_merged_full", "Smartctl Version");
@@ -308,7 +308,7 @@ auto custom_string_formatter(std::function<std::string(Type value)> formatter)
 				get_node_data<std::string>(json_root_node, "smartctl/build_info", {}).value_or(std::string())
 		);
 		full_property.value = full_property.readable_value;  // string-type value
-		full_property.section = StorageProperty::Section::Info;  // add to info section
+		full_property.section = StoragePropertySection::Info;  // add to info section
 	}
 	if (!SmartctlVersionParser::check_format_supported(SmartctlOutputFormat::Json, smartctl_version)) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Incompatible smartctl version. Returning.\n");

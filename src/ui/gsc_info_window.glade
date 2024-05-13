@@ -247,6 +247,72 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                   </packing>
                 </child>
                 <child>
+                  <object class="GtkBox" id="nvme_attributes_tab_vbox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="border-width">6</property>
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">6</property>
+                    <child>
+                      <object class="GtkBox" id="nvme_attributes_label_vbox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">3</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkScrolledWindow" id="scrolledwindow1">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="shadow-type">in</property>
+                        <child>
+                          <object class="GtkTreeView" id="nvme_attributes_treeview">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="rubber-banding">True</property>
+                            <property name="enable-grid-lines">both</property>
+                            <child internal-child="selection">
+                              <object class="GtkTreeSelection">
+                                <property name="mode">multiple</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+                <child type="tab">
+                  <object class="GtkLabel" id="nvme_attributes_tab_label">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">NVMe attributes</property>
+                    <property name="hexpand">True</property>
+                    <property name="label" translatable="yes">NVMe Attributes</property>
+                  </object>
+                  <packing>
+                    <property name="position">2</property>
+                    <property name="tab-fill">False</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkBox" id="statistics_tab_vbox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
@@ -297,7 +363,7 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                     </child>
                   </object>
                   <packing>
-                    <property name="position">2</property>
+                    <property name="position">3</property>
                   </packing>
                 </child>
                 <child type="tab">
@@ -311,7 +377,7 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                     <property name="use-underline">True</property>
                   </object>
                   <packing>
-                    <property name="position">2</property>
+                    <property name="position">3</property>
                     <property name="tab-fill">False</property>
                   </packing>
                 </child>
@@ -659,7 +725,7 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                     </child>
                   </object>
                   <packing>
-                    <property name="position">3</property>
+                    <property name="position">4</property>
                   </packing>
                 </child>
                 <child type="tab">
@@ -674,7 +740,7 @@ Self-test log contains information about the most recent manually performed SMAR
                     <property name="use-underline">True</property>
                   </object>
                   <packing>
-                    <property name="position">3</property>
+                    <property name="position">4</property>
                     <property name="tab-fill">False</property>
                   </packing>
                 </child>
@@ -785,7 +851,7 @@ Self-test log contains information about the most recent manually performed SMAR
                     </child>
                   </object>
                   <packing>
-                    <property name="position">4</property>
+                    <property name="position">5</property>
                   </packing>
                 </child>
                 <child type="tab">
@@ -799,7 +865,7 @@ Self-test log contains information about the most recent manually performed SMAR
                     <property name="use-underline">True</property>
                   </object>
                   <packing>
-                    <property name="position">4</property>
+                    <property name="position">5</property>
                     <property name="tab-fill">False</property>
                   </packing>
                 </child>
@@ -849,7 +915,7 @@ Self-test log contains information about the most recent manually performed SMAR
                     </child>
                   </object>
                   <packing>
-                    <property name="position">5</property>
+                    <property name="position">6</property>
                   </packing>
                 </child>
                 <child type="tab">
@@ -861,7 +927,7 @@ Self-test log contains information about the most recent manually performed SMAR
                     <property name="label" translatable="yes">Temperature Log</property>
                   </object>
                   <packing>
-                    <property name="position">5</property>
+                    <property name="position">6</property>
                     <property name="tab-fill">False</property>
                   </packing>
                 </child>
@@ -1048,7 +1114,7 @@ Self-test log contains information about the most recent manually performed SMAR
                     </child>
                   </object>
                   <packing>
-                    <property name="position">6</property>
+                    <property name="position">7</property>
                     <property name="tab-fill">False</property>
                   </packing>
                 </child>
@@ -1063,7 +1129,7 @@ Self-test log contains information about the most recent manually performed SMAR
                     <property name="use-underline">True</property>
                   </object>
                   <packing>
-                    <property name="position">6</property>
+                    <property name="position">7</property>
                     <property name="tab-fill">False</property>
                   </packing>
                 </child>
@@ -1095,8 +1161,8 @@ Self-test log contains information about the most recent manually performed SMAR
                 <property name="receives-default">True</property>
                 <property name="tooltip-text" translatable="yes">Re-read all the information</property>
                 <property name="use-stock">True</property>
-                <accelerator key="R" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                 <accelerator key="F5" signal="clicked"/>
+                <accelerator key="R" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
               </object>
               <packing>
                 <property name="expand">True</property>

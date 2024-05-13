@@ -61,7 +61,10 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 		void fill_ui_general(const StoragePropertyRepository& property_repo);
 
 		/// fill_ui_with_info() helper
-		void fill_ui_attributes(const StoragePropertyRepository& property_repo);
+		void fill_ui_ata_attributes(const StoragePropertyRepository& property_repo);
+
+		/// fill_ui_with_info() helper
+		void fill_ui_nvme_attributes(const StoragePropertyRepository& property_repo);
 
 		/// fill_ui_with_info() helper
 		void fill_ui_statistics(const StoragePropertyRepository& property_repo);
@@ -97,7 +100,11 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 		// ---------- Helpers
 
 		/// Cell renderer function for a table
-		void cell_renderer_for_attributes(Gtk::CellRenderer* cr, const Gtk::TreeModel::iterator& iter,
+		void cell_renderer_for_ata_attributes(Gtk::CellRenderer* cr, const Gtk::TreeModel::iterator& iter,
+				int column_index) const;
+
+		/// Cell renderer function for a table
+		void cell_renderer_for_nvme_attributes(Gtk::CellRenderer* cr, const Gtk::TreeModel::iterator& iter,
 				int column_index) const;
 
 		/// Cell renderer function for a table
@@ -183,7 +190,8 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 
 		// tab headers, to perform their coloration
 		Glib::ustring tab_identity_name;  ///< Tab header name
-		Glib::ustring tab_attributes_name;  ///< Tab header name
+		Glib::ustring tab_ata_attributes_name;  ///< Tab header name
+		Glib::ustring tab_nvme_attributes_name;  ///< Tab header name
 		Glib::ustring tab_statistics_name;  ///< Tab header name
 		Glib::ustring tab_test_name;  ///< Tab header name
 		Glib::ustring tab_error_log_name;  ///< Tab header name
@@ -208,7 +216,7 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 		Glib::Timer test_timer_bar;  ///< Timer for testing phase
 		bool test_force_bar_update = false;  ///< Helper for testing callback
 
-		/// Attributes table model columns
+		/// ATA Attributes table model columns
 		struct {
 			Gtk::TreeModelColumn<int32_t> id;
 			Gtk::TreeModelColumn<Glib::ustring> displayable_name;
@@ -222,7 +230,15 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 			Gtk::TreeModelColumn<std::string> flag_value;
 			Gtk::TreeModelColumn<Glib::ustring> tooltip;
 			Gtk::TreeModelColumn<const StorageProperty*> storage_property;
-		} attribute_table_columns;
+		} ata_attribute_table_columns;
+
+		/// NVMe attributes table model columns
+		struct {
+			Gtk::TreeModelColumn<Glib::ustring> displayable_name;
+			Gtk::TreeModelColumn<std::string> value;
+			Gtk::TreeModelColumn<Glib::ustring> tooltip;
+			Gtk::TreeModelColumn<const StorageProperty*> storage_property;
+		} nvme_attribute_table_columns;
 
 		/// Statistics table model columns
 		struct {

@@ -56,7 +56,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		p.set_name("Smartctl version", "smartctl/version/_merged", "Smartctl Version");
 		p.reported_value = version;
 		p.value = p.reported_value;  // string-type value
-		p.section = StorageProperty::Section::Info;  // add to info section
+		p.section = StoragePropertySection::Info;  // add to info section
 		add_property(p);
 	}
 	{
@@ -64,7 +64,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		p.set_name("Smartctl version", "smartctl/version/_merged_full", "Smartctl Version");
 		p.reported_value = version_full;
 		p.value = p.reported_value;  // string-type value
-		p.section = StorageProperty::Section::Info;  // add to info section
+		p.section = StoragePropertySection::Info;  // add to info section
 		add_property(p);
 	}
 
@@ -82,7 +82,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		p.set_name("Drive type", "_text_only/custom/parser_detected_drive_type", "Parser-Detected Drive Type");
 		p.reported_value = "CD/DVD";
 		p.value = StorageDeviceDetectedTypeExt::get_storable_name(StorageDeviceDetectedType::CdDvd);
-		p.section = StorageProperty::Section::Info;  // add to info section
+		p.section = StoragePropertySection::Info;  // add to info section
 		add_property(p);
 
 	// This was encountered on a csmi soft-raid under windows with pd0.
@@ -93,7 +93,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		p.set_name("Drive type", "_text_only/custom/parser_detected_drive_type", "Parser-Detected Drive Type");
 		p.reported_value = "RAID";
 		p.value = StorageDeviceDetectedTypeExt::get_storable_name(StorageDeviceDetectedType::UnsupportedRaid);
-		p.section = StorageProperty::Section::Info;  // add to info section
+		p.section = StoragePropertySection::Info;  // add to info section
 		add_property(p);
 
 		is_raid = true;
@@ -136,14 +136,14 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		StorageProperty p;
 		p.set_name("SMART Supported", "smart_support/available", "SMART Supported");
 		p.value = smart_supported;
-		p.section = StorageProperty::Section::Info;  // add to info section
+		p.section = StoragePropertySection::Info;  // add to info section
 		add_property(p);
 	}
 	{
 		StorageProperty p;
 		p.set_name("SMART Enabled", "smart_support/enabled", "SMART Enabled");
 		p.value = smart_enabled;
-		p.section = StorageProperty::Section::Info;  // add to info section
+		p.section = StoragePropertySection::Info;  // add to info section
 		add_property(p);
 	}
 
@@ -189,7 +189,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		p.set_name("Rotation Rate", "rotation_rate", "Rotation Rate");
 		p.reported_value = rpm_str;
 		p.value = hz::string_to_number_nolocale<int>(rpm_str, false);
-		p.section = StorageProperty::Section::Info;  // add to info section
+		p.section = StoragePropertySection::Info;  // add to info section
 		add_property(p);
 	}
 
@@ -204,7 +204,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		p.reported_value = size;
 		p.value = bytes;
 		p.readable_value = readable_size;
-		p.section = StorageProperty::Section::Info;  // add to info section
+		p.section = StoragePropertySection::Info;  // add to info section
 		add_property(p);
 	}
 

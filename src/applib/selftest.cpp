@@ -78,7 +78,7 @@ std::chrono::seconds SelfTest::get_min_duration_seconds() const
 	}
 
 	const StorageProperty p = drive_->get_property_repository().lookup_property(prop_name,
-			StorageProperty::Section::Capabilities);
+			StoragePropertySection::Capabilities);
 
 	// p stores it as uint64_t
 	return (total_duration_ = (p.empty() ? 0s : p.get_value<std::chrono::seconds>()));

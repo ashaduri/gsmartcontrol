@@ -65,30 +65,37 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse(std::string_
 
 	// Add properties for each parsed section so that the UI knows which tabs to show or hide
 	{
-		auto section_parse_status = parse_section_health(json_root_node);
+		auto section_parse_status = parse_section_overall_health(json_root_node);
 //		StorageProperty p;
-//		p.section = StorageProperty::Section::Health;
+//		p.section = StoragePropertySection::Health;
+//		p.set_name("_parser/health_section_available");
+//		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+	}
+	{
+		auto section_parse_status = parse_section_nvme_health(json_root_node);
+//		StorageProperty p;
+//		p.section = StoragePropertySection::Health;
 //		p.set_name("_parser/health_section_available");
 //		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 	{
 		auto section_parse_status = parse_section_nvme_error_log(json_root_node);
 //		StorageProperty p;
-//		p.section = StorageProperty::Section::ErrorLog;
+//		p.section = StoragePropertySection::ErrorLog;
 //		p.set_name("_parser/error_log_section_available");
 //		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 	{
 		auto section_parse_status = parse_section_selftest_log(json_root_node);
 //		StorageProperty p;
-//		p.section = StorageProperty::Section::SelftestLog;
+//		p.section = StoragePropertySection::SelftestLog;
 //		p.set_name("_parser/selftest_log_section_available");
 //		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 	{
 		auto section_parse_status = parse_section_nvme_attributes(json_root_node);
 //		StorageProperty p;
-//		p.section = StorageProperty::Section::Devstat;
+//		p.section = StoragePropertySection::Devstat;
 //		p.set_name("_parser/devstat_section_available");
 //		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
@@ -190,7 +197,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_info
 
 		auto p = retrieval_func(json_root_node, key, displayable_name);
 		if (p.has_value()) {  // ignore if not found
-			p->section = StorageProperty::Section::Info;
+			p->section = StoragePropertySection::Info;
 			add_property(p.value());
 			any_found = true;
 		}
@@ -204,7 +211,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_info
 
 
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_health(const nlohmann::json& json_root_node)
+hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_overall_health(const nlohmann::json& json_root_node)
 {
 	using namespace SmartctlJsonParserHelpers;
 
@@ -212,7 +219,37 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_heal
 
 	const std::vector<std::tuple<std::string, std::string, PropertyRetrievalFunc>> health_keys = {
 			{"smart_status/passed", _("Overall Health Self-Assessment Test"), bool_formatter(_("PASSED"), _("FAILED"))},
+	};
 
+	for (const auto& [key, displayable_name, retrieval_func] : health_keys) {
+		DBG_ASSERT(retrieval_func != nullptr);
+
+		auto p = retrieval_func(json_root_node, key, displayable_name);
+		if (p.has_value()) {  // ignore if not found
+			p->section = StoragePropertySection::OverallHealth;
+			add_property(p.value());
+
+			section_properties_found = true;
+		}
+	}
+
+	if (!section_properties_found) {
+		return hz::Unexpected(SmartctlParserError::NoSection,
+				std::format("No section {} parsed.", StoragePropertySectionExt::get_displayable_name(StoragePropertySection::OverallHealth)));
+	}
+
+	return {};
+}
+
+
+
+hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme_health(const nlohmann::json& json_root_node)
+{
+	using namespace SmartctlJsonParserHelpers;
+
+	bool section_properties_found = false;
+
+	const std::vector<std::tuple<std::string, std::string, PropertyRetrievalFunc>> health_keys = {
 			// These are included when smart_status/passed is false
 			{"smart_status/nvme/spare_below_threshold", _("Available Spare Fallen Below Threshold"), bool_formatter(_("Yes"), _("No"))},
 			{"smart_status/nvme/temperature_above_or_below_threshold", _("Temperature Outside Limits"), bool_formatter(_("Yes"), _("No"))},
@@ -228,7 +265,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_heal
 
 		auto p = retrieval_func(json_root_node, key, displayable_name);
 		if (p.has_value()) {  // ignore if not found
-			p->section = StorageProperty::Section::Health;
+			p->section = StoragePropertySection::NvmeHealth;
 			add_property(p.value());
 
 			section_properties_found = true;
@@ -237,7 +274,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_heal
 
 	if (!section_properties_found) {
 		return hz::Unexpected(SmartctlParserError::NoSection,
-				std::format("No section {} parsed.", StorageProperty::get_readable_section_name(StorageProperty::Section::Health)));
+				std::format("No section {} parsed.", StoragePropertySectionExt::get_displayable_name(StoragePropertySection::NvmeHealth)));
 	}
 
 	return {};
@@ -258,7 +295,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme
 	if (get_node_exists(json_root_node, "nvme_error_information_log/size").value_or(false)) {
 		StorageProperty p;
 		p.set_name("nvme_error_information_log/size", "nvme_error_information_log/size", _("Non-Persistent Error Log Size"));
-		p.section = StorageProperty::Section::NvmeErrorLog;
+		p.section = StoragePropertySection::NvmeErrorLog;
 		p.value = get_node_data<int64_t>(json_root_node, "nvme_error_information_log/size").value_or(0);
 		add_property(p);
 
@@ -269,7 +306,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme
 		StorageProperty p;
 		// Note: This number can be controlled using smartctl option.
 		p.set_name("nvme_error_information_log/read", "nvme_error_information_log/read", _("Number of Error Log Entries Read"));
-		p.section = StorageProperty::Section::NvmeErrorLog;
+		p.section = StoragePropertySection::NvmeErrorLog;
 		p.value = get_node_data<int64_t>(json_root_node, "nvme_error_information_log/size").value_or(0);
 		add_property(p);
 
@@ -307,7 +344,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme
 	if (!lines.empty()) {
 		StorageProperty p;
 		p.set_name("NVMe Non-Persistent Error Information Log", "nvme_error_information_log/_merged");
-		p.section = StorageProperty::Section::NvmeErrorLog;
+		p.section = StoragePropertySection::NvmeErrorLog;
 		p.reported_value = hz::string_join(lines, "\n");
 		p.value = p.reported_value;  // string-type value
 
@@ -316,7 +353,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme
 
 	if (!section_properties_found) {
 		return hz::Unexpected(SmartctlParserError::NoSection,
-				std::format("No section {} parsed.", StorageProperty::get_readable_section_name(StorageProperty::Section::NvmeErrorLog)));
+				std::format("No section {} parsed.", StoragePropertySectionExt::get_displayable_name(StoragePropertySection::NvmeErrorLog)));
 	}
 
 	return {};
@@ -336,7 +373,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_self
 		StorageProperty p;
 		p.set_name("nvme_self_test_log/current_self_test_operation/value/_decoded",
 				"nvme_self_test_log/current_self_test_operation/value/_decoded", _("Current Self-Test Operation"));
-		p.section = StorageProperty::Section::SelftestLog;
+		p.section = StoragePropertySection::SelftestLog;
 
 		auto value_val = get_node_data<uint8_t>(json_root_node, "nvme_self_test_log/current_self_test_operation/value");
 		NvmeSelfTestCurrentOperationType operation = NvmeSelfTestCurrentOperationType::Unknown;
@@ -361,7 +398,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_self
 		StorageProperty p;
 		p.set_name("nvme_self_test_log/current_self_test_operation/current_self_test_completion_percent",
 				"nvme_self_test_log/current_self_test_operation/current_self_test_completion_percent", _("Current Self-Test Completion Percentage"));
-		p.section = StorageProperty::Section::SelftestLog;
+		p.section = StoragePropertySection::SelftestLog;
 
 		auto value_val = get_node_data<uint8_t>(json_root_node, "nvme_self_test_log/current_self_test_operation/current_self_test_completion_percent");
 		if (value_val.has_value()) {
@@ -417,7 +454,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_self
 
 			StorageProperty p;
 			p.set_name(std::format("Self-test entry {}", entry.test_num));
-			p.section = StorageProperty::Section::SelftestLog;
+			p.section = StoragePropertySection::SelftestLog;
 			p.value = entry;
 			add_property(p);
 
@@ -429,7 +466,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_self
 
 	if (!section_properties_found) {
 		return hz::Unexpected(SmartctlParserError::NoSection,
-				std::format("No section {} parsed.", StorageProperty::get_readable_section_name(StorageProperty::Section::SelftestLog)));
+				std::format("No section {} parsed.", StoragePropertySectionExt::get_displayable_name(StoragePropertySection::SelftestLog)));
 	}
 
 	return {};
@@ -444,6 +481,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme
 	bool section_properties_found = false;
 
 	const std::vector<std::tuple<std::string, std::string, PropertyRetrievalFunc>> health_keys = {
+			{"nvme_smart_health_information_log/temperature", _("Current Temperature"), integer_formatter<int64_t>("{}° Celsius")},
 			{"nvme_smart_health_information_log/available_spare", _("Available Spare"), integer_formatter<int64_t>("{}%")},
 			{"nvme_smart_health_information_log/available_spare_threshold", _("Available Spare Threshold"), integer_formatter<int64_t>("{}%")},
 			{"nvme_smart_health_information_log/percentage_used", _("Percentage Used"), integer_formatter<int64_t>("{}%")},
@@ -468,7 +506,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme
 
 		auto p = retrieval_func(json_root_node, key, displayable_name);
 		if (p.has_value()) {  // ignore if not found
-			p->section = StorageProperty::Section::NvmeAttributes;
+			p->section = StoragePropertySection::NvmeAttributes;
 			add_property(p.value());
 
 			section_properties_found = true;
@@ -477,7 +515,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme
 
 	if (!section_properties_found) {
 		return hz::Unexpected(SmartctlParserError::NoSection,
-				std::format("No section {} parsed.", StorageProperty::get_readable_section_name(StorageProperty::Section::NvmeAttributes)));
+				std::format("No section {} parsed.", StoragePropertySectionExt::get_displayable_name(StoragePropertySection::NvmeAttributes)));
 	}
 
 	return {};

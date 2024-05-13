@@ -214,6 +214,7 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 	{
 		static const std::vector<std::string> treeview_names {
 			"attributes_treeview",
+			"nvme_attributes_treeview",
 			"statistics_treeview",
 			"selftest_log_treeview"
 		};
@@ -273,7 +274,10 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 	tab_identity_name = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("attributes_tab_label");
-	tab_attributes_name = (tab_label ? tab_label->get_label() : "");
+	tab_ata_attributes_name = (tab_label ? tab_label->get_label() : "");
+
+	tab_label = lookup_widget<Gtk::Label*>("nvme_attributes_tab_label");
+	tab_nvme_attributes_name = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("statistics_tab_label");
 	tab_statistics_name = (tab_label ? tab_label->get_label() : "");
@@ -373,55 +377,60 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		const auto& prop_repo = drive->get_property_repository();
 		Gtk::Widget* note_page_box = nullptr;
 
-		bool has_attributes = prop_repo.has_properties_for_section(StorageProperty::Section::Attributes);
+		bool has_ata_attributes = prop_repo.has_properties_for_section(StoragePropertySection::AtaAttributes);
 		if (note_page_box = lookup_widget("attributes_tab_vbox"); note_page_box != nullptr) {
-			note_page_box->set_visible(has_attributes);
+			note_page_box->set_visible(has_ata_attributes);
 		}
 
-		bool has_statistics = prop_repo.has_properties_for_section(StorageProperty::Section::Statistics);
+		bool has_nvme_attributes = prop_repo.has_properties_for_section(StoragePropertySection::NvmeAttributes);
+		if (note_page_box = lookup_widget("nvme_attributes_tab_vbox"); note_page_box != nullptr) {
+			note_page_box->set_visible(has_nvme_attributes);
+		}
+
+		bool has_statistics = prop_repo.has_properties_for_section(StoragePropertySection::Statistics);
 		if (note_page_box = lookup_widget("statistics_tab_vbox"); note_page_box != nullptr) {
 			note_page_box->set_visible(has_statistics);
 		}
 
-		bool has_selftest = prop_repo.has_properties_for_section(StorageProperty::Section::SelftestLog);
+		bool has_selftest = prop_repo.has_properties_for_section(StoragePropertySection::SelftestLog);
 		if (note_page_box = lookup_widget("test_tab_vbox"); note_page_box != nullptr) {
 			// Some USB flash drives erroneously report SMART as enabled.
 			// note_page_box->set_visible(drive->get_smart_status() == StorageDevice::Status::Enabled);
 			note_page_box->set_visible(has_selftest);
 		}
 
-		bool has_error_log = prop_repo.has_properties_for_section(StorageProperty::Section::ErrorLog);
+		bool has_error_log = prop_repo.has_properties_for_section(StoragePropertySection::ErrorLog);
 		if (note_page_box = lookup_widget("error_log_tab_vbox"); note_page_box != nullptr) {
 			note_page_box->set_visible(has_error_log);
 		}
 
-		bool has_temperature_log = prop_repo.has_properties_for_section(StorageProperty::Section::TemperatureLog);
+		bool has_temperature_log = prop_repo.has_properties_for_section(StoragePropertySection::TemperatureLog);
 		if (note_page_box = lookup_widget("temperature_log_tab_vbox"); note_page_box != nullptr) {
 			note_page_box->set_visible(has_temperature_log);
 		}
 
-
-		const bool has_capabilities = prop_repo.has_properties_for_section(StorageProperty::Section::Capabilities);
+		// Advanced tab's subtabs
+		const bool has_capabilities = prop_repo.has_properties_for_section(StoragePropertySection::Capabilities);
 		if (note_page_box = lookup_widget("capabilities_scrolledwindow"); note_page_box != nullptr) {
 			note_page_box->set_visible(has_capabilities);
 		}
 
-		const bool has_erc = prop_repo.has_properties_for_section(StorageProperty::Section::ErcLog);
+		const bool has_erc = prop_repo.has_properties_for_section(StoragePropertySection::ErcLog);
 		if (note_page_box = lookup_widget("erc_scrolledwindow"); note_page_box != nullptr) {
 			note_page_box->set_visible(has_erc);
 		}
 
-		const bool has_selective = prop_repo.has_properties_for_section(StorageProperty::Section::SelectiveSelftestLog);
+		const bool has_selective = prop_repo.has_properties_for_section(StoragePropertySection::SelectiveSelftestLog);
 		if (note_page_box = lookup_widget("selective_selftest_scrolledwindow"); note_page_box != nullptr) {
 			note_page_box->set_visible(has_selective);
 		}
 
-		const bool has_phy = prop_repo.has_properties_for_section(StorageProperty::Section::PhyLog);
+		const bool has_phy = prop_repo.has_properties_for_section(StoragePropertySection::PhyLog);
 		if (note_page_box = lookup_widget("phy_scrolledwindow"); note_page_box != nullptr) {
 			note_page_box->set_visible(has_phy);
 		}
 
-		const bool has_dir = prop_repo.has_properties_for_section(StorageProperty::Section::DirectoryLog);
+		const bool has_dir = prop_repo.has_properties_for_section(StoragePropertySection::DirectoryLog);
 		if (note_page_box = lookup_widget("directory_scrolledwindow"); note_page_box != nullptr) {
 			note_page_box->set_visible(has_dir);
 		}
@@ -439,7 +448,8 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		// Hide tab titles if only one tab is visible
 		if (auto* notebook = lookup_widget<Gtk::Notebook*>("main_notebook")) {
 			notebook->set_show_tabs(
-					has_attributes
+					has_ata_attributes
+					|| has_nvme_attributes
 					|| has_statistics
 					|| has_selftest
 					|| has_error_log
@@ -472,7 +482,8 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 	const auto& property_repo = drive->get_property_repository();  // it's a vector
 
 	fill_ui_general(property_repo);
-	fill_ui_attributes(property_repo);
+	fill_ui_ata_attributes(property_repo);
+	fill_ui_nvme_attributes(property_repo);
 	fill_ui_statistics(property_repo);
 	if (clear_tests) {
 		fill_ui_self_test_info();
@@ -542,7 +553,23 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("attributes_tab_label"), WarningLevel::None, tab_attributes_name);
+		app_highlight_tab_label(lookup_widget("attributes_tab_label"), WarningLevel::None, tab_ata_attributes_name);
+	}
+
+	{
+		auto* label_vbox = lookup_widget<Gtk::Box*>("nvme_attributes_label_vbox");
+		app_set_top_labels(label_vbox, std::vector<PropertyLabel>());
+
+		if (auto* treeview = lookup_widget<Gtk::TreeView*>("nvme_attributes_treeview")) {
+// 			Glib::RefPtr<Gtk::ListStore> model = Glib::RefPtr<Gtk::ListStore>::cast_dynamic(treeview->get_model());
+// 			if (model)
+// 				model->clear();
+			treeview->remove_all_columns();
+			treeview->unset_model();
+		}
+
+		// tab label
+		app_highlight_tab_label(lookup_widget("nvme_attributes_tab_label"), WarningLevel::None, tab_nvme_attributes_name);
 	}
 
 	{
@@ -896,10 +923,10 @@ void GscInfoWindow::fill_ui_general(const StoragePropertyRepository& property_re
 	const auto& props = property_repo.get_properties();
 
 	// filter out some properties
-	std::vector<StorageProperty> id_props, version_props, health_props;
+	std::vector<StorageProperty> id_props, version_props, overall_health_props;
 
 	for (auto&& p : props) {
-		if (p.section == StorageProperty::Section::Info) {
+		if (p.section == StoragePropertySection::Info) {
 			if (p.generic_name == "smartctl/version/_merged_full") {
 				version_props.push_back(p);
 			} else if (p.generic_name == "smartctl/version/_merged") {
@@ -907,8 +934,8 @@ void GscInfoWindow::fill_ui_general(const StoragePropertyRepository& property_re
 			} else {
 				id_props.push_back(p);
 			}
-		} else if (p.section == StorageProperty::Section::Health) {
-			health_props.push_back(p);
+		} else if (p.section == StoragePropertySection::OverallHealth) {
+			overall_health_props.push_back(p);
 		}
 	}
 
@@ -917,7 +944,7 @@ void GscInfoWindow::fill_ui_general(const StoragePropertyRepository& property_re
 		id_props.push_back(p);
 
 	// health is the last one
-	for (auto&& p : health_props)
+	for (auto&& p : overall_health_props)
 		id_props.push_back(p);
 
 
@@ -984,7 +1011,7 @@ void GscInfoWindow::fill_ui_general(const StoragePropertyRepository& property_re
 
 
 
-void GscInfoWindow::fill_ui_attributes(const StoragePropertyRepository& property_repo)
+void GscInfoWindow::fill_ui_ata_attributes(const StoragePropertyRepository& property_repo)
 {
 	const auto& props = property_repo.get_properties();
 
@@ -996,36 +1023,36 @@ void GscInfoWindow::fill_ui_attributes(const StoragePropertyRepository& property
 	// ID (int), Name, Flag (hex), Normalized Value (uint8), Worst (uint8), Thresh (uint8), Raw (int64), Type (string),
 	// Updated (string), When Failed (string)
 
-	model_columns.add(attribute_table_columns.id);  // we can use the column variable by value after this.
-	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.id, *treeview, _("ID"), _("Attribute ID"), true);
+	model_columns.add(ata_attribute_table_columns.id);  // we can use the column variable by value after this.
+	num_tree_col = app_gtkmm_create_tree_view_column(ata_attribute_table_columns.id, *treeview, _("ID"), _("Attribute ID"), true);
 
-	model_columns.add(attribute_table_columns.displayable_name);
-	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.displayable_name, *treeview,
+	model_columns.add(ata_attribute_table_columns.displayable_name);
+	num_tree_col = app_gtkmm_create_tree_view_column(ata_attribute_table_columns.displayable_name, *treeview,
 			_("Name"), _("Attribute name (this is deduced from ID by smartctl and may be incorrect, as it's highly vendor-specific)"), true);
-	treeview->set_search_column(attribute_table_columns.displayable_name.index());
+	treeview->set_search_column(ata_attribute_table_columns.displayable_name.index());
 
-	model_columns.add(attribute_table_columns.when_failed);
-	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.when_failed, *treeview,
+	model_columns.add(ata_attribute_table_columns.when_failed);
+	num_tree_col = app_gtkmm_create_tree_view_column(ata_attribute_table_columns.when_failed, *treeview,
 			_("Failed"), _("When failed (that is, the normalized value became equal to or less than threshold)"), true, true);
 
-	model_columns.add(attribute_table_columns.normalized_value);
-	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.normalized_value, *treeview,
+	model_columns.add(ata_attribute_table_columns.normalized_value);
+	num_tree_col = app_gtkmm_create_tree_view_column(ata_attribute_table_columns.normalized_value, *treeview,
 			C_("value", "Normalized"), _("Normalized value (highly vendor-specific; converted from Raw value by the drive's firmware)"), false);
 
-	model_columns.add(attribute_table_columns.worst);
-	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.worst, *treeview,
+	model_columns.add(ata_attribute_table_columns.worst);
+	num_tree_col = app_gtkmm_create_tree_view_column(ata_attribute_table_columns.worst, *treeview,
 			C_("value", "Worst"), _("The worst normalized value recorded for this attribute during the drive's lifetime (with SMART enabled)"), false);
 
-	model_columns.add(attribute_table_columns.threshold);
-	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.threshold, *treeview,
+	model_columns.add(ata_attribute_table_columns.threshold);
+	num_tree_col = app_gtkmm_create_tree_view_column(ata_attribute_table_columns.threshold, *treeview,
 			C_("value", "Threshold"), _("Threshold for normalized value. Normalized value should be greater than threshold (unless vendor thinks otherwise)."), false);
 
-	model_columns.add(attribute_table_columns.raw);
-	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.raw, *treeview,
+	model_columns.add(ata_attribute_table_columns.raw);
+	num_tree_col = app_gtkmm_create_tree_view_column(ata_attribute_table_columns.raw, *treeview,
 			_("Raw value"), _("Raw value as reported by drive. May or may not be sensible."), false);
 
-	model_columns.add(attribute_table_columns.type);
-	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.type, *treeview,
+	model_columns.add(ata_attribute_table_columns.type);
+	num_tree_col = app_gtkmm_create_tree_view_column(ata_attribute_table_columns.type, *treeview,
 			_("Type"), _("Alarm condition is reached when normalized value becomes less than or equal to threshold. Type indicates whether it's a signal of drive's pre-failure time or just an old age."), false, true);
 
 	// Doesn't carry that much info. Advanced users can look at the flags.
@@ -1033,8 +1060,8 @@ void GscInfoWindow::fill_ui_attributes(const StoragePropertyRepository& property
 // 		tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.updated, *treeview,
 // 				"Updated", "The attribute is usually updated continuously, or during Offline Data Collection only. This column indicates that.", true);
 
-	model_columns.add(attribute_table_columns.flag_value);
-	num_tree_col = app_gtkmm_create_tree_view_column(attribute_table_columns.flag_value, *treeview,
+	model_columns.add(ata_attribute_table_columns.flag_value);
+	num_tree_col = app_gtkmm_create_tree_view_column(ata_attribute_table_columns.flag_value, *treeview,
 			_("Flags"), _("Flags") + "\n\n"s
 					+ Glib::ustring::compose(_("If given in %1 format, the presence of each letter indicates that the flag is on."), "POSRCK+") + "\n"
 					+ _("P: pre-failure attribute (if the attribute failed, the drive is failing)") + "\n"
@@ -1045,21 +1072,21 @@ void GscInfoWindow::fill_ui_attributes(const StoragePropertyRepository& property
 					+ _("K: auto-keep") + "\n"
 					+ _("+: undocumented bits present"), false);
 
-	model_columns.add(attribute_table_columns.tooltip);
-	treeview->set_tooltip_column(attribute_table_columns.tooltip.index());
+	model_columns.add(ata_attribute_table_columns.tooltip);
+	treeview->set_tooltip_column(ata_attribute_table_columns.tooltip.index());
 
-	model_columns.add(attribute_table_columns.storage_property);
+	model_columns.add(ata_attribute_table_columns.storage_property);
 
 
 	// create a TreeModel (ListStore)
 	Glib::RefPtr<Gtk::ListStore> list_store = Gtk::ListStore::create(model_columns);
-	list_store->set_sort_column(attribute_table_columns.id, Gtk::SORT_ASCENDING);  // default sort
+	list_store->set_sort_column(ata_attribute_table_columns.id, Gtk::SORT_ASCENDING);  // default sort
 	treeview->set_model(list_store);
 
 	for (int i = 0; i < int(treeview->get_n_columns()); ++i) {
 		Gtk::TreeViewColumn* tcol = treeview->get_column(i);
 		tcol->set_cell_data_func(*(tcol->get_first_cell()),
-				sigc::bind(sigc::mem_fun(*this, &GscInfoWindow::cell_renderer_for_attributes), i));
+				sigc::bind(sigc::mem_fun(*this, &GscInfoWindow::cell_renderer_for_ata_attributes), i));
 	}
 
 
@@ -1067,7 +1094,7 @@ void GscInfoWindow::fill_ui_attributes(const StoragePropertyRepository& property
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (const auto& p : props) {
-		if (p.section != StorageProperty::Section::Attributes || !p.show_in_ui)
+		if (p.section != StoragePropertySection::AtaAttributes || !p.show_in_ui)
 			continue;
 
 		// add non-attribute-type properties to label above
@@ -1082,20 +1109,20 @@ void GscInfoWindow::fill_ui_attributes(const StoragePropertyRepository& property
 		const auto& attr = p.get_value<AtaStorageAttribute>();
 
 		Gtk::TreeRow row = *(list_store->append());
-		row[attribute_table_columns.id] = attr.id;
-		row[attribute_table_columns.displayable_name] = Glib::Markup::escape_text(p.displayable_name);
-		row[attribute_table_columns.flag_value] = Glib::Markup::escape_text(attr.flag);  // it's a string, not int.
-		row[attribute_table_columns.normalized_value] = Glib::Markup::escape_text(attr.value.has_value() ? hz::number_to_string_locale(attr.value.value()) : "-");
-		row[attribute_table_columns.worst] = Glib::Markup::escape_text(attr.worst.has_value() ? hz::number_to_string_locale(attr.worst.value()) : "-");
-		row[attribute_table_columns.threshold] = Glib::Markup::escape_text(attr.threshold.has_value() ? hz::number_to_string_locale(attr.threshold.value()) : "-");
-		row[attribute_table_columns.raw] = Glib::Markup::escape_text(attr.format_raw_value());
-		row[attribute_table_columns.type] = Glib::Markup::escape_text(
+		row[ata_attribute_table_columns.id] = attr.id;
+		row[ata_attribute_table_columns.displayable_name] = Glib::Markup::escape_text(p.displayable_name);
+		row[ata_attribute_table_columns.flag_value] = Glib::Markup::escape_text(attr.flag);  // it's a string, not int.
+		row[ata_attribute_table_columns.normalized_value] = Glib::Markup::escape_text(attr.value.has_value() ? hz::number_to_string_locale(attr.value.value()) : "-");
+		row[ata_attribute_table_columns.worst] = Glib::Markup::escape_text(attr.worst.has_value() ? hz::number_to_string_locale(attr.worst.value()) : "-");
+		row[ata_attribute_table_columns.threshold] = Glib::Markup::escape_text(attr.threshold.has_value() ? hz::number_to_string_locale(attr.threshold.value()) : "-");
+		row[ata_attribute_table_columns.raw] = Glib::Markup::escape_text(attr.format_raw_value());
+		row[ata_attribute_table_columns.type] = Glib::Markup::escape_text(
 				AtaStorageAttribute::get_readable_attribute_type_name(attr.attr_type));
 // 		row[attribute_table_columns.updated] = Glib::Markup::escape_text(AtaStorageAttribute::get_update_type_name(attr.update_type));
-		row[attribute_table_columns.when_failed] = Glib::Markup::escape_text(
+		row[ata_attribute_table_columns.when_failed] = Glib::Markup::escape_text(
 				AtaStorageAttribute::get_readable_fail_time_name(attr.when_failed));
-		row[attribute_table_columns.tooltip] = p.get_description();  // markup
-		row[attribute_table_columns.storage_property] = &p;
+		row[ata_attribute_table_columns.tooltip] = p.get_description();  // markup
+		row[ata_attribute_table_columns.storage_property] = &p;
 
 		if (int(p.warning_level) > int(max_tab_warning))
 			max_tab_warning = p.warning_level;
@@ -1106,7 +1133,69 @@ void GscInfoWindow::fill_ui_attributes(const StoragePropertyRepository& property
 	app_set_top_labels(label_vbox, label_strings);
 
 	// tab label
-	app_highlight_tab_label(lookup_widget("attributes_tab_label"), max_tab_warning, tab_attributes_name);
+	app_highlight_tab_label(lookup_widget("attributes_tab_label"), max_tab_warning, tab_ata_attributes_name);
+}
+
+
+
+void GscInfoWindow::fill_ui_nvme_attributes(const StoragePropertyRepository& property_repo)
+{
+	const auto& props = property_repo.get_properties();
+
+	auto* treeview = lookup_widget<Gtk::TreeView*>("nvme_attributes_treeview");
+
+	Gtk::TreeModelColumnRecord model_columns;
+	[[maybe_unused]] int num_tree_col = 0;
+
+	model_columns.add(nvme_attribute_table_columns.displayable_name);
+	num_tree_col = app_gtkmm_create_tree_view_column(nvme_attribute_table_columns.displayable_name, *treeview,
+			_("Description"), _("Entry description"), true);
+	treeview->set_search_column(nvme_attribute_table_columns.displayable_name.index());
+
+	model_columns.add(nvme_attribute_table_columns.value);
+	num_tree_col = app_gtkmm_create_tree_view_column(nvme_attribute_table_columns.value, *treeview,
+			_("Value"), _("Value"), false);
+
+	model_columns.add(nvme_attribute_table_columns.tooltip);
+	treeview->set_tooltip_column(nvme_attribute_table_columns.tooltip.index());
+
+	model_columns.add(nvme_attribute_table_columns.storage_property);
+
+
+	// create a TreeModel (ListStore)
+	Glib::RefPtr<Gtk::ListStore> list_store = Gtk::ListStore::create(model_columns);
+	treeview->set_model(list_store);
+
+	for (int i = 0; i < int(treeview->get_n_columns()); ++i) {
+		Gtk::TreeViewColumn* tcol = treeview->get_column(i);
+		tcol->set_cell_data_func(*(tcol->get_first_cell()),
+				sigc::bind(sigc::mem_fun(*this, &GscInfoWindow::cell_renderer_for_nvme_attributes), i));
+	}
+
+	WarningLevel max_tab_warning = WarningLevel::None;
+	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
+
+	for (const auto& p : props) {
+		if (p.section != StoragePropertySection::NvmeAttributes || !p.show_in_ui)
+			continue;
+
+		Gtk::TreeRow row = *(list_store->append());
+
+		const auto& value = p.format_value();
+		row[nvme_attribute_table_columns.displayable_name] = Glib::Markup::escape_text(p.displayable_name);
+		row[nvme_attribute_table_columns.value] = Glib::Markup::escape_text(value);
+		row[nvme_attribute_table_columns.tooltip] = p.get_description();  // markup
+		row[nvme_attribute_table_columns.storage_property] = &p;
+
+		if (int(p.warning_level) > int(max_tab_warning))
+			max_tab_warning = p.warning_level;
+	}
+
+	auto* label_vbox = lookup_widget<Gtk::Box*>("nvme_attributes_label_vbox");
+	app_set_top_labels(label_vbox, label_strings);
+
+	// tab label
+	app_highlight_tab_label(lookup_widget("nvme_attributes_tab_label"), max_tab_warning, tab_nvme_attributes_name);
 }
 
 
@@ -1163,7 +1252,7 @@ void GscInfoWindow::fill_ui_statistics(const StoragePropertyRepository& property
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (const auto& p : props) {
-		if (p.section != StorageProperty::Section::Statistics || !p.show_in_ui)
+		if (p.section != StoragePropertySection::Statistics || !p.show_in_ui)
 			continue;
 
 		// add non-entry-type properties to label above
@@ -1343,7 +1432,7 @@ void GscInfoWindow::fill_ui_self_test_log(const StoragePropertyRepository& prope
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (auto&& p : props) {
-		if (p.section != StorageProperty::Section::SelftestLog || !p.show_in_ui)
+		if (p.section != StoragePropertySection::SelftestLog || !p.show_in_ui)
 			continue;
 
 		if (p.generic_name == "ata_smart_self_test_log/_merged")  // the whole section, we don't need it
@@ -1444,7 +1533,7 @@ void GscInfoWindow::fill_ui_error_log(const StoragePropertyRepository& property_
 	bool supports_details = false;
 
 	for (auto&& p : props) {
-		if (p.section != StorageProperty::Section::ErrorLog || !p.show_in_ui)
+		if (p.section != StoragePropertySection::ErrorLog || !p.show_in_ui)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1562,7 +1651,7 @@ void GscInfoWindow::fill_ui_temperature_log(const StoragePropertyRepository& pro
 			temp_prop_source = temp_attr2;
 		}
 
-		if (p.section != StorageProperty::Section::TemperatureLog || !p.show_in_ui)
+		if (p.section != StoragePropertySection::TemperatureLog || !p.show_in_ui)
 			continue;
 
 		if (p.generic_name == "_text_only/ata_sct_status/_not_present" && p.get_value<bool>()) {  // only show if unsupported
@@ -1657,7 +1746,7 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const StoragePropertyRepository
 	bool has_text_parser_capabilities = false;
 
 	for (auto&& p : props) {
-		if (p.section != StorageProperty::Section::Capabilities || !p.show_in_ui)
+		if (p.section != StoragePropertySection::Capabilities || !p.show_in_ui)
 			continue;
 
 		std::string flag_value;
@@ -1709,7 +1798,7 @@ WarningLevel GscInfoWindow::fill_ui_error_recovery(const StoragePropertyReposito
 	WarningLevel max_tab_warning = WarningLevel::None;
 
 	for (auto&& p : props) {
-		if (p.section != StorageProperty::Section::ErcLog || !p.show_in_ui)
+		if (p.section != StoragePropertySection::ErcLog || !p.show_in_ui)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1741,7 +1830,7 @@ WarningLevel GscInfoWindow::fill_ui_selective_self_test_log(const StoragePropert
 	WarningLevel max_tab_warning = WarningLevel::None;
 
 	for (auto&& p : props) {
-		if (p.section != StorageProperty::Section::SelectiveSelftestLog || !p.show_in_ui)
+		if (p.section != StoragePropertySection::SelectiveSelftestLog || !p.show_in_ui)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1773,7 +1862,7 @@ WarningLevel GscInfoWindow::fill_ui_physical(const StoragePropertyRepository& pr
 	WarningLevel max_tab_warning = WarningLevel::None;
 
 	for (auto&& p : props) {
-		if (p.section != StorageProperty::Section::PhyLog || !p.show_in_ui)
+		if (p.section != StoragePropertySection::PhyLog || !p.show_in_ui)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1805,7 +1894,7 @@ WarningLevel GscInfoWindow::fill_ui_directory(const StoragePropertyRepository& p
 	WarningLevel max_tab_warning = WarningLevel::None;
 
 	for (auto&& p : props) {
-		if (p.section != StorageProperty::Section::DirectoryLog || !p.show_in_ui)
+		if (p.section != StoragePropertySection::DirectoryLog || !p.show_in_ui)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1847,10 +1936,10 @@ inline void cell_renderer_set_warning_fg_bg(Gtk::CellRendererText* crt, const St
 
 
 
-void GscInfoWindow::cell_renderer_for_attributes(Gtk::CellRenderer* cr,
+void GscInfoWindow::cell_renderer_for_ata_attributes(Gtk::CellRenderer* cr,
 		const Gtk::TreeModel::iterator& iter, [[maybe_unused]] int column_index) const
 {
-	const StorageProperty* prop = (*iter)[this->attribute_table_columns.storage_property];
+	const StorageProperty* prop = (*iter)[this->ata_attribute_table_columns.storage_property];
 	if (!prop) {
 		return;
 	}
@@ -1859,17 +1948,17 @@ void GscInfoWindow::cell_renderer_for_attributes(Gtk::CellRenderer* cr,
 	if (auto* crt = dynamic_cast<Gtk::CellRendererText*>(cr)) {
 		cell_renderer_set_warning_fg_bg(crt, *prop);
 
-		if (column_index == attribute_table_columns.displayable_name.index()) {
+		if (column_index == ata_attribute_table_columns.displayable_name.index()) {
 			crt->property_weight() = Pango::WEIGHT_BOLD;
 		}
-		if (column_index == attribute_table_columns.type.index()) {
+		if (column_index == ata_attribute_table_columns.type.index()) {
 			if (attribute.attr_type == AtaStorageAttribute::AttributeType::Prefail) {
 				crt->property_weight() = Pango::WEIGHT_BOLD;
 			} else {  // reset to default value if reloading
 				crt->property_weight().reset_value();
 			}
 		}
-		if (column_index == attribute_table_columns.when_failed.index()) {
+		if (column_index == ata_attribute_table_columns.when_failed.index()) {
 			if (attribute.when_failed != AtaStorageAttribute::FailTime::None) {
 				crt->property_weight() = Pango::WEIGHT_BOLD;
 			} else {  // reset to default value if reloading
@@ -1879,20 +1968,44 @@ void GscInfoWindow::cell_renderer_for_attributes(Gtk::CellRenderer* cr,
 		}
 
 		// Monospace, align all numeric values
-		if (column_index == attribute_table_columns.normalized_value.index()
-				|| column_index == attribute_table_columns.worst.index()
-				|| column_index == attribute_table_columns.threshold.index()
-				|| column_index == attribute_table_columns.raw.index() ) {
+		if (column_index == ata_attribute_table_columns.normalized_value.index()
+				|| column_index == ata_attribute_table_columns.worst.index()
+				|| column_index == ata_attribute_table_columns.threshold.index()
+				|| column_index == ata_attribute_table_columns.raw.index() ) {
 			crt->property_family() = "Monospace";
 			crt->property_xalign() = 1.;  // right-align
 		}
-		if (column_index == attribute_table_columns.id.index()
-				|| column_index == attribute_table_columns.flag_value.index()) {
+		if (column_index == ata_attribute_table_columns.id.index()
+				|| column_index == ata_attribute_table_columns.flag_value.index()) {
 			crt->property_family() = "Monospace";
 			crt->property_xalign() = .5;  // center-align
 		}
-		if (column_index == attribute_table_columns.type.index()) {
+		if (column_index == ata_attribute_table_columns.type.index()) {
 			crt->property_xalign() = .5;  // center-align
+		}
+	}
+}
+
+
+
+void GscInfoWindow::cell_renderer_for_nvme_attributes(Gtk::CellRenderer* cr,
+		const Gtk::TreeModel::iterator& iter, int column_index) const
+{
+	const StorageProperty* prop = (*iter)[this->nvme_attribute_table_columns.storage_property];
+	if (!prop) {
+		return;
+	}
+
+	if (auto* crt = dynamic_cast<Gtk::CellRendererText*>(cr)) {
+		cell_renderer_set_warning_fg_bg(crt, *prop);
+
+		if (column_index == nvme_attribute_table_columns.displayable_name.index()) {
+			crt->property_weight() = Pango::WEIGHT_BOLD;
+		}
+
+		if (column_index == nvme_attribute_table_columns.value.index()) {
+			crt->property_family() = "Monospace";
+			crt->property_xalign() = 1.;  // right-align
 		}
 	}
 }

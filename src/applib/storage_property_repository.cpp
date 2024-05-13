@@ -28,10 +28,10 @@ std::vector<StorageProperty>& StoragePropertyRepository::get_properties_ref()
 
 
 StorageProperty StoragePropertyRepository::lookup_property(
-		const std::string& generic_name, StorageProperty::Section section) const
+		const std::string& generic_name, StoragePropertySection section) const
 {
 	for (const auto& p : properties_) {
-		if (section != StorageProperty::Section::Unknown && p.section != section)
+		if (section != StoragePropertySection::Unknown && p.section != section)
 			continue;
 
 		if (p.generic_name == generic_name)
@@ -63,7 +63,7 @@ void StoragePropertyRepository::clear()
 
 
 
-bool StoragePropertyRepository::has_properties_for_section(StorageProperty::Section section) const
+bool StoragePropertyRepository::has_properties_for_section(StoragePropertySection section) const
 {
 	return std::any_of(properties_.begin(), properties_.end(),
 			[section](const StorageProperty& p) { return p.section == section; });

@@ -366,33 +366,67 @@ std::ostream& operator<< (std::ostream& os, const NvmeStorageSelftestEntry& b);
 
 
 
+/// Sections in output
+enum class StoragePropertySection {
+	Unknown,  ///< Used when searching in all sections
+	Info,  ///< Short info (--info)
+	OverallHealth,  ///< Overall-health (-H, --health)
+	Capabilities,  ///< General SMART Values, aka Capabilities (-c, --capabilities)
+	AtaAttributes,  ///< Attributes (-A, --attributes). These need decoding.
+	Statistics,  ///< Device statistics (--log=devstat). These need decoding.
+	ErrorLog,  ///< Error Log (--log=error)
+	SelftestLog,  ///< Self-test log (--log=selftest)
+	SelectiveSelftestLog,  ///< Selective self-test log (--log=selective)
+	TemperatureLog,  ///< SCT temperature (current and history) (--log=scttemp)
+	ErcLog,  ///< SCT Error Recovery Control settings (--log=scterc)
+	PhyLog,  ///< Phy log (--log=sataphy)
+	DirectoryLog,  ///< Directory log (--log=directory)
+	NvmeHealth,  ///< NVMe health (-H, --health)
+	NvmeAttributes,  ///< NVMe attributes (health log) (-A, --attributes)
+	NvmeErrorLog,  ///< NVMe error log (--log=error)
+};
+
+
+
+/// Helper structure for enum-related functions
+struct StoragePropertySectionExt
+		: public hz::EnumHelper<
+				StoragePropertySection,
+				StoragePropertySectionExt,
+				std::string>
+{
+	static constexpr StoragePropertySection default_value = StoragePropertySection::Unknown;
+
+	static std::unordered_map<EnumType, std::pair<std::string, std::string>> build_enum_map()
+	{
+		return {
+			{StoragePropertySection::Unknown,              {"unknown",              _("Unknown")}},
+			{StoragePropertySection::Info,                 {"info",                 _("Short Info")}},
+			{StoragePropertySection::OverallHealth,        {"overallHealth",        _("Overall Health")}},
+			{StoragePropertySection::Capabilities,         {"capabilities",         _("Capabilities")}},
+			{StoragePropertySection::AtaAttributes,        {"attributes",           _("Attributes")}},
+			{StoragePropertySection::Statistics,           {"statistics",           _("Statistics")}},
+			{StoragePropertySection::ErrorLog,             {"errorLog",             _("Error Log")}},
+			{StoragePropertySection::SelftestLog,          {"selftestLog",          _("Self-test Log")}},
+			{StoragePropertySection::SelectiveSelftestLog, {"selectiveSelftestLog", _("Selective Self-test Log")}},
+			{StoragePropertySection::TemperatureLog,       {"temperatureLog",       _("Temperature Log")}},
+			{StoragePropertySection::ErcLog,               {"ercLog",               _("Error Recovery Control Log")}},
+			{StoragePropertySection::PhyLog,               {"phyLog",               _("Phy Log")}},
+			{StoragePropertySection::DirectoryLog,         {"directoryLog",         _("Directory Log")}},
+			{StoragePropertySection::NvmeHealth,           {"nvmeHealth",           _("NVMe Health")}},
+			{StoragePropertySection::NvmeAttributes,       {"nvmeAttributes",       _("NVMe Attributes")}},
+			{StoragePropertySection::NvmeErrorLog, {"nvmeErrorLog", _("NVMe Error Log")}},
+		};
+	}
+};
+
+
+
+
 
 /// A single parser-extracted property
 class StorageProperty {
 	public:
-
-		/// Sections in output
-		enum class Section {
-			Unknown,  ///< Used when searching in all sections
-			Info,  ///< Short info (--info)
-			Health,  ///< Overall-health (-H, --health)
-			Capabilities,  ///< General SMART Values, aka Capabilities (-c, --capabilities)
-			Attributes,  ///< Attributes (-A, --attributes). These need decoding.
-			Statistics,  ///< Device statistics (--log=devstat). These need decoding.
-			ErrorLog,  ///< Error Log (--log=error)
-			SelftestLog,  ///< Self-test log (--log=selftest)
-			SelectiveSelftestLog,  ///< Selective self-test log (--log=selective)
-			TemperatureLog,  ///< SCT temperature (current and history) (--log=scttemp)
-			ErcLog,  ///< SCT Error Recovery Control settings (--log=scterc)
-			PhyLog,  ///< Phy log (--log=sataphy)
-			DirectoryLog,  ///< Directory log (--log=directory)
-			NvmeAttributes,  ///< NVMe attributes (health log) (-A, --attributes)
-			NvmeErrorLog,  ///< NVMe error log (--log=error)
-		};
-
-		/// Get displayable section type name
-		[[nodiscard]] static std::string get_readable_section_name(Section s);
-
 
 		using ValueVariantType = std::variant<
 			std::monostate,  ///< None
@@ -413,7 +447,7 @@ class StorageProperty {
 		StorageProperty() = default;
 
 		/// Constructor
-		StorageProperty(Section section_, ValueVariantType value_)
+		StorageProperty(StoragePropertySection section_, ValueVariantType value_)
 				: section(section_), value(std::move(value_))
 		{ }
 
@@ -462,7 +496,7 @@ class StorageProperty {
 
 		std::string description;  ///< Property description (for tooltips, etc.). May contain markup.
 
-		Section section = Section::Unknown;  ///< Section this property belongs to
+		StoragePropertySection section = StoragePropertySection::Unknown;  ///< Section this property belongs to
 
 		std::string reported_value;  ///< String representation of the value as reported
 		std::string readable_value;  ///< User-friendly readable representation of value. if empty, use the other members.

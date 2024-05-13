@@ -25,7 +25,7 @@ class StoragePropertyRepository {
 		/// Find a property.
 		/// If section is Section::Unknown, search in all sections.
 		[[nodiscard]] StorageProperty lookup_property(const std::string& generic_name,
-				StorageProperty::Section section = StorageProperty::Section::Unknown) const;
+				StoragePropertySection section = StoragePropertySection::Unknown) const;
 
 
 		/// Set properties
@@ -39,7 +39,7 @@ class StoragePropertyRepository {
 
 
 		/// Check if there are any properties for a given section
-		[[nodiscard]] bool has_properties_for_section(StorageProperty::Section section) const;
+		[[nodiscard]] bool has_properties_for_section(StoragePropertySection section) const;
 
 
 	private:

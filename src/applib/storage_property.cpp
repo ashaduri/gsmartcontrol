@@ -307,32 +307,6 @@ std::ostream& operator<<(std::ostream& os, const NvmeStorageSelftestEntry& b)
 
 
 
-std::string StorageProperty::get_readable_section_name(Section s)
-{
-	static const std::unordered_map<Section, std::string> m {
-			{Section::Unknown,              "unknown"},
-			{Section::Info,                 "info"},
-			{Section::Health,               "health"},
-			{Section::Capabilities,         "capabilities"},
-			{Section::Attributes,           "attributes"},
-			{Section::Statistics,           "devstat"},
-			{Section::ErrorLog,             "error_log"},
-			{Section::SelftestLog,          "selftest_log"},
-			{Section::SelectiveSelftestLog, "selective_selftest_log"},
-			{Section::TemperatureLog,       "temperature_log"},
-			{Section::ErcLog,               "erc_log"},
-			{Section::PhyLog,               "phy_log"},
-			{Section::DirectoryLog,         "directory_log"},
-//			{Section::Internal, "internal"},
-	};
-	if (auto iter = m.find(s); iter != m.end()) {
-		return iter->second;
-	}
-	return "[internal_error]";
-}
-
-
-
 std::string StorageProperty::get_storable_value_type_name() const
 {
 	if (std::holds_alternative<std::monostate>(value))
@@ -373,7 +347,7 @@ void StorageProperty::dump(std::ostream& os, std::size_t internal_offset) const
 {
 	const std::string offset(internal_offset, ' ');
 
-	os << offset << "[" << get_readable_section_name(section) << "]"
+	os << offset << "[" << StoragePropertySectionExt::get_storable_name(section) << "]"
 			<< " " << generic_name
 			// << (generic_name == reported_name ? "" : (" (" + reported_name + ")"))
 			<< ": [" << get_storable_value_type_name() << "] ";
