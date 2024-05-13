@@ -42,7 +42,7 @@ class SmartctlJsonNvmeParser : public SmartctlParser {
 		hz::ExpectedVoid<SmartctlParserError> parse_section_health(const nlohmann::json& json_root_node);
 
 		/// Parse a section from json data
-		hz::ExpectedVoid<SmartctlParserError> parse_section_error_log(const nlohmann::json& json_root_node);
+		hz::ExpectedVoid<SmartctlParserError> parse_section_nvme_error_log(const nlohmann::json& json_root_node);
 
 		/// Parse a section from json data
 		hz::ExpectedVoid<SmartctlParserError> parse_section_selftest_log(const nlohmann::json& json_root_node);

@@ -66,31 +66,31 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse(std::string_
 	// Add properties for each parsed section so that the UI knows which tabs to show or hide
 	{
 		auto section_parse_status = parse_section_health(json_root_node);
-		StorageProperty p;
-		p.section = StorageProperty::Section::Health;
-		p.set_name("_parser/health_section_available");
-		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+//		StorageProperty p;
+//		p.section = StorageProperty::Section::Health;
+//		p.set_name("_parser/health_section_available");
+//		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 	{
-		auto section_parse_status = parse_section_error_log(json_root_node);
-		StorageProperty p;
-		p.section = StorageProperty::Section::ErrorLog;
-		p.set_name("_parser/error_log_section_available");
-		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+		auto section_parse_status = parse_section_nvme_error_log(json_root_node);
+//		StorageProperty p;
+//		p.section = StorageProperty::Section::ErrorLog;
+//		p.set_name("_parser/error_log_section_available");
+//		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 	{
 		auto section_parse_status = parse_section_selftest_log(json_root_node);
-		StorageProperty p;
-		p.section = StorageProperty::Section::SelftestLog;
-		p.set_name("_parser/selftest_log_section_available");
-		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+//		StorageProperty p;
+//		p.section = StorageProperty::Section::SelftestLog;
+//		p.set_name("_parser/selftest_log_section_available");
+//		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 	{
 		auto section_parse_status = parse_section_nvme_attributes(json_root_node);
-		StorageProperty p;
-		p.section = StorageProperty::Section::Devstat;
-		p.set_name("_parser/devstat_section_available");
-		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+//		StorageProperty p;
+//		p.section = StorageProperty::Section::Devstat;
+//		p.set_name("_parser/devstat_section_available");
+//		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 
 	return {};
@@ -245,18 +245,78 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_heal
 
 
 
-hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_error_log(const nlohmann::json& json_root_node)
+hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme_error_log(const nlohmann::json& json_root_node)
 {
 	using namespace SmartctlJsonParserHelpers;
 
 	bool section_properties_found = false;
 
-	// TODO
-	// nvme_error_information_log
+	// NOTE: nvme_error_information_log is not persistent across resets / restarts.
+
+	std::vector<std::string> lines;
+
+	if (get_node_exists(json_root_node, "nvme_error_information_log/size").value_or(false)) {
+		StorageProperty p;
+		p.set_name("nvme_error_information_log/size", "nvme_error_information_log/size", _("Non-Persistent Error Log Size"));
+		p.section = StorageProperty::Section::NvmeErrorLog;
+		p.value = get_node_data<int64_t>(json_root_node, "nvme_error_information_log/size").value_or(0);
+		add_property(p);
+
+		lines.emplace_back(std::format("Non-Persistent Error Log Size: {}", p.get_value<int64_t>()));
+		section_properties_found = true;
+	}
+	if (get_node_exists(json_root_node, "nvme_error_information_log/read").value_or(false)) {
+		StorageProperty p;
+		// Note: This number can be controlled using smartctl option.
+		p.set_name("nvme_error_information_log/read", "nvme_error_information_log/read", _("Number of Error Log Entries Read"));
+		p.section = StorageProperty::Section::NvmeErrorLog;
+		p.value = get_node_data<int64_t>(json_root_node, "nvme_error_information_log/size").value_or(0);
+		add_property(p);
+
+		lines.emplace_back(std::format("Number of Error Log Entries Read: {}", p.get_value<int64_t>()));
+		section_properties_found = true;
+	}
+
+	// Table
+	const std::string table_key = "nvme_error_information_log/table";
+	auto table_node = get_node(json_root_node, table_key);
+
+	// Entries
+	if (table_node.has_value() && table_node->is_array()) {
+		lines.emplace_back();
+
+		for (const auto& table_entry : table_node.value()) {
+			const uint64_t error_count = get_node_data<uint64_t>(table_entry, "error_count").value_or(0);
+			const uint64_t command_id = get_node_data<uint64_t>(table_entry, "command_id").value_or(0);
+			const std::string status_str = get_node_data<std::string>(table_entry, "status_field/string").value_or(std::string());
+			const uint64_t lba = get_node_data<uint64_t>(table_entry, "lba/value").value_or(0);
+
+			// Error #, Command ID, LBA, Status
+			lines.emplace_back(std::format(
+					"Error {:3}    Command ID: {:04X}    LBA: {:020}    {}",
+					error_count,
+					command_id,
+					lba,
+					status_str));
+		}
+
+		section_properties_found = true;
+	}
+
+	// The whole section
+	if (!lines.empty()) {
+		StorageProperty p;
+		p.set_name("NVMe Non-Persistent Error Information Log", "nvme_error_information_log/_merged");
+		p.section = StorageProperty::Section::NvmeErrorLog;
+		p.reported_value = hz::string_join(lines, "\n");
+		p.value = p.reported_value;  // string-type value
+
+		add_property(p);
+	}
 
 	if (!section_properties_found) {
 		return hz::Unexpected(SmartctlParserError::NoSection,
-				std::format("No section {} parsed.", StorageProperty::get_readable_section_name(StorageProperty::Section::ErrorLog)));
+				std::format("No section {} parsed.", StorageProperty::get_readable_section_name(StorageProperty::Section::NvmeErrorLog)));
 	}
 
 	return {};
@@ -396,7 +456,9 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme
 			{"nvme_smart_health_information_log/power_on_hours", _("Power On Hours"), integer_formatter<int64_t>()},
 			{"nvme_smart_health_information_log/unsafe_shutdowns", _("Unsafe Shutdowns"), integer_formatter<int64_t>()},
 			{"nvme_smart_health_information_log/media_errors", _("Media and Data Integrity Errors"), integer_formatter<int64_t>()},
-			{"nvme_smart_health_information_log/num_err_log_entries", _("Error Information Log Entries"), integer_formatter<int64_t>()},
+			// TODO Display warning if this is > 0
+			{"nvme_smart_health_information_log/num_err_log_entries", _("Preserved Error Information Log Entries"), integer_formatter<int64_t>()},  // preserved across resets
+
 			{"nvme_smart_health_information_log/warning_temp_time", _("Warning  Comp. Temperature Time"), integer_formatter<int64_t>()},
 			{"nvme_smart_health_information_log/critical_comp_time", _("Critical Comp. Temperature Time"), integer_formatter<int64_t>()},
 	};
