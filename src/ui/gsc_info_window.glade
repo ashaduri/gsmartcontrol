@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1 
+<!-- Generated with glade 3.38.2 
 
 Copyright (C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
 
@@ -48,38 +48,35 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
     </data>
   </object>
   <object class="GtkWindow" id="gsc_info_window">
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="title" translatable="yes">Device Information - GSmartControl</property>
-    <property name="window_position">center-on-parent</property>
-    <property name="default_width">850</property>
-    <property name="default_height">600</property>
-    <property name="destroy_with_parent">True</property>
-    <child>
-      <placeholder/>
-    </child>
+    <property name="window-position">center-on-parent</property>
+    <property name="default-width">850</property>
+    <property name="default-height">600</property>
+    <property name="destroy-with-parent">True</property>
     <child>
       <object class="GtkBox" id="vbox1">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="border_width">12</property>
+        <property name="can-focus">False</property>
+        <property name="border-width">12</property>
         <property name="orientation">vertical</property>
         <property name="spacing">12</property>
         <child>
           <object class="GtkBox" id="vbox2">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <property name="spacing">6</property>
             <child>
               <object class="GtkAlignment" id="alignment1">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="left_padding">6</property>
-                <property name="right_padding">6</property>
+                <property name="can-focus">False</property>
+                <property name="left-padding">6</property>
+                <property name="right-padding">6</property>
                 <child>
                   <object class="GtkBox" id="device_name_label_hbox">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <child>
                       <placeholder/>
                     </child>
@@ -95,33 +92,34 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
             <child>
               <object class="GtkNotebook" id="main_notebook">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="has_focus">True</property>
+                <property name="can-focus">True</property>
+                <property name="has-focus">True</property>
                 <child>
                   <object class="GtkBox" id="general_tab_vbox">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="orientation">vertical</property>
                     <child>
                       <object class="GtkScrolledWindow">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="shadow_type">in</property>
+                        <property name="can-focus">True</property>
+                        <property name="shadow-type">in</property>
                         <child>
                           <object class="GtkViewport">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="border_width">6</property>
+                            <property name="can-focus">False</property>
+                            <property name="border-width">6</property>
                             <child>
+                              <!-- n-columns=3 n-rows=3 -->
                               <object class="GtkGrid" id="identity_table">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
+                                <property name="can-focus">False</property>
                                 <property name="halign">center</property>
                                 <property name="valign">center</property>
                                 <property name="hexpand">True</property>
-                                <property name="border_width">12</property>
-                                <property name="row_spacing">6</property>
-                                <property name="column_spacing">12</property>
+                                <property name="border-width">12</property>
+                                <property name="row-spacing">6</property>
+                                <property name="column-spacing">12</property>
                                 <child>
                                   <placeholder/>
                                 </child>
@@ -165,32 +163,32 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                 <child type="tab">
                   <object class="GtkLabel" id="general_tab_label">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="has_focus">True</property>
-                    <property name="is_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">Drive identity and general health information</property>
-                    <property name="margin_top">3</property>
-                    <property name="margin_bottom">3</property>
+                    <property name="can-focus">True</property>
+                    <property name="has-focus">True</property>
+                    <property name="is-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Drive identity and general health information</property>
+                    <property name="margin-top">3</property>
+                    <property name="margin-bottom">3</property>
                     <property name="hexpand">True</property>
                     <property name="label" translatable="yes">_General</property>
-                    <property name="use_markup">True</property>
-                    <property name="use_underline">True</property>
+                    <property name="use-markup">True</property>
+                    <property name="use-underline">True</property>
                   </object>
                   <packing>
-                    <property name="tab_fill">False</property>
+                    <property name="tab-fill">False</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkBox" id="attributes_tab_vbox">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="border_width">6</property>
+                    <property name="can-focus">False</property>
+                    <property name="border-width">6</property>
                     <property name="orientation">vertical</property>
                     <property name="spacing">6</property>
                     <child>
                       <object class="GtkBox" id="attributes_label_vbox">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="orientation">vertical</property>
                         <property name="spacing">3</property>
                         <child>
@@ -206,14 +204,14 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                     <child>
                       <object class="GtkScrolledWindow" id="scrolledwindow4">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="shadow_type">in</property>
+                        <property name="can-focus">True</property>
+                        <property name="shadow-type">in</property>
                         <child>
                           <object class="GtkTreeView" id="attributes_treeview">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="rubber_banding">True</property>
-                            <property name="enable_grid_lines">both</property>
+                            <property name="can-focus">True</property>
+                            <property name="rubber-banding">True</property>
+                            <property name="enable-grid-lines">both</property>
                             <child internal-child="selection">
                               <object class="GtkTreeSelection">
                                 <property name="mode">multiple</property>
@@ -236,29 +234,29 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                 <child type="tab">
                   <object class="GtkLabel" id="attributes_tab_label">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">SMART attributes</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">SMART attributes</property>
                     <property name="hexpand">True</property>
                     <property name="label" translatable="yes">Attributes</property>
-                    <property name="use_markup">True</property>
-                    <property name="use_underline">True</property>
+                    <property name="use-markup">True</property>
+                    <property name="use-underline">True</property>
                   </object>
                   <packing>
                     <property name="position">1</property>
-                    <property name="tab_fill">False</property>
+                    <property name="tab-fill">False</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkBox" id="statistics_tab_vbox">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="border_width">6</property>
+                    <property name="can-focus">False</property>
+                    <property name="border-width">6</property>
                     <property name="orientation">vertical</property>
                     <property name="spacing">6</property>
                     <child>
                       <object class="GtkBox" id="statistics_label_vbox">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="orientation">vertical</property>
                         <property name="spacing">3</property>
                         <child>
@@ -274,15 +272,15 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                     <child>
                       <object class="GtkScrolledWindow" id="scrolledwindow10">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="shadow_type">in</property>
+                        <property name="can-focus">True</property>
+                        <property name="shadow-type">in</property>
                         <child>
                           <object class="GtkTreeView" id="statistics_treeview">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="headers_clickable">False</property>
-                            <property name="rubber_banding">True</property>
-                            <property name="enable_grid_lines">both</property>
+                            <property name="can-focus">True</property>
+                            <property name="headers-clickable">False</property>
+                            <property name="rubber-banding">True</property>
+                            <property name="enable-grid-lines">both</property>
                             <child internal-child="selection">
                               <object class="GtkTreeSelection">
                                 <property name="mode">multiple</property>
@@ -305,39 +303,39 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                 <child type="tab">
                   <object class="GtkLabel" id="statistics_tab_label">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">Drive statistics</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Drive statistics</property>
                     <property name="hexpand">True</property>
                     <property name="label" translatable="yes">Statistics</property>
-                    <property name="use_markup">True</property>
-                    <property name="use_underline">True</property>
+                    <property name="use-markup">True</property>
+                    <property name="use-underline">True</property>
                   </object>
                   <packing>
                     <property name="position">2</property>
-                    <property name="tab_fill">False</property>
+                    <property name="tab-fill">False</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkBox" id="test_tab_vbox">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="border_width">12</property>
+                    <property name="can-focus">False</property>
+                    <property name="border-width">12</property>
                     <property name="orientation">vertical</property>
                     <property name="spacing">6</property>
                     <child>
                       <object class="GtkBox" id="vbox4">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="orientation">vertical</property>
                         <property name="spacing">15</property>
                         <child>
                           <object class="GtkLabel" id="label1">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
+                            <property name="can-focus">False</property>
                             <property name="halign">start</property>
                             <property name="label" translatable="yes">Self-tests are built-in tests within the drive designed to recognize drive fault conditions. All self-tests are safe to user data. The tests can be performed during normal system operation, but will take longer to complete if the drive is not idle.</property>
                             <property name="wrap">True</property>
-                            <property name="width_chars">70</property>
+                            <property name="width-chars">70</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -346,20 +344,21 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                           </packing>
                         </child>
                         <child>
+                          <!-- n-columns=3 n-rows=4 -->
                           <object class="GtkGrid">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="row_spacing">6</property>
-                            <property name="column_spacing">6</property>
+                            <property name="can-focus">False</property>
+                            <property name="row-spacing">6</property>
+                            <property name="column-spacing">6</property>
                             <child>
                               <object class="GtkBox" id="test_result_hbox">
-                                <property name="can_focus">False</property>
+                                <property name="can-focus">False</property>
                                 <property name="spacing">6</property>
                                 <child>
                                   <object class="GtkImage" id="test_result_image">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
-                                    <property name="icon_name">dialog-information</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="icon-name">dialog-information</property>
                                     <property name="icon_size">3</property>
                                   </object>
                                   <packing>
@@ -371,10 +370,10 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                 <child>
                                   <object class="GtkLabel" id="test_result_label">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
+                                    <property name="can-focus">False</property>
                                     <property name="label">[Test result text placeholder]</property>
-                                    <property name="use_markup">True</property>
-                                    <property name="width_chars">70</property>
+                                    <property name="use-markup">True</property>
+                                    <property name="width-chars">70</property>
                                   </object>
                                   <packing>
                                     <property name="expand">True</property>
@@ -384,63 +383,63 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                 </child>
                               </object>
                               <packing>
-                                <property name="left_attach">0</property>
-                                <property name="top_attach">3</property>
+                                <property name="left-attach">0</property>
+                                <property name="top-attach">3</property>
                                 <property name="width">2</property>
                               </packing>
                             </child>
                             <child>
                               <object class="GtkProgressBar" id="test_completion_progressbar">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="tooltip_text" translatable="yes">Test progress</property>
+                                <property name="can-focus">False</property>
+                                <property name="tooltip-text" translatable="yes">Test progress</property>
                                 <property name="hexpand">True</property>
                                 <property name="text">[test completion % and ETA placeholder text]</property>
-                                <property name="show_text">True</property>
+                                <property name="show-text">True</property>
                                 <property name="ellipsize">end</property>
                               </object>
                               <packing>
-                                <property name="left_attach">0</property>
-                                <property name="top_attach">2</property>
+                                <property name="left-attach">0</property>
+                                <property name="top-attach">2</property>
                               </packing>
                             </child>
                             <child>
                               <object class="GtkButton" id="test_stop_button">
                                 <property name="label">gtk-stop</property>
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                                <property name="tooltip_text" translatable="yes">Abort the test</property>
-                                <property name="use_stock">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                                <property name="tooltip-text" translatable="yes">Abort the test</property>
+                                <property name="use-stock">True</property>
                               </object>
                               <packing>
-                                <property name="left_attach">1</property>
-                                <property name="top_attach">2</property>
+                                <property name="left-attach">1</property>
+                                <property name="top-attach">2</property>
                               </packing>
                             </child>
                             <child>
                               <object class="GtkScrolledWindow" id="scrolledwindow5">
-                                <property name="height_request">85</property>
+                                <property name="height-request">85</property>
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="shadow_type">in</property>
-                                <property name="min_content_height">80</property>
+                                <property name="can-focus">True</property>
+                                <property name="shadow-type">in</property>
+                                <property name="min-content-height">80</property>
                                 <child>
                                   <object class="GtkTextView" id="test_description_textview">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="tooltip_text" translatable="yes">Test description</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="tooltip-text" translatable="yes">Test description</property>
                                     <property name="editable">False</property>
-                                    <property name="wrap_mode">word</property>
-                                    <property name="left_margin">5</property>
-                                    <property name="right_margin">5</property>
-                                    <property name="cursor_visible">False</property>
+                                    <property name="wrap-mode">word</property>
+                                    <property name="left-margin">5</property>
+                                    <property name="right-margin">5</property>
+                                    <property name="cursor-visible">False</property>
                                   </object>
                                 </child>
                               </object>
                               <packing>
-                                <property name="left_attach">0</property>
-                                <property name="top_attach">1</property>
+                                <property name="left-attach">0</property>
+                                <property name="top-attach">1</property>
                                 <property name="width">2</property>
                               </packing>
                             </child>
@@ -448,31 +447,31 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                               <object class="GtkButton" id="test_execute_button">
                                 <property name="label">gtk-execute</property>
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                                <property name="tooltip_text" translatable="yes">Perform selected test</property>
-                                <property name="use_stock">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                                <property name="tooltip-text" translatable="yes">Perform selected test</property>
+                                <property name="use-stock">True</property>
                               </object>
                               <packing>
-                                <property name="left_attach">1</property>
-                                <property name="top_attach">0</property>
+                                <property name="left-attach">1</property>
+                                <property name="top-attach">0</property>
                               </packing>
                             </child>
                             <child>
                               <object class="GtkBox" id="test_execution_hbox">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
+                                <property name="can-focus">False</property>
                                 <property name="hexpand">True</property>
                                 <property name="spacing">6</property>
                                 <child>
                                   <object class="GtkBox" id="hbox4">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
+                                    <property name="can-focus">False</property>
                                     <property name="spacing">6</property>
                                     <child>
                                       <object class="GtkLabel" id="label2">
                                         <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
+                                        <property name="can-focus">False</property>
                                         <property name="halign">start</property>
                                         <property name="label" translatable="yes">Test type:</property>
                                         <attributes>
@@ -488,8 +487,8 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                     <child>
                                       <object class="GtkComboBox" id="test_type_combo">
                                         <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
-                                        <property name="tooltip_text" translatable="yes">Choose a test type</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="tooltip-text" translatable="yes">Choose a test type</property>
                                         <property name="model">model1</property>
                                       </object>
                                       <packing>
@@ -508,13 +507,13 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                 <child>
                                   <object class="GtkBox" id="hbox3">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
+                                    <property name="can-focus">False</property>
                                     <property name="spacing">6</property>
                                     <child>
                                       <object class="GtkLabel" id="label5">
                                         <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
-                                        <property name="tooltip_text" translatable="yes">Estimated test duration on idle drive</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="tooltip-text" translatable="yes">Estimated test duration on idle drive</property>
                                         <property name="label" translatable="yes">Estimated duration:</property>
                                         <attributes>
                                           <attribute name="weight" value="bold"/>
@@ -529,8 +528,8 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                     <child>
                                       <object class="GtkLabel" id="min_duration_label">
                                         <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
-                                        <property name="tooltip_text" translatable="yes">Minimum test duration on idle drive</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="tooltip-text" translatable="yes">Minimum test duration on idle drive</property>
                                         <property name="label" translatable="yes">N/A</property>
                                       </object>
                                       <packing>
@@ -549,9 +548,21 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                 </child>
                               </object>
                               <packing>
-                                <property name="left_attach">0</property>
-                                <property name="top_attach">0</property>
+                                <property name="left-attach">0</property>
+                                <property name="top-attach">0</property>
                               </packing>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
                             </child>
                           </object>
                           <packing>
@@ -570,23 +581,23 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                     <child>
                       <object class="GtkFrame">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="margin_top">6</property>
-                        <property name="label_xalign">0</property>
-                        <property name="shadow_type">none</property>
+                        <property name="can-focus">False</property>
+                        <property name="margin-top">6</property>
+                        <property name="label-xalign">0</property>
+                        <property name="shadow-type">none</property>
                         <child>
                           <object class="GtkAlignment">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
+                            <property name="can-focus">False</property>
                             <child>
                               <object class="GtkBox">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
+                                <property name="can-focus">False</property>
                                 <property name="orientation">vertical</property>
                                 <child>
                                   <object class="GtkBox" id="selftest_log_label_vbox">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
+                                    <property name="can-focus">False</property>
                                     <property name="orientation">vertical</property>
                                     <property name="spacing">3</property>
                                     <child>
@@ -603,14 +614,14 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                 <child>
                                   <object class="GtkScrolledWindow" id="scrolledwindow3">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="shadow_type">in</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="shadow-type">in</property>
                                     <child>
                                       <object class="GtkTreeView" id="selftest_log_treeview">
                                         <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="rubber_banding">True</property>
-                                        <property name="enable_grid_lines">both</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="rubber-banding">True</property>
+                                        <property name="enable-grid-lines">both</property>
                                         <child internal-child="selection">
                                           <object class="GtkTreeSelection">
                                             <property name="mode">multiple</property>
@@ -632,7 +643,7 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                         <child type="label">
                           <object class="GtkLabel">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
+                            <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Self-Test Log</property>
                             <attributes>
                               <attribute name="weight" value="bold"/>
@@ -654,35 +665,35 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                 <child type="tab">
                   <object class="GtkLabel" id="test_tab_label">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">Perform self-tests on the hard drive.
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Perform self-tests on the hard drive.
 Self-test log contains information about the most recent manually performed SMART self-tests.</property>
                     <property name="hexpand">True</property>
                     <property name="label" translatable="yes">Self-Tests</property>
-                    <property name="use_markup">True</property>
-                    <property name="use_underline">True</property>
+                    <property name="use-markup">True</property>
+                    <property name="use-underline">True</property>
                   </object>
                   <packing>
                     <property name="position">3</property>
-                    <property name="tab_fill">False</property>
+                    <property name="tab-fill">False</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkBox" id="error_log_tab_vbox">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="border_width">6</property>
+                    <property name="can-focus">False</property>
+                    <property name="border-width">6</property>
                     <property name="orientation">vertical</property>
                     <child>
                       <object class="GtkBox">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="orientation">vertical</property>
                         <property name="spacing">6</property>
                         <child>
                           <object class="GtkBox" id="error_log_label_vbox">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
+                            <property name="can-focus">False</property>
                             <property name="orientation">vertical</property>
                             <property name="spacing">3</property>
                             <child>
@@ -698,26 +709,26 @@ Self-test log contains information about the most recent manually performed SMAR
                         <child>
                           <object class="GtkBox" id="vbox5">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
+                            <property name="can-focus">False</property>
                             <property name="orientation">vertical</property>
                             <child>
                               <object class="GtkPaned" id="vpaned1">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
+                                <property name="can-focus">True</property>
                                 <property name="orientation">vertical</property>
                                 <property name="position">170</property>
-                                <property name="position_set">True</property>
-                                <property name="wide_handle">True</property>
+                                <property name="position-set">True</property>
+                                <property name="wide-handle">True</property>
                                 <child>
                                   <object class="GtkScrolledWindow" id="error_log_scrolledwindow">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="shadow_type">in</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="shadow-type">in</property>
                                     <child>
                                       <object class="GtkTreeView" id="error_log_treeview">
                                         <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="enable_grid_lines">both</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="enable-grid-lines">both</property>
                                         <child internal-child="selection">
                                           <object class="GtkTreeSelection"/>
                                         </child>
@@ -730,18 +741,18 @@ Self-test log contains information about the most recent manually performed SMAR
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkScrolledWindow" id="scrolledwindow1">
+                                  <object class="GtkScrolledWindow" id="error_log_details_scrolledwindow">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="shadow_type">in</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="shadow-type">in</property>
                                     <child>
                                       <object class="GtkTextView" id="error_log_textview">
                                         <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="tooltip_text" translatable="yes">Complete error log information</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="tooltip-text" translatable="yes">Complete error log information</property>
                                         <property name="editable">False</property>
-                                        <property name="left_margin">5</property>
-                                        <property name="right_margin">5</property>
+                                        <property name="left-margin">5</property>
+                                        <property name="right-margin">5</property>
                                         <property name="monospace">True</property>
                                       </object>
                                     </child>
@@ -780,29 +791,29 @@ Self-test log contains information about the most recent manually performed SMAR
                 <child type="tab">
                   <object class="GtkLabel" id="error_log_tab_label">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">SMART error log contains most recent non-trivial errors the hard drive has encountered</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">SMART error log contains most recent non-trivial errors the hard drive has encountered</property>
                     <property name="hexpand">True</property>
                     <property name="label" translatable="yes">Error Log</property>
-                    <property name="use_markup">True</property>
-                    <property name="use_underline">True</property>
+                    <property name="use-markup">True</property>
+                    <property name="use-underline">True</property>
                   </object>
                   <packing>
                     <property name="position">4</property>
-                    <property name="tab_fill">False</property>
+                    <property name="tab-fill">False</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkBox" id="temperature_log_tab_vbox">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="border_width">6</property>
+                    <property name="can-focus">False</property>
+                    <property name="border-width">6</property>
                     <property name="orientation">vertical</property>
                     <property name="spacing">6</property>
                     <child>
                       <object class="GtkBox" id="temperature_log_label_vbox">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="orientation">vertical</property>
                         <child>
                           <placeholder/>
@@ -817,15 +828,15 @@ Self-test log contains information about the most recent manually performed SMAR
                     <child>
                       <object class="GtkScrolledWindow" id="scrolledwindow6">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="shadow_type">in</property>
+                        <property name="can-focus">True</property>
+                        <property name="shadow-type">in</property>
                         <child>
                           <object class="GtkTextView" id="temperature_log_textview">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
+                            <property name="can-focus">True</property>
                             <property name="editable">False</property>
-                            <property name="left_margin">5</property>
-                            <property name="right_margin">5</property>
+                            <property name="left-margin">5</property>
+                            <property name="right-margin">5</property>
                             <property name="monospace">True</property>
                           </object>
                         </child>
@@ -844,37 +855,37 @@ Self-test log contains information about the most recent manually performed SMAR
                 <child type="tab">
                   <object class="GtkLabel" id="temperature_log_tab_label">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="tooltip_text" translatable="yes">Current temperature and history</property>
+                    <property name="can-focus">False</property>
+                    <property name="tooltip-text" translatable="yes">Current temperature and history</property>
                     <property name="hexpand">True</property>
                     <property name="label" translatable="yes">Temperature Log</property>
                   </object>
                   <packing>
                     <property name="position">5</property>
-                    <property name="tab_fill">False</property>
+                    <property name="tab-fill">False</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkBox" id="advanced_tab_vbox">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="orientation">vertical</property>
                     <property name="spacing">6</property>
                     <child>
                       <object class="GtkNotebook" id="advanced_notebook">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="border_width">6</property>
+                        <property name="can-focus">True</property>
+                        <property name="border-width">6</property>
                         <child>
                           <object class="GtkScrolledWindow" id="capabilities_scrolledwindow">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="shadow_type">in</property>
+                            <property name="can-focus">True</property>
+                            <property name="shadow-type">in</property>
                             <child>
                               <object class="GtkTreeView" id="capabilities_treeview">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="enable_grid_lines">both</property>
+                                <property name="can-focus">True</property>
+                                <property name="enable-grid-lines">both</property>
                                 <child internal-child="selection">
                                   <object class="GtkTreeSelection"/>
                                 </child>
@@ -885,29 +896,29 @@ Self-test log contains information about the most recent manually performed SMAR
                         <child type="tab">
                           <object class="GtkLabel" id="capabilities_tab_label">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="margin_left">6</property>
-                            <property name="margin_right">6</property>
-                            <property name="margin_top">3</property>
-                            <property name="margin_bottom">3</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-left">6</property>
+                            <property name="margin-right">6</property>
+                            <property name="margin-top">3</property>
+                            <property name="margin-bottom">3</property>
                             <property name="label" translatable="yes">Capabilities</property>
                           </object>
                           <packing>
-                            <property name="tab_fill">False</property>
+                            <property name="tab-fill">False</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkScrolledWindow" id="scrolledwindow9">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="shadow_type">in</property>
+                            <property name="can-focus">True</property>
+                            <property name="shadow-type">in</property>
                             <child>
                               <object class="GtkTextView" id="erc_log_textview">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
+                                <property name="can-focus">True</property>
                                 <property name="editable">False</property>
-                                <property name="left_margin">5</property>
-                                <property name="right_margin">5</property>
+                                <property name="left-margin">5</property>
+                                <property name="right-margin">5</property>
                                 <property name="monospace">True</property>
                               </object>
                             </child>
@@ -919,28 +930,28 @@ Self-test log contains information about the most recent manually performed SMAR
                         <child type="tab">
                           <object class="GtkLabel" id="erc_tab_label">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="margin_left">6</property>
-                            <property name="margin_right">6</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-left">6</property>
+                            <property name="margin-right">6</property>
                             <property name="label" translatable="yes">Error Recovery</property>
                           </object>
                           <packing>
                             <property name="position">1</property>
-                            <property name="tab_fill">False</property>
+                            <property name="tab-fill">False</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkScrolledWindow" id="scrolledwindow2">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="shadow_type">in</property>
+                            <property name="can-focus">True</property>
+                            <property name="shadow-type">in</property>
                             <child>
                               <object class="GtkTextView" id="selective_selftest_log_textview">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
+                                <property name="can-focus">True</property>
                                 <property name="editable">False</property>
-                                <property name="left_margin">5</property>
-                                <property name="right_margin">5</property>
+                                <property name="left-margin">5</property>
+                                <property name="right-margin">5</property>
                                 <property name="monospace">True</property>
                               </object>
                             </child>
@@ -952,28 +963,28 @@ Self-test log contains information about the most recent manually performed SMAR
                         <child type="tab">
                           <object class="GtkLabel" id="selective_selftest_tab_label">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="margin_left">6</property>
-                            <property name="margin_right">6</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-left">6</property>
+                            <property name="margin-right">6</property>
                             <property name="label" translatable="yes">Selective Self-Test Log</property>
                           </object>
                           <packing>
                             <property name="position">2</property>
-                            <property name="tab_fill">False</property>
+                            <property name="tab-fill">False</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkScrolledWindow" id="scrolledwindow7">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="shadow_type">in</property>
+                            <property name="can-focus">True</property>
+                            <property name="shadow-type">in</property>
                             <child>
                               <object class="GtkTextView" id="phy_log_textview">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
+                                <property name="can-focus">True</property>
                                 <property name="editable">False</property>
-                                <property name="left_margin">5</property>
-                                <property name="right_margin">5</property>
+                                <property name="left-margin">5</property>
+                                <property name="right-margin">5</property>
                                 <property name="monospace">True</property>
                               </object>
                             </child>
@@ -985,28 +996,28 @@ Self-test log contains information about the most recent manually performed SMAR
                         <child type="tab">
                           <object class="GtkLabel" id="phy_tab_label">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="margin_left">6</property>
-                            <property name="margin_right">6</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-left">6</property>
+                            <property name="margin-right">6</property>
                             <property name="label" translatable="yes">Physical</property>
                           </object>
                           <packing>
                             <property name="position">3</property>
-                            <property name="tab_fill">False</property>
+                            <property name="tab-fill">False</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkScrolledWindow" id="scrolledwindow8">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="shadow_type">in</property>
+                            <property name="can-focus">True</property>
+                            <property name="shadow-type">in</property>
                             <child>
                               <object class="GtkTextView" id="directory_log_textview">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
+                                <property name="can-focus">True</property>
                                 <property name="editable">False</property>
-                                <property name="left_margin">5</property>
-                                <property name="right_margin">5</property>
+                                <property name="left-margin">5</property>
+                                <property name="right-margin">5</property>
                                 <property name="monospace">True</property>
                               </object>
                             </child>
@@ -1018,14 +1029,14 @@ Self-test log contains information about the most recent manually performed SMAR
                         <child type="tab">
                           <object class="GtkLabel" id="directory_tab_label">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="margin_left">6</property>
-                            <property name="margin_right">6</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-left">6</property>
+                            <property name="margin-right">6</property>
                             <property name="label" translatable="yes">Directory</property>
                           </object>
                           <packing>
                             <property name="position">4</property>
-                            <property name="tab_fill">False</property>
+                            <property name="tab-fill">False</property>
                           </packing>
                         </child>
                       </object>
@@ -1038,22 +1049,22 @@ Self-test log contains information about the most recent manually performed SMAR
                   </object>
                   <packing>
                     <property name="position">6</property>
-                    <property name="tab_fill">False</property>
+                    <property name="tab-fill">False</property>
                   </packing>
                 </child>
                 <child type="tab">
                   <object class="GtkLabel" id="advanced_tab_label">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">Advanced parameters and logs</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Advanced parameters and logs</property>
                     <property name="hexpand">True</property>
                     <property name="label" translatable="yes">Advanced</property>
-                    <property name="use_markup">True</property>
-                    <property name="use_underline">True</property>
+                    <property name="use-markup">True</property>
+                    <property name="use-underline">True</property>
                   </object>
                   <packing>
                     <property name="position">6</property>
-                    <property name="tab_fill">False</property>
+                    <property name="tab-fill">False</property>
                   </packing>
                 </child>
               </object>
@@ -1073,19 +1084,19 @@ Self-test log contains information about the most recent manually performed SMAR
         <child>
           <object class="GtkBox" id="hbox1">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="spacing">6</property>
             <property name="homogeneous">True</property>
             <child>
               <object class="GtkButton" id="refresh_info_button">
                 <property name="label">gtk-refresh</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="tooltip_text" translatable="yes">Re-read all the information</property>
-                <property name="use_stock">True</property>
-                <accelerator key="F5" signal="clicked"/>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Re-read all the information</property>
+                <property name="use-stock">True</property>
                 <accelerator key="R" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                <accelerator key="F5" signal="clicked"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -1097,10 +1108,10 @@ Self-test log contains information about the most recent manually performed SMAR
               <object class="GtkButton" id="view_output_button">
                 <property name="label" translatable="yes">_View Output</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="tooltip_text" translatable="yes">View smartctl output</property>
-                <property name="use_underline">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">View smartctl output</property>
+                <property name="use-underline">True</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -1112,10 +1123,10 @@ Self-test log contains information about the most recent manually performed SMAR
               <object class="GtkButton" id="save_info_button">
                 <property name="label">gtk-save-as</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="tooltip_text" translatable="yes">Save the SMART information (smartctl output) to a text file</property>
-                <property name="use_stock">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Save the SMART information (smartctl output) to a text file</property>
+                <property name="use-stock">True</property>
                 <accelerator key="S" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
               </object>
               <packing>
@@ -1127,7 +1138,7 @@ Self-test log contains information about the most recent manually performed SMAR
             <child>
               <object class="GtkLabel" id="label8">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -1139,10 +1150,10 @@ Self-test log contains information about the most recent manually performed SMAR
               <object class="GtkButton" id="close_window_button">
                 <property name="label">gtk-close</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="tooltip_text" translatable="yes">Close this window</property>
-                <property name="use_stock">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Close this window</property>
+                <property name="use-stock">True</property>
               </object>
               <packing>
                 <property name="expand">True</property>
