@@ -589,7 +589,7 @@ void StorageDevice::read_common_properties()
 void StorageDevice::detect_drive_type_from_properties(const StoragePropertyRepository& property_repo)
 {
 	// This is set by Text parser
-	if (auto drive_type_prop = property_repo.lookup_property("_custom/parser_detected_drive_type"); !drive_type_prop.empty()) {
+	if (auto drive_type_prop = property_repo.lookup_property("_text_only/custom/parser_detected_drive_type"); !drive_type_prop.empty()) {
 		const auto& drive_type_storable_str = drive_type_prop.get_value<std::string>();
 		set_detected_type(StorageDeviceDetectedTypeExt::get_by_storable_name(drive_type_storable_str, StorageDeviceDetectedType::BasicScsi));
 

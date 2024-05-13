@@ -10,13 +10,17 @@ Copyright:
 /// @{
 
 #include "local_glibmm.h"
+#include <cstddef>
+#include <chrono>
 #include <ios>
 #include <map>
 #include <ostream>  // not iosfwd - it doesn't work
 #include <sstream>
 #include <locale>
 #include <stdexcept>
+#include <string>
 #include <unordered_map>
+#include <variant>
 
 
 #include "hz/string_num.h"  // number_to_string
@@ -28,7 +32,7 @@ Copyright:
 
 
 
-std::ostream& operator<< (std::ostream& os, const AtaStorageCapability& p)
+std::ostream& operator<< (std::ostream& os, const AtaStorageTextCapability& p)
 {
 	os
 			// << p.name << ": "
@@ -335,13 +339,13 @@ std::string StorageProperty::get_storable_value_type_name() const
 		return "empty";
 	if (std::holds_alternative<std::string>(value))
 		return "string";
-	if (std::holds_alternative<int64_t>(value))
+	if (std::holds_alternative<std::int64_t>(value))
 		return "integer";
 	if (std::holds_alternative<bool>(value))
 		return "bool";
 	if (std::holds_alternative<std::chrono::seconds>(value))
 		return "time_length";
-	if (std::holds_alternative<AtaStorageCapability>(value))
+	if (std::holds_alternative<AtaStorageTextCapability>(value))
 		return "capability";
 	if (std::holds_alternative<AtaStorageAttribute>(value))
 		return "attribute";
@@ -381,14 +385,14 @@ void StorageProperty::dump(std::ostream& os, std::size_t internal_offset) const
 		os << "[empty]";
 	} else if (std::holds_alternative<std::string>(value)) {
 		os << std::get<std::string>(value);
-	} else if (std::holds_alternative<int64_t>(value)) {
-		os << std::get<int64_t>(value) << " [" << reported_value << "]";
+	} else if (std::holds_alternative<std::int64_t>(value)) {
+		os << std::get<std::int64_t>(value) << " [" << reported_value << "]";
 	} else if (std::holds_alternative<bool>(value)) {
 		os << std::string(std::get<bool>(value) ? "Yes" : "No") << " [" << reported_value << "]";
 	} else if (std::holds_alternative<std::chrono::seconds>(value)) {
 		os << std::get<std::chrono::seconds>(value).count() << " sec [" << reported_value << "]";
-	} else if (std::holds_alternative<AtaStorageCapability>(value)) {
-		os << std::get<AtaStorageCapability>(value);
+	} else if (std::holds_alternative<AtaStorageTextCapability>(value)) {
+		os << std::get<AtaStorageTextCapability>(value);
 	} else if (std::holds_alternative<AtaStorageAttribute>(value)) {
 		os << std::get<AtaStorageAttribute>(value);
 	} else if (std::holds_alternative<AtaStorageStatistic>(value)) {
@@ -419,8 +423,8 @@ std::string StorageProperty::format_value(bool add_reported_too) const
 		return std::string(std::get<bool>(value) ? "Yes" : "No") + (add_reported_too ? (" [" + reported_value + "]") : "");
 	if (std::holds_alternative<std::chrono::seconds>(value))
 		return hz::format_time_length(std::get<std::chrono::seconds>(value)) + (add_reported_too ? (" [" + reported_value + "]") : "");
-	if (std::holds_alternative<AtaStorageCapability>(value))
-		return hz::stream_cast<std::string>(std::get<AtaStorageCapability>(value));
+	if (std::holds_alternative<AtaStorageTextCapability>(value))
+		return hz::stream_cast<std::string>(std::get<AtaStorageTextCapability>(value));
 	if (std::holds_alternative<AtaStorageAttribute>(value))
 		return hz::stream_cast<std::string>(std::get<AtaStorageAttribute>(value));
 	if (std::holds_alternative<AtaStorageStatistic>(value))

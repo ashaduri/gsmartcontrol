@@ -19,6 +19,7 @@ Copyright:
 #include <string_view>
 
 // #include "hz/locale_tools.h"  // ScopedCLocale, locale_c_get().
+#include "storage_device_detected_type.h"
 #include "storage_property.h"
 #include "hz/string_algo.h"  // string_*
 #include "hz/string_num.h"  // string_is_numeric, number_to_string
@@ -78,7 +79,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	if (app_pcre_match("/this device: CD\\/DVD/mi", output)
 			|| app_pcre_match("/^Device type:\\s+CD\\/DVD/mi", output)) {
 		StorageProperty p;
-		p.set_name("Drive type", "_custom/parser_detected_drive_type", "Parser-Detected Drive Type");
+		p.set_name("Drive type", "_text_only/custom/parser_detected_drive_type", "Parser-Detected Drive Type");
 		p.reported_value = "CD/DVD";
 		p.value = StorageDeviceDetectedTypeExt::get_storable_name(StorageDeviceDetectedType::CdDvd);
 		p.section = StorageProperty::Section::Info;  // add to info section
@@ -89,7 +90,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	// Product:              Raid 5 Volume
 	} else if (app_pcre_match("/Product:[ \\t]*Raid/mi", output)) {
 		StorageProperty p;
-		p.set_name("Drive type", "_custom/parser_detected_drive_type", "Parser-Detected Drive Type");
+		p.set_name("Drive type", "_text_only/custom/parser_detected_drive_type", "Parser-Detected Drive Type");
 		p.reported_value = "RAID";
 		p.value = StorageDeviceDetectedTypeExt::get_storable_name(StorageDeviceDetectedType::UnsupportedRaid);
 		p.section = StorageProperty::Section::Info;  // add to info section

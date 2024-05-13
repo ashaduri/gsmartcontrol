@@ -12,6 +12,7 @@ Copyright:
 #include "smartctl_text_ata_parser.h"
 
 // #include "local_glibmm.h"
+#include <chrono>
 #include <clocale>  // localeconv
 #include <cstddef>
 #include <cstdint>
@@ -955,7 +956,7 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 			// well, not really as reported, but still...
 			p.reported_value.append(numvalue_orig).append(" | ").append(strvalue_orig);
 
-			AtaStorageCapability cap;
+			AtaStorageTextCapability cap;
 			cap.reported_flag_value = numvalue_orig;
 			cap.flag_value = static_cast<uint16_t>(numvalue);  // full flag value
 			cap.reported_strvalue = strvalue_orig;
@@ -1038,7 +1039,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 
 
 	// Name the capability groups for easy matching when setting descriptions
-	if (cap_prop.is_value_type<AtaStorageCapability>()) {
+	if (cap_prop.is_value_type<AtaStorageTextCapability>()) {
 		if (re_offline_status_group.PartialMatch(cap_prop.reported_name)) {
 			cap_prop.generic_name = "ata_smart_data/offline_data_collection/status/_group";
 
@@ -1074,7 +1075,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 		sse.remaining_percent = -1;  // unknown or n/a
 
 		// check for lines in capability vector
-		for (const auto& sv : cap_prop.get_value<AtaStorageCapability>().strvalues) {
+		for (const auto& sv : cap_prop.get_value<AtaStorageTextCapability>().strvalues) {
 			std::string value;
 
 			if (app_pcre_match("/^([0-9]+)% of test remaining/mi", sv, &value)) {
@@ -1164,10 +1165,10 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 
 
 	// Extract subcapabilities from capability vectors and assign to "internal" section.
-	if (cap_prop.is_value_type<AtaStorageCapability>()) {
+	if (cap_prop.is_value_type<AtaStorageTextCapability>()) {
 
 		// check for lines in capability vector
-		for (const auto& sv : cap_prop.get_value<AtaStorageCapability>().strvalues) {
+		for (const auto& sv : cap_prop.get_value<AtaStorageTextCapability>().strvalues) {
 
 			// debug_out_dump("app", "Looking for internal capability in: \"" << sv << "\"\n");
 
@@ -1598,7 +1599,7 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 
 		if (re.PartialMatch(sub)) {
 			StorageProperty p(pt);
-			p.set_name("ata_smart_error_log/_not_present");
+			p.set_name("_text_only/ata_smart_error_log/_not_present");
 			p.displayable_name = "Warning";
 			p.readable_value = "Device does not support error logging";
 			add_property(p);
@@ -2000,7 +2001,7 @@ Index    Estimated Time   Temperature Celsius
 	// supported / unsupported
 	{
 		StorageProperty p(pt);
-		p.set_name("SCT commands unsupported", "ata_sct_status/_not_present");
+		p.set_name("SCT commands unsupported", "_text_only/ata_sct_status/_not_present");
 
 		// p.reported_value;  // nothing
 		p.value = app_pcre_match("/(SCT Commands not supported)|(SCT Data Table command not supported)/mi", sub);  // bool

@@ -58,40 +58,40 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 	protected:
 
 		/// fill_ui_with_info() helper
-		void fill_ui_general(const std::vector<StorageProperty>& props);
+		void fill_ui_general(const StoragePropertyRepository& property_repo);
 
 		/// fill_ui_with_info() helper
-		void fill_ui_attributes(const std::vector<StorageProperty>& props);
+		void fill_ui_attributes(const StoragePropertyRepository& property_repo);
 
 		/// fill_ui_with_info() helper
-		void fill_ui_statistics(const std::vector<StorageProperty>& props);
+		void fill_ui_statistics(const StoragePropertyRepository& property_repo);
 
 		/// fill_ui_with_info() helper
 		void fill_ui_self_test_info();
 
 		/// fill_ui_with_info() helper
-		void fill_ui_self_test_log(const std::vector<StorageProperty>& props);
+		void fill_ui_self_test_log(const StoragePropertyRepository& property_repo);
 
 		/// fill_ui_with_info() helper
-		void fill_ui_error_log(const std::vector<StorageProperty>& props);
+		void fill_ui_error_log(const StoragePropertyRepository& property_repo);
 
 		/// fill_ui_with_info() helper
-		void fill_ui_temperature_log(const std::vector<StorageProperty>& props);
+		void fill_ui_temperature_log(const StoragePropertyRepository& property_repo);
 
 		/// fill_ui_with_info() helper
-		WarningLevel fill_ui_capabilities(const std::vector<StorageProperty>& props);
+		WarningLevel fill_ui_capabilities(const StoragePropertyRepository& property_repo);
 
 		/// fill_ui_with_info() helper
-		WarningLevel fill_ui_error_recovery(const std::vector<StorageProperty>& props);
+		WarningLevel fill_ui_error_recovery(const StoragePropertyRepository& property_repo);
 
 		/// fill_ui_with_info() helper
-		WarningLevel fill_ui_selective_self_test_log(const std::vector<StorageProperty>& props);
+		WarningLevel fill_ui_selective_self_test_log(const StoragePropertyRepository& property_repo);
 
 		/// fill_ui_with_info() helper
-		WarningLevel fill_ui_physical(const std::vector<StorageProperty>& props);
+		WarningLevel fill_ui_physical(const StoragePropertyRepository& property_repo);
 
 		/// fill_ui_with_info() helper
-		WarningLevel fill_ui_directory(const std::vector<StorageProperty>& props);
+		WarningLevel fill_ui_directory(const StoragePropertyRepository& property_repo);
 
 
 		// ---------- Helpers
@@ -262,8 +262,9 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 		struct {
 			Gtk::TreeModelColumn<int> entry_index;
 			Gtk::TreeModelColumn<Glib::ustring> name;
-			Gtk::TreeModelColumn<std::string> flag_value;
-			Gtk::TreeModelColumn<Glib::ustring> str_values;
+			Gtk::TreeModelColumn<std::string> flag_value;  // Text ATA
+			Gtk::TreeModelColumn<Glib::ustring> str_values;  // Text ATA
+			Gtk::TreeModelColumn<Glib::ustring> value;  // JSON ATA
 			Gtk::TreeModelColumn<Glib::ustring> tooltip;
 			Gtk::TreeModelColumn<const StorageProperty*> storage_property;
 		} capabilities_table_columns;

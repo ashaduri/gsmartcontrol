@@ -30,8 +30,8 @@ Copyright:
 
 
 /// Holds one block of "capabilities" subsection (only for non-time-interval blocks).
-/// ATA only.
-class AtaStorageCapability {
+/// ATA Text parser only.
+class AtaStorageTextCapability {
 	public:
 		std::string reported_flag_value;  ///< original flag value as a string
 		uint16_t flag_value = 0x0;  ///< Flag value. This is one or sometimes two bytes (maybe more?)
@@ -41,7 +41,7 @@ class AtaStorageCapability {
 
 
 /// Output operator for debug purposes
-std::ostream& operator<< (std::ostream& os, const AtaStorageCapability& p);
+std::ostream& operator<< (std::ostream& os, const AtaStorageTextCapability& p);
 
 
 
@@ -97,7 +97,7 @@ class AtaStorageAttribute {
 		[[nodiscard]] std::string format_raw_value() const;
 
 
-		int32_t id = -1;  ///< Attribute ID (most vendors agree on this)
+		std::int32_t id = -1;  ///< Attribute ID (most vendors agree on this)
 		std::string flag;  ///< "Old" format is "0xXXXX", "brief" format is "PO--C-".
 		std::optional<uint8_t> value;  ///< Normalized value. May be unset ("---").
 		std::optional<uint8_t> worst;  ///< Worst ever value. May be unset ("---").
@@ -106,7 +106,7 @@ class AtaStorageAttribute {
 		UpdateType update_type = UpdateType::Unknown;  ///< When-updated type
 		FailTime when_failed = FailTime::Unknown;  ///< When-failed type
 		std::string raw_value;  ///< Raw value as a string, as presented by smartctl (formatted).
-		int64_t raw_value_int = 0;  ///< Same as raw_value, but parsed as int64. original value is 6 bytes I think.
+		std::int64_t raw_value_int = 0;  ///< Same as raw_value, but parsed as int64. original value is 6 bytes I think.
 
 };
 
@@ -131,9 +131,9 @@ class AtaStorageStatistic {
 		bool is_header = false;  ///< If the line is a header
 		std::string flags;  ///< Flags in "NDC" / "---" format
 		std::string value;  ///< Value as a string, as presented by smartctl (formatted).
-		int64_t value_int = 0;  ///< Same as value, but parsed as int64.
-		int64_t page = 0;  ///< Page
-		int64_t offset = 0;  ///< Offset in page
+		std::int64_t value_int = 0;  ///< Same as value, but parsed as int64.
+		std::int64_t page = 0;  ///< Page
+		std::int64_t offset = 0;  ///< Offset in page
 };
 
 
@@ -154,13 +154,13 @@ class AtaStorageErrorBlock {
 		[[nodiscard]] static WarningLevel get_warning_level_for_error_type(const std::string& type);
 
 
-		uint32_t error_num = 0;  ///< Error number
-		uint64_t log_index = 0;  ///< Log index
-		uint32_t lifetime_hours = 0;  ///< When the error occurred (in lifetime hours)
+		std::uint32_t error_num = 0;  ///< Error number
+		std::uint64_t log_index = 0;  ///< Log index
+		std::uint32_t lifetime_hours = 0;  ///< When the error occurred (in lifetime hours)
 		std::string device_state;  ///< Device state during the error - "active or idle", standby, etc.
 		std::vector<std::string> reported_types;  ///< Array of reported types (strings), e.g. "UNC".
 		std::string type_more_info;  ///< More info on error type (e.g. "at LBA = 0x0253eac0 = 39054016")
-		uint64_t lba = 0;  ///< LBA of the error
+		std::uint64_t lba = 0;  ///< LBA of the error
 };
 
 
@@ -211,12 +211,12 @@ class AtaStorageSelftestEntry {
 		[[nodiscard]] std::string get_readable_status() const;
 
 
-		uint32_t test_num = 0;  ///< Test number. always starts from 1. larger means older or newer, depending on model. 0 for capability.
+		std::uint32_t test_num = 0;  ///< Test number. always starts from 1. larger means older or newer, depending on model. 0 for capability.
 		std::string type;  ///< Extended offline, Short offline, Conveyance offline, etc. . capability: unused.
 		std::string status_str;  ///< Self-test routine in progress, Completed without error, etc. (as reported by log or capability)
 		Status status = Status::Unknown;  ///< same as status_str, but from enum
-		int8_t remaining_percent = -1;  ///< Remaining %. 0% for completed, 90% for started. -1 if n/a.
-		uint32_t lifetime_hours = 0;  ///< When the test happened (in lifetime hours). capability: unused.
+		std::int8_t remaining_percent = -1;  ///< Remaining %. 0% for completed, 90% for started. -1 if n/a.
+		std::uint32_t lifetime_hours = 0;  ///< When the test happened (in lifetime hours). capability: unused.
 		std::string lba_of_first_error;  ///< LBA of the first error. "-" or value (format? usually hex). capability: unused.
 		bool passed = false;  ///< Test passed or not.
 };
@@ -353,11 +353,11 @@ class NvmeStorageSelftestEntry {
 			Error
 		};
 
-		uint32_t test_num = 0;  ///< Test number, auto-generated
+		std::uint32_t test_num = 0;  ///< Test number, auto-generated
 		NvmeSelfTestType type = NvmeSelfTestType::Unknown;  ///< Test type
 		NvmeSelfTestResultType result = NvmeSelfTestResultType::Unknown;  ///< Test result
-		uint32_t power_on_hours = 0;  ///< When the test happened (in power-on hours).
-		uint64_t lba = 0;  ///< LBA of the first error.
+		std::uint32_t power_on_hours = 0;  ///< When the test happened (in power-on hours).
+		std::uint64_t lba = 0;  ///< LBA of the first error.
 };
 
 
@@ -387,7 +387,7 @@ class StorageProperty {
 			PhyLog,  ///< Phy log (--log=sataphy)
 			DirectoryLog,  ///< Directory log (--log=directory)
 			NvmeAttributes,  ///< NVMe attributes (health log) (-A, --attributes)
-//			Internal  ///< Internal application-specific data
+			NvmeErrorLog,  ///< NVMe error log (--log=error)
 		};
 
 		/// Get displayable section type name
@@ -397,10 +397,10 @@ class StorageProperty {
 		using ValueVariantType = std::variant<
 			std::monostate,  ///< None
 			std::string,  ///< Value (if it's a string)
-			int64_t,   ///< Value (if it's an integer)
+			std::int64_t,   ///< Value (if it's an integer)
 			bool,  ///< Value (if it's bool)
 			std::chrono::seconds,  ///< Value in seconds (if it's time interval)
-			AtaStorageCapability,  ///< Value (if it's a capability)
+			AtaStorageTextCapability,  ///< Value (if it's a capability)
 			AtaStorageAttribute,  ///< Value (if it's an attribute)
 			AtaStorageStatistic,  ///< Value (if it's a statistic from devstat)
 			AtaStorageErrorBlock,  ///< Value (if it's a error block)

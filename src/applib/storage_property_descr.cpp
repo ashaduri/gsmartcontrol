@@ -1566,7 +1566,7 @@ bool ata_storage_property_autoset_description(StorageProperty& p, StorageDeviceD
 
 
 	// checksum errors first
-	if (p.generic_name.find("_checksum_error") != std::string::npos) {
+	if (p.generic_name.find("_text_only/_checksum_error") != std::string::npos) {
 		p.set_description("Checksum errors indicate that SMART data is invalid. This shouldn't happen in normal circumstances.");
 		found = true;
 
@@ -1655,14 +1655,18 @@ bool ata_storage_property_autoset_description(StorageProperty& p, StorageDeviceD
 				break;
 
 			case StorageProperty::Section::TemperatureLog:
-				found = auto_set(p, "ata_sct_status/_not_present", "SCT support is needed for SCT temperature logging.");
+				found = auto_set(p, "_text_only/ata_sct_status/_not_present", "SCT support is needed for SCT temperature logging.");
+				break;
+
+			case StorageProperty::Section::NvmeErrorLog:
+			case StorageProperty::Section::NvmeAttributes:
+				// TODO
 				break;
 
 			case StorageProperty::Section::ErcLog:
 			case StorageProperty::Section::PhyLog:
 			case StorageProperty::Section::DirectoryLog:
 			case StorageProperty::Section::Unknown:
-//			case AtaStorageProperty::Section::Internal:
 				// nothing
 				break;
 		}
@@ -1680,7 +1684,7 @@ WarningLevel ata_storage_property_autoset_warning(StorageProperty& p)
 	std::string reason;
 
 	// checksum errors first
-	if (p.generic_name.find("_checksum_error") != std::string::npos) {
+	if (p.generic_name.find("_text_only/_checksum_error") != std::string::npos) {
 		w = WarningLevel::Warning;
 		reason = "The drive may have a broken implementation of SMART, or it's failing.";
 
@@ -1901,7 +1905,7 @@ WarningLevel ata_storage_property_autoset_warning(StorageProperty& p)
 					reason = "The drive is reporting internal errors. Usually this means uncorrectable data loss and similar severe errors. "
 							"Check the actual errors for details.";
 
-				} else if (name_match(p, "ata_smart_error_log/_not_present")) {
+				} else if (name_match(p, "_text_only/ata_smart_error_log/_not_present")) {
 					w = WarningLevel::Notice;
 					reason = "The drive does not support error logging. This means that SMART error history is unavailable.";
 				}
@@ -1949,7 +1953,7 @@ WarningLevel ata_storage_property_autoset_warning(StorageProperty& p)
 
 			case StorageProperty::Section::TemperatureLog:
 				// Don't highlight SCT Unsupported as warning, it's harmless.
-// 				if (name_match(p, "ata_sct_status/_not_present") && p.value_bool) {
+// 				if (name_match(p, "_text_only/ata_sct_status/_not_present") && p.value_bool) {
 // 					w = WarningLevel::notice;
 // 					reason = "The drive does not support SCT Temperature logging.";
 // 				}
@@ -1959,6 +1963,11 @@ WarningLevel ata_storage_property_autoset_warning(StorageProperty& p)
 					reason = "The temperature of the drive is higher than 50 degrees Celsius. "
 							"This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
 				}
+				break;
+
+			case StorageProperty::Section::NvmeErrorLog:
+			case StorageProperty::Section::NvmeAttributes:
+				// TODO
 				break;
 
 			case StorageProperty::Section::ErcLog:

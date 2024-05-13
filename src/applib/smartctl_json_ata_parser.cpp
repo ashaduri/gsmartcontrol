@@ -68,13 +68,12 @@ Information not printed in JSON yet:
 	_text_only/power_mode
 
 - Automatic Offline Data Collection toggle support
+ 	FIXME Already filed a bug report with smartmontools.
 	_text_only/aodc_support
 
  - Directory log supported
  	We don't use this.
  	_text_only/directory_log_supported
-
-ata_smart_error_log/_not_present
 
 */
 
@@ -113,80 +112,80 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse(std::string_v
 	// Add properties for each parsed section so that the UI knows which tabs to show or hide
 	{
 		auto section_parse_status = parse_section_health(json_root_node);
-		StorageProperty p;
-		p.section = StorageProperty::Section::Health;
-		p.set_name("_parser/health_section_available");
-		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+//		StorageProperty p;
+//		p.section = StorageProperty::Section::Health;
+//		p.set_name("_parser/health_section_available");
+//		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 	{
 		auto section_parse_status = parse_section_capabilities(json_root_node);
-		StorageProperty p;
-		p.section = StorageProperty::Section::Capabilities;
-		p.set_name("_parser/capabilities_section_available");
-		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+//		StorageProperty p;
+//		p.section = StorageProperty::Section::Capabilities;
+//		p.set_name("_parser/capabilities_section_available");
+//		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 	{
 		auto section_parse_status = parse_section_attributes(json_root_node);
-		StorageProperty p;
-		p.section = StorageProperty::Section::Attributes;
-		p.set_name("_parser/attributes_section_available");
-		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+//		StorageProperty p;
+//		p.section = StorageProperty::Section::Attributes;
+//		p.set_name("_parser/attributes_section_available");
+//		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 	{
 		auto section_parse_status = parse_section_directory_log(json_root_node);
-		StorageProperty p;
-		p.section = StorageProperty::Section::DirectoryLog;
-		p.set_name("_parser/directory_log_section_available");
-		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+//		StorageProperty p;
+//		p.section = StorageProperty::Section::DirectoryLog;
+//		p.set_name("_parser/directory_log_section_available");
+//		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 	{
 		auto section_parse_status = parse_section_error_log(json_root_node);
-		StorageProperty p;
-		p.section = StorageProperty::Section::ErrorLog;
-		p.set_name("_parser/error_log_section_available");
-		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+//		StorageProperty p;
+//		p.section = StorageProperty::Section::ErrorLog;
+//		p.set_name("_parser/error_log_section_available");
+//		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 	{
 		auto section_parse_status = parse_section_selftest_log(json_root_node);
-		StorageProperty p;
-		p.section = StorageProperty::Section::SelftestLog;
-		p.set_name("_parser/selftest_log_section_available");
-		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+//		StorageProperty p;
+//		p.section = StorageProperty::Section::SelftestLog;
+//		p.set_name("_parser/selftest_log_section_available");
+//		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 	{
 		auto section_parse_status = parse_section_selective_selftest_log(json_root_node);
-		StorageProperty p;
-		p.section = StorageProperty::Section::SelectiveSelftestLog;
-		p.set_name("_parser/selective_selftest_log_section_available");
-		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+//		StorageProperty p;
+//		p.section = StorageProperty::Section::SelectiveSelftestLog;
+//		p.set_name("_parser/selective_selftest_log_section_available");
+//		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 	{
 		auto section_parse_status = parse_section_scttemp_log(json_root_node);
-		StorageProperty p;
-		p.section = StorageProperty::Section::TemperatureLog;
-		p.set_name("_parser/temperature_log_section_available");
-		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+//		StorageProperty p;
+//		p.section = StorageProperty::Section::TemperatureLog;
+//		p.set_name("_parser/temperature_log_section_available");
+//		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 	{
 		auto section_parse_status = parse_section_scterc_log(json_root_node);
-		StorageProperty p;
-		p.section = StorageProperty::Section::ErcLog;
-		p.set_name("_parser/erc_log_section_available");
-		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+//		StorageProperty p;
+//		p.section = StorageProperty::Section::ErcLog;
+//		p.set_name("_parser/erc_log_section_available");
+//		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 	{
 		auto section_parse_status = parse_section_devstat(json_root_node);
-		StorageProperty p;
-		p.section = StorageProperty::Section::Devstat;
-		p.set_name("_parser/devstat_section_available");
-		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+//		StorageProperty p;
+//		p.section = StorageProperty::Section::Devstat;
+//		p.set_name("_parser/devstat_section_available");
+//		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 	{
 		auto section_parse_status = parse_section_sataphy(json_root_node);
-		StorageProperty p;
-		p.section = StorageProperty::Section::PhyLog;
-		p.set_name("_parser/phy_log_section_available");
-		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
+//		StorageProperty p;
+//		p.section = StorageProperty::Section::PhyLog;
+//		p.set_name("_parser/phy_log_section_available");
+//		p.value = section_parse_status.has_value() || section_parse_status.error().data() != SmartctlParserError::NoSection;
 	}
 
 	return {};
@@ -333,13 +332,15 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_info(
 				[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
 						-> hz::ExpectedValue<StorageProperty, SmartctlParserError>
 				{
-					int64_t level = get_node_data<int64_t>(root_node, "ata_aam/level").value_or(0);
-					std::string level_string = get_node_data<std::string>(root_node, "ata_aam/string").value_or("");
-					StorageProperty p;
-					p.set_name(key, key, displayable_name);
-					p.readable_value = std::format("{} ({})", level_string, level);
-					p.value = level;
-					return p;
+					if (auto level_result = get_node_data<int64_t>(root_node, "ata_aam/level"); level_result.has_value()) {
+						std::string level_string = get_node_data<std::string>(root_node, "ata_aam/string").value_or("");
+						StorageProperty p;
+						p.set_name(key, key, displayable_name);
+						p.readable_value = std::format("{} ({})", level_string, level_result.value());
+						p.value = level_result.value();
+						return p;
+					}
+					return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
 				}
 			},
 			{"ata_aam/recommended_level", _("AAM Recommended Level"), integer_formatter<int64_t>()},
@@ -349,13 +350,15 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_info(
 				[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
 						-> hz::ExpectedValue<StorageProperty, SmartctlParserError>
 				{
-					int64_t level = get_node_data<int64_t>(root_node, "ata_apm/level").value_or(0);
-					std::string level_string = get_node_data<std::string>(root_node, "ata_apm/string").value_or("");
-					StorageProperty p;
-					p.set_name(key, key, displayable_name);
-					p.readable_value = std::format("{} ({})", level_string, level);
-					p.value = level;
-					return p;
+					if (auto level_result = get_node_data<int64_t>(root_node, "ata_apm/level"); level_result.has_value()) {
+						std::string level_string = get_node_data<std::string>(root_node, "ata_apm/string").value_or("");
+						StorageProperty p;
+						p.set_name(key, key, displayable_name);
+						p.readable_value = std::format("{} ({})", level_string, level_result.value());
+						p.value = level_result.value();
+						return p;
+					}
+					return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
 				}
 			},
 
@@ -598,8 +601,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_capab
 				[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
 							-> hz::ExpectedValue<StorageProperty, SmartctlParserError>
 				{
-					auto value_val = get_node_exists(root_node, "ata_sct_capabilities");
-					if (value_val.has_value()) {
+					if (auto value_val = get_node_exists(root_node, "ata_sct_capabilities"); value_val.has_value()) {
 						StorageProperty p;
 						p.set_name(key, key, displayable_name);
 						p.value = value_val.value();
@@ -976,6 +978,8 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_selec
 		p.section = StorageProperty::Section::SelectiveSelftestLog;
 		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_selective_self_test_log/revision").value_or(0);
 		add_property(p);
+
+		lines.emplace_back(std::format("SMART Selective self-test log data structure revision number: {}", p.get_value<int64_t>()));
 		section_properties_found = true;
 	}
 	if (get_node_exists(json_root_node, "ata_smart_selective_self_test_log/power_up_scan_resume_minutes").value_or(false)) {
@@ -986,16 +990,20 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_selec
 		p.section = StorageProperty::Section::SelectiveSelftestLog;
 		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_selective_self_test_log/power_up_scan_resume_minutes").value_or(0);
 		add_property(p);
+
+		lines.emplace_back(std::format("If Selective self-test is pending on power-up, resume delay: {} minutes", p.get_value<int64_t>()));
 		section_properties_found = true;
 	}
-	if (get_node_exists(json_root_node, "ata_smart_selective_self_test_log/remainder_scan_enabled").value_or(false)) {
+	if (get_node_exists(json_root_node, "ata_smart_selective_self_test_log/flags/remainder_scan_enabled").value_or(false)) {
 		StorageProperty p;
-		p.set_name("ata_smart_selective_self_test_log/remainder_scan_enabled",
-				"ata_smart_selective_self_test_log/remainder_scan_enabled",
+		p.set_name("ata_smart_selective_self_test_log/flags/remainder_scan_enabled",
+				"ata_smart_selective_self_test_log/flags/remainder_scan_enabled",
 				_("After scanning selected spans, scan remainder of the drive"));
 		p.section = StorageProperty::Section::SelectiveSelftestLog;
-		p.value = get_node_data<bool>(json_root_node, "ata_smart_selective_self_test_log/remainder_scan_enabled").value_or(0);
+		p.value = get_node_data<bool>(json_root_node, "ata_smart_selective_self_test_log/flags/remainder_scan_enabled").value_or(0);
 		add_property(p);
+
+		lines.emplace_back(std::format("After scanning selected spans, scan remainder of the drive: {}", p.get_value<bool>() ? "Yes" : "No"));
 		section_properties_found = true;
 	}
 
@@ -1005,6 +1013,8 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_selec
 
 	// Entries
 	if (table_node.has_value() && table_node->is_array()) {
+		lines.emplace_back();
+
 		int entry_num = 1;
 		for (const auto& table_entry : table_node.value()) {
 			const uint64_t lba_min = get_node_data<uint64_t>(table_entry, "lba_min").value_or(0);
@@ -1060,7 +1070,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_sctte
 		lines.emplace_back(std::format("SCT format version: {}", get_node_data<int64_t>(json_root_node, "ata_sct_status/sct_version").value_or(0)));
 	}
 	if (get_node_exists(json_root_node, "ata_sct_status/device_state").value_or(false)) {
-		lines.emplace_back(std::format("Device state: {}", get_node_data<std::string>(json_root_node, "ata_sct_status/device_state").value_or(std::string())));
+		lines.emplace_back(std::format("Device state: {}", get_node_data<std::string>(json_root_node, "ata_sct_status/device_state/string").value_or(std::string())));
 	}
 	if (get_node_exists(json_root_node, "ata_sct_status/temperature/current").value_or(false)) {
 		lines.emplace_back(std::format("Current temperature: {}° Celsius", get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/current").value_or(0)));

@@ -419,24 +419,24 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 	// Fill the tabs with info
 
 	// we need reference here - we take addresses of the elements
-	const auto& props = drive->get_property_repository().get_properties();  // it's a vector
+	const auto& property_repo = drive->get_property_repository();  // it's a vector
 
-	fill_ui_general(props);
-	fill_ui_attributes(props);
-	fill_ui_statistics(props);
+	fill_ui_general(property_repo);
+	fill_ui_attributes(property_repo);
+	fill_ui_statistics(property_repo);
 	if (clear_tests) {
 		fill_ui_self_test_info();
 	}
-	fill_ui_self_test_log(props);
-	fill_ui_error_log(props);
-	fill_ui_temperature_log(props);
+	fill_ui_self_test_log(property_repo);
+	fill_ui_error_log(property_repo);
+	fill_ui_temperature_log(property_repo);
 
 	// Advanced tab
-	auto caps_warning_level = fill_ui_capabilities(props);
-	auto errc_warning_level = fill_ui_error_recovery(props);
-	auto selective_warning_level = fill_ui_selective_self_test_log(props);
-	auto dir_warning_level = fill_ui_directory(props);
-	auto phy_warning_level = fill_ui_physical(props);
+	auto caps_warning_level = fill_ui_capabilities(property_repo);
+	auto errc_warning_level = fill_ui_error_recovery(property_repo);
+	auto selective_warning_level = fill_ui_selective_self_test_log(property_repo);
+	auto dir_warning_level = fill_ui_directory(property_repo);
+	auto phy_warning_level = fill_ui_physical(property_repo);
 
 	auto max_advanced_tab_warning = std::max({
 		caps_warning_level,
@@ -841,8 +841,10 @@ void GscInfoWindow::on_test_type_combo_changed()
 
 
 
-void GscInfoWindow::fill_ui_general(const std::vector<StorageProperty>& props)
+void GscInfoWindow::fill_ui_general(const StoragePropertyRepository& property_repo)
 {
+	const auto& props = property_repo.get_properties();
+
 	// filter out some properties
 	std::vector<StorageProperty> id_props, version_props, health_props;
 
@@ -932,8 +934,10 @@ void GscInfoWindow::fill_ui_general(const std::vector<StorageProperty>& props)
 
 
 
-void GscInfoWindow::fill_ui_attributes(const std::vector<StorageProperty>& props)
+void GscInfoWindow::fill_ui_attributes(const StoragePropertyRepository& property_repo)
 {
+	const auto& props = property_repo.get_properties();
+
 	auto* treeview = lookup_widget<Gtk::TreeView*>("attributes_treeview");
 
 	Gtk::TreeModelColumnRecord model_columns;
@@ -1057,8 +1061,10 @@ void GscInfoWindow::fill_ui_attributes(const std::vector<StorageProperty>& props
 
 
 
-void GscInfoWindow::fill_ui_statistics(const std::vector<StorageProperty>& props)
+void GscInfoWindow::fill_ui_statistics(const StoragePropertyRepository& property_repo)
 {
+	const auto& props = property_repo.get_properties();
+
 	auto* treeview = lookup_widget<Gtk::TreeView*>("statistics_treeview");
 
 	Gtk::TreeModelColumnRecord model_columns;
@@ -1076,6 +1082,7 @@ void GscInfoWindow::fill_ui_statistics(const std::vector<StorageProperty>& props
 	model_columns.add(statistics_table_columns.flags);
 	num_tree_col = app_gtkmm_create_tree_view_column(statistics_table_columns.flags, *treeview,
 			_("Flags"), _("Flags") + "\n\n"s
+					+ _("V: valid") + "\n"
 					+ _("N: value is normalized") + "\n"
 					+ _("D: supports Device Statistics Notification (DSN)") + "\n"
 					+ _("C: monitored condition met") + "\n"  // Related to DSN? From the specification, it looks like something user-controllable.
@@ -1228,8 +1235,10 @@ void GscInfoWindow::fill_ui_self_test_info()
 
 
 
-void GscInfoWindow::fill_ui_self_test_log(const std::vector<StorageProperty>& props)
+void GscInfoWindow::fill_ui_self_test_log(const StoragePropertyRepository& property_repo)
 {
+	const auto& props = property_repo.get_properties();
+
 	auto* treeview = lookup_widget<Gtk::TreeView*>("selftest_log_treeview");
 
 	Gtk::TreeModelColumnRecord model_columns;
@@ -1328,8 +1337,10 @@ void GscInfoWindow::fill_ui_self_test_log(const std::vector<StorageProperty>& pr
 
 
 
-void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
+void GscInfoWindow::fill_ui_error_log(const StoragePropertyRepository& property_repo)
 {
+	const auto& props = property_repo.get_properties();
+
 	auto* treeview = lookup_widget<Gtk::TreeView*>("error_log_treeview");
 
 	Gtk::TreeModelColumnRecord model_columns;
@@ -1380,12 +1391,15 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
 	WarningLevel max_tab_warning = WarningLevel::None;
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
+	bool supports_details = false;
+
 	for (auto&& p : props) {
 		if (p.section != StorageProperty::Section::ErrorLog || !p.show_in_ui)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
 		if (p.generic_name == "ata_smart_error_log/_merged") {
+			supports_details = true;  // Text parser only
 			if (auto* textview = lookup_widget<Gtk::TextView*>("error_log_textview")) {
 				// Add complete error log to textview window.
 				Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
@@ -1411,7 +1425,7 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
 						match_end.forward_word_end();  // include error number
 						titer = match_end;  // continue searching from here
 
-						Glib::ustring mark_name = match_start.get_slice(match_end);  // e.g. "Error 3"
+						const Glib::ustring mark_name = match_start.get_slice(match_end);  // e.g. "Error 3"
 						buffer->create_mark(mark_name, titer);
 					}
 				}
@@ -1426,8 +1440,6 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
 
 		} else {
 			const auto& eb = p.get_value<AtaStorageErrorBlock>();
-
-			std::string type_details = eb.type_more_info;
 
 			Gtk::TreeRow row = *(list_store->append());
 			row[error_log_table_columns.log_entry_index] = eb.error_num;
@@ -1450,6 +1462,10 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
 			max_tab_warning = p.warning_level;
 	}
 
+	// JSON parser does not support details, so hide the bottom area.
+	auto* details_area = lookup_widget<Gtk::ScrolledWindow*>("error_log_details_scrolledwindow");
+	details_area->set_visible(supports_details);
+
 	auto* label_vbox = lookup_widget<Gtk::Box*>("error_log_label_vbox");
 	app_set_top_labels(label_vbox, label_strings);
 
@@ -1459,8 +1475,10 @@ void GscInfoWindow::fill_ui_error_log(const std::vector<StorageProperty>& props)
 
 
 
-void GscInfoWindow::fill_ui_temperature_log(const std::vector<StorageProperty>& props)
+void GscInfoWindow::fill_ui_temperature_log(const StoragePropertyRepository& property_repo)
 {
+	const auto& props = property_repo.get_properties();
+
 	auto* textview = lookup_widget<Gtk::TextView*>("temperature_log_textview");
 
 	WarningLevel max_tab_warning = WarningLevel::None;
@@ -1497,7 +1515,7 @@ void GscInfoWindow::fill_ui_temperature_log(const std::vector<StorageProperty>& 
 		if (p.section != StorageProperty::Section::TemperatureLog || !p.show_in_ui)
 			continue;
 
-		if (p.generic_name == "ata_sct_status/_not_present" && p.get_value<bool>()) {  // only show if unsupported
+		if (p.generic_name == "_text_only/ata_sct_status/_not_present" && p.get_value<bool>()) {  // only show if unsupported
 			label_strings.emplace_back(_("SCT temperature commands not supported."), &p);
 			if (int(p.warning_level) > int(max_tab_warning))
 				max_tab_warning = p.warning_level;
@@ -1537,8 +1555,10 @@ void GscInfoWindow::fill_ui_temperature_log(const std::vector<StorageProperty>& 
 
 
 
-WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<StorageProperty>& props)
+WarningLevel GscInfoWindow::fill_ui_capabilities(const StoragePropertyRepository& property_repo)
 {
+	const auto& props = property_repo.get_properties();
+
 	auto* treeview = lookup_widget<Gtk::TreeView*>("capabilities_treeview");
 
 	Gtk::TreeModelColumnRecord model_columns;
@@ -1555,9 +1575,13 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<StorageProper
 
 	model_columns.add(capabilities_table_columns.flag_value);
 	num_tree_col = app_gtkmm_create_tree_view_column(capabilities_table_columns.flag_value, *treeview, _("Flags"), _("Flags"), false);
+//	treeview->get_column(num_tree_col - 1)->set_visible(false);  //
 
 	model_columns.add(capabilities_table_columns.str_values);
 	num_tree_col = app_gtkmm_create_tree_view_column(capabilities_table_columns.str_values, *treeview, _("Capabilities"), _("Capabilities"), false);
+
+	model_columns.add(capabilities_table_columns.value);
+	num_tree_col = app_gtkmm_create_tree_view_column(capabilities_table_columns.value, *treeview, _("Value"), _("Value"), false);
 
 	model_columns.add(capabilities_table_columns.tooltip);
 	treeview->set_tooltip_column(capabilities_table_columns.tooltip.index());
@@ -1580,6 +1604,8 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<StorageProper
 	WarningLevel max_tab_warning = WarningLevel::None;
 	int index = 1;
 
+	bool has_text_parser_capabilities = false;
+
 	for (auto&& p : props) {
 		if (p.section != StorageProperty::Section::Capabilities || !p.show_in_ui)
 			continue;
@@ -1587,9 +1613,10 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<StorageProper
 		std::string flag_value;
 		Glib::ustring str_value;
 
-		if (p.is_value_type<AtaStorageCapability>()) {
-			flag_value = hz::number_to_string_nolocale(p.get_value<AtaStorageCapability>().flag_value, 16);  // 0xXX
-			str_value = hz::string_join(p.get_value<AtaStorageCapability>().strvalues, "\n");
+		if (p.is_value_type<AtaStorageTextCapability>()) {
+			flag_value = hz::number_to_string_nolocale(p.get_value<AtaStorageTextCapability>().flag_value, 16);  // 0xXX
+			str_value = hz::string_join(p.get_value<AtaStorageTextCapability>().strvalues, "\n");
+			has_text_parser_capabilities = true;
 		} else {
 			// no flag value here
 			str_value = p.format_value();
@@ -1600,6 +1627,7 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<StorageProper
 		row[capabilities_table_columns.name] = Glib::Markup::escape_text(p.displayable_name);
 		row[capabilities_table_columns.flag_value] = Glib::Markup::escape_text(flag_value.empty() ? "-" : flag_value);
 		row[capabilities_table_columns.str_values] = Glib::Markup::escape_text(str_value);
+		row[capabilities_table_columns.value] = Glib::Markup::escape_text(str_value);
 		row[capabilities_table_columns.tooltip] = p.get_description();  // markup
 		row[capabilities_table_columns.storage_property] = &p;
 
@@ -1609,6 +1637,11 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<StorageProper
 		++index;
 	}
 
+	// Show/hide columns according to parser type.
+	treeview->get_column(2)->set_visible(has_text_parser_capabilities);  // flag_value
+	treeview->get_column(3)->set_visible(has_text_parser_capabilities);  // str_values
+	treeview->get_column(4)->set_visible(!has_text_parser_capabilities);  // value
+
 	// tab label
 	app_highlight_tab_label(lookup_widget("capabilities_tab_label"), max_tab_warning, tab_capabilities_name);
 
@@ -1617,8 +1650,10 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const std::vector<StorageProper
 
 
 
-WarningLevel GscInfoWindow::fill_ui_error_recovery(const std::vector<StorageProperty>& props)
+WarningLevel GscInfoWindow::fill_ui_error_recovery(const StoragePropertyRepository& property_repo)
 {
+	const auto& props = property_repo.get_properties();
+
 	auto* textview = lookup_widget<Gtk::TextView*>("erc_log_textview");
 
 	WarningLevel max_tab_warning = WarningLevel::None;
@@ -1647,8 +1682,10 @@ WarningLevel GscInfoWindow::fill_ui_error_recovery(const std::vector<StorageProp
 
 
 
-WarningLevel GscInfoWindow::fill_ui_selective_self_test_log(const std::vector<StorageProperty>& props)
+WarningLevel GscInfoWindow::fill_ui_selective_self_test_log(const StoragePropertyRepository& property_repo)
 {
+	const auto& props = property_repo.get_properties();
+
 	auto* textview = lookup_widget<Gtk::TextView*>("selective_selftest_log_textview");
 
 	WarningLevel max_tab_warning = WarningLevel::None;
@@ -1677,8 +1714,10 @@ WarningLevel GscInfoWindow::fill_ui_selective_self_test_log(const std::vector<St
 
 
 
-WarningLevel GscInfoWindow::fill_ui_physical(const std::vector<StorageProperty>& props)
+WarningLevel GscInfoWindow::fill_ui_physical(const StoragePropertyRepository& property_repo)
 {
+	const auto& props = property_repo.get_properties();
+
 	auto* textview = lookup_widget<Gtk::TextView*>("phy_log_textview");
 
 	WarningLevel max_tab_warning = WarningLevel::None;
@@ -1707,8 +1746,10 @@ WarningLevel GscInfoWindow::fill_ui_physical(const std::vector<StorageProperty>&
 
 
 
-WarningLevel GscInfoWindow::fill_ui_directory(const std::vector<StorageProperty>& props)
+WarningLevel GscInfoWindow::fill_ui_directory(const StoragePropertyRepository& property_repo)
 {
+	const auto& props = property_repo.get_properties();
+
 	auto* textview = lookup_widget<Gtk::TextView*>("directory_log_textview");
 
 	WarningLevel max_tab_warning = WarningLevel::None;

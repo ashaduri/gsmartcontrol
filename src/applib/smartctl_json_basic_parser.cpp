@@ -93,10 +93,12 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 
 			{"vendor", _("Vendor"), string_formatter()},  // Flash drive
 			{"scsi_vendor", _("Vendor"), string_formatter()},  // Flash drive
+
 			{"product", _("Product"), string_formatter()},  // Flash drive
 			{"scsi_product", _("Product"), string_formatter()},  // Flash drive
 
 			{"model_family", _("Model Family"), string_formatter()},  // (S)ATA
+
 			{"model_name", _("Device Model"), string_formatter()},
 			{"scsi_model_name", _("Device Model"), string_formatter()},  // Flash drive
 
