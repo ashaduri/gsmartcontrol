@@ -1626,7 +1626,7 @@ bool ata_storage_property_autoset_description(StorageProperty& p, StorageDeviceD
 				}
 				break;
 
-			case StorageProperty::Section::Devstat:
+			case StorageProperty::Section::Statistics:
 				found = auto_set_statistic(p);
 				break;
 
@@ -1818,7 +1818,7 @@ WarningLevel ata_storage_property_autoset_warning(StorageProperty& p)
 				break;
 			}
 
-			case StorageProperty::Section::Devstat:
+			case StorageProperty::Section::Statistics:
 			{
 				if (p.is_value_type<AtaStorageStatistic>()) {
 					const auto& statistic = p.get_value<AtaStorageStatistic>();

@@ -310,12 +310,12 @@ std::ostream& operator<<(std::ostream& os, const NvmeStorageSelftestEntry& b)
 std::string StorageProperty::get_readable_section_name(Section s)
 {
 	static const std::unordered_map<Section, std::string> m {
-			{Section::Unknown,  "unknown"},
-			{Section::Info,     "info"},
+			{Section::Unknown,              "unknown"},
+			{Section::Info,                 "info"},
 			{Section::Health,               "health"},
 			{Section::Capabilities,         "capabilities"},
 			{Section::Attributes,           "attributes"},
-			{Section::Devstat,              "devstat"},
+			{Section::Statistics,           "devstat"},
 			{Section::ErrorLog,             "error_log"},
 			{Section::SelftestLog,          "selftest_log"},
 			{Section::SelectiveSelftestLog, "selective_selftest_log"},

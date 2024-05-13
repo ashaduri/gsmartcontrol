@@ -204,7 +204,6 @@ namespace {
 		gboolean arg_locale = TRUE;  ///< if false, disable using system locale
 		gboolean arg_version = FALSE;  ///< if true, show version and exit
 		gboolean arg_scan = TRUE;  ///< if false, don't scan the system for drives on startup
-		gboolean arg_hide_tabs = TRUE;  ///< if true, hide additional info tabs when smart is disabled. false may help debugging.
 		gchar** arg_add_virtual = nullptr;  ///< load smartctl data from these files as virtual drives
 		gchar** arg_add_device = nullptr;  ///< add these device files manually
 		double arg_gdk_scale = std::numeric_limits<double>::quiet_NaN();  ///< The value of GDK_SCALE environment variable
@@ -223,8 +222,6 @@ namespace {
 					N_("Display version information"), nullptr },
 			{ "no-scan", '\0', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_scan),
 					N_("Don't scan devices on startup"), nullptr },
-			{ "no-hide-tabs", '\0', G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &(args.arg_hide_tabs),
-					N_("Don't hide non-identity tabs when SMART is disabled. Useful for debugging."), nullptr },
 			{ "add-virtual", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &(args.arg_add_virtual),
 					N_("Load smartctl data from file, creating a virtual drive. You can specify this option multiple times."), nullptr },
 			{ "add-device", '\0', 0, G_OPTION_ARG_FILENAME_ARRAY, &(args.arg_add_device),
@@ -378,7 +375,6 @@ bool app_init_and_loop(int& argc, char**& argv)
 	debug_out_dump("app", "Application options:\n"
 		<< "\tlocale: " << args.arg_locale << "\n"
 		<< "\tversion: " << args.arg_version << "\n"
-		<< "\thide_tabs: " << args.arg_hide_tabs << "\n"
 		<< "\tscan: " << args.arg_scan << "\n"
 		<< "\targ_add_virtual: " << (load_virtuals_str.empty() ? "[empty]" : load_virtuals_str) << "\n"
 		<< "\targ_add_device: " << (load_devices_str.empty() ? "[empty]" : load_devices_str) << "\n"
@@ -533,9 +529,6 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 	// add devices to the list on startup if specified.
 	get_startup_settings().add_devices = load_devices;
-
-	// hide tabs if SMART is disabled
-	get_startup_settings().hide_tabs_on_smart_disabled = bool(args.arg_hide_tabs);
 
 
 	// Create executor log window, but don't show it.

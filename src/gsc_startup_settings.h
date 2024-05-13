@@ -20,7 +20,6 @@ struct GscStartupSettings {
 	bool no_scan = false;  ///< No scanning on startup
 	std::vector<std::string> load_virtuals;  ///< Virtual files to load
 	std::vector<std::string> add_devices;  ///< Devices to add (with options)
-	bool hide_tabs_on_smart_disabled = true;  ///< Hide additional Info Window tabs if SMART is disabled.
 
 };
 

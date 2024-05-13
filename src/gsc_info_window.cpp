@@ -368,33 +368,83 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		}
 	}
 
-
-	// hide all tabs except the first if smart is disabled, because they may contain
-	// completely random data (smartctl does that sometimes).
-	if (get_startup_settings().hide_tabs_on_smart_disabled) {
-		const bool smart_enabled = (drive->get_smart_status() == StorageDevice::Status::Enabled);
+	// Hide tabs which have no properties associated with them
+	{
+		const auto& prop_repo = drive->get_property_repository();
 		Gtk::Widget* note_page_box = nullptr;
 
+		bool has_attributes = prop_repo.has_properties_for_section(StorageProperty::Section::Attributes);
 		if (note_page_box = lookup_widget("attributes_tab_vbox"); note_page_box != nullptr) {
-			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
+			note_page_box->set_visible(has_attributes);
 		}
+
+		bool has_statistics = prop_repo.has_properties_for_section(StorageProperty::Section::Statistics);
 		if (note_page_box = lookup_widget("statistics_tab_vbox"); note_page_box != nullptr) {
-			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
+			note_page_box->set_visible(has_statistics);
 		}
+
+		bool has_selftest = prop_repo.has_properties_for_section(StorageProperty::Section::SelftestLog);
 		if (note_page_box = lookup_widget("test_tab_vbox"); note_page_box != nullptr) {
-			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
+			// Some USB flash drives erroneously report SMART as enabled.
+			// note_page_box->set_visible(drive->get_smart_status() == StorageDevice::Status::Enabled);
+			note_page_box->set_visible(has_selftest);
 		}
+
+		bool has_error_log = prop_repo.has_properties_for_section(StorageProperty::Section::ErrorLog);
 		if (note_page_box = lookup_widget("error_log_tab_vbox"); note_page_box != nullptr) {
-			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
+			note_page_box->set_visible(has_error_log);
 		}
+
+		bool has_temperature_log = prop_repo.has_properties_for_section(StorageProperty::Section::TemperatureLog);
 		if (note_page_box = lookup_widget("temperature_log_tab_vbox"); note_page_box != nullptr) {
-			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
+			note_page_box->set_visible(has_temperature_log);
 		}
+
+
+		const bool has_capabilities = prop_repo.has_properties_for_section(StorageProperty::Section::Capabilities);
+		if (note_page_box = lookup_widget("capabilities_scrolledwindow"); note_page_box != nullptr) {
+			note_page_box->set_visible(has_capabilities);
+		}
+
+		const bool has_erc = prop_repo.has_properties_for_section(StorageProperty::Section::ErcLog);
+		if (note_page_box = lookup_widget("erc_scrolledwindow"); note_page_box != nullptr) {
+			note_page_box->set_visible(has_erc);
+		}
+
+		const bool has_selective = prop_repo.has_properties_for_section(StorageProperty::Section::SelectiveSelftestLog);
+		if (note_page_box = lookup_widget("selective_selftest_scrolledwindow"); note_page_box != nullptr) {
+			note_page_box->set_visible(has_selective);
+		}
+
+		const bool has_phy = prop_repo.has_properties_for_section(StorageProperty::Section::PhyLog);
+		if (note_page_box = lookup_widget("phy_scrolledwindow"); note_page_box != nullptr) {
+			note_page_box->set_visible(has_phy);
+		}
+
+		const bool has_dir = prop_repo.has_properties_for_section(StorageProperty::Section::DirectoryLog);
+		if (note_page_box = lookup_widget("directory_scrolledwindow"); note_page_box != nullptr) {
+			note_page_box->set_visible(has_dir);
+		}
+
+		const bool has_advanced =
+				has_capabilities
+				|| has_erc
+				|| has_selective
+				|| has_phy
+				|| has_dir;
 		if (note_page_box = lookup_widget("advanced_tab_vbox"); note_page_box != nullptr) {
-			if (smart_enabled) { note_page_box->show(); } else { note_page_box->hide(); }
+			note_page_box->set_visible(has_advanced);
 		}
+
+		// Hide tab titles if only one tab is visible
 		if (auto* notebook = lookup_widget<Gtk::Notebook*>("main_notebook")) {
-			notebook->set_show_tabs(smart_enabled);
+			notebook->set_show_tabs(
+					has_attributes
+					|| has_statistics
+					|| has_selftest
+					|| has_error_log
+					|| has_temperature_log
+					|| has_advanced);
 		}
 	}
 
@@ -1113,7 +1163,7 @@ void GscInfoWindow::fill_ui_statistics(const StoragePropertyRepository& property
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
 	for (const auto& p : props) {
-		if (p.section != StorageProperty::Section::Devstat || !p.show_in_ui)
+		if (p.section != StorageProperty::Section::Statistics || !p.show_in_ui)
 			continue;
 
 		// add non-entry-type properties to label above

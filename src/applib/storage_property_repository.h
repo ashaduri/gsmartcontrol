@@ -38,6 +38,10 @@ class StoragePropertyRepository {
 		void clear();
 
 
+		/// Check if there are any properties for a given section
+		[[nodiscard]] bool has_properties_for_section(StorageProperty::Section section) const;
+
+
 	private:
 
 		std::vector<StorageProperty> properties_;  ///< Parsed data properties

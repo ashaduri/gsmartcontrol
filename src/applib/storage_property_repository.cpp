@@ -4,9 +4,11 @@ Copyright:
 	(C) 2008 - 2024 Alexander Shaduri <ashaduri@gmail.com>
 ******************************************************************************/
 
-#include <string>
-
 #include "storage_property_repository.h"
+
+#include <algorithm>
+#include <string>
+#include <utility>
 
 
 
@@ -57,5 +59,13 @@ void StoragePropertyRepository::add_property(StorageProperty property)
 void StoragePropertyRepository::clear()
 {
 	properties_.clear();
+}
+
+
+
+bool StoragePropertyRepository::has_properties_for_section(StorageProperty::Section section) const
+{
+	return std::any_of(properties_.begin(), properties_.end(),
+			[section](const StorageProperty& p) { return p.section == section; });
 }
 

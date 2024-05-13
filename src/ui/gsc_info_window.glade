@@ -908,7 +908,7 @@ Self-test log contains information about the most recent manually performed SMAR
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkScrolledWindow" id="scrolledwindow9">
+                          <object class="GtkScrolledWindow" id="erc_scrolledwindow">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="shadow-type">in</property>
@@ -941,7 +941,7 @@ Self-test log contains information about the most recent manually performed SMAR
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkScrolledWindow" id="scrolledwindow2">
+                          <object class="GtkScrolledWindow" id="selective_selftest_scrolledwindow">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="shadow-type">in</property>
@@ -974,7 +974,7 @@ Self-test log contains information about the most recent manually performed SMAR
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkScrolledWindow" id="scrolledwindow7">
+                          <object class="GtkScrolledWindow" id="phy_scrolledwindow">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="shadow-type">in</property>
@@ -1007,7 +1007,7 @@ Self-test log contains information about the most recent manually performed SMAR
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkScrolledWindow" id="scrolledwindow8">
+                          <object class="GtkScrolledWindow" id="directory_scrolledwindow">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="shadow-type">in</property>

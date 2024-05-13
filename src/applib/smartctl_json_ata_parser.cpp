@@ -1204,7 +1204,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_devst
 
 			StorageProperty page_prop;
 			page_prop.set_name(get_node_data<std::string>(page_entry, "name").value_or(std::string()));
-			page_prop.section = StorageProperty::Section::Devstat;
+			page_prop.section = StorageProperty::Section::Statistics;
 			page_prop.value = page_stat;
 			add_property(page_prop);
 
@@ -1222,7 +1222,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_devst
 
 					StorageProperty p;
 					p.set_name(get_node_data<std::string>(table_entry, "name").value_or(std::string()));
-					p.section = StorageProperty::Section::Devstat;
+					p.section = StorageProperty::Section::Statistics;
 					p.value = s;
 					add_property(p);
 				}
@@ -1234,7 +1234,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_devst
 
 	if (!section_properties_found) {
 		return hz::Unexpected(SmartctlParserError::NoSection,
-				std::format("No section {} parsed.", StorageProperty::get_readable_section_name(StorageProperty::Section::Devstat)));
+				std::format("No section {} parsed.", StorageProperty::get_readable_section_name(StorageProperty::Section::Statistics)));
 	}
 
 	return {};

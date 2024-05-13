@@ -378,7 +378,7 @@ class StorageProperty {
 			Health,  ///< Overall-health (-H, --health)
 			Capabilities,  ///< General SMART Values, aka Capabilities (-c, --capabilities)
 			Attributes,  ///< Attributes (-A, --attributes). These need decoding.
-			Devstat,  ///< Device statistics (--log=devstat). These need decoding.
+			Statistics,  ///< Device statistics (--log=devstat). These need decoding.
 			ErrorLog,  ///< Error Log (--log=error)
 			SelftestLog,  ///< Self-test log (--log=selftest)
 			SelectiveSelftestLog,  ///< Selective self-test log (--log=selective)

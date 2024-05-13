@@ -2088,7 +2088,7 @@ SCT Error Recovery Control:
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_devstat(const std::string& sub)
 {
 	StorageProperty pt;  // template for easy copying
-	pt.section = StorageProperty::Section::Devstat;
+	pt.section = StorageProperty::Section::Statistics;
 
 	// devstat log contains:
 /*
