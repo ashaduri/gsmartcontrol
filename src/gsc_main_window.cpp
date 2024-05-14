@@ -238,7 +238,6 @@ bool GscMainWindow::create_widgets()
 	"		<menuitem action='" APP_ACTION_NAME(action_view_details) "' />"
 	"		<separator />"
 	"		<menuitem action='" APP_ACTION_NAME(action_enable_smart) "' />"
-	"		<menuitem action='" APP_ACTION_NAME(action_enable_aodc) "' />"
 	"		<separator />"
 	"		<menuitem action='" APP_ACTION_NAME(action_reread_device_data) "' />"
 	"		<menuitem action='" APP_ACTION_NAME(action_perform_tests) "' />"
@@ -269,7 +268,6 @@ bool GscMainWindow::create_widgets()
 	"	<menuitem action='" APP_ACTION_NAME(action_view_details) "' />"
 	"	<separator />"
 	"	<menuitem action='" APP_ACTION_NAME(action_enable_smart) "' />"
-	"	<menuitem action='" APP_ACTION_NAME(action_enable_aodc) "' />"
 	"	<separator />"
 	"	<menuitem action='" APP_ACTION_NAME(action_reread_device_data) "' />"
 	"	<menuitem action='" APP_ACTION_NAME(action_perform_tests) "' />"
@@ -310,12 +308,6 @@ bool GscMainWindow::create_widgets()
 		lookup_widget<Gtk::CheckButton*>("status_smart_enabled_check")->set_related_action(action);
 		actiongroup_device_->add((action_map_[action_enable_smart] = action), Gtk::AccelKey("<control>M"),
 				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_enable_smart));
-
-		action = Gtk::ToggleAction::create(APP_ACTION_NAME(action_enable_aodc), _("Enable Auto Offline Data Collection"),
-				_("Toggle Automatic Offline Data Collection which will update \"offline\" SMART attributes every four hours"));
-		lookup_widget<Gtk::CheckButton*>("status_aodc_enabled_check")->set_related_action(action);
-		actiongroup_device_->add((action_map_[action_enable_aodc] = action), Gtk::AccelKey("<control>F"),
-				sigc::bind(sigc::mem_fun(*this, &GscMainWindow::on_action_activated), action_enable_aodc));
 
 		action = Gtk::Action::create(APP_ACTION_NAME(action_reread_device_data), Gtk::Stock::REFRESH, _("Re-read Data"),
 				_("Re-read basic SMART data"));
@@ -526,11 +518,6 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 					actiongroup_device_->get_action(APP_ACTION_NAME(action_enable_smart)).operator->()));
 			break;
 
-		case action_enable_aodc:  // this may be invoked on menu manipulation
-			on_action_enable_aodc_toggled(dynamic_cast<Gtk::ToggleAction*>(
-					actiongroup_device_->get_action(APP_ACTION_NAME(action_enable_aodc)).operator->()));
-			break;
-
 		case action_reread_device_data:
 			on_action_reread_device_data();
 			break;
@@ -641,14 +628,14 @@ void GscMainWindow::on_action_enable_smart_toggled(Gtk::ToggleAction* action)
 	if (!drive->get_smart_switch_supported())
 		return;
 
-	StorageDevice::Status status = drive->get_smart_status();
-	if (status == StorageDevice::Status::Unsupported)  // this shouldn't happen
+	StorageDevice::SmartStatus status = drive->get_smart_status();
+	if (status == StorageDevice::SmartStatus::Unsupported)  // this shouldn't happen
 		return;
 
 	bool toggle_active = action->get_active();
 
-	if ( (toggle_active && status == StorageDevice::Status::Disabled)
-			|| (!toggle_active && status == StorageDevice::Status::Enabled) ) {
+	if ( (toggle_active && status == StorageDevice::SmartStatus::Disabled)
+			|| (!toggle_active && status == StorageDevice::SmartStatus::Enabled) ) {
 
 		std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 		ex->create_running_dialog(this);
@@ -657,112 +644,6 @@ void GscMainWindow::on_action_enable_smart_toggled(Gtk::ToggleAction* action)
 
 		if (!command_status) {
 			std::string error_header = (toggle_active ? _("Cannot enable SMART") : _("Cannot disable SMART"));
-			gsc_executor_error_dialog_show(error_header, command_status.error().message(), this);
-		}
-
-		on_action_reread_device_data();  // reread if changed
-	}
-}
-
-
-
-void GscMainWindow::on_action_enable_aodc_toggled(Gtk::ToggleAction* action)
-{
-	if (!action || !iconview_)
-		return;
-	if (!action->get_sensitive())  // it's insensitive, nothing to do (this shouldn't happen).
-		return;
-
-	StorageDevicePtr drive = iconview_->get_selected_drive();
-
-	// we should be protected from these by disabled actions, but still...
-	if (!drive || drive->get_is_virtual() || drive->get_test_is_active())
-		return;
-
-	StorageDevice::Status status = drive->get_aodc_status();
-	if (status == StorageDevice::Status::Unsupported)  // this shouldn't happen
-		return;
-
-	if (status == StorageDevice::Status::Unknown) {
-		// it's supported, but we don't know if it's enabled or not. ask the user.
-
-		int response = 0;
-		{  // the dialog hides at the end of scope
-			Gtk::MessageDialog dialog(*this, "\n"s + _("Automatic Offline Data Collection status could not be determined.\n"
-					"\n<big>Do you want to enable or disable it?</big>") + "\n",
-					true, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_NONE, true);  // markup, modal
-
-			Gtk::Button dismiss_button(_("Dis_miss"), true);
-			dismiss_button.set_image(*Gtk::manage(new Gtk::Image(Gtk::Stock::CANCEL, Gtk::ICON_SIZE_BUTTON)));
-			dismiss_button.show_all();
-			dialog.add_action_widget(dismiss_button, Gtk::RESPONSE_CANCEL);
-
-			Gtk::Button disable_button(_("_Disable"), true);
-			disable_button.set_image(*Gtk::manage(new Gtk::Image(Gtk::Stock::NO, Gtk::ICON_SIZE_BUTTON)));
-			disable_button.show_all();
-			dialog.add_action_widget(disable_button, Gtk::RESPONSE_NO);
-
-			Gtk::Button enable_button(_("_Enable"), true);
-			enable_button.set_image(*Gtk::manage(new Gtk::Image(Gtk::Stock::YES, Gtk::ICON_SIZE_BUTTON)));
-			enable_button.set_can_default(true);
-			enable_button.show_all();
-			dialog.add_action_widget(enable_button, Gtk::RESPONSE_YES);
-			enable_button.grab_default();  // make it the default widget
-
-			dialog.set_position(Gtk::WIN_POS_CENTER_ON_PARENT);
-
-			response = dialog.run();  // blocks until the dialog is closed
-		}
-
-		bool enable_aodc = false;
-
-		switch (response) {
-			case Gtk::RESPONSE_YES:
-				enable_aodc = true;
-				break;
-			case Gtk::RESPONSE_NO:
-				enable_aodc = false;
-				break;
-			case Gtk::RESPONSE_CANCEL: case Gtk::RESPONSE_DELETE_EVENT:
-				// nothing, the dialog is closed already
-				return;
-			default:
-				debug_out_error("app", DBG_FUNC_MSG << "Unknown dialog response code: " << response << ".\n");
-				return;
-		}
-
-		std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
-		ex->create_running_dialog(this);
-
-		auto command_status = drive->set_aodc_enabled(enable_aodc, ex);  // run it with GUI support
-
-		if (!command_status) {
-			std::string error_header = (enable_aodc ? _("Cannot enable Automatic Offline Data Collection")
-					: _("Cannot disable Automatic Offline Data Collection"));
-			gsc_executor_error_dialog_show(error_header, command_status.error().message(), this);
-
-		} else {  // tell the user, because there's no other feedback
-			gui_show_info_dialog((enable_aodc ? _("Automatic Offline Data Collection enabled.")
-					: _("Automatic Offline Data Collection disabled.")), this);
-		}
-
-		return;
-	}
-
-
-	bool toggle_active = action->get_active();
-
-	if ( (toggle_active && status == StorageDevice::Status::Disabled)
-			|| (!toggle_active && status == StorageDevice::Status::Enabled) ) {
-
-		std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
-		ex->create_running_dialog(this);
-
-		auto command_status = drive->set_aodc_enabled(toggle_active, ex);  // run it with GUI support
-
-		if (!command_status) {
-			std::string error_header = (toggle_active ? _("Cannot enable Automatic Offline Data Collection")
-					: _("Cannot disable Automatic Offline Data Collection"));
 			gsc_executor_error_dialog_show(error_header, command_status.error().message(), this);
 		}
 
@@ -826,12 +707,10 @@ void GscMainWindow::set_drive_menu_status(const StorageDevicePtr& drive)
 
 		bool is_virtual = (drive && drive->get_is_virtual());
 
-		StorageDevice::Status smart_status = StorageDevice::Status::Unsupported;
-		StorageDevice::Status aodc_status = StorageDevice::Status::Unsupported;
+		StorageDevice::SmartStatus smart_status = StorageDevice::SmartStatus::Unsupported;
 
 		if (drive && !is_virtual) {
 			smart_status = drive->get_smart_status();
-			aodc_status = drive->get_aodc_status();
 		}
 
 
@@ -841,7 +720,7 @@ void GscMainWindow::set_drive_menu_status(const StorageDevicePtr& drive)
 			Glib::RefPtr<Gtk::Action> action;
 
 			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_perform_tests))))
-				action->set_sensitive(smart_status == StorageDevice::Status::Enabled);
+				action->set_sensitive(smart_status == StorageDevice::SmartStatus::Enabled);
 			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_reread_device_data))))
 				action->set_visible(drive && !is_virtual);
 			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_remove_device)))) {
@@ -853,8 +732,6 @@ void GscMainWindow::set_drive_menu_status(const StorageDevicePtr& drive)
 			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_enable_smart)))) {
 				action->set_sensitive(drive && drive->get_smart_switch_supported());
 			}
-			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_enable_aodc))))
-				action->set_sensitive(aodc_status != StorageDevice::Status::Unsupported);
 		}
 
 
@@ -863,33 +740,7 @@ void GscMainWindow::set_drive_menu_status(const StorageDevicePtr& drive)
 			Gtk::ToggleAction* action = dynamic_cast<Gtk::ToggleAction*>(
 					actiongroup_device_->get_action(APP_ACTION_NAME(action_enable_smart)).operator->());
 			if (action) {
-				action->set_active(smart_status == StorageDevice::Status::Enabled);
-			}
-		}
-
-
-		// aodc toggle status
-		{
-			Gtk::ToggleAction* action = dynamic_cast<Gtk::ToggleAction*>(
-					actiongroup_device_->get_action(APP_ACTION_NAME(action_enable_aodc)).operator->());
-
-			if (action) {
-				Gtk::CheckMenuItem* dev_odc_item = dynamic_cast<Gtk::CheckMenuItem*>(ui_manager_->get_widget(
-						"/main_menubar/device_menu/" APP_ACTION_NAME(action_enable_aodc)));
-				Gtk::CheckMenuItem* popup_odc_item = dynamic_cast<Gtk::CheckMenuItem*>(ui_manager_->get_widget(
-						"/device_popup/" APP_ACTION_NAME(action_enable_aodc)));
-				auto* status_aodc_check = lookup_widget<Gtk::CheckButton*>("status_aodc_enabled_check");
-
-				// true if supported, but unknown whether it's enabled or not.
-				if (dev_odc_item)
-					dev_odc_item->set_inconsistent(aodc_status == StorageDevice::Status::Unknown);
-				if (popup_odc_item)
-					popup_odc_item->set_inconsistent(aodc_status == StorageDevice::Status::Unknown);
-				if (status_aodc_check)
-					status_aodc_check->set_inconsistent(aodc_status == StorageDevice::Status::Unknown);
-
-				// for unknown it doesn't really matter what state it's in.
-				action->set_active(aodc_status == StorageDevice::Status::Enabled);
+				action->set_active(smart_status == StorageDevice::SmartStatus::Enabled);
 			}
 		}
 
@@ -1062,7 +913,7 @@ void GscMainWindow::rescan_devices()
 		// add them to iconview
 		for (auto& drive : drives_) {
 			if (rconfig::get_data<bool>("gui/show_smart_capable_only")) {
-				if (drive->get_smart_status() != StorageDevice::Status::Unsupported)
+				if (drive->get_smart_status() != StorageDevice::SmartStatus::Unsupported)
 					iconview_->add_entry(drive);
 			} else {
 				iconview_->add_entry(drive);
@@ -1207,7 +1058,7 @@ std::shared_ptr<GscInfoWindow> GscMainWindow::show_device_info_window(const Stor
 	}
 
 	// ask to enable SMART if it's supported but disabled
-	if (!drive->get_is_virtual() && (drive->get_smart_status() == StorageDevice::Status::Disabled)) {
+	if (!drive->get_is_virtual() && (drive->get_smart_status() == StorageDevice::SmartStatus::Disabled)) {
 
 		int status = 0;
 
@@ -1237,7 +1088,7 @@ std::shared_ptr<GscInfoWindow> GscMainWindow::show_device_info_window(const Stor
 
 	// Virtual drives are parsed at load time.
 	// Parse non-virtual, smart-supporting drives here.
-	if (!drive->get_is_virtual() && drive->get_smart_status() != StorageDevice::Status::Unsupported) {
+	if (!drive->get_is_virtual() && drive->get_smart_status() != StorageDevice::SmartStatus::Unsupported) {
 		std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 		ex->create_running_dialog(this, Glib::ustring::compose(_("Running {command} on %1..."), drive->get_device_with_type()));
 		auto command_status = drive->fetch_full_data_and_parse(ex);  // run it with GUI support

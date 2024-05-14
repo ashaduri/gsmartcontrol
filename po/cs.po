@@ -33,10 +33,6 @@ msgstr "Řada modelu:"
 msgid "enable smart (action-replaced text)"
 msgstr "Zapnout SMART"
 
-#: src/ui/gsc_main_window.glade:209
-msgid "enable aodc (action-replaced text)"
-msgstr "Zapnout AODC"
-
 #: src/ui/gsc_add_device_window.glade:29
 msgid "Add Device - GSmartControl"
 msgstr "Přidat zařízení - GSmartControl"

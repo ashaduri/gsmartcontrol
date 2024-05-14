@@ -67,10 +67,6 @@ Information not printed in JSON yet:
 	_text_only/write_cache_reorder
 	_text_only/power_mode
 
-- Automatic Offline Data Collection toggle support
- 	FIXME Already filed a bug report with smartmontools.
-	_text_only/aodc_support
-
  - Directory log supported
  	We don't use this.
  	_text_only/directory_log_supported

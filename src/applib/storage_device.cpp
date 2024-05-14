@@ -40,13 +40,12 @@ Copyright:
 
 
 
-std::string StorageDevice::get_status_displayable_name(Status status)
+std::string StorageDevice::get_status_displayable_name(SmartStatus status)
 {
-	static const std::unordered_map<Status, std::string> m {
-			{Status::Enabled, C_("status", "Enabled")},
-			{Status::Disabled, C_("status", "Disabled")},
-			{Status::Unsupported, C_("status", "Unsupported")},
-			{Status::Unknown, C_("status", "Unknown")},
+	static const std::unordered_map<SmartStatus, std::string> m {
+			{SmartStatus::Enabled,     C_("status", "Enabled")},
+			{SmartStatus::Disabled,    C_("status", "Disabled")},
+			{SmartStatus::Unsupported, C_("status", "Unsupported")},
 	};
 	if (auto iter = m.find(status); iter != m.end()) {
 		return iter->second;
@@ -92,7 +91,6 @@ void StorageDevice::clear_parse_results()
 	smart_supported_.reset();
 	smart_enabled_.reset();
 	model_name_.reset();
-	aodc_status_.reset();
 	family_name_.reset();
 	size_.reset();
 	health_property_.reset();
@@ -146,7 +144,7 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::fetch_basic_data_and_parse(
 //		return execute_status;
 //	}
 
-	// Set some properties too - they are needed for e.g. AODC status, etc.
+	// Set some properties too - they are needed for e.g. SMART on/off support, etc.
 	return this->parse_basic_data();
 }
 
@@ -524,42 +522,6 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 
 
 
-hz::ExpectedVoid<StorageDeviceError> StorageDevice::set_aodc_enabled(bool b, const std::shared_ptr<CommandExecutor>& smartctl_ex)
-{
-	if (this->test_is_active_) {
-		return hz::Unexpected(StorageDeviceError::TestRunning, _("A test is currently being performed on this drive."));
-	}
-
-	// execute smartctl --offlineauto=on|off /dev/...
-	// Output:
-/*
-=== START OF ENABLE/DISABLE COMMANDS SECTION ===
-SMART Automatic Offline Testing Enabled every four hours.
---------------------------- OR ---------------------------
-=== START OF ENABLE/DISABLE COMMANDS SECTION ===
-SMART Automatic Offline Testing Disabled.
---------------------------- OR ---------------------------
-A mandatory SMART command failed: exiting. To continue, add one or more '-T permissive' options.
-*/
-	std::string output;
-	auto status = execute_device_smartctl((b ? "--offlineauto=on" : "--offlineauto=off"), smartctl_ex, output);
-	if (!status) {
-		return status;
-	}
-
-	if (app_pcre_match("/Testing Enabled/mi", output) || app_pcre_match("/Testing Disabled/mi", output)) {
-		return {};  // success
-	}
-
-	if (app_pcre_match("/^A mandatory SMART command failed/mi", output)) {
-		return hz::Unexpected(StorageDeviceError::CommandFailed, _("Mandatory SMART command failed."));
-	}
-
-	return hz::Unexpected(StorageDeviceError::CommandUnknownError, _("Unknown error occurred."));
-}
-
-
-
 void StorageDevice::read_common_properties()
 {
 	if (auto prop = property_repository_.lookup_property("smart_support/available"); !prop.empty()) {
@@ -648,32 +610,32 @@ void StorageDevice::detect_drive_type_from_properties(const StoragePropertyRepos
 
 
 
-StorageDevice::Status StorageDevice::get_smart_status() const
+StorageDevice::SmartStatus StorageDevice::get_smart_status() const
 {
-	Status status = Status::Unsupported;
+	SmartStatus status = SmartStatus::Unsupported;
 	if (smart_enabled_.has_value()) {
 		if (smart_enabled_.value()) {  // enabled, supported
-			status = Status::Enabled;
+			status = SmartStatus::Enabled;
 		} else {  // if it's disabled, maybe it's unsupported, check that:
 			if (smart_supported_.has_value()) {
 				if (smart_supported_.value()) {  // disabled, supported
-					status = Status::Disabled;
+					status = SmartStatus::Disabled;
 				} else {  // disabled, unsupported
-					status = Status::Unsupported;
+					status = SmartStatus::Unsupported;
 				}
 			} else {  // disabled, support unknown
-				status = Status::Disabled;
+				status = SmartStatus::Disabled;
 			}
 		}
 	} else {  // status unknown
 		if (smart_supported_.has_value()) {
 			if (smart_supported_.value()) {  // status unknown, supported
-				status = Status::Disabled;  // at least give the user a chance to try enabling it
+				status = SmartStatus::Disabled;  // at least give the user a chance to try enabling it
 			} else {  // status unknown, unsupported
-				status = Status::Unsupported;  // most likely
+				status = SmartStatus::Unsupported;  // most likely
 			}
 		} else {  // status unknown, support unknown
-			status = Status::Unsupported;
+			status = SmartStatus::Unsupported;
 		}
 	}
 	return status;
@@ -683,56 +645,11 @@ StorageDevice::Status StorageDevice::get_smart_status() const
 
 bool StorageDevice::get_smart_switch_supported() const
 {
-	const bool supported = get_smart_status() != Status::Unsupported;
+	const bool supported = get_smart_status() != SmartStatus::Unsupported;
 	// NVMe does not support on/off
 	const bool is_nvme = get_detected_type() == StorageDeviceDetectedType::Nvme;
 
 	return !get_is_virtual() && supported && !is_nvme;
-}
-
-
-
-StorageDevice::Status StorageDevice::get_aodc_status() const
-{
-	// smart-disabled drives are known to print some garbage, so
-	// let's protect us from it.
-	if (get_smart_status() != Status::Enabled)
-		return Status::Unsupported;
-
-	if (aodc_status_.has_value())  // cached return value
-		return aodc_status_.value();
-
-	Status status = Status::Unknown;  // for now
-
-	bool aodc_supported = false;
-	int found = 0;
-
-	for (const auto& p : property_repository_.get_properties()) {
-//		if (p.section == AtaStoragePropertySection::Internal) {
-			if (p.generic_name == "ata_smart_data/offline_data_collection/status/value/_parsed") {  // if this is not present at all, we set the unknown status.
-				status = (p.get_value<bool>() ? Status::Enabled : Status::Disabled);
-				//++found;
-				continue;
-			}
-			if (p.generic_name == "_text_only/aodc_support") {
-				aodc_supported = p.get_value<bool>();
-				++found;
-				continue;
-			}
-			if (found >= 2)
-				break;
-//		}
-	}
-
-	if (!aodc_supported)
-		status = Status::Unsupported;
-	// if it's supported, then status may be enabled, disabled or unknown.
-
-	aodc_status_ = status;  // store to cache
-
-	debug_out_info("app", DBG_FUNC_MSG << "AODC status: " << get_status_displayable_name(status) << "\n");
-
-	return status;
 }
 
 

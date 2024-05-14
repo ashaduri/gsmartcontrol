@@ -52,15 +52,14 @@ class StorageDevice {
 	public:
 
 		/// Statuses of various states
-		enum class Status {
-			Enabled,  ///< SMART, AODC
-			Disabled,  ///< SMART, AODC
-			Unsupported,  ///< SMART, AODC
-			Unknown  ///< AODC - supported but unknown if it's enabled or not.
+		enum class SmartStatus {
+			Enabled,
+			Disabled,
+			Unsupported,
 		};
 
 		/// Get displayable name for Status.
-		[[nodiscard]] static std::string get_status_displayable_name(Status status);
+		[[nodiscard]] static std::string get_status_displayable_name(SmartStatus status);
 
 
 		/// Statuses of various parse states
@@ -115,9 +114,6 @@ class StorageDevice {
 		/// Try to enable SMART.
 		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> set_smart_enabled(bool b, const std::shared_ptr<CommandExecutor>& smartctl_ex);
 
-		/// Try to enable Automatic Offline Data Collection.
-		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> set_aodc_enabled(bool b, const std::shared_ptr<CommandExecutor>& smartctl_ex);
-
 
 		/// Read common properties (smart supported, smart enabled, etc.) from the repository.
 		void read_common_properties();
@@ -127,13 +123,10 @@ class StorageDevice {
 
 
 		/// Get SMART status
-		[[nodiscard]] Status get_smart_status() const;
+		[[nodiscard]] SmartStatus get_smart_status() const;
 
 		/// Get if SMART on/off is supported
 		[[nodiscard]] bool get_smart_switch_supported() const;
-
-		/// Get AODC status
-		[[nodiscard]] Status get_aodc_status() const;
 
 
 		/// Get format size string, or an empty string on error.
@@ -294,7 +287,6 @@ class StorageDevice {
 		// Common properties
 		std::optional<bool> smart_supported_;  ///< SMART support status
 		std::optional<bool> smart_enabled_;  ///< SMART enabled status
-		mutable std::optional<Status> aodc_status_;  ///< Cached aodc status.
 		std::optional<std::string> model_name_;  ///< Model name
 		std::optional<std::string> family_name_;  ///< Family name
 		std::optional<std::string> serial_number_;  ///< Serial number

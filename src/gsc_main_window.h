@@ -79,7 +79,6 @@ class GscMainWindow : public AppBuilderWidget<GscMainWindow, false> {
 
 			action_view_details,
 			action_enable_smart,
-			action_enable_aodc,
 			action_reread_device_data,
 			action_perform_tests,
 			action_remove_device,
@@ -145,9 +144,6 @@ class GscMainWindow : public AppBuilderWidget<GscMainWindow, false> {
 
 		/// Action callback
 		void on_action_enable_smart_toggled(Gtk::ToggleAction* action);
-
-		/// Action callback
-		void on_action_enable_aodc_toggled(Gtk::ToggleAction* action);
 
 		/// Action callback
 		void on_action_reread_device_data();
