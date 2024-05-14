@@ -29,6 +29,7 @@ Copyright:
 #include "applib/gui_utils.h"  // gui_show_error_dialog
 #include "applib/smartctl_executor_gui.h"
 #include "applib/storage_property.h"
+#include "applib/storage_device_detected_type.h"
 
 #include "gsc_text_window.h"
 #include "gsc_info_window.h"
@@ -399,7 +400,9 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			note_page_box->set_visible(has_statistics);
 		}
 
-		const bool has_selftest = prop_repo.has_properties_for_section(StoragePropertySection::SelftestLog);
+		bool has_selftest = prop_repo.has_properties_for_section(StoragePropertySection::SelftestLog);
+		// NVMe spec supports self-tests by default.
+		has_selftest = has_selftest || drive->get_detected_type() == StorageDeviceDetectedType::Nvme;
 		if (note_page_box = lookup_widget("test_tab_vbox"); note_page_box != nullptr) {
 			// Some USB flash drives erroneously report SMART as enabled.
 			// note_page_box->set_visible(drive->get_smart_status() == StorageDevice::Status::Enabled);
@@ -1353,17 +1356,17 @@ void GscInfoWindow::fill_ui_self_test_info()
 
 	Gtk::TreeModel::Row row;
 
-	auto test_ioffline = std::make_shared<SelfTest>(drive, SelfTest::TestType::ImmediateOffline);
-	if (test_ioffline->is_supported()) {
-		row = *(test_combo_model->append());
-		row[test_combo_columns.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::ImmediateOffline);
-		row[test_combo_columns.description] =
-				_("Immediate Offline Test (also known as Immediate Offline Data Collection)"
-				" is the manual version of Automatic Offline Data Collection, which, if enabled, is automatically run"
-				" every four hours. If an error occurs during this test, it will be reported in Error Log. Besides that,"
-				" its effects are visible only in that it updates the \"Offline\" Attribute values.");
-		row[test_combo_columns.self_test] = test_ioffline;
-	}
+//	auto test_ioffline = std::make_shared<SelfTest>(drive, SelfTest::TestType::ImmediateOffline);
+//	if (test_ioffline->is_supported()) {
+//		row = *(test_combo_model->append());
+//		row[test_combo_columns.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::ImmediateOffline);
+//		row[test_combo_columns.description] =
+//				_("Immediate Offline Test (also known as Immediate Offline Data Collection)"
+//				" is the manual version of Automatic Offline Data Collection, which, if enabled, is automatically run"
+//				" every four hours. If an error occurs during this test, it will be reported in Error Log. Besides that,"
+//				" its effects are visible only in that it updates the \"Offline\" Attribute values.");
+//		row[test_combo_columns.self_test] = test_ioffline;
+//	}
 
 	auto test_short = std::make_shared<SelfTest>(drive, SelfTest::TestType::ShortTest);
 	if (test_short->is_supported()) {
@@ -1470,6 +1473,8 @@ void GscInfoWindow::fill_ui_self_test_log(const StoragePropertyRepository& prope
 	WarningLevel max_tab_warning = WarningLevel::None;
 	std::vector<PropertyLabel> label_strings;  // outside-of-tree properties
 
+	bool ata_entries_found = false;
+
 	for (auto&& p : props) {
 		if (p.section != StoragePropertySection::SelftestLog || !p.show_in_ui)
 			continue;
@@ -1477,8 +1482,12 @@ void GscInfoWindow::fill_ui_self_test_log(const StoragePropertyRepository& prope
 		if (p.generic_name == "ata_smart_self_test_log/_merged")  // the whole section, we don't need it
 			continue;
 
+		if (p.is_value_type<AtaStorageSelftestEntry>()) {
+			ata_entries_found = true;
+		}
+
 		// add non-entry properties to label above
-		if (!p.is_value_type<AtaStorageSelftestEntry>()) {
+		if (!p.is_value_type<AtaStorageSelftestEntry>() && !p.is_value_type<NvmeStorageSelftestEntry>()) {
 			label_strings.emplace_back(p.displayable_name + ": " + p.format_value(), &p);
 
 			if (int(p.warning_level) > int(max_tab_warning))
@@ -1488,14 +1497,23 @@ void GscInfoWindow::fill_ui_self_test_log(const StoragePropertyRepository& prope
 
 		Gtk::TreeRow row = *(list_store->append());
 
-		const auto& sse = p.get_value<AtaStorageSelftestEntry>();
+		if (p.is_value_type<AtaStorageSelftestEntry>()) {
+			const auto& entry = p.get_value<AtaStorageSelftestEntry>();
+			row[self_test_log_table_columns.log_entry_index] = entry.test_num;
+			row[self_test_log_table_columns.type] = Glib::Markup::escape_text(entry.type);
+			row[self_test_log_table_columns.status] = Glib::Markup::escape_text(entry.get_readable_status());
+			row[self_test_log_table_columns.percent] = Glib::Markup::escape_text(hz::number_to_string_locale(100 - entry.remaining_percent) + "%");
+			row[self_test_log_table_columns.hours] = Glib::Markup::escape_text(hz::number_to_string_locale(entry.lifetime_hours));
+			row[self_test_log_table_columns.lba] = Glib::Markup::escape_text(entry.lba_of_first_error);
 
-		row[self_test_log_table_columns.log_entry_index] = sse.test_num;
-		row[self_test_log_table_columns.type] = Glib::Markup::escape_text(sse.type);
-		row[self_test_log_table_columns.status] = Glib::Markup::escape_text(sse.get_readable_status());
-		row[self_test_log_table_columns.percent] = Glib::Markup::escape_text(hz::number_to_string_locale(100 - sse.remaining_percent) + "%");
-		row[self_test_log_table_columns.hours] = Glib::Markup::escape_text(hz::number_to_string_locale(sse.lifetime_hours));
-		row[self_test_log_table_columns.lba] = Glib::Markup::escape_text(sse.lba_of_first_error);
+		} else if (p.is_value_type<NvmeStorageSelftestEntry>()) {
+			const auto& entry = p.get_value<NvmeStorageSelftestEntry>();
+			row[self_test_log_table_columns.log_entry_index] = entry.test_num;
+			row[self_test_log_table_columns.type] = Glib::Markup::escape_text(NvmeSelfTestTypeExt::get_displayable_name(entry.type));
+			row[self_test_log_table_columns.status] = Glib::Markup::escape_text(NvmeSelfTestResultTypeExt::get_displayable_name(entry.result));
+			row[self_test_log_table_columns.hours] = Glib::Markup::escape_text(hz::number_to_string_locale(entry.power_on_hours));
+			row[self_test_log_table_columns.lba] = Glib::Markup::escape_text(entry.lba.has_value() ? hz::number_to_string_locale(entry.lba.value()) : std::string("-"));
+		}
 		// There are no descriptions in self-test log entries, so don't display
 		// "No description available" for all of them.
 		// row[self_test_log_table_columns.tooltip] = p.get_description();
@@ -1504,6 +1522,9 @@ void GscInfoWindow::fill_ui_self_test_log(const StoragePropertyRepository& prope
 		if (int(p.warning_level) > int(max_tab_warning))
 			max_tab_warning = p.warning_level;
 	}
+
+	// Hide percentage column if NVMe as there is no such field in output.
+	treeview->get_column(3)->set_visible(ata_entries_found);  // % Completed
 
 
 	auto* label_vbox = lookup_widget<Gtk::Box*>("selftest_log_label_vbox");
@@ -1629,7 +1650,7 @@ void GscInfoWindow::fill_ui_ata_error_log(const StoragePropertyRepository& prope
 				details_str = AtaStorageErrorBlock::format_readable_error_types(eb.reported_types);  // parsed in Text
 			}
 
-			row[error_log_table_columns.lba] = Glib::Markup::escape_text(std::to_string(eb.lba));
+			row[error_log_table_columns.lba] = Glib::Markup::escape_text(hz::number_to_string_locale(eb.lba));
 			row[error_log_table_columns.details] = Glib::Markup::escape_text(details_str.empty() ? "-" : details_str);
 			row[error_log_table_columns.tooltip] = p.get_description();  // markup
 			row[error_log_table_columns.storage_property] = &p;
@@ -2306,23 +2327,23 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 	auto status = self->current_test->get_status();
 
 	bool aborted = false;
-	AtaStorageSelftestEntry::StatusSeverity severity = AtaStorageSelftestEntry::StatusSeverity::None;
+	SelfTestStatusSeverity severity = SelfTestStatusSeverity::None;
 	std::string result_msg;
 
 	if (!self->test_error_msg.empty()) {
 		aborted = true;
-		severity = AtaStorageSelftestEntry::StatusSeverity::Error;
+		severity = SelfTestStatusSeverity::Error;
 		result_msg = Glib::ustring::compose(_("<b>Test aborted:</b> %1"), Glib::Markup::escape_text(self->test_error_msg));
 
 	} else {
-		severity = AtaStorageSelftestEntry::get_status_severity(status);
-		if (status == AtaStorageSelftestEntry::Status::AbortedByHost) {
+		severity = get_self_test_status_severity(status);
+		if (status == SelfTestStatus::ManuallyAborted) {
 			aborted = true;
 			result_msg = "<b>"s + _("Test was manually aborted.") + "</b>";  // it's a StatusSeverity::none message
 
 		} else {
 			result_msg = Glib::ustring::compose(_("<b>Test result:</b> %1."),
-					Glib::Markup::escape_text(AtaStorageSelftestEntry::get_readable_status_name(status)));
+					Glib::Markup::escape_text(SelfTestStatusExt::get_displayable_name(status)));
 
 			// It may not reach 100% somehow, so do it manually.
 			if (test_completion_progressbar)
@@ -2330,7 +2351,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 		}
 	}
 
-	if (severity != AtaStorageSelftestEntry::StatusSeverity::None) {
+	if (severity != SelfTestStatusSeverity::None) {
 		result_msg += "\n"s + _("Check the Self-Test Log for more information.");
 	}
 
@@ -2348,9 +2369,9 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 		test_stop_button->set_sensitive(false);
 
 	Gtk::StockID stock_id = Gtk::Stock::DIALOG_ERROR;
-	if (severity == AtaStorageSelftestEntry::StatusSeverity::None) {
+	if (severity == SelfTestStatusSeverity::None) {
 		stock_id = Gtk::Stock::DIALOG_INFO;
-	} else if (severity == AtaStorageSelftestEntry::StatusSeverity::Warning) {
+	} else if (severity == SelfTestStatusSeverity::Warning) {
 		stock_id = Gtk::Stock::DIALOG_WARNING;
 	}
 

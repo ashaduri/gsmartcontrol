@@ -194,19 +194,8 @@ class AtaStorageSelftestEntry {
 			InProgress = 0xf,  ///< Test in progress
 		};
 
-		/// Self-test error severity
-		enum class StatusSeverity {
-			None,
-			Warning,
-			Error
-		};
-
 		/// Get log entry status displayable name
 		[[nodiscard]] static std::string get_readable_status_name(Status s);
-
-		/// Get severity of error status
-		[[nodiscard]] static StatusSeverity get_status_severity(Status s);
-
 
 		/// Get error status as a string
 		[[nodiscard]] std::string get_readable_status() const;

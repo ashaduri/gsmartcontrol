@@ -256,30 +256,6 @@ std::string AtaStorageSelftestEntry::get_readable_status_name(Status s)
 
 
 
-AtaStorageSelftestEntry::StatusSeverity AtaStorageSelftestEntry::get_status_severity(AtaStorageSelftestEntry::Status s)
-{
-	static const std::unordered_map<Status, StatusSeverity> m {
-			{Status::Unknown,                StatusSeverity::None},
-			{Status::CompletedNoError,       StatusSeverity::None},
-			{Status::AbortedByHost,          StatusSeverity::Warning},
-			{Status::Interrupted,            StatusSeverity::Warning},
-			{Status::FatalOrUnknown,         StatusSeverity::Error},
-			{Status::ComplUnknownFailure,    StatusSeverity::Error},
-			{Status::ComplElectricalFailure, StatusSeverity::Error},
-			{Status::ComplServoFailure,      StatusSeverity::Error},
-			{Status::ComplReadFailure,       StatusSeverity::Error},
-			{Status::ComplHandlingDamage,    StatusSeverity::Error},
-			{Status::InProgress,             StatusSeverity::None},
-			{Status::Reserved,               StatusSeverity::None},
-	};
-	if (auto iter = m.find(s); iter != m.end()) {
-		return iter->second;
-	}
-	return StatusSeverity::None;
-}
-
-
-
 std::string AtaStorageSelftestEntry::get_readable_status() const
 {
 	return (status == Status::Unknown ? status_str : get_readable_status_name(status));

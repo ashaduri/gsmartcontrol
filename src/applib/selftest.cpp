@@ -13,9 +13,16 @@ Copyright:
 #include <algorithm>  // std::max, std::min
 #include <cmath>  // std::floor
 #include <chrono>
+#include <cstdint>
 #include <format>
+#include <memory>
+#include <unordered_map>
+#include <string>
 
 #include "app_pcrecpp.h"
+#include "smartctl_parser_types.h"
+#include "smartctl_parser.h"
+#include "storage_device_detected_type.h"
 #include "storage_property.h"
 #include "smartctl_text_ata_parser.h"
 #include "selftest.h"
@@ -24,10 +31,29 @@ Copyright:
 
 
 
+SelfTestStatusSeverity get_self_test_status_severity(SelfTestStatus s)
+{
+	static const std::unordered_map<SelfTestStatus, SelfTestStatusSeverity> m {
+			{SelfTestStatus::Unknown,                SelfTestStatusSeverity::None},
+			{SelfTestStatus::CompletedNoError,       SelfTestStatusSeverity::None},
+			{SelfTestStatus::ManuallyAborted,          SelfTestStatusSeverity::Warning},
+			{SelfTestStatus::Interrupted,            SelfTestStatusSeverity::Warning},
+			{SelfTestStatus::CompletedWithError,         SelfTestStatusSeverity::Error},
+			{SelfTestStatus::InProgress,             SelfTestStatusSeverity::None},
+			{SelfTestStatus::Reserved,               SelfTestStatusSeverity::None},
+	};
+	if (auto iter = m.find(s); iter != m.end()) {
+		return iter->second;
+	}
+	return SelfTestStatusSeverity::None;
+}
+
+
+
 std::string SelfTest::get_test_displayable_name(SelfTest::TestType type)
 {
 	static const std::unordered_map<TestType, std::string> m {
-			{TestType::ImmediateOffline, _("Immediate Offline Test")},
+//			{TestType::ImmediateOffline, _("Immediate Offline Test")},
 			{TestType::ShortTest,        _("Short Self-Test")},
 			{TestType::LongTest,         _("Extended Self-Test")},
 			{TestType::Conveyance,       _("Conveyance Self-Test")},
@@ -36,6 +62,20 @@ std::string SelfTest::get_test_displayable_name(SelfTest::TestType type)
 		return iter->second;
 	}
 	return "[internal_error]";
+}
+
+
+
+bool SelfTest::is_active() const
+{
+	return (status_ == SelfTestStatus::InProgress);
+}
+
+
+
+int8_t SelfTest::get_remaining_percent() const
+{
+	return remaining_percent_;
 }
 
 
@@ -58,6 +98,27 @@ std::chrono::seconds SelfTest::get_remaining_seconds() const
 
 
 
+SelfTest::TestType SelfTest::get_test_type() const
+{
+	return type_;
+}
+
+
+
+SelfTestStatus SelfTest::get_status() const
+{
+	return status_;
+}
+
+
+
+std::chrono::seconds SelfTest::get_poll_in_seconds() const
+{
+	return poll_in_seconds_;
+}
+
+
+
 // a drive reports a constant "test duration during idle" capability.
 std::chrono::seconds SelfTest::get_min_duration_seconds() const
 {
@@ -69,9 +130,14 @@ std::chrono::seconds SelfTest::get_min_duration_seconds() const
 	if (total_duration_ != -1s)  // cache
 		return total_duration_;
 
+	if (drive_->get_detected_type() == StorageDeviceDetectedType::Nvme) {
+		return -1s;  // NVMe doesn't report this.
+	}
+
+	// ATA
 	std::string prop_name;
 	switch(type_) {
-		case TestType::ImmediateOffline: prop_name = "ata_smart_data/offline_data_collection/completion_seconds"; break;
+//		case TestType::ImmediateOffline: prop_name = "ata_smart_data/offline_data_collection/completion_seconds"; break;
 		case TestType::ShortTest: prop_name = "ata_smart_data/self_test/polling_minutes/short"; break;
 		case TestType::LongTest: prop_name = "ata_smart_data/self_test/polling_minutes/extended"; break;
 		case TestType::Conveyance: prop_name = "ata_smart_data/self_test/polling_minutes/conveyance"; break;
@@ -91,63 +157,87 @@ bool SelfTest::is_supported() const
 	if (!drive_)
 		return false;
 
-	std::string prop_name;
-	switch(type_) {
-		case TestType::ImmediateOffline:
-			// prop_name = "ata_smart_data/capabilities/exec_offline_immediate_supported";
-			// break;
-			return false;  // disable this for now - it's unsupported.
-		case TestType::ShortTest:
-		case TestType::LongTest:  // same for short and long
-			prop_name = "ata_smart_data/capabilities/self_tests_supported";
-			break;
-		case TestType::Conveyance: prop_name = "ata_smart_data/capabilities/conveyance_self_test_supported"; break;
+	if (drive_->get_detected_type() == StorageDeviceDetectedType::Nvme) {
+		switch (type_) {
+//			case TestType::ImmediateOffline:
+			case TestType::Conveyance:
+				return false;  // not supported by nvme
+			case TestType::ShortTest:
+			case TestType::LongTest:
+				// NVMe spec
+				return true;
+		}
+
+	} else if (drive_->get_detected_type() == StorageDeviceDetectedType::AtaAny
+			|| drive_->get_detected_type() == StorageDeviceDetectedType::AtaHdd
+			|| drive_->get_detected_type() == StorageDeviceDetectedType::AtaSsd) {
+
+		// Find appropriate capability
+		std::string prop_name;
+		switch(type_) {
+//			case TestType::ImmediateOffline:
+				// prop_name = "ata_smart_data/capabilities/exec_offline_immediate_supported";
+				// break;
+//				return false;  // disable this for now - it's unsupported by this application.
+			case TestType::ShortTest:
+			case TestType::LongTest:  // same for short and long
+				prop_name = "ata_smart_data/capabilities/self_tests_supported";
+				break;
+			case TestType::Conveyance:
+				prop_name = "ata_smart_data/capabilities/conveyance_self_test_supported";
+				break;
+		}
+
+		const StorageProperty p = drive_->get_property_repository().lookup_property(prop_name);
+		return (!p.empty() && p.get_value<bool>());
 	}
 
-	const StorageProperty p = drive_->get_property_repository().lookup_property(prop_name);
-	return (!p.empty() && p.get_value<bool>());
+	return false;
 }
 
 
 
 
 // start the test
-hz::ExpectedVoid<SelfTestError> SelfTest::start(const std::shared_ptr<CommandExecutor>& smartctl_ex)
+hz::ExpectedVoid<SelfTestExecutionError> SelfTest::start(const std::shared_ptr<CommandExecutor>& smartctl_ex)
 {
 	if (!drive_) {
-		return hz::Unexpected(SelfTestError::InternalError, _("Internal Error: Drive must not be NULL."));
+		return hz::Unexpected(SelfTestExecutionError::InternalError, _("Internal Error: Drive must not be NULL."));
 	}
 	if (drive_->get_test_is_active()) {
-		return hz::Unexpected(SelfTestError::AlreadyRunning, _("A test is already running on this drive."));
+		return hz::Unexpected(SelfTestExecutionError::AlreadyRunning, _("A test is already running on this drive."));
 	}
 	if (!this->is_supported()) {
 		// Translators: {} is a test name - Short test, etc.
-		return hz::Unexpected(SelfTestError::UnsupportedTest,
+		return hz::Unexpected(SelfTestExecutionError::UnsupportedTest,
 				std::vformat(_("{} is unsupported by this drive."), std::make_format_args(get_test_displayable_name(type_))));
 	}
 
 	std::string test_param;
 	switch(type_) {
-		case TestType::ImmediateOffline: test_param = "offline"; break;
+//		case TestType::ImmediateOffline: test_param = "offline"; break;
 		case TestType::ShortTest: test_param = "short"; break;
 		case TestType::LongTest: test_param = "long"; break;
 		case TestType::Conveyance: test_param = "conveyance"; break;
 		// no default - this way we get warned by compiler if we're not listing all of them.
 	}
 	if (test_param.empty()) {
-		return hz::Unexpected(SelfTestError::InvalidTestType, _("Invalid test specified."));
+		return hz::Unexpected(SelfTestExecutionError::InvalidTestType, _("Invalid test specified."));
 	}
 
 	std::string output;
 	auto execute_status = drive_->execute_device_smartctl("--test=" + test_param, smartctl_ex, output);
 
-	if (!execute_status) {
-		return hz::Unexpected(SelfTestError::CommandFailed,
+	if (!execute_status.has_value()) {
+		return hz::Unexpected(SelfTestExecutionError::CommandFailed,
 				std::vformat(_("Sending command to drive failed: {}"), std::make_format_args(execute_status.error().message())));
 	}
 
-	if (!app_pcre_match(R"(/^Drive command .* successful\.\nTesting has begun\.$/mi)", output)) {
-		return hz::Unexpected(SelfTestError::CommandUnknownError, _("Sending command to drive failed."));
+	bool ata_test_started = app_pcre_match(R"(/^Drive command .* successful\.\nTesting has begun\.$/mi)", output);
+	bool nvme_test_started = app_pcre_match(R"(/^Self-test has begun$/mi)", output);
+
+	if (!ata_test_started && !nvme_test_started) {
+		return hz::Unexpected(SelfTestExecutionError::CommandUnknownError, _("Sending command to drive failed."));
 	}
 
 	// update our members
@@ -160,7 +250,7 @@ hz::ExpectedVoid<SelfTestError> SelfTest::start(const std::shared_ptr<CommandExe
 
 	// Set up everything so that the caller won't have to.
 
-	status_ = AtaStorageSelftestEntry::Status::InProgress;
+	status_ = SelfTestStatus::InProgress;
 
 	remaining_percent_ = 100;
 	// set to 90 to avoid the 100->90 timer reset. this way we won't be looking at
@@ -178,40 +268,40 @@ hz::ExpectedVoid<SelfTestError> SelfTest::start(const std::shared_ptr<CommandExe
 
 
 // abort test.
-hz::ExpectedVoid<SelfTestError> SelfTest::force_stop(const std::shared_ptr<CommandExecutor>& smartctl_ex)
+hz::ExpectedVoid<SelfTestExecutionError> SelfTest::force_stop(const std::shared_ptr<CommandExecutor>& smartctl_ex)
 {
 	if (!drive_) {
-		return hz::Unexpected(SelfTestError::InternalError, _("Internal Error: Drive must not be NULL."));
+		return hz::Unexpected(SelfTestExecutionError::InternalError, _("Internal Error: Drive must not be NULL."));
 	}
 	if (!drive_->get_test_is_active()) {
-		return hz::Unexpected(SelfTestError::NotRunning, _("No test is currently running on this drive."));
+		return hz::Unexpected(SelfTestExecutionError::NotRunning, _("No test is currently running on this drive."));
 	}
 
 	// To abort immediate offline test, the device MUST have
 	// "Abort Offline collection upon new command" capability,
 	// any command (e.g. "--abort") will abort it. If it has "Suspend Offline...",
 	// there's no way to abort such test.
-	if (type_ == TestType::ImmediateOffline) {
-		const StorageProperty p = drive_->get_property_repository().lookup_property(
-				"ata_smart_data/capabilities/offline_is_aborted_upon_new_cmd");
-		if (!p.empty() && p.get_value<bool>()) {  // if empty, give a chance to abort anyway.
-			return hz::Unexpected(SelfTestError::StopUnsupported, _("Aborting this test is unsupported by the drive."));
-		}
-		// else, proceed as any other test
-	}
+//	if (type_ == TestType::ImmediateOffline) {
+//		const StorageProperty p = drive_->get_property_repository().lookup_property(
+//				"ata_smart_data/capabilities/offline_is_aborted_upon_new_cmd");
+//		if (!p.empty() && p.get_value<bool>()) {  // if empty, give a chance to abort anyway.
+//			return hz::Unexpected(SelfTestError::StopUnsupported, _("Aborting this test is unsupported by the drive."));
+//		}
+//		// else, proceed as any other test
+//	}
 
 	// To abort non-captive short, long and conveyance tests, use "--abort".
 	std::string output;
 	auto execute_status = drive_->execute_device_smartctl("--abort", smartctl_ex, output);
 
 	if (!execute_status) {
-		return hz::Unexpected(SelfTestError::CommandFailed,
+		return hz::Unexpected(SelfTestExecutionError::CommandFailed,
 				std::vformat(_("Sending command to drive failed: {}"), std::make_format_args(execute_status.error().message())));
 	}
 
 	// this command prints success even if no test was running.
 	if (!app_pcre_match("/^Self-testing aborted!$/mi", output)) {
-		return hz::Unexpected(SelfTestError::CommandUnknownError, _("Sending command to drive failed."));
+		return hz::Unexpected(SelfTestExecutionError::CommandUnknownError, _("Sending command to drive failed."));
 	}
 
 	// update our members
@@ -219,8 +309,8 @@ hz::ExpectedVoid<SelfTestError> SelfTest::force_stop(const std::shared_ptr<Comma
 
 	// the thing is, update() may fail to actually update the statuses, so
 	// do it manually.
-	if (status_ == AtaStorageSelftestEntry::Status::InProgress) {  // update() couldn't do its job
-		status_ = AtaStorageSelftestEntry::Status::AbortedByHost;
+	if (status_ == SelfTestStatus::InProgress) {  // update() couldn't do its job
+		status_ = SelfTestStatus::ManuallyAborted;
 		remaining_percent_ = -1;
 		last_seen_percent_ = -1;
 		poll_in_seconds_ = std::chrono::seconds(-1);
@@ -229,7 +319,7 @@ hz::ExpectedVoid<SelfTestError> SelfTest::force_stop(const std::shared_ptr<Comma
 	}
 
 	if (!update_status) {  // update can error out too.
-		return hz::Unexpected(SelfTestError::UpdateError,
+		return hz::Unexpected(SelfTestExecutionError::UpdateError,
 				std::vformat(_("Error fetching test progress information: {}"), std::make_format_args(update_status.error().message())));
 	}
 
@@ -240,58 +330,145 @@ hz::ExpectedVoid<SelfTestError> SelfTest::force_stop(const std::shared_ptr<Comma
 
 // update status variables. note: the returned error is an error in logic,
 // not a hw defect error.
-hz::ExpectedVoid<SelfTestError> SelfTest::update(const std::shared_ptr<CommandExecutor>& smartctl_ex)
+hz::ExpectedVoid<SelfTestExecutionError> SelfTest::update(const std::shared_ptr<CommandExecutor>& smartctl_ex)
 {
 	using namespace std::literals;
 
 	if (!drive_) {
-		return hz::Unexpected(SelfTestError::InternalError, _("Internal Error: Drive must not be NULL."));
+		return hz::Unexpected(SelfTestExecutionError::InternalError, _("Internal Error: Drive must not be NULL."));
 	}
 
 	std::string output;
-// 	std::string error_message = drive_->execute_device_smartctl("--log=selftest", smartctl_ex, output);
-	auto execute_status = drive_->execute_device_smartctl("--capabilities", smartctl_ex, output);
+	// ATA shows status in capabilities; NVMe shows it in self-test log.
+	auto execute_status = drive_->execute_device_smartctl("--capabilities --log=selftest", smartctl_ex, output);
 
 	if (!execute_status) {
-		return hz::Unexpected(SelfTestError::CommandFailed,
+		return hz::Unexpected(SelfTestExecutionError::CommandFailed,
 				std::vformat(_("Sending command to drive failed: {}"), std::make_format_args(execute_status.error().message())));
 	}
 
-	auto parser = SmartctlParser::create(SmartctlParserType::Ata, SmartctlVersionParser::get_default_format(SmartctlParserType::Ata));
-	DBG_ASSERT_RETURN(parser, hz::Unexpected(SelfTestError::ParseError, _("Cannot create parser.")));
+
+	std::shared_ptr<SmartctlParser> parser;
+	if (drive_->get_detected_type() == StorageDeviceDetectedType::Nvme) {
+		parser = SmartctlParser::create(SmartctlParserType::Nvme, SmartctlVersionParser::get_default_format(SmartctlParserType::Nvme));
+	} else {
+		parser = SmartctlParser::create(SmartctlParserType::Ata, SmartctlVersionParser::get_default_format(SmartctlParserType::Ata));
+	}
+
+	DBG_ASSERT_RETURN(parser, hz::Unexpected(SelfTestExecutionError::ParseError, _("Cannot create parser.")));
 
 	auto parse_status = parser->parse(output);
 	if (!parse_status) {
-		return hz::Unexpected(SelfTestError::ParseError,
+		return hz::Unexpected(SelfTestExecutionError::ParseError,
 				std::vformat(_("Cannot parse smartctl output: {}"), std::make_format_args(parse_status.error().message())));
 	}
-	auto property_repo = StoragePropertyProcessor::process_properties(
+	const auto property_repo = StoragePropertyProcessor::process_properties(
 			parser->get_property_repository(), drive_->get_detected_type());
 
-	// Note: Since the self-test log is sometimes late
-	// and in undetermined order (sorting by hours is too rough),
-	// we use the "self-test status" capability.
-	StorageProperty p;
-	for (const auto& e : property_repo.get_properties()) {
-		if (e.is_value_type<AtaStorageSelftestEntry>() || e.get_value<AtaStorageSelftestEntry>().test_num != 0
-				|| e.generic_name != "ata_smart_data/self_test/status/_merged")
-			continue;
-		p = e;
+
+	if (drive_->get_detected_type() == StorageDeviceDetectedType::Nvme) {
+
+		const StorageProperty current_operation = property_repo.lookup_property("nvme_self_test_log/current_self_test_operation/value/_decoded");
+
+		// If no test is active, the property may be absent, or set to None.
+		if (!current_operation.empty()
+				&& current_operation.get_value<std::string>() != NvmeSelfTestCurrentOperationTypeExt::get_storable_name(NvmeSelfTestCurrentOperationType::None)) {
+			status_ = SelfTestStatus::InProgress;
+
+			auto remaining_percent = property_repo.lookup_property("nvme_self_test_log/current_self_test_operation/current_self_test_completion_percent");
+			if (!remaining_percent.empty()) {
+				remaining_percent_ = static_cast<int8_t>(100 - remaining_percent.get_value<int64_t>());
+			}
+		} else {  // no test is active
+			// The first self-test table entry is the latest.
+			std::optional<NvmeStorageSelftestEntry> entry;
+			for (const auto& e : property_repo.get_properties()) {
+				if (e.is_value_type<NvmeStorageSelftestEntry>() && e.get_value<AtaStorageSelftestEntry>().test_num == 1) {
+					entry = e.get_value<NvmeStorageSelftestEntry>();
+				}
+			}
+			if (!entry) {
+				return hz::Unexpected(SelfTestExecutionError::ReportUnsupported, _("The drive doesn't report the test status."));
+			}
+
+			switch (entry->result) {
+				case NvmeSelfTestResultType::Unknown:
+					status_ = SelfTestStatus::Unknown;
+					break;
+				case NvmeSelfTestResultType::CompletedNoError:
+					status_ = SelfTestStatus::CompletedNoError;
+					break;
+				case NvmeSelfTestResultType::AbortedSelfTestCommand:
+					status_ = SelfTestStatus::ManuallyAborted;
+					break;
+				case NvmeSelfTestResultType::AbortedControllerReset:
+				case NvmeSelfTestResultType::AbortedNamespaceRemoved:
+				case NvmeSelfTestResultType::AbortedFormatNvmCommand:
+				case NvmeSelfTestResultType::AbortedUnknownReason:
+				case NvmeSelfTestResultType::AbortedSanitizeOperation:
+					status_ = SelfTestStatus::Interrupted;
+					break;
+				case NvmeSelfTestResultType::FatalOrUnknownTestError:
+				case NvmeSelfTestResultType::CompletedUnknownFailedSegment:
+				case NvmeSelfTestResultType::CompletedFailedSegments:
+					status_ = SelfTestStatus::CompletedWithError;
+					break;
+			}
+		}
+
+	} else {
+		// ATA:
+		// Note: Since the self-test log is sometimes late
+		// and in undetermined order (sorting by hours is too rough),
+		// we use the "self-test status" capability.
+		StorageProperty p;
+		for (const auto& e : property_repo.get_properties()) {
+			if (e.is_value_type<AtaStorageSelftestEntry>() || e.get_value<AtaStorageSelftestEntry>().test_num != 0
+					|| e.generic_name != "ata_smart_data/self_test/status/_merged")
+				continue;
+			p = e;
+		}
+		if (p.empty()) {
+			return hz::Unexpected(SelfTestExecutionError::ReportUnsupported, _("The drive doesn't report the test status."));
+		}
+
+		switch (p.get_value<AtaStorageSelftestEntry>().status) {
+			case AtaStorageSelftestEntry::Status::InProgress:
+				status_ = SelfTestStatus::InProgress;
+				break;
+			case AtaStorageSelftestEntry::Status::Unknown:
+				status_ = SelfTestStatus::Unknown;
+				break;
+			case AtaStorageSelftestEntry::Status::Reserved:
+				status_ = SelfTestStatus::Reserved;
+				break;
+			case AtaStorageSelftestEntry::Status::CompletedNoError:
+				status_ = SelfTestStatus::CompletedNoError;
+				break;
+			case AtaStorageSelftestEntry::Status::AbortedByHost:
+				status_ = SelfTestStatus::ManuallyAborted;
+				break;
+			case AtaStorageSelftestEntry::Status::Interrupted:
+				status_ = SelfTestStatus::Interrupted;
+				break;
+			case AtaStorageSelftestEntry::Status::FatalOrUnknown:
+			case AtaStorageSelftestEntry::Status::ComplUnknownFailure:
+			case AtaStorageSelftestEntry::Status::ComplElectricalFailure:
+			case AtaStorageSelftestEntry::Status::ComplServoFailure:
+			case AtaStorageSelftestEntry::Status::ComplReadFailure:
+			case AtaStorageSelftestEntry::Status::ComplHandlingDamage:
+				status_ = SelfTestStatus::CompletedWithError;
+				break;
+		}
+
+		if (status_ == SelfTestStatus::InProgress) {
+			remaining_percent_ = p.get_value<AtaStorageSelftestEntry>().remaining_percent;
+		}
 	}
-
-	if (p.empty()) {
-		return hz::Unexpected(SelfTestError::ReportUnsupported, _("The drive doesn't report the test status."));
-	}
-
-	status_ = p.get_value<AtaStorageSelftestEntry>().status;
-	const bool active = (status_ == AtaStorageSelftestEntry::Status::InProgress);
-
 
 	// Note that the test needs 90% to complete, not 100. It starts at 90%
 	// and reaches 00% on completion. That's 9 pieces.
-	if (active) {
-
-		remaining_percent_ = p.get_value<AtaStorageSelftestEntry>().remaining_percent;
+	if (status_ == SelfTestStatus::InProgress) {
 		if (remaining_percent_ != last_seen_percent_) {
 			last_seen_percent_ = remaining_percent_;
 			timer_.start();  // restart the timer
@@ -326,7 +503,7 @@ hz::ExpectedVoid<SelfTestError> SelfTest::update(const std::shared_ptr<CommandEx
 		timer_.stop();
 	}
 
-	drive_->set_test_is_active(active);
+	drive_->set_test_is_active(status_ == SelfTestStatus::InProgress);
 
 	return {};  // everything ok
 }
