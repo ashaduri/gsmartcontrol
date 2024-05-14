@@ -97,6 +97,14 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		add_property(p);
 
 		is_raid = true;
+
+	} else if (app_pcre_match("/ATA Version is:/mi", output)) {
+		StorageProperty p;
+		p.set_name("Drive type", "_text_only/custom/parser_detected_drive_type", "Parser-Detected Drive Type");
+		p.reported_value = "(S)ATA";
+		p.value = StorageDeviceDetectedTypeExt::get_storable_name(StorageDeviceDetectedType::AtaAny);
+		p.section = StoragePropertySection::Info;  // add to info section
+		add_property(p);
 	}
 
 	bool smart_supported = true;

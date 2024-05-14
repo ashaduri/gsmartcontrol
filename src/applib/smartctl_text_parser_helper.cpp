@@ -15,12 +15,13 @@ Copyright:
 #include "hz/format_unit.h"  // format_size
 #include "hz/string_num.h"  // string_is_numeric, number_to_string
 #include "hz/string_algo.h"  // string_*
+#include "hz/debug.h"
 
 
 
-std::string SmartctlTextParserHelper::parse_byte_size(const std::string& str, int64_t& bytes, bool extended)
+std::string SmartctlTextParserHelper::parse_byte_size(std::string str, int64_t& bytes, bool extended)
 {
-	// E.g. "500,107,862,016" bytes or "80'060'424'192 bytes" or "80 026 361 856 bytes".
+	// E.g. "500,107,862,016" bytes or "80'060'424'192 bytes" or "80 026 361 856 bytes" or "750,156,374,016 bytes [750 GB]".
 	// French locale inserts 0xA0 as a separator (non-breaking space, _not_ a valid utf8 char).
 	// Finnish uses 0xC2 as a separator.
 	// Added '.'-separated too, just in case.
@@ -29,7 +30,7 @@ std::string SmartctlTextParserHelper::parse_byte_size(const std::string& str, in
 	// When launching smartctl, we use LANG=C for it, but it works only on POSIX.
 	// Also, loading smartctl output files from different locales doesn't really work.
 
-// 	debug_out_dump("app", "Size reported as: " << str << "\n");
+	str = str.substr(0, str.find('['));
 
 	std::vector<std::string> to_replace = {
 			" ",
@@ -56,10 +57,10 @@ std::string SmartctlTextParserHelper::parse_byte_size(const std::string& str, in
 	}
 
 	to_replace.emplace_back("bytes");
-	std::string s = hz::string_replace_array_copy(hz::string_trim_copy(str), to_replace, "");
+	str = hz::string_replace_array_copy(hz::string_trim_copy(str), to_replace, "");
 
 	int64_t v = 0;
-	if (hz::string_is_numeric_nolocale(s, v, false)) {
+	if (hz::string_is_numeric_nolocale(str, v, false)) {
 		bytes = v;
 		return hz::format_size(static_cast<uint64_t>(v), true) + (extended ?
 				" [" + hz::format_size(static_cast<uint64_t>(v), false) + ", " + hz::number_to_string_locale(v) + " bytes]" : "");

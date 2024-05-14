@@ -479,7 +479,8 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_info_
 	} else if (app_pcre_match("/^User Capacity$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "user_capacity/bytes", "Capacity");
 		int64_t v = 0;
-		if (p.readable_value = SmartctlTextParserHelper::parse_byte_size(p.reported_value, v, true); p.empty()) {
+		p.readable_value = SmartctlTextParserHelper::parse_byte_size(p.reported_value, v, true);
+		if (p.readable_value.empty()) {
 			p.readable_value = "[unknown]";
 		} else {
 			p.value = v;  // integer-type value
@@ -795,6 +796,7 @@ Device is:        In smartctl database [for details use: -P show]
 			pt.set_name(name, "smart_status/passed", "Overall Health Self-Assessment Test");
 			pt.reported_value = value;
 			pt.value = (pt.reported_value == "PASSED");  // bool
+			pt.readable_value = (pt.get_value<bool>() ? "PASSED" : "FAILED");
 
 			add_property(pt);
 		}

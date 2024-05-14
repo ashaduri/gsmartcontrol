@@ -26,7 +26,7 @@ class SmartctlTextParserHelper {
 		/// \param bytes Number of bytes
 		/// \param extended Return size in other units as well
 		/// \return Size as a displayable string
-		static std::string parse_byte_size(const std::string& str, int64_t& bytes, bool extended);
+		static std::string parse_byte_size(std::string str, int64_t& bytes, bool extended);
 
 };
 
