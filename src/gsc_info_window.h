@@ -21,6 +21,82 @@ Copyright:
 
 
 
+/// Columns of treeviews inside GscInfoWindow
+struct GscInfoWindowColumns {
+
+	/// ATA Attributes table model columns
+	struct {
+		Gtk::TreeModelColumn<int32_t> id;
+		Gtk::TreeModelColumn<Glib::ustring> displayable_name;
+		Gtk::TreeModelColumn<Glib::ustring> when_failed;
+		Gtk::TreeModelColumn<std::string> normalized_value;
+		Gtk::TreeModelColumn<std::string> worst;
+		Gtk::TreeModelColumn<std::string> threshold;
+		Gtk::TreeModelColumn<std::string> raw;
+		Gtk::TreeModelColumn<Glib::ustring> type;
+		// Gtk::TreeModelColumn<Glib::ustring> updated;
+		Gtk::TreeModelColumn<std::string> flag_value;
+		Gtk::TreeModelColumn<Glib::ustring> tooltip;
+		Gtk::TreeModelColumn<const StorageProperty*> storage_property;
+	} ata_attribute_table_columns;
+
+	/// NVMe attributes table model columns
+	struct {
+		Gtk::TreeModelColumn<Glib::ustring> displayable_name;
+		Gtk::TreeModelColumn<std::string> value;
+		Gtk::TreeModelColumn<Glib::ustring> tooltip;
+		Gtk::TreeModelColumn<const StorageProperty*> storage_property;
+	} nvme_attribute_table_columns;
+
+	/// Statistics table model columns
+	struct {
+		Gtk::TreeModelColumn<Glib::ustring> displayable_name;
+		Gtk::TreeModelColumn<std::string> value;
+		Gtk::TreeModelColumn<std::string> flags;
+		Gtk::TreeModelColumn<std::string> page_offset;
+		Gtk::TreeModelColumn<Glib::ustring> tooltip;
+		Gtk::TreeModelColumn<const StorageProperty*> storage_property;
+	} statistics_table_columns;
+
+	/// Self-test log table model columns
+	struct {
+		Gtk::TreeModelColumn<uint32_t> log_entry_index;
+		Gtk::TreeModelColumn<std::string> type;
+		Gtk::TreeModelColumn<std::string> status;
+		Gtk::TreeModelColumn<std::string> percent;
+		Gtk::TreeModelColumn<std::string> hours;
+		Gtk::TreeModelColumn<std::string> lba;
+		Gtk::TreeModelColumn<Glib::ustring> tooltip;
+		Gtk::TreeModelColumn<const StorageProperty*> storage_property;
+	} self_test_log_table_columns;
+
+	/// Error log table model columns
+	struct {
+		Gtk::TreeModelColumn<uint32_t> log_entry_index;
+		Gtk::TreeModelColumn<std::string> hours;
+		Gtk::TreeModelColumn<std::string> state;
+		Gtk::TreeModelColumn<std::string> lba;
+		Gtk::TreeModelColumn<std::string> details;
+		Gtk::TreeModelColumn<Glib::ustring> tooltip;
+		Gtk::TreeModelColumn<const StorageProperty*> storage_property;
+		Gtk::TreeModelColumn<Glib::ustring> mark_name;
+	} error_log_table_columns;
+
+	/// Capabilities table model columns
+	struct {
+		Gtk::TreeModelColumn<int> entry_index;
+		Gtk::TreeModelColumn<Glib::ustring> name;
+		Gtk::TreeModelColumn<std::string> flag_value;  // Text ATA
+		Gtk::TreeModelColumn<Glib::ustring> str_values;  // Text ATA
+		Gtk::TreeModelColumn<Glib::ustring> value;  // JSON ATA
+		Gtk::TreeModelColumn<Glib::ustring> tooltip;
+		Gtk::TreeModelColumn<const StorageProperty*> storage_property;
+	} capabilities_table_columns;
+
+};
+
+
+
 
 /// The "Drive Information" window.
 /// Use create() / destroy() with this class instead of new / delete!
@@ -220,75 +296,6 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 		Glib::Timer test_timer_bar;  ///< Timer for testing phase
 		bool test_force_bar_update = false;  ///< Helper for testing callback
 
-		/// ATA Attributes table model columns
-		struct {
-			Gtk::TreeModelColumn<int32_t> id;
-			Gtk::TreeModelColumn<Glib::ustring> displayable_name;
-			Gtk::TreeModelColumn<Glib::ustring> when_failed;
-			Gtk::TreeModelColumn<std::string> normalized_value;
-			Gtk::TreeModelColumn<std::string> worst;
-			Gtk::TreeModelColumn<std::string> threshold;
-			Gtk::TreeModelColumn<std::string> raw;
-			Gtk::TreeModelColumn<Glib::ustring> type;
-			// Gtk::TreeModelColumn<Glib::ustring> updated;
-			Gtk::TreeModelColumn<std::string> flag_value;
-			Gtk::TreeModelColumn<Glib::ustring> tooltip;
-			Gtk::TreeModelColumn<const StorageProperty*> storage_property;
-		} ata_attribute_table_columns;
-
-		/// NVMe attributes table model columns
-		struct {
-			Gtk::TreeModelColumn<Glib::ustring> displayable_name;
-			Gtk::TreeModelColumn<std::string> value;
-			Gtk::TreeModelColumn<Glib::ustring> tooltip;
-			Gtk::TreeModelColumn<const StorageProperty*> storage_property;
-		} nvme_attribute_table_columns;
-
-		/// Statistics table model columns
-		struct {
-			Gtk::TreeModelColumn<Glib::ustring> displayable_name;
-			Gtk::TreeModelColumn<std::string> value;
-			Gtk::TreeModelColumn<std::string> flags;
-			Gtk::TreeModelColumn<std::string> page_offset;
-			Gtk::TreeModelColumn<Glib::ustring> tooltip;
-			Gtk::TreeModelColumn<const StorageProperty*> storage_property;
-		} statistics_table_columns;
-
-		/// Self-test log table model columns
-		struct {
-			Gtk::TreeModelColumn<uint32_t> log_entry_index;
-			Gtk::TreeModelColumn<std::string> type;
-			Gtk::TreeModelColumn<std::string> status;
-			Gtk::TreeModelColumn<std::string> percent;
-			Gtk::TreeModelColumn<std::string> hours;
-			Gtk::TreeModelColumn<std::string> lba;
-			Gtk::TreeModelColumn<Glib::ustring> tooltip;
-			Gtk::TreeModelColumn<const StorageProperty*> storage_property;
-		} self_test_log_table_columns;
-
-		/// Error log table model columns
-		struct {
-			Gtk::TreeModelColumn<uint32_t> log_entry_index;
-			Gtk::TreeModelColumn<std::string> hours;
-			Gtk::TreeModelColumn<std::string> state;
-			Gtk::TreeModelColumn<std::string> lba;
-			Gtk::TreeModelColumn<std::string> details;
-			Gtk::TreeModelColumn<Glib::ustring> tooltip;
-			Gtk::TreeModelColumn<const StorageProperty*> storage_property;
-			Gtk::TreeModelColumn<Glib::ustring> mark_name;
-		} error_log_table_columns;
-
-		/// Capabilities table model columns
-		struct {
-			Gtk::TreeModelColumn<int> entry_index;
-			Gtk::TreeModelColumn<Glib::ustring> name;
-			Gtk::TreeModelColumn<std::string> flag_value;  // Text ATA
-			Gtk::TreeModelColumn<Glib::ustring> str_values;  // Text ATA
-			Gtk::TreeModelColumn<Glib::ustring> value;  // JSON ATA
-			Gtk::TreeModelColumn<Glib::ustring> tooltip;
-			Gtk::TreeModelColumn<const StorageProperty*> storage_property;
-		} capabilities_table_columns;
-
 		// "Test type" combobox columns
 		struct {
 			Gtk::TreeModelColumn<Glib::ustring> name;  ///< Combobox model column
@@ -298,6 +305,8 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 
 		Glib::RefPtr<Gtk::ListStore> test_combo_model;  ///< Combobox model
 
+		/// Columns of treeviews inside GscInfoWindow
+		std::unique_ptr<GscInfoWindowColumns> columns;
 };
 
 
