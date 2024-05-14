@@ -201,8 +201,9 @@ hz::ExpectedVoid<StorageDetectorError> detect_drives_other(std::vector<StorageDe
 	}
 	if (ec) {
 		debug_out_error("app", DBG_FUNC_MSG << "Cannot list device directory entries.\n");
+		std::string message = ec.message();
 		return hz::Unexpected(StorageDetectorError::DevOpenError,
-				std::vformat(_("Cannot list device directory entries: {}"), std::make_format_args(ec.message())));
+				std::vformat(_("Cannot list device directory entries: {}"), std::make_format_args(message)));
 	}
 
 

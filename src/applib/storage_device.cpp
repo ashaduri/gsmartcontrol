@@ -162,8 +162,9 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::parse_basic_data()
 	// This also fills the drive type properties.
 	auto parse_status = basic_parser->parse(this->get_basic_output());
 	if (!parse_status) {
+		std::string message = parse_status.error().message();
 		return hz::Unexpected(StorageDeviceError::ParseError,
-				std::vformat(_("Cannot parse smartctl output: {}"), std::make_format_args(parse_status.error().message())));
+				std::vformat(_("Cannot parse smartctl output: {}"), std::make_format_args(message)));
 	}
 
 	// See if we can narrow down the drive type from what was detected
@@ -357,8 +358,9 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::try_parse_data()
 	auto basic_parse_status = this->parse_basic_data(true);  // will add some properties too. this will emit signal_changed().
 	if (!basic_parse_status) {
 		// return full parser's error messages - they are more detailed.
+		std::string message = basic_parse_status.error().message();
 		return hz::Unexpected(StorageDeviceError::ParseError,
-				std::vformat(_("Cannot parse smartctl output: {}"), std::make_format_args(parse_status.error().message())));
+				std::vformat(_("Cannot parse smartctl output: {}"), std::make_format_args(message)));
 	}
 
 	return {};  // return ok if at least the info was ok.
@@ -393,8 +395,9 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::parse_full_data(SmartctlPars
 		return {};
 	}
 
+	std::string message = parse_status.error().message();
 	return hz::Unexpected(StorageDeviceError::ParseError,
-			std::vformat(_("Cannot parse smartctl output: {}"), std::make_format_args(parse_status.error().message())));
+			std::vformat(_("Cannot parse smartctl output: {}"), std::make_format_args(message)));
 }
 
 
@@ -417,8 +420,9 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::parse_any_data_for_virtual()
 	// This will add some properties and emit signal_changed().
 	auto basic_parse_status = basic_parser->parse(this->full_output_);
 	if (!basic_parse_status) {
+		std::string message = basic_parse_status.error().message();
 		return hz::Unexpected(StorageDeviceError::ParseError,
-				std::vformat(_("Cannot parse smartctl output: {}"), std::make_format_args(basic_parse_status.error().message())));
+				std::vformat(_("Cannot parse smartctl output: {}"), std::make_format_args(message)));
 	}
 
 	auto basic_property_repo = basic_parser->get_property_repository();

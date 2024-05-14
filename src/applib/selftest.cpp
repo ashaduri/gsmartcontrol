@@ -210,8 +210,9 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::start(const std::shared_ptr<C
 	}
 	if (!this->is_supported()) {
 		// Translators: {} is a test name - Short test, etc.
+		std::string type_name = get_test_displayable_name(type_);
 		return hz::Unexpected(SelfTestExecutionError::UnsupportedTest,
-				std::vformat(_("{} is unsupported by this drive."), std::make_format_args(get_test_displayable_name(type_))));
+				std::vformat(_("{} is unsupported by this drive."), std::make_format_args(type_name)));
 	}
 
 	std::string test_param;
@@ -230,8 +231,9 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::start(const std::shared_ptr<C
 	auto execute_status = drive_->execute_device_smartctl("--test=" + test_param, smartctl_ex, output);
 
 	if (!execute_status.has_value()) {
+		std::string message = execute_status.error().message();
 		return hz::Unexpected(SelfTestExecutionError::CommandFailed,
-				std::vformat(_("Sending command to drive failed: {}"), std::make_format_args(execute_status.error().message())));
+				std::vformat(_("Sending command to drive failed: {}"), std::make_format_args(message)));
 	}
 
 	bool ata_test_started = app_pcre_match(R"(/^Drive command .* successful\.\nTesting has begun\.$/mi)", output);
@@ -297,8 +299,9 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::force_stop(const std::shared_
 	auto execute_status = drive_->execute_device_smartctl("--abort", smartctl_ex, output);
 
 	if (!execute_status) {
+		std::string message = execute_status.error().message();
 		return hz::Unexpected(SelfTestExecutionError::CommandFailed,
-				std::vformat(_("Sending command to drive failed: {}"), std::make_format_args(execute_status.error().message())));
+				std::vformat(_("Sending command to drive failed: {}"), std::make_format_args(message)));
 	}
 
 	// this command prints success even if no test was running.
@@ -324,8 +327,9 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::force_stop(const std::shared_
 	}
 
 	if (!update_status) {  // update can error out too.
+		std::string message = update_status.error().message();
 		return hz::Unexpected(SelfTestExecutionError::UpdateError,
-				std::vformat(_("Error fetching test progress information: {}"), std::make_format_args(update_status.error().message())));
+				std::vformat(_("Error fetching test progress information: {}"), std::make_format_args(message)));
 	}
 
 	return {};  // everything ok
@@ -360,8 +364,9 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::update(const std::shared_ptr<
 	auto execute_status = drive_->execute_device_smartctl(command_options, smartctl_ex, output);
 
 	if (!execute_status) {
+		std::string message = execute_status.error().message();
 		return hz::Unexpected(SelfTestExecutionError::CommandFailed,
-				std::vformat(_("Sending command to drive failed: {}"), std::make_format_args(execute_status.error().message())));
+				std::vformat(_("Sending command to drive failed: {}"), std::make_format_args(message)));
 	}
 
 

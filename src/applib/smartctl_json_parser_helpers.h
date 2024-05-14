@@ -238,7 +238,8 @@ auto integer_formatter(const std::string& format_string = "{}")
 			StorageProperty p;
 			p.set_name(key, key, displayable_name);
 			// p.reported_value = (jval.value() ? true_str : false_str);
-			p.readable_value = std::vformat(format_string, std::make_format_args(hz::number_to_string_locale(jval.value())));
+			std::string num_str = hz::number_to_string_locale(jval.value());
+			p.readable_value = std::vformat(format_string, std::make_format_args(num_str));
 			p.value = jval.value();
 			return p;
 		}
