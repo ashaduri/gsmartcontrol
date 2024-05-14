@@ -129,6 +129,9 @@ class StorageDevice {
 		/// Get SMART status
 		[[nodiscard]] Status get_smart_status() const;
 
+		/// Get if SMART on/off is supported
+		[[nodiscard]] bool get_smart_switch_supported() const;
+
 		/// Get AODC status
 		[[nodiscard]] Status get_aodc_status() const;
 

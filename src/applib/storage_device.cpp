@@ -681,6 +681,17 @@ StorageDevice::Status StorageDevice::get_smart_status() const
 
 
 
+bool StorageDevice::get_smart_switch_supported() const
+{
+	const bool supported = get_smart_status() != Status::Unsupported;
+	// NVMe does not support on/off
+	const bool is_nvme = get_detected_type() == StorageDeviceDetectedType::Nvme;
+
+	return !get_is_virtual() && supported && !is_nvme;
+}
+
+
+
 StorageDevice::Status StorageDevice::get_aodc_status() const
 {
 	// smart-disabled drives are known to print some garbage, so

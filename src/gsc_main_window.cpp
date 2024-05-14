@@ -638,6 +638,9 @@ void GscMainWindow::on_action_enable_smart_toggled(Gtk::ToggleAction* action)
 	if (!drive || drive->get_is_virtual() || drive->get_test_is_active())
 		return;
 
+	if (!drive->get_smart_switch_supported())
+		return;
+
 	StorageDevice::Status status = drive->get_smart_status();
 	if (status == StorageDevice::Status::Unsupported)  // this shouldn't happen
 		return;
@@ -848,7 +851,7 @@ void GscMainWindow::set_drive_menu_status(const StorageDevicePtr& drive)
 			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_remove_virtual_device))))
 				action->set_visible(drive && is_virtual);
 			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_enable_smart)))) {
-				action->set_sensitive(smart_status != StorageDevice::Status::Unsupported);
+				action->set_sensitive(drive && drive->get_smart_switch_supported());
 			}
 			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_enable_aodc))))
 				action->set_sensitive(aodc_status != StorageDevice::Status::Unsupported);
