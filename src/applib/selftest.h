@@ -154,17 +154,17 @@ class SelfTest {
 		/// Start the test. Note that this object is not reusable, start() must be called
 		/// only on newly constructed objects.
 		/// \return error message on error, empty string on success.
-		hz::ExpectedVoid<SelfTestExecutionError> start(const std::shared_ptr<CommandExecutor>& smartctl_ex = nullptr);
+		[[nodiscard]] hz::ExpectedVoid<SelfTestExecutionError> start(const std::shared_ptr<CommandExecutor>& smartctl_ex = nullptr);
 
 
 		/// Abort the running test.
 		/// \return error message on error, empty string on success.
-		hz::ExpectedVoid<SelfTestExecutionError> force_stop(const std::shared_ptr<CommandExecutor>& smartctl_ex = nullptr);
+		[[nodiscard]] hz::ExpectedVoid<SelfTestExecutionError> force_stop(const std::shared_ptr<CommandExecutor>& smartctl_ex = nullptr);
 
 
 		/// Update status variables. The user should call this every get_poll_in_seconds() seconds.
 		/// \return error message on error, empty string on success.
-		hz::ExpectedVoid<SelfTestExecutionError> update(const std::shared_ptr<CommandExecutor>& smartctl_ex = nullptr);
+		[[nodiscard]] hz::ExpectedVoid<SelfTestExecutionError> update(const std::shared_ptr<CommandExecutor>& smartctl_ex = nullptr);
 
 
 	private:

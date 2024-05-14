@@ -396,11 +396,11 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_self
 
 	{
 		StorageProperty p;
-		p.set_name("nvme_self_test_log/current_self_test_operation/current_self_test_completion_percent",
-				"nvme_self_test_log/current_self_test_operation/current_self_test_completion_percent", _("Current Self-Test Completion Percentage"));
+		p.set_name("nvme_self_test_log/current_self_test_completion_percent",
+				"nvme_self_test_log/current_self_test_completion_percent", _("Current Self-Test Completion Percentage"));
 		p.section = StoragePropertySection::SelftestLog;
 
-		auto value_val = get_node_data<uint8_t>(json_root_node, "nvme_self_test_log/current_self_test_operation/current_self_test_completion_percent");
+		auto value_val = get_node_data<uint8_t>(json_root_node, "nvme_self_test_log/current_self_test_completion_percent");
 		if (value_val.has_value()) {
 			p.value = value_val.value();
 			p.readable_value = std::format("{} %", value_val.value());
@@ -430,8 +430,8 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_self
 			}
 
 			NvmeSelfTestResultType test_result = NvmeSelfTestResultType::Unknown;
-			if (get_node_exists(table_entry, "self_test_code/value").value_or(false)) {
-				const int32_t type_value = get_node_data<int32_t>(table_entry, "self_test_code/value").value_or(int(NvmeSelfTestType::Unknown));
+			if (get_node_exists(table_entry, "self_test_result/value").value_or(false)) {
+				const int32_t type_value = get_node_data<int32_t>(table_entry, "self_test_result/value").value_or(int(NvmeSelfTestType::Unknown));
 				switch(type_value) {
 					case 0x0: test_result = NvmeSelfTestResultType::CompletedNoError; break;
 					case 0x1: test_result = NvmeSelfTestResultType::AbortedSelfTestCommand; break;

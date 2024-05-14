@@ -16,6 +16,7 @@ Copyright:
 #include <cstdint>
 #include <format>
 #include <memory>
+#include <optional>
 #include <unordered_map>
 #include <string>
 
@@ -235,8 +236,9 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::start(const std::shared_ptr<C
 
 	bool ata_test_started = app_pcre_match(R"(/^Drive command .* successful\.\nTesting has begun\.$/mi)", output);
 	bool nvme_test_started = app_pcre_match(R"(/^Self-test has begun$/mi)", output);
+	bool nvme_test_running = app_pcre_match(R"(/^Can't start self-test without aborting current test/mi)", output);
 
-	if (!ata_test_started && !nvme_test_started) {
+	if (!ata_test_started && !nvme_test_started && !nvme_test_running) {
 		return hz::Unexpected(SelfTestExecutionError::CommandUnknownError, _("Sending command to drive failed."));
 	}
 
@@ -300,7 +302,10 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::force_stop(const std::shared_
 	}
 
 	// this command prints success even if no test was running.
-	if (!app_pcre_match("/^Self-testing aborted!$/mi", output)) {
+	bool ata_aborted = app_pcre_match("/^Self-testing aborted!$/mi", output);
+	bool nvme_aborted = app_pcre_match("/^Self-test aborted!$/mi", output);
+
+	if (!ata_aborted && !nvme_aborted) {
 		return hz::Unexpected(SelfTestExecutionError::CommandUnknownError, _("Sending command to drive failed."));
 	}
 
@@ -338,9 +343,21 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::update(const std::shared_ptr<
 		return hz::Unexpected(SelfTestExecutionError::InternalError, _("Internal Error: Drive must not be NULL."));
 	}
 
-	std::string output;
+	SmartctlParserType parser_type = SmartctlParserType::Ata;
+	if (drive_->get_detected_type() == StorageDeviceDetectedType::Nvme) {
+		parser_type = SmartctlParserType::Nvme;
+	}
+	auto parser_format = SmartctlVersionParser::get_default_format(parser_type);
+
 	// ATA shows status in capabilities; NVMe shows it in self-test log.
-	auto execute_status = drive_->execute_device_smartctl("--capabilities --log=selftest", smartctl_ex, output);
+	std::string command_options = "--capabilities --log=selftest";
+	if (parser_format == SmartctlOutputFormat::Json) {
+		// --json flags: o means include original output (just in case).
+		command_options += " --json=o";
+	}
+
+	std::string output;
+	auto execute_status = drive_->execute_device_smartctl(command_options, smartctl_ex, output);
 
 	if (!execute_status) {
 		return hz::Unexpected(SelfTestExecutionError::CommandFailed,
@@ -348,13 +365,7 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::update(const std::shared_ptr<
 	}
 
 
-	std::shared_ptr<SmartctlParser> parser;
-	if (drive_->get_detected_type() == StorageDeviceDetectedType::Nvme) {
-		parser = SmartctlParser::create(SmartctlParserType::Nvme, SmartctlVersionParser::get_default_format(SmartctlParserType::Nvme));
-	} else {
-		parser = SmartctlParser::create(SmartctlParserType::Ata, SmartctlVersionParser::get_default_format(SmartctlParserType::Ata));
-	}
-
+	std::shared_ptr<SmartctlParser> parser = SmartctlParser::create(parser_type, parser_format);
 	DBG_ASSERT_RETURN(parser, hz::Unexpected(SelfTestExecutionError::ParseError, _("Cannot create parser.")));
 
 	auto parse_status = parser->parse(output);
@@ -375,7 +386,7 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::update(const std::shared_ptr<
 				&& current_operation.get_value<std::string>() != NvmeSelfTestCurrentOperationTypeExt::get_storable_name(NvmeSelfTestCurrentOperationType::None)) {
 			status_ = SelfTestStatus::InProgress;
 
-			auto remaining_percent = property_repo.lookup_property("nvme_self_test_log/current_self_test_operation/current_self_test_completion_percent");
+			auto remaining_percent = property_repo.lookup_property("nvme_self_test_log/current_self_test_completion_percent");
 			if (!remaining_percent.empty()) {
 				remaining_percent_ = static_cast<int8_t>(100 - remaining_percent.get_value<int64_t>());
 			}
@@ -383,7 +394,7 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::update(const std::shared_ptr<
 			// The first self-test table entry is the latest.
 			std::optional<NvmeStorageSelftestEntry> entry;
 			for (const auto& e : property_repo.get_properties()) {
-				if (e.is_value_type<NvmeStorageSelftestEntry>() && e.get_value<AtaStorageSelftestEntry>().test_num == 1) {
+				if (e.is_value_type<NvmeStorageSelftestEntry>() && e.get_value<NvmeStorageSelftestEntry>().test_num == 1) {
 					entry = e.get_value<NvmeStorageSelftestEntry>();
 				}
 			}
@@ -477,7 +488,7 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::update(const std::shared_ptr<
 		const std::chrono::seconds total = get_min_duration_seconds();
 
 		if (total <= 0s) {  // unknown
-			poll_in_seconds_ = 30s;  // just a guess
+			poll_in_seconds_ = 15s;  // just a guess, quick enough for nvme
 
 		} else {
 			// seconds per 10%. use double, because e.g. 60sec test gives silly values with int.

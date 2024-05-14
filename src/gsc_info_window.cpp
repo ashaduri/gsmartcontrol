@@ -2308,10 +2308,10 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 			ex->create_running_dialog(self);
 
 			auto test_status = self->current_test->update(ex);
-			self->test_error_msg = (test_status ? test_status.error().message() : "");
+			self->test_error_msg = (!test_status ? test_status.error().message() : "");
 			if (!self->test_error_msg.empty()) {
 // 				gui_show_error_dialog("Cannot monitor test progress", self->test_error_msg, this);  // better show in progressbar.
-				self->current_test->force_stop(ex);  // what else can we do?
+				[[maybe_unused]] auto result = self->current_test->force_stop(ex);  // what else can we do?
 				active = false;
 				break;
 			}
