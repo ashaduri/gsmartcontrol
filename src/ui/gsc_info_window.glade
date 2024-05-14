@@ -306,6 +306,8 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                     <property name="tooltip-text" translatable="yes">NVMe attributes</property>
                     <property name="hexpand">True</property>
                     <property name="label" translatable="yes">NVMe Attributes</property>
+                    <property name="use-markup">True</property>
+                    <property name="use-underline">True</property>
                   </object>
                   <packing>
                     <property name="position">2</property>
@@ -870,6 +872,70 @@ Self-test log contains information about the most recent manually performed SMAR
                   </packing>
                 </child>
                 <child>
+                  <object class="GtkBox" id="nvme_error_log_tab_vbox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="border-width">6</property>
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">6</property>
+                    <child>
+                      <object class="GtkBox" id="nvme_error_log_label_vbox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkScrolledWindow" id="scrolledwindow2">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="shadow-type">in</property>
+                        <child>
+                          <object class="GtkTextView" id="nvme_error_log_textview">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="editable">False</property>
+                            <property name="left-margin">5</property>
+                            <property name="right-margin">5</property>
+                            <property name="monospace">True</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">6</property>
+                  </packing>
+                </child>
+                <child type="tab">
+                  <object class="GtkLabel" id="nvme_error_log_tab_label">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">NVMe error information log contains recent errors encountered by the drive.
+
+Note: The log is not preserved across power cycles or controller resets.</property>
+                    <property name="hexpand">True</property>
+                    <property name="label" translatable="yes">NVMe Error Log</property>
+                  </object>
+                  <packing>
+                    <property name="position">6</property>
+                    <property name="tab-fill">False</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkBox" id="temperature_log_tab_vbox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
@@ -915,7 +981,7 @@ Self-test log contains information about the most recent manually performed SMAR
                     </child>
                   </object>
                   <packing>
-                    <property name="position">6</property>
+                    <property name="position">7</property>
                   </packing>
                 </child>
                 <child type="tab">
@@ -927,7 +993,7 @@ Self-test log contains information about the most recent manually performed SMAR
                     <property name="label" translatable="yes">Temperature Log</property>
                   </object>
                   <packing>
-                    <property name="position">6</property>
+                    <property name="position">7</property>
                     <property name="tab-fill">False</property>
                   </packing>
                 </child>
@@ -1114,7 +1180,7 @@ Self-test log contains information about the most recent manually performed SMAR
                     </child>
                   </object>
                   <packing>
-                    <property name="position">7</property>
+                    <property name="position">8</property>
                     <property name="tab-fill">False</property>
                   </packing>
                 </child>
@@ -1129,7 +1195,7 @@ Self-test log contains information about the most recent manually performed SMAR
                     <property name="use-underline">True</property>
                   </object>
                   <packing>
-                    <property name="position">7</property>
+                    <property name="position">8</property>
                     <property name="tab-fill">False</property>
                   </packing>
                 </child>
@@ -1161,8 +1227,8 @@ Self-test log contains information about the most recent manually performed SMAR
                 <property name="receives-default">True</property>
                 <property name="tooltip-text" translatable="yes">Re-read all the information</property>
                 <property name="use-stock">True</property>
-                <accelerator key="F5" signal="clicked"/>
                 <accelerator key="R" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                <accelerator key="F5" signal="clicked"/>
               </object>
               <packing>
                 <property name="expand">True</property>

@@ -76,7 +76,10 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 		void fill_ui_self_test_log(const StoragePropertyRepository& property_repo);
 
 		/// fill_ui_with_info() helper
-		void fill_ui_error_log(const StoragePropertyRepository& property_repo);
+		void fill_ui_ata_error_log(const StoragePropertyRepository& property_repo);
+
+		/// fill_ui_with_info() helper
+		void fill_ui_nvme_error_log(const StoragePropertyRepository& property_repo);
 
 		/// fill_ui_with_info() helper
 		void fill_ui_temperature_log(const StoragePropertyRepository& property_repo);
@@ -194,7 +197,8 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 		Glib::ustring tab_nvme_attributes_name;  ///< Tab header name
 		Glib::ustring tab_statistics_name;  ///< Tab header name
 		Glib::ustring tab_test_name;  ///< Tab header name
-		Glib::ustring tab_error_log_name;  ///< Tab header name
+		Glib::ustring tab_ata_error_log_name;  ///< Tab header name
+		Glib::ustring tab_nvme_error_log_name;  ///< Tab header name
 		Glib::ustring tab_temperature_name;  ///< Tab header name
 		Glib::ustring tab_advanced_name;  ///< Tab header name
 

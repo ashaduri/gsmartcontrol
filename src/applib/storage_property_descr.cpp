@@ -1630,7 +1630,7 @@ bool ata_storage_property_autoset_description(StorageProperty& p, StorageDeviceD
 				found = auto_set_statistic(p);
 				break;
 
-			case StoragePropertySection::ErrorLog:
+			case StoragePropertySection::AtaErrorLog:
 				found = auto_set(p, "ata_smart_error_log/extended/revision", p.displayable_name.c_str())
 				|| auto_set(p, "ata_smart_error_log/extended/count", "Number of errors in error log. Note: Some manufacturers may list completely harmless errors in this log "
 					"(e.g., command invalid, not implemented, etc.).");
@@ -1895,7 +1895,7 @@ WarningLevel ata_storage_property_autoset_warning(StorageProperty& p)
 				break;
 			}
 
-			case StoragePropertySection::ErrorLog:
+			case StoragePropertySection::AtaErrorLog:
 			{
 				// Note: The error list table doesn't display any descriptions, so if any
 				// error-entry related descriptions are added here, don't forget to enable

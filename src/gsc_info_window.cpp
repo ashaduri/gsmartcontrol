@@ -245,6 +245,10 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 		Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 		buffer->set_text("\n"s + _("No data available"));
 	}
+	if (auto* textview = lookup_widget<Gtk::TextView*>("nvme_error_log_textview")) {
+		Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+		buffer->set_text("\n"s + _("No data available"));
+	}
 	if (auto* textview = lookup_widget<Gtk::TextView*>("selective_selftest_log_textview")) {
 		Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
 		buffer->set_text("\n"s + _("No data available"));
@@ -286,7 +290,10 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 	tab_test_name = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("error_log_tab_label");
-	tab_error_log_name = (tab_label ? tab_label->get_label() : "");
+	tab_ata_error_log_name = (tab_label ? tab_label->get_label() : "");
+
+	tab_label = lookup_widget<Gtk::Label*>("nvme_error_log_tab_label");
+	tab_nvme_error_log_name = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("temperature_log_tab_label");
 	tab_temperature_name = (tab_label ? tab_label->get_label() : "");
@@ -377,34 +384,39 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		const auto& prop_repo = drive->get_property_repository();
 		Gtk::Widget* note_page_box = nullptr;
 
-		bool has_ata_attributes = prop_repo.has_properties_for_section(StoragePropertySection::AtaAttributes);
+		const bool has_ata_attributes = prop_repo.has_properties_for_section(StoragePropertySection::AtaAttributes);
 		if (note_page_box = lookup_widget("attributes_tab_vbox"); note_page_box != nullptr) {
 			note_page_box->set_visible(has_ata_attributes);
 		}
 
-		bool has_nvme_attributes = prop_repo.has_properties_for_section(StoragePropertySection::NvmeAttributes);
+		const bool has_nvme_attributes = prop_repo.has_properties_for_section(StoragePropertySection::NvmeAttributes);
 		if (note_page_box = lookup_widget("nvme_attributes_tab_vbox"); note_page_box != nullptr) {
 			note_page_box->set_visible(has_nvme_attributes);
 		}
 
-		bool has_statistics = prop_repo.has_properties_for_section(StoragePropertySection::Statistics);
+		const bool has_statistics = prop_repo.has_properties_for_section(StoragePropertySection::Statistics);
 		if (note_page_box = lookup_widget("statistics_tab_vbox"); note_page_box != nullptr) {
 			note_page_box->set_visible(has_statistics);
 		}
 
-		bool has_selftest = prop_repo.has_properties_for_section(StoragePropertySection::SelftestLog);
+		const bool has_selftest = prop_repo.has_properties_for_section(StoragePropertySection::SelftestLog);
 		if (note_page_box = lookup_widget("test_tab_vbox"); note_page_box != nullptr) {
 			// Some USB flash drives erroneously report SMART as enabled.
 			// note_page_box->set_visible(drive->get_smart_status() == StorageDevice::Status::Enabled);
 			note_page_box->set_visible(has_selftest);
 		}
 
-		bool has_error_log = prop_repo.has_properties_for_section(StoragePropertySection::ErrorLog);
+		const bool has_ata_error_log = prop_repo.has_properties_for_section(StoragePropertySection::AtaErrorLog);
 		if (note_page_box = lookup_widget("error_log_tab_vbox"); note_page_box != nullptr) {
-			note_page_box->set_visible(has_error_log);
+			note_page_box->set_visible(has_ata_error_log);
 		}
 
-		bool has_temperature_log = prop_repo.has_properties_for_section(StoragePropertySection::TemperatureLog);
+		const bool has_nvme_error_log = prop_repo.has_properties_for_section(StoragePropertySection::NvmeErrorLog);
+		if (note_page_box = lookup_widget("nvme_error_log_tab_vbox"); note_page_box != nullptr) {
+			note_page_box->set_visible(has_nvme_error_log);
+		}
+
+		const bool has_temperature_log = prop_repo.has_properties_for_section(StoragePropertySection::TemperatureLog);
 		if (note_page_box = lookup_widget("temperature_log_tab_vbox"); note_page_box != nullptr) {
 			note_page_box->set_visible(has_temperature_log);
 		}
@@ -452,7 +464,8 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 					|| has_nvme_attributes
 					|| has_statistics
 					|| has_selftest
-					|| has_error_log
+					|| has_ata_error_log
+					|| has_nvme_error_log
 					|| has_temperature_log
 					|| has_advanced);
 		}
@@ -489,7 +502,8 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		fill_ui_self_test_info();
 	}
 	fill_ui_self_test_log(property_repo);
-	fill_ui_error_log(property_repo);
+	fill_ui_ata_error_log(property_repo);
+	fill_ui_nvme_error_log(property_repo);
 	fill_ui_temperature_log(property_repo);
 
 	// Advanced tab
@@ -657,7 +671,21 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("error_log_tab_label"), WarningLevel::None, tab_error_log_name);
+		app_highlight_tab_label(lookup_widget("error_log_tab_label"), WarningLevel::None, tab_ata_error_log_name);
+	}
+
+	{
+		auto* label_vbox = lookup_widget<Gtk::Box*>("nvme_error_log_label_vbox");
+		app_set_top_labels(label_vbox, std::vector<PropertyLabel>());
+
+		auto* textview = lookup_widget<Gtk::TextView*>("nvme_error_log_textview");
+		if (textview) {
+			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+			buffer->set_text("\n"s + _("No data available"));
+		}
+
+		// tab label
+		app_highlight_tab_label(lookup_widget("nvme_error_log_tab_label"), WarningLevel::None, tab_nvme_error_log_name);
 	}
 
 	{
@@ -923,7 +951,7 @@ void GscInfoWindow::fill_ui_general(const StoragePropertyRepository& property_re
 	const auto& props = property_repo.get_properties();
 
 	// filter out some properties
-	std::vector<StorageProperty> id_props, version_props, overall_health_props;
+	std::vector<StorageProperty> general_props, version_props, overall_health_props, nvme_health_props;
 
 	for (auto&& p : props) {
 		if (p.section == StoragePropertySection::Info) {
@@ -932,20 +960,30 @@ void GscInfoWindow::fill_ui_general(const StoragePropertyRepository& property_re
 			} else if (p.generic_name == "smartctl/version/_merged") {
 				continue;  // we use the full version string instead.
 			} else {
-				id_props.push_back(p);
+				general_props.push_back(p);
 			}
 		} else if (p.section == StoragePropertySection::OverallHealth) {
 			overall_health_props.push_back(p);
+		} else if (p.section == StoragePropertySection::NvmeHealth) {
+			nvme_health_props.push_back(p);
 		}
 	}
 
 	// put version after all the info
-	for (auto&& p : version_props)
-		id_props.push_back(p);
+	for (auto&& p : version_props) {
+		general_props.push_back(p);
+	}
 
-	// health is the last one
-	for (auto&& p : overall_health_props)
-		id_props.push_back(p);
+	// health at the bottom
+	for (auto&& p : overall_health_props) {
+		general_props.push_back(p);
+	}
+
+	// nvme health properties are only present if there is health failure
+	for (auto&& p : nvme_health_props) {
+		general_props.push_back(p);
+	}
+
 
 
 	auto* identity_table = lookup_widget<Gtk::Grid*>("identity_table");
@@ -955,7 +993,7 @@ void GscInfoWindow::fill_ui_general(const StoragePropertyRepository& property_re
 	WarningLevel max_tab_warning = WarningLevel::None;
 	int row = 0;
 
-	for (auto&& p : id_props) {
+	for (auto&& p : general_props) {
 		if (!p.show_in_ui) {
 			continue;  // hide debug messages from smartctl
 		}
@@ -997,8 +1035,9 @@ void GscInfoWindow::fill_ui_general(const StoragePropertyRepository& property_re
 		app_gtkmm_set_widget_tooltip(*value, // value->get_label() + "\n\n" +
 				p.get_description(), true);
 
-		if (int(p.warning_level) > int(max_tab_warning))
+		if (int(p.warning_level) > int(max_tab_warning)) {
 			max_tab_warning = p.warning_level;
+		}
 
 		++row;
 	}
@@ -1476,7 +1515,7 @@ void GscInfoWindow::fill_ui_self_test_log(const StoragePropertyRepository& prope
 
 
 
-void GscInfoWindow::fill_ui_error_log(const StoragePropertyRepository& property_repo)
+void GscInfoWindow::fill_ui_ata_error_log(const StoragePropertyRepository& property_repo)
 {
 	const auto& props = property_repo.get_properties();
 
@@ -1533,7 +1572,7 @@ void GscInfoWindow::fill_ui_error_log(const StoragePropertyRepository& property_
 	bool supports_details = false;
 
 	for (auto&& p : props) {
-		if (p.section != StoragePropertySection::ErrorLog || !p.show_in_ui)
+		if (p.section != StoragePropertySection::AtaErrorLog || !p.show_in_ui)
 			continue;
 
 		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
@@ -1609,7 +1648,37 @@ void GscInfoWindow::fill_ui_error_log(const StoragePropertyRepository& property_
 	app_set_top_labels(label_vbox, label_strings);
 
 	// inner tab label
-	app_highlight_tab_label(lookup_widget("error_log_tab_label"), max_tab_warning, tab_error_log_name);
+	app_highlight_tab_label(lookup_widget("error_log_tab_label"), max_tab_warning, tab_ata_error_log_name);
+}
+
+
+
+void GscInfoWindow::fill_ui_nvme_error_log(const StoragePropertyRepository& property_repo)
+{
+	const auto& props = property_repo.get_properties();
+
+	auto* textview = lookup_widget<Gtk::TextView*>("nvme_error_log_textview");
+
+	WarningLevel max_tab_warning = WarningLevel::None;
+
+	for (auto&& p : props) {
+		if (p.section != StoragePropertySection::NvmeErrorLog || !p.show_in_ui)
+			continue;
+
+		// Note: Don't use property description as a tooltip here. It won't be available if there's no property.
+		if (p.generic_name == "nvme_error_information_log/_merged") {
+			Glib::RefPtr<Gtk::TextBuffer> buffer = textview->get_buffer();
+			buffer->set_text("\n" + Glib::ustring::compose(_("NVMe Non-Persistent Error Information Log: %1"), "\n\n" + p.get_value<std::string>()));
+
+			// Make the text monospace (the 3.16+ glade property does not work anymore for some reason).
+			Glib::RefPtr<Gtk::TextTag> tag = buffer->create_tag();
+			tag->property_family() = "Monospace";
+			buffer->apply_tag(tag, buffer->begin(), buffer->end());
+		}
+	}
+
+	// tab label
+	app_highlight_tab_label(lookup_widget("nvme_error_log_tab_label"), max_tab_warning, tab_nvme_error_log_name);
 }
 
 

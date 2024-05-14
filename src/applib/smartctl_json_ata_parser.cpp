@@ -804,7 +804,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_error
 	if (get_node_exists(json_root_node, "ata_smart_error_log/extended/revision").value_or(false)) {
 		StorageProperty p;
 		p.set_name("ata_smart_error_log/extended/revision", "ata_smart_error_log/extended/revision", _("SMART extended comprehensive error log version"));
-		p.section = StoragePropertySection::ErrorLog;
+		p.section = StoragePropertySection::AtaErrorLog;
 		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_error_log/extended/revision").value_or(0);
 		add_property(p);
 		section_properties_found = true;
@@ -813,7 +813,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_error
 	if (get_node_exists(json_root_node, "ata_smart_error_log/extended/count").value_or(false)) {
 		StorageProperty p;
 		p.set_name("ata_smart_error_log/extended/count", "ata_smart_error_log/extended/count", _("ATA error count"));
-		p.section = StoragePropertySection::ErrorLog;
+		p.section = StoragePropertySection::AtaErrorLog;
 		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_error_log/extended/count").value_or(0);
 		add_property(p);
 		section_properties_found = true;
@@ -835,7 +835,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_error
 
 			StorageProperty p;
 			p.set_name(std::format("Error {}", block.error_num));
-			p.section = StoragePropertySection::ErrorLog;
+			p.section = StoragePropertySection::AtaErrorLog;
 			p.value = block;
 			add_property(p);
 		}
@@ -845,7 +845,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_error
 
 	if (!section_properties_found) {
 		return hz::Unexpected(SmartctlParserError::NoSection,
-				std::format("No section {} parsed.", StoragePropertySectionExt::get_displayable_name(StoragePropertySection::ErrorLog)));
+				std::format("No section {} parsed.", StoragePropertySectionExt::get_displayable_name(StoragePropertySection::AtaErrorLog)));
 	}
 
 	return {};

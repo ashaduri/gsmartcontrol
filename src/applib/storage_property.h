@@ -374,7 +374,7 @@ enum class StoragePropertySection {
 	Capabilities,  ///< General SMART Values, aka Capabilities (-c, --capabilities)
 	AtaAttributes,  ///< Attributes (-A, --attributes). These need decoding.
 	Statistics,  ///< Device statistics (--log=devstat). These need decoding.
-	ErrorLog,  ///< Error Log (--log=error)
+	AtaErrorLog,  ///< Error Log (--log=error)
 	SelftestLog,  ///< Self-test log (--log=selftest)
 	SelectiveSelftestLog,  ///< Selective self-test log (--log=selective)
 	TemperatureLog,  ///< SCT temperature (current and history) (--log=scttemp)
@@ -406,7 +406,7 @@ struct StoragePropertySectionExt
 			{StoragePropertySection::Capabilities,         {"capabilities",         _("Capabilities")}},
 			{StoragePropertySection::AtaAttributes,        {"attributes",           _("Attributes")}},
 			{StoragePropertySection::Statistics,           {"statistics",           _("Statistics")}},
-			{StoragePropertySection::ErrorLog,             {"errorLog",             _("Error Log")}},
+			{StoragePropertySection::AtaErrorLog,          {"errorLog",             _("Error Log")}},
 			{StoragePropertySection::SelftestLog,          {"selftestLog",          _("Self-test Log")}},
 			{StoragePropertySection::SelectiveSelftestLog, {"selectiveSelftestLog", _("Selective Self-test Log")}},
 			{StoragePropertySection::TemperatureLog,       {"temperatureLog",       _("Temperature Log")}},
@@ -415,7 +415,7 @@ struct StoragePropertySectionExt
 			{StoragePropertySection::DirectoryLog,         {"directoryLog",         _("Directory Log")}},
 			{StoragePropertySection::NvmeHealth,           {"nvmeHealth",           _("NVMe Health")}},
 			{StoragePropertySection::NvmeAttributes,       {"nvmeAttributes",       _("NVMe Attributes")}},
-			{StoragePropertySection::NvmeErrorLog, {"nvmeErrorLog", _("NVMe Error Log")}},
+			{StoragePropertySection::NvmeErrorLog,         {"nvmeErrorLog",         _("NVMe Error Log")}},
 		};
 	}
 };

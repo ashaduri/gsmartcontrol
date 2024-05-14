@@ -54,7 +54,7 @@ namespace {
 			p.set_name(name, "_text_only/attribute_thresholds_checksum_error");
 
 		} else if (name == "ATA Error Log") {
-			p.section = StoragePropertySection::ErrorLog;
+			p.section = StoragePropertySection::AtaErrorLog;
 			p.set_name(name, "_text_only/ata_error_log_checksum_error");
 
 		} else if (name == "Self-Test Log") {
@@ -1522,7 +1522,7 @@ Address    Access  R/W   Size  Description
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_subsection_error_log(const std::string& sub)
 {
 	StorageProperty pt;  // template for easy copying
-	pt.section = StoragePropertySection::ErrorLog;
+	pt.section = StoragePropertySection::AtaErrorLog;
 
 	// Note: The format of this section was changed somewhere between 5.0-x and 5.30.
 	// The old format is doesn't really give any useful info, and whatever's left is somewhat
