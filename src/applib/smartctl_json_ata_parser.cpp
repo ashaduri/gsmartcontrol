@@ -929,7 +929,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_selft
 			entry.passed = get_node_data<bool>(table_entry, "status/passed").value_or(false);
 
 			if (get_node_exists(table_entry, "lba").value_or(false)) {
-				entry.lba_of_first_error = std::format("0x{:X}", get_node_data<uint64_t>(table_entry, "lba").value_or(0));
+				entry.lba_of_first_error = hz::number_to_string_locale(get_node_data<uint64_t>(table_entry, "lba").value_or(0));
 			} else {
 				entry.lba_of_first_error = "-";
 			}

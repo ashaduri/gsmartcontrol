@@ -450,7 +450,9 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_self
 			entry.type = test_type;
 			entry.result = test_result;
 			entry.power_on_hours = get_node_data<uint32_t>(table_entry, "power_on_hours").value_or(0);
-			entry.lba = get_node_data<uint64_t>(table_entry, "lba").value_or(0);
+			if (get_node_exists(table_entry, "lba").value_or(false)) {  // optional
+				entry.lba = get_node_data<uint64_t>(table_entry, "lba").value();
+			}
 
 			StorageProperty p;
 			p.set_name(std::format("Self-test entry {}", entry.test_num));

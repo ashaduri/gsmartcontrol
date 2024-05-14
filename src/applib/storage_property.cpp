@@ -302,7 +302,7 @@ std::ostream& operator<<(std::ostream& os, const NvmeStorageSelftestEntry& b)
 		<< NvmeSelfTestTypeExt::get_storable_name(b.type)
 		<< ", result: " << NvmeSelfTestResultTypeExt::get_storable_name(b.result)
 		<< ", power on hours: " << int(b.power_on_hours)
-		<< ", lba: " << int(b.lba);
+		<< ", lba: " << int(b.lba.value_or(0));
 }
 
 

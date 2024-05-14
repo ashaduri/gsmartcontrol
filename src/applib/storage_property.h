@@ -16,6 +16,7 @@ Copyright:
 
 #include <cstddef>  // std::size_t
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 #include <iosfwd>
@@ -357,7 +358,7 @@ class NvmeStorageSelftestEntry {
 		NvmeSelfTestType type = NvmeSelfTestType::Unknown;  ///< Test type
 		NvmeSelfTestResultType result = NvmeSelfTestResultType::Unknown;  ///< Test result
 		std::uint32_t power_on_hours = 0;  ///< When the test happened (in power-on hours).
-		std::uint64_t lba = 0;  ///< LBA of the first error.
+		std::optional<std::uint64_t> lba;  ///< LBA of the first error.
 };
 
 
