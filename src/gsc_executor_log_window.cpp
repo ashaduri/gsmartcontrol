@@ -197,7 +197,8 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 	int result = 0;
 
 	const Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
-	specific_filter->set_name(_("Text Files"));
+	specific_filter->set_name(_("JSON and Text Files"));
+	specific_filter->add_pattern("*.json");
 	specific_filter->add_pattern("*.txt");
 
 	const Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
@@ -237,7 +238,7 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 	if (!last_dir.empty())
 		dialog.set_current_folder(last_dir);
 
-	dialog.set_current_name(".txt");
+	dialog.set_current_name(".json");
 
 	// Show the dialog and wait for a user response
 	result = dialog.run();  // the main cycle blocks here
@@ -257,8 +258,8 @@ void GscExecutorLogWindow::on_window_save_current_button_clicked()
 #endif
 			rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
 
-			if (file.extension() != ".txt") {
-				file += ".txt";
+			if (file.extension() != ".json" && file.extension() != ".txt") {
+				file += ".json";
 			}
 
 			auto ec = hz::fs_file_put_contents(file, entry->std_output);

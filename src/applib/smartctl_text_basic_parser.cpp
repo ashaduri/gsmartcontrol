@@ -153,7 +153,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		model = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(model), ' ');
 		StorageProperty p;
 		p.set_name("Device Model", "model_name", "Device Model");
-		p.value = p.reported_value;  // string-type value
+		p.value = model;  // string-type value
 		add_property(p);
 
 	} else if (app_pcre_match("/^(?:Device|Product):[ \\t]*(.*)$/mi", output, &model)) {  // usb flash drives

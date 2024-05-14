@@ -836,7 +836,8 @@ void GscInfoWindow::on_save_info_button_clicked()
 	const std::string filename = drive->get_save_filename();
 
 	Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
-	specific_filter->set_name(_("Text Files"));
+	specific_filter->set_name(_("JSON and Text Files"));
+	specific_filter->add_pattern("*.json");
 	specific_filter->add_pattern("*.txt");
 
 	Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
@@ -898,8 +899,8 @@ void GscInfoWindow::on_save_info_button_clicked()
 #endif
 			rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
 
-			if (file.extension() != ".txt") {
-				file += ".txt";
+			if (file.extension() != ".json" && file.extension() != ".txt") {
+				file += ".json";
 			}
 
 			std::string data = this->drive->get_full_output();

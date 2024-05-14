@@ -417,7 +417,7 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::parse_any_data_for_virtual()
 	}
 
 	// This will add some properties and emit signal_changed().
-	auto basic_parse_status = this->parse_basic_data();
+	auto basic_parse_status = basic_parser->parse(this->full_output_);
 	if (!basic_parse_status) {
 		return hz::Unexpected(StorageDeviceError::ParseError,
 				std::vformat(_("Cannot parse smartctl output: {}"), std::make_format_args(basic_parse_status.error().message())));

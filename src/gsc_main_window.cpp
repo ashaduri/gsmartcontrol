@@ -1303,7 +1303,8 @@ void GscMainWindow::show_load_virtual_file_chooser()
 	int result = 0;
 
 	Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
-	specific_filter->set_name(_("Text Files"));
+	specific_filter->set_name(_("JSON and Text Files"));
+	specific_filter->add_pattern("*.json");
 	specific_filter->add_pattern("*.txt");
 
 	Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
