@@ -28,6 +28,7 @@ jobs:
         envs: 'BUILD_TYPE'
         usesh: true
         sync: rsync
+        mem: 2048
         prepare: >
           pkg install -y cmake pkgconf gtkmm30 gettext pcre libiconv
 
