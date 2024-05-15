@@ -32,14 +32,14 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{github.workspace}}/build
-      # We need at least AppleClang 15 for format library
+      # We need at least AppleClang 16 for source_location
       run: >
         cmake $GITHUB_WORKSPACE
         -DCMAKE_BUILD_TYPE=$BUILD_TYPE
         -DAPP_BUILD_EXAMPLES=ON
         -DAPP_BUILD_TESTS=ON
         -DAPP_COMPILER_ENABLE_WARNINGS=ON
-        -DCMAKE_CXX_COMPILER=$(brew --prefix llvm@15)/bin/clang++
+        -DCMAKE_CXX_COMPILER=$(brew --prefix llvm@16)/bin/clang++
 
     - name: Build
       shell: bash
