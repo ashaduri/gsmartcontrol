@@ -19,28 +19,49 @@ jobs:
 
   macos-homebrew:
     runs-on: macos-latest
+    strategy:
+      matrix:
+        include: [
+          # We need AppleClang 16, but GitHub only has 14 for now.
+          # { compiler: apple-clang },
+          { compiler: clang }
+        ]
 
     steps:
     - uses: actions/checkout@v4
 
     - name: Install Dependencies
-      run: >
-        brew install pkg-config gtkmm3 pcre cmake llvm@16
+      run: brew install pkg-config gtkmm3 pcre cmake
+
+    - name: Install Clang Compiler
+      if: ${{ matrix.compiler == 'clang' }}
+      run: brew install llvm@17
 
     - name: Create Build Directory
       run: cmake -E make_directory build
 
-    - name: Configure CMake
+    - name: Configure CMake (Apple Clang)
+      if: ${{ matrix.compiler == 'apple-clang' }}
       shell: bash
       working-directory: ${{github.workspace}}/build
-      # We need at least AppleClang 16 for source_location
       run: >
         cmake $GITHUB_WORKSPACE
         -DCMAKE_BUILD_TYPE=$BUILD_TYPE
         -DAPP_BUILD_EXAMPLES=ON
         -DAPP_BUILD_TESTS=ON
         -DAPP_COMPILER_ENABLE_WARNINGS=ON
-        -DCMAKE_CXX_COMPILER=$(brew --prefix llvm@16)/bin/clang++
+
+    - name: Configure CMake
+      if: ${{ matrix.compiler == 'clang' }}
+      shell: bash
+      working-directory: ${{github.workspace}}/build
+      run: >
+        cmake $GITHUB_WORKSPACE
+        -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        -DAPP_BUILD_EXAMPLES=ON
+        -DAPP_BUILD_TESTS=ON
+        -DAPP_COMPILER_ENABLE_WARNINGS=ON
+        -DCMAKE_CXX_COMPILER=$(brew --prefix llvm@17)/bin/clang++
 
     - name: Build
       shell: bash
