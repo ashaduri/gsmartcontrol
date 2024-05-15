@@ -23,12 +23,11 @@ jobs:
 
     - name: Build and test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@v0.1.2
+      uses: vmactions/freebsd-vm@v1
       with:
         envs: 'BUILD_TYPE'
         usesh: true
         sync: rsync
-        mem: 2048
         prepare: >
           pkg install -y cmake pkgconf gtkmm30 gettext pcre libiconv
 
@@ -43,4 +42,4 @@ jobs:
 
           cmake --build . --config $BUILD_TYPE
 
-          ctest -C $BUILD_TYPE
+          ctest -C $BUILD_TYPE --rerun-failed --output-on-failure
