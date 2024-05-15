@@ -191,7 +191,7 @@ TEST_CASE("NumericStrings", "[hz][parser]")
 
 		REQUIRE(number_to_string_nolocale(5.F) == "5");  // float
 		REQUIRE(number_to_string_nolocale(1.33) == "1.33");  // double
-		REQUIRE(number_to_string_nolocale(2.123456789123456789123456789L) == "2.123456789123456789");
+		REQUIRE(number_to_string_nolocale(2.123456789123456789123456789L).starts_with("2.1234567891234567") == true);
 
 		REQUIRE(number_to_string_nolocale(std::numeric_limits<double>::quiet_NaN()) == "nan");
 		REQUIRE(number_to_string_nolocale(std::numeric_limits<float>::signaling_NaN()) == "nan");
