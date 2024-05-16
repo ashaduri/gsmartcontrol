@@ -27,7 +27,7 @@ Copyright:
 #include "hz/string_num.h"  // string_is_numeric, number_to_string
 #include "hz/debug.h"  // debug_*
 
-#include "app_pcrecpp.h"
+#include "app_regex.h"
 //#include "ata_storage_property_descr.h"
 // #include "warning_colors.h"
 #include "smartctl_parser_types.h"
@@ -94,30 +94,26 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse(std::string_v
 	// NO NEED: We ignore everything non-section (except version info).
 	// Note: We ignore non-section lines, so we don't need any filtering here.
 // 	{
-// 		app_pcre_replace_once("/^# .*$/", "", s);  // replace first only, on the first line only.
+// 		app_regex_replace_once("/^# .*$/", "", s);  // replace first only, on the first line only.
 // 	}
 
 
 	// Checksum warnings are kind of randomly distributed, so
 	// extract and remove them.
 	{
-		const pcrecpp::RE re = app_pcre_re("/\\nWarning! SMART (.+) Structure error: invalid SMART checksum\\.$/mi");
-
-		std::string name;
-		pcrecpp::StringPiece input(s);  // position tracker
-
-		while (re.FindAndConsume(&input, &name)) {
-			add_property(app_get_checksum_error_property(hz::string_trim_copy(name)));
+		const auto re = app_regex_re("/\\nWarning! SMART (.+) Structure error: invalid SMART checksum\\.$/mi");
+		for (auto it = std::sregex_iterator(s.begin(), s.end(), re), end = std::sregex_iterator(); it != end; ++it) {
+			const std::string structure_name = hz::string_trim_copy(it->str(1));
+			add_property(app_get_checksum_error_property(structure_name));
 		}
-
-		app_pcre_replace(re, "", s);  // remove them from s.
+		app_regex_replace(re, "", s);  // remove them from s.
 	}
 
 	// Remove some additional stuff which doesn't fit
 	// Display this warning somewhere? (info section?)
 	// Or not, these options don't do anything crucial - just some translation stuff.
 	{
-		app_pcre_replace("/\\n.*May need -F samsung or -F samsung2 enabled; see manual for details\\.$/mi",
+		app_regex_replace("/\\n.*May need -F samsung or -F samsung2 enabled; see manual for details\\.$/mi",
 				"", s);  // remove from s
 	}
 
@@ -125,11 +121,11 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse(std::string_v
 	// The Warning: parts also screw up newlines sometimes (making double-newlines,
 	// confusing for section separation).
 	{
-		const pcrecpp::RE re = app_pcre_re("/^(Warning: ATA error count.*\\n)\\n/mi");
+		const auto re = app_regex_re("/^(Warning: ATA error count.*\\n)\\n/mi");
 
 		std::string match;
-		if (app_pcre_match(re, s, &match)) {
-			app_pcre_replace(re, match, s);  // make one newline less
+		if (app_regex_partial_match(re, s, &match)) {
+			app_regex_replace(re, match, s);  // make one newline less
 		}
 	}
 
@@ -137,23 +133,23 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse(std::string_v
 	// If the device doesn't support many things, the warnings aren't separated (for sections).
 	// Fix that. This affects old smartctl only (at least 6.5 fixed the warnings).
 	{
-		const pcrecpp::RE re1 = app_pcre_re("/^(Warning: device does not support Error Logging)$/mi");
-		const pcrecpp::RE re2 = app_pcre_re("/^(Warning: device does not support Self Test Logging)$/mi");
-		const pcrecpp::RE re3 = app_pcre_re("/^(Device does not support Selective Self Tests\\/Logging)$/mi");
-		const pcrecpp::RE re4 = app_pcre_re("/^(Warning: device does not support SCT Commands)$/mi");
+		const auto re1 = app_regex_re("/^(Warning: device does not support Error Logging)$/mi");
+		const auto re2 = app_regex_re("/^(Warning: device does not support Self Test Logging)$/mi");
+		const auto re3 = app_regex_re("/^(Device does not support Selective Self Tests\\/Logging)$/mi");
+		const auto re4 = app_regex_re("/^(Warning: device does not support SCT Commands)$/mi");
 		std::string match;
 
-		if (app_pcre_match(re1, s, &match))
-			app_pcre_replace(re1, "\n" + match + "\n", s);  // add extra newlines
+		if (app_regex_partial_match(re1, s, &match))
+			app_regex_replace(re1, "\n" + match + "\n", s);  // add extra newlines
 
-		if (app_pcre_match(re2, s, &match))
-			app_pcre_replace(re2, "\n" + match + "\n", s);  // add extra newlines
+		if (app_regex_partial_match(re2, s, &match))
+			app_regex_replace(re2, "\n" + match + "\n", s);  // add extra newlines
 
-		if (app_pcre_match(re3, s, &match))
-			app_pcre_replace(re3, "\n" + match + "\n", s);  // add extra newlines
+		if (app_regex_partial_match(re3, s, &match))
+			app_regex_replace(re3, "\n" + match + "\n", s);  // add extra newlines
 
-		if (app_pcre_match(re4, s, &match))
-			app_pcre_replace(re4, "\n" + match + "\n", s);  // add extra newlines
+		if (app_regex_partial_match(re4, s, &match))
+			app_regex_replace(re4, "\n" + match + "\n", s);  // add extra newlines
 	}
 
 	// Some errors get in the way of subsection detection and have little value, remove them.
@@ -161,45 +157,45 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse(std::string_v
 		// "ATA_READ_LOG_EXT (addr=0x00:0x00, page=0, n=1) failed: 48-bit ATA commands not implemented"
 		// or "ATA_READ_LOG_EXT (addr=0x11:0x00, page=0, n=1) failed: scsi error aborted command"
 		// in front of "Read GP Log Directory failed" and "Read SATA Phy Event Counters failed".
-		const pcrecpp::RE re1 = app_pcre_re("/^(ATA_READ_LOG_EXT \\([^)]+\\) failed: .*)$/mi");
+		const auto re1 = app_regex_re("/^(ATA_READ_LOG_EXT \\([^)]+\\) failed: .*)$/mi");
 		// "SMART WRITE LOG does not return COUNT and LBA_LOW register"
 		// in front of "SCT (Get) Error Recovery Control command failed" (scterc section)
-		const pcrecpp::RE re2= app_pcre_re("/^((?:Error )?SMART WRITE LOG does not return COUNT and LBA_LOW register)$/mi");
+		const auto re2= app_regex_re("/^((?:Error )?SMART WRITE LOG does not return COUNT and LBA_LOW register)$/mi");
 		// "Read SCT Status failed: scsi error aborted command"
 		// in front of "Read SCT Temperature History failed" and "SCT (Get) Error Recovery Control command failed"
-		const pcrecpp::RE re3= app_pcre_re("/^(Read SCT Status failed: .*)$/mi");
+		const auto re3= app_regex_re("/^(Read SCT Status failed: .*)$/mi");
 		// "Unknown SCT Status format version 0, should be 2 or 3."
-		const pcrecpp::RE re4= app_pcre_re("/^(Unknown SCT Status format version .*)$/mi");
+		const auto re4= app_regex_re("/^(Unknown SCT Status format version .*)$/mi");
 		// "Read SCT Data Table failed: scsi error aborted command"
-		const pcrecpp::RE re5= app_pcre_re("/^(Read SCT Data Table failed: .*)$/mi");
+		const auto re5= app_regex_re("/^(Read SCT Data Table failed: .*)$/mi");
 		// "Write SCT Data Table failed: Undefined error: 0"
 		// in front of "Read SCT Temperature History failed"
-		const pcrecpp::RE re6= app_pcre_re("/^(Write SCT Data Table failed: .*)$/mi");
+		const auto re6= app_regex_re("/^(Write SCT Data Table failed: .*)$/mi");
 		// "Unexpected SCT status 0x0000 (action_code=0, function_code=0)"
 		// in front of "Read SCT Temperature History failed"
-		const pcrecpp::RE re7= app_pcre_re("/^(Unexpected SCT status .*\\))$/mi");
+		const auto re7= app_regex_re("/^(Unexpected SCT status .*\\))$/mi");
 		std::string match;
 
-		if (app_pcre_match(re1, s, &match))
-			app_pcre_replace(re1, "", s);  // add extra newlines
+		if (app_regex_partial_match(re1, s, &match))
+			app_regex_replace(re1, "", s);  // add extra newlines
 
-		if (app_pcre_match(re2, s, &match))
-			app_pcre_replace(re2, "", s);  // add extra newlines
+		if (app_regex_partial_match(re2, s, &match))
+			app_regex_replace(re2, "", s);  // add extra newlines
 
-		if (app_pcre_match(re3, s, &match))
-			app_pcre_replace(re3, "", s);  // add extra newlines
+		if (app_regex_partial_match(re3, s, &match))
+			app_regex_replace(re3, "", s);  // add extra newlines
 
-		if (app_pcre_match(re4, s, &match))
-			app_pcre_replace(re4, "", s);  // add extra newlines
+		if (app_regex_partial_match(re4, s, &match))
+			app_regex_replace(re4, "", s);  // add extra newlines
 
-		if (app_pcre_match(re5, s, &match))
-			app_pcre_replace(re5, "", s);  // add extra newlines
+		if (app_regex_partial_match(re5, s, &match))
+			app_regex_replace(re5, "", s);  // add extra newlines
 
-		if (app_pcre_match(re6, s, &match))
-			app_pcre_replace(re6, "", s);  // add extra newlines
+		if (app_regex_partial_match(re6, s, &match))
+			app_regex_replace(re6, "", s);  // add extra newlines
 
-		if (app_pcre_match(re7, s, &match))
-			app_pcre_replace(re7, "", s);  // add extra newlines
+		if (app_regex_partial_match(re7, s, &match))
+			app_regex_replace(re7, "", s);  // add extra newlines
 	}
 
 
@@ -275,11 +271,11 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse(std::string_v
 // Parse the section part (with "=== .... ===" header) - info or data sections.
 hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section(const std::string& header, const std::string& body)
 {
-	if (app_pcre_match("/START OF INFORMATION SECTION/mi", header)) {
+	if (app_regex_partial_match("/START OF INFORMATION SECTION/mi", header)) {
 		return parse_section_info(body);
 	}
 
-	if (app_pcre_match("/START OF READ SMART DATA SECTION/mi", header)) {
+	if (app_regex_partial_match("/START OF READ SMART DATA SECTION/mi", header)) {
 		return parse_section_data(body);
 	}
 
@@ -287,17 +283,17 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section(const
 	// You may encounter this if e.g. executing "smartctl -a -s on".
 
 	// example contents: "SMART Enabled.".
-	if (app_pcre_match("/START OF READ SMART DATA SECTION/mi", header)) {
+	if (app_regex_partial_match("/START OF READ SMART DATA SECTION/mi", header)) {
 		return {};
 	}
 
 	// We don't parse this - it's parsed by the respective command issuer.
-	if (app_pcre_match("/START OF ENABLE/DISABLE COMMANDS SECTION/mi", header)) {
+	if (app_regex_partial_match("/START OF ENABLE/DISABLE COMMANDS SECTION/mi", header)) {
 		return {};
 	}
 
 	// This is printed when executing "-t long", etc. . Parsed by respective command issuer.
-	if (app_pcre_match("/START OF OFFLINE IMMEDIATE AND SELF-TEST SECTION/mi", header)) {
+	if (app_regex_partial_match("/START OF OFFLINE IMMEDIATE AND SELF-TEST SECTION/mi", header)) {
 		return {};
 	}
 
@@ -323,7 +319,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_info(
 
 	// split by lines.
 	// e.g. Device Model:     ST3500630AS
-	const pcrecpp::RE re = app_pcre_re("/^([^\\n]+): [ \\t]*(.*)$/miU");  // ungreedy
+	const auto re = app_regex_re("/^([^\\n]+): [ \\t]*(.*)$/mi");  // MUST BE Ungreedy!
 
 	std::vector<std::string> lines;
 	hz::string_split(body, '\n', lines, false);
@@ -362,8 +358,8 @@ see the following Seagate web pages:
 http://knowledge.seagate.com/articles/en_US/FAQ/207931en
 http://knowledge.seagate.com/articles/en_US/FAQ/213891en
 */
-		if (app_pcre_match("/^==> WARNING: /mi", line)) {
-			app_pcre_replace("^==> WARNING: ", "", line);
+		if (app_regex_partial_match("/^==> WARNING: /mi", line)) {
+			app_regex_replace("^==> WARNING: ", "", line);
 			warning_msg = hz::string_trim_copy(line);
 			expecting_warning_lines = true;
 			continue;
@@ -371,34 +367,34 @@ http://knowledge.seagate.com/articles/en_US/FAQ/213891en
 
 		// This is not an ordinary name / value pair, so filter it out (we don't need it anyway).
 		// Usually this happens when smart is unsupported or disabled.
-		if (app_pcre_match("/mandatory SMART command failed/mi", line)) {
+		if (app_regex_partial_match("/mandatory SMART command failed/mi", line)) {
 			continue;
 		}
 		// --get=all may cause these, ignore.
 				// "Unexpected SCT status 0x0010 (action_code=4, function_code=2)"
-		if (app_pcre_match("/^Unexpected SCT status/mi", line)
+		if (app_regex_partial_match("/^Unexpected SCT status/mi", line)
 				// "Write SCT (Get) XXX Error Recovery Control Command failed: scsi error aborted command"
-				|| app_pcre_match("/^Write SCT \\(Get\\) XXX Error Recovery Control Command failed/mi", line)
+				|| app_regex_partial_match("/^Write SCT \\(Get\\) XXX Error Recovery Control Command failed/mi", line)
 				// "Write SCT (Get) Feature Control Command failed: scsi error aborted command"
-				|| app_pcre_match("/^Write SCT \\(Get\\) Feature Control Command failed/mi", line)
+				|| app_regex_partial_match("/^Write SCT \\(Get\\) Feature Control Command failed/mi", line)
 				// "Read SCT Status failed: scsi error aborted command"
-				|| app_pcre_match("/^Read SCT Status failed/mi", line)
+				|| app_regex_partial_match("/^Read SCT Status failed/mi", line)
 				// "Read SMART Data failed: Input/output error"  (just ignore this, the rest of the data seems fine)
-				|| app_pcre_match("/^Read SMART Data failed/mi", line)
+				|| app_regex_partial_match("/^Read SMART Data failed/mi", line)
 				// "Unknown SCT Status format version 0, should be 2 or 3."
-				|| app_pcre_match("/^Unknown SCT Status format version/mi", line)
+				|| app_regex_partial_match("/^Unknown SCT Status format version/mi", line)
 				// "Read SMART Thresholds failed: scsi error aborted command"
-				|| app_pcre_match("/^Read SMART Thresholds failed/mi", line)
+				|| app_regex_partial_match("/^Read SMART Thresholds failed/mi", line)
 				// "                  Enabled status cached by OS, trying SMART RETURN STATUS cmd."
-				|| app_pcre_match("/Enabled status cached by OS, trying SMART RETURN STATUS cmd/mi", line)
-				|| app_pcre_match("/^>> Terminate command early due to bad response to IEC mode page/mi", line)  // on a flash drive
+				|| app_regex_partial_match("/Enabled status cached by OS, trying SMART RETURN STATUS cmd/mi", line)
+				|| app_regex_partial_match("/^>> Terminate command early due to bad response to IEC mode page/mi", line)  // on a flash drive
 				// "scsiModePageOffset: response length too short, resp_len=4 offset=4 bd_len=0"
-				|| app_pcre_match("/^scsiModePageOffset: .+/mi", line)  // on a flash drive
+				|| app_regex_partial_match("/^scsiModePageOffset: .+/mi", line)  // on a flash drive
 		   ) {
 			continue;
 		}
 
-		if (re.FullMatch(line, &name, &value)) {
+		if (app_regex_full_match(re, line, {&name, &value})) {
 			hz::string_trim(name);
 			hz::string_trim(value);
 
@@ -436,47 +432,47 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_info_
 	}
 
 
-	if (app_pcre_match("/^Model Family$/mi", p.reported_name)) {
+	if (app_regex_partial_match("/^Model Family$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "model_family", "Model Family");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^(?:Device Model|Device|Product)$/mi", p.reported_name)) {  // "Device" and "Product" are from scsi/usb
+	} else if (app_regex_partial_match("/^(?:Device Model|Device|Product)$/mi", p.reported_name)) {  // "Device" and "Product" are from scsi/usb
 		p.set_name(p.reported_name, "model_name", "Device Model");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^Vendor$/mi", p.reported_name)) {  // From scsi/usb
+	} else if (app_regex_partial_match("/^Vendor$/mi", p.reported_name)) {  // From scsi/usb
 		p.set_name(p.reported_name, "vendor", "Vendor");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^Revision$/mi", p.reported_name)) {  // From scsi/usb
+	} else if (app_regex_partial_match("/^Revision$/mi", p.reported_name)) {  // From scsi/usb
 		p.set_name(p.reported_name, "revision", "Revision");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^Device type$/mi", p.reported_name)) {  // From scsi/usb
+	} else if (app_regex_partial_match("/^Device type$/mi", p.reported_name)) {  // From scsi/usb
 		p.set_name(p.reported_name, "device_type/name", "Device Type");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^Compliance$/mi", p.reported_name)) {  // From scsi/usb
+	} else if (app_regex_partial_match("/^Compliance$/mi", p.reported_name)) {  // From scsi/usb
 		p.set_name(p.reported_name, "scsi_version", "Compliance");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^Serial Number$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^Serial Number$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "serial_number", "Serial Number");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^LU WWN Device Id$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^LU WWN Device Id$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "wwn/_merged", "World Wide Name");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^Add. Product Id$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^Add. Product Id$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "ata_additional_product_id", "Additional Product ID");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^Firmware Version$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^Firmware Version$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "firmware_version", "Firmware Version");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^User Capacity$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^User Capacity$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "user_capacity/bytes", "Capacity");
 		int64_t v = 0;
 		p.readable_value = SmartctlTextParserHelper::parse_byte_size(p.reported_value, v, true);
@@ -486,119 +482,119 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_info_
 			p.value = v;  // integer-type value
 		}
 
-	} else if (app_pcre_match("/^Sector Sizes$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^Sector Sizes$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "physical_block_size/_and/logical_block_size", "Sector Sizes");
 		// This contains 2 values (phys/logical, if they're different)
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^Sector Size$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^Sector Size$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "physical_block_size/_and/logical_block_size", "Sector Size");
 		// This contains a single value (if it's not 512)
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^Logical block size$/mi", p.reported_name)) {  // from scsi/usb
+	} else if (app_regex_partial_match("/^Logical block size$/mi", p.reported_name)) {  // from scsi/usb
 		p.set_name(p.reported_name, "logical_block_size", "Logical Block Size");
 		// "512 bytes"
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^Rotation Rate$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^Rotation Rate$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "rotation_rate", "Rotation Rate");
 		p.value = hz::string_to_number_nolocale<int64_t>(p.reported_value, false);
 
-	} else if (app_pcre_match("/^Form Factor$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^Form Factor$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "form_factor/name", "Form Factor");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^Device is$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^Device is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "in_smartctl_database", "In Smartctl Database");
-		p.value = (!app_pcre_match("/Not in /mi", p.reported_value));  // bool-type value
+		p.value = (!app_regex_partial_match("/Not in /mi", p.reported_value));  // bool-type value
 
-	} else if (app_pcre_match("/^ATA Version is$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^ATA Version is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "ata_version/string", "ATA Version");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^ATA Standard is$/mi", p.reported_name)) {  // old, not present in smartctl 7.2
+	} else if (app_regex_partial_match("/^ATA Standard is$/mi", p.reported_name)) {  // old, not present in smartctl 7.2
 		p.set_name(p.reported_name, "ata_version/string", "ATA Standard");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^SATA Version is$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^SATA Version is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "sata_version/string", "SATA Version");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^Local Time is$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^Local Time is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "local_time/asctime", "Scanned on");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^SMART support is$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^SMART support is$/mi", p.reported_name)) {
 		// There are two different properties with this name - supported and enabled.
 		// Don't put complete messages here - they change across smartctl versions.
 
-		if (app_pcre_match("/Available - device has/mi", p.reported_value)) {
+		if (app_regex_partial_match("/Available - device has/mi", p.reported_value)) {
 			p.set_name(p.reported_name, "smart_support/available", "SMART Supported");
 			p.value = true;
 
-		} else if (app_pcre_match("/Enabled/mi", p.reported_value)) {
+		} else if (app_regex_partial_match("/Enabled/mi", p.reported_value)) {
 			p.set_name(p.reported_name, "smart_support/enabled", "SMART Enabled");
 			p.value = true;
 
-		} else if (app_pcre_match("/Disabled/mi", p.reported_value)) {
+		} else if (app_regex_partial_match("/Disabled/mi", p.reported_value)) {
 			p.set_name(p.reported_name, "smart_support/enabled", "SMART Enabled");
 			p.value = false;
 
-		} else if (app_pcre_match("/Unavailable/mi", p.reported_value)) {
+		} else if (app_regex_partial_match("/Unavailable/mi", p.reported_value)) {
 			p.set_name(p.reported_name, "smart_support/available", "SMART Supported");
 			p.value = false;
 
 		// this should be the last - when ambiguous state is detected, usually smartctl
 		// retries with other methods and prints one of the above.
-		} else if (app_pcre_match("/Ambiguous/mi", p.reported_value)) {
+		} else if (app_regex_partial_match("/Ambiguous/mi", p.reported_value)) {
 			p.set_name(p.reported_name, "smart_support/available", "SMART Supported");
 			p.value = true;  // let's be optimistic - just hope that it doesn't hurt.
 		}
 
 	// "-g all" stuff
-	} else if (app_pcre_match("/^AAM feature is$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^AAM feature is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "ata_aam/enabled", "AAM Feature");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^AAM level is$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^AAM level is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "ata_aam/level", "AAM Level");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^APM feature is$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^APM feature is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "ata_apm/enabled", "APM Feature");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^APM level is$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^APM level is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "ata_apm/level", "APM Level");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^Rd look-ahead is$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^Rd look-ahead is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "read_lookahead/enabled", "Read Look-Ahead");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^Write cache is$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^Write cache is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "write_cache/enabled", "Write Cache");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^Wt Cache Reorder$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^Wt Cache Reorder$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "_text_only/write_cache_reorder", "Write Cache Reorder");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^DSN feature is$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^DSN feature is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "ata_dsn/enabled", "DSN Feature");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^Power mode (?:was|is)$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^Power mode (?:was|is)$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "_text_only/power_mode", "Power Mode");
 		p.value = p.reported_value;  // string-type value
 
-	} else if (app_pcre_match("/^ATA Security is$/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^ATA Security is$/mi", p.reported_name)) {
 		p.set_name(p.reported_name, "ata_security/string", "ATA Security");
 		p.value = p.reported_value;  // string-type value
 
 	// These are some debug warnings from smartctl on usb flash drives
-	} else if (app_pcre_match("/^scsiMode/mi", p.reported_name)) {
+	} else if (app_regex_partial_match("/^scsiMode/mi", p.reported_name)) {
 		p.show_in_ui = false;
 
 	} else {
@@ -643,10 +639,11 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data(
 	// "Read SCT Temperature History failed".
 	for (auto sub : split_subsections) {
 		hz::string_trim(sub, "\t\n\r");  // don't trim space
-		if (app_pcre_re("^  ").PartialMatch(sub) || app_pcre_re("^Error [0-9]+").PartialMatch(sub)
-				|| app_pcre_re("^SCT Temperature History Version").PartialMatch(sub)
-				|| app_pcre_re("^Index[ \t]+").PartialMatch(sub)
-				|| app_pcre_re("^Read SCT Temperature History failed").PartialMatch(sub) ) {
+		if (app_regex_partial_match("^  ", sub)
+				|| app_regex_partial_match("^Error [0-9]+", sub)
+				|| app_regex_partial_match("^SCT Temperature History Version", sub)
+				|| app_regex_partial_match("^Index[ \t]+", sub)
+				|| app_regex_partial_match("^Read SCT Temperature History failed", sub) ) {
 			if (!subsections.empty()) {
 				subsections.back() += "\n\n" + sub;  // append to previous part
 			} else {
@@ -664,93 +661,93 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data(
 		if (sub.empty())
 			continue;
 
-		if (app_pcre_match("/^SMART overall-health self-assessment/mi", sub)) {
+		if (app_regex_partial_match("/^SMART overall-health self-assessment/mi", sub)) {
 			status = parse_section_data_subsection_health(sub).has_value() || status;
 
-		} else if (app_pcre_match("/^General SMART Values/mi", sub)) {
+		} else if (app_regex_partial_match("/^General SMART Values/mi", sub)) {
 			status = parse_section_data_subsection_capabilities(sub).has_value() || status;
 
-		} else if (app_pcre_match("/^SMART Attributes Data Structure/mi", sub)) {
+		} else if (app_regex_partial_match("/^SMART Attributes Data Structure/mi", sub)) {
 			status = parse_section_data_subsection_attributes(sub).has_value() || status;
 
-		} else if (app_pcre_match("/^General Purpose Log Directory Version/mi", sub)  // -l directory
-				|| app_pcre_match("/^General Purpose Log Directory not supported/mi", sub)
-				|| app_pcre_match("/^General Purpose Logging \\(GPL\\) feature set supported/mi", sub)
-				|| app_pcre_match("/^Read GP Log Directory failed/mi", sub)
-				|| app_pcre_match("/^Log Directories not read due to '-F nologdir' option/mi", sub)
-				|| app_pcre_match("/^Read SMART Log Directory failed/mi", sub)
-				|| app_pcre_match("/^SMART Log Directory Version/mi", sub) ) {  // old smartctl
+		} else if (app_regex_partial_match("/^General Purpose Log Directory Version/mi", sub)  // -l directory
+				|| app_regex_partial_match("/^General Purpose Log Directory not supported/mi", sub)
+				|| app_regex_partial_match("/^General Purpose Logging \\(GPL\\) feature set supported/mi", sub)
+				|| app_regex_partial_match("/^Read GP Log Directory failed/mi", sub)
+				|| app_regex_partial_match("/^Log Directories not read due to '-F nologdir' option/mi", sub)
+				|| app_regex_partial_match("/^Read SMART Log Directory failed/mi", sub)
+				|| app_regex_partial_match("/^SMART Log Directory Version/mi", sub) ) {  // old smartctl
 			status = parse_section_data_subsection_directory_log(sub).has_value() || status;
 
-		} else if (app_pcre_match("/^SMART Error Log Version/mi", sub)  // -l error
-				|| app_pcre_match("/^SMART Extended Comprehensive Error Log Version/mi", sub)  // -l xerror
-				|| app_pcre_match("/^Warning: device does not support Error Logging/mi", sub)  // -l error
-				|| app_pcre_match("/^SMART Error Log not supported/mi", sub)  // -l error
-				|| app_pcre_match("/^Read SMART Error Log failed/mi", sub) ) {  // -l error
+		} else if (app_regex_partial_match("/^SMART Error Log Version/mi", sub)  // -l error
+				|| app_regex_partial_match("/^SMART Extended Comprehensive Error Log Version/mi", sub)  // -l xerror
+				|| app_regex_partial_match("/^Warning: device does not support Error Logging/mi", sub)  // -l error
+				|| app_regex_partial_match("/^SMART Error Log not supported/mi", sub)  // -l error
+				|| app_regex_partial_match("/^Read SMART Error Log failed/mi", sub) ) {  // -l error
 			status = parse_section_data_subsection_error_log(sub).has_value() || status;
 
-		} else if (app_pcre_match("/^SMART Extended Comprehensive Error Log \\(GP Log 0x03\\) not supported/mi", sub)  // -l xerror
-				|| app_pcre_match("/^SMART Extended Comprehensive Error Log size (.*) not supported/mi", sub)
-				|| app_pcre_match("/^Read SMART Extended Comprehensive Error Log failed/mi", sub) ) {  // -l xerror
+		} else if (app_regex_partial_match("/^SMART Extended Comprehensive Error Log \\(GP Log 0x03\\) not supported/mi", sub)  // -l xerror
+				|| app_regex_partial_match("/^SMART Extended Comprehensive Error Log size (.*) not supported/mi", sub)
+				|| app_regex_partial_match("/^Read SMART Extended Comprehensive Error Log failed/mi", sub) ) {  // -l xerror
 			// These are printed with "-l xerror,error" if falling back to "error". They're in their own sections, ignore them.
 			// We don't support showing these messages.
 			status = false;
 
-		} else if (app_pcre_match("/^SMART Self-test log/mi", sub)  // -l selftest
-				|| app_pcre_match("/^SMART Extended Self-test Log Version/mi", sub)  // -l xselftest
-				|| app_pcre_match("/^Warning: device does not support Self Test Logging/mi", sub)  // -l selftest
-				|| app_pcre_match("/^Read SMART Self-test Log failed/mi", sub)  // -l selftest
-				|| app_pcre_match("/^SMART Self-test Log not supported/mi", sub)) {  // -l selftest
+		} else if (app_regex_partial_match("/^SMART Self-test log/mi", sub)  // -l selftest
+				|| app_regex_partial_match("/^SMART Extended Self-test Log Version/mi", sub)  // -l xselftest
+				|| app_regex_partial_match("/^Warning: device does not support Self Test Logging/mi", sub)  // -l selftest
+				|| app_regex_partial_match("/^Read SMART Self-test Log failed/mi", sub)  // -l selftest
+				|| app_regex_partial_match("/^SMART Self-test Log not supported/mi", sub)) {  // -l selftest
 			status = parse_section_data_subsection_selftest_log(sub).has_value() || status;
 
-		} else if (app_pcre_match("/^SMART Extended Self-test Log \\(GP Log 0x07\\) not supported/mi", sub)  // -l xselftest
-				|| app_pcre_match("/^SMART Extended Self-test Log size [0-9-]+ not supported/mi", sub)  // -l xselftest
-				|| app_pcre_match("/^Read SMART Extended Self-test Log failed/mi", sub) ) {  // -l xselftest
+		} else if (app_regex_partial_match("/^SMART Extended Self-test Log \\(GP Log 0x07\\) not supported/mi", sub)  // -l xselftest
+				|| app_regex_partial_match("/^SMART Extended Self-test Log size [0-9-]+ not supported/mi", sub)  // -l xselftest
+				|| app_regex_partial_match("/^Read SMART Extended Self-test Log failed/mi", sub) ) {  // -l xselftest
 			// These are printed with "-l xselftest,selftest" if falling back to "selftest". They're in their own sections, ignore them.
 			// We don't support showing these messages.
 			status = false;
 
-		} else if (app_pcre_match("/^SMART Selective self-test log data structure/mi", sub)
-				|| app_pcre_match("/^Device does not support Selective Self Tests\\/Logging/mi", sub)
-				|| app_pcre_match("/^Selective Self-tests\\/Logging not supported/mi", sub)
-				|| app_pcre_match("/^Read SMART Selective Self-test Log failed/mi", sub) ) {
+		} else if (app_regex_partial_match("/^SMART Selective self-test log data structure/mi", sub)
+				|| app_regex_partial_match("/^Device does not support Selective Self Tests\\/Logging/mi", sub)
+				|| app_regex_partial_match("/^Selective Self-tests\\/Logging not supported/mi", sub)
+				|| app_regex_partial_match("/^Read SMART Selective Self-test Log failed/mi", sub) ) {
 			status = parse_section_data_subsection_selective_selftest_log(sub).has_value() || status;
 
-		} else if (app_pcre_match("/^SCT Status Version/mi", sub)
+		} else if (app_regex_partial_match("/^SCT Status Version/mi", sub)
 				// "SCT Commands not supported"
 				// "SCT Commands not supported if ATA Security is LOCKED"
 				// "Error unknown SCT Temperature History Format Version (3), should be 2."
 				// "Another SCT command is executing, abort Read Data Table"
-				|| app_pcre_match("/^SCT Commands not supported/mi", sub)
-				|| app_pcre_match("/^SCT Data Table command not supported/mi", sub)
-				|| app_pcre_match("/^Error unknown SCT Temperature History Format Version/mi", sub)
-				|| app_pcre_match("/^Another SCT command is executing, abort Read Data Table/mi", sub)
-				|| app_pcre_match("/^Warning: device does not support SCT Commands/mi", sub) ) {  // old smartctl
+				|| app_regex_partial_match("/^SCT Commands not supported/mi", sub)
+				|| app_regex_partial_match("/^SCT Data Table command not supported/mi", sub)
+				|| app_regex_partial_match("/^Error unknown SCT Temperature History Format Version/mi", sub)
+				|| app_regex_partial_match("/^Another SCT command is executing, abort Read Data Table/mi", sub)
+				|| app_regex_partial_match("/^Warning: device does not support SCT Commands/mi", sub) ) {  // old smartctl
 			status = parse_section_data_subsection_scttemp_log(sub).has_value() || status;
 
-		} else if (app_pcre_match("/^SCT Error Recovery Control/mi", sub)
+		} else if (app_regex_partial_match("/^SCT Error Recovery Control/mi", sub)
 				// Can be the same "SCT Commands not supported" as scttemp.
 				// "Another SCT command is executing, abort Error Recovery Control"
-				|| app_pcre_match("/^SCT Error Recovery Control command not supported/mi", sub)
-				|| app_pcre_match("/^SCT \\(Get\\) Error Recovery Control command failed/mi", sub)
-				|| app_pcre_match("/^Another SCT command is executing, abort Error Recovery Control/mi", sub)
-				|| app_pcre_match("/^Warning: device does not support SCT \\(Get\\) Error Recovery Control/mi", sub) ) {  // old smartctl
+				|| app_regex_partial_match("/^SCT Error Recovery Control command not supported/mi", sub)
+				|| app_regex_partial_match("/^SCT \\(Get\\) Error Recovery Control command failed/mi", sub)
+				|| app_regex_partial_match("/^Another SCT command is executing, abort Error Recovery Control/mi", sub)
+				|| app_regex_partial_match("/^Warning: device does not support SCT \\(Get\\) Error Recovery Control/mi", sub) ) {  // old smartctl
 			status = parse_section_data_subsection_scterc_log(sub).has_value() || status;
 
-		} else if (app_pcre_match("/^Device Statistics \\([^)]+\\)$/mi", sub)  // -l devstat
-				|| app_pcre_match("/^Device Statistics \\([^)]+\\) not supported/mi", sub)
-				|| app_pcre_match("/^Read Device Statistics page (?:.+) failed/mi", sub) ) {
+		} else if (app_regex_partial_match("/^Device Statistics \\([^)]+\\)$/mi", sub)  // -l devstat
+				|| app_regex_partial_match("/^Device Statistics \\([^)]+\\) not supported/mi", sub)
+				|| app_regex_partial_match("/^Read Device Statistics page (?:.+) failed/mi", sub) ) {
 			status = parse_section_data_subsection_devstat(sub).has_value() || status;
 
 		// "Device Statistics (GP Log 0x04) supported pages"
-		} else if (app_pcre_match("/^Device Statistics \\([^)]+\\) supported pages/mi", sub) ) {  // not sure where it came from
+		} else if (app_regex_partial_match("/^Device Statistics \\([^)]+\\) supported pages/mi", sub) ) {  // not sure where it came from
 			// We don't support this section.
 			status = false;
 
-		} else if (app_pcre_match("/^SATA Phy Event Counters/mi", sub)  // -l sataphy
-				|| app_pcre_match("/^SATA Phy Event Counters \\(GP Log 0x11\\) not supported/mi", sub)
-				|| app_pcre_match("/^SATA Phy Event Counters with [0-9-]+ sectors not supported/mi", sub)
-				|| app_pcre_match("/^Read SATA Phy Event Counters failed/mi", sub) ) {
+		} else if (app_regex_partial_match("/^SATA Phy Event Counters/mi", sub)  // -l sataphy
+				|| app_regex_partial_match("/^SATA Phy Event Counters \\(GP Log 0x11\\) not supported/mi", sub)
+				|| app_regex_partial_match("/^SATA Phy Event Counters with [0-9-]+ sectors not supported/mi", sub)
+				|| app_regex_partial_match("/^Read SATA Phy Event Counters failed/mi", sub) ) {
 			status = parse_section_data_subsection_sataphy(sub).has_value() || status;
 
 		} else {
@@ -787,12 +784,12 @@ Device is:        In smartctl database [for details use: -P show]
 	pt.section = StoragePropertySection::OverallHealth;
 
 	std::string name, value;
-	if (app_pcre_match("/^([^:\\n]+):[ \\t]*(.*)$/mi", sub, &name, &value)) {
+	if (app_regex_partial_match("/^([^:\\n]+):[ \\t]*(.*)$/mi", sub, {&name, &value})) {
 		hz::string_trim(name);
 		hz::string_trim(value);
 
 		// only one attribute in this section
-		if (app_pcre_match("/SMART overall-health self-assessment/mi", name)) {
+		if (app_regex_partial_match("/SMART overall-health self-assessment/mi", name)) {
 			pt.set_name(name, "smart_status/passed", "Overall Health Self-Assessment Test");
 			pt.reported_value = value;
 			pt.value = (pt.reported_value == "PASSED");  // bool
@@ -857,9 +854,9 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 	// Fix some bugs in smartctl output (pre-5.39-final versions):
 	// There is a stale newline in "is in a Vendor Specific state\n.\n" and
 	// "is in a Reserved state\n.\n".
-// 	app_pcre_replace("/\\n\\.$/mi", ".", &sub);
-	app_pcre_replace("/(is in a Vendor Specific state)\\n\\.$/mi", "\\1.", sub);
-	app_pcre_replace("/(is in a Reserved state)\\n\\.$/mi", "\\1.", sub);
+// 	app_regex_replace("/\\n\\.$/mi", ".", &sub);
+	app_regex_replace("/(is in a Vendor Specific state)\\n\\.$/mi", "\\1.", sub);
+	app_regex_replace("/(is in a Reserved state)\\n\\.$/mi", "\\1.", sub);
 
 
 	// split to lines and merge them into blocks
@@ -868,7 +865,7 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 	bool partial = false;
 
 	for(auto line : lines) {
-		if (line.empty() || app_pcre_match("/General SMART Values/mi", line))  // skip the non-informative lines
+		if (line.empty() || app_regex_partial_match("/General SMART Values/mi", line))  // skip the non-informative lines
 			continue;
 		line += "\n";  // avoid joining lines without separator. this will get stripped anyway.
 
@@ -891,8 +888,9 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 	}
 
 
-	// parse each block
-	const pcrecpp::RE re = app_pcre_re(R"(/([^:]*):\s*\(([^)]+)\)\s*(.*)/ms)");
+	// parse each block.
+	// [\s\S] is equivalent to dot matching newlines.
+	const auto re = app_regex_re(R"(/([^:]*):\s*\(([^)]+)\)\s*([\s\S]*)/m)");
 
 	bool cap_found = false;  // found at least one capability
 
@@ -901,7 +899,7 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 
 		std::string name_orig, numvalue_orig, strvalue_orig;
 
-		if (!re.FullMatch(block, &name_orig, &numvalue_orig, &strvalue_orig)) {
+		if (!app_regex_full_match(re, block, {&name_orig, &numvalue_orig, &strvalue_orig})) {
 			debug_out_error("app", DBG_FUNC_MSG << "Block "
 					<< i << " cannot be parsed.\n");
 			debug_out_dump("app", "---------------- Begin unparsable block dump ----------------\n");
@@ -1003,36 +1001,36 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 
 	// "was never started", "was completed without error", "is in progress",
 	// "was suspended by an interrupting command from host", etc.
-	const pcrecpp::RE re_offline_status = app_pcre_re("/^(Off-?line data collection) activity (?:is|was) (.*)$/mi");
+	const auto re_offline_status = app_regex_re("/^(Off-?line data collection) activity (?:is|was) (.*)$/mi");
 	// "Enabled", "Disabled". May not show up on older smartctl (< 5.1.10), so no way of knowing there.
-	const pcrecpp::RE re_offline_enabled = app_pcre_re("/^(Auto Off-?line Data Collection):[ \\t]*(.*)$/mi");
-	const pcrecpp::RE re_offline_immediate = app_pcre_re("/^(SMART execute Off-?line immediate)$/mi");
+	const auto re_offline_enabled = app_regex_re("/^(Auto Off-?line Data Collection):[ \\t]*(.*)$/mi");
+	const auto re_offline_immediate = app_regex_re("/^(SMART execute Off-?line immediate)$/mi");
 	// "No Auto Offline data collection support.", "Auto Offline data collection on/off support.".
-	const pcrecpp::RE re_offline_auto = app_pcre_re("/^(No |)(Auto Off-?line data collection (?:on\\/off )?support)$/mi");
+	const auto re_offline_auto = app_regex_re("/^(No |)(Auto Off-?line data collection (?:on\\/off )?support)$/mi");
 	// Same as above (smartctl <= 5.1-18). "No Automatic timer ON/OFF support."
-	const pcrecpp::RE re_offline_auto2 = app_pcre_re("/^(No |)(Automatic timer ON\\/OFF support)$/mi");
-	const pcrecpp::RE re_offline_suspend = app_pcre_re("/^(?:Suspend|Abort) (Off-?line collection upon new command)$/mi");
-	const pcrecpp::RE re_offline_surface = app_pcre_re("/^(No |)(Off-?line surface scan supported)$/mi");
+	const auto re_offline_auto2 = app_regex_re("/^(No |)(Automatic timer ON\\/OFF support)$/mi");
+	const auto re_offline_suspend = app_regex_re("/^(?:Suspend|Abort) (Off-?line collection upon new command)$/mi");
+	const auto re_offline_surface = app_regex_re("/^(No |)(Off-?line surface scan supported)$/mi");
 
-	const pcrecpp::RE re_selftest_support = app_pcre_re("/^(No |)(Self-test supported)$/mi");
-	const pcrecpp::RE re_conv_selftest_support = app_pcre_re("/^(No |)(Conveyance Self-test supported)$/mi");
-	const pcrecpp::RE re_selective_selftest_support = app_pcre_re("/^(No |)(Selective Self-test supported)$/mi");
+	const auto re_selftest_support = app_regex_re("/^(No |)(Self-test supported)$/mi");
+	const auto re_conv_selftest_support = app_regex_re("/^(No |)(Conveyance Self-test supported)$/mi");
+	const auto re_selective_selftest_support = app_regex_re("/^(No |)(Selective Self-test supported)$/mi");
 
-	const pcrecpp::RE re_sct_status = app_pcre_re("/^(SCT Status supported)$/mi");
-	const pcrecpp::RE re_sct_control = app_pcre_re("/^(SCT Feature Control supported)$/mi");  // means can change logging interval
-	const pcrecpp::RE re_sct_data = app_pcre_re("/^(SCT Data Table supported)$/mi");
+	const auto re_sct_status = app_regex_re("/^(SCT Status supported)$/mi");
+	const auto re_sct_control = app_regex_re("/^(SCT Feature Control supported)$/mi");  // means can change logging interval
+	const auto re_sct_data = app_regex_re("/^(SCT Data Table supported)$/mi");
 
 	// these are matched on name
-	const pcrecpp::RE re_offline_status_group = app_pcre_re("/^(Off-?line data collection status)/mi");
-	const pcrecpp::RE re_offline_time = app_pcre_re("/^(Total time to complete Off-?line data collection)/mi");
-	const pcrecpp::RE re_offline_cap_group = app_pcre_re("/^(Off-?line data collection capabilities)/mi");
-	const pcrecpp::RE re_smart_cap_group = app_pcre_re("/^(SMART capabilities)/mi");
-	const pcrecpp::RE re_error_log_cap_group = app_pcre_re("/^(Error logging capability)/mi");
-	const pcrecpp::RE re_sct_cap_group = app_pcre_re("/^(SCT capabilities)/mi");
-	const pcrecpp::RE re_selftest_status = app_pcre_re("/^Self-test execution status/mi");
-	const pcrecpp::RE re_selftest_short_time = app_pcre_re("/^(Short self-test routine recommended polling time)/mi");
-	const pcrecpp::RE re_selftest_long_time = app_pcre_re("/^(Extended self-test routine recommended polling time)/mi");
-	const pcrecpp::RE re_conv_selftest_time = app_pcre_re("/^(Conveyance self-test routine recommended polling time)/mi");
+	const auto re_offline_status_group = app_regex_re("/^(Off-?line data collection status)/mi");
+	const auto re_offline_time = app_regex_re("/^(Total time to complete Off-?line data collection)/mi");
+	const auto re_offline_cap_group = app_regex_re("/^(Off-?line data collection capabilities)/mi");
+	const auto re_smart_cap_group = app_regex_re("/^(SMART capabilities)/mi");
+	const auto re_error_log_cap_group = app_regex_re("/^(Error logging capability)/mi");
+	const auto re_sct_cap_group = app_regex_re("/^(SCT capabilities)/mi");
+	const auto re_selftest_status = app_regex_re("/^Self-test execution status/mi");
+	const auto re_selftest_short_time = app_regex_re("/^(Short self-test routine recommended polling time)/mi");
+	const auto re_selftest_long_time = app_regex_re("/^(Extended self-test routine recommended polling time)/mi");
+	const auto re_conv_selftest_time = app_regex_re("/^(Conveyance self-test routine recommended polling time)/mi");
 
 	if (cap_prop.section != StoragePropertySection::Capabilities) {
 		debug_out_error("app", DBG_FUNC_MSG << "Non-capability property passed.\n");
@@ -1042,29 +1040,29 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 
 	// Name the capability groups for easy matching when setting descriptions
 	if (cap_prop.is_value_type<AtaStorageTextCapability>()) {
-		if (re_offline_status_group.PartialMatch(cap_prop.reported_name)) {
+		if (app_regex_partial_match(re_offline_status_group, cap_prop.reported_name)) {
 			cap_prop.generic_name = "ata_smart_data/offline_data_collection/status/_group";
 
-		} else if (re_offline_cap_group.PartialMatch(cap_prop.reported_name)) {
+		} else if (app_regex_partial_match(re_offline_cap_group, cap_prop.reported_name)) {
 			cap_prop.generic_name = "ata_smart_data/offline_data_collection/_group";
 
-		} else if (re_smart_cap_group.PartialMatch(cap_prop.reported_name)) {
+		} else if (app_regex_partial_match(re_smart_cap_group, cap_prop.reported_name)) {
 			cap_prop.generic_name = "ata_smart_data/capabilities/_group";
 
-		} else if (re_error_log_cap_group.PartialMatch(cap_prop.reported_name)) {
+		} else if (app_regex_partial_match(re_error_log_cap_group, cap_prop.reported_name)) {
 			cap_prop.generic_name = "ata_smart_data/capabilities/error_logging_supported/_group";
 
-		} else if (re_sct_cap_group.PartialMatch(cap_prop.reported_name)) {
+		} else if (app_regex_partial_match(re_sct_cap_group, cap_prop.reported_name)) {
 			cap_prop.generic_name = "ata_sct_capabilities/_group";
 
-		} else if (re_selftest_status.PartialMatch(cap_prop.reported_name)) {
+		} else if (app_regex_partial_match(re_selftest_status, cap_prop.reported_name)) {
 			cap_prop.generic_name = "ata_smart_data/self_test/status/_group";
 		}
 	}
 
 
 	// Last self-test status
-	if (re_selftest_status.PartialMatch(cap_prop.reported_name)) {
+	if (app_regex_partial_match(re_selftest_status, cap_prop.reported_name)) {
 		// The last self-test status. break up into pieces.
 
 		StorageProperty p;
@@ -1080,57 +1078,57 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 		for (const auto& sv : cap_prop.get_value<AtaStorageTextCapability>().strvalues) {
 			std::string value;
 
-			if (app_pcre_match("/^([0-9]+)% of test remaining/mi", sv, &value)) {
+			if (app_regex_partial_match("/^([0-9]+)% of test remaining/mi", sv, &value)) {
 				int8_t v = 0;
 				if (hz::string_is_numeric_nolocale(value, v))
 					sse.remaining_percent = v;
 
-			} else if (app_pcre_match("/^(The previous self-test routine completed without error or no .*)/mi", sv, &value)) {
+			} else if (app_regex_partial_match("/^(The previous self-test routine completed without error or no .*)/mi", sv, &value)) {
 				sse.status_str = value;
 				sse.status = AtaStorageSelftestEntry::Status::CompletedNoError;
 
-			} else if (app_pcre_match("/^(The self-test routine was aborted by the host)/mi", sv, &value)) {
+			} else if (app_regex_partial_match("/^(The self-test routine was aborted by the host)/mi", sv, &value)) {
 				sse.status_str = value;
 				sse.status = AtaStorageSelftestEntry::Status::AbortedByHost;
 
-			} else if (app_pcre_match("/^(The self-test routine was interrupted by the host with a hard.*)/mi", sv, &value)) {
+			} else if (app_regex_partial_match("/^(The self-test routine was interrupted by the host with a hard.*)/mi", sv, &value)) {
 				sse.status_str = value;
 				sse.status = AtaStorageSelftestEntry::Status::Interrupted;
 
-			} else if (app_pcre_match("/^(A fatal error or unknown test error occurred while the device was executing its .*)/mi", sv, &value)) {
+			} else if (app_regex_partial_match("/^(A fatal error or unknown test error occurred while the device was executing its .*)/mi", sv, &value)) {
 				sse.status_str = value;
 				sse.status = AtaStorageSelftestEntry::Status::FatalOrUnknown;
 
-			} else if (app_pcre_match("/^(The previous self-test completed having a test element that failed and the test element that failed is not known)/mi", sv, &value)) {
+			} else if (app_regex_partial_match("/^(The previous self-test completed having a test element that failed and the test element that failed is not known)/mi", sv, &value)) {
 				sse.status_str = value;
 				sse.status = AtaStorageSelftestEntry::Status::ComplUnknownFailure;
 
-			} else if (app_pcre_match("/^(The previous self-test completed having the electrical element of the test failed)/mi", sv, &value)) {
+			} else if (app_regex_partial_match("/^(The previous self-test completed having the electrical element of the test failed)/mi", sv, &value)) {
 				sse.status_str = value;
 				sse.status = AtaStorageSelftestEntry::Status::ComplElectricalFailure;
 
-			} else if (app_pcre_match("/^(The previous self-test completed having the servo .*)/mi", sv, &value)) {
+			} else if (app_regex_partial_match("/^(The previous self-test completed having the servo .*)/mi", sv, &value)) {
 				sse.status_str = value;
 				sse.status = AtaStorageSelftestEntry::Status::ComplServoFailure;
 
-			} else if (app_pcre_match("/^(The previous self-test completed having the read element of the test failed)/mi", sv, &value)) {
+			} else if (app_regex_partial_match("/^(The previous self-test completed having the read element of the test failed)/mi", sv, &value)) {
 				sse.status_str = value;
 				sse.status = AtaStorageSelftestEntry::Status::ComplReadFailure;
 
-			} else if (app_pcre_match("/^(The previous self-test completed having a test element that failed and the device is suspected of having handling damage)/mi", sv, &value)) {
+			} else if (app_regex_partial_match("/^(The previous self-test completed having a test element that failed and the device is suspected of having handling damage)/mi", sv, &value)) {
 				sse.status_str = value;
 				sse.status = AtaStorageSelftestEntry::Status::ComplHandlingDamage;
 
 			// samsung bug (?), as per smartctl sources.
-			} else if (app_pcre_match("/^(The previous self-test routine completed with unknown result or self-test .*)/mi", sv, &value)) {
+			} else if (app_regex_partial_match("/^(The previous self-test routine completed with unknown result or self-test .*)/mi", sv, &value)) {
 				sse.status_str = value;
 				sse.status = AtaStorageSelftestEntry::Status::ComplUnknownFailure;  // we'll use this again (correct?)
 
-			} else if (app_pcre_match("/^(Self-test routine in progress)/mi", sv, &value)) {
+			} else if (app_regex_partial_match("/^(Self-test routine in progress)/mi", sv, &value)) {
 				sse.status_str = value;
 				sse.status = AtaStorageSelftestEntry::Status::InProgress;
 
-			} else if (app_pcre_match("/^(Reserved)/mi", sv, &value)) {
+			} else if (app_regex_partial_match("/^(Reserved)/mi", sv, &value)) {
 				sse.status_str = value;
 				sse.status = AtaStorageSelftestEntry::Status::Reserved;
 			}
@@ -1149,16 +1147,16 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 	// Section is unmodified.
 	if (cap_prop.is_value_type<std::chrono::seconds>()) {
 
-		if (re_offline_time.PartialMatch(cap_prop.reported_name)) {
+		if (app_regex_partial_match(re_offline_time, cap_prop.reported_name)) {
 			cap_prop.generic_name = "ata_smart_data/offline_data_collection/completion_seconds";
 
-		} else if (re_selftest_short_time.PartialMatch(cap_prop.reported_name)) {
+		} else if (app_regex_partial_match(re_selftest_short_time, cap_prop.reported_name)) {
 			cap_prop.generic_name = "ata_smart_data/self_test/polling_minutes/short";
 
-		} else if (re_selftest_long_time.PartialMatch(cap_prop.reported_name)) {
+		} else if (app_regex_partial_match(re_selftest_long_time, cap_prop.reported_name)) {
 			cap_prop.generic_name = "ata_smart_data/self_test/polling_minutes/extended";
 
-		} else if (re_conv_selftest_time.PartialMatch(cap_prop.reported_name)) {
+		} else if (app_regex_partial_match(re_conv_selftest_time, cap_prop.reported_name)) {
 			cap_prop.generic_name = "ata_smart_data/self_test/polling_minutes/conveyance";
 		}
 
@@ -1181,53 +1179,54 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 
 			std::string name, value;
 
-			if (re_offline_status.PartialMatch(sv, &name, &value)) {
+			if (app_regex_partial_match(re_offline_status, sv, {&name, &value})) {
 				p.set_name(name, "ata_smart_data/offline_data_collection/status/string");
 				p.value = hz::string_trim_copy(value);  // string-type value
 
-			} else if (re_offline_enabled.PartialMatch(sv, &name, &value)) {
+			} else if (app_regex_partial_match(re_offline_enabled, sv, {&name, &value})) {
 				p.set_name(name, "ata_smart_data/offline_data_collection/status/value/_parsed");
 				p.value = (hz::string_trim_copy(value) == "Enabled");  // bool
 
-			} else if (re_offline_immediate.PartialMatch(sv, &name)) {
+			} else if (app_regex_partial_match(re_offline_immediate, sv, &name)) {
 				p.set_name(name, "ata_smart_data/capabilities/exec_offline_immediate_supported");
 				p.value = true;  // bool
 
-			} else if (re_offline_auto.PartialMatch(sv, &value, &name) || re_offline_auto2.PartialMatch(sv, &value, &name)) {
+			} else if (app_regex_partial_match(re_offline_auto, sv, {&value, &name})
+					|| app_regex_partial_match(re_offline_auto2, sv, {&value, &name})) {
 				p.set_name(name, "_text_only/aodc_support", "Automatic Offline Data Collection toggle support");
 				p.value = (hz::string_trim_copy(value) != "No");  // bool
 
-			} else if (re_offline_suspend.PartialMatch(sv, &value, &name)) {
+			} else if (app_regex_partial_match(re_offline_suspend, sv, {&value, &name})) {
 				p.set_name(name, "ata_smart_data/capabilities/offline_is_aborted_upon_new_cmd", "Offline Data Collection suspends upon new command");
 				p.value = (hz::string_trim_copy(value) == "Suspend");  // bool
 
-			} else if (re_offline_surface.PartialMatch(sv, &value, &name)) {
+			} else if (app_regex_partial_match(re_offline_surface, sv, {&value, &name})) {
 				p.set_name(name, "ata_smart_data/capabilities/offline_surface_scan_supported");
 				p.value = (hz::string_trim_copy(value) != "No");  // bool
 
 
-			} else if (re_selftest_support.PartialMatch(sv, &value, &name)) {
+			} else if (app_regex_partial_match(re_selftest_support, sv, {&value, &name})) {
 				p.set_name(name, "ata_smart_data/capabilities/self_tests_supported");
 				p.value = (hz::string_trim_copy(value) != "No");  // bool
 
-			} else if (re_conv_selftest_support.PartialMatch(sv, &value, &name)) {
+			} else if (app_regex_partial_match(re_conv_selftest_support, sv, {&value, &name})) {
 				p.set_name(name, "ata_smart_data/capabilities/conveyance_self_test_supported");
 				p.value = (hz::string_trim_copy(value) != "No");  // bool
 
-			} else if (re_selective_selftest_support.PartialMatch(sv, &value, &name)) {
+			} else if (app_regex_partial_match(re_selective_selftest_support, sv, {&value, &name})) {
 				p.set_name(name, "ata_smart_data/capabilities/selective_self_test_supported");
 				p.value = (hz::string_trim_copy(value) != "No");  // bool
 
 
-			} else if (re_sct_status.PartialMatch(sv, &name)) {
+			} else if (app_regex_partial_match(re_sct_status, sv, &name)) {
 				p.set_name(name, "ata_sct_capabilities/value/_present");
 				p.value = true;  // bool
 
-			} else if (re_sct_control.PartialMatch(sv, &name)) {
+			} else if (app_regex_partial_match(re_sct_control, sv, &name)) {
 				p.set_name(name, "ata_sct_capabilities/feature_control_supported");
 				p.value = true;  // bool
 
-			} else if (re_sct_data.PartialMatch(sv, &name)) {
+			} else if (app_regex_partial_match(re_sct_data, sv, &name)) {
 				p.set_name(name, "ata_sct_capabilities/data_table_supported");
 				p.value = true;  // bool
 			}
@@ -1316,36 +1315,36 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 	const std::string failed_re = "([^ \\t\\n]+)" + space_re;
 	const std::string raw_re = "(.+)[ \\t]*";
 
-	const pcrecpp::RE re_old_up = app_pcre_re("/" + old_base_re + vals_re + type_re + updated_re + failed_re + raw_re + "/mi");
-	const pcrecpp::RE re_old_noup = app_pcre_re("/" + old_base_re + vals_re + type_re + failed_re + raw_re + "/mi");
-	const pcrecpp::RE re_brief = app_pcre_re("/" + brief_base_re + vals_re + failed_re + raw_re + "/mi");
+	const auto re_old_up = app_regex_re("/" + old_base_re + vals_re + type_re + updated_re + failed_re + raw_re + "/mi");
+	const auto re_old_noup = app_regex_re("/" + old_base_re + vals_re + type_re + failed_re + raw_re + "/mi");
+	const auto re_brief = app_regex_re("/" + brief_base_re + vals_re + failed_re + raw_re + "/mi");
 
-	const pcrecpp::RE re_flag_descr = app_pcre_re("/^[\\t ]+\\|/mi");
+	const auto re_flag_descr = app_regex_re("/^[\\t ]+\\|/mi");
 
 
 	for (const auto& line : lines) {
 		// skip the non-informative lines
-		if (line.empty() || app_pcre_match("/SMART Attributes with Thresholds/mi", line))
+		if (line.empty() || app_regex_partial_match("/SMART Attributes with Thresholds/mi", line))
 			continue;
 
-		if (app_pcre_match("/ATTRIBUTE_NAME/mi", line)) {
+		if (app_regex_partial_match("/ATTRIBUTE_NAME/mi", line)) {
 			// detect format type
-			if (!app_pcre_match("/WHEN_FAILED/mi", line)) {
+			if (!app_regex_partial_match("/WHEN_FAILED/mi", line)) {
 				attr_format_style = FormatStyleBrief;
-			} else if (!app_pcre_match("/UPDATED/mi", line)) {
+			} else if (!app_regex_partial_match("/UPDATED/mi", line)) {
 				attr_format_style = FormatStyleNoUpdated;
 			}
 			continue;  // we don't need this line
 		}
 
-		if (re_flag_descr.PartialMatch(line)) {
+		if (app_regex_partial_match(re_flag_descr, line)) {
 			continue;  // skip flag description lines
 		}
 
-		if (app_pcre_match("/Data Structure revision number/mi", line)) {
-			const pcrecpp::RE re = app_pcre_re("/^([^:\\n]+):[ \\t]*(.*)$/mi");
+		if (app_regex_partial_match("/Data Structure revision number/mi", line)) {
+			const auto re = app_regex_re("/^([^:\\n]+):[ \\t]*(.*)$/mi");
 			std::string name, value;
-			if (re.PartialMatch(line, &name, &value)) {
+			if (app_regex_partial_match(re, line, {&name, &value})) {
 				hz::string_trim(name);
 				hz::string_trim(value);
 				int64_t value_num = 0;
@@ -1369,22 +1368,22 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 			bool matched = true;
 
 			if (attr_format_style == FormatStyleOld) {
-				if (!re_old_up.FullMatch(line, &id, &name, &flag, &value, &worst, &threshold, &attr_type,
-						&update_type, &when_failed, &raw_value)) {
+				if (!app_regex_full_match(re_old_up, line,
+						{&id, &name, &flag, &value, &worst, &threshold, &attr_type, &update_type, &when_failed, &raw_value})) {
 					matched = false;
 					debug_out_warn("app", DBG_FUNC_MSG << "Cannot parse attribute line.\n");
 				}
 
 			} else if (attr_format_style == FormatStyleNoUpdated) {
-				if (!re_old_noup.FullMatch(line, &id, &name, &flag, &value, &worst, &threshold, &attr_type,
-						&when_failed, &raw_value)) {
+				if (!app_regex_full_match(re_old_noup, line,
+						{&id, &name, &flag, &value, &worst, &threshold, &attr_type, &when_failed, &raw_value})) {
 					matched = false;
 					debug_out_warn("app", DBG_FUNC_MSG << "Cannot parse attribute line.\n");
 				}
 
 			} else if (attr_format_style == FormatStyleBrief) {
-				if (!re_brief.FullMatch(line, &id, &name, &flag, &value, &worst, &threshold,
-						&when_failed, &raw_value)) {
+				if (!app_regex_full_match(re_brief, line,
+						{&id, &name, &flag, &value, &worst, &threshold, &when_failed, &raw_value})) {
 					matched = false;
 					debug_out_warn("app", DBG_FUNC_MSG << "Cannot parse attribute line.\n");
 				}
@@ -1414,7 +1413,7 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 			}
 
 			if (attr_format_style == FormatStyleBrief) {
-				attr.attr_type = app_pcre_match("/P/", attr.flag) ? AtaStorageAttribute::AttributeType::Prefail : AtaStorageAttribute::AttributeType::OldAge;
+				attr.attr_type = app_regex_partial_match("/P/", attr.flag) ? AtaStorageAttribute::AttributeType::Prefail : AtaStorageAttribute::AttributeType::OldAge;
 			} else {
 				if (attr_type == "Pre-fail") {
 					attr.attr_type = AtaStorageAttribute::AttributeType::Prefail;
@@ -1426,7 +1425,7 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 			}
 
 			if (attr_format_style == FormatStyleBrief) {
-				attr.update_type = app_pcre_match("/O/", attr.flag) ? AtaStorageAttribute::UpdateType::Always : AtaStorageAttribute::UpdateType::Offline;
+				attr.update_type = app_regex_partial_match("/O/", attr.flag) ? AtaStorageAttribute::UpdateType::Always : AtaStorageAttribute::UpdateType::Offline;
 			} else {
 				if (update_type == "Always") {
 					attr.update_type = AtaStorageAttribute::UpdateType::Always;
@@ -1509,7 +1508,7 @@ Address    Access  R/W   Size  Description
 		p.set_name("General Purpose Log Directory supported", "_text_only/directory_log_supported");
 
 		// p.reported_value;  // nothing
-		p.value = !app_pcre_match("/General Purpose Log Directory not supported/mi", sub);  // bool
+		p.value = !app_regex_partial_match("/General Purpose Log Directory not supported/mi", sub);  // bool
 
 		add_property(p);
 //		data_found = true;
@@ -1573,10 +1572,10 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 	{
 		// "SMART Error Log Version: 1"
 		// "SMART Extended Comprehensive Error Log Version: 1 (1 sectors)"
-		const pcrecpp::RE re = app_pcre_re("/^(SMART (Extended Comprehensive )?Error Log Version): ([0-9]+).*?$/mi");
+		const auto re = app_regex_re("/^(SMART (Extended Comprehensive )?Error Log Version): ([0-9]+).*?$/mi");
 
 		std::string name, value;
-		if (re.PartialMatch(sub, &name, &value)) {
+		if (app_regex_partial_match(re, sub, {&name, &value})) {
 			hz::string_trim(name);
 			hz::string_trim(value);
 
@@ -1597,9 +1596,9 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 
 	// Error log support
 	{
-		const pcrecpp::RE re = app_pcre_re("/^(Warning: device does not support Error Logging)|(SMART Error Log not supported)$/mi");
+		const auto re = app_regex_re("/^(Warning: device does not support Error Logging)|(SMART Error Log not supported)$/mi");
 
-		if (re.PartialMatch(sub)) {
+		if (app_regex_partial_match(re, sub)) {
 			StorageProperty p(pt);
 			p.set_name("_text_only/ata_smart_error_log/_not_present");
 			p.displayable_name = "Warning";
@@ -1611,11 +1610,11 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 	// Error log entry count
 	{
 		// note: these represent the same information
-		const pcrecpp::RE re1 = app_pcre_re("/^(?:ATA|Device) Error Count:[ \\t]*([0-9]+)/mi");
-		const pcrecpp::RE re2 = app_pcre_re("/^No Errors Logged$/mi");
+		const auto re1 = app_regex_re("/^(?:ATA|Device) Error Count:[ \\t]*([0-9]+)/mi");
+		const auto re2 = app_regex_re("/^No Errors Logged$/mi");
 
 		std::string value;
-		if (re1.PartialMatch(sub, &value) || re2.PartialMatch(sub)) {
+		if (app_regex_partial_match(re1, sub, &value) || app_regex_partial_match(re2, sub)) {
 			hz::string_trim(value);
 
 			StorageProperty p(pt);
@@ -1625,7 +1624,7 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 			p.reported_value = value;
 
 			int64_t value_num = 0;
-			if (!re2.PartialMatch(sub)) {  // if no errors, when value should be zero. otherwise, this:
+			if (!app_regex_partial_match(re2, sub)) {  // if no errors, when value should be zero. otherwise, this:
 				hz::string_is_numeric_nolocale(value, value_num, false);
 			}
 			p.value = value_num;  // integer
@@ -1640,29 +1639,28 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 		// Split by blocks:
 		// "Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)"
 		// "Error 25 occurred at disk power-on lifetime: 14799 hours"
-		const pcrecpp::RE re_block = app_pcre_re(
+		const auto re_block = app_regex_re(
 				R"(/^((Error[ \t]*([0-9]+))[ \t]*(?:\[[0-9]+\][ \t])?occurred at disk power-on lifetime:[ \t]*([0-9]+) hours(?:[^\n]*)?.*(?:\n(?:  |\n  ).*)*)/mi)");
 
 		// "  When the command that caused the error occurred, the device was active or idle."
 		// Note: For "in an unknown state" - remove first two words.
-		const pcrecpp::RE re_state = app_pcre_re(R"(/occurred, the device was[ \t]*(?: in)?(?: an?)?[ \t]+([^.\n]*)\.?/mi)");
+		const auto re_state = app_regex_re(R"(/occurred, the device was[ \t]*(?: in)?(?: an?)?[ \t]+([^.\n]*)\.?/mi)");
 		// "  84 51 2c 71 cd 3f e6  Error: ICRC, ABRT 44 sectors at LBA = 0x063fcd71 = 104844657"
 		// "  40 51 00 f5 41 61 e0  Error: UNC at LBA = 0x006141f5 = 6373877"
 		// "  02 -- 51 00 00 00 00 00 00 00 00 00 00  Error: TK0NF"
-		const pcrecpp::RE re_type = app_pcre_re(R"(/[ \t]+Error:[ \t]*([ ,a-z0-9]+)(?:[ \t]+((?:[0-9]+|at )[ \t]*.*))?$/mi)");
+		const auto re_type = app_regex_re(R"(/[ \t]+Error:[ \t]*([ ,a-z0-9]+)(?:[ \t]+((?:[0-9]+|at )[ \t]*.*))?$/mi)");
 
-		std::string block, name, value_num, value_time;
-		pcrecpp::StringPiece input(sub);  // position tracker
+		for (auto it = std::sregex_iterator(sub.begin(), sub.end(), re_block), end = std::sregex_iterator(); it != end; ++it) {
+			const std::string block = hz::string_trim_copy(it->str(1));
+			const std::string name = hz::string_trim_copy(it->str(2));
+			const std::string value_num = hz::string_trim_copy(it->str(3));
+			const std::string value_time = hz::string_trim_copy(it->str(4));
 
-		while (re_block.FindAndConsume(&input, &block, &name, &value_num, &value_time)) {
-			hz::string_trim(block);
-			hz::string_trim(value_num);
-			hz::string_trim(value_time);
 			// debug_out_dump("app", "\nBLOCK -------------------------------\n" << block);
 
 			std::string state, etypes_str, emore;
-			re_state.PartialMatch(block, &state);
-			re_type.PartialMatch(block, &etypes_str, &emore);
+			app_regex_partial_match(re_state, block, &state);
+			app_regex_partial_match(re_type, block, {&etypes_str, &emore});
 
 			StorageProperty p(pt);
 			p.set_name(hz::string_trim_copy(name));  // "Error 6"
@@ -1755,9 +1753,9 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 
 	// Self-test log support
 	{
-		const pcrecpp::RE re = app_pcre_re("/^(Warning: device does not support Self Test Logging)|(SMART Self-test Log not supported)$/mi");
+		const auto re = app_regex_re("/^(Warning: device does not support Self Test Logging)|(SMART Self-test Log not supported)$/mi");
 
-		if (re.PartialMatch(sub)) {
+		if (app_regex_partial_match(re, sub)) {
 			StorageProperty p(pt);
 			p.set_name("ata_smart_self_test_log/_present");
 			p.displayable_name = "Warning";
@@ -1772,13 +1770,15 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 	{
 		// SMART Self-test log structure revision number 1
 		// SMART Extended Self-test Log Version: 1 (1 sectors)
-		const pcrecpp::RE re1 = app_pcre_re(R"(/(SMART Self-test log structure[^\n0-9]*)([^ \n]+)[ \t]*$/mi)");
-		const pcrecpp::RE re1_ex = app_pcre_re("/(SMART Extended Self-test Log Version: ([0-9]+).*$/mi");
+		const auto re1 = app_regex_re(R"(/(SMART Self-test log structure[^\n0-9]*)([^ \n]+)[ \t]*$/mi)");
+		const auto re1_ex = app_regex_re("/(SMART Extended Self-test Log Version): ([0-9]+).*$/mi");
 		// older smartctl (pre 5.1-16)
-		const pcrecpp::RE re2 = app_pcre_re(R"(/(SMART Self-test log, version number[^\n0-9]*)([^ \n]+)[ \t]*$/mi)");
+		const auto re2 = app_regex_re(R"(/(SMART Self-test log, version number[^\n0-9]*)([^ \n]+)[ \t]*$/mi)");
 
 		std::string name, value;
-		if (re1.PartialMatch(sub, &name, &value) || re1_ex.PartialMatch(sub, &name, &value) || re2.PartialMatch(sub, &name, &value)) {
+		if (app_regex_partial_match(re1, sub, {&name, &value})
+				|| app_regex_partial_match(re1_ex, sub, {&name, &value})
+				|| app_regex_partial_match(re2, sub, {&name, &value})) {
 			hz::string_trim(value);
 
 			StorageProperty p(pt);
@@ -1802,14 +1802,17 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 	{
 		// split by columns.
 		// num, type, status, remaining, hours, lba (optional).
-		const pcrecpp::RE re = app_pcre_re(
+		const auto re = app_regex_re(
 				R"(/^(#[ \t]*([0-9]+)[ \t]+(\S+(?: \S+)*)  [ \t]*(\S.*) [ \t]*([0-9]+%)  [ \t]*([0-9]+)[ \t]*((?:  [ \t]*\S.*)?))$/mi)");
 
-		std::string line, num, type, status_str, remaining, hours, lba;
-		pcrecpp::StringPiece input(sub);  // position tracker
-
-		while (re.FindAndConsume(&input, &line, &num, &type, &status_str, &remaining, &hours, &lba)) {
-			hz::string_trim(num);
+		for (auto it = std::sregex_iterator(sub.begin(), sub.end(), re), end = std::sregex_iterator(); it != end; ++it) {
+			const std::string line = hz::string_trim_copy(it->str(1));
+			const std::string num = hz::string_trim_copy(it->str(2));
+			const std::string type = hz::string_trim_copy(it->str(3));
+			const std::string status_str = hz::string_trim_copy(it->str(4));
+			const std::string remaining = hz::string_trim_copy(it->str(5));
+			const std::string hours = hz::string_trim_copy(it->str(6));
+			const std::string lba = hz::string_trim_copy(it->str(7));
 
 			StorageProperty p(pt);
 			p.set_name("Self-test entry " + num);
@@ -1827,31 +1830,30 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 			if (sse.lba_of_first_error.empty())
 				sse.lba_of_first_error = "-";
 
-			hz::string_trim(status_str);
 			AtaStorageSelftestEntry::Status status = AtaStorageSelftestEntry::Status::Unknown;
 
 			// don't match end - some of them are not complete here
-			if (app_pcre_match("/^Completed without error/mi", status_str)) {
+			if (app_regex_partial_match("/^Completed without error/mi", status_str)) {
 				status = AtaStorageSelftestEntry::Status::CompletedNoError;
-			} else if (app_pcre_match("/^Aborted by host/mi", status_str)) {
+			} else if (app_regex_partial_match("/^Aborted by host/mi", status_str)) {
 				status = AtaStorageSelftestEntry::Status::AbortedByHost;
-			} else if (app_pcre_match("/^Interrupted \\(host reset\\)/mi", status_str)) {
+			} else if (app_regex_partial_match("/^Interrupted \\(host reset\\)/mi", status_str)) {
 				status = AtaStorageSelftestEntry::Status::Interrupted;
-			} else if (app_pcre_match("/^Fatal or unknown error/mi", status_str)) {
+			} else if (app_regex_partial_match("/^Fatal or unknown error/mi", status_str)) {
 				status = AtaStorageSelftestEntry::Status::FatalOrUnknown;
-			} else if (app_pcre_match("/^Completed: unknown failure/mi", status_str)) {
+			} else if (app_regex_partial_match("/^Completed: unknown failure/mi", status_str)) {
 				status = AtaStorageSelftestEntry::Status::ComplUnknownFailure;
-			} else if (app_pcre_match("/^Completed: electrical failure/mi", status_str)) {
+			} else if (app_regex_partial_match("/^Completed: electrical failure/mi", status_str)) {
 				status = AtaStorageSelftestEntry::Status::ComplElectricalFailure;
-			} else if (app_pcre_match("/^Completed: servo\\/seek failure/mi", status_str)) {
+			} else if (app_regex_partial_match("/^Completed: servo\\/seek failure/mi", status_str)) {
 				status = AtaStorageSelftestEntry::Status::ComplServoFailure;
-			} else if (app_pcre_match("/^Completed: read failure/mi", status_str)) {
+			} else if (app_regex_partial_match("/^Completed: read failure/mi", status_str)) {
 				status = AtaStorageSelftestEntry::Status::ComplReadFailure;
-			} else if (app_pcre_match("/^Completed: handling damage/mi", status_str)) {
+			} else if (app_regex_partial_match("/^Completed: handling damage/mi", status_str)) {
 				status = AtaStorageSelftestEntry::Status::ComplHandlingDamage;
-			} else if (app_pcre_match("/^Self-test routine in progress/mi", status_str)) {
+			} else if (app_regex_partial_match("/^Self-test routine in progress/mi", status_str)) {
 				status = AtaStorageSelftestEntry::Status::InProgress;
-			} else if (app_pcre_match("/^Unknown\\/reserved test status/mi", status_str)) {
+			} else if (app_regex_partial_match("/^Unknown\\/reserved test status/mi", status_str)) {
 				status = AtaStorageSelftestEntry::Status::Reserved;
 			}
 
@@ -1933,7 +1935,7 @@ If Selective self-test is pending on power-up, resume after 0 minute delay.
 		p.set_name("Selective self-tests supported", "ata_smart_data/capabilities/selective_self_test_supported");
 
 		// p.reported_value;  // nothing
-		p.value = !app_pcre_match("/Device does not support Selective Self Tests\\/Logging/mi", sub);  // bool
+		p.value = !app_regex_partial_match("/Device does not support Selective Self Tests\\/Logging/mi", sub);  // bool
 
 		add_property(p);
 
@@ -2006,7 +2008,7 @@ Index    Estimated Time   Temperature Celsius
 		p.set_name("SCT commands unsupported", "_text_only/ata_sct_status/_not_present");
 
 		// p.reported_value;  // nothing
-		p.value = app_pcre_match("/(SCT Commands not supported)|(SCT Data Table command not supported)/mi", sub);  // bool
+		p.value = app_regex_partial_match("/(SCT Commands not supported)|(SCT Data Table command not supported)/mi", sub);  // bool
 
 		add_property(p);
 
@@ -2018,7 +2020,7 @@ Index    Estimated Time   Temperature Celsius
 	// Find current temperature
 	{
 		std::string name, value;
-		if (app_pcre_match("/^(Current Temperature):[ \\t]+(.*) Celsius$/mi", sub, &name, &value)) {
+		if (app_regex_partial_match("/^(Current Temperature):[ \\t]+(.*) Celsius$/mi", sub, {&name, &value})) {
 			StorageProperty p;
 			p.section = StoragePropertySection::TemperatureLog;
 			p.set_name("Current Temperature", "ata_sct_status/temperature/current");
@@ -2069,7 +2071,7 @@ SCT Error Recovery Control:
 		p.set_name("SCT ERC supported", "ata_sct_erc/_present");
 
 		// p.reported_value;  // nothing
-		p.value = !app_pcre_match("/SCT Error Recovery Control command not supported/mi", sub);  // bool
+		p.value = !app_regex_partial_match("/SCT Error Recovery Control command not supported/mi", sub);  // bool
 
 		add_property(p);
 
@@ -2141,7 +2143,7 @@ Page Offset Size         Value  Description
 		p.set_name("Device statistics supported", "ata_device_statistics/_present");
 
 		// p.reported_value;  // nothing
-		supported = !app_pcre_match(R"(/Device Statistics \(GP\/SMART Log 0x04\) not supported/mi)", sub);
+		supported = !app_regex_partial_match(R"(/Device Statistics \(GP\/SMART Log 0x04\) not supported/mi)", sub);
 		p.value = supported;  // bool
 
 		add_property(p);
@@ -2161,13 +2163,13 @@ Page Offset Size         Value  Description
 
 	const std::string flag_re = "([A-Z=-]{3,})";
 	// Page Offset Size Value Flags Description
-	const pcrecpp::RE line_re = app_pcre_re("/[ \\t]*([0-9a-z]+)" + space_re + "([0-9a-z=]+)" + space_re + "([0-9=]+)"
+	const auto line_re = app_regex_re("/[ \\t]*([0-9a-z]+)" + space_re + "([0-9a-z=]+)" + space_re + "([0-9=]+)"
 			+ space_re + "([0-9=-]+)" + space_re + flag_re + space_re + "(.+)/mi");
 	// Page Offset Size Value Description
-	const pcrecpp::RE line_re_noflags = app_pcre_re("/[ \\t]*([0-9a-z]+)" + space_re + "([0-9a-z=]+)" + space_re + "([0-9=]+)"
+	const auto line_re_noflags = app_regex_re("/[ \\t]*([0-9a-z]+)" + space_re + "([0-9a-z=]+)" + space_re + "([0-9=]+)"
 			+ space_re + "([0-9=~-]+)" + space_re + "(.+)/mi");
 	// flag description lines
-	const pcrecpp::RE re_flag_descr = app_pcre_re("/^[\\t ]+\\|/mi");
+	const auto re_flag_descr = app_regex_re("/^[\\t ]+\\|/mi");
 
 
 	int devstat_format_style = FormatStyleCurrent;
@@ -2180,23 +2182,23 @@ Page Offset Size         Value  Description
 		// "Read Device Statistics page 0x00 failed"
 		// "Read Device Statistics pages 0x00-0x07 failed"
 		if (line.empty()
-				|| app_pcre_match("/^Device Statistics \\((?:GP|SMART) Log 0x04\\)/mi", line)
-				|| app_pcre_match("/^ATA_SMART_READ_LOG failed:/mi", line)
-				|| app_pcre_match("/^Read Device Statistics page (?:.+) failed/mi", line)
-				|| app_pcre_match("/^Read Device Statistics pages (?:.+) failed/mi", line) ) {
+				|| app_regex_partial_match("/^Device Statistics \\((?:GP|SMART) Log 0x04\\)/mi", line)
+				|| app_regex_partial_match("/^ATA_SMART_READ_LOG failed:/mi", line)
+				|| app_regex_partial_match("/^Read Device Statistics page (?:.+) failed/mi", line)
+				|| app_regex_partial_match("/^Read Device Statistics pages (?:.+) failed/mi", line) ) {
 			continue;
 		}
 
 		// Table header
-		if (app_pcre_match("/^Page[\\t ]+Offset[\\t ]+Size/mi", line)) {
+		if (app_regex_partial_match("/^Page[\\t ]+Offset[\\t ]+Size/mi", line)) {
 			// detect format type
-			if (!app_pcre_match("/[\\t ]+Flags[\\t ]+/mi", line)) {
+			if (!app_regex_partial_match("/[\\t ]+Flags[\\t ]+/mi", line)) {
 				devstat_format_style = FormatStyleNoFlags;
 			}
 			continue;  // we don't need this line
 		}
 
-		if (re_flag_descr.PartialMatch(line)) {  // "    |||_ C monitored condition met", etc.
+		if (app_regex_partial_match(re_flag_descr, line)) {  // "    |||_ C monitored condition met", etc.
 			continue;  // skip flag description lines
 		}
 
@@ -2204,11 +2206,11 @@ Page Offset Size         Value  Description
 
 		bool matched = false;
 		if (devstat_format_style == FormatStyleCurrent) {
-			if (line_re.FullMatch(line, &page, &offset, &size, &value, &flags, &description)) {
+			if (app_regex_full_match(line_re, line, {&page, &offset, &size, &value, &flags, &description})) {
 				matched = true;
 			}
 		} else if (devstat_format_style == FormatStyleNoFlags) {
-			if (line_re_noflags.FullMatch(line, &page, &offset, &size, &value, &description)) {
+			if (app_regex_full_match(line_re_noflags, line, {&page, &offset, &size, &value, &description})) {
 				matched = true;
 				flags = "---";  // to keep consistent with the Current format
 				if (!value.empty() && value[value.size() - 1] == '~') {  // normalized
@@ -2295,8 +2297,8 @@ ID      Size     Value  Description
 		p.set_name("SATA Phy log supported", "sata_phy_event_counters/_present");
 
 		// p.reported_value;  // nothing
-		p.value = !app_pcre_match("/SATA Phy Event Counters \\(GP Log 0x11\\) not supported/mi", sub)
-				&& !app_pcre_match("/SATA Phy Event Counters with [0-9-]+ sectors not supported/mi", sub);  // bool
+		p.value = !app_regex_partial_match("/SATA Phy Event Counters \\(GP Log 0x11\\) not supported/mi", sub)
+				&& !app_regex_partial_match("/SATA Phy Event Counters with [0-9-]+ sectors not supported/mi", sub);  // bool
 
 		add_property(p);
 
