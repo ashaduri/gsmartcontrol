@@ -60,8 +60,8 @@ inline void init_default_settings()
 	rconfig::set_default_data("system/linux_areca_neonc_max_scan_port", 24);  // 1-24 (areca without enclosures). The last RAID port to scan if no other method is available
 	rconfig::set_default_data("system/solaris_dev_path", "/dev/rdsk");  // path to /dev/rdsk for solaris.
 	rconfig::set_default_data("system/unix_sdev_path", "/dev");  // path to /dev. used by other unices
-// 	rconfig::set_default_data("system/device_match_patterns", "");  // semicolon-separated PCRE patterns
-	rconfig::set_default_data("system/device_blacklist_patterns", "");  // semicolon-separated PCRE patterns
+// 	rconfig::set_default_data("system/device_match_patterns", "");  // semicolon-separated Regex patterns
+	rconfig::set_default_data("system/device_blacklist_patterns", "");  // semicolon-separated Regex patterns
 
 	rconfig::set_default_data("gui/drive_data_open_save_dir", "");
 

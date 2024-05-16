@@ -27,7 +27,7 @@ Copyright:
 #include "hz/format_unit.h"  // hz::format_date
 #include "hz/error_container.h"
 
-#include "app_pcrecpp.h"
+#include "app_regex.h"
 #include "smartctl_parser_types.h"
 #include "storage_device_detected_type.h"
 #include "storage_settings.h"
@@ -513,11 +513,12 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 	}
 
 	// search at line start, because they are sometimes present in other sentences too.
-	if (app_pcre_match("/^SMART Enabled/mi", output) || app_pcre_match("/^SMART Disabled/mi", output)) {
+	if (app_regex_partial_match("/^SMART Enabled/mi", output)
+			|| app_regex_partial_match("/^SMART Disabled/mi", output)) {
 		return {};  // success
 	}
 
-	if (app_pcre_match("/^A mandatory SMART command failed/mi", output)) {
+	if (app_regex_partial_match("/^A mandatory SMART command failed/mi", output)) {
 		return hz::Unexpected(StorageDeviceError::CommandFailed, _("Mandatory SMART command failed."));
 	}
 
@@ -969,7 +970,7 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::execute_device_smartctl(cons
 
 		// Note: This match works even with JSON (the text output is included in --json=o).
 		if (check_type && this->get_detected_type() == StorageDeviceDetectedType::Unknown
-				&& app_pcre_match("/specify device type with the -d option/mi", smartctl_output)) {
+				&& app_regex_partial_match("/specify device type with the -d option/mi", smartctl_output)) {
 			this->set_detected_type(StorageDeviceDetectedType::NeedsExplicitType);
 		}
 

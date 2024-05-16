@@ -18,7 +18,7 @@ Copyright:
 
 #include "hz/debug.h"
 
-#include "app_pcrecpp.h"
+#include "app_regex.h"
 #include "smartctl_executor.h"
 #include "storage_detector.h"
 
@@ -57,13 +57,13 @@ hz::ExpectedVoid<StorageDetectorError> StorageDetector::detect(std::vector<Stora
 		// try to match against patterns
 // 		for (std::size_t i = 0; i < match_patterns_.size(); i++) {
 			// try to match against general filter
-// 			if (!app_pcre_match(match_patterns_[i], dev))
+// 			if (!app_regex_partial_match(match_patterns_[i], dev))
 // 				continue;
 
 			// matched, check the blacklist
 			bool blacked = false;
 			for (const auto& blacklist_pattern : blacklist_patterns_) {
-				if (app_pcre_match(blacklist_pattern, drive->get_device())) {  // matched the blacklist too
+				if (app_regex_partial_match(blacklist_pattern, drive->get_device())) {  // matched the blacklist too
 					blacked = true;
 					break;
 				}

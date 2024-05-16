@@ -13,7 +13,7 @@ This distribution includes:
 
 * GSmartControl binary (gsmartcontrol.exe) and associated resources.
 The binary was compiled against Gtkmm (http://www.gtkmm.org/), GTK+
-(http://gtk.org/) and related libraries, and PCRE (http://www.pcre.org/).
+(http://gtk.org/) and related libraries.
 
 * Smartctl binaries (from smartmontools 7.4, http://smartmontools.sf.net/)
 - smartctl-nc.exe (compiled without console output), smartctl.exe (compiled

@@ -46,15 +46,6 @@ if ("${Glibmm_VERSION}" VERSION_LESS "2.50.1")
 endif()
 
 
-# pcrecpp from pcre1
-pkg_check_modules(Pcrecpp REQUIRED IMPORTED_TARGET GLOBAL libpcrecpp)
-add_library(app_pcrecpp_interface INTERFACE)
-target_link_libraries(app_pcrecpp_interface
-	INTERFACE
-		PkgConfig::Pcrecpp
-)
-
-
 # Gettext libintl
 find_package(Intl REQUIRED)
 add_library(app_gettext_interface INTERFACE)

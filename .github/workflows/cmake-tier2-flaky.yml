@@ -30,7 +30,7 @@ jobs:
         sync: rsync
         mem: 2048
         prepare: >
-          pkg install -y cmake pkgconf gtkmm30 gettext pcre libiconv
+          pkg install -y cmake pkgconf gtkmm30 gettext libiconv
 
         run: >
           mkdir build && cd build

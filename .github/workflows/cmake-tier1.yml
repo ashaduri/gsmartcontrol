@@ -29,7 +29,7 @@ jobs:
       run: sudo apt-get update
 
     - name: Install Dependencies
-      run: sudo apt-get install libpcre3-dev libgtkmm-3.0-dev gettext
+      run: sudo apt-get install libgtkmm-3.0-dev gettext
 
     - name: Create Build Directory
       run: cmake -E make_directory build
@@ -93,7 +93,6 @@ jobs:
             mingw-w64-${{ matrix.arch }}-cmake
             mingw-w64-${{ matrix.arch }}-gcc
             mingw-w64-${{ matrix.arch }}-fontconfig
-            mingw-w64-${{ matrix.arch }}-pcre
             make
             p7zip
 

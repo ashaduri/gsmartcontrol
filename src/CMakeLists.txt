@@ -57,7 +57,6 @@ endif()
 target_link_libraries(gsmartcontrol
 	PRIVATE
 		applib
-		app_pcrecpp_interface
 		app_gtkmm_interface
 		build_config
 )

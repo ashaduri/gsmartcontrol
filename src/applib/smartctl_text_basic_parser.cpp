@@ -25,13 +25,12 @@ Copyright:
 #include "hz/string_num.h"  // string_is_numeric, number_to_string
 //#include "hz/debug.h"  // debug_*
 
-#include "app_pcrecpp.h"
+#include "app_regex.h"
 //#include "ata_storage_property_descr.h"
 // #include "warning_colors.h"
 #include "smartctl_parser_types.h"
 #include "smartctl_version_parser.h"
 #include "smartctl_text_parser_helper.h"
-#include "storage_device.h"
 
 
 
@@ -76,33 +75,36 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	// Sample output line 2 (encountered on a BDRW drive):
 	// Device type:          CD/DVD
 	// NOTE: CD/DVD detection does not work in "-d scsi" mode.
-	if (app_pcre_match("/this device: CD\\/DVD/mi", output)
-			|| app_pcre_match("/^Device type:\\s+CD\\/DVD/mi", output)) {
+	if (app_regex_partial_match("/this device: CD\\/DVD/mi", output)
+			|| app_regex_partial_match("/^Device type:\\s+CD\\/DVD/mi", output)) {
 		StorageProperty p;
 		p.set_name("Drive type", "_text_only/custom/parser_detected_drive_type", "Parser-Detected Drive Type");
 		p.reported_value = "CD/DVD";
 		p.value = StorageDeviceDetectedTypeExt::get_storable_name(StorageDeviceDetectedType::CdDvd);
+		p.readable_value = StorageDeviceDetectedTypeExt::get_displayable_name(StorageDeviceDetectedType::CdDvd);
 		p.section = StoragePropertySection::Info;  // add to info section
 		add_property(p);
 
 	// This was encountered on a csmi soft-raid under windows with pd0.
 	// The device reported that it had smart supported and enabled.
 	// Product:              Raid 5 Volume
-	} else if (app_pcre_match("/Product:[ \\t]*Raid/mi", output)) {
+	} else if (app_regex_partial_match("/Product:[ \\t]*Raid/mi", output)) {
 		StorageProperty p;
 		p.set_name("Drive type", "_text_only/custom/parser_detected_drive_type", "Parser-Detected Drive Type");
 		p.reported_value = "RAID";
 		p.value = StorageDeviceDetectedTypeExt::get_storable_name(StorageDeviceDetectedType::UnsupportedRaid);
+		p.readable_value = StorageDeviceDetectedTypeExt::get_displayable_name(StorageDeviceDetectedType::UnsupportedRaid);
 		p.section = StoragePropertySection::Info;  // add to info section
 		add_property(p);
 
 		is_raid = true;
 
-	} else if (app_pcre_match("/ATA Version is:/mi", output)) {
+	} else if (app_regex_partial_match("/ATA Version is:/mi", output)) {
 		StorageProperty p;
 		p.set_name("Drive type", "_text_only/custom/parser_detected_drive_type", "Parser-Detected Drive Type");
 		p.reported_value = "(S)ATA";
 		p.value = StorageDeviceDetectedTypeExt::get_storable_name(StorageDeviceDetectedType::AtaAny);
+		p.readable_value = StorageDeviceDetectedTypeExt::get_displayable_name(StorageDeviceDetectedType::AtaAny);
 		p.section = StoragePropertySection::Info;  // add to info section
 		add_property(p);
 	}
@@ -122,19 +124,19 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		// Compared to SmartctlTextAtaParser, this one is much looser.
 
 		// Don't put complete messages here - they change across smartctl versions.
-		if (app_pcre_match("/^SMART support is:[ \\t]*Unavailable/mi", output)  // cdroms output this
-				|| app_pcre_match("/Device does not support SMART/mi", output)  // usb flash drives, non-smart hds
-				|| app_pcre_match("/Device Read Identity Failed/mi", output)) {  // solaris scsi, unsupported by smartctl (maybe others?)
+		if (app_regex_partial_match("/^SMART support is:[ \\t]*Unavailable/mi", output)  // cdroms output this
+				|| app_regex_partial_match("/Device does not support SMART/mi", output)  // usb flash drives, non-smart hds
+				|| app_regex_partial_match("/Device Read Identity Failed/mi", output)) {  // solaris scsi, unsupported by smartctl (maybe others?)
 			smart_supported = false;
 			smart_enabled = false;
 
-		} else if (app_pcre_match("/^SMART support is:[ \\t]*Available/mi", output)
-				|| app_pcre_match("/^SMART support is:[ \\t]*Ambiguous/mi", output)) {
+		} else if (app_regex_partial_match("/^SMART support is:[ \\t]*Available/mi", output)
+				|| app_regex_partial_match("/^SMART support is:[ \\t]*Ambiguous/mi", output)) {
 			smart_supported = true;
 
-			if (app_pcre_match("/^SMART support is:[ \\t]*Enabled/mi", output)) {
+			if (app_regex_partial_match("/^SMART support is:[ \\t]*Enabled/mi", output)) {
 				smart_enabled = true;
-			} else if (app_pcre_match("/^SMART support is:[ \\t]*Disabled/mi", output)) {
+			} else if (app_regex_partial_match("/^SMART support is:[ \\t]*Disabled/mi", output)) {
 				smart_enabled = false;
 			}
 		}
@@ -157,14 +159,14 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 
 
 	std::string model;
-	if (app_pcre_match("/^Device Model:[ \\t]*(.*)$/mi", output, &model)) {  // HDDs and CDROMs
+	if (app_regex_partial_match("/^Device Model:[ \\t]*(.*)$/mi", output, &model)) {  // HDDs and CDROMs
 		model = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(model), ' ');
 		StorageProperty p;
 		p.set_name("Device Model", "model_name", "Device Model");
 		p.value = model;  // string-type value
 		add_property(p);
 
-	} else if (app_pcre_match("/^(?:Device|Product):[ \\t]*(.*)$/mi", output, &model)) {  // usb flash drives
+	} else if (app_regex_partial_match("/^(?:Device|Product):[ \\t]*(.*)$/mi", output, &model)) {  // usb flash drives
 		model = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(model), ' ');
 		StorageProperty p;
 		p.set_name("Device Model", "model_name", "Device Model");
@@ -174,7 +176,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 
 
 	std::string family;  // this is from smartctl's database
-	if (app_pcre_match("/^Model Family:[ \\t]*(.*)$/mi", output, &family)) {
+	if (app_regex_partial_match("/^Model Family:[ \\t]*(.*)$/mi", output, &family)) {
 		family = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(family), ' ');
 		StorageProperty p;
 		p.set_name("Model Family", "model_family", "Model Family");
@@ -183,7 +185,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	}
 
 	std::string serial;
-	if (app_pcre_match("/^Serial Number:[ \\t]*(.*)$/mi", output, &serial)) {
+	if (app_regex_partial_match("/^Serial Number:[ \\t]*(.*)$/mi", output, &serial)) {
 		serial = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(serial), ' ');
 		StorageProperty p;
 		p.set_name("Serial Number", "serial_number", "Serial Number");
@@ -192,7 +194,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	}
 
 	std::string rpm_str;
-	if (app_pcre_match("/^Rotation Rate:[ \\t]*(.*)$/mi", output, &rpm_str)) {
+	if (app_regex_partial_match("/^Rotation Rate:[ \\t]*(.*)$/mi", output, &rpm_str)) {
 		StorageProperty p;
 		p.set_name("Rotation Rate", "rotation_rate", "Rotation Rate");
 		p.reported_value = rpm_str;
@@ -204,7 +206,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 
 	// Note: this property is present since 5.33.
 	std::string size;
-	if (app_pcre_match("/^User Capacity:[ \\t]*(.*)$/mi", output, &size)) {
+	if (app_regex_partial_match("/^User Capacity:[ \\t]*(.*)$/mi", output, &size)) {
 		int64_t bytes = 0;
 		const std::string readable_size = SmartctlTextParserHelper::parse_byte_size(size, bytes, false);
 		StorageProperty p;

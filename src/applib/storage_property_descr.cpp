@@ -16,7 +16,7 @@ Copyright:
 #include <unordered_map>
 
 #include "hz/string_algo.h"  // string_replace_copy
-#include "applib/app_pcrecpp.h"
+#include "applib/app_regex.h"
 
 #include "storage_property_descr.h"
 #include "warning_colors.h"
@@ -1434,7 +1434,7 @@ namespace {
 
 		std::string humanized_reported_name;
 		std::string ssd_hdd_str;
-		const bool known_by_smartctl = !app_pcre_match("/Unknown_(HDD|SSD)_?Attr.*/i", p.reported_name, &ssd_hdd_str);
+		const bool known_by_smartctl = !app_regex_partial_match("/Unknown_(HDD|SSD)_?Attr.*/i", p.reported_name, &ssd_hdd_str);
 		if (known_by_smartctl) {
 			humanized_reported_name = " " + p.reported_name + " ";  // spaces are for easy replacements
 
@@ -1502,7 +1502,7 @@ namespace {
 				hz::string_replace_array(match, replacement_map);
 				hz::string_replace_array(against, replacement_map);
 
-				same_names = app_pcre_match("/^" + app_pcre_escape(match) + "$/i", against);
+				same_names = app_regex_partial_match("/^" + app_regex_escape(match) + "$/i", against);
 			}
 
 			std::string descr =  std::string("<b>") + Glib::Markup::escape_text(attr.displayable_name) + "</b>";

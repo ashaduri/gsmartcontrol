@@ -27,7 +27,7 @@ Copyright:
 #include "applib/smartctl_executor_gui.h"
 #include "applib/app_gtkmm_tools.h"  // app_gtkmm_*
 #include "applib/warning_colors.h"  // app_property_get_label_highlight_color
-#include "applib/app_pcrecpp.h"  // app_pcre_match
+#include "applib/app_regex.h"
 #include "applib/smartctl_version_parser.h"
 
 #include "gsc_init.h"  // app_quit()
@@ -893,7 +893,7 @@ void GscMainWindow::rescan_devices()
 	std::vector<std::string> fetch_outputs = sd.get_fetch_data_error_outputs();
 	for (const auto& fetch_output : fetch_outputs) {
 		// debug_out_error("app", DBG_FUNC_MSG << fetch_outputs[i] << "\n");
-		if (app_pcre_match("/Smartctl open device.+Permission denied/mi", fetch_output)) {
+		if (app_regex_partial_match("/Smartctl open device.+Permission denied/mi", fetch_output)) {
 			gsc_executor_error_dialog_show(_("An error occurred while scanning the system"),
 					_("It seems that smartctl doesn't have enough permissions to access devices.\n"
 					"<small>See \"Permission Problems\" section of the documentation, accessible through the Help menu.</small>"), this, true, true);
