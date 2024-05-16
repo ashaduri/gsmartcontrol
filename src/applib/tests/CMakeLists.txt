@@ -1,7 +1,7 @@
 ###############################################################################
 # License: BSD Zero Clause License file
 # Copyright:
-#   (C) 2021 Alexander Shaduri <ashaduri@gmail.com>
+#   (C) 2021 - 2024 Alexander Shaduri <ashaduri@gmail.com>
 ###############################################################################
 
 if (NOT APP_BUILD_TESTS)
@@ -15,6 +15,7 @@ endif()
 add_library(applib_tests OBJECT)
 target_sources(applib_tests PRIVATE
 	test_app_pcrecpp.cpp
+	test_app_regex.cpp
 	test_smartctl_parser.cpp
 	test_smartctl_version_parser.cpp
 )

@@ -14,7 +14,7 @@ Copyright:
 #include "smartctl_executor.h"
 #include "hz/win32_tools.h"
 #include "rconfig/rconfig.h"
-#include "app_pcrecpp.h"
+#include "app_regex.h"
 #include "hz/fs.h"
 #include "build_config.h"
 
@@ -126,7 +126,7 @@ hz::ExpectedVoid<SmartctlExecutorError> execute_smartctl(const std::string& devi
 
 		// check if it's a device permission error.
 		// Smartctl open device: /dev/sdb failed: Permission denied
-		if (app_pcre_match("/Smartctl open device.+Permission denied/mi", smartctl_output)) {
+		if (app_regex_partial_match("/Smartctl open device.+Permission denied/mi", smartctl_output)) {
 			return hz::Unexpected(SmartctlExecutorError::PermissionDenied, _("Permission denied while opening device."));
 		}
 

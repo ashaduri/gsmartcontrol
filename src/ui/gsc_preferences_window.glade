@@ -375,7 +375,7 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                       <object class="GtkLabel" id="label6">
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
-                                        <property name="tooltip_text" translatable="yes">Semicolon-separated blacklist PCRE (perl-like) patterns for device search. For example, to blacklist all "/dev/sd*" devices, use "sd.{1}$". Simply listing them as "sda;sdb" will also work.</property>
+                                        <property name="tooltip_text" translatable="yes">Semicolon-separated blacklist regular expression patterns for device search. For example, to blacklist all "/dev/sd*" devices, use "sd.{1}$". Simply listing them as "sda;sdb" will also work.</property>
                                         <property name="halign">start</property>
                                         <property name="label" translatable="yes">Device blacklist patterns:</property>
                                         <property name="use_underline">True</property>
@@ -390,7 +390,7 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                       <object class="GtkEntry" id="device_blacklist_patterns_entry">
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
-                                        <property name="tooltip_text" translatable="yes">Semicolon-separated blacklist PCRE patterns for device search. For example, to blacklist all "/dev/sd*" devices, use "sd.$". Simply listing them as "sda;sdb" or "sd[ab]" will also work.</property>
+                                        <property name="tooltip_text" translatable="yes">Semicolon-separated blacklist regular expression patterns for device search. For example, to blacklist all "/dev/sd*" devices, use "sd.$". Simply listing them as "sda;sdb" or "sd[ab]" will also work.</property>
                                         <property name="activates_default">True</property>
                                         <property name="primary_icon_activatable">False</property>
                                         <property name="secondary_icon_activatable">False</property>

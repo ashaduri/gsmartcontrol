@@ -21,9 +21,10 @@ Copyright:
 #include "command_executor_factory.h"
 #include "storage_device.h"
 #include "rconfig/rconfig.h"
-#include "app_pcrecpp.h"
+#include "app_regex.h"
 #include "hz/string_num.h"
 #include "storage_detector.h"
+#include "hz/string_algo.h"
 
 
 
@@ -92,10 +93,10 @@ inline hz::ExpectedVoid<StorageDetectorError> tw_cli_get_drives(const std::strin
 	hz::string_split(output, '\n', lines, true);
 
 	// Note that the ports may be printed in any order. We sort the drives themselves in the end.
-	pcrecpp::RE port_re = app_pcre_re(R"(/^p([0-9]+)[ \t]+([^\t\n]+)/mi)");
+	auto port_re = app_regex_re(R"(/^p([0-9]+)[ \t]+([^\t\n]+)/mi)");
 	for (const auto& line : lines) {
 		std::string port_str, status;
-		if (port_re.PartialMatch(hz::string_trim_copy(line), &port_str, &status)) {
+		if (app_regex_partial_match(port_re, hz::string_trim_copy(line), {&port_str, &status})) {
 			if (status != "NOT-PRESENT") {
 				int port = -1;
 				if (hz::string_is_numeric_nolocale(port_str, port)) {
@@ -133,10 +134,10 @@ inline hz::ExpectedVoid<StorageDetectorError> tw_cli_get_controllers(
 	std::vector<std::string> lines;
 	hz::string_split(output, '\n', lines, true);
 
-	pcrecpp::RE controller_re = app_pcre_re("/^c([0-9]+)[ \\t]+/mi");
+	auto controller_re = app_regex_re("/^c([0-9]+)[ \\t]+/mi");
 	for (const auto& line : lines) {
 		std::string controller_str;
-		if (controller_re.PartialMatch(hz::string_trim_copy(line), &controller_str)) {
+		if (app_regex_partial_match(controller_re, hz::string_trim_copy(line), &controller_str)) {
 			int controller = -1;
 			if (hz::string_is_numeric_nolocale(controller_str, controller)) {
 				debug_out_info("app", "Found 3ware controller " << controller << ".\n");
@@ -176,14 +177,14 @@ inline hz::ExpectedVoid<StorageDetectorError> smartctl_scan_drives_sequentially(
 		last_output = drive->get_basic_output();
 
 		// If we've reached smartctl port limit (older versions may have smaller limits), abort.
-		if (app_pcre_match("/VALID ARGUMENTS ARE/mi", last_output)) {
+		if (app_regex_partial_match("/VALID ARGUMENTS ARE/mi", last_output)) {
 			break;
 		}
 
 		// If we couldn't open the device, it means there is no such controller at specified device
 		// and scanning the ports is useless.
-		if (app_pcre_match("/No .* controller found/mi", last_output)
-				|| app_pcre_match("/Smartctl open device: .* failed: No such device/mi", last_output) ) {
+		if (app_regex_partial_match("/No .* controller found/mi", last_output)
+				|| app_regex_partial_match("/Smartctl open device: .* failed: No such device/mi", last_output) ) {
 			break;
 		}
 

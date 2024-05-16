@@ -9,6 +9,8 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
+#include "hz/error_container.h"
+#include "command_executor.h"
 #include "local_glibmm.h"
 #include <algorithm>  // std::max, std::min
 #include <cmath>  // std::floor
@@ -20,7 +22,6 @@ Copyright:
 #include <unordered_map>
 #include <string>
 
-#include "app_pcrecpp.h"
 #include "smartctl_parser_types.h"
 #include "smartctl_parser.h"
 #include "storage_device_detected_type.h"
@@ -29,6 +30,7 @@ Copyright:
 #include "selftest.h"
 #include "storage_property_descr.h"
 #include "smartctl_version_parser.h"
+#include "app_regex.h"
 
 
 
@@ -236,9 +238,9 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::start(const std::shared_ptr<C
 				std::vformat(_("Sending command to drive failed: {}"), std::make_format_args(message)));
 	}
 
-	bool ata_test_started = app_pcre_match(R"(/^Drive command .* successful\.\nTesting has begun\.$/mi)", output);
-	bool nvme_test_started = app_pcre_match(R"(/^Self-test has begun$/mi)", output);
-	bool nvme_test_running = app_pcre_match(R"(/^Can't start self-test without aborting current test/mi)", output);
+	const bool ata_test_started = app_regex_partial_match(R"(/^Drive command .* successful\.\nTesting has begun\.$/mi)", output);
+	const bool nvme_test_started = app_regex_partial_match(R"(/^Self-test has begun$/mi)", output);
+	const bool nvme_test_running = app_regex_partial_match(R"(/^Can't start self-test without aborting current test/mi)", output);
 
 	if (!ata_test_started && !nvme_test_started && !nvme_test_running) {
 		return hz::Unexpected(SelfTestExecutionError::CommandUnknownError, _("Sending command to drive failed."));
@@ -305,8 +307,8 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::force_stop(const std::shared_
 	}
 
 	// this command prints success even if no test was running.
-	bool ata_aborted = app_pcre_match("/^Self-testing aborted!$/mi", output);
-	bool nvme_aborted = app_pcre_match("/^Self-test aborted!$/mi", output);
+	const bool ata_aborted = app_regex_partial_match("/^Self-testing aborted!$/mi", output);
+	const bool nvme_aborted = app_regex_partial_match("/^Self-test aborted!$/mi", output);
 
 	if (!ata_aborted && !nvme_aborted) {
 		return hz::Unexpected(SelfTestExecutionError::CommandUnknownError, _("Sending command to drive failed."));

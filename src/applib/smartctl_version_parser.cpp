@@ -15,7 +15,7 @@ Copyright:
 #include "hz/string_num.h"  // string_is_numeric, number_to_string
 #include "hz/debug.h"  // debug_*
 
-#include "app_pcrecpp.h"
+#include "app_regex.h"
 #include "smartctl_version_parser.h"
 
 
@@ -29,7 +29,8 @@ bool SmartctlVersionParser::parse_version_text(const std::string& s, std::string
 	// "smartctl 5.39 2009-06-03 20:10" (cvs versions)
 	// "smartctl 5.39 2009-08-08 r2873" (svn versions)
 	// "smartctl 7.3 (build date Feb 11 2022)" (git versions)
-	if (!app_pcre_match(R"(/^smartctl (?:version )?(([0-9][^ \t\n\r]+)(?: [0-9 r:-]+)?)/mi)", s, &version_full, &version_only)) {
+	// "smartctl pre-7.4 2023-06-13 r5481" (pre-releases)
+	if (!app_regex_partial_match(R"(/^smartctl (?:version )?(?:pre-)?(([0-9][^ \t\n\r]+)(?: [0-9 r:-]+)?)/mi)", s, {&version_full, &version_full})) {
 		debug_out_error("app", DBG_FUNC_MSG << "No smartctl version information found in supplied string.\n");
 		return false;
 	}

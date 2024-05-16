@@ -13,6 +13,7 @@ target_sources(applib PRIVATE
 	app_gtkmm_tools.cpp
 	app_gtkmm_tools.h
 	app_pcrecpp.h
+	app_regex.h
 	command_executor.h
 	command_executor.cpp
 	command_executor_3ware.h

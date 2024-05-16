@@ -22,7 +22,7 @@ Copyright:
 #include "hz/debug.h"
 #include "hz/fs.h"
 #include "rconfig/rconfig.h"
-#include "app_pcrecpp.h"
+#include "app_regex.h"
 #include "storage_detector_other.h"
 
 
@@ -184,7 +184,7 @@ hz::ExpectedVoid<StorageDetectorError> detect_drives_other(std::vector<StorageDe
 
 		bool matched = false;
 		for (const auto& wl_pattern : whitelist) {
-			if (app_pcre_match(wl_pattern, path.filename().string())) {
+			if (app_regex_partial_match(wl_pattern, path.filename().string())) {
 				matched = true;
 				break;
 			}

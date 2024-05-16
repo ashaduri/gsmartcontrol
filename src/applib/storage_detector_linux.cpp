@@ -18,8 +18,8 @@ Copyright:
 #include <cstdio>  // std::fgets(), std::FILE
 // #include <cerrno>  // ENXIO
 #include <memory>
-#include <pcrecpp.h>
 #include <filesystem>
+#include <regex>
 #include <set>
 #include <map>
 #include <system_error>
@@ -35,7 +35,7 @@ Copyright:
 #include "hz/fs.h"
 #include "hz/string_num.h"
 #include "rconfig/rconfig.h"
-#include "app_pcrecpp.h"
+#include "app_regex.h"
 #include "storage_detector.h"
 #include "storage_detector_helpers.h"
 #include "storage_device.h"
@@ -96,7 +96,7 @@ inline std::string detect_drives_linux_udev_byid(std::vector<std::string>& devic
 		// platform blacklist
 		bool blacked = false;
 		for (const auto& bl_pattern : blacklist) {
-			if (app_pcre_match(bl_pattern, path.string())) {
+			if (app_regex_partial_match(bl_pattern, path.string())) {
 				blacked = true;
 				break;
 			}
@@ -259,7 +259,7 @@ inline std::string read_proc_scsi_scsi_file(std::vector< std::pair<int, std::str
 	}
 
 	int last_scsi_host = -1;
-	const pcrecpp::RE host_re = app_pcre_re("^Host: scsi([0-9]+)");
+	const auto host_re = app_regex_re("^Host: scsi([0-9]+)");
 
 	for (auto line : lines) {
 		hz::string_trim(line);
@@ -267,11 +267,11 @@ inline std::string read_proc_scsi_scsi_file(std::vector< std::pair<int, std::str
 		// some other info on the third.
 		// debug_out_error("app", "SCSI Line: " << hz::string_trim_copy(lines[i]) << "\n");
 		std::string scsi_host_str;
-		if (host_re.PartialMatch(line, &scsi_host_str)) {
+		if (app_regex_partial_match(host_re, line, &scsi_host_str)) {
 			// debug_out_dump("app", "SCSI Host " << scsi_host_str << " found.\n");
 			hz::string_is_numeric_nolocale(scsi_host_str, last_scsi_host);
 
-		} else if (last_scsi_host != -1 && app_pcre_match("/Vendor: /i", line)) {
+		} else if (last_scsi_host != -1 && app_regex_partial_match("/Vendor: /i", line)) {
 			vendors_models.emplace_back(last_scsi_host, line);
 		}
 	}
@@ -305,19 +305,21 @@ inline std::string read_proc_scsi_sg_devices_file(std::vector<std::vector<int>>&
 		return ec.message();
 	}
 
-	pcrecpp::RE parse_re = app_pcre_re(
+	auto parse_re = app_regex_re(
 			R"(^([0-9-]+)\s+([0-9-]+)\s+([0-9-]+)\s+([0-9-]+)\s+([0-9-]+)\s+([0-9-]+)\s+([0-9-]+)\s+([0-9-]+)\s+([0-9-]+))");
 
 	for (std::size_t i = 0; i < lines.size(); ++i) {
 		const std::string trimmed = hz::string_trim_copy(lines[i]);
-		std::vector<std::string> line(9);
-		if (parse_re.PartialMatch(trimmed, &line[0], &line[1], &line[2], &line[3], &line[4], &line[5], &line[6], &line[7], &line[8])) {
-			std::vector<int> line_num(line.size(), -1);
-			for (std::size_t j = 0; j < line_num.size(); ++j) {
-				hz::string_is_numeric_nolocale(line[j], line_num[j]);
+		std::smatch matches;
+		if (app_regex_partial_match(parse_re, trimmed, matches)) {
+			DBG_ASSERT(matches.size() == 10);
+
+			std::vector<int> line_numbers(matches.size() - 1, -1);
+			for (std::size_t j = 0; j < line_numbers.size(); ++j) {
+				hz::string_is_numeric_nolocale(matches.str(j+1), line_numbers[j]);
 			}
 			sg_entries.resize(i+1);  // maintain the line indices
-			sg_entries[i] = line_num;
+			sg_entries[i] = line_numbers;
 
 		} else {
 			debug_out_warn("app", DBG_FUNC_MSG << "Sg devices line offset " << i << " has invalid format.\n");
@@ -401,11 +403,11 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_proc_partition
 
 	for (auto line : lines) {
 		hz::string_trim(line);
-		if (line.empty() || app_pcre_match("/^major/", line))  // file header
+		if (line.empty() || app_regex_partial_match("/^major/", line))  // file header
 			continue;
 
 		std::string dev;
-		if (!app_pcre_match(R"(/^[ \t]*[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+([^ \t\n]+)/)", line, &dev) || dev.empty()) {
+		if (!app_regex_partial_match(R"(/^[ \t]*[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+([^ \t\n]+)/)", line, &dev) || dev.empty()) {
 			debug_out_warn("app", DBG_FUNC_MSG << "Cannot parse line \"" << line << "\".\n");
 			continue;
 		}
@@ -413,7 +415,7 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_proc_partition
 		// platform blacklist
 		bool blacked = false;
 		for (const auto& bl_pattern : blacklist) {
-			if (app_pcre_match(bl_pattern, dev)) {
+			if (app_regex_partial_match(bl_pattern, dev)) {
 				blacked = true;
 				break;
 			}
@@ -439,7 +441,7 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_proc_partition
 		// 3ware controllers also export themselves as sd*. Smartctl detects that,
 		// so we can avoid adding them. Older smartctl (5.38) prints "AMCC", newer one
 		// prints "AMCC/3ware controller". It's better to search it this way.
-		if (app_pcre_match("/try adding '-d 3ware,N'/im", drive->get_basic_output())) {
+		if (app_regex_partial_match("/try adding '-d 3ware,N'/im", drive->get_basic_output())) {
 			debug_out_dump("app", "Drive " << drive->get_device_with_type() << " seems to be a 3ware controller, ignoring.\n");
 		} else {
 			drives.push_back(drive);
@@ -497,7 +499,7 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_3ware(
 	// Check /proc/devices for twa or twe
 	for (const auto& line : lines) {
 		std::string dev;
-		if (app_pcre_match(R"(/^[ \t]*[0-9]+[ \t]+(tw[ael])(?:[ \t]*|$)/)", hz::string_trim_copy(line), &dev)) {
+		if (app_regex_partial_match(R"(/^[ \t]*[0-9]+[ \t]+(tw[ael])(?:[ \t]*|$)/)", hz::string_trim_copy(line), &dev)) {
 			debug_out_dump("app", DBG_FUNC_MSG << "Found 3ware " << dev << " entry in devices file.\n");
 			if (dev == "twa") {
 				twa_found = true;
@@ -532,7 +534,7 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_3ware(
 	for (auto& vendor_model : vendors_models) {
 		// twe: 3ware, twa: AMCC, twl: LSI.
 		std::string vendor;
-		if (!app_pcre_match("/Vendor: (AMCC)|(3ware)|(LSI) /i", vendor_model.second, &vendor)) {
+		if (!app_regex_partial_match("/Vendor: (AMCC)|(3ware)|(LSI) /i", vendor_model.second, &vendor)) {
 			continue;  // not a supported controller
 		}
 
@@ -629,7 +631,7 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_adaptec(
 
 	// Check /proc/devices for "aac"
 	for (const auto& line : lines) {
-		if (app_pcre_match(R"(/^[ \t]*[0-9]+[ \t]+aac(?:[ \t]*|$)/)", hz::string_trim_copy(line))) {
+		if (app_regex_partial_match(R"(/^[ \t]*[0-9]+[ \t]+aac(?:[ \t]*|$)/)", hz::string_trim_copy(line))) {
 			debug_out_dump("app", DBG_FUNC_MSG << "Found aac entry in devices file.\n");
 			aac_found = true;
 		}
@@ -659,7 +661,7 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_adaptec(
 	std::set<int> controller_hosts;
 
 	for (const auto& vendors_model : vendors_models) {
-		if (!app_pcre_match("/Vendor: Adaptec /i", vendors_model.second)) {
+		if (!app_regex_partial_match("/Vendor: Adaptec /i", vendors_model.second)) {
 			continue;  // not a supported controller
 		}
 		const int host_num = vendors_model.first;
@@ -691,7 +693,7 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_adaptec(
 			const std::string output = drive->get_basic_output();
 
 			// Note: Not sure about this, have to check with real SAS drives
-			if (app_pcre_match("/Device Read Identity Failed/mi", output)) {
+			if (app_regex_partial_match("/Device Read Identity Failed/mi", output)) {
 				// "-d sat" didn't work, default back to smartctl's "-d scsi"
 				drive->clear_parse_results();
 				drive->clear_outputs();
@@ -761,7 +763,7 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_areca(
 
 	for (auto& vendor_model : vendors_models) {
 		std::string vendor_line = vendor_model.second;
-		if (!app_pcre_match("/Vendor: Areca /i", vendor_line)) {
+		if (!app_regex_partial_match("/Vendor: Areca /i", vendor_line)) {
 			continue;  // not a supported controller
 		}
 		int host_num = vendor_model.first;
@@ -775,7 +777,7 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_areca(
 
 		// Check if it contains the "ix" string in its model name. It may not be exactly
 		// a suffix (there may be "-VOL#00" or something like that appended as well).
-		bool has_enclosure = app_pcre_match("/Model:.+ix.+Rev:/i", vendor_line);
+		bool has_enclosure = app_regex_partial_match("/Model:.+ix.+Rev:/i", vendor_line);
 		debug_out_dump("app", DBG_FUNC_MSG << "Areca controller (SCSI host " << host_num
 				<< ") seems to " << (has_enclosure ? "have enclosure(s)" : "have no enclosures") << ".\n");
 
@@ -916,7 +918,7 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_cciss(
 	// Check /proc/devices for ccissX (where X is the controller #).
 	for (const auto& line : lines) {
 		std::string controller_no_str;
-		if (app_pcre_match(R"(/^[ \t]*[0-9]+[ \t]+cciss([0-9]+)(?:[ \t]*|$)/)", hz::string_trim_copy(line), &controller_no_str)) {
+		if (app_regex_partial_match(R"(/^[ \t]*[0-9]+[ \t]+cciss([0-9]+)(?:[ \t]*|$)/)", hz::string_trim_copy(line), &controller_no_str)) {
 			debug_out_dump("app", DBG_FUNC_MSG << "Found cciss" << controller_no_str << " entry in devices file.\n");
 			controllers.push_back(hz::string_to_number_nolocale<int>(controller_no_str));
 		}
@@ -944,12 +946,12 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_cciss(
 				debug_out_info("app", "Smartctl returned with an error: " << fetch_status.error().message() << "\n");
 			}
 
-			if (app_pcre_match("/VALID ARGUMENTS ARE/mi", output)) {
+			if (app_regex_partial_match("/VALID ARGUMENTS ARE/mi", output)) {
 				// smartctl doesn't support this many ports, return.
 				debug_out_dump("app", "Reached smartctl port limit with port " << port << ", stopping port scan.\n");
 				break;
 			}
-			if (app_pcre_match("/No such device or address/mi", output) && port > 15) {
+			if (app_regex_partial_match("/No such device or address/mi", output) && port > 15) {
 				// we've reached the controller port limit
 				debug_out_dump("app", "Reached controller port limit with port " << port << ", stopping port scan.\n");
 				break;
@@ -1011,8 +1013,8 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_hpsa(
 	std::set<int> controller_hosts;
 
 	for (auto& vendor_model : vendors_models) {
-		if (!app_pcre_match("/Vendor: HP /i", vendor_model.second) || app_pcre_match("/LOGICAL VOLUME/i",
-				vendor_model.second)) {
+		if (!app_regex_partial_match("/Vendor: HP /i", vendor_model.second)
+				|| app_regex_partial_match("/LOGICAL VOLUME/i", vendor_model.second)) {
 			continue;  // not a supported controller, or a logical drive.
 		}
 		int host_num = vendor_model.first;
@@ -1047,7 +1049,8 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_hpsa(
 				auto fetch_status = drive->fetch_basic_data_and_parse(smartctl_ex);
 				std::string output = drive->get_basic_output();
 
-				if (app_pcre_match("/No such device or address/mi", output) || app_pcre_match("/VALID ARGUMENTS ARE/mi", output)) {
+				if (app_regex_partial_match("/No such device or address/mi", output)
+						|| app_regex_partial_match("/VALID ARGUMENTS ARE/mi", output)) {
 					// We reached the controller port limit, or smartctl-supported port limit.
 					debug_out_dump("app", "Reached controller or smartctl port limit with port " << port << ", stopping port scan.\n");
 					break;

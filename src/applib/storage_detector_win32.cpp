@@ -27,7 +27,7 @@ Copyright:
 #include "hz/fs.h"
 #include "hz/string_num.h"
 #include "rconfig/rconfig.h"
-#include "app_pcrecpp.h"
+#include "app_regex.h"
 #include "storage_detector_win32.h"
 #include "storage_detector_helpers.h"
 #include "smartctl_executor.h"  // get_smartctl_binary
@@ -221,7 +221,7 @@ hz::ExpectedVoid<StorageDetectorError> get_scan_open_multiport_devices(std::vect
 		return hz::Unexpected(StorageDetectorError::EmptyCommandOutput, _("Smartctl returned an empty output."));
 	}
 
-	if (app_pcre_match("/UNRECOGNIZED OPTION/mi", output)) {
+	if (app_regex_partial_match("/UNRECOGNIZED OPTION/mi", output)) {
 		// Our requirements list smartctl with --scan-open support, so this should never happen.
 		// Therefore, we don't translate it.
 		return hz::Unexpected(StorageDetectorError::UnsupportedCommandVersion,
@@ -238,15 +238,15 @@ hz::ExpectedVoid<StorageDetectorError> get_scan_open_multiport_devices(std::vect
 // /dev/sde,2 -d ata [ATA] (opened)
 
 	// we only pick the ones with ports
-	const pcrecpp::RE port_re = app_pcre_re("/^(/dev/[a-z0-9]+),([0-9]+)[ \\t]+-d[ \\t]+([^ \\t\\n]+)/i");
-	const pcrecpp::RE dev_re = app_pcre_re("/^/dev/sd([a-z])$/");
+	const auto port_re = app_regex_re("/^(/dev/[a-z0-9]+),([0-9]+)[ \\t]+-d[ \\t]+([^ \\t\\n]+)/i");
+	const auto dev_re = app_regex_re("/^/dev/sd([a-z])$/");
 
 	for (const auto& line : lines) {
 		std::string dev, port_str, type;
-		if (port_re.PartialMatch(hz::string_trim_copy(line), &dev, &port_str, &type)) {
+		if (app_regex_partial_match(port_re, hz::string_trim_copy(line), {&dev, &port_str, &type})) {
 			std::string sd_letter;
 			int drive_num = -1;
-			if (dev_re.PartialMatch(dev, &sd_letter)) {
+			if (app_regex_partial_match(dev_re, dev, &sd_letter)) {
 				// don't use pd* devices equivalent to these sd* devices.
 				drive_num = sd_letter.at(0) - 'a';
 				equivalent_pds.insert(drive_num);
@@ -408,21 +408,21 @@ GuiErrMsg<0x00>: Success.
 		Enc
 	};
 
-	const pcrecpp::RE noenc1_header_re = app_pcre_re("/^\\s*#\\s+Ch#/mi");
-	const pcrecpp::RE noenc2_header_re = app_pcre_re("/^\\s*#\\s+ModelName/mi");
-	const pcrecpp::RE exp_header_re = app_pcre_re("/^\\s*#\\s+Enc#/mi");
+	const auto noenc1_header_re = app_regex_re("/^\\s*#\\s+Ch#/mi");
+	const auto noenc2_header_re = app_regex_re("/^\\s*#\\s+ModelName/mi");
+	const auto exp_header_re = app_regex_re("/^\\s*#\\s+Enc#/mi");
 
 	FormatType format_type = FormatType::Unknown;
 	for (const auto& line : lines) {
-		if (noenc1_header_re.PartialMatch(line)) {
+		if (app_regex_partial_match(noenc1_header_re, line)) {
 			format_type = FormatType::NoEnc1;
 			break;
 		}
-		if (noenc2_header_re.PartialMatch(line)) {
+		if (app_regex_partial_match(noenc2_header_re, line)) {
 			format_type = FormatType::NoEnc2;
 			break;
 		}
-		if (exp_header_re.PartialMatch(line)) {
+		if (app_regex_partial_match(exp_header_re, line)) {
 			format_type = FormatType::Enc;
 			break;
 		}
@@ -434,9 +434,9 @@ GuiErrMsg<0x00>: Success.
 	}
 
 	// Note: These may not match the full model, but just the first part is sufficient for comparison with "N.A.".
-	const pcrecpp::RE noexp1_port_re = app_pcre_re("/^\\s*[0-9]+\\s+([0-9]+)\\s+([^\\s]+)/mi");  // matches port, model.
-	const pcrecpp::RE noexp2_port_re = app_pcre_re("/^\\s*([0-9]+)\\s+([^\\s]+)/mi");  // matches port, model.
-	const pcrecpp::RE exp_port_re = app_pcre_re("/^\\s*[0-9]+\\s+([0-9]+)\\s+(?:Slot#|SLOT\\s+)([0-9]+)\\s+([^\\s]+)/mi");  // matches enclosure, port, model.
+	const auto noexp1_port_re = app_regex_re("/^\\s*[0-9]+\\s+([0-9]+)\\s+([^\\s]+)/mi");  // matches port, model.
+	const auto noexp2_port_re = app_regex_re("/^\\s*([0-9]+)\\s+([^\\s]+)/mi");  // matches port, model.
+	const auto exp_port_re = app_regex_re("/^\\s*[0-9]+\\s+([0-9]+)\\s+(?:Slot#|SLOT\\s+)([0-9]+)\\s+([^\\s]+)/mi");  // matches enclosure, port, model.
 
 	const bool has_enclosure = (format_type == FormatType::Enc);
 	if (has_enclosure) {
@@ -449,7 +449,7 @@ GuiErrMsg<0x00>: Success.
 		std::string port_str, model_str;
 		if (has_enclosure) {
 			std::string enclosure_str;
-			if (exp_port_re.PartialMatch(hz::string_trim_copy(line), &enclosure_str, &port_str, &model_str)) {
+			if (app_regex_partial_match(exp_port_re, hz::string_trim_copy(line), {&enclosure_str, &port_str, &model_str})) {
 				if (model_str != "N.A.") {
 					const int port = hz::string_to_number_nolocale<int>(port_str);
 					const int enclosure = hz::string_to_number_nolocale<int>(enclosure_str);
@@ -459,8 +459,8 @@ GuiErrMsg<0x00>: Success.
 				}
 			}
 		} else {  // no enclosures
-			const pcrecpp::RE port_re = (format_type == FormatType::NoEnc1 ? noexp1_port_re : noexp2_port_re);
-			if (port_re.PartialMatch(hz::string_trim_copy(line), &port_str, &model_str)) {
+			const auto port_re = (format_type == FormatType::NoEnc1 ? noexp1_port_re : noexp2_port_re);
+			if (app_regex_partial_match(port_re, hz::string_trim_copy(line), {&port_str, &model_str})) {
 				if (model_str != "N.A.") {
 					const int port = hz::string_to_number_nolocale<int>(port_str);
 					drives.emplace_back(std::make_shared<StorageDevice>(dev, "areca," + hz::number_to_string_nolocale(port)));
@@ -588,8 +588,8 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_win32_areca(std::vec
 		auto drive = std::make_shared<StorageDevice>("/dev/arcmsr0", "areca,1");
 		[[maybe_unused]] auto drive_status = drive->fetch_basic_data_and_parse(smartctl_ex);
 		const std::string output = drive->get_basic_output();
-		if (app_pcre_match("/No Areca controller found/mi", output)
-				|| app_pcre_match("/Smartctl open device: .* failed: No such device/mi", output) ) {
+		if (app_regex_partial_match("/No Areca controller found/mi", output)
+				|| app_regex_partial_match("/Smartctl open device: .* failed: No such device/mi", output) ) {
 			use_cli = 0;
 			scan_detect = false;
 			debug_out_dump("app", "Areca controller not found.\n");
@@ -636,8 +636,8 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_win32_areca(std::vec
 			std::string last_output;
 			auto scan_status = smartctl_scan_drives_sequentially(dev, "areca,%d", 1, max_noenc_ports, drives, ex_factory, last_output);
 			// If the scan stopped because of no controller, stop it all.
-			if (!scan_status && (app_pcre_match("/No Areca controller found/mi", last_output)
-					|| app_pcre_match("/Smartctl open device: .* failed: No such device/mi", last_output)) ) {
+			if (!scan_status && (app_regex_partial_match("/No Areca controller found/mi", last_output)
+					|| app_regex_partial_match("/Smartctl open device: .* failed: No such device/mi", last_output)) ) {
 				debug_out_dump("app", "Areca controller " << controller_no << " not present, stopping sequential scan.\n");
 				break;
 			}
