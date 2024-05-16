@@ -14,7 +14,6 @@ endif()
 # Use Object libraries to allow runtime test discovery
 add_library(applib_tests OBJECT)
 target_sources(applib_tests PRIVATE
-	test_app_pcrecpp.cpp
 	test_app_regex.cpp
 	test_smartctl_parser.cpp
 	test_smartctl_version_parser.cpp

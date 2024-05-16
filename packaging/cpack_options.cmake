@@ -122,7 +122,7 @@ set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "${CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS}
 # Install GTK+ and other dependencies in Windows.
 # Requires installed smartctl-nc.exe, smartctl.exe, update-smart-drivedb.ps1 in bin subdirectory of sysroot.
 # The following packages when cross-compiling from opensuse:
-# mingw64-cross-gcc-c++ mingw64-gtkmm3-devel mingw64-pcre-devel adwaita-icon-theme
+# mingw64-cross-gcc-c++ mingw64-gtkmm3-devel adwaita-icon-theme
 if (WIN32)
 	message(STATUS "CMAKE_FIND_ROOT_PATH: ${CMAKE_FIND_ROOT_PATH}")
 
@@ -208,7 +208,7 @@ if (WIN32)
 	install(FILES ${MATCHED_FILES} DESTINATION .)
 
 
-	#	All of GTK+ / PCRE
+	#	All of GTK+
 	set(GTK_FILES
 #		gdk-pixbuf-query-loaders.exe
 		gspawn-win32-helper-console.exe
@@ -291,11 +291,6 @@ if (WIN32)
 		libpangoft2-*.dll
 		libpangomm-*.dll
 		libpangowin32-*.dll
-		libpcre-*.dll
-		libpcre16-*.dll
-		libpcre32-*.dll
-		libpcrecpp-*.dll
-		libpcreposix-*.dll
 		libpixman-*.dll
 		libpng*-*.dll
 		libpsl-*.dll

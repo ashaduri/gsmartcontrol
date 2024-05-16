@@ -12,7 +12,6 @@ target_sources(applib PRIVATE
 	app_builder_widget.h
 	app_gtkmm_tools.cpp
 	app_gtkmm_tools.h
-	app_pcrecpp.h
 	app_regex.h
 	command_executor.h
 	command_executor.cpp
@@ -77,7 +76,6 @@ target_link_libraries(applib
 		hz
 		rconfig
 		app_gtkmm_interface
-		app_pcrecpp_interface
 		app_gettext_interface
 		build_config
 )

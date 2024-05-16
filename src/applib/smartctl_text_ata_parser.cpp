@@ -324,7 +324,6 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_info(
 	std::vector<std::string> lines;
 	hz::string_split(body, '\n', lines, false);
 	std::string name, value, warning_msg;
-// 	pcrecpp::StringPiece input(body);  // position tracker
 	bool expecting_warning_lines = false;
 
 // 	while (re.FindAndConsume(&input, &name, &value)) {

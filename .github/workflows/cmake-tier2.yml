@@ -31,7 +31,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Install Dependencies
-      run: brew install pkg-config gtkmm3 pcre cmake
+      run: brew install pkg-config gtkmm3 cmake
 
     - name: Install Clang Compiler
       if: ${{ matrix.compiler == 'clang' }}

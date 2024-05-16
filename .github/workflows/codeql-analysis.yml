@@ -44,7 +44,7 @@ jobs:
       run: sudo apt-get update
 
     - name: Install Dependencies
-      run: sudo apt-get install libpcre3-dev libgtkmm-3.0-dev gettext
+      run: sudo apt-get install libgtkmm-3.0-dev gettext
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL

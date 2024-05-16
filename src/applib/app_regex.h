@@ -62,7 +62,7 @@ inline std::regex app_regex_re(const std::string& perl_pattern)
 		const std::string::size_type endpos = perl_pattern.rfind('/');
 		DBG_ASSERT(endpos != std::string::npos);  // shouldn't happen
 
-		// no need to unescape slashes in pattern - pcre seems to not mind.
+		// no need to unescape slashes in pattern
 		return std::regex(perl_pattern.substr(1, endpos - 1),
 				app_regex_get_options(perl_pattern.substr(endpos + 1)));
 	}
