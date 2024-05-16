@@ -25,7 +25,7 @@ on:
 jobs:
   codacy-security-scan:
     name: Codacy Security Scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       # Checkout the repository to the GitHub Actions runner
       - name: Checkout code
