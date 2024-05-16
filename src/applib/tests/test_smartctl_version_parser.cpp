@@ -47,6 +47,12 @@ TEST_CASE("SmartctlVersionParser", "[app][parser]")
 		REQUIRE(version_full == "5.39 2009-08-08 r2873");
 	}
 
+	SECTION("Parse pre-releases") {
+		SmartctlVersionParser::parse_version_text("smartctl pre-7.4 2023-06-13 r5481", version_only, version_full);
+		REQUIRE(version_only == "7.4");
+		REQUIRE(version_full == "pre-7.4 2023-06-13 r5481");
+	}
+
 	SECTION("Parse old 5.0") {
 		SmartctlVersionParser::parse_version_text("smartctl version 5.0-49", version_only, version_full);
 		REQUIRE(version_only == "5.0-49");

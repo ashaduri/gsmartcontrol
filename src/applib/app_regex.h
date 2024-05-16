@@ -164,9 +164,9 @@ inline bool app_regex_partial_match(const std::regex& re, const std::string& str
 		return false;
 	}
 
-	for (std::size_t i = 1; i < matches_vector.size(); ++i) {
-		if (matches_vector[i - 1]) {
-			*(matches_vector[i - 1]) = matches.str(i);
+	for (std::size_t i = 0; i < matches_vector.size(); ++i) {
+		if (matches_vector[i]) {
+			*(matches_vector[i]) = matches.str(i + 1);
 		}
 	}
 
@@ -283,9 +283,9 @@ inline bool app_regex_full_match(const std::regex& re, const std::string& str, s
 		return false;
 	}
 
-	for (std::size_t i = 1; i < matches_vector.size(); ++i) {
-		if (matches_vector[i - 1]) {
-			*(matches_vector[i - 1]) = matches.str(i);
+	for (std::size_t i = 0; i < matches_vector.size(); ++i) {
+		if (matches_vector[i]) {
+			*(matches_vector[i]) = matches.str(i + 1);
 		}
 	}
 

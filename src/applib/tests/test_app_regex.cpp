@@ -35,7 +35,7 @@ TEST_CASE("AppRegexFlags", "[app][regex]")
 
 TEST_CASE("AppRegexBasic", "[app][regex]")
 {
-	const std::vector<std::string> output_lines = {
+	const std::vector<std::string> input_lines = {
 		"major minor",
 		"31  0     128 mtdblock0",
 		"3     1    1638598 ide/host0/bus0/target0/lun0/part1 0 0 0 0 0 0 0 0 0 0 0",
@@ -44,26 +44,26 @@ TEST_CASE("AppRegexBasic", "[app][regex]")
 
 	{
 		std::smatch matches;
-		const bool matched = app_regex_partial_match(R"(/^[ \t]*[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+([^ \t\n]+)/)", output_lines.at(0), matches);
+		const bool matched = app_regex_partial_match(R"(/^[ \t]*[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+([^ \t\n]+)/)", input_lines.at(0), matches);
 		REQUIRE(matched == false);
 	}
 	{
 		std::smatch matches;
-		const bool matched = app_regex_partial_match(R"(/^[ \t]*[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+([^ \t\n]+)/)", output_lines.at(1), matches);
+		const bool matched = app_regex_partial_match(R"(/^[ \t]*[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+([^ \t\n]+)/)", input_lines.at(1), matches);
 		REQUIRE(matched == true);
 		REQUIRE(matches.size() == 2);
 		REQUIRE(matches[1].str() == "mtdblock0");
 	}
 	{
 		std::smatch matches;
-		const bool matched = app_regex_partial_match(R"(/^[ \t]*[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+([^ \t\n]+)/)", output_lines.at(2), matches);
+		const bool matched = app_regex_partial_match(R"(/^[ \t]*[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+([^ \t\n]+)/)", input_lines.at(2), matches);
 		REQUIRE(matched == true);
 		REQUIRE(matches.size() == 2);
 		REQUIRE(matches[1].str() == "ide/host0/bus0/target0/lun0/part1");
 	}
 	{
 		std::smatch matches;
-		const bool matched = app_regex_partial_match(R"(/^[ \t]*[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+([^ \t\n]+)/)", output_lines.at(3), matches);
+		const bool matched = app_regex_partial_match(R"(/^[ \t]*[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+[^ \t\n]+[ \t]+([^ \t\n]+)/)", input_lines.at(3), matches);
 		REQUIRE(matched == true);
 		REQUIRE(matches.size() == 2);
 		REQUIRE(matches[1].str() == "sda");
@@ -72,9 +72,22 @@ TEST_CASE("AppRegexBasic", "[app][regex]")
 
 
 
+TEST_CASE("AppRegexLines", "[app][regex]")
+{
+	const std::string input = R"(Device Model:     ST3500630AS)";
+
+	std::string name, value;
+	const bool matched = app_regex_full_match("/^([^:]+):[ \\t]+(.*)$/i", input, {&name, &value});
+	REQUIRE(matched == true);
+	REQUIRE(name == "Device Model");
+	REQUIRE(value == "ST3500630AS");
+}
+
+
+
 TEST_CASE("AppRegexMultiline", "[app][regex]")
 {
-	const std::string output = R"(
+	const std::string input = R"(
 Copyright (C) 2002-23, Bruce Allen, Christian Franke, www.smartmontools.org
 
 === START OF OFFLINE IMMEDIATE AND SELF-TEST SECTION ===
@@ -86,7 +99,7 @@ Test will complete after Thu May 16 14:31:06 2024 +04
 Use smartctl -X to abort test.
 )";
 
-	const bool matched = app_regex_partial_match(R"(/^Drive command .* successful\.\nTesting has begun\.$/mi)", output);
+	const bool matched = app_regex_partial_match(R"(/^Drive command .* successful\.\nTesting has begun\.$/mi)", input);
 	REQUIRE(matched == true);
 }
 

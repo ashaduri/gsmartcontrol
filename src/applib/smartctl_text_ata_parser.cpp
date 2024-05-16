@@ -319,7 +319,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_info(
 
 	// split by lines.
 	// e.g. Device Model:     ST3500630AS
-	const auto re = app_regex_re("/^([^\\n]+): [ \\t]*(.*)$/mi");  // MUST BE Ungreedy!
+	const auto re = app_regex_re("/^([^:]+):[ \\t]+(.*)$/i");  // MUST BE Ungreedy!
 
 	std::vector<std::string> lines;
 	hz::string_split(body, '\n', lines, false);

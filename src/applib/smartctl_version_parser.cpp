@@ -30,7 +30,7 @@ bool SmartctlVersionParser::parse_version_text(const std::string& s, std::string
 	// "smartctl 5.39 2009-08-08 r2873" (svn versions)
 	// "smartctl 7.3 (build date Feb 11 2022)" (git versions)
 	// "smartctl pre-7.4 2023-06-13 r5481" (pre-releases)
-	if (!app_regex_partial_match(R"(/^smartctl (?:version )?(?:pre-)?(([0-9][^ \t\n\r]+)(?: [0-9 r:-]+)?)/mi)", s, {&version_only, &version_full})) {
+	if (!app_regex_partial_match(R"(/^smartctl (?:version )?((?:pre-)?([0-9][^ \t\n\r]+)(?: [0-9 r:-]+)?)/mi)", s, {&version_full, &version_only})) {
 		debug_out_error("app", DBG_FUNC_MSG << "No smartctl version information found in supplied string.\n");
 		return false;
 	}
