@@ -104,8 +104,8 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 		ex.create_running_dialog(this);
 		ex.set_running_msg(_("Checking if smartctl is executable..."));
 
-// 		ex.set_command(Glib::shell_quote(smartctl_binary), smartctl_def_options + "-V");  // --version
-		ex.set_command(Glib::shell_quote(smartctl_binary), "-V");  // --version
+// 		ex.set_command(CommandExecutor::shell_quote(smartctl_binary), smartctl_def_options + "-V");  // --version
+		ex.set_command(CommandExecutor::shell_quote(smartctl_binary), "-V");  // --version
 
 		if (!ex.execute() || !ex.get_error_msg().empty()) {
 			error_msg = ex.get_error_msg();
@@ -946,7 +946,7 @@ void GscMainWindow::run_update_drivedb()
 	if (smartctl_binary.is_absolute()) {
 		update_binary_path = smartctl_binary.parent_path() / update_binary_path;
 	}
-	std::string update_binary = Glib::shell_quote(hz::fs_path_to_string(update_binary_path));
+	std::string update_binary = CommandExecutor::shell_quote(hz::fs_path_to_string(update_binary_path));
 
 	if constexpr(!BuildEnv::is_kernel_family_windows()) {  // X11
 		update_binary = "xterm -hold -e " + update_binary;

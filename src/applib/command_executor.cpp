@@ -13,6 +13,8 @@ Copyright:
 #include <glib.h>  // g_usleep()
 
 #include "command_executor.h"
+#include "build_config.h"
+#include "hz/string_algo.h"
 
 
 
@@ -247,6 +249,18 @@ void CommandExecutor::set_error_header(const std::string& msg)
 std::string CommandExecutor::get_error_header()
 {
 	return error_header_;
+}
+
+
+
+std::string CommandExecutor::shell_quote(const std::string& str)
+{
+	if (!BuildEnv::is_kernel_family_windows()) {
+		return Glib::shell_quote(str);
+	}
+	// This may be somewhat insecure, but g_spawn_command_line_async()
+	// does not work with single quotes on Windows.
+	return "\"" + hz::string_replace_copy(str, "\"", "\\\"") + "\"";
 }
 
 

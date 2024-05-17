@@ -115,9 +115,9 @@ hz::ExpectedVoid<SmartctlExecutorError> execute_smartctl(const std::string& devi
 		device_specific_options += " ";
 
 
-	smartctl_ex->set_command(Glib::shell_quote(hz::fs_path_to_string(smartctl_binary)),
+	smartctl_ex->set_command(CommandExecutor::shell_quote(hz::fs_path_to_string(smartctl_binary)),
 			smartctl_def_options + device_specific_options + command_options
-			+ " " + Glib::shell_quote(device));
+			+ " " + CommandExecutor::shell_quote(device));
 
 	if (!smartctl_ex->execute() || !smartctl_ex->get_error_msg().empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Smartctl binary did not execute cleanly.\n");

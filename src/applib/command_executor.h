@@ -162,6 +162,12 @@ class CommandExecutor : public sigc::trackable {
 		[[nodiscard]] std::string get_error_header();
 
 
+		/// Quote a string for shell execution. This is similar to
+		/// g_shell_quote(), but it uses double quotes in Windows so that
+		/// the command can be actually executed by g_spawn_command_line_async().
+		[[nodiscard]] static std::string shell_quote(const std::string& str);
+
+
 		// ----------------- Signals
 
 

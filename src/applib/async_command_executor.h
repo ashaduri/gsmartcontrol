@@ -54,8 +54,8 @@ class AsyncCommandExecutor : public hz::ErrorHolder {
 
 
 		/// Set the command to execute. Call before execute().
-		/// Note: The command and the arguments _must_ be shell-escaped.
-		/// Use g_shell_quote() or Glib::shell_quote(). Note that each argument
+		/// Note: The command and the arguments _must_ be shell-escaped
+		/// using CommandExecutor::shell_quote(). Note that each argument
 		/// must be escaped separately.
 		void set_command(const std::string& command_exec, const std::string& command_args);
 

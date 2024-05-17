@@ -53,7 +53,7 @@ inline hz::ExpectedVoid<StorageDetectorError> execute_tw_cli(const CommandExecut
 	}
 
 	for (const auto& bin : binaries) {
-		executor->set_command(Glib::shell_quote(bin), command_options);
+		executor->set_command(CommandExecutor::shell_quote(bin), command_options);
 
 		if (!executor->execute() || !executor->get_error_msg().empty()) {
 			debug_out_warn("app", DBG_FUNC_MSG << "Error while executing tw_cli binary.\n");

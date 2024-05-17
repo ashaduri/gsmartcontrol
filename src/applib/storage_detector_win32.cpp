@@ -206,7 +206,7 @@ hz::ExpectedVoid<StorageDetectorError> get_scan_open_multiport_devices(std::vect
 	if (!smartctl_def_options.empty())
 		smartctl_def_options += " ";
 
-	smartctl_ex->set_command(Glib::shell_quote(hz::fs_path_to_string(smartctl_binary)),
+	smartctl_ex->set_command(CommandExecutor::shell_quote(hz::fs_path_to_string(smartctl_binary)),
 			smartctl_def_options + "--scan-open");
 
 	if (bool execute_status = smartctl_ex->execute(); !execute_status) {
@@ -280,7 +280,7 @@ inline hz::ExpectedVoid<StorageDetectorError> execute_areca_cli(const CommandExe
 {
 	std::shared_ptr<CommandExecutor> executor = ex_factory->create_executor(CommandExecutorFactory::ExecutorType::ArecaCli);
 
-	executor->set_command(Glib::shell_quote(cli_binary), command_options);
+	executor->set_command(CommandExecutor::shell_quote(cli_binary), command_options);
 
 	if (!executor->execute() || !executor->get_error_msg().empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Error while executing Areca cli binary.\n");
