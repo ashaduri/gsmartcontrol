@@ -10,7 +10,7 @@
 Name:		gsmartcontrol
 Version: 	git
 Release:	0
-License:	GPL-3.0
+License:	GPL-3.0-only
 Url:		https://gsmartcontrol.shaduri.dev
 Vendor:		Alexander Shaduri <ashaduri@gmail.com>
 Source0:		https://github.com/ashaduri/%{name}/releases/download/v%{version}/%{name}-%{version}.tar.bz2
@@ -26,7 +26,7 @@ Group:		Hardware/Other
 Requires: smartmontools >= 5.43 xterm
 Requires: polkit bash
 # libX11-devel is required to resove pkgconfig(x11) requirement in SLE15.3
-BuildRequires: cmake >= 3.12.0 gcc-c++ libstdc++-devel gtkmm3-devel >= 3.4.0 libX11-devel
+BuildRequires: cmake >= 3.12.0 gcc-c++ libstdc++-devel gtkmm3-devel >= 3.4.0 libX11-devel pkgconfig
 BuildRequires: update-desktop-files fdupes hicolor-icon-theme polkit
 Recommends: xdg-utils
 %endif
@@ -59,14 +59,15 @@ on it.
 
 %build
 %cmake \
-	-DAPP_COMPILER_ENABLE_WARNINGS=ON
+	-DAPP_COMPILER_ENABLE_WARNINGS=ON \
+	-DCMAKE_INSTALL_DOCDIR(:PATH)="%_defaultdocdir"
 %cmake_build
 
 %install
 %cmake_install
 
 %if 0%{?suse_version}
-%suse_update_desktop_file -n %{name}
+%suse_update_desktop_file %{name}
 # There are some png file duplicates, hardlink them.
 %fdupes -s %{buildroot}%{_prefix}
 %endif
@@ -93,9 +94,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}.desktop
 %files
 %defattr(-,root,root)
 
-%if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version}
 %license LICENSE.txt
-%endif
 
 %attr(0755,root,root) %{_bindir}/%{name}-root
 %attr(0755,root,root) %{_sbindir}/%{name}
@@ -103,8 +102,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/%{name}.desktop
 %if 0%{?suse_version} || 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version}
 
 %if 0%{?suse_version}
-#%doc %{_defaultdocdir}/%{name}
-%doc %{_datadir}/doc/gsmartcontrol
+%doc %{_defaultdocdir}/%{name}
 %endif
 %if 0%{?fedora_version} || 0%{?centos_version} || 0%{?rhel_version}
 %{_pkgdocdir}
