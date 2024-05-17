@@ -9,7 +9,7 @@ configure_file("nsis/gsmartcontrol.in.nsi" "nsis/gsmartcontrol.nsi" ESCAPE_QUOTE
 
 # NSIS helpers
 if (WIN32)
-	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/nsis/distribution.txt" DESTINATION doc/)
+	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/nsis/distribution.txt" TYPE DOC)
 
 	# nsis file, only for cross-compilation
 	if (NOT ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")

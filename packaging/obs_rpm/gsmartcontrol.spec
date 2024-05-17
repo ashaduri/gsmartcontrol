@@ -59,8 +59,7 @@ on it.
 
 %build
 %cmake \
-	-DAPP_COMPILER_ENABLE_WARNINGS=ON \
-	-DCMAKE_INSTALL_DOCDIR:PATH=%{_defaultdocdir}/gsmartcontrol
+	-DAPP_COMPILER_ENABLE_WARNINGS=ON
 
 %cmake_build
 

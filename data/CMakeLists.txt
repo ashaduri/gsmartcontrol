@@ -49,10 +49,10 @@ if (NOT WIN32)
 		DESTINATION "${CMAKE_INSTALL_DATADIR}/polkit-1/actions/")
 
 	# Man pages
-	install(FILES "gsmartcontrol.1" DESTINATION "${CMAKE_INSTALL_MANDIR}/man1/")
-	install(FILES "gsmartcontrol.1" DESTINATION "${CMAKE_INSTALL_MANDIR}/man1/" RENAME "gsmartcontrol-root.1")
+	install(FILES "man1/gsmartcontrol.1" DESTINATION "${CMAKE_INSTALL_MANDIR}")
+	install(FILES "man1/gsmartcontrol.1" DESTINATION "${CMAKE_INSTALL_MANDIR}" RENAME "gsmartcontrol-root.1")
 
 	# Scripts (this goes to bin, not sbin, as it doesn't require root privileges before running)
-	install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/gsmartcontrol-root.sh" DESTINATION "${CMAKE_INSTALL_BINDIR}" RENAME "gsmartcontrol-root")
+	install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/gsmartcontrol-root.sh" TYPE BIN RENAME "gsmartcontrol-root")
 endif()
 

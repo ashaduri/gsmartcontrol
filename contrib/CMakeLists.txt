@@ -5,5 +5,6 @@
 ###############################################################################
 
 if (NOT WIN32)
-	install(DIRECTORY "cron-based_noadmin" DESTINATION "${CMAKE_INSTALL_DOCDIR}/contrib/")
+	install(DIRECTORY "${CMAKE_SOURCE_DIR}/contrib" TYPE DOC
+		PATTERN "CMakeLists.txt" EXCLUDE)
 endif()
