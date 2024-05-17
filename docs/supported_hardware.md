@@ -5,8 +5,8 @@ permalink: /supported-hardware
 
 # Supported Hardware
 
-GSmartControl supports ATA drives (both PATA and SATA), various USB to
-ATA bridges, and drives behind some RAID controllers.
+GSmartControl supports ATA drives (both PATA and SATA), NVMe drives,
+various USB to ATA bridges, and drives behind some RAID controllers.
 
 See [Smartmontools USB Device Support](https://www.smartmontools.org/wiki/Supported_USB-Devices)
 page for an (incomplete) list of supported USB to ATA bridges.

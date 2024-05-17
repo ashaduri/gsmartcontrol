@@ -1,7 +1,7 @@
 /******************************************************************************
 License: GNU General Public License v3.0 only
 Copyright:
-	(C) 2008 - 2022 Alexander Shaduri <ashaduri@gmail.com>
+	(C) 2008 - 2024 Alexander Shaduri <ashaduri@gmail.com>
 ******************************************************************************/
 /// \file
 /// \author Alexander Shaduri
@@ -65,6 +65,7 @@ class SmartctlVersionParser {
 		static constexpr double minimum_req_text_version = 5.0;
 
 		// 7.3 adds "smart_support" section in json.
+		// 7.4 adds nvme testing, but it's an optional feature not related to parsing.
 		static constexpr double minimum_req_json_version = 7.3;
 
 

@@ -54,9 +54,6 @@ Example:
 
 `-l`, `--no-locale` - Don't use system locale.
 
-`--no-hide-tabs` - Don't hide non-identity tabs when SMART is disabled. Useful
-for debugging.
-
 
 ## Smartctl Options
 

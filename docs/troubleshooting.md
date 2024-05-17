@@ -10,22 +10,15 @@ Please see the [Support](support.md) page for information on how to report issue
 
 ## Known Limitations
 
-- Only ATA drives (both PATA and SATA), various USB to ATA bridges,
-and drives behind some RAID controllers are supported for now.
+- Only ATA drives (both PATA and SATA), NVMe drives, various USB to ATA
+bridges, and drives behind some RAID controllers are supported for now.
 The main reasons for this are:
   - We can't support drives which don't work with smartmontools.
   This affects drives which don't support SMART or don't export SMART data
   correctly (e.g. some USB enclosures, RAIDs, etc.).
-  - Smartctl's output for SCSI drives is completely different compared to ATA.
-  Also, SCSI drives are rarely found in desktop systems and the servers rarely
+  - SCSI drives are rarely found in desktop systems and the servers rarely
   have X11 / Gtkmm running, so this is a low priority task.
-- Immediate Offline Tests are not supported. We have not found a way to reliably
-monitor them. Besides, they run automatically anyway if Automatic Offline
-Data Collection is enabled.
-- Testing is only supported on drives which correctly report their progress
-information in their list of capabilities.
-- Not all drives support disabling Automatic Offline Data Collection, even
-if they report otherwise. Unfortunately, there's no way to detect such drives.
+- Immediate Offline Tests are not supported due to being mostly obsolete.
 
 
 ## Custom Smartctl Options

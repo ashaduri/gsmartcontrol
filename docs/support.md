@@ -30,7 +30,7 @@ second physical drive, etc. Run `cmd` as administrator first.
 If you still think it's a GSmartControl issue, please collect the following
 information about your system:
 
-- Which operating system you use (for example, openSUSE Leap 15.3).
+- Which operating system you use (for example, openSUSE Leap 15.5).
 - Which version of GTK and Gtkmm you have installed. Finding this out is very
 distribution-specific. For example, on openSUSE it would be `rpm -q gtk3 gtkmm3`.
 Some distributions have `gtkmm30` instead. You may also search them in your 
