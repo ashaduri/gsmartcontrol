@@ -34,7 +34,7 @@ Requires: polkit bash
 
 %if 0%{?suse_version} < 1600 || 0%{?sle_version} < 160000
 # 15.x come with gcc7 as the system compiler
-BuildRequires: gcc13-c++ >= 13 libstdc++6-devel-gcc13 >= 13
+BuildRequires: gcc13-c++ libstdc++6-devel-gcc13
 %else
 # Tumbleweed, ALP, ...
 BuildRequires: gcc-c++ >= 13 libstdc++-devel >= 13
@@ -68,7 +68,8 @@ on it.
 %setup -q
 
 %build
-%if 0%{?suse_version} < 1600 || 0%{?sle_version} < 160000
+
+%if 0%{?suse_version} && ( 0%{?suse_version} < 1600 || 0%{?sle_version} < 160000 )
 %cmake -DAPP_COMPILER_ENABLE_WARNINGS=ON -DCMAKE_CXX_COMPILER=g++-13
 %else
 %cmake -DAPP_COMPILER_ENABLE_WARNINGS=ON
