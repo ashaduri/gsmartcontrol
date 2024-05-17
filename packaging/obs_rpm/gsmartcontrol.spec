@@ -60,7 +60,7 @@ on it.
 %build
 %cmake \
 	-DAPP_COMPILER_ENABLE_WARNINGS=ON \
-	-DCMAKE_INSTALL_DOCDIR(:PATH)="%_defaultdocdir"
+	-DCMAKE_INSTALL_DOCDIR="%_defaultdocdir"
 %cmake_build
 
 %install
