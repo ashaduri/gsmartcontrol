@@ -58,8 +58,7 @@ on it.
 %setup -q
 
 %build
-%cmake \
-	-DAPP_COMPILER_ENABLE_WARNINGS=ON
+%cmake -DAPP_COMPILER_ENABLE_WARNINGS=ON
 
 %cmake_build
 
