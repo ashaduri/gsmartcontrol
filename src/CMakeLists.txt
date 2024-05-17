@@ -64,7 +64,7 @@ target_link_libraries(gsmartcontrol
 if (WIN32)
 	install(TARGETS gsmartcontrol DESTINATION .)
 else()
-	install(TARGETS gsmartcontrol TYPE SBIN)
+	install(TARGETS gsmartcontrol DESTINATION "${CMAKE_INSTALL_SBINDIR}/")
 endif()
 
 
