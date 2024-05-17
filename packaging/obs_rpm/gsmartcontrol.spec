@@ -26,9 +26,19 @@ Group:		Hardware/Other
 Requires: smartmontools >= 5.43 xterm
 Requires: polkit bash
 # libX11-devel is required to resove pkgconfig(x11) requirement in SLE15.3
-BuildRequires: cmake >= 3.12.0 gcc-c++ >= 13 libstdc++-devel >= 13 gtkmm3-devel >= 3.4.0 libX11-devel pkgconfig
+BuildRequires: cmake >= 3.12.0  gtkmm3-devel >= 3.4.0 libX11-devel pkgconfig
 BuildRequires: update-desktop-files fdupes hicolor-icon-theme polkit
 Recommends: xdg-utils
+Requires: smartmontools >= 5.43 xterm
+Requires: polkit bash
+
+%if 0%{?suse_version} < 1600 || 0%{?sle_version} < 160000
+# 15.x come with gcc7 as the system compiler
+BuildRequires: gcc13-c++ >= 13 libstdc++6-devel-gcc13 >= 13
+%else
+# Tumbleweed, ALP, ...
+BuildRequires: gcc-c++ >= 13 libstdc++-devel >= 13
+%endif
 %endif
 
 
@@ -58,7 +68,11 @@ on it.
 %setup -q
 
 %build
+%if 0%{?suse_version}
+%cmake -DAPP_COMPILER_ENABLE_WARNINGS=ON CXX=g++-13
+%else
 %cmake -DAPP_COMPILER_ENABLE_WARNINGS=ON
+%endif
 
 %cmake_build
 
