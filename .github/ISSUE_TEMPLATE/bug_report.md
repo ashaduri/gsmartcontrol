@@ -9,7 +9,7 @@ assignees: ashaduri
 
 **Version and Environment**
  - GSmartControl version: [Are you using the latest released version or git?]
- - OS: [e.g. openSUSE Linux 15.4]
+ - OS: [e.g. openSUSE Linux 15.5]
 
 **Describe the Bug**
 [A clear and concise description of what the bug is].

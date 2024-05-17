@@ -9,7 +9,7 @@ assignees: ashaduri
 
 **Version and Environment**
  - GSmartControl version: [Are you using the latest released version or git?]
- - OS: [e.g. openSUSE Linux 15.4]
+ - OS: [e.g. openSUSE Linux 15.5]
 
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
