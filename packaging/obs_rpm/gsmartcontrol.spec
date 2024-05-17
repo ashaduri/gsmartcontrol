@@ -41,7 +41,7 @@ BuildRequires: cmake3 >= 3.12.0
 %else
 BuildRequires: cmake >= 3.12.0
 %endif
-BuildRequires: gcc-c++ gtkmm30-devel >= 3.4.0
+BuildRequires: gcc-c++ >= 13.0.0 gtkmm30-devel >= 3.4.0
 BuildRequires: desktop-file-utils hicolor-icon-theme make
 %endif
 
