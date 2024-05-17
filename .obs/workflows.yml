@@ -35,6 +35,8 @@
 
 
 # Workflow for pushes
+
+# Note: This adds new repositories to the project if they do not exist.
 build_main_workflow:
   steps:
     - configure_repositories:
@@ -47,29 +49,31 @@ build_main_workflow:
                 target_repository: snapshot
             architectures:
               - x86_64
-              - i586
 
-          - name: openSUSE_Leap_15.4
+          - name: openSUSE_Slowroll
             paths:
-              - target_project: openSUSE:Leap:15.4
+              - target_project: openSUSE:Slowroll
                 target_repository: standard
             architectures:
               - x86_64
 
-          - name: openSUSE_Leap_15.3
+          - name: openSUSE_Leap_15.6
             paths:
-              - target_project: openSUSE:Leap:15.3
+#              - target_project: devel:gcc
+#                target_repository: openSUSE_Leap_15.6
+              - target_project: openSUSE:Leap:15.6
                 target_repository: standard
             architectures:
               - x86_64
 
-          - name: openSUSE_Factory_PowerPC
+          - name: openSUSE_Leap_15.5
             paths:
-              - target_project: openSUSE:Factory:PowerPC
+              - target_project: devel:gcc
+                target_repository: openSUSE_Leap_15.5
+              - target_project: openSUSE:Leap:15.5
                 target_repository: standard
             architectures:
-              - ppc64
-              - ppc64le
+              - x86_64
 
           - name: openSUSE_Factory_ARM
             paths:
@@ -79,33 +83,28 @@ build_main_workflow:
               - aarch64
               - armv7l
 
-          - name: SUSE_SLE-15-SP4
+          - name: SUSE_SLE-15-SP6
             paths:
-              - target_project: SUSE:SLE-15-SP4:GA
+              - target_project: devel:gcc
+                target_repository: SLE-15
+              - target_project: SUSE:SLE-15-SP6:GA
                 target_repository: standard
             architectures:
               - x86_64
 
-          - name: SUSE_SLE-12-SP5
-            paths:
-              - target_project: SUSE:SLE-12-SP5:GA
-                target_repository: standard
-            architectures:
-              - x86_64
-
-          - name: xUbuntu_21.10
+          - name: Ubuntu_24.04
             paths:
               - target_project: openSUSE:Tools
-                target_repository: xUbuntu_21.10
+                target_repository: xUbuntu_24.04
               - target_project: Ubuntu:21.10
                 target_repository: universe
             architectures:
               - x86_64
 
-          - name: xUbuntu_20.04
+          - name: Ubuntu_23.10
             paths:
               - target_project: openSUSE:Tools
-                target_repository: xUbuntu_20.04
+                target_repository: xUbuntu_23.10
               - target_project: Ubuntu:20.04
                 target_repository: universe
             architectures:
@@ -120,26 +119,25 @@ build_main_workflow:
             architectures:
               - x86_64
 
-          - name: Fedora_35
+          - name: Fedora_40
             paths:
               - target_project: openSUSE:Tools
-                target_repository: Fedora_35
-              - target_project: Fedora:35
+                target_repository: Fedora_40
+              - target_project: Fedora:40
                 target_repository: standard
             architectures:
               - x86_64
               - aarch64
-#              - armv7l  # very slow
-              - ppc64le
 
-          - name: Fedora_34
+          - name: Fedora_39
             paths:
               - target_project: openSUSE:Tools
-                target_repository: Fedora_34
-              - target_project: Fedora:34
+                target_repository: Fedora_39
+              - target_project: Fedora:39
                 target_repository: standard
             architectures:
               - x86_64
+              - aarch64
 
           - name: Debian_Unstable
             paths:
@@ -159,48 +157,6 @@ build_main_workflow:
             architectures:
               - x86_64
               - i586
-
-          - name: Debian_11
-            paths:
-              - target_project: openSUSE:Tools
-                target_repository: Debian_11
-              - target_project: Debian:11
-                target_repository: standard
-            architectures:
-              - x86_64
-              - i586
-
-#          - name: Debian_10
-#            paths:
-#              - target_project: openSUSE:Tools
-#                target_repository: Debian_10
-#              - target_project: Debian:10
-#                target_repository: standard
-#            architectures:
-#              - x86_64
-#              - i586
-#
-#          - name: CentOS_8_Stream
-#            paths:
-#              - target_project: openSUSE:Tools
-#                target_repository: CentOS_8_Stream
-#              - target_project: Fedora:EPEL:8
-#                target_repository: CentOS
-#              - target_project: CentOS:CentOS-8:Stream
-#                target_repository: standard
-#            architectures:
-#              - x86_64
-#
-#          - name: CentOS_8
-#            paths:
-#              - target_project: openSUSE:Tools
-#                target_repository: CentOS_8
-#              - target_project: Fedora:EPEL:8
-#                target_repository: CentOS
-#              - target_project: CentOS:CentOS-8
-#                target_repository: standard
-#            architectures:
-#              - x86_64
 
     - set_flags:
         flags:
