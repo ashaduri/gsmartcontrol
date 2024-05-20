@@ -93,6 +93,7 @@ GscAddDeviceWindow::GscAddDeviceWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk
 	if (auto* type_combo = lookup_widget<Gtk::ComboBoxText*>("device_type_combo")) {
 		type_combo->append("sat,12");
 		type_combo->append("sat,16");
+		type_combo->append("nvme");
 		type_combo->append("usbcypress");
 		type_combo->append("usbjmicron");
 		type_combo->append("usbsunplus");
