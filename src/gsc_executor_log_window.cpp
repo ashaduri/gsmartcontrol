@@ -9,12 +9,14 @@ Copyright:
 /// \weakgroup gsc
 /// @{
 
+#include "hz/string_algo.h"
 #include "local_glibmm.h"
 #include <gtkmm.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
 #include <sstream>
 #include <cstddef>  // std::size_t
 #include <memory>
+#include <vector>
 
 #include "applib/app_gtkmm_tools.h"  // app_gtkmm_create_tree_view_column
 #include "hz/fs.h"
@@ -152,10 +154,13 @@ void GscExecutorLogWindow::on_command_output_received(const CommandExecutorResul
 	auto entry = std::make_shared<CommandExecutorResult>(info);
 	entries.push_back(entry);
 
+	std::vector<std::string> command = {info.command};
+	command.insert(command.end(), info.parameters.begin(), info.parameters.end());
+
 	// update tree model
 	const Gtk::TreeRow row = *(list_store->append());
 	row[col_num] = entries.size();
-	row[col_command] = info.command + " " + info.parameters;
+	row[col_command] = hz::string_join(command, " ");
 	row[col_entry] = entry;
 
 	// if visible, set the selection to it
@@ -299,7 +304,9 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 		exss << "\n---------------" << "Command" << "---------------\n";
 		exss << entries[i]->command << "\n";
 		exss << "\n---------------" << "Parameters" << "---------------\n";
-		exss << entries[i]->parameters << "\n";
+		for (const auto& param : entries[i]->parameters) {
+			exss << param << "\n";
+		}
 		exss << "\n---------------" << "STDOUT" << "---------------\n";
 		exss << entries[i]->std_output << "\n\n";
 		exss << "\n---------------" << "STDERR" << "---------------\n";
@@ -436,8 +443,9 @@ void GscExecutorLogWindow::on_tree_selection_changed()
 		}
 
 		if (auto* command_entry = this->lookup_widget<Gtk::Entry*>("command_entry")) {
-			const std::string cmd_text = entry->command + " " + entry->parameters;
-			command_entry->set_text(app_make_valid_utf8_from_command_output(cmd_text));
+			std::vector<std::string> command = {entry->command};
+			command.insert(command.end(), entry->parameters.begin(), entry->parameters.end());
+			command_entry->set_text(app_make_valid_utf8_from_command_output(hz::string_join(command, " ")));
 		}
 
 		if (auto* window_save_current_button = this->lookup_widget<Gtk::Button*>("window_save_current_button"))

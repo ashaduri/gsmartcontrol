@@ -26,8 +26,8 @@ class CommandExecutorGui : public CommandExecutor {
 	public:
 
 		/// Constructor
-		CommandExecutorGui(const std::string& cmd, const std::string& cmdargs)
-				: CommandExecutor(cmd, cmdargs)
+		CommandExecutorGui(std::string cmd, std::vector<std::string> cmdargs)
+				: CommandExecutor(std::move(cmd), std::move(cmdargs))
 		{
 			signal_execute_tick().connect(sigc::mem_fun(*this, &CommandExecutorGui::execute_tick_func));
 		}

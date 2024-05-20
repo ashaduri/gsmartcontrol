@@ -27,7 +27,7 @@ cmdex_signal_execute_finish_t& cmdex_sync_signal_execute_finish()
 
 
 
-CommandExecutor::CommandExecutor(std::string command_name, std::string command_args)
+CommandExecutor::CommandExecutor(std::string command_name, std::vector<std::string> command_args)
 		: CommandExecutor()
 {
 	this->set_command(std::move(command_name), std::move(command_args));
@@ -44,7 +44,7 @@ CommandExecutor::CommandExecutor()
 
 
 
-void CommandExecutor::set_command(std::string command_name, std::string command_args)
+void CommandExecutor::set_command(std::string command_name, std::vector<std::string> command_args)
 {
 	cmdex_.set_command(command_name, command_args);
 	// keep a copy locally to avoid locking on get() every time
@@ -61,7 +61,7 @@ std::string CommandExecutor::get_command_name() const
 
 
 
-std::string CommandExecutor::get_command_args() const
+std::vector<std::string> CommandExecutor::get_command_args() const
 {
 	return command_args_;
 }

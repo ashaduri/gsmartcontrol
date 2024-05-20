@@ -31,8 +31,8 @@ class SmartctlExecutorGeneric : public ExecutorSync {
 	public:
 
 		/// Constructor
-		SmartctlExecutorGeneric(const std::string& cmd, const std::string& cmdargs)
-			: ExecutorSync(cmd, cmdargs)
+		SmartctlExecutorGeneric(std::string cmd, std::vector<std::string> cmdargs)
+			: ExecutorSync(std::move(cmd), std::move(cmdargs))
 		{
 			this->construct();
 		}
@@ -175,13 +175,14 @@ enum class SmartctlExecutorError {
 	PermissionDenied,  ///< Permission denied while opening device
 	ExecutionError,  ///< Error executing smartctl
 	EmptyOutput,  ///< Smartctl returned an empty output
+	InvalidCommandLine,  ///< Invalid command line
 };
 
 
 /// Execute smartctl on device \c device.
 /// \return error message on error, empty string on success.
-[[nodiscard]] hz::ExpectedVoid<SmartctlExecutorError> execute_smartctl(const std::string& device, const std::string& device_opts,
-		const std::string& command_options,
+[[nodiscard]] hz::ExpectedVoid<SmartctlExecutorError> execute_smartctl(const std::string& device, const std::vector<std::string>& device_opts,
+		const std::vector<std::string>& command_options,
 		std::shared_ptr<CommandExecutor> smartctl_ex, std::string& smartctl_output);
 
 

@@ -112,10 +112,10 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::fetch_basic_data_and_parse(
 	// We don't use "--all" - it may cause really screwed up the output (tests, etc.).
 	// This looks just like "--info" only on non-smart devices.
 	const auto default_parser_type = SmartctlVersionParser::get_default_format(SmartctlParserType::Basic);
-	std::string command_options = "--info --health --capabilities";
+	std::vector<std::string> command_options = {"--info", "--health", "--capabilities"};
 	if (default_parser_type == SmartctlOutputFormat::Json) {
 		// --json flags: o means include original output (just in case).
-		command_options += " --json=o";
+		command_options.push_back("--json=o");
 	}
 
 	auto execute_status = execute_device_smartctl(command_options, smartctl_ex, this->basic_output_, true);  // set type to invalid if needed
@@ -223,7 +223,7 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::fetch_full_data_and_parse(
 
 	// Instead of -x, we use all the individual options -x encompasses, so that
 	// an addition to default -x output won't affect us.
-	std::string command_options;
+	std::vector<std::string> command_options;
 
 	// Type was detected by Basic parser
 	switch (this->get_detected_type()) {
@@ -234,19 +234,34 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::fetch_full_data_and_parse(
 		case StorageDeviceDetectedType::AtaAny:
 		case StorageDeviceDetectedType::AtaHdd:
 		case StorageDeviceDetectedType::AtaSsd:
-			command_options = "--health --info --get=all --capabilities --attributes --format=brief --log=xerror,50,error --log=xselftest,50,selftest --log=selective --log=directory --log=scttemp --log=scterc --log=devstat --log=sataphy";
+			command_options = {
+					"--health",
+					"--info",
+					"--get=all",
+					"--capabilities",
+					"--attributes",
+					"--format=brief",
+					"--log=xerror,50,error",
+					"--log=xselftest,50,selftest",
+					"--log=selective",
+					"--log=directory",
+					"--log=scttemp",
+					"--log=scterc",
+					"--log=devstat",
+					"--log=sataphy",
+			};
 			break;
 		case StorageDeviceDetectedType::Nvme:
 			// We don't care if something is added to json output.
 			// Same as: --health --info --capabilities --attributes --log=error --log=selftest
-			command_options = "--xall";
+			command_options = {"--xall"};
 			break;
 		case StorageDeviceDetectedType::BasicScsi:
 		case StorageDeviceDetectedType::CdDvd:
 		case StorageDeviceDetectedType::UnsupportedRaid:
 			// SCSI equivalent of -x:
 			// command_options = "--health --info --attributes --log=error --log=selftest --log=background --log=sasphy";
-			command_options = "--xall";
+			command_options = {"--xall"};
 			break;
 	}
 
@@ -254,7 +269,7 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::fetch_full_data_and_parse(
 	auto parser_format = SmartctlVersionParser::get_default_format(parser_type);
 	if (parser_format == SmartctlOutputFormat::Json) {
 		// --json flags: o means include original output (just in case).
-		command_options += " --json=o";
+		command_options.push_back("--json=o");
 	}
 
 	std::string output;
@@ -507,7 +522,9 @@ A mandatory SMART command failed: exiting. To continue, add one or more '-T perm
 */
 
 	std::string output;
-	auto status = execute_device_smartctl((b ? "--smart=on --saveauto=on" : "--smart=off"), smartctl_ex, output);
+	std::vector<std::string> on_command = {"--smart=on", "--saveauto=on"};
+	std::vector<std::string> off_command = {"--smart=off"};
+	auto status = execute_device_smartctl((b ? on_command : off_command), smartctl_ex, output);
 	if (!status) {
 		return status;
 	}
@@ -746,14 +763,14 @@ std::string StorageDevice::get_type_argument() const
 
 
 
-void StorageDevice::set_extra_arguments(std::string args)
+void StorageDevice::set_extra_arguments(std::vector<std::string> args)
 {
 	extra_args_ = std::move(args);
 }
 
 
 
-std::string StorageDevice::get_extra_arguments() const
+std::vector<std::string> StorageDevice::get_extra_arguments() const
 {
 	return extra_args_;
 }
@@ -914,7 +931,7 @@ std::string StorageDevice::get_save_filename() const
 
 
 
-std::string StorageDevice::get_device_options() const
+std::vector<std::string> StorageDevice::get_device_options() const
 {
 	if (is_virtual_) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Cannot get device options of a virtual device.\n");
@@ -927,25 +944,23 @@ std::string StorageDevice::get_device_options() const
 	// lowest priority - the detected type
 	std::vector<std::string> args;
 	if (!get_type_argument().empty()) {
-		args.push_back("-d " + get_type_argument());
+		args.push_back("-d");
+		args.push_back(get_type_argument());
 	}
 	// extra args, as specified manually in CLI or when adding the drive
-	if (!get_extra_arguments().empty()) {
-		args.push_back(get_extra_arguments());
-	}
+	auto extra_args = get_extra_arguments();
+	args.insert(args.end(), extra_args.begin(), extra_args.end());
 
 	// config options, as specified in preferences.
-	std::string config_options = app_get_device_option(get_device(), get_type_argument());
-	if (!config_options.empty()) {
-		args.push_back(config_options);
-	}
+	std::vector<std::string> config_options = app_get_device_options(get_device(), get_type_argument());
+	args.insert(args.end(), config_options.begin(), config_options.end());
 
-	return hz::string_join(args, " ");
+	return args;
 }
 
 
 
-hz::ExpectedVoid<StorageDeviceError> StorageDevice::execute_device_smartctl(const std::string& command_options,
+hz::ExpectedVoid<StorageDeviceError> StorageDevice::execute_device_smartctl(const std::vector<std::string>& command_options,
 		const std::shared_ptr<CommandExecutor>& smartctl_ex, std::string& smartctl_output, bool check_type)
 {
 	// don't forbid running on currently tested drive - we need to call this from the test code.

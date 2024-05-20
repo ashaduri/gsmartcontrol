@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 	// 	SmartctlExecutorGui ex("ls", "-l --color=no -R /dev");
 	// 	SmartctlExecutorGui ex("lsa", "-1 --color=no /sys/block");
 	// 	SmartctlExecutorGui ex("../../../0test_binary.sh", "");
-		SmartctlExecutor ex("../../../0test_binary.sh", "");
+		SmartctlExecutor ex("../../../0test_binary.sh", {});
 
 		ex.execute();
 

@@ -9,7 +9,7 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#include "local_glibmm.h"  // Glib::shell_quote()
+#include "local_glibmm.h"
 
 #include "smartctl_executor.h"
 #include "hz/win32_tools.h"
@@ -17,6 +17,7 @@ Copyright:
 #include "app_regex.h"
 #include "hz/fs.h"
 #include "build_config.h"
+#include <vector>
 
 
 
@@ -80,8 +81,8 @@ hz::fs::path get_smartctl_binary()
 
 
 
-hz::ExpectedVoid<SmartctlExecutorError> execute_smartctl(const std::string& device, const std::string& device_opts,
-		const std::string& command_options,
+hz::ExpectedVoid<SmartctlExecutorError> execute_smartctl(const std::string& device, const std::vector<std::string>& device_opts,
+		const std::vector<std::string>& command_options,
 		std::shared_ptr<CommandExecutor> smartctl_ex, std::string& smartctl_output)
 {
 	// win32 doesn't have slashes in devices names. For others, check that slash is present.
@@ -104,20 +105,22 @@ hz::ExpectedVoid<SmartctlExecutorError> execute_smartctl(const std::string& devi
 		return hz::Unexpected(SmartctlExecutorError::NoBinary, _("Smartctl binary is not specified in configuration."));
 	}
 
-	auto smartctl_def_options = rconfig::get_data<std::string>("system/smartctl_options");
+	auto smartctl_def_options_str = hz::string_trim_copy(rconfig::get_data<std::string>("system/smartctl_options"));
+	std::vector<std::string> smartctl_options;
+	if (!smartctl_def_options_str.empty()) {
+		try {
+			smartctl_options = Glib::shell_parse_argv(smartctl_def_options_str);
+		}
+		catch(Glib::ShellError& e)
+		{
+			return hz::Unexpected(SmartctlExecutorError::InvalidCommandLine, _("Invalid command line specified."));
+		}
+	}
+	smartctl_options.insert(smartctl_options.end(), device_opts.begin(), device_opts.end());
+	smartctl_options.insert(smartctl_options.end(), command_options.begin(), command_options.end());
+	smartctl_options.push_back(device);
 
-	if (!smartctl_def_options.empty())
-		smartctl_def_options += " ";
-
-
-	std::string device_specific_options = device_opts;
-	if (!device_specific_options.empty())
-		device_specific_options += " ";
-
-
-	smartctl_ex->set_command(CommandExecutor::shell_quote(hz::fs_path_to_string(smartctl_binary)),
-			smartctl_def_options + device_specific_options + command_options
-			+ " " + CommandExecutor::shell_quote(device));
+	smartctl_ex->set_command(hz::fs_path_to_string(smartctl_binary), smartctl_options);
 
 	if (!smartctl_ex->execute() || !smartctl_ex->get_error_msg().empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Smartctl binary did not execute cleanly.\n");

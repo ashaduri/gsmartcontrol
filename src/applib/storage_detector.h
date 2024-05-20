@@ -32,6 +32,7 @@ enum class StorageDetectorError {
 	GeneralDetectionErrors,
 	ConfigError,
 	DevOpenError,
+	InvalidCommandLine,
 };
 
 

@@ -84,14 +84,24 @@ inline AppDeviceOptionMap app_config_get_device_option_map()
 
 
 /// Read device option map from config and get the options for (dev, type_arg) pair.
-inline std::string app_get_device_option(const std::string& dev, const std::string& type_arg)
+inline std::vector<std::string> app_get_device_options(const std::string& dev, const std::string& type_arg)
 {
 	if (dev.empty())
 		return {};
 
 	auto devmap = app_config_get_device_option_map().value;
 	if (auto iter = devmap.find(std::pair(dev, type_arg)); iter != devmap.end()) {
-		return iter->second;
+		if (iter->second.empty()) {
+			return {};
+		}
+		try {
+			return Glib::shell_parse_argv(iter->second);
+		}
+		catch(Glib::ShellError& e)
+		{
+			// TODO report error
+			return {};
+		}
 	}
 	return {};
 }

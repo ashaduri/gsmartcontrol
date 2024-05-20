@@ -54,10 +54,8 @@ class AsyncCommandExecutor : public hz::ErrorHolder {
 
 
 		/// Set the command to execute. Call before execute().
-		/// Note: The command and the arguments _must_ be shell-escaped
-		/// using CommandExecutor::shell_quote(). Note that each argument
-		/// must be escaped separately.
-		void set_command(const std::string& command_exec, const std::string& command_args);
+		/// The spawning function escapes the command and arguments, so you don't have to.
+		void set_command(std::string command_exec, std::vector<std::string> command_args);
 
 
 		/// Launch the command.
@@ -173,7 +171,7 @@ class AsyncCommandExecutor : public hz::ErrorHolder {
 
 		// default command and its args. std::strings, not ustrings.
 		std::string command_exec_;  /// Binary name to execute. NOT affected by cleanup_members().
-		std::string command_args_;  /// Arguments that always go with the binary. NOT affected by cleanup_members().
+		std::vector<std::string> command_args_;  /// Arguments that always go with the binary. NOT affected by cleanup_members().
 
 
 		bool running_ = false;  ///< If true, the child process is running now. NOT affected by cleanup_members().

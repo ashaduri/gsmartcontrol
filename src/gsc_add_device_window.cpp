@@ -146,7 +146,8 @@ void GscAddDeviceWindow::on_window_cancel_button_clicked()
 
 void GscAddDeviceWindow::on_window_ok_button_clicked()
 {
-	std::string dev, type, params;
+	std::string dev, type;
+	std::vector<std::string> params;
 	if (auto* entry = lookup_widget<Gtk::Entry*>("device_name_entry")) {
 		dev = entry->get_text();
 	}
@@ -154,7 +155,16 @@ void GscAddDeviceWindow::on_window_ok_button_clicked()
 		type = type_combo->get_entry_text();
 	}
 	if (auto* entry = lookup_widget<Gtk::Entry*>("smartctl_params_entry")) {
-		params = entry->get_text();
+		auto params_str = entry->get_text();
+		if (!params_str.empty()) {
+			try {
+				params = Glib::shell_parse_argv(params_str);
+			}
+			catch(Glib::ShellError& e)
+			{
+				// TODO Alert
+			}
+		}
 	}
 	if (main_window_ && !dev.empty()) {
 		main_window_->add_device(dev, type, params);

@@ -104,8 +104,7 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 		ex.create_running_dialog(this);
 		ex.set_running_msg(_("Checking if smartctl is executable..."));
 
-// 		ex.set_command(CommandExecutor::shell_quote(smartctl_binary), smartctl_def_options + "-V");  // --version
-		ex.set_command(CommandExecutor::shell_quote(smartctl_binary), "-V");  // --version
+		ex.set_command(smartctl_binary, {"-V"});  // --version
 
 		if (!ex.execute() || !ex.get_error_msg().empty()) {
 			error_msg = ex.get_error_msg();
@@ -188,9 +187,20 @@ void GscMainWindow::populate_iconview(bool smartctl_valid)
 			if (!dev_with_type.empty()) {
 				std::vector<std::string> parts;
 				hz::string_split(dev_with_type, "::", parts, false);
-				std::string file = (!parts.empty() ? parts.at(0) : std::string());
-				std::string type_arg = (parts.size() > 1 ? parts.at(1) : std::string());
-				std::string extra_args = (parts.size() > 2 ? parts.at(2) : std::string());
+				const std::string file = (!parts.empty() ? parts.at(0) : std::string());
+				const std::string type_arg = (parts.size() > 1 ? parts.at(1) : std::string());
+
+				const std::string extra_args_str = (parts.size() > 2 ? parts.at(2) : std::string());
+				std::vector<std::string> extra_args;
+				if (!extra_args_str.empty()) {
+					try {
+						extra_args = Glib::shell_parse_argv(extra_args_str);
+					}
+					catch(Glib::ShellError& e)
+					{
+						// TODO Report
+					}
+				}
 				if (!file.empty()) {
 					add_device(file, type_arg, extra_args);
 				}
@@ -946,7 +956,7 @@ void GscMainWindow::run_update_drivedb()
 	if (smartctl_binary.is_absolute()) {
 		update_binary_path = smartctl_binary.parent_path() / update_binary_path;
 	}
-	std::string update_binary = CommandExecutor::shell_quote(hz::fs_path_to_string(update_binary_path));
+	std::string update_binary = hz::fs_path_to_string(update_binary_path);
 
 	if constexpr(!BuildEnv::is_kernel_family_windows()) {  // X11
 		update_binary = "xterm -hold -e " + update_binary;
@@ -962,7 +972,7 @@ void GscMainWindow::run_update_drivedb()
 
 
 
-bool GscMainWindow::add_device(const std::string& file, const std::string& type_arg, const std::string& extra_args)
+bool GscMainWindow::add_device(const std::string& file, const std::string& type_arg, const std::vector<std::string>& extra_args)
 {
 	// win32 doesn't have device files, so skip the check in Windows.
 	if constexpr(!BuildEnv::is_kernel_family_windows()) {

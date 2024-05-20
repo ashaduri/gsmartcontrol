@@ -161,10 +161,10 @@ class StorageDevice {
 
 
 		/// Set extra arguments smartctl
-		void set_extra_arguments(std::string args);
+		void set_extra_arguments(std::vector<std::string> args);
 
 		/// Get extra arguments smartctl
-		[[nodiscard]] std::string get_extra_arguments() const;
+		[[nodiscard]] std::vector<std::string> get_extra_arguments() const;
 
 
 		/// Set windows drive letters for this drive
@@ -237,11 +237,11 @@ class StorageDevice {
 
 
 		/// Get final smartctl options for this device from config and type info.
-		[[nodiscard]] std::string get_device_options() const;
+		[[nodiscard]] std::vector<std::string> get_device_options() const;
 
 
 		/// Execute smartctl on this device. Nothing is modified in this class.
-		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> execute_device_smartctl(const std::string& command_options,
+		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> execute_device_smartctl(const std::vector<std::string>& command_options,
 				const std::shared_ptr<CommandExecutor>& smartctl_ex, std::string& output, bool check_type = false);
 
 
@@ -262,7 +262,7 @@ class StorageDevice {
 
 		std::string device_;  ///< e.g. /dev/sda or pd0. empty if virtual.
 		std::string type_arg_;  ///< Device type (for -d smartctl parameter), as specified when adding the device.
-		std::string extra_args_;  ///< Extra parameters for smartctl, as specified when adding the device.
+		std::vector<std::string> extra_args_;  ///< Extra parameters for smartctl, as specified when adding the device.
 
 		std::map<char, std::string> drive_letters_;  ///< Windows drive letters (if detected), with volume names
 

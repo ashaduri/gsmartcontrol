@@ -111,10 +111,10 @@ AsyncCommandExecutor::~AsyncCommandExecutor()
 
 
 
-void AsyncCommandExecutor::set_command(const std::string& command_exec, const std::string& command_args)
+void AsyncCommandExecutor::set_command(std::string command_exec, std::vector<std::string> command_args)
 {
-	command_exec_ = command_exec;
-	command_args_ = command_args;
+	command_exec_ = std::move(command_exec);
+	command_args_ = std::move(command_args);
 }
 
 
@@ -130,21 +130,6 @@ bool AsyncCommandExecutor::execute()
 	clear_errors();
 	str_stdout_.clear();
 	str_stderr_.clear();
-
-
-	const std::string cmd = command_exec_ + " " + command_args_;
-
-
-	// Make command vector
-	std::vector<std::string> argvp;
-	try {
-		argvp = Glib::shell_parse_argv(cmd);
-	}
-	catch(Glib::ShellError& e)
-	{
-		push_error(Error<void>("gshell", ErrorLevel::Error, e.what()));
-		return false;
-	}
 
 
 	// Set the locale for a child to Classic - otherwise it may mangle the output.
@@ -173,7 +158,14 @@ bool AsyncCommandExecutor::execute()
 		path_changed = !ec;
 	}
 
-	debug_out_info("app", DBG_FUNC_MSG << "Executing \"" << cmd << "\".\n");
+	debug_out_info("app", DBG_FUNC_MSG << "Executing \"" << command_exec_ << "\".\n");
+	debug_out_info("app", DBG_FUNC_MSG << "Arguments:\n");
+	for (const auto& arg : command_args_) {
+		debug_out_info("app", "  " << arg << "\n");
+	}
+
+	std::vector<std::string> argvp = {command_exec_};
+	argvp.insert(argvp.end(), command_args_.begin(), command_args_.end());
 
 	// Execute the command
 	try {

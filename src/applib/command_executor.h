@@ -26,7 +26,7 @@ Copyright:
 
 /// Information about a finished command.
 struct CommandExecutorResult {
-	CommandExecutorResult(std::string arg_command, std::string arg_parameters,
+	CommandExecutorResult(std::string arg_command, std::vector<std::string> arg_parameters,
 			std::string arg_std_output, std::string arg_std_error, std::string arg_error_message)
 			: command(std::move(arg_command)),
 			parameters(std::move(arg_parameters)),
@@ -36,7 +36,7 @@ struct CommandExecutorResult {
 	{ }
 
 	const std::string command;  ///< Executed command
-	const std::string parameters;  ///< Command parameters
+	const std::vector<std::string> parameters;  ///< Command parameters
 	const std::string std_output;  ///< Stdout data
 	const std::string std_error;  ///< Stderr data
 	const std::string error_message;  ///< Execution error message
@@ -63,7 +63,7 @@ class CommandExecutor : public sigc::trackable {
 		CommandExecutor();
 
 		/// Constructor
-		CommandExecutor(std::string command_name, std::string command_args);
+		CommandExecutor(std::string command_name, std::vector<std::string> command_args);
 
 
 		/// Deleted
@@ -84,7 +84,7 @@ class CommandExecutor : public sigc::trackable {
 
 
 		/// Set command to execute and its parameters
-		void set_command(std::string command_name, std::string command_args);
+		void set_command(std::string command_name, std::vector<std::string> command_args);
 
 
 		/// Get command to execute
@@ -92,7 +92,7 @@ class CommandExecutor : public sigc::trackable {
 
 
 		/// Get command arguments
-		[[nodiscard]] std::string get_command_args() const;
+		[[nodiscard]] std::vector<std::string> get_command_args() const;
 
 
 		/// Execute the command. The function will return only after the command exits.
@@ -213,7 +213,7 @@ class CommandExecutor : public sigc::trackable {
 		AsyncCommandExecutor cmdex_;  ///< Command executor
 
 		std::string command_name_;  ///< Command name
-		std::string command_args_;  ///< Command arguments
+		std::vector<std::string> command_args_;  ///< Command arguments
 
 		std::string running_msg_;  ///< "Running" message (to show in the dialogs, etc.)
 

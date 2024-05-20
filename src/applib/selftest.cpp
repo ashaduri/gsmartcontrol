@@ -230,7 +230,7 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::start(const std::shared_ptr<C
 	}
 
 	std::string output;
-	auto execute_status = drive_->execute_device_smartctl("--test=" + test_param, smartctl_ex, output);
+	auto execute_status = drive_->execute_device_smartctl({"--test=" + test_param}, smartctl_ex, output);
 
 	if (!execute_status.has_value()) {
 		std::string message = execute_status.error().message();
@@ -298,7 +298,7 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::force_stop(const std::shared_
 
 	// To abort non-captive short, long and conveyance tests, use "--abort".
 	std::string output;
-	auto execute_status = drive_->execute_device_smartctl("--abort", smartctl_ex, output);
+	auto execute_status = drive_->execute_device_smartctl({"--abort"}, smartctl_ex, output);
 
 	if (!execute_status) {
 		std::string message = execute_status.error().message();
@@ -356,10 +356,10 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::update(const std::shared_ptr<
 	auto parser_format = SmartctlVersionParser::get_default_format(parser_type);
 
 	// ATA shows status in capabilities; NVMe shows it in self-test log.
-	std::string command_options = "--capabilities --log=selftest";
+	std::vector<std::string> command_options = {"--capabilities", "--log=selftest"};
 	if (parser_format == SmartctlOutputFormat::Json) {
 		// --json flags: o means include original output (just in case).
-		command_options += " --json=o";
+		command_options.push_back(" --json=o");
 	}
 
 	std::string output;

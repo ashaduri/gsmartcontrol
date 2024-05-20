@@ -15,7 +15,7 @@ Copyright:
 #include <string>
 #include <vector>
 
-#include "local_glibmm.h"  // Glib::shell_quote(), compose
+#include "local_glibmm.h"  // Glib::compose
 
 #include "build_config.h"
 #include "command_executor_factory.h"
@@ -31,7 +31,7 @@ Copyright:
 /// Find and execute tw_cli with specified options, return its output through \c output.
 /// \return error message
 inline hz::ExpectedVoid<StorageDetectorError> execute_tw_cli(const CommandExecutorFactoryPtr& ex_factory,
-		const std::string& command_options, std::string& output)
+		const std::vector<std::string>& command_options, std::string& output)
 {
 	std::shared_ptr<CommandExecutor> executor = ex_factory->create_executor(CommandExecutorFactory::ExecutorType::TwCli);
 
@@ -53,7 +53,7 @@ inline hz::ExpectedVoid<StorageDetectorError> execute_tw_cli(const CommandExecut
 	}
 
 	for (const auto& bin : binaries) {
-		executor->set_command(CommandExecutor::shell_quote(bin), command_options);
+		executor->set_command(bin, command_options);
 
 		if (!executor->execute() || !executor->get_error_msg().empty()) {
 			debug_out_warn("app", DBG_FUNC_MSG << "Error while executing tw_cli binary.\n");
@@ -83,7 +83,7 @@ inline hz::ExpectedVoid<StorageDetectorError> tw_cli_get_drives(const std::strin
 	debug_out_info("app", "Getting available 3ware drives (ports) for controller " << controller << " through tw_cli...\n");
 
 	std::string output;
-	auto exec_status = execute_tw_cli(ex_factory, hz::string_sprintf("/c%d show all", controller), output);
+	auto exec_status = execute_tw_cli(ex_factory, {hz::string_sprintf("/c%d", controller), "show", "all"}, output);
 	if (!exec_status) {
 		return exec_status;
 	}
@@ -125,7 +125,7 @@ inline hz::ExpectedVoid<StorageDetectorError> tw_cli_get_controllers(
 	debug_out_info("app", "Getting available 3ware controllers through tw_cli...\n");
 
 	std::string output;
-	auto exec_status = execute_tw_cli(ex_factory, "show", output);
+	auto exec_status = execute_tw_cli(ex_factory, {"show"}, output);
 	if (!exec_status) {
 		return exec_status;
 	}

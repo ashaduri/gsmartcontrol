@@ -201,13 +201,19 @@ hz::ExpectedVoid<StorageDetectorError> get_scan_open_multiport_devices(std::vect
 		return hz::Unexpected(StorageDetectorError::NoSmartctlBinary, _("Smartctl binary is not specified in configuration."));
 	}
 
-	auto smartctl_def_options = rconfig::get_data<std::string>("system/smartctl_options");
 
-	if (!smartctl_def_options.empty())
-		smartctl_def_options += " ";
-
-	smartctl_ex->set_command(CommandExecutor::shell_quote(hz::fs_path_to_string(smartctl_binary)),
-			smartctl_def_options + "--scan-open");
+	auto smartctl_def_options_str = rconfig::get_data<std::string>("system/smartctl_options");
+	std::vector<std::string> smartctl_options;
+	if (!smartctl_def_options_str.empty()) {
+		try {
+			smartctl_options = Glib::shell_parse_argv(smartctl_def_options_str);
+		}
+		catch(Glib::ShellError& e)
+		{
+			return hz::Unexpected(StorageDetectorError::InvalidCommandLine, _("Invalid command line specified."));
+		}
+	}
+	smartctl_options.push_back("--scan-open");
 
 	if (bool execute_status = smartctl_ex->execute(); !execute_status) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Smartctl binary did not execute cleanly.\n");
@@ -276,11 +282,11 @@ hz::ExpectedVoid<StorageDetectorError> get_scan_open_multiport_devices(std::vect
 /// Find and execute areca cli with specified options, return its output through \c output.
 /// \return error message
 inline hz::ExpectedVoid<StorageDetectorError> execute_areca_cli(const CommandExecutorFactoryPtr& ex_factory, const std::string& cli_binary,
-		const std::string& command_options, std::string& output)
+		const std::vector<std::string>& command_options, std::string& output)
 {
 	std::shared_ptr<CommandExecutor> executor = ex_factory->create_executor(CommandExecutorFactory::ExecutorType::ArecaCli);
 
-	executor->set_command(CommandExecutor::shell_quote(cli_binary), command_options);
+	executor->set_command(cli_binary, command_options);
 
 	if (!executor->execute() || !executor->get_error_msg().empty()) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Error while executing Areca cli binary.\n");
@@ -392,7 +398,7 @@ GuiErrMsg<0x00>: Success.
 	// the interactive mode.
 
 	std::string output;
-	auto execute_status = execute_areca_cli(ex_factory, cli_binary, "disk info", output);
+	auto execute_status = execute_areca_cli(ex_factory, cli_binary, {"disk", "info"}, output);
 	if (!execute_status) {
 		return execute_status;
 	}
