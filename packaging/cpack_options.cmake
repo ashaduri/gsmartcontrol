@@ -215,6 +215,7 @@ if (WIN32)
 		gspawn-win32-helper.exe
 		gspawn-win64-helper-console.exe
 		gspawn-win64-helper.exe
+		gtk-query-settings.exe
 #		gtk-query-immodules-3.0.exe
 #		gtk-update-icon-cache-3.0.exe
 
@@ -224,6 +225,7 @@ if (WIN32)
 		libatk-*.dll
 		libatkmm-*.dll
 		libatomic-*.dll
+		libb2-*.dll
 		libbrotlicommon.dll
 		libbrotlidec.dll
 		libbrotlienc.dll
@@ -242,6 +244,7 @@ if (WIN32)
 		libexpat-*.dll
 		libffi-*.dll
 		libfontconfig-*.dll
+		libformw*.dll
 		libfreetype-*.dll
 		libfribidi-*.dll
 		libgailutil-*.dll
@@ -254,6 +257,7 @@ if (WIN32)
 		libgif-*.dll
 		libgio-*.dll
 		libgiomm-*.dll
+		libgirepository-*.dll
 		libglib-*.dll
 		libglibmm-*.dll
 		libglibmm_generate_extra_defs-*.dll
@@ -272,25 +276,34 @@ if (WIN32)
 		libiconv-*.dll
 		libidn*.dll
 		libintl-*.dll
+		libisl-*.dll
 		libjansson-*.dll
 		libjemalloc.dll
+		libjbig-*.dll
 		libjpeg-*.dll
 		libjson-glib-*.dll
 		libjsoncpp-*.dll
+		libLerc-*.dll
 		liblz4.dll
 		liblzma-*.dll
 		liblzo2-*.dll
+		libmenuw*.dll
+		libmpc-*.dll
 		libmetalink-*.dll
 		libmpdec++-*.dll
 		libmpdec-*.dll
+		libmpfr-*.dll
+		libncurses*.dll
 		libnettle-*.dll
 		libnghttp2-*.dll
 		libp11-kit-*.dll
+		libpanelw*.dll
 		libpango-*.dll
 		libpangocairo-*.dll
 		libpangoft2-*.dll
 		libpangomm-*.dll
 		libpangowin32-*.dll
+		libpcre2-*.dll
 		libpixman-*.dll
 		libpng*-*.dll
 		libpsl-*.dll
@@ -299,6 +312,7 @@ if (WIN32)
 		libreadline*.dll
 		librhash.dll
 		librsvg-*.dll
+		libsharpyuv-*.dll
 		libsigc-*.dll
 		libsqlite3-*.dll
 		libssh2-*.dll
@@ -336,6 +350,14 @@ if (WIN32)
 		endif()
 	endforeach()
 
+	# gdk_pixbuf loaders
+	install(DIRECTORY "${APP_WINDOWS_SYSROOT}/lib/gdk-pixbuf-2.0/2.10.0/loaders"
+		DESTINATION "lib/gdk-pixbuf-2.0/2.10.0/"
+		FILES_MATCHING PATTERN "*.dll")
+	install(FILES "${APP_WINDOWS_SYSROOT}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
+		DESTINATION "lib/gdk-pixbuf-2.0/2.10.0/")
+
+
 	# Msys2 in github has problems with this (cannot install: file exists!)
 #	install(FILES "${APP_WINDOWS_SYSROOT}/etc/fonts/fonts.conf" DESTINATION "etc/fonts/")
 
@@ -353,100 +375,26 @@ if (WIN32)
 #	install(DIRECTORY "${APP_WINDOWS_SYSROOT}/share/glib-2.0/schemas" DESTINATION "share/glib-2.0/")
 
 
-	# Disable installing icons for now. TODO: Update this for msys2.
-	set(APP_WINDOWS_INSTALL_GTK_ICONS false)
+	set(APP_WINDOWS_INSTALL_GTK_ICONS true)
 
 	if (APP_WINDOWS_INSTALL_GTK_ICONS)
-	#	install(DIRECTORY "${APP_WINDOWS_GTK_ICONS_ROOT}/hicolor" DESTINATION "share/icons/")
-
 		# needed for window titlebar (if using client-side decorations),
 		# tree sorting indicators, GUI icons.
-		install(FILES
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/16x16/actions/window-close-symbolic.symbolic.png"
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/16x16/actions/window-maximize-symbolic.symbolic.png"
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/16x16/actions/window-minimize-symbolic.symbolic.png"
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/16x16/actions/window-restore-symbolic.symbolic.png"
-			"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/16x16/actions/pan-down-symbolic.symbolic.png"
-			"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/16x16/actions/pan-up-symbolic.symbolic.png"
-			DESTINATION "share/icons/Adwaita/16x16/actions/"
-		)
-		install(FILES
-			"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/16x16/status/dialog-information.png"
-			DESTINATION "share/icons/Adwaita/16x16/status/"
-		)
-		install(FILES
-			"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/22x22/status/dialog-information.png"
-			DESTINATION "share/icons/Adwaita/22x22/status/"
-		)
-		install(FILES
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/24x24/actions/window-close-symbolic.symbolic.png"
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/24x24/actions/window-maximize-symbolic.symbolic.png"
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/24x24/actions/window-minimize-symbolic.symbolic.png"
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/24x24/actions/window-restore-symbolic.symbolic.png"
-			"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/24x24/actions/pan-down-symbolic.symbolic.png"
-			"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/24x24/actions/pan-up-symbolic.symbolic.png"
-			DESTINATION "share/icons/Adwaita/24x24/actions/"
-		)
-		install(FILES
-			"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/24x24/status/dialog-information.png"
-			DESTINATION "share/icons/Adwaita/24x24/status/"
-		)
-		install(FILES
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/32x32/actions/window-close-symbolic.symbolic.png"
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/32x32/actions/window-maximize-symbolic.symbolic.png"
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/32x32/actions/window-minimize-symbolic.symbolic.png"
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/32x32/actions/window-restore-symbolic.symbolic.png"
-			"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/32x32/actions/pan-down-symbolic.symbolic.png"
-			"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/32x32/actions/pan-up-symbolic.symbolic.png"
-			DESTINATION "share/icons/Adwaita/32x32/actions/"
-		)
-		install(FILES
-			"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/32x32/status/dialog-information.png"
-			DESTINATION "share/icons/Adwaita/32x32/status/"
-		)
-		install(FILES
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/48x48/actions/window-close-symbolic.symbolic.png"
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/48x48/actions/window-maximize-symbolic.symbolic.png"
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/48x48/actions/window-minimize-symbolic.symbolic.png"
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/48x48/actions/window-restore-symbolic.symbolic.png"
-			"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/48x48/actions/pan-down-symbolic.symbolic.png"
-			"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/48x48/actions/pan-up-symbolic.symbolic.png"
-			DESTINATION "share/icons/Adwaita/48x48/actions/"
-		)
-		install(FILES
-			"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/48x48/status/dialog-information.png"
-			DESTINATION "share/icons/Adwaita/48x48/status/"
-		)
-		install(FILES
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/64x64/actions/window-close-symbolic.symbolic.png"
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/64x64/actions/window-maximize-symbolic.symbolic.png"
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/64x64/actions/window-minimize-symbolic.symbolic.png"
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/64x64/actions/window-restore-symbolic.symbolic.png"
-			"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/64x64/actions/pan-down-symbolic.symbolic.png"
-			"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/64x64/actions/pan-up-symbolic.symbolic.png"
-			DESTINATION "share/icons/Adwaita/64x64/actions/"
-		)
-		install(FILES
-			"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/64x64/status/dialog-information.png"
-			DESTINATION "share/icons/Adwaita/64x64/status/"
-		)
-		install(FILES
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/96x96/actions/window-close-symbolic.symbolic.png"
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/96x96/actions/window-maximize-symbolic.symbolic.png"
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/96x96/actions/window-minimize-symbolic.symbolic.png"
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/96x96/actions/window-restore-symbolic.symbolic.png"
-			"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/96x96/actions/pan-down-symbolic.symbolic.png"
-			"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/96x96/actions/pan-up-symbolic.symbolic.png"
-			DESTINATION "share/icons/Adwaita/96x96/actions/"
-		)
-	#	install(FILES
-	#		"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/96x96/status/dialog-information.png"
-	#		DESTINATION "share/icons/Adwaita/96x96/status/"
-	#	)
-		install(FILES
-			"${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita/256x256/status/dialog-information.png"
-			DESTINATION "share/icons/Adwaita/256x256/status/"
-		)
+# windows-close
+# window-maximize
+# window-minimize
+# window-restore
+# pan-down
+# pan-up
+# dialog-information
+# dialog-error
+# dialog-warning
+
+		install(DIRECTORY "${APP_WINDOWS_GTK_ICONS_ROOT}/hicolor"
+			DESTINATION "share/icons/")
+
+		install(DIRECTORY "${APP_WINDOWS_GTK_ICONS_ROOT}/Adwaita"
+			DESTINATION "share/icons/")
 	endif()  # icons
 endif()
 
