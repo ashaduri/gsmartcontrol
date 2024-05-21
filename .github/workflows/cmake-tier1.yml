@@ -43,9 +43,7 @@ jobs:
       run: >
         cmake $GITHUB_WORKSPACE
         -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-        -DAPP_BUILD_EXAMPLES=ON
-        -DAPP_BUILD_TESTS=ON
-        -DAPP_COMPILER_ENABLE_WARNINGS=ON
+        -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/toolchains/linux-dev.cmake"
 
     - name: Build
       shell: bash
@@ -74,8 +72,8 @@ jobs:
     strategy:
       matrix:
         include: [
-          { msystem: MINGW64, arch: x86_64 },
-          { msystem: MINGW32, arch: i686 }
+          { msystem: MINGW64, arch: x86_64, platform: win64 },
+          { msystem: MINGW32, arch: i686, platform: win32 }
         ]
 
     steps:
@@ -105,11 +103,10 @@ jobs:
       - name: Configure CMake
         shell: msys2 {0}
         run: >
-          cmake -B build -S "$GITHUB_WORKSPACE" -G "MSYS Makefiles"
+          cmake -B build -S "$GITHUB_WORKSPACE"
+          -G "MSYS Makefiles"
           -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-          -DAPP_BUILD_EXAMPLES=ON
-          -DAPP_BUILD_TESTS=ON
-          -DAPP_COMPILER_ENABLE_WARNINGS=ON
+          -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/toolchains/${{ matrix.platform }}-mingw-msys2.cmake"
 
       - name: Build
         shell: msys2 {0}
