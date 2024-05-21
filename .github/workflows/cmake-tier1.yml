@@ -98,7 +98,9 @@ jobs:
 
       - name: List installed files
         shell: msys2 {0}
-        run: ls -1R /mingw64
+        run: |
+          ls -1R /mingw64
+          ls -1R /mingw32
 
       - name: Configure CMake
         shell: msys2 {0}
