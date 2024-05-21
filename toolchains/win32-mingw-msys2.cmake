@@ -17,7 +17,7 @@ set(CMAKE_CXX_COMPILER i686-w64-mingw32-g++)
 #set(CMAKE_RC_COMPILER i686-w64-mingw32-windres)
 
 # The target environment. This is a path which is valid for msys2.
-set(CMAKE_FIND_ROOT_PATH /mingw32)
+set(CMAKE_FIND_ROOT_PATH "$ENV{MINGW_PREFIX}")
 
 # Enable LTO for Release build
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
