@@ -1,0 +1,128 @@
+name: Windows Release
+
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+  SMARTMONTOOLS_INSTALLER: smartmontools-7.4-1.win32-setup.exe
+  SMARTMONTOOLS_URL: https://downloads.sourceforge.net/project/smartmontools/smartmontools/7.4/smartmontools-7.4-1.win32-setup.exe
+
+
+jobs:
+
+  windows-msys2:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        include: [
+          { msystem: MINGW64, arch: x86_64, platform: win64 },
+          { msystem: MINGW32, arch: i686, platform: win32 }
+        ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: msys2/setup-msys2@v2
+        # p7zip is needed to extract smartmontools
+        # fontconfig owns /etc/fonts
+        with:
+          msystem: ${{ matrix.msystem }}
+          update: true
+          install: >-
+            mingw-w64-${{ matrix.arch }}-gtkmm3
+            mingw-w64-${{ matrix.arch }}-pkg-config
+            mingw-w64-${{ matrix.arch }}-cmake
+            mingw-w64-${{ matrix.arch }}-gcc
+            mingw-w64-${{ matrix.arch }}-fontconfig
+            make
+            p7zip
+
+      - name: List installed files
+        shell: msys2 {0}
+        run: |
+          ls -1R /mingw64
+          ls -1R /mingw32
+
+      - name: Configure CMake
+        shell: msys2 {0}
+        run: >
+          cmake -B build -S "$GITHUB_WORKSPACE"
+          -G "MSYS Makefiles"
+          -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+          -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/toolchains/${{ matrix.platform }}-mingw-msys2.cmake"
+
+      - name: Build
+        shell: msys2 {0}
+        working-directory: ${{github.workspace}}/build
+        run: cmake --build . --config $BUILD_TYPE
+
+      - name: Test
+        working-directory: ${{github.workspace}}/build
+        shell: msys2 {0}
+        run: ctest -C $BUILD_TYPE --rerun-failed --output-on-failure
+
+      - name: Download Package Requirements
+        shell: msys2 {0}
+        working-directory: ${{github.workspace}}/build
+        run: |
+          mkdir smartmontools
+          cd smartmontools
+          wget $SMARTMONTOOLS_URL
+
+      - name: Extract Package Requirements (64-bit)
+        if: ${{ matrix.msystem == 'MINGW64' }}
+        shell: msys2 {0}
+        working-directory: ${{github.workspace}}/build/smartmontools
+        run: >
+          7z -bb1 e $SMARTMONTOOLS_INSTALLER
+          bin/smartctl.exe
+          bin/smartctl-nc.exe
+          bin/update-smart-drivedb.ps1
+          bin/drivedb.h
+
+      - name: Extract Package Requirements (32-bit)
+        if: ${{ matrix.msystem == 'MINGW32' }}
+        shell: msys2 {0}
+        working-directory: ${{github.workspace}}/build/smartmontools
+        run: >
+          7z -bb1 e $SMARTMONTOOLS_INSTALLER
+          bin32/smartctl.exe
+          bin32/smartctl-nc.exe
+          bin/update-smart-drivedb.ps1
+          bin/drivedb.h
+
+      - name: Package ZIP
+        shell: msys2 {0}
+        working-directory: ${{github.workspace}}/build
+        run: cpack -G ZIP
+
+      - name: Package NSIS (64-bit)
+        if: ${{ matrix.msystem == 'MINGW64' }}
+        shell: msys2 {0}
+        working-directory: ${{github.workspace}}/build
+        run: cpack -G NSIS64
+
+      - name: Package NSIS (32-bit)
+        if: ${{ matrix.msystem == 'MINGW32' }}
+        shell: msys2 {0}
+        working-directory: ${{github.workspace}}/build
+        run: cpack -G NSIS
+
+      - name: Upload artifacts
+        if: ${{ matrix.msystem == 'MINGW64' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows 32-Bit Packages
+          path: ${{github.workspace}}/build/gsmartcontrol-*-win*.*
+
+      - name: Upload artifacts
+        if: ${{ matrix.msystem == 'MINGW32' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows 64-Bit Packages
+          path: ${{github.workspace}}/build/gsmartcontrol-*-win*.*
+
