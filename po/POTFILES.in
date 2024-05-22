@@ -1,12 +1,12 @@
 src/hz/format_unit.h
 
-src/ui/gsc_about_dialog.glade
-src/ui/gsc_add_device_window.glade
-src/ui/gsc_executor_log_window.glade
-src/ui/gsc_info_window.glade
-src/ui/gsc_main_window.glade
-src/ui/gsc_preferences_window.glade
-src/ui/gsc_text_window.glade
+src/gui/ui/gsc_about_dialog.glade
+src/gui/ui/gsc_add_device_window.glade
+src/gui/ui/gsc_executor_log_window.glade
+src/gui/ui/gsc_info_window.glade
+src/gui/ui/gsc_main_window.glade
+src/gui/ui/gsc_preferences_window.glade
+src/gui/ui/gsc_text_window.glade
 
 src/gsc_add_device_window.cpp
 src/gsc_main_window.cpp

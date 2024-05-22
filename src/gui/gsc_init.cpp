@@ -1,8 +1,10 @@
-/******************************************************************************
-License: GNU General Public License v3.0 only
-Copyright:
-	(C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
-******************************************************************************/
+/*
+ *****************************************************************************
+ License: GNU General Public License v3.0 only
+ Copyright:
+ 	(C) 2024 Alexander Shaduri <ashaduri@gmail.com>
+ *****************************************************************************
+ */
 /// \file
 /// \author Alexander Shaduri
 /// \ingroup gsc
@@ -456,13 +458,13 @@ bool app_init_and_loop(int& argc, char**& argv)
 	if (is_from_source) {
 		if constexpr(BuildEnv::debug_build()) {
 			hz::data_file_add_search_directory("icons", hz::fs_path_from_string(BuildEnv::package_top_source_dir()) / "data");
-			hz::data_file_add_search_directory("ui", hz::fs_path_from_string(BuildEnv::package_top_source_dir()) / "src/ui");
+			hz::data_file_add_search_directory("ui", hz::fs_path_from_string(BuildEnv::package_top_source_dir()) / "src/gui/ui");
 			hz::data_file_add_search_directory("doc", hz::fs_path_from_string(BuildEnv::package_top_source_dir()) / "doc");
 		} else {
 			// Assume the source is the parent directory (standard cmake build with the build directory as a subdirectory of source directory,
 			// and the executables placed directly in the build directory).
 			hz::data_file_add_search_directory("icons", application_dir.parent_path() / "data");
-			hz::data_file_add_search_directory("ui", application_dir.parent_path() / "src/ui");
+			hz::data_file_add_search_directory("ui", application_dir.parent_path() / "src/gui/ui");
 			hz::data_file_add_search_directory("doc", application_dir.parent_path() / "doc");
 		}
 	} else {

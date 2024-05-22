@@ -17,150 +17,150 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/ui/gsc_main_window.glade:70
+#: src/gui/ui/gsc_main_window.glade:70
 msgid "Drive information:"
 msgstr "Informace o disku:"
 
-#: src/ui/gsc_main_window.glade:85
+#: src/gui/ui/gsc_main_window.glade:85
 msgid "Basic health check:"
 msgstr "Základní kontrola stavu:"
 
-#: src/ui/gsc_main_window.glade:100
+#: src/gui/ui/gsc_main_window.glade:100
 msgid "Model family:"
 msgstr "Řada modelu:"
 
-#: src/ui/gsc_main_window.glade:195
+#: src/gui/ui/gsc_main_window.glade:195
 msgid "enable smart (action-replaced text)"
 msgstr "Zapnout SMART"
 
-#: src/ui/gsc_add_device_window.glade:29
+#: src/gui/ui/gsc_add_device_window.glade:29
 msgid "Add Device - GSmartControl"
 msgstr "Přidat zařízení - GSmartControl"
 
-#: src/ui/gsc_add_device_window.glade:51
+#: src/gui/ui/gsc_add_device_window.glade:51
 msgid "The &lt;a href=\"%1\"&gt;smartctl man page&lt;/a&gt; contains information on what you can enter here."
 msgstr "&lt;a href=\"%1\"&gt;smartctl man page&lt;/a&gt; obsahuje informace o tom, co zde můžete zadat."
 
-#: src/ui/gsc_add_device_window.glade:89
+#: src/gui/ui/gsc_add_device_window.glade:89
 msgid "Browse..."
 msgstr "Procházet..."
 
-#: src/ui/gsc_add_device_window.glade:112
+#: src/gui/ui/gsc_add_device_window.glade:112
 msgid "Device type:"
 msgstr "Typ zařízení:"
 
-#: src/ui/gsc_add_device_window.glade:124
+#: src/gui/ui/gsc_add_device_window.glade:124
 msgid "Additional smartctl parameters"
 msgstr "Dodatečné paramentry smartctl"
 
-#: src/ui/gsc_add_device_window.glade:126
+#: src/gui/ui/gsc_add_device_window.glade:126
 msgid "Smartctl parameters:"
 msgstr "Paramentry smartctl:"
 
-#: src/ui/gsc_add_device_window.glade:190
+#: src/gui/ui/gsc_add_device_window.glade:190
 msgid "Note: To make this change permanent, you'll have to add the gsmartcontrol --add-device command line option to its shortcut."
 msgstr "Poznámka: Chcete-li tuto změnu provést trvale, musíte do terminálu přidat příkaz: gsmartcontrol --add-device."
 
-#: src/ui/gsc_info_window.glade:52
+#: src/gui/ui/gsc_info_window.glade:52
 msgid "Device Information - GSmartControl"
 msgstr "Informace o zařízení - GSmartControl"
 
-#: src/ui/gsc_info_window.glade:175
+#: src/gui/ui/gsc_info_window.glade:175
 msgid "_General"
 msgstr "_Obecné"
 
-#: src/ui/gsc_info_window.glade:242
+#: src/gui/ui/gsc_info_window.glade:242
 msgid "Attributes"
 msgstr "Atributy"
 
-#: src/ui/gsc_info_window.glade:240
+#: src/gui/ui/gsc_info_window.glade:240
 msgid "SMART Attributes"
 msgstr "Atributy SMARTu"
 
-#: src/ui/gsc_info_window.glade:309
+#: src/gui/ui/gsc_info_window.glade:309
 msgid "Drive Statistics"
 msgstr "Statistiky disku"
 
-#: src/ui/gsc_info_window.glade:311
+#: src/gui/ui/gsc_info_window.glade:311
 msgid "Statistics"
 msgstr "Statistiky"
 
-#: src/ui/gsc_info_window.glade:338
+#: src/gui/ui/gsc_info_window.glade:338
 msgid "Self-tests are built-in tests within the drive designed to recognize drive fault conditions. All self-tests are safe to user data. The tests can be performed during normal system operation, but will take longer to complete if the drive is not idle."
 msgstr "Selt-Testy jsou vestavěné testy jednotky určené k rozpoznání chybových stavů jednotky. Všechny Self-Testy jsou bezpečné, co se týče uživatelských dat. Testy lze provádět za běžného provozu systému, ale jejich dokončení bude trvat déle, pokud jednotka není v nečinnosti."
 
-#: src/ui/gsc_info_window.glade:477
+#: src/gui/ui/gsc_info_window.glade:477
 msgid "Test type: <"
 msgstr "Typ testu: <"
 
-#: src/ui/gsc_info_window.glade:492
+#: src/gui/ui/gsc_info_window.glade:492
 msgid "Choose a test type"
 msgstr "Vyberte typ testu"
 
-#: src/ui/gsc_info_window.glade:396
+#: src/gui/ui/gsc_info_window.glade:396
 msgid "Test progress"
 msgstr "Stav testu"
 
-#: src/ui/gsc_info_window.glade:412
+#: src/gui/ui/gsc_info_window.glade:412
 msgid "Abort the test"
 msgstr "Přeskočit test"
 
-#: src/ui/gsc_info_window.glade:432
+#: src/gui/ui/gsc_info_window.glade:432
 msgid "Test description"
 msgstr "Popis testu"
 
-#: src/ui/gsc_info_window.glade:453
+#: src/gui/ui/gsc_info_window.glade:453
 msgid "Perform selected test"
 msgstr "Spustit"
 
-#: src/ui/gsc_info_window.glade:636
+#: src/gui/ui/gsc_info_window.glade:636
 msgid "Self-Test Log"
 msgstr "Protokol Self-Testu"
 
-#: src/ui/gsc_info_window.glade:741
+#: src/gui/ui/gsc_info_window.glade:741
 msgid "Complete error log information"
 msgstr "Kompletní informace z protokolu o chybách"
 
-#: src/ui/gsc_info_window.glade:784
+#: src/gui/ui/gsc_info_window.glade:784
 msgid "SMART error log contains most recent non-trivial errors the hard drive has encountered"
 msgstr "Protokol chyb SMART neobsahuje triviální chyby, se kterými se pevný disk setkal."
 
-#: src/ui/gsc_info_window.glade:786
+#: src/gui/ui/gsc_info_window.glade:786
 msgid "Error Log"
 msgstr "Protokol chyb"
 
-#: src/ui/gsc_info_window.glade:848
+#: src/gui/ui/gsc_info_window.glade:848
 msgid "Current temperature and history"
 msgstr "Aktuální teplota a historie"
 
-#: src/ui/gsc_info_window.glade:850
+#: src/gui/ui/gsc_info_window.glade:850
 msgid "Temperature Log"
 msgstr "Teplota"
 
-#: src/ui/gsc_info_window.glade:893
+#: src/gui/ui/gsc_info_window.glade:893
 msgid "Capabilities"
 msgstr "Schopnosti"
 
-#: src/ui/gsc_info_window.glade:850
+#: src/gui/ui/gsc_info_window.glade:850
 msgid "Error Recovery"
 msgstr "Obnova Chyb"
 
-#: src/ui/gsc_info_window.glade:958
+#: src/gui/ui/gsc_info_window.glade:958
 msgid "Selective Self-Test Log"
 msgstr "Protokol Self-Testu"
 
-#: src/ui/gsc_info_window.glade:991
+#: src/gui/ui/gsc_info_window.glade:991
 msgid "Physical"
 msgstr "Fyzický"
 
-#: src/ui/gsc_info_window.glade:1024
+#: src/gui/ui/gsc_info_window.glade:1024
 msgid "Directory"
 msgstr "Umíštění"
 
-#: src/ui/gsc_info_window.glade:1048
+#: src/gui/ui/gsc_info_window.glade:1048
 msgid "Advanced parameters and logs"
 msgstr "Pokročilé paramentry a protokoly"
 
-#: src/ui/gsc_info_window.glade:1050
+#: src/gui/ui/gsc_info_window.glade:1050
 msgid "Advanced"
 msgstr "Pokročilé"
