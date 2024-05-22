@@ -9,7 +9,7 @@ on: [workflow_dispatch]
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: RelWithDebInfo
-
+  CXX: clang++-17
 
 jobs:
 
@@ -25,12 +25,12 @@ jobs:
       id: test
       uses: vmactions/freebsd-vm@v1
       with:
-        envs: 'BUILD_TYPE'
+        envs: 'BUILD_TYPE CXX'
         usesh: true
         sync: rsync
         # release: "14.0"
         prepare: >
-          pkg install -y cmake pkgconf gtkmm30 gettext libiconv
+          pkg install -y cmake pkgconf gtkmm30 gettext libiconv llvm17
 
         run: >
           mkdir build && cd build
