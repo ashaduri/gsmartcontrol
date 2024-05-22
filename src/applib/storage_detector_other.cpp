@@ -11,7 +11,7 @@ Copyright:
 
 #include "build_config.h"
 
-#include "local_glibmm.h"
+#include <glibmm.h>
 #include <algorithm>  // std::sort
 #include <cerrno>
 

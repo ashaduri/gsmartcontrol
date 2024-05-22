@@ -12,7 +12,7 @@ Copyright:
 #include "storage_detector_linux.h"
 
 #include "command_executor.h"
-#include "local_glibmm.h"
+#include <glibmm.h>
 
 #include <algorithm>  // std::find
 #include <cstdio>  // std::fgets(), std::FILE

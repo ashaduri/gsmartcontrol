@@ -9,7 +9,8 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#include "local_glibmm.h"
+#include <glibmm.h>
+#include <glibmm/i18n.h>
 #include <gtkmm.h>  // Gtk::Main
 #include <gdkmm.h>
 

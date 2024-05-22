@@ -12,7 +12,7 @@ Copyright:
 #ifndef GSC_MAIN_WINDOW_ICONVIEW_H
 #define GSC_MAIN_WINDOW_ICONVIEW_H
 
-#include "local_glibmm.h"
+#include <glibmm.h>
 #include <gtkmm.h>
 #include <vector>
 #include <cmath>  // std::floor

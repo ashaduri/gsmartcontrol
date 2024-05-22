@@ -12,9 +12,11 @@ Copyright:
 #ifndef APP_BUILDER_WIDGET_H
 #define APP_BUILDER_WIDGET_H
 
-#include "local_glibmm.h"
-#include <string>
+#include <glibmm.h>
+#include <glibmm/i18n.h>
 #include <gtkmm.h>
+
+#include <string>
 #include <memory>
 #include <utility>
 

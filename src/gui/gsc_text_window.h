@@ -12,7 +12,7 @@ Copyright:
 #ifndef GSC_TEXT_WINDOW_H
 #define GSC_TEXT_WINDOW_H
 
-#include "local_glibmm.h"
+#include <glibmm.h>
 #include <gtkmm.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
 #include <memory>

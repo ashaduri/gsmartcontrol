@@ -12,7 +12,7 @@ Copyright:
 #ifndef GUI_UTILS_H
 #define GUI_UTILS_H
 
-#include "local_glibmm.h"
+#include <glibmm.h>
 #include <gtkmm.h>
 #include <string>
 

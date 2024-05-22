@@ -15,7 +15,7 @@ Copyright:
 #include <string>
 #include <vector>
 
-#include "local_glibmm.h"  // Glib::compose
+#include <glibmm.h>  // Glib::compose
 
 #include "build_config.h"
 #include "command_executor_factory.h"

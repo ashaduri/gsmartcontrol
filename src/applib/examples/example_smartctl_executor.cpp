@@ -12,7 +12,7 @@ Copyright:
 // #include "applib/smartctl_executor_gui.h"
 #include "applib/smartctl_executor.h"
 
-#include "local_glibmm.h"
+#include <glibmm.h>
 #include <gtkmm.h>
 #include <iostream>
 

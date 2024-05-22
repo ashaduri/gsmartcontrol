@@ -9,7 +9,8 @@ Copyright:
 /// \weakgroup gsc
 /// @{
 
-#include "local_glibmm.h"
+#include <glibmm.h>
+#include <glibmm/i18n.h>
 #include <gtkmm.h>
 
 #include "gsc_executor_log_window.h"

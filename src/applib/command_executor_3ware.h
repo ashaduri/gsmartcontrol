@@ -14,7 +14,7 @@ Copyright:
 
 #include <ranges>
 
-#include "local_glibmm.h"
+#include <glibmm.h>
 
 #include "async_command_executor.h"
 #include "command_executor.h"

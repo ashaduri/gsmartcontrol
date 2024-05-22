@@ -27,8 +27,8 @@ Copyright:
 #endif
 
 #ifdef ENABLE_GLIB
-	#include "local_glibmm.h"
-	// #include <glib/gi18n.h>  // may cause conflicts with std::*printf()
+	#include <glibmm.h>
+	#include <glibmm/i18n.h>
 #else
 	#define C_(Context,String) (String)
 #endif

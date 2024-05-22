@@ -12,7 +12,7 @@ Copyright:
 #ifndef SELFTEST_H
 #define SELFTEST_H
 
-#include "local_glibmm.h"
+#include <glibmm.h>
 #include <memory>
 #include <string>
 #include <cstdint>

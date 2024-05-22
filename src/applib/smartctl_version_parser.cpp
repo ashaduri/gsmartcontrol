@@ -9,7 +9,7 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-// #include "local_glibmm.h"
+// #include <glibmm.h>
 
 #include "hz/string_algo.h"  // string_*
 #include "hz/string_num.h"  // string_is_numeric, number_to_string

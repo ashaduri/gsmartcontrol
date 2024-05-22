@@ -11,7 +11,7 @@
 /// \weakgroup gsc
 /// @{
 
-#include "local_glibmm.h"
+#include <glibmm.h>
 #include <gtkmm.h>
 #include <glib.h>  // g_, G*
 

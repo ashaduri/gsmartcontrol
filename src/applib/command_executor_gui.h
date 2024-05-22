@@ -12,7 +12,7 @@ Copyright:
 #ifndef COMMAND_EXECUTOR_GUI_H
 #define COMMAND_EXECUTOR_GUI_H
 
-#include "local_glibmm.h"
+#include <glibmm.h>
 #include <gtkmm.h>
 #include <memory>
 

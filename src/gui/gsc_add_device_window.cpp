@@ -9,7 +9,7 @@ Copyright:
 /// \weakgroup gsc
 /// @{
 
-#include "local_glibmm.h"
+#include <glibmm.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
 #include <memory>
 

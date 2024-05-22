@@ -12,7 +12,8 @@ Copyright:
 #ifndef SMARTCTL_PARSER_TYPES_H
 #define SMARTCTL_PARSER_TYPES_H
 
-#include "local_glibmm.h"
+#include <glibmm.h>
+#include <glibmm/i18n.h>
 
 #include "hz/enum_helper.h"
 

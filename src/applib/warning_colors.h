@@ -12,7 +12,7 @@ Copyright:
 #ifndef WARNING_COLORS_H
 #define WARNING_COLORS_H
 
-#include "local_glibmm.h"
+#include <glibmm.h>
 
 #include "storage_property.h"
 

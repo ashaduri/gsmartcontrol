@@ -9,7 +9,7 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#include "local_glibmm.h"
+#include <glibmm.h>
 #include <gtkmm.h>  // compose()
 #include <algorithm>
 #include <memory>

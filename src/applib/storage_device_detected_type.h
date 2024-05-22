@@ -11,7 +11,7 @@ Copyright:
 #ifndef STORAGE_DEVICE_DETECTED_TYPE_H
 #define STORAGE_DEVICE_DETECTED_TYPE_H
 
-#include "local_glibmm.h"
+#include <glibmm.h>
 
 #include "hz/enum_helper.h"
 

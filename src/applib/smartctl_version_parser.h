@@ -12,7 +12,7 @@ Copyright:
 #ifndef SMARTCTL_VERSION_PARSER_H
 #define SMARTCTL_VERSION_PARSER_H
 
-#include "local_glibmm.h"
+#include <glibmm.h>
 
 #include <string>
 #include <optional>

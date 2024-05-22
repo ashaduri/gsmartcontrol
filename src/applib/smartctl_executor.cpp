@@ -9,7 +9,7 @@ Copyright:
 /// \weakgroup applib
 /// @{
 
-#include "local_glibmm.h"
+#include <glibmm.h>
 
 #include "smartctl_executor.h"
 #include "hz/win32_tools.h"

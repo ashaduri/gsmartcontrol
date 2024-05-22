@@ -10,7 +10,7 @@ Copyright:
 /// @{
 
 #include "hz/string_algo.h"
-#include "local_glibmm.h"
+#include <glibmm.h>
 #include <gtkmm.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
 #include <sstream>

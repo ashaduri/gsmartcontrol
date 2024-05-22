@@ -12,7 +12,9 @@ Copyright:
 #ifndef SMARTCTL_EXECUTOR_H
 #define SMARTCTL_EXECUTOR_H
 
-#include "local_glibmm.h"
+#include <glibmm.h>
+#include <glibmm/i18n.h>
+
 #include <ranges>
 #include <vector>
 
