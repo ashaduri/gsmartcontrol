@@ -15,7 +15,7 @@ Copyright:
 //#include <string>
 //#include <vector>
 
-#include "json/json.hpp"
+#include "nlohmann/json.hpp"
 
 #include "smartctl_parser.h"
 

@@ -8,7 +8,7 @@ add_library(nlohmann_json INTERFACE)
 
 # Relative sources are allowed only since cmake 3.13.
 target_sources(nlohmann_json INTERFACE
-	${CMAKE_CURRENT_SOURCE_DIR}/json/json.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/nlohmann/json.hpp
 )
 
 target_include_directories(nlohmann_json
