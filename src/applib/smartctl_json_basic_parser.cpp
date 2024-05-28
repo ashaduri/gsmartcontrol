@@ -24,7 +24,7 @@ Copyright:
 #include "hz/string_algo.h"  // string_*
 #include "hz/string_num.h"  // string_is_numeric, number_to_string
 //#include "hz/debug.h"  // debug_*
-#include "json/json.hpp"
+#include "nlohmann/json.hpp"
 #include "hz/error_container.h"
 
 //#include "smartctl_text_ata_parser.h"

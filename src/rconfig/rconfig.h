@@ -12,7 +12,7 @@ Copyright:
 #ifndef RCONFIG_CONFIG_H
 #define RCONFIG_CONFIG_H
 
-#include "json/json.hpp"
+#include "nlohmann/json.hpp"
 
 #include <string>
 #include <memory>
