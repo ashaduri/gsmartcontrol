@@ -189,7 +189,7 @@ if (WIN32)
 	# TODO unix2dos doc/*.txt
 
 	# Smartmontools
-	if (EXISTS "${CMAKE_BINARY_DIR}/smartmontools")  # CI
+	if (IS_DIRECTORY "${CMAKE_BINARY_DIR}/smartmontools")  # CI
 		# GitHub extract location. The files are extracted without relative paths in archive (7z e).
 		install(FILES
 			"${CMAKE_BINARY_DIR}/smartmontools/drivedb.h"
