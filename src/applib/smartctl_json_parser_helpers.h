@@ -19,7 +19,7 @@ Copyright:
 #include <string_view>
 #include <vector>
 
-#include "json/json.hpp"
+#include "nlohmann/json.hpp"
 #include "hz/debug.h"
 #include "hz/string_algo.h"
 #include "smartctl_parser_types.h"

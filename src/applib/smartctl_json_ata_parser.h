@@ -16,7 +16,7 @@ Copyright:
 
 #include <string_view>
 
-#include "json/json.hpp"
+#include "nlohmann/json.hpp"
 
 #include "hz/error_container.h"
 #include "smartctl_parser_types.h"
