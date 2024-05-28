@@ -2411,6 +2411,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 void GscInfoWindow::on_test_execute_button_clicked()
 {
 	auto* test_type_combo = lookup_widget<Gtk::ComboBox*>("test_type_combo");
+	DBG_ASSERT_RETURN_NONE(test_type_combo);
 
 	Gtk::TreeRow row = *(test_type_combo->get_active());
 	if (!row)
@@ -2440,9 +2441,7 @@ void GscInfoWindow::on_test_execute_button_clicked()
 
 
 	// Switch GUI to "running test" mode
-
-	if (test_type_combo)
-		test_type_combo->set_sensitive(false);
+	test_type_combo->set_sensitive(false);
 
 	if (auto* test_execute_button = lookup_widget<Gtk::Button*>("test_execute_button"))
 		test_execute_button->set_sensitive(false);
