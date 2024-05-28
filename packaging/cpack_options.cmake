@@ -126,7 +126,7 @@ set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "${CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS}
 if (WIN32)
 	message(STATUS "CMAKE_FIND_ROOT_PATH: ${CMAKE_FIND_ROOT_PATH}")
 
-	option(APP_WINDOWS_SYSROOT "Location of system root for Windows binaries, for packing" "")
+	set(APP_WINDOWS_SYSROOT "" CACHE PATH "Location of system root for Windows binaries, for packing" "")
 	if (NOT APP_WINDOWS_SYSROOT)
 #		if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
 #			if (CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -144,7 +144,7 @@ if (WIN32)
 	endif()
 	message(STATUS "APP_WINDOWS_SYSROOT: ${APP_WINDOWS_SYSROOT}")
 
-	option(APP_WINDOWS_GTK_ICONS_ROOT "Location of root folder for icons, for packing Windows packages" "")
+	set(APP_WINDOWS_GTK_ICONS_ROOT "" CACHE PATH "Location of root folder for icons, for packing Windows packages" "")
 	if (NOT APP_WINDOWS_GTK_ICONS_ROOT)
 		if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
 			set(APP_WINDOWS_GTK_ICONS_ROOT "${APP_WINDOWS_SYSROOT}/share/icons")
@@ -154,14 +154,19 @@ if (WIN32)
 	endif()
 	message(STATUS "APP_WINDOWS_GTK_ICONS_ROOT: ${APP_WINDOWS_GTK_ICONS_ROOT}")
 
-	option(APP_WINDOWS_SMARTCTL_ROOT "Location of root folder for smartctl, for packing Windows packages" "")
+	# This is for non-CI builds (CI uses extracted files).
+	# FIXME The logic may be wrong here.
+	set(APP_WINDOWS_SMARTCTL_ROOT "" CACHE PATH "Location of root folder for smartctl, for packing Windows packages" "")
 	if (NOT APP_WINDOWS_SMARTCTL_ROOT)
 		if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-			if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+			# PROGRAMFILES matches the bitness of the installer.
+			if (DEFINED ENV{PROGRAMFILES})
+				set(APP_WINDOWS_SMARTCTL_ROOT "$ENV{PROGRAMFILES}/smartmontools")
+			elseif (CMAKE_SIZEOF_VOID_P EQUAL 8)
 				set(APP_WINDOWS_SMARTCTL_ROOT "C:\\Program Files\\smartmontools")
-			else()
+			else()  # 32-bit
 				set(APP_WINDOWS_SMARTCTL_ROOT "C:\\Program Files (x86)\\smartmontools")
-			endif()
+			endif ()
 			file(TO_CMAKE_PATH "${APP_WINDOWS_SMARTCTL_ROOT}" APP_WINDOWS_SMARTCTL_ROOT)
 		else()  # Cross-compiling
 			if (CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -184,7 +189,7 @@ if (WIN32)
 	# TODO unix2dos doc/*.txt
 
 	# Smartmontools
-	if ("$ENV{CI}")
+	if (EXISTS "${CMAKE_BINARY_DIR}/smartmontools")  # CI
 		# GitHub extract location. The files are extracted without relative paths in archive (7z e).
 		install(FILES
 			"${CMAKE_BINARY_DIR}/smartmontools/drivedb.h"
