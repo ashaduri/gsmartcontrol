@@ -126,7 +126,7 @@ set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "${CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS}
 if (WIN32)
 	message(STATUS "CMAKE_FIND_ROOT_PATH: ${CMAKE_FIND_ROOT_PATH}")
 
-	set(APP_WINDOWS_SYSROOT "" CACHE PATH "Location of system root for Windows binaries, for packing" "")
+	set(APP_WINDOWS_SYSROOT "" CACHE "Location of system root for Windows binaries, for packing")
 	if (NOT APP_WINDOWS_SYSROOT)
 #		if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
 #			if (CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -144,7 +144,7 @@ if (WIN32)
 	endif()
 	message(STATUS "APP_WINDOWS_SYSROOT: ${APP_WINDOWS_SYSROOT}")
 
-	set(APP_WINDOWS_GTK_ICONS_ROOT "" CACHE PATH "Location of root folder for icons, for packing Windows packages" "")
+	set(APP_WINDOWS_GTK_ICONS_ROOT "" CACHE "Location of root folder for icons, for packing Windows packages")
 	if (NOT APP_WINDOWS_GTK_ICONS_ROOT)
 		if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
 			set(APP_WINDOWS_GTK_ICONS_ROOT "${APP_WINDOWS_SYSROOT}/share/icons")
@@ -156,7 +156,7 @@ if (WIN32)
 
 	# This is for non-CI builds (CI uses extracted files).
 	# FIXME The logic may be wrong here.
-	set(APP_WINDOWS_SMARTCTL_ROOT "" CACHE PATH "Location of root folder for smartctl, for packing Windows packages" "")
+	set(APP_WINDOWS_SMARTCTL_ROOT "" CACHE "Location of root folder for smartctl, for packing Windows packages")
 	if (NOT APP_WINDOWS_SMARTCTL_ROOT)
 		if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
 			# PROGRAMFILES matches the bitness of the installer.
