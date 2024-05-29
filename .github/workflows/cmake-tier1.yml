@@ -94,30 +94,6 @@ jobs:
             make
             p7zip
 
-      - name: List installed files
-        shell: msys2 {0}
-        run: |
-          ls -1R /mingw64
-          ls -1R /mingw32
-
-      - name: Configure CMake
-        shell: msys2 {0}
-        run: >
-          cmake -B build -S "$GITHUB_WORKSPACE"
-          -G "MSYS Makefiles"
-          -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-          -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/toolchains/${{ matrix.platform }}-mingw-msys2.cmake"
-
-      - name: Build
-        shell: msys2 {0}
-        working-directory: ${{github.workspace}}/build
-        run: cmake --build . --config $BUILD_TYPE
-
-      - name: Test
-        working-directory: ${{github.workspace}}/build
-        shell: msys2 {0}
-        run: ctest -C $BUILD_TYPE --rerun-failed --output-on-failure
-
       - name: Download Package Requirements
         shell: msys2 {0}
         working-directory: ${{github.workspace}}/build
@@ -148,10 +124,34 @@ jobs:
           bin/update-smart-drivedb.ps1
           bin/drivedb.h
 
+      - name: List installed files
+        shell: msys2 {0}
+        run: |
+          ls -1R /mingw64
+          ls -1R /mingw32
+
       - name: List Files in Workspace
         shell: msys2 {0}
         working-directory: ${{github.workspace}}
         run: ls -1R .
+
+      - name: Configure CMake
+        shell: msys2 {0}
+        run: >
+          cmake -B build -S "$GITHUB_WORKSPACE"
+          -G "MSYS Makefiles"
+          -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+          -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/toolchains/${{ matrix.platform }}-mingw-msys2.cmake"
+
+      - name: Build
+        shell: msys2 {0}
+        working-directory: ${{github.workspace}}/build
+        run: cmake --build . --config $BUILD_TYPE
+
+      - name: Test
+        working-directory: ${{github.workspace}}/build
+        shell: msys2 {0}
+        run: ctest -C $BUILD_TYPE --rerun-failed --output-on-failure
 
       - name: Package ZIP
         shell: msys2 {0}
