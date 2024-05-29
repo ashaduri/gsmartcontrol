@@ -43,9 +43,9 @@ jobs:
 
       - name: Download Package Requirements
         shell: msys2 {0}
-        working-directory: ${{github.workspace}}/build
+        working-directory: ${{github.workspace}}
         run: |
-          mkdir smartmontools
+          mkdir -p build/smartmontools
           cd smartmontools
           wget $SMARTMONTOOLS_URL
 
