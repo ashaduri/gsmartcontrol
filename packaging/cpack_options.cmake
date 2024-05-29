@@ -189,7 +189,9 @@ if (WIN32)
 	# TODO unix2dos doc/*.txt
 
 	# Smartmontools
+	message(STATUS "Checking if \"${CMAKE_BINARY_DIR}/smartmontools\" exists.")
 	if (IS_DIRECTORY "${CMAKE_BINARY_DIR}/smartmontools")  # CI
+		message(STATUS "Copying smartmontools files from \"${CMAKE_BINARY_DIR}/smartmontools\".")
 		# GitHub extract location. The files are extracted without relative paths in archive (7z e).
 		install(FILES
 			"${CMAKE_BINARY_DIR}/smartmontools/drivedb.h"
@@ -200,6 +202,7 @@ if (WIN32)
 		)
 	else()
 		# System-installed smartmontools
+		message(STATUS "Assuming system-installed smartmontools in \"${APP_WINDOWS_SMARTCTL_ROOT}\".")
 		install(FILES
 			"${APP_WINDOWS_SMARTCTL_ROOT}/bin/drivedb.h"
 			"${APP_WINDOWS_SMARTCTL_ROOT}/bin/smartctl-nc.exe"
