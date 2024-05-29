@@ -148,6 +148,11 @@ jobs:
           bin/update-smart-drivedb.ps1
           bin/drivedb.h
 
+      - name: List Files in Workspace
+        shell: msys2 {0}
+        working-directory: ${{github.workspace}}
+        run: ls -1R .
+
       - name: Package ZIP
         shell: msys2 {0}
         working-directory: ${{github.workspace}}/build
