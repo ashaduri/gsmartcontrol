@@ -46,7 +46,7 @@ jobs:
         working-directory: ${{github.workspace}}
         run: |
           mkdir -p build/smartmontools
-          cd smartmontools
+          cd build/smartmontools
           wget $SMARTMONTOOLS_URL
 
       - name: Extract Package Requirements (64-bit)
