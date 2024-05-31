@@ -90,6 +90,21 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 				}
 			},
 
+			{"device/protocol", _("Smartctl Device Protocol"),  // NVMe, ...
+				[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
+						-> hz::ExpectedValue<StorageProperty, SmartctlParserError>
+				{
+					if (auto jval = get_node_data<std::string>(root_node, "device/protocol"); jval.has_value()) {
+						StorageProperty p;
+						p.set_name(key, key, displayable_name);
+						p.value = jval.value();
+						p.show_in_ui = false;
+						return p;
+					}
+					return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+				}
+			},
+
 			{"vendor", _("Vendor"), string_formatter()},  // Flash drive
 			{"scsi_vendor", _("Vendor"), string_formatter()},  // Flash drive
 

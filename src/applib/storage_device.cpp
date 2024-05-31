@@ -597,6 +597,11 @@ void StorageDevice::detect_drive_type_from_properties(const StoragePropertyRepos
 		// Note: USB flash drives in non-scsi mode do not have this property.
 		const auto& smartctl_type = device_type_prop.get_value<std::string>();
 
+		std::string lowercase_protocol;
+		if (auto device_protocol_prop = property_repo.lookup_property("device/protocol"); !device_protocol_prop.empty()) {
+			lowercase_protocol = hz::string_to_lower_copy(device_protocol_prop.get_value<std::string>());
+		}
+
 		if (smartctl_type == "scsi") {  // USB flash in scsi mode, optical, scsi, etc.
 			if (BuildEnv::is_kernel_linux() && get_device_base().starts_with("sr")) {
 				set_detected_type(StorageDeviceDetectedType::CdDvd);
@@ -616,9 +621,13 @@ void StorageDevice::detect_drive_type_from_properties(const StoragePropertyRepos
 		} else if (smartctl_type == "nvme") {  // NVMe SSD
 			set_detected_type(StorageDeviceDetectedType::Nvme);
 
+		// Try protocol (type may be a USB bridge name)
+		} else if (lowercase_protocol == "nvme") {  // nvme behind USB bridge like "sntrealtek"
+			set_detected_type(StorageDeviceDetectedType::Nvme);
+
 		} else {
 			// TODO Detect unsupported RAID
-			debug_out_warn("app", "Unsupported type " << smartctl_type << " reported by smartctl for " << get_device_with_type() << "\n");
+			debug_out_warn("app", "Unsupported type " << smartctl_type << " (protocol: " << lowercase_protocol << ") reported by smartctl for " << get_device_with_type() << "\n");
 		}
 	}
 
