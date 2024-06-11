@@ -169,7 +169,7 @@ bool SelfTest::is_supported() const
 			case TestType::LongTest:
 			{
 				// Both short and long should be supported if the drive has a self-test log
-				const StorageProperty p = drive_->get_property_repository().lookup_property("nvme_self_test_log/_tests_supported");
+				const StorageProperty p = drive_->get_property_repository().lookup_property("nvme_self_test_log/_exists");
 				return (!p.empty() && p.get_value<bool>());
 			}
 		}
@@ -504,7 +504,7 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::update(const std::shared_ptr<
 			// seconds per 10%. use double, because e.g. 60sec test gives silly values with int.
 			const double gran = (double(total.count()) / 9.);
 
-			// Add 1/10 for disk load delays, etc. . Limit to 15sec, in case of very quick tests.
+			// Add 1/10 for disk load delays, etc. Limit to 15sec, in case of very quick tests.
 			poll_in_seconds_ = std::chrono::seconds(std::max(int64_t(15), int64_t(gran / 3. + (gran / 10.))));
 
 			// for long tests we don't want to make the user wait too much, so

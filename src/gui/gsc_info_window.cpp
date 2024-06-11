@@ -405,8 +405,6 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		}
 
 		bool has_selftest = prop_repo.has_properties_for_section(StoragePropertySection::SelftestLog);
-		// NVMe spec supports self-tests by default.
-		has_selftest = has_selftest || drive_->get_detected_type() == StorageDeviceDetectedType::Nvme;
 		if (note_page_box = lookup_widget("test_tab_vbox"); note_page_box != nullptr) {
 			// Some USB flash drives erroneously report SMART as enabled.
 			// note_page_box->set_visible(drive->get_smart_status() == StorageDevice::Status::Enabled);
