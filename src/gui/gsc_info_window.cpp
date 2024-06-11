@@ -1,7 +1,7 @@
 /******************************************************************************
 License: GNU General Public License v3.0 only
 Copyright:
-	(C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+	(C) 2008 - 2024 Alexander Shaduri <ashaduri@gmail.com>
 ******************************************************************************/
 /// \file
 /// \author Alexander Shaduri
@@ -174,10 +174,10 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 	// Create missing widgets
 	auto* device_name_hbox = lookup_widget<Gtk::Box*>("device_name_label_hbox");
 	if (device_name_hbox) {
-		device_name_label = Gtk::manage(new Gtk::Label(_("No data available"), Gtk::ALIGN_START));
-		device_name_label->set_selectable(true);
-		device_name_label->show();
-		device_name_hbox->pack_start(*device_name_label, true, true);
+		device_name_label_ = Gtk::manage(new Gtk::Label(_("No data available"), Gtk::ALIGN_START));
+		device_name_label_->set_selectable(true);
+		device_name_label_->show();
+		device_name_hbox->pack_start(*device_name_label_, true, true);
 	}
 
 
@@ -222,17 +222,17 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 
 		for (const auto& treeview_name : treeview_names) {
 			auto* treeview = lookup_widget<Gtk::TreeView*>(treeview_name);
-			treeview_menus[treeview_name] = new Gtk::Menu();  // deleted in window destructor
+			treeview_menus_[treeview_name] = new Gtk::Menu();  // deleted in window destructor
 
 			treeview->signal_button_press_event().connect(
-					sigc::bind(sigc::bind(sigc::mem_fun(*this, &GscInfoWindow::on_treeview_button_press_event), treeview), treeview_menus[treeview_name]), false);  // before
+					sigc::bind(sigc::bind(sigc::mem_fun(*this, &GscInfoWindow::on_treeview_button_press_event), treeview), treeview_menus_[treeview_name]), false);  // before
 
 			Gtk::MenuItem* item = Gtk::manage(new Gtk::MenuItem(_("Copy Selected Data"), true));
 			item->signal_activate().connect(
 					sigc::bind(sigc::mem_fun(*this, &GscInfoWindow::on_treeview_menu_copy_clicked), treeview) );
-			treeview_menus[treeview_name]->append(*item);
+			treeview_menus_[treeview_name]->append(*item);
 
-			treeview_menus[treeview_name]->show_all();  // Show all menu items when the menu pops up
+			treeview_menus_[treeview_name]->show_all();  // Show all menu items when the menu pops up
 		}
 	}
 
@@ -279,46 +279,46 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 	Gtk::Label* tab_label = nullptr;
 
 	tab_label = lookup_widget<Gtk::Label*>("general_tab_label");
-	tab_identity_name = (tab_label ? tab_label->get_label() : "");
+	tab_names_.identity = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("attributes_tab_label");
-	tab_ata_attributes_name = (tab_label ? tab_label->get_label() : "");
+	tab_names_.ata_attributes = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("nvme_attributes_tab_label");
-	tab_nvme_attributes_name = (tab_label ? tab_label->get_label() : "");
+	tab_names_.nvme_attributes = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("statistics_tab_label");
-	tab_statistics_name = (tab_label ? tab_label->get_label() : "");
+	tab_names_.statistics = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("test_tab_label");
-	tab_test_name = (tab_label ? tab_label->get_label() : "");
+	tab_names_.test = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("error_log_tab_label");
-	tab_ata_error_log_name = (tab_label ? tab_label->get_label() : "");
+	tab_names_.ata_error_log = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("nvme_error_log_tab_label");
-	tab_nvme_error_log_name = (tab_label ? tab_label->get_label() : "");
+	tab_names_.nvme_error_log = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("temperature_log_tab_label");
-	tab_temperature_name = (tab_label ? tab_label->get_label() : "");
+	tab_names_.temperature = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("advanced_tab_label");
-	tab_advanced_name = (tab_label ? tab_label->get_label() : "");
+	tab_names_.advanced = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("capabilities_tab_label");
-	tab_capabilities_name = (tab_label ? tab_label->get_label() : "");
+	tab_names_.capabilities = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("erc_tab_label");
-	tab_erc_name = (tab_label ? tab_label->get_label() : "");
+	tab_names_.erc = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("selective_selftest_tab_label");
-	tab_selective_selftest_name = (tab_label ? tab_label->get_label() : "");
+	tab_names_.selective_selftest = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("phy_tab_label");
-	tab_phy_name = (tab_label ? tab_label->get_label() : "");
+	tab_names_.phy = (tab_label ? tab_label->get_label() : "");
 
 	tab_label = lookup_widget<Gtk::Label*>("directory_tab_label");
-	tab_directory_name = (tab_label ? tab_label->get_label() : "");
+	tab_names_.directory = (tab_label ? tab_label->get_label() : "");
 
 	// show();  // don't show here, removing tabs later is ugly.
 }
@@ -335,7 +335,7 @@ GscInfoWindow::~GscInfoWindow()
 		rconfig::set_data("gui/info_window/default_size_h", window_h);
 	}
 
-	for (auto& iter : treeview_menus) {
+	for (auto& iter : treeview_menus_) {
 		delete iter.second;
 	}
 }
@@ -344,10 +344,10 @@ GscInfoWindow::~GscInfoWindow()
 
 void GscInfoWindow::set_drive(StorageDevicePtr d)
 {
-	if (drive)  // if an old drive is present, disconnect our callback from it.
-		drive_changed_connection.disconnect();
-	drive = std::move(d);
-	drive_changed_connection = drive->signal_changed().connect(sigc::mem_fun(this,
+	if (drive_)  // if an old drive is present, disconnect our callback from it.
+		drive_changed_connection_.disconnect();
+	drive_ = std::move(d);
+	drive_changed_connection_ = drive_->signal_changed().connect(sigc::mem_fun(this,
 			&GscInfoWindow::on_drive_changed));
 }
 
@@ -361,12 +361,12 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 		clear_ui_info(clear_tests);
 	}
 
-	if (!drive->get_is_virtual()) {
+	if (!drive_->get_is_virtual()) {
 		// fetch all smartctl info, even if it already has it (to refresh it).
 		if (scan) {
 			std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
-			ex->create_running_dialog(this, Glib::ustring::compose(_("Running {command} on %1..."), drive->get_device_with_type()));
-			auto fetch_status = drive->fetch_full_data_and_parse(ex);  // run it with GUI support
+			ex->create_running_dialog(this, Glib::ustring::compose(_("Running {command} on %1..."), drive_->get_device_with_type()));
+			auto fetch_status = drive_->fetch_full_data_and_parse(ex);  // run it with GUI support
 
 			if (!fetch_status) {
 				gsc_executor_error_dialog_show(_("Cannot retrieve SMART data"), fetch_status.error().message(), this);
@@ -376,7 +376,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 	}
 
 	// disable refresh button if virtual
-	if (drive->get_is_virtual()) {
+	if (drive_->get_is_virtual()) {
 		auto* b = lookup_widget<Gtk::Button*>("refresh_info_button");
 		if (b) {
 			b->set_sensitive(false);
@@ -386,7 +386,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 	// Hide tabs which have no properties associated with them
 	{
-		const auto& prop_repo = drive->get_property_repository();
+		const auto& prop_repo = drive_->get_property_repository();
 		Gtk::Widget* note_page_box = nullptr;
 
 		const bool has_ata_attributes = prop_repo.has_properties_for_section(StoragePropertySection::AtaAttributes);
@@ -406,7 +406,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 		bool has_selftest = prop_repo.has_properties_for_section(StoragePropertySection::SelftestLog);
 		// NVMe spec supports self-tests by default.
-		has_selftest = has_selftest || drive->get_detected_type() == StorageDeviceDetectedType::Nvme;
+		has_selftest = has_selftest || drive_->get_detected_type() == StorageDeviceDetectedType::Nvme;
 		if (note_page_box = lookup_widget("test_tab_vbox"); note_page_box != nullptr) {
 			// Some USB flash drives erroneously report SMART as enabled.
 			// note_page_box->set_visible(drive->get_smart_status() == StorageDevice::Status::Enabled);
@@ -480,17 +480,17 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 
 	// Top label - short device information
 	{
-		const std::string device = Glib::Markup::escape_text(drive->get_device_with_type());
-		const std::string model = Glib::Markup::escape_text(drive->get_model_name().empty() ? _("Unknown model") : drive->get_model_name());
-		const std::string drive_letters = Glib::Markup::escape_text(drive->format_drive_letters(false));
+		const std::string device = Glib::Markup::escape_text(drive_->get_device_with_type());
+		const std::string model = Glib::Markup::escape_text(drive_->get_model_name().empty() ? _("Unknown model") : drive_->get_model_name());
+		const std::string drive_letters = Glib::Markup::escape_text(drive_->format_drive_letters(false));
 
 		/// Translators: %1 is device name, %2 is device model.
 		this->set_title(Glib::ustring::compose(_("Device Information - %1: %2 - GSmartControl"), device, model));
 
 		// Gtk::Label* device_name_label = lookup_widget<Gtk::Label*>("device_name_label");
-		if (device_name_label) {
+		if (device_name_label_) {
 			/// Translators: %1 is device name, %2 is drive letters (if not empty), %3 is device model.
-			device_name_label->set_markup(Glib::ustring::compose(_("<b>Device:</b> %1%2  <b>Model:</b> %3"),
+			device_name_label_->set_markup(Glib::ustring::compose(_("<b>Device:</b> %1%2  <b>Model:</b> %3"),
 					device, (drive_letters.empty() ? "" : (" (<b>" + drive_letters + "</b>)")), model));
 		}
 	}
@@ -499,7 +499,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 	// Fill the tabs with info
 
 	// we need reference here - we take addresses of the elements
-	const auto& property_repo = drive->get_property_repository();  // it's a vector
+	const auto& property_repo = drive_->get_property_repository();  // it's a vector
 
 	fill_ui_general(property_repo);
 	fill_ui_ata_attributes(property_repo);
@@ -529,7 +529,7 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 	});
 
 	// Advanced tab label
-	app_highlight_tab_label(lookup_widget("advanced_tab_label"), max_advanced_tab_warning, tab_advanced_name);
+	app_highlight_tab_label(lookup_widget("advanced_tab_label"), max_advanced_tab_warning, tab_names_.advanced);
 }
 
 
@@ -543,8 +543,8 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		this->set_title(_("Device Information - GSmartControl"));
 
 		// Gtk::Label* device_name_label = lookup_widget<Gtk::Label*>("device_name_label");
-		if (device_name_label) {
-			device_name_label->set_text(_("No data available"));
+		if (device_name_label_) {
+			device_name_label_->set_text(_("No data available"));
 		}
 	}
 
@@ -559,7 +559,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("general_tab_label"), WarningLevel::None, tab_identity_name);
+		app_highlight_tab_label(lookup_widget("general_tab_label"), WarningLevel::None, tab_names_.identity);
 	}
 
 	{
@@ -575,7 +575,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("attributes_tab_label"), WarningLevel::None, tab_ata_attributes_name);
+		app_highlight_tab_label(lookup_widget("attributes_tab_label"), WarningLevel::None, tab_names_.ata_attributes);
 	}
 
 	{
@@ -591,7 +591,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("nvme_attributes_tab_label"), WarningLevel::None, tab_nvme_attributes_name);
+		app_highlight_tab_label(lookup_widget("nvme_attributes_tab_label"), WarningLevel::None, tab_names_.nvme_attributes);
 	}
 
 	{
@@ -604,7 +604,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("statistics_tab_label"), WarningLevel::None, tab_statistics_name);
+		app_highlight_tab_label(lookup_widget("statistics_tab_label"), WarningLevel::None, tab_names_.statistics);
 	}
 
 	{
@@ -624,8 +624,8 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 			if (test_type_combo) {
 				test_type_combo->set_sensitive(false);  // true if testing is possible and not active.
 				// test_type_combo->clear();  // clear cellrenderers
-				if (test_combo_model)
-					test_combo_model->clear();
+				if (test_combo_model_)
+					test_combo_model_->clear();
 			}
 
 			if (auto* min_duration_label = lookup_widget<Gtk::Label*>("min_duration_label"))
@@ -655,7 +655,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("test_tab_label"), WarningLevel::None, tab_test_name);
+		app_highlight_tab_label(lookup_widget("test_tab_label"), WarningLevel::None, tab_names_.test);
 	}
 
 	{
@@ -679,7 +679,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("error_log_tab_label"), WarningLevel::None, tab_ata_error_log_name);
+		app_highlight_tab_label(lookup_widget("error_log_tab_label"), WarningLevel::None, tab_names_.ata_error_log);
 	}
 
 	{
@@ -693,7 +693,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("nvme_error_log_tab_label"), WarningLevel::None, tab_nvme_error_log_name);
+		app_highlight_tab_label(lookup_widget("nvme_error_log_tab_label"), WarningLevel::None, tab_names_.nvme_error_log);
 	}
 
 	{
@@ -704,11 +704,11 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("temperature_log_tab_label"), WarningLevel::None, tab_temperature_name);
+		app_highlight_tab_label(lookup_widget("temperature_log_tab_label"), WarningLevel::None, tab_names_.temperature);
 	}
 
 	// tab label
-	app_highlight_tab_label(lookup_widget("advanced_tab_label"), WarningLevel::None, tab_advanced_name);
+	app_highlight_tab_label(lookup_widget("advanced_tab_label"), WarningLevel::None, tab_names_.advanced);
 
 	{
 		if (auto* treeview = lookup_widget<Gtk::TreeView*>("capabilities_treeview")) {
@@ -722,7 +722,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("capabilities_tab_label"), WarningLevel::None, tab_capabilities_name);
+		app_highlight_tab_label(lookup_widget("capabilities_tab_label"), WarningLevel::None, tab_names_.capabilities);
 	}
 
 	{
@@ -731,7 +731,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("erc_tab_label"), WarningLevel::None, tab_erc_name);
+		app_highlight_tab_label(lookup_widget("erc_tab_label"), WarningLevel::None, tab_names_.erc);
 	}
 
 	{
@@ -740,7 +740,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("selective_selftest_tab_label"), WarningLevel::None, tab_selective_selftest_name);
+		app_highlight_tab_label(lookup_widget("selective_selftest_tab_label"), WarningLevel::None, tab_names_.selective_selftest);
 	}
 
 	{
@@ -749,7 +749,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("phy_tab_label"), WarningLevel::None, tab_phy_name);
+		app_highlight_tab_label(lookup_widget("phy_tab_label"), WarningLevel::None, tab_names_.phy);
 	}
 
 	{
@@ -758,7 +758,7 @@ void GscInfoWindow::clear_ui_info(bool clear_tests_too)
 		}
 
 		// tab label
-		app_highlight_tab_label(lookup_widget("directory_tab_label"), WarningLevel::None, tab_directory_name);
+		app_highlight_tab_label(lookup_widget("directory_tab_label"), WarningLevel::None, tab_names_.directory);
 	}
 
 	// Delete columns. We need to do this because otherwise,
@@ -809,14 +809,14 @@ void GscInfoWindow::on_view_output_button_clicked()
 	auto win = GscTextWindow<SmartctlOutputInstance>::create();
 	// make save visible and enable monospace font
 
-	std::string output = this->drive->get_full_output();
+	std::string output = this->drive_->get_full_output();
 	if (output.empty()) {
-		output = this->drive->get_basic_output();
+		output = this->drive_->get_basic_output();
 	}
 
 	win->set_text_from_command(_("Smartctl Output"), output);
 
-	const std::string filename = drive->get_save_filename();
+	const std::string filename = drive_->get_save_filename();
 	if (!filename.empty())
 		win->set_save_filename(filename);
 
@@ -833,7 +833,7 @@ void GscInfoWindow::on_save_info_button_clicked()
 	}
 	int result = 0;
 
-	const std::string filename = drive->get_save_filename();
+	const std::string filename = drive_->get_save_filename();
 
 	Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
 	specific_filter->set_name(_("JSON and Text Files"));
@@ -903,9 +903,9 @@ void GscInfoWindow::on_save_info_button_clicked()
 				file += ".json";
 			}
 
-			std::string data = this->drive->get_full_output();
+			std::string data = this->drive_->get_full_output();
 			if (data.empty()) {
-				data = this->drive->get_basic_output();
+				data = this->drive_->get_basic_output();
 			}
 			const std::error_code ec = hz::fs_file_put_contents(file, data);
 			if (ec) {
@@ -928,7 +928,7 @@ void GscInfoWindow::on_save_info_button_clicked()
 
 void GscInfoWindow::on_close_window_button_clicked()
 {
-	if (drive && drive->get_test_is_active()) {  // disallow close if test is active.
+	if (drive_ && drive_->get_test_is_active()) {  // disallow close if test is active.
 		gui_show_warn_dialog(_("Please wait until all tests are finished."), this);
 	} else {
 		destroy_instance();  // deletes this object and nullifies instance
@@ -943,7 +943,7 @@ void GscInfoWindow::on_test_type_combo_changed()
 
 	Gtk::TreeRow row = *(test_type_combo->get_active());
 	if (row) {
-		std::shared_ptr<SelfTest> test = row[test_combo_columns.self_test];
+		std::shared_ptr<SelfTest> test = row[test_combo_columns_.self_test];
 
 		//debug_out_error("app", test->get_min_duration_seconds() << "\n");
 		if (auto* min_duration_label = lookup_widget<Gtk::Label*>("min_duration_label")) {
@@ -954,7 +954,7 @@ void GscInfoWindow::on_test_type_combo_changed()
 
 		auto* test_description_textview = lookup_widget<Gtk::TextView*>("test_description_textview");
 		if (test_description_textview != nullptr && test_description_textview->get_buffer())
-			test_description_textview->get_buffer()->set_text(row[test_combo_columns.description]);
+			test_description_textview->get_buffer()->set_text(row[test_combo_columns_.description]);
 	}
 }
 
@@ -1059,7 +1059,7 @@ void GscInfoWindow::fill_ui_general(const StoragePropertyRepository& property_re
 	identity_table->show_all();
 
 	// tab label
-	app_highlight_tab_label(lookup_widget("general_tab_label"), max_tab_warning, tab_identity_name);
+	app_highlight_tab_label(lookup_widget("general_tab_label"), max_tab_warning, tab_names_.identity);
 }
 
 
@@ -1186,7 +1186,7 @@ void GscInfoWindow::fill_ui_ata_attributes(const StoragePropertyRepository& prop
 	app_set_top_labels(label_vbox, label_strings);
 
 	// tab label
-	app_highlight_tab_label(lookup_widget("attributes_tab_label"), max_tab_warning, tab_ata_attributes_name);
+	app_highlight_tab_label(lookup_widget("attributes_tab_label"), max_tab_warning, tab_names_.ata_attributes);
 }
 
 
@@ -1248,7 +1248,7 @@ void GscInfoWindow::fill_ui_nvme_attributes(const StoragePropertyRepository& pro
 	app_set_top_labels(label_vbox, label_strings);
 
 	// tab label
-	app_highlight_tab_label(lookup_widget("nvme_attributes_tab_label"), max_tab_warning, tab_nvme_attributes_name);
+	app_highlight_tab_label(lookup_widget("nvme_attributes_tab_label"), max_tab_warning, tab_names_.nvme_attributes);
 }
 
 
@@ -1336,7 +1336,7 @@ void GscInfoWindow::fill_ui_statistics(const StoragePropertyRepository& property
 	app_set_top_labels(label_vbox, label_strings);
 
 	// tab label
-	app_highlight_tab_label(lookup_widget("statistics_tab_label"), max_tab_warning, tab_statistics_name);
+	app_highlight_tab_label(lookup_widget("statistics_tab_label"), max_tab_warning, tab_names_.statistics);
 }
 
 
@@ -1346,21 +1346,21 @@ void GscInfoWindow::fill_ui_self_test_info()
 	auto* test_type_combo = lookup_widget<Gtk::ComboBox*>("test_type_combo");
 
 	// don't check with get_model(), it comes pre-modeled from glade.
-	if (!test_combo_model) {
+	if (!test_combo_model_) {
 		Gtk::TreeModelColumnRecord model_columns;
 
 		// Test name, [description], [selftest_obj]
-		model_columns.add(test_combo_columns.name);  // we can use the column variable by value after this.
-		model_columns.add(test_combo_columns.description);
-		model_columns.add(test_combo_columns.self_test);
+		model_columns.add(test_combo_columns_.name);  // we can use the column variable by value after this.
+		model_columns.add(test_combo_columns_.description);
+		model_columns.add(test_combo_columns_.self_test);
 
-		test_combo_model = Gtk::ListStore::create(model_columns);
-		test_type_combo->set_model(test_combo_model);
+		test_combo_model_ = Gtk::ListStore::create(model_columns);
+		test_type_combo->set_model(test_combo_model_);
 
 		// visible columns
 		test_type_combo->clear();  // clear old (glade) cellrenderers
 
-		test_type_combo->pack_start(test_combo_columns.name);
+		test_type_combo->pack_start(test_combo_columns_.name);
 	}
 
 	// add possible tests
@@ -1379,49 +1379,49 @@ void GscInfoWindow::fill_ui_self_test_info()
 //		row[test_combo_columns.self_test] = test_ioffline;
 //	}
 
-	auto test_short = std::make_shared<SelfTest>(drive, SelfTest::TestType::ShortTest);
+	auto test_short = std::make_shared<SelfTest>(drive_, SelfTest::TestType::ShortTest);
 	if (test_short->is_supported()) {
-		row = *(test_combo_model->append());
-		row[test_combo_columns.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::ShortTest);
-		row[test_combo_columns.description] =
+		row = *(test_combo_model_->append());
+		row[test_combo_columns_.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::ShortTest);
+		row[test_combo_columns_.description] =
 				_("Short self-test consists of a collection of test routines that have the highest chance"
 				" of detecting drive problems. Its result is reported in the Self-Test Log."
 				" Note that this test is in no way comprehensive. Its main purpose is to detect totally damaged"
 				" drives without running a full surface scan."
 				"\nNote: On some drives this actually runs several consequent tests, which may"
 				" cause the program to display the test progress incorrectly.");  // seagate multi-pass test on 7200.11.
-		row[test_combo_columns.self_test] = test_short;
+		row[test_combo_columns_.self_test] = test_short;
 	}
 
-	auto test_long = std::make_shared<SelfTest>(drive, SelfTest::TestType::LongTest);
+	auto test_long = std::make_shared<SelfTest>(drive_, SelfTest::TestType::LongTest);
 	if (test_long->is_supported()) {
-		row = *(test_combo_model->append());
-		row[test_combo_columns.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::LongTest);
-		row[test_combo_columns.description] =
+		row = *(test_combo_model_->append());
+		row[test_combo_columns_.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::LongTest);
+		row[test_combo_columns_.description] =
 				_("Extended self-test examines complete disk surface and performs various test routines"
 				" built into the drive. Its result is reported in the Self-Test Log.");
-		row[test_combo_columns.self_test] = test_long;
+		row[test_combo_columns_.self_test] = test_long;
 	}
 
-	auto test_conveyance = std::make_shared<SelfTest>(drive, SelfTest::TestType::Conveyance);
+	auto test_conveyance = std::make_shared<SelfTest>(drive_, SelfTest::TestType::Conveyance);
 	if (test_conveyance->is_supported()) {
-		row = *(test_combo_model->append());
-		row[test_combo_columns.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::Conveyance);
-		row[test_combo_columns.description] =
+		row = *(test_combo_model_->append());
+		row[test_combo_columns_.name] = SelfTest::get_test_displayable_name(SelfTest::TestType::Conveyance);
+		row[test_combo_columns_.description] =
 				_("Conveyance self-test is intended to identify damage incurred during transporting of the drive.");
-		row[test_combo_columns.self_test] = test_conveyance;
+		row[test_combo_columns_.self_test] = test_conveyance;
 	}
 
-	if (!test_combo_model->children().empty()) {
+	if (!test_combo_model_->children().empty()) {
 		test_type_combo->set_sensitive(true);
-		test_type_combo->set_active(test_combo_model->children().begin());  // select first entry
+		test_type_combo->set_active(test_combo_model_->children().begin());  // select first entry
 
 		// At least one test is possible, so enable test button.
 		// Note: we disable only Execute button on virtual drives. The combo is left
 		// sensitive so that the user can see which tests are supported by the drive.
 		auto* test_execute_button = lookup_widget<Gtk::Button*>("test_execute_button");
 		if (test_execute_button)
-			test_execute_button->set_sensitive(!drive->get_is_virtual());
+			test_execute_button->set_sensitive(!drive_->get_is_virtual());
 	}
 }
 
@@ -1542,7 +1542,7 @@ void GscInfoWindow::fill_ui_self_test_log(const StoragePropertyRepository& prope
 	app_set_top_labels(label_vbox, label_strings);
 
 	// tab label
-	app_highlight_tab_label(lookup_widget("test_tab_label"), max_tab_warning, tab_test_name);
+	app_highlight_tab_label(lookup_widget("test_tab_label"), max_tab_warning, tab_names_.test);
 }
 
 
@@ -1622,8 +1622,8 @@ void GscInfoWindow::fill_ui_ata_error_log(const StoragePropertyRepository& prope
 					buffer->apply_tag(tag, buffer->begin(), buffer->end());
 
 					// Set marks so we can scroll to them
-					if (!error_log_row_selected_conn.connected()) {  // avoid double-connect
-						error_log_row_selected_conn = treeview->get_selection()->signal_changed().connect(
+					if (!error_log_row_selected_conn_.connected()) {  // avoid double-connect
+						error_log_row_selected_conn_ = treeview->get_selection()->signal_changed().connect(
 								sigc::bind(sigc::bind(sigc::ptr_fun(on_error_log_treeview_row_selected), columns_->error_log_table_columns.mark_name), this));
 					}
 
@@ -1680,7 +1680,7 @@ void GscInfoWindow::fill_ui_ata_error_log(const StoragePropertyRepository& prope
 	app_set_top_labels(label_vbox, label_strings);
 
 	// inner tab label
-	app_highlight_tab_label(lookup_widget("error_log_tab_label"), max_tab_warning, tab_ata_error_log_name);
+	app_highlight_tab_label(lookup_widget("error_log_tab_label"), max_tab_warning, tab_names_.ata_error_log);
 }
 
 
@@ -1710,7 +1710,7 @@ void GscInfoWindow::fill_ui_nvme_error_log(const StoragePropertyRepository& prop
 	}
 
 	// tab label
-	app_highlight_tab_label(lookup_widget("nvme_error_log_tab_label"), max_tab_warning, tab_nvme_error_log_name);
+	app_highlight_tab_label(lookup_widget("nvme_error_log_tab_label"), max_tab_warning, tab_names_.nvme_error_log);
 }
 
 
@@ -1790,7 +1790,7 @@ void GscInfoWindow::fill_ui_temperature_log(const StoragePropertyRepository& pro
 	app_set_top_labels(label_vbox, label_strings);
 
 	// tab label
-	app_highlight_tab_label(lookup_widget("temperature_log_tab_label"), max_tab_warning, tab_temperature_name);
+	app_highlight_tab_label(lookup_widget("temperature_log_tab_label"), max_tab_warning, tab_names_.temperature);
 }
 
 
@@ -1883,7 +1883,7 @@ WarningLevel GscInfoWindow::fill_ui_capabilities(const StoragePropertyRepository
 	treeview->get_column(4)->set_visible(!has_text_parser_capabilities);  // value
 
 	// tab label
-	app_highlight_tab_label(lookup_widget("capabilities_tab_label"), max_tab_warning, tab_capabilities_name);
+	app_highlight_tab_label(lookup_widget("capabilities_tab_label"), max_tab_warning, tab_names_.capabilities);
 
 	return max_tab_warning;
 }
@@ -1915,7 +1915,7 @@ WarningLevel GscInfoWindow::fill_ui_error_recovery(const StoragePropertyReposito
 	}
 
 	// tab label
-	app_highlight_tab_label(lookup_widget("erc_tab_label"), max_tab_warning, tab_erc_name);
+	app_highlight_tab_label(lookup_widget("erc_tab_label"), max_tab_warning, tab_names_.erc);
 
 	return max_tab_warning;
 }
@@ -1947,7 +1947,7 @@ WarningLevel GscInfoWindow::fill_ui_selective_self_test_log(const StoragePropert
 	}
 
 	// tab label
-	app_highlight_tab_label(lookup_widget("selective_selftest_tab_label"), max_tab_warning, tab_selective_selftest_name);
+	app_highlight_tab_label(lookup_widget("selective_selftest_tab_label"), max_tab_warning, tab_names_.selective_selftest);
 
 	return max_tab_warning;
 }
@@ -1979,7 +1979,7 @@ WarningLevel GscInfoWindow::fill_ui_physical(const StoragePropertyRepository& pr
 	}
 
 	// tab label
-	app_highlight_tab_label(lookup_widget("phy_tab_label"), max_tab_warning, tab_phy_name);
+	app_highlight_tab_label(lookup_widget("phy_tab_label"), max_tab_warning, tab_names_.phy);
 
 	return max_tab_warning;
 }
@@ -2011,7 +2011,7 @@ WarningLevel GscInfoWindow::fill_ui_directory(const StoragePropertyRepository& p
 	}
 
 	// tab label
-	app_highlight_tab_label(lookup_widget("directory_tab_label"), max_tab_warning, tab_directory_name);
+	app_highlight_tab_label(lookup_widget("directory_tab_label"), max_tab_warning, tab_names_.directory);
 
 	return max_tab_warning;
 }
@@ -2241,7 +2241,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 	auto* self = static_cast<GscInfoWindow*>(data);
 	DBG_ASSERT_RETURN(self, false);
 
-	if (!self->current_test)  // shouldn't happen
+	if (!self->current_test_)  // shouldn't happen
 		return FALSE;  // stop
 
 	auto* test_completion_progressbar =
@@ -2251,48 +2251,48 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 	bool active = true;
 
 	do {  // goto
-		if (!self->current_test->is_active()) {  // check status
+		if (!self->current_test_->is_active()) {  // check status
 			active = false;
 			break;
 		}
 
-		const int8_t rem_percent = self->current_test->get_remaining_percent();
+		const int8_t rem_percent = self->current_test_->get_remaining_percent();
 		const std::string rem_percent_str = (rem_percent == -1 ? C_("value", "Unknown") : hz::number_to_string_locale(100 - rem_percent));
 
-		auto poll_in = self->current_test->get_poll_in_seconds();  // sec
+		auto poll_in = self->current_test_->get_poll_in_seconds();  // sec
 
 
 		// One update() is performed by start(), so do the timeout first.
 
 		// Wait until next poll (up to several minutes). Meanwhile, interpolate
 		// the remaining time, update the progressbar, etc.
-		if (self->test_timer_poll.elapsed() < static_cast<double>(poll_in.count())) {  // elapsed() is seconds in double.
+		if (self->test_timer_poll_.elapsed() < static_cast<double>(poll_in.count())) {  // elapsed() is seconds in double.
 
 			// Update progress bar right after poll, plus every 5 seconds.
-			if (self->test_force_bar_update || self->test_timer_bar.elapsed() >= 5.) {
+			if (self->test_force_bar_update_ || self->test_timer_bar_.elapsed() >= 5.) {
 
-				auto rem_seconds = self->current_test->get_remaining_seconds();
+				auto rem_seconds = self->current_test_->get_remaining_seconds();
 
 				if (test_completion_progressbar) {
 					const std::string rem_seconds_str = (rem_seconds == std::chrono::seconds(-1) ? C_("duration", "Unknown") : hz::format_time_length(rem_seconds));
 
 					Glib::ustring bar_str;
 
-					if (self->test_error_msg.empty()) {
+					if (self->test_error_msg_.empty()) {
 						bar_str = Glib::ustring::compose(_("Test completion: %1%%; ETA: %2"), rem_percent_str, rem_seconds_str);
 					} else {
-						bar_str = self->test_error_msg;  // better than popup every few seconds
+						bar_str = self->test_error_msg_;  // better than popup every few seconds
 					}
 
 					test_completion_progressbar->set_text(bar_str);
 					test_completion_progressbar->set_fraction(std::max(0., std::min(1., 1. - (rem_percent / 100.))));
 				}
 
-				self->test_force_bar_update = false;
-				self->test_timer_bar.start();  // restart
+				self->test_force_bar_update_ = false;
+				self->test_timer_bar_.start();  // restart
 			}
 
-			if (!self->current_test->is_active()) {  // check status
+			if (!self->current_test_->is_active()) {  // check status
 				active = false;
 				break;
 			}
@@ -2300,7 +2300,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 
 		} else {  // it's poll time
 
-			if (!self->current_test->is_active()) {  // the inner loop stopped, stop this one too
+			if (!self->current_test_->is_active()) {  // the inner loop stopped, stop this one too
 				active = false;
 				break;
 			}
@@ -2308,17 +2308,17 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 			std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 			ex->create_running_dialog(self);
 
-			auto test_status = self->current_test->update(ex);
-			self->test_error_msg = (!test_status ? test_status.error().message() : "");
-			if (!self->test_error_msg.empty()) {
+			auto test_status = self->current_test_->update(ex);
+			self->test_error_msg_ = (!test_status ? test_status.error().message() : "");
+			if (!self->test_error_msg_.empty()) {
 // 				gui_show_error_dialog("Cannot monitor test progress", self->test_error_msg, this);  // better show in progressbar.
-				[[maybe_unused]] auto result = self->current_test->force_stop(ex);  // what else can we do?
+				[[maybe_unused]] auto result = self->current_test_->force_stop(ex);  // what else can we do?
 				active = false;
 				break;
 			}
 
-			self->test_timer_poll.start();  // restart it
-			self->test_force_bar_update = true;  // force progressbar / ETA update on the next tick
+			self->test_timer_poll_.start();  // restart it
+			self->test_force_bar_update_ = true;  // force progressbar / ETA update on the next tick
 		}
 
 
@@ -2332,19 +2332,19 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 
 	// Test is finished, clean up
 
-	self->test_timer_poll.stop();  // just in case
-	self->test_timer_bar.stop();  // just in case
+	self->test_timer_poll_.stop();  // just in case
+	self->test_timer_bar_.stop();  // just in case
 
-	auto status = self->current_test->get_status();
+	auto status = self->current_test_->get_status();
 
 	bool aborted = false;
 	SelfTestStatusSeverity severity = SelfTestStatusSeverity::None;
 	std::string result_msg;
 
-	if (!self->test_error_msg.empty()) {
+	if (!self->test_error_msg_.empty()) {
 		aborted = true;
 		severity = SelfTestStatusSeverity::Error;
-		result_msg = Glib::ustring::compose(_("<b>Test aborted:</b> %1"), Glib::Markup::escape_text(self->test_error_msg));
+		result_msg = Glib::ustring::compose(_("<b>Test aborted:</b> %1"), Glib::Markup::escape_text(self->test_error_msg_));
 
 	} else {
 		severity = get_self_test_status_severity(status);
@@ -2417,8 +2417,8 @@ void GscInfoWindow::on_test_execute_button_clicked()
 	if (!row)
 		return;
 
-	std::shared_ptr<SelfTest> test_from_combo = row[test_combo_columns.self_test];
-	auto test = std::make_shared<SelfTest>(drive, test_from_combo->get_test_type());
+	std::shared_ptr<SelfTest> test_from_combo = row[test_combo_columns_.self_test];
+	auto test = std::make_shared<SelfTest>(drive_, test_from_combo->get_test_type());
 	if (!test)
 		return;
 
@@ -2437,7 +2437,7 @@ void GscInfoWindow::on_test_execute_button_clicked()
 		return;
 	}
 
-	current_test = test;
+	current_test_ = test;
 
 
 	// Switch GUI to "running test" mode
@@ -2459,10 +2459,10 @@ void GscInfoWindow::on_test_execute_button_clicked()
 
 
 	// reset these
-	test_error_msg.clear();
-	test_timer_poll.start();
-	test_timer_bar.start();
-	test_force_bar_update = true;
+	test_error_msg_.clear();
+	test_timer_poll_.start();
+	test_timer_bar_.start();
+	test_force_bar_update_ = true;
 
 
 	// We don't use idle function here, because it has the following problem:
@@ -2484,17 +2484,17 @@ void GscInfoWindow::on_test_execute_button_clicked()
 
 void GscInfoWindow::on_test_stop_button_clicked()
 {
-	if (!current_test)
+	if (!current_test_)
 		return;
 
 	std::shared_ptr<SmartctlExecutorGui> ex(new SmartctlExecutorGui());
 	ex->create_running_dialog(this);
 
-	auto test_status = current_test->force_stop(ex);
+	auto test_status = current_test_->force_stop(ex);
 	if (!test_status) {
 		/// Translators: %1 is test name
 		gui_show_error_dialog(Glib::ustring::compose(_("Cannot stop %1"),
-				SelfTest::get_test_displayable_name(current_test->get_test_type())), test_status.error().message(), this);
+				SelfTest::get_test_displayable_name(current_test_->get_test_type())), test_status.error().message(), this);
 		return;
 	}
 
@@ -2510,13 +2510,13 @@ void GscInfoWindow::on_test_stop_button_clicked()
 // But we need to look for testing status change, to avoid aborting it.
 void GscInfoWindow::on_drive_changed([[maybe_unused]] StorageDevice* pdrive)
 {
-	if (!drive)
+	if (!drive_)
 		return;
-	const bool test_active = drive->get_test_is_active();
+	const bool test_active = drive_->get_test_is_active();
 
 	// disable refresh button if test is active or if it's a virtual drive
 	if (auto* refresh_info_button = lookup_widget<Gtk::Button*>("refresh_info_button"))
-		refresh_info_button->set_sensitive(!test_active && !drive->get_is_virtual());
+		refresh_info_button->set_sensitive(!test_active && !drive_->get_is_virtual());
 
 	// disallow close. usually modal dialogs are used for this, but we can't have
 	// per-drive modal dialogs.

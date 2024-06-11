@@ -1,7 +1,7 @@
 /******************************************************************************
 License: GNU General Public License v3.0 only
 Copyright:
-	(C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+	(C) 2008 - 2024 Alexander Shaduri <ashaduri@gmail.com>
 ******************************************************************************/
 /// \file
 /// \author Alexander Shaduri
@@ -65,25 +65,25 @@ GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, Glib::RefPtr
 
 		// #, Command + parameters, [EntryPtr]
 
-		model_columns.add(col_num);
-		app_gtkmm_create_tree_view_column(col_num, *treeview,
+		model_columns.add(col_num_);
+		app_gtkmm_create_tree_view_column(col_num_, *treeview,
 				"#", _("# of executed command"), true);  // sortable
 
-		model_columns.add(col_command);
-		app_gtkmm_create_tree_view_column(col_command, *treeview,
+		model_columns.add(col_command_);
+		app_gtkmm_create_tree_view_column(col_command_, *treeview,
 				_("Command"), _("Command with parameters"), true);  // sortable
 
-		model_columns.add(col_entry);
+		model_columns.add(col_entry_);
 
 
 		// create a TreeModel (ListStore)
-		list_store = Gtk::ListStore::create(model_columns);
+		list_store_ = Gtk::ListStore::create(model_columns);
 		// list_store->set_sort_column(col_num, Gtk::SORT_DESCENDING);  // default sort
-		treeview->set_model(list_store);
+		treeview->set_model(list_store_);
 
 
-		selection = treeview->get_selection();
-		selection->signal_changed().connect(sigc::mem_fun(*this,
+		selection_ = treeview->get_selection();
+		selection_->signal_changed().connect(sigc::mem_fun(*this,
 				&GscExecutorLogWindow::on_tree_selection_changed) );
 
 	}
@@ -117,12 +117,12 @@ void GscExecutorLogWindow::show_last()
 {
 	auto* treeview = this->lookup_widget<Gtk::TreeView*>("command_list_treeview");
 
-	if (treeview != nullptr && !list_store->children().empty()) {
+	if (treeview != nullptr && !list_store_->children().empty()) {
 // 		Gtk::TreeRow row = *(list_store->children().rbegin());  // this causes invalid read error in valgrind
-		const Gtk::TreeRow row = *(--(list_store->children().end()));
-		selection->select(row);
+		const Gtk::TreeRow row = *(--(list_store_->children().end()));
+		selection_->select(row);
 		// you would think that scroll_to_row would accept a TreeRow for a change (shock!)
-		treeview->scroll_to_row(list_store->get_path(row));
+		treeview->scroll_to_row(list_store_->get_path(row));
 	}
 
 	show();
@@ -152,21 +152,21 @@ void GscExecutorLogWindow::clear_view_widgets()
 void GscExecutorLogWindow::on_command_output_received(const CommandExecutorResult& info)
 {
 	auto entry = std::make_shared<CommandExecutorResult>(info);
-	entries.push_back(entry);
+	entries_.push_back(entry);
 
 	std::vector<std::string> command = {info.command};
 	command.insert(command.end(), info.parameters.begin(), info.parameters.end());
 
 	// update tree model
-	const Gtk::TreeRow row = *(list_store->append());
-	row[col_num] = entries.size();
-	row[col_command] = hz::string_join(command, " ");
-	row[col_entry] = entry;
+	const Gtk::TreeRow row = *(list_store_->append());
+	row[col_num_] = entries_.size();
+	row[col_command_] = hz::string_join(command, " ");
+	row[col_entry_] = entry;
 
 	// if visible, set the selection to it
 	if (auto* treeview = this->lookup_widget<Gtk::TreeView*>("command_list_treeview")) {
-		selection->select(row);
-		treeview->scroll_to_row(list_store->get_path(row));
+		selection_->select(row);
+		treeview->scroll_to_row(list_store_->get_path(row));
 	}
 }
 
@@ -189,11 +189,11 @@ void GscExecutorLogWindow::on_window_close_button_clicked()
 
 void GscExecutorLogWindow::on_window_save_current_button_clicked()
 {
-	if (selection->count_selected_rows() == 0)
+	if (selection_->count_selected_rows() == 0)
 		return;
 
-	const Gtk::TreeIter iter = selection->get_selected();
-	const std::shared_ptr<CommandExecutorResult> entry = (*iter)[col_entry];
+	const Gtk::TreeIter iter = selection_->get_selected();
+	const std::shared_ptr<CommandExecutorResult> entry = (*iter)[col_entry_];
 
 	static std::string last_dir;
 	if (last_dir.empty()) {
@@ -299,20 +299,20 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 
 	exss << "\n\n\n------------------------- EXECUTION LOG -------------------------\n\n\n";
 
-	for (std::size_t i = 0; i < entries.size(); ++i) {
+	for (std::size_t i = 0; i < entries_.size(); ++i) {
 		exss << "\n\n\n------------------------- EXECUTED COMMAND " << (i+1) << " -------------------------\n\n";
 		exss << "\n---------------" << "Command" << "---------------\n";
-		exss << entries[i]->command << "\n";
+		exss << entries_[i]->command << "\n";
 		exss << "\n---------------" << "Parameters" << "---------------\n";
-		for (const auto& param : entries[i]->parameters) {
+		for (const auto& param : entries_[i]->parameters) {
 			exss << param << "\n";
 		}
 		exss << "\n---------------" << "STDOUT" << "---------------\n";
-		exss << entries[i]->std_output << "\n\n";
+		exss << entries_[i]->std_output << "\n\n";
 		exss << "\n---------------" << "STDERR" << "---------------\n";
-		exss << entries[i]->std_error << "\n\n";
+		exss << entries_[i]->std_error << "\n\n";
 		exss << "\n---------------" << "Error Message" << "---------------\n";
-		exss << entries[i]->error_message << "\n\n";
+		exss << entries_[i]->error_message << "\n\n";
 	}
 
 
@@ -409,8 +409,8 @@ void GscExecutorLogWindow::on_window_save_all_button_clicked()
 
 void GscExecutorLogWindow::on_clear_command_list_button_clicked()
 {
-	entries.clear();
-	list_store->clear();  // this will unselect & clear widgets too.
+	entries_.clear();
+	list_store_->clear();  // this will unselect & clear widgets too.
 }
 
 
@@ -419,11 +419,11 @@ void GscExecutorLogWindow::on_tree_selection_changed()
 {
 	this->clear_view_widgets();
 
-	if (selection->count_selected_rows() > 0) {
-		const Gtk::TreeIter iter = selection->get_selected();
+	if (selection_->count_selected_rows() > 0) {
+		const Gtk::TreeIter iter = selection_->get_selected();
 		const Gtk::TreeRow& row = *iter;
 
-		const std::shared_ptr<CommandExecutorResult> entry = row[col_entry];
+		const std::shared_ptr<CommandExecutorResult> entry = row[col_entry_];
 
 		if (auto* output_textview = this->lookup_widget<Gtk::TextView*>("output_textview")) {
 			const Glib::RefPtr<Gtk::TextBuffer> buffer = output_textview->get_buffer();

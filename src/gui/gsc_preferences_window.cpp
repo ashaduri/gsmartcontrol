@@ -290,9 +290,9 @@ GscPreferencesWindow::GscPreferencesWindow(BaseObjectType* gtkcobj, Glib::RefPtr
 
 
 	// create Device Options treeview
-	get_ui()->get_widget_derived("device_options_treeview", device_options_treeview);
-	if (device_options_treeview)
-		device_options_treeview->set_preferences_window(this);
+	get_ui()->get_widget_derived("device_options_treeview", device_options_treeview_);
+	if (device_options_treeview_)
+		device_options_treeview_->set_preferences_window(this);
 
 	// we can't do this in treeview's constructor, it doesn't know about this window yet.
 	this->device_widget_set_remove_possible(false);  // initial state
@@ -401,8 +401,8 @@ void GscPreferencesWindow::import_config()
 	if (auto* entry = this->lookup_widget<Gtk::Entry*>("device_blacklist_patterns_entry"))
 		entry->set_text(device_blacklist_patterns);
 
-	if (device_options_treeview) {
-		device_options_treeview->set_device_map(app_config_get_device_option_map());
+	if (device_options_treeview_) {
+		device_options_treeview_->set_device_map(app_config_get_device_option_map());
 	}
 
 }
@@ -442,7 +442,7 @@ void GscPreferencesWindow::export_config()
 	if (auto* entry = this->lookup_widget<Gtk::Entry*>("device_blacklist_patterns_entry"))
 		prefs_config_set("system/device_blacklist_patterns", std::string(entry->get_text()));
 
-	auto devmap = device_options_treeview->get_device_map();
+	auto devmap = device_options_treeview_->get_device_map();
 	prefs_config_set("system/smartctl_device_options", devmap);
 }
 
@@ -466,7 +466,7 @@ void GscPreferencesWindow::on_window_cancel_button_clicked()
 void GscPreferencesWindow::on_window_ok_button_clicked()
 {
 	// Check if device map contains drives with empty device names or parameters.
-	auto devmap = device_options_treeview->get_device_map();
+	auto devmap = device_options_treeview_->get_device_map();
 	bool contains_empty = false;
 	for (const auto& iter : devmap.value) {
 		if (iter.first.first.empty() || iter.second.empty()) {
@@ -596,7 +596,7 @@ void GscPreferencesWindow::on_smartctl_binary_browse_button_clicked()
 
 void GscPreferencesWindow::on_device_options_remove_device_button_clicked()
 {
-	device_options_treeview->remove_selected_row();
+	device_options_treeview_->remove_selected_row();
 }
 
 
@@ -614,10 +614,10 @@ void GscPreferencesWindow::on_device_options_add_device_button_clicked()
 	if (auto* entry = this->lookup_widget<Gtk::Entry*>("device_options_parameter_entry"))
 		par = entry->get_text();
 
-	if (device_options_treeview->has_selected_row()) {
-		device_options_treeview->add_new_row("", "", "");  // without this it would clone the existing.
+	if (device_options_treeview_->has_selected_row()) {
+		device_options_treeview_->add_new_row("", "", "");  // without this it would clone the existing.
 	} else {
-		device_options_treeview->add_new_row(dev, type, par);
+		device_options_treeview_->add_new_row(dev, type, par);
 	}
 }
 
@@ -626,7 +626,7 @@ void GscPreferencesWindow::on_device_options_add_device_button_clicked()
 void GscPreferencesWindow::on_device_options_device_entry_changed()
 {
 	if (auto* entry = this->lookup_widget<Gtk::Entry*>("device_options_device_entry"))
-		device_options_treeview->update_selected_row_device(entry->get_text());
+		device_options_treeview_->update_selected_row_device(entry->get_text());
 }
 
 
@@ -634,7 +634,7 @@ void GscPreferencesWindow::on_device_options_device_entry_changed()
 void GscPreferencesWindow::on_device_options_type_entry_changed()
 {
 	if (auto* entry = this->lookup_widget<Gtk::Entry*>("device_options_type_entry"))
-		device_options_treeview->update_selected_row_type(entry->get_text());
+		device_options_treeview_->update_selected_row_type(entry->get_text());
 }
 
 
@@ -642,7 +642,7 @@ void GscPreferencesWindow::on_device_options_type_entry_changed()
 void GscPreferencesWindow::on_device_options_parameter_entry_changed()
 {
 	if (auto* entry = this->lookup_widget<Gtk::Entry*>("device_options_parameter_entry"))
-		device_options_treeview->update_selected_row_params(entry->get_text());
+		device_options_treeview_->update_selected_row_params(entry->get_text());
 }
 
 

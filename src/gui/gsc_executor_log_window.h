@@ -1,7 +1,7 @@
 /******************************************************************************
 License: GNU General Public License v3.0 only
 Copyright:
-	(C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+	(C) 2008 - 2024 Alexander Shaduri <ashaduri@gmail.com>
 ******************************************************************************/
 /// \file
 /// \author Alexander Shaduri
@@ -82,15 +82,15 @@ class GscExecutorLogWindow : public AppBuilderWidget<GscExecutorLogWindow, false
 
 	private:
 
-		std::vector<std::shared_ptr<CommandExecutorResult>> entries;  ///< Command information entries
+		std::vector<std::shared_ptr<CommandExecutorResult>> entries_;  ///< Command information entries
 
 
-		Glib::RefPtr<Gtk::ListStore> list_store;  ///< List store
-		Glib::RefPtr<Gtk::TreeSelection> selection;  ///< Tree selection
+		Glib::RefPtr<Gtk::ListStore> list_store_;  ///< List store
+		Glib::RefPtr<Gtk::TreeSelection> selection_;  ///< Tree selection
 
-		Gtk::TreeModelColumn<std::size_t> col_num;  ///< Tree column
-		Gtk::TreeModelColumn<std::string> col_command;  ///< Tree column
-		Gtk::TreeModelColumn<std::shared_ptr<CommandExecutorResult>> col_entry;  ///< Tree column
+		Gtk::TreeModelColumn<std::size_t> col_num_;  ///< Tree column
+		Gtk::TreeModelColumn<std::string> col_command_;  ///< Tree column
+		Gtk::TreeModelColumn<std::shared_ptr<CommandExecutorResult>> col_entry_;  ///< Tree column
 
 
 };

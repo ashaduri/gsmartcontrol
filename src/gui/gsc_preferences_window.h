@@ -1,7 +1,7 @@
 /******************************************************************************
 License: GNU General Public License v3.0 only
 Copyright:
-	(C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+	(C) 2008 - 2024 Alexander Shaduri <ashaduri@gmail.com>
 ******************************************************************************/
 /// \file
 /// \author Alexander Shaduri
@@ -101,7 +101,7 @@ class GscPreferencesWindow : public AppBuilderWidget<GscPreferencesWindow, true>
 
 		GscMainWindow* main_window_ = nullptr;  ///< Main window that called us.
 
-		GscPreferencesDeviceOptionsTreeView* device_options_treeview = nullptr;  ///< Device options tree view
+		GscPreferencesDeviceOptionsTreeView* device_options_treeview_ = nullptr;  ///< Device options tree view
 
 };
 

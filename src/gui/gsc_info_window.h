@@ -1,7 +1,7 @@
 /******************************************************************************
 License: GNU General Public License v3.0 only
 Copyright:
-	(C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+	(C) 2008 - 2024 Alexander Shaduri <ashaduri@gmail.com>
 ******************************************************************************/
 /// \file
 /// \author Alexander Shaduri
@@ -14,6 +14,7 @@ Copyright:
 
 #include <gtkmm.h>
 #include <map>
+#include <memory>
 
 #include "applib/app_builder_widget.h"
 #include "applib/storage_device.h"
@@ -256,54 +257,56 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 
 		// ---------- Connections
 
-		sigc::connection error_log_row_selected_conn;  ///< Callback connection
+		sigc::connection error_log_row_selected_conn_;  ///< Callback connection
 
-		sigc::connection test_type_combo_changed_conn;  ///< Callback connection
+		sigc::connection test_type_combo_changed_conn_;  ///< Callback connection
 
-		sigc::connection drive_changed_connection;  // Callback connection of drive's signal_changed callback
+		sigc::connection drive_changed_connection_;  // Callback connection of drive's signal_changed callback
 
 
 		// ---------- Data members
 
-		std::map<std::string, Gtk::Menu*> treeview_menus;  ///< Context menus
+		std::map<std::string, Gtk::Menu*> treeview_menus_;  ///< Context menus
 
-		// tab headers, to perform their coloration
-		Glib::ustring tab_identity_name;  ///< Tab header name
-		Glib::ustring tab_ata_attributes_name;  ///< Tab header name
-		Glib::ustring tab_nvme_attributes_name;  ///< Tab header name
-		Glib::ustring tab_statistics_name;  ///< Tab header name
-		Glib::ustring tab_test_name;  ///< Tab header name
-		Glib::ustring tab_ata_error_log_name;  ///< Tab header name
-		Glib::ustring tab_nvme_error_log_name;  ///< Tab header name
-		Glib::ustring tab_temperature_name;  ///< Tab header name
-		Glib::ustring tab_advanced_name;  ///< Tab header name
+		/// tab header names, to perform their coloration
+		struct {
+			Glib::ustring identity;  ///< Tab header name
+			Glib::ustring ata_attributes;  ///< Tab header name
+			Glib::ustring nvme_attributes;  ///< Tab header name
+			Glib::ustring statistics;  ///< Tab header name
+			Glib::ustring test;  ///< Tab header name
+			Glib::ustring ata_error_log;  ///< Tab header name
+			Glib::ustring nvme_error_log;  ///< Tab header name
+			Glib::ustring temperature;  ///< Tab header name
+			Glib::ustring advanced;  ///< Tab header name
 
-		Glib::ustring tab_capabilities_name;  ///< Tab header name
-		Glib::ustring tab_erc_name;  ///< Tab header name
-		Glib::ustring tab_selective_selftest_name;  ///< Tab header name
-		Glib::ustring tab_phy_name;  ///< Tab header name
-		Glib::ustring tab_directory_name;  ///< Tab header name
+			Glib::ustring capabilities;  ///< Tab header name
+			Glib::ustring erc;  ///< Tab header name
+			Glib::ustring selective_selftest;  ///< Tab header name
+			Glib::ustring phy;  ///< Tab header name
+			Glib::ustring directory;  ///< Tab header name
+		} tab_names_;
 
-		Gtk::Label* device_name_label = nullptr;  ///< Top label
+		Gtk::Label* device_name_label_ = nullptr;  ///< Top label
 
-		StorageDevicePtr drive;  ///< The drive we're showing
+		StorageDevicePtr drive_;  ///< The drive we're showing
 
-		std::shared_ptr<SelfTest> current_test;  ///< Currently running test, or 0.
+		std::shared_ptr<SelfTest> current_test_;  ///< Currently running test, or 0.
 
 		// Test idle callback temporaries
-		std::string test_error_msg;  ///< Our errors
-		Glib::Timer test_timer_poll;  ///< Timer for testing phase
-		Glib::Timer test_timer_bar;  ///< Timer for testing phase
-		bool test_force_bar_update = false;  ///< Helper for testing callback
+		std::string test_error_msg_;  ///< Our errors
+		Glib::Timer test_timer_poll_;  ///< Timer for testing phase
+		Glib::Timer test_timer_bar_;  ///< Timer for testing phase
+		bool test_force_bar_update_ = false;  ///< Helper for testing callback
 
 		// "Test type" combobox columns
 		struct {
 			Gtk::TreeModelColumn<Glib::ustring> name;  ///< Combobox model column
 			Gtk::TreeModelColumn<Glib::ustring> description;  ///< Combobox model column
 			Gtk::TreeModelColumn<std::shared_ptr<SelfTest>> self_test;  ///< Combobox model column
-		} test_combo_columns;
+		} test_combo_columns_;
 
-		Glib::RefPtr<Gtk::ListStore> test_combo_model;  ///< Combobox model
+		Glib::RefPtr<Gtk::ListStore> test_combo_model_;  ///< Combobox model
 
 		/// Columns of treeviews inside GscInfoWindow
 		std::unique_ptr<GscInfoWindowColumns> columns_;
