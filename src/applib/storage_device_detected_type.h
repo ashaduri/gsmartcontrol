@@ -12,6 +12,7 @@ Copyright:
 #define STORAGE_DEVICE_DETECTED_TYPE_H
 
 #include <glibmm.h>
+#include <unordered_map>
 
 #include "hz/enum_helper.h"
 
