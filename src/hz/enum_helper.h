@@ -67,7 +67,7 @@ class EnumHelper {
 
 
 		/// Return all possible members of an enum
-		[[nodiscard]] static std::vector<EnumType> getAllValues()
+		[[nodiscard]] static std::vector<EnumType> get_all_values()
 		{
 			static const auto v = build_enum_value_list();
 			return v;
