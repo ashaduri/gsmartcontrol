@@ -384,6 +384,17 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_self
 
 	bool section_properties_found = false;
 
+	// If nvme_self_test_log is present, the drive supports tests
+	{
+		StorageProperty p;
+		p.set_name("nvme_self_test_log/_tests_supported", "nvme_self_test_log/_tests_supported", _("Self-tests supported"));
+		p.section = StoragePropertySection::SelftestLog;
+		// p.show_in_ui = false;
+		p.value = get_node_exists(json_root_node, "nvme_self_test_log").value_or(false);
+		add_property(p);
+	}
+
+
 	{
 		StorageProperty p;
 		p.set_name("nvme_self_test_log/current_self_test_operation/value/_decoded",

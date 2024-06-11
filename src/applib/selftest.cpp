@@ -167,8 +167,11 @@ bool SelfTest::is_supported() const
 				return false;  // not supported by nvme
 			case TestType::ShortTest:
 			case TestType::LongTest:
-				// NVMe spec
-				return true;
+			{
+				// Both short and long should be supported if the drive has a self-test log
+				const StorageProperty p = drive_->get_property_repository().lookup_property("nvme_self_test_log/_tests_supported");
+				return (!p.empty() && p.get_value<bool>());
+			}
 		}
 
 	} else if (drive_->get_detected_type() == StorageDeviceDetectedType::AtaAny
