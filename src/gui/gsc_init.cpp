@@ -473,8 +473,8 @@ bool app_init_and_loop(int& argc, char**& argv)
 			hz::data_file_add_search_directory("ui", application_dir / "ui");
 			hz::data_file_add_search_directory("doc", application_dir / "doc");
 		} else {
-			hz::data_file_add_search_directory("icons", hz::fs_path_from_string(BuildEnv::package_pkgdata_dir()) / "icons");  // /usr/share/program_name/icons
-			hz::data_file_add_search_directory("ui", hz::fs_path_from_string(BuildEnv::package_pkgdata_dir()) / "ui");  // /usr/share/program_name/ui
+			hz::data_file_add_search_directory("icons", hz::fs_path_from_string(BuildEnv::package_pkgdata_dir()) / BuildEnv::package_name() / "icons");  // /usr/share/program_name/icons
+			hz::data_file_add_search_directory("ui", hz::fs_path_from_string(BuildEnv::package_pkgdata_dir()) / BuildEnv::package_name() / "ui");  // /usr/share/program_name/ui
 			hz::data_file_add_search_directory("doc", hz::fs_path_from_string(BuildEnv::package_doc_dir()));  // /usr/share/doc/[packages/]gsmartcontrol
 		}
 	}
