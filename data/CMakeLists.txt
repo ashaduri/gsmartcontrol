@@ -28,10 +28,10 @@ endif()
 
 # Install internal icons
 if (WIN32)
-	install(FILES icon_cddvd.png icon_hdd.png
+	install(FILES icon_optical.png icon_harddisk.png
 		DESTINATION .)
 else()
-	install(FILES icon_cddvd.png icon_hdd.png
+	install(FILES icon_optical.png icon_harddisk.png
 		DESTINATION "${CMAKE_INSTALL_DATADIR}/gsmartcontrol/icons")
 endif()
 

@@ -23,6 +23,7 @@ target_sources(gsmartcontrol PRIVATE
 	gsc_main.cpp
 	gsc_main_window.cpp
 	gsc_main_window.h
+	gsc_main_window_iconview.cpp
 	gsc_main_window_iconview.h
 	gsc_preferences_window.cpp
 	gsc_preferences_window.h

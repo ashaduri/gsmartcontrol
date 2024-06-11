@@ -11,6 +11,7 @@ Copyright:
 
 #include <glibmm.h>
 #include <gtkmm.h>
+#include <system_error>
 #include <vector>
 #include <memory>
 #include <algorithm>
@@ -42,6 +43,7 @@ Copyright:
 #include "gsc_add_device_window.h"
 #include "applib/command_executor_factory.h"
 #include "gsc_startup_settings.h"
+#include "build_config.h"
 
 
 
@@ -56,8 +58,8 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 
 	// Size
 	{
-		int def_size_w = rconfig::get_data<int>("gui/main_window/default_size_w");
-		int def_size_h = rconfig::get_data<int>("gui/main_window/default_size_h");
+		const int def_size_w = rconfig::get_data<int>("gui/main_window/default_size_w");
+		const int def_size_h = rconfig::get_data<int>("gui/main_window/default_size_h");
 		if (def_size_w > 0 && def_size_h > 0) {
 			set_default_size(def_size_w, def_size_h);
 		}
@@ -68,8 +70,8 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 
 	// Position (after the window has been shown)
 	{
-		int pos_x = rconfig::get_data<int>("gui/main_window/default_pos_x");
-		int pos_y = rconfig::get_data<int>("gui/main_window/default_pos_y");
+		const int pos_x = rconfig::get_data<int>("gui/main_window/default_pos_x");
+		const int pos_y = rconfig::get_data<int>("gui/main_window/default_pos_y");
 		if (pos_x > 0 && pos_y > 0) {  // to avoid situations where positions are not supported
 			this->move(pos_x, pos_y);
 		}
@@ -85,7 +87,7 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 	bool show_output_button = true;
 
 	do {
-		std::string smartctl_binary = hz::fs_path_to_string(get_smartctl_binary());
+		const std::string smartctl_binary = hz::fs_path_to_string(get_smartctl_binary());
 
 		// Don't use default options here - they are used when invoked
 		// with a device option.
@@ -111,7 +113,7 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 			break;
 		}
 
-		std::string output = ex.get_stdout_str();
+		const std::string output = ex.get_stdout_str();
 		if (output.empty()) {
 			error_msg = _("Smartctl returned an empty output.");
 			break;
@@ -137,7 +139,7 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 
 	} while (false);
 
-	bool smartctl_valid = error_msg.empty();
+	const bool smartctl_valid = error_msg.empty();
 	if (!smartctl_valid) {
 		gsc_executor_error_dialog_show(_("There was an error while executing smartctl"),
 				error_msg + "\n\n<i>" + _("Please specify the correct smartctl binary in Preferences.") + "</i>",
@@ -237,7 +239,7 @@ bool GscMainWindow::create_widgets()
 
 	// --------------------------------- Action widgets
 
-	static Glib::ustring ui_info =
+	static const Glib::ustring ui_info =
 	"<menubar name='main_menubar'>"
 
 	"	<menu action='file_menu'>"
@@ -506,7 +508,7 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 		return;
 	}
 
-	std::string action_name = action->get_name();
+	const std::string action_name = action->get_name();
 
 	// Do NOT output action->get_name() directly, it dies with unhandled conversion error
 	// exception if used with operator <<.
@@ -642,7 +644,7 @@ void GscMainWindow::on_action_enable_smart_toggled(Gtk::ToggleAction* action)
 	if (status == StorageDevice::SmartStatus::Unsupported)  // this shouldn't happen
 		return;
 
-	bool toggle_active = action->get_active();
+	const bool toggle_active = action->get_active();
 
 	if ( (toggle_active && status == StorageDevice::SmartStatus::Disabled)
 			|| (!toggle_active && status == StorageDevice::SmartStatus::Enabled) ) {
@@ -653,7 +655,7 @@ void GscMainWindow::on_action_enable_smart_toggled(Gtk::ToggleAction* action)
 		auto command_status = drive->set_smart_enabled(toggle_active, ex);  // run it with GUI support
 
 		if (!command_status) {
-			std::string error_header = (toggle_active ? _("Cannot enable SMART") : _("Cannot disable SMART"));
+			const std::string error_header = (toggle_active ? _("Cannot enable SMART") : _("Cannot disable SMART"));
 			gsc_executor_error_dialog_show(error_header, command_status.error().message(), this);
 		}
 
@@ -715,7 +717,7 @@ void GscMainWindow::set_drive_menu_status(const StorageDevicePtr& drive)
 		// make everything sensitive, then disable one by one
 		actiongroup_device_->set_sensitive(true);
 
-		bool is_virtual = (drive && drive->get_is_virtual());
+		const bool is_virtual = (drive && drive->get_is_virtual());
 
 		StorageDevice::SmartStatus smart_status = StorageDevice::SmartStatus::Unsupported;
 
@@ -774,7 +776,7 @@ void GscMainWindow::update_status_widgets()
 // 	Gtk::Label* family_label = this->lookup_widget<Gtk::Label*>("status_family_label");
 // 	Gtk::Statusbar* statusbar = this->lookup_widget<Gtk::Statusbar*>("window_statusbar");
 
-	StorageDevicePtr drive = iconview_->get_selected_drive();
+	const StorageDevicePtr drive = iconview_->get_selected_drive();
 	if (!drive) {
 		if (name_label_)
 			name_label_->set_text(_("No drive selected"));
@@ -788,17 +790,17 @@ void GscMainWindow::update_status_widgets()
 	}
 
 	/// Translators: %1 is filename
-	std::string device = Glib::Markup::escape_text(drive->get_is_virtual()
+	const std::string device = Glib::Markup::escape_text(drive->get_is_virtual()
 			? Glib::ustring::compose(_("Virtual: %1"), drive->get_virtual_filename()) : Glib::ustring(drive->get_device_with_type()));
-	std::string size = Glib::Markup::escape_text(drive->get_device_size_str());
-	std::string model = Glib::Markup::escape_text(drive->get_model_name().empty()
+	const std::string size = Glib::Markup::escape_text(drive->get_device_size_str());
+	const std::string model = Glib::Markup::escape_text(drive->get_model_name().empty()
 			? std::string(_("Unknown model")) : drive->get_model_name());
-	std::string family = Glib::Markup::escape_text(drive->get_family_name().empty()
+	const std::string family = Glib::Markup::escape_text(drive->get_family_name().empty()
 			? C_("model_family", "Unknown") : drive->get_family_name());
-	std::string family_fallback = Glib::Markup::escape_text(drive->get_family_name().empty() ? model : drive->get_family_name());
-	std::string drive_letters_str = Glib::Markup::escape_text(drive->format_drive_letters(false));
+	const std::string family_fallback = Glib::Markup::escape_text(drive->get_family_name().empty() ? model : drive->get_family_name());
+	const std::string drive_letters_str = Glib::Markup::escape_text(drive->format_drive_letters(false));
 
-	std::string info_str = device
+	const std::string info_str = device
 			+ (drive_letters_str.empty() ? "" : (" (<b>" + drive_letters_str + "</b>)"))
 			+ (size.empty() ? "" : (", " + size))
 			+ (model.empty() ? "" : (", " + model));
@@ -807,7 +809,7 @@ void GscMainWindow::update_status_widgets()
 		app_gtkmm_set_widget_tooltip(*name_label_, info_str, false);  // in case it doesn't fit
 	}
 
-	StorageProperty health_prop = drive->get_health_property();
+	const StorageProperty health_prop = drive->get_health_property();
 
 	if (health_label_) {
 		if (health_prop.generic_name == "smart_status/passed") {
@@ -821,7 +823,7 @@ void GscMainWindow::update_status_widgets()
 			// app_gtkmm_set_widget_tooltip(*health_label, health_prop.get_description(), true);
 
 			if (health_prop.warning_level != WarningLevel::None) {
-				std::string tooltip_str = storage_property_get_warning_reason(health_prop)
+				const std::string tooltip_str = storage_property_get_warning_reason(health_prop)
 						+ "\n\n" + _("View details for more information.");
 				app_gtkmm_set_widget_tooltip(*health_label_, tooltip_str, true);
 			}
@@ -900,7 +902,7 @@ void GscMainWindow::rescan_devices()
 
 	// Catch permission errors.
 	// executor errors and outputs, not reported through error_message.
-	std::vector<std::string> fetch_outputs = sd.get_fetch_data_error_outputs();
+	const std::vector<std::string> fetch_outputs = sd.get_fetch_data_error_outputs();
 	for (const auto& fetch_output : fetch_outputs) {
 		// debug_out_error("app", DBG_FUNC_MSG << fetch_outputs[i] << "\n");
 		if (app_regex_partial_match("/Smartctl open device.+Permission denied/mi", fetch_output)) {

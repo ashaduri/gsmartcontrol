@@ -306,7 +306,7 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 		Glib::RefPtr<Gtk::ListStore> test_combo_model;  ///< Combobox model
 
 		/// Columns of treeviews inside GscInfoWindow
-		std::unique_ptr<GscInfoWindowColumns> columns;
+		std::unique_ptr<GscInfoWindowColumns> columns_;
 };
 
 
