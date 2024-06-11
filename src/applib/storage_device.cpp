@@ -602,14 +602,17 @@ void StorageDevice::detect_drive_type_from_properties(const StoragePropertyRepos
 			lowercase_protocol = hz::string_to_lower_copy(device_protocol_prop.get_value<std::string>());
 		}
 
-		if (smartctl_type == "scsi") {  // USB flash in scsi mode, optical, scsi, etc.
+		// USB flash in scsi mode, optical, scsi, etc.
+		// Protocol is also "SCSI".
+		if (smartctl_type == "scsi") {
 			if (BuildEnv::is_kernel_linux() && get_device_base().starts_with("sr")) {
 				set_detected_type(StorageDeviceDetectedType::CdDvd);
 			} else {
 				set_detected_type(StorageDeviceDetectedType::BasicScsi);
 			}
 
-		} else if (smartctl_type == "sat") {  // (S)ATA, including behind supported RAID controllers
+		// (S)ATA, including behind supported RAID controllers
+		} else if (smartctl_type == "sat" || lowercase_protocol == "ata") {
 			// Find out if it's SSD or HDD
 			auto rpm_prop = property_repo.lookup_property("rotation_rate");
 			if (rpm_prop.empty() || rpm_prop.get_value<std::int64_t>() == 0) {
@@ -618,11 +621,9 @@ void StorageDevice::detect_drive_type_from_properties(const StoragePropertyRepos
 				set_detected_type(StorageDeviceDetectedType::AtaHdd);
 			}
 
-		} else if (smartctl_type == "nvme") {  // NVMe SSD
-			set_detected_type(StorageDeviceDetectedType::Nvme);
-
-		// Try protocol (type may be a USB bridge name)
-		} else if (lowercase_protocol == "nvme") {  // nvme behind USB bridge like "sntrealtek"
+		// NVMe SSD.
+		// Note: NVMe behind USB bridge may have type "sntrealtek" or similar, with protocol "nvme".
+		} else if (smartctl_type == "nvme" || lowercase_protocol == "nvme") {
 			set_detected_type(StorageDeviceDetectedType::Nvme);
 
 		} else {
