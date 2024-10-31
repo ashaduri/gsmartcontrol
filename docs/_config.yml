@@ -1,4 +1,4 @@
-remote_theme: rundocs/jekyll-rtd-theme
+remote_theme: carlosperate/jekyll-theme-rtd
 
 title: GSmartControl
 description: Hard disk drive and SSD health inspection tool
