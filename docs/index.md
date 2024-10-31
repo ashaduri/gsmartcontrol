@@ -1,6 +1,8 @@
 ---
 title: "Home"
 permalink: /
+nav_exclude: false
+nav_order: 1
 ---
 
 # GSmartControl
