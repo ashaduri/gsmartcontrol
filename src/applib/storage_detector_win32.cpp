@@ -112,7 +112,7 @@ std::map<char, DriveLetterInfo> win32_get_drive_letter_map()
 	// Check which drives are fixed
 	std::vector<char> good_drives;
 	for (char c = 'A'; c <= 'Z'; ++c) {
-		if (drives[c - 'A']) {  // drive is present
+		if (drives[static_cast<unsigned char>(c) - 'A']) {  // drive is present
 			debug_out_dump("app", "Windows drive found: " << c << ".\n");
 			switch (auto drive_type = GetDriveType((c + std::string(":\\")).c_str())) {
 				case DRIVE_FIXED:
@@ -136,8 +136,8 @@ std::map<char, DriveLetterInfo> win32_get_drive_letter_map()
 	}
 
 	// Try to open each drive, check its disk extents
-	for (char drive : good_drives) {
-		std::string drive_str = std::string("\\\\.\\") + drive + ":";
+	for (const char drive : good_drives) {
+		const std::string drive_str = std::string("\\\\.\\") + drive + ":";
 		HANDLE h = CreateFileA(
 				drive_str.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
 				OPEN_EXISTING, FILE_FLAG_NO_BUFFERING | FILE_FLAG_RANDOM_ACCESS, nullptr);
@@ -147,26 +147,27 @@ std::map<char, DriveLetterInfo> win32_get_drive_letter_map()
 		}
 		DWORD bytesReturned = 0;
 		VOLUME_DISK_EXTENTS vde;
-		if (!DeviceIoControl(
+		if (DeviceIoControl(
 				h, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS,
-				nullptr, 0, &vde, sizeof(vde), &bytesReturned, nullptr)) {
+				nullptr, 0, &vde, sizeof(vde), &bytesReturned, nullptr) == FALSE) {
 			debug_out_warn("app", "Windows drive " << drive << " is not mapped to any physical drives.\n");
 			continue;
 		}
 
 		std::set<int> physical_drives;
-		for (int i = 0; i < int(vde.NumberOfDiskExtents); ++i) {
+		for (std::size_t i = 0; i < vde.NumberOfDiskExtents; ++i) {
 			physical_drives.insert(int(vde.Extents[i].DiskNumber));
 			debug_out_dump("app", "Windows drive " << drive << " corresponds to physical drive " << vde.Extents[i].DiskNumber << ".\n");
 		}
 
 		std::string volume_name;
-		wchar_t volume_name_w[MAX_PATH+1] = {0};
+		std::array<wchar_t, MAX_PATH+1> volume_name_w = {};
 		DWORD dummy = 0;
-		std::wstring drive_name = hz::win32_utf8_to_utf16(drive + std::string(":\\"));
-		if (!drive_name.empty() && GetVolumeInformationW(drive_name.c_str(),
-				volume_name_w, MAX_PATH+1,
-				nullptr, &dummy, &dummy, nullptr, 0)) {
+		const std::wstring drive_name = hz::win32_utf8_to_utf16(drive + std::string(":\\"));
+		if (!drive_name.empty()
+				&& GetVolumeInformationW(drive_name.c_str(),
+					volume_name_w.data(), MAX_PATH+1,
+					nullptr, &dummy, &dummy, nullptr, 0) == TRUE) {
 			volume_name = hz::win32_utf16_to_utf8(volume_name_w);
 		}
 
@@ -213,9 +214,10 @@ hz::ExpectedVoid<StorageDetectorError> get_scan_open_multiport_devices(std::vect
 			return hz::Unexpected(StorageDetectorError::InvalidCommandLine, _("Invalid command line specified."));
 		}
 	}
-	smartctl_options.push_back("--scan-open");
+	smartctl_options.emplace_back("--scan-open");
+	smartctl_ex->set_command(hz::fs_path_to_string(smartctl_binary), smartctl_options);
 
-	if (bool execute_status = smartctl_ex->execute(); !execute_status) {
+	if (const bool execute_status = smartctl_ex->execute(); !execute_status) {
 		debug_out_warn("app", DBG_FUNC_MSG << "Smartctl binary did not execute cleanly.\n");
 		return hz::Unexpected(StorageDetectorError::SmartctlExecutionError, smartctl_ex->get_error_msg());
 	}
@@ -776,17 +778,18 @@ hz::ExpectedVoid<StorageDetectorError> detect_drives_win32(std::vector<StorageDe
 		drive->set_drive_letters(letters_volnames);
 		debug_out_dump("app", "Drive letters for: " << drive->get_device() << ": " << drive->format_drive_letters(true) << ".\n");
 
+		// Fetch the drive data
+		auto local_status = drive->fetch_basic_data_and_parse(smartctl_ex);
+		if (!local_status) {
+			debug_out_info("app", "Smartctl returned with an error: " << local_status.error().message() << "\n");
+			// Don't exit, just report it.
+		}
+
 		// Sometimes, a single physical drive may be accessible from both "/.//PhysicalDriveN"
 		// and "/.//Scsi2" (e.g. pd0 and csmi2,1). Prefer the port-having ones (which is from --scan-open),
 		// they contain more information.
 		// The only way to detect these duplicates is to compare them using serial numbers.
 		if (!serials.empty()) {
-			auto local_status = drive->fetch_basic_data_and_parse(smartctl_ex);
-			if (!local_status) {
-				debug_out_info("app", "Smartctl returned with an error: " << local_status.error().message() << "\n");
-				// Don't exit, just report it.
-			}
-
 			const std::string drive_serial_id = drive->get_model_name() + "_" + drive->get_serial_number();
 			// A serial may be empty if "-q noserial" was given to smartctl.
 			if (!drive->get_serial_number().empty() && serials.contains(drive_serial_id)) {
