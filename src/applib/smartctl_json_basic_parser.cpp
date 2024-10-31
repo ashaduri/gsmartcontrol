@@ -216,7 +216,11 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 
 		auto p = retrieval_func(json_root_node, key, displayable_name);
 		if (p.has_value()) {  // ignore if not found
-			p->section = StoragePropertySection::Info;
+			if (p->generic_name == "smart_status/passed") {
+				p->section = StoragePropertySection::OverallHealth;
+			} else {
+				p->section = StoragePropertySection::Info;
+			}
 			add_property(p.value());
 		}
 	}
