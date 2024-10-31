@@ -363,7 +363,7 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::update(const std::shared_ptr<
 	std::vector<std::string> command_options = {"--capabilities", "--log=selftest"};
 	if (parser_format == SmartctlOutputFormat::Json) {
 		// --json flags: o means include original output (just in case).
-		command_options.emplace_back(" --json=o");
+		command_options.emplace_back("--json=o");
 	}
 
 	std::string output;
