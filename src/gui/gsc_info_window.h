@@ -310,6 +310,8 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 
 		/// Columns of treeviews inside GscInfoWindow
 		std::unique_ptr<GscInfoWindowColumns> columns_;
+
+		int book_selftest_page_no_ = -1;  ///< The page number of the self-test log in the notebook
 };
 
 

@@ -731,16 +731,20 @@ void GscMainWindow::set_drive_menu_status(const StorageDevicePtr& drive)
 		{
 			Glib::RefPtr<Gtk::Action> action;
 
-			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_perform_tests))))
-				action->set_sensitive(smart_status == StorageDevice::SmartStatus::Enabled);
-			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_reread_device_data))))
+			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_perform_tests)))) {
+				auto status = drive->get_self_test_support_status();
+				action->set_sensitive(status != StorageDevice::SelfTestSupportStatus::Unsupported);
+			}
+			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_reread_device_data)))) {
 				action->set_visible(drive && !is_virtual);
+			}
 			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_remove_device)))) {
 				action->set_visible(drive && drive->get_is_manually_added());
 				// action->set_sensitive(drive && drive->get_is_manually_added());
 			}
-			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_remove_virtual_device))))
+			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_remove_virtual_device)))) {
 				action->set_visible(drive && is_virtual);
+			}
 			if ((action = actiongroup_device_->get_action(APP_ACTION_NAME(action_enable_smart)))) {
 				action->set_sensitive(drive && drive->get_smart_switch_supported());
 			}

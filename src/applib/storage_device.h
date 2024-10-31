@@ -70,6 +70,14 @@ class StorageDevice {
 		};
 
 
+		/// Status of self-test support
+		enum class SelfTestSupportStatus {
+			Unknown,  ///< Full info not parsed yet
+			Supported,  ///< Supported
+			Unsupported,  ///< Not supported
+		};
+
+
 		/// Constructor
 		explicit StorageDevice(std::string dev_or_vfile, bool is_virtual = false);
 
@@ -230,6 +238,10 @@ class StorageDevice {
 
 		/// Get "test is active" flag
 		[[nodiscard]] bool get_test_is_active() const;
+
+
+		/// Get whether the tests are supported, based on parsed properties
+		[[nodiscard]] SelfTestSupportStatus get_self_test_support_status() const;
 
 
 		/// Get the recommended filename to save output to. Includes model and date.

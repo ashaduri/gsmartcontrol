@@ -404,11 +404,16 @@ void GscInfoWindow::fill_ui_with_info(bool scan, bool clear_ui, bool clear_tests
 			note_page_box->set_visible(has_statistics);
 		}
 
-		bool has_selftest = prop_repo.has_properties_for_section(StoragePropertySection::SelftestLog);
+		const bool has_selftest = (drive_->get_self_test_support_status() == StorageDevice::SelfTestSupportStatus::Supported);
 		if (note_page_box = lookup_widget("test_tab_vbox"); note_page_box != nullptr) {
 			// Some USB flash drives erroneously report SMART as enabled.
 			// note_page_box->set_visible(drive->get_smart_status() == StorageDevice::Status::Enabled);
 			note_page_box->set_visible(has_selftest);
+			if (has_selftest) {
+				book_selftest_page_no_ = 4;
+			} else {
+				book_selftest_page_no_ = -1;
+			}
 		}
 
 		const bool has_ata_error_log = prop_repo.has_properties_for_section(StoragePropertySection::AtaErrorLog);
@@ -781,8 +786,13 @@ void GscInfoWindow::refresh_info(bool clear_tests_too)
 
 void GscInfoWindow::show_tests()
 {
-	if (auto* book = lookup_widget<Gtk::Notebook*>("main_notebook"))
-		book->set_current_page(3);  // the Tests tab
+	if (auto* book = lookup_widget<Gtk::Notebook*>("main_notebook")) {
+		if (book_selftest_page_no_ >= 0) {
+			book->set_current_page(book_selftest_page_no_);  // the Tests tab
+		} else {
+			gui_show_warn_dialog(_("Self-Tests Not Supported"), _("Self-tests are not supported on this drive."), this);
+		}
+	}
 }
 
 

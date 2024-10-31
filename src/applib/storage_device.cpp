@@ -925,6 +925,20 @@ bool StorageDevice::get_test_is_active() const
 
 
 
+StorageDevice::SelfTestSupportStatus StorageDevice::get_self_test_support_status() const
+{
+	if (get_parse_status() == ParseStatus::Full) {
+		return property_repository_.has_properties_for_section(StoragePropertySection::SelftestLog) ?
+				SelfTestSupportStatus::Supported : SelfTestSupportStatus::Unsupported;
+	}
+	if (get_parse_status() == ParseStatus::Basic) {
+		return get_smart_status() == SmartStatus::Enabled ? SelfTestSupportStatus::Unknown : SelfTestSupportStatus::Unsupported;
+	}
+	return StorageDevice::SelfTestSupportStatus::Unknown;
+}
+
+
+
 std::string StorageDevice::get_save_filename() const
 {
 	const std::string model = this->get_model_name();  // may be empty
