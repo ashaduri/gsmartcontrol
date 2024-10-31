@@ -399,7 +399,7 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_proc_partition
 		"/dm-[0-9]*$/",  // linux device mapper
 	};
 
-	std::vector<std::string> devices;
+	std::vector<std::string> proc_devices;
 
 	for (auto line : lines) {
 		hz::string_trim(line);
@@ -423,18 +423,38 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_proc_partition
 		if (blacked)
 			continue;
 
-		// In case if nvme, smartctl < 7.5 doesn't support self-tests for nvme devices with namespaces.
-		// Remove the namespace portion from the device name.
-		std::string no_ns_dev;
-		if (app_regex_full_match("/(nvme[0-9]+)n[0-9]+/", dev, &no_ns_dev)) {
-			dev = no_ns_dev;
-		}
+		proc_devices.push_back(dev);
+	}
 
-		const std::string path = "/dev/" + dev;  // let's just hope it's really /dev.
-		if (std::find(devices.begin(), devices.end(), path) == devices.end()) {  // there may be duplicates
-			devices.push_back(path);
+	// In case if nvme, smartctl < 7.5 doesn't support self-tests for nvme devices with namespaces.
+	// Remove the namespace portion from the device name, unless there are multiple namespaces.
+	std::vector<std::string> clean_devices;
+	for (const auto& dev : proc_devices) {
+		std::string no_ns_dev;
+		if (app_regex_partial_match("/(nvme[0-9]+)n[0-9]+$/", dev, &no_ns_dev)) {
+			auto num_nvmes = std::count_if(proc_devices.begin(), proc_devices.end(), [&no_ns_dev](const std::string& d) {
+				return d.starts_with(no_ns_dev);
+			});
+			if (num_nvmes == 1) {
+				// Only one namespace, remove the namespace portion.
+				clean_devices.push_back(no_ns_dev);
+			} else {
+				clean_devices.push_back(dev);
+			}
+		} else {
+			clean_devices.push_back(dev);
 		}
 	}
+
+	std::vector<std::string> devices;
+	for (auto& dev : clean_devices) {
+		dev = "/dev/" + dev;  // let's just hope it's really /dev.
+
+		if (std::find(devices.begin(), devices.end(), dev) == devices.end()) {  // there may be duplicates
+			devices.push_back(dev);
+		}
+	}
+
 
 	std::shared_ptr<CommandExecutor> smartctl_ex = ex_factory->create_executor(CommandExecutorFactory::ExecutorType::Smartctl);
 
