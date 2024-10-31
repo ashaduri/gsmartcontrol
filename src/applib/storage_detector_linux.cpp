@@ -423,6 +423,13 @@ inline hz::ExpectedVoid<StorageDetectorError> detect_drives_linux_proc_partition
 		if (blacked)
 			continue;
 
+		// In case if nvme, smartctl < 7.5 doesn't support self-tests for nvme devices with namespaces.
+		// Remove the namespace portion from the device name.
+		std::string no_ns_dev;
+		if (app_regex_full_match("/(nvme[0-9]+)n[0-9]+/", dev, &no_ns_dev)) {
+			dev = no_ns_dev;
+		}
+
 		const std::string path = "/dev/" + dev;  // let's just hope it's really /dev.
 		if (std::find(devices.begin(), devices.end(), path) == devices.end()) {  // there may be duplicates
 			devices.push_back(path);
