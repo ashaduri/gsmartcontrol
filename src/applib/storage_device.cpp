@@ -968,7 +968,7 @@ std::vector<std::string> StorageDevice::get_device_options() const
 	// lowest priority - the detected type
 	std::vector<std::string> args;
 	if (!get_type_argument().empty()) {
-		args.push_back("-d");
+		args.emplace_back("-d");
 		args.push_back(get_type_argument());
 	}
 	// extra args, as specified manually in CLI or when adding the drive

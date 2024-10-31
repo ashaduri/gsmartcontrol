@@ -21,6 +21,7 @@ Copyright:
 #include <optional>
 #include <unordered_map>
 #include <string>
+#include <vector>
 
 #include "smartctl_parser_types.h"
 #include "smartctl_parser.h"
@@ -362,7 +363,7 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::update(const std::shared_ptr<
 	std::vector<std::string> command_options = {"--capabilities", "--log=selftest"};
 	if (parser_format == SmartctlOutputFormat::Json) {
 		// --json flags: o means include original output (just in case).
-		command_options.push_back(" --json=o");
+		command_options.emplace_back(" --json=o");
 	}
 
 	std::string output;
@@ -505,7 +506,7 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::update(const std::shared_ptr<
 			const double gran = (double(total.count()) / 9.);
 
 			// Add 1/10 for disk load delays, etc. Limit to 15sec, in case of very quick tests.
-			poll_in_seconds_ = std::chrono::seconds(std::max(int64_t(15), int64_t(gran / 3. + (gran / 10.))));
+			poll_in_seconds_ = std::chrono::seconds(std::max(int64_t(15), int64_t((gran / 3.) + (gran / 10.))));
 
 			// for long tests we don't want to make the user wait too much, so
 			// we need to poll more frequently by the end, in case it's completed.
