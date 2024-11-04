@@ -445,7 +445,7 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::update(const std::shared_ptr<
 		// we use the "self-test status" capability.
 		StorageProperty p;
 		for (const auto& e : property_repo.get_properties()) {
-			if (e.is_value_type<AtaStorageSelftestEntry>() || e.get_value<AtaStorageSelftestEntry>().test_num != 0
+			if (!e.is_value_type<AtaStorageSelftestEntry>() || e.get_value<AtaStorageSelftestEntry>().test_num != 0
 					|| e.generic_name != "ata_smart_data/self_test/status/_merged")
 				continue;
 			p = e;

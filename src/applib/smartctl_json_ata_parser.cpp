@@ -498,7 +498,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_capab
 				}
 			},
 
-			{"ata_smart_data/self_test/status/value/_decoded", _("Self-test execution status"),
+			{"ata_smart_data/self_test/status/_merged", _("Self-test execution status"),
 				[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
 						-> hz::ExpectedValue<StorageProperty, SmartctlParserError>
 				{
@@ -536,9 +536,19 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_capab
 							default: status = AtaStorageSelftestEntry::Status::Reserved; break;
 						}
 
+						AtaStorageSelftestEntry sse;
+						sse.test_num = 0;  // capability uses 0
+						sse.status_str = AtaStorageSelftestEntry::get_readable_status_name(status);
+						sse.status = status;
+
+						sse.remaining_percent = -1;  // unknown or n/a
+						if (auto remaining_percent_val = get_node_data<int8_t>(root_node, "ata_smart_data/self_test/status/remaining_percent"); remaining_percent_val.has_value()) {
+							sse.remaining_percent = remaining_percent_val.value();
+						}
+
 						StorageProperty p;
 						p.set_name(key, key, displayable_name);
-						p.value = AtaStorageSelftestEntry::get_readable_status_name(status);
+						p.value = sse;
 						return p;
 					}
 

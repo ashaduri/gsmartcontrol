@@ -209,7 +209,7 @@ class AtaStorageSelftestEntry {
 		std::int8_t remaining_percent = -1;  ///< Remaining %. 0% for completed, 90% for started. -1 if n/a.
 		std::uint32_t lifetime_hours = 0;  ///< When the test happened (in lifetime hours). capability: unused.
 		std::string lba_of_first_error;  ///< LBA of the first error. "-" or value (format? usually hex). capability: unused.
-		bool passed = false;  ///< Test passed or not.
+		bool passed = false;  ///< Test passed or not. capability: unused.
 };
 
 
