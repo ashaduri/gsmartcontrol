@@ -316,7 +316,7 @@ struct NvmeSelfTestResultTypeExt
 	{
 		return {
 			{NvmeSelfTestResultType::Unknown, {"unknown", _("Unknown")}},
-			{NvmeSelfTestResultType::CompletedNoError, {"completedNoError", _("Completed with No Error")}},
+			{NvmeSelfTestResultType::CompletedNoError, {"completedNoError", _("Completed Without Errors")}},
 			{NvmeSelfTestResultType::AbortedSelfTestCommand, {"abortedSelfTestCommand", _("Aborted: Self-Test Command")}},
 			{NvmeSelfTestResultType::AbortedControllerReset, {"abortedControllerReset", _("Aborted: Controller Reset")}},
 			{NvmeSelfTestResultType::AbortedNamespaceRemoved, {"abortedNamespaceRemoved", _("Aborted: Namespace Removed")}},

@@ -2264,7 +2264,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 			break;
 		}
 
-		const int8_t rem_percent = self->current_test_->get_remaining_percent();
+		const std::int8_t rem_percent = self->current_test_->get_remaining_percent();
 		const std::string rem_percent_str = (rem_percent == -1 ? C_("value", "Unknown") : hz::number_to_string_locale(100 - rem_percent));
 
 		auto poll_in = self->current_test_->get_poll_in_seconds();  // sec
@@ -2347,21 +2347,21 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 
 	bool aborted = false;
 	SelfTestStatusSeverity severity = SelfTestStatusSeverity::None;
-	std::string result_msg;
+	std::string result_details_msg;
 
 	if (!self->test_error_msg_.empty()) {
 		aborted = true;
 		severity = SelfTestStatusSeverity::Error;
-		result_msg = Glib::ustring::compose(_("<b>Test aborted:</b> %1"), Glib::Markup::escape_text(self->test_error_msg_));
+		result_details_msg = Glib::ustring::compose(_("<b>Test aborted: %1</b>"), Glib::Markup::escape_text(self->test_error_msg_));
 
 	} else {
 		severity = get_self_test_status_severity(status);
 		if (status == SelfTestStatus::ManuallyAborted) {
 			aborted = true;
-			result_msg = "<b>"s + _("Test was manually aborted.") + "</b>";  // it's a StatusSeverity::none message
+			result_details_msg = "<b>"s + _("Test was manually aborted.") + "</b>";  // it's a StatusSeverity::none message
 
 		} else {
-			result_msg = Glib::ustring::compose(_("<b>Test result:</b> %1."),
+			result_details_msg = Glib::ustring::compose(_("<b>Test result: %1</b>."),
 					Glib::Markup::escape_text(SelfTestStatusExt::get_displayable_name(status)));
 
 			// It may not reach 100% somehow, so do it manually.
@@ -2370,9 +2370,53 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 		}
 	}
 
-	if (severity != SelfTestStatusSeverity::None) {
-		result_msg += "\n"s + _("Check the Self-Test Log for more information.");
+	std::string result_main_msg;
+	if (aborted) {
+		result_main_msg = _("TEST ABORTED!");
+	} else {
+		switch (status) {
+			case SelfTestStatus::Unknown:
+				result_main_msg = _("TEST STATUS UNKNOWN.");
+				break;
+			case SelfTestStatus::InProgress:
+				result_main_msg = _("TEST IN PROGRESS.");
+				break;
+			case SelfTestStatus::ManuallyAborted:
+				result_main_msg = _("TEST ABORTED!");
+				break;
+			case SelfTestStatus::Interrupted:
+				result_main_msg = _("TEST INTERRUPTED!");
+				break;
+			case SelfTestStatus::CompletedNoError:
+				result_main_msg = _("TEST SUCCESSFUL.");
+				break;
+			case SelfTestStatus::CompletedWithError:
+				result_main_msg = _("TEST FAILED!");
+				break;
+			case SelfTestStatus::Reserved:
+				result_main_msg = _("TEST STATUS UNKNOWN.");
+				break;
+		}
 	}
+
+	switch (severity) {
+		case SelfTestStatusSeverity::None:
+			break;
+		case SelfTestStatusSeverity::Warning:
+			result_details_msg = "\n"s + _("Check the Self-Test Log for more information.");
+			break;
+		case SelfTestStatusSeverity::Error:
+			if (!result_main_msg.empty()) {  // Highlight in red
+				result_main_msg = "<span color=\"#FF0000\">"s + result_main_msg + "</span>";
+			}
+			result_details_msg += "\n"s + _("Check the Self-Test Log for more information.");
+			break;
+	}
+
+	if (!result_main_msg.empty()) {
+		result_main_msg = "<b>"s + result_main_msg + "</b>\n";
+	}
+	std::string result_msg = result_main_msg + result_details_msg;
 
 
 	if (auto* test_type_combo = self->lookup_widget<Gtk::ComboBox*>("test_type_combo"))
@@ -2381,8 +2425,9 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 	if (auto* test_execute_button = self->lookup_widget<Gtk::Button*>("test_execute_button"))
 		test_execute_button->set_sensitive(true);
 
-	if (test_completion_progressbar)
-		test_completion_progressbar->set_text(aborted ? _("Test aborted") : _("Test completed"));
+	if (test_completion_progressbar) {
+		test_completion_progressbar->set_text("");
+	}
 
 	if (auto* test_stop_button = self->lookup_widget<Gtk::Button*>("test_stop_button"))
 		test_stop_button->set_sensitive(false);

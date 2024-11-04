@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 
+<!-- Generated with glade 3.40.0 
 
 Copyright (C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
 
@@ -441,6 +441,7 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                     <property name="can-focus">False</property>
                                     <property name="label">[Test result text placeholder]</property>
                                     <property name="use-markup">True</property>
+                                    <property name="justify">center</property>
                                     <property name="width-chars">70</property>
                                   </object>
                                   <packing>
@@ -1227,8 +1228,8 @@ Note: The log is not preserved across power cycles or controller resets.</proper
                 <property name="receives-default">True</property>
                 <property name="tooltip-text" translatable="yes">Re-read all the information</property>
                 <property name="use-stock">True</property>
-                <accelerator key="R" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                 <accelerator key="F5" signal="clicked"/>
+                <accelerator key="R" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
               </object>
               <packing>
                 <property name="expand">True</property>
