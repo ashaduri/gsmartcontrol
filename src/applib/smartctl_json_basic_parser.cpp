@@ -173,6 +173,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 			{"firmware_version", _("Firmware Version"), string_formatter()},
 			{"trim/supported", _("TRIM Supported"), bool_formatter(_("Yes"), _("No"))},
 			{"in_smartctl_database", _("In Smartctl Database"), bool_formatter(_("Yes"), _("No"))},
+			{"smartctl/drive_database_version/string", _("Smartctl Database Version"), string_formatter()},
 			{"ata_version/string", _("ATA Version"), string_formatter()},
 			{"sata_version/string", _("SATA Version"), string_formatter()},
 
