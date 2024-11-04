@@ -81,7 +81,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 				{
 					if (auto jval = get_node_data<std::string>(root_node, "device/type"); jval.has_value()) {
 						StorageProperty p;
-						p.set_name(key, key, displayable_name);
+						p.set_name(key, displayable_name);
 						p.value = jval.value();
 						p.show_in_ui = false;
 						return p;
@@ -96,7 +96,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 				{
 					if (auto jval = get_node_data<std::string>(root_node, "device/protocol"); jval.has_value()) {
 						StorageProperty p;
-						p.set_name(key, key, displayable_name);
+						p.set_name(key, displayable_name);
 						p.value = jval.value();
 						p.show_in_ui = false;
 						return p;
@@ -137,7 +137,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 				{
 					if (auto jval = get_node_data<int64_t>(root_node, "user_capacity/bytes"); jval) {
 						StorageProperty p;
-						p.set_name(key, key, displayable_name);
+						p.set_name(key, displayable_name);
 						p.readable_value = hz::format_size(static_cast<uint64_t>(jval.value()), true);
 						p.value = jval.value();
 						p.show_in_ui = false;
@@ -160,7 +160,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 					}
 					if (!values.empty()) {
 						StorageProperty p;
-						p.set_name(key, key, displayable_name);
+						p.set_name(key, displayable_name);
 						p.readable_value = hz::string_join(values, ", ");
 						p.value = p.readable_value;
 						return p;
@@ -189,7 +189,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 					}
 					if (!values.empty()) {
 						StorageProperty p;
-						p.set_name(key, key, displayable_name);
+						p.set_name(key, displayable_name);
 						p.readable_value = hz::string_join(values, ", ");
 						p.value = p.readable_value;
 						return p;

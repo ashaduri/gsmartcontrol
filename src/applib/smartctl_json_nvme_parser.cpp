@@ -120,7 +120,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_info
 				{
 					if (auto jval = get_node_data<std::string>(root_node, "device/type"); jval.has_value()) {
 						StorageProperty p;
-						p.set_name(key, key, displayable_name);
+						p.set_name(key, displayable_name);
 						p.value = jval.value();
 						p.show_in_ui = false;
 						return p;
@@ -135,7 +135,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_info
 				{
 					if (auto jval = get_node_data<std::string>(root_node, "device/protocol"); jval.has_value()) {
 						StorageProperty p;
-						p.set_name(key, key, displayable_name);
+						p.set_name(key, displayable_name);
 						p.value = jval.value();
 						p.show_in_ui = false;
 						return p;
@@ -184,7 +184,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_info
 				{
 					if (auto jval = get_node_data<int64_t>(root_node, "user_capacity/bytes"); jval) {
 						StorageProperty p;
-						p.set_name(key, key, displayable_name);
+						p.set_name(key, displayable_name);
 						p.readable_value = hz::format_size(static_cast<uint64_t>(jval.value()), true);
 						p.value = jval.value();
 						p.show_in_ui = false;
@@ -309,7 +309,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme
 
 	if (get_node_exists(json_root_node, "nvme_error_information_log/size").value_or(false)) {
 		StorageProperty p;
-		p.set_name("nvme_error_information_log/size", "nvme_error_information_log/size", _("Non-Persistent Error Log Size"));
+		p.set_name("nvme_error_information_log/size", _("Non-Persistent Error Log Size"));
 		p.section = StoragePropertySection::NvmeErrorLog;
 		p.value = get_node_data<int64_t>(json_root_node, "nvme_error_information_log/size").value_or(0);
 		add_property(p);
@@ -320,7 +320,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme
 	if (get_node_exists(json_root_node, "nvme_error_information_log/read").value_or(false)) {
 		StorageProperty p;
 		// Note: This number can be controlled using smartctl option.
-		p.set_name("nvme_error_information_log/read", "nvme_error_information_log/read", _("Number of Error Log Entries Read"));
+		p.set_name("nvme_error_information_log/read", _("Number of Error Log Entries Read"));
 		p.section = StoragePropertySection::NvmeErrorLog;
 		p.value = get_node_data<int64_t>(json_root_node, "nvme_error_information_log/size").value_or(0);
 		add_property(p);
@@ -358,7 +358,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme
 	// The whole section
 	if (!lines.empty()) {
 		StorageProperty p;
-		p.set_name("NVMe Non-Persistent Error Information Log", "nvme_error_information_log/_merged");
+		p.set_name("nvme_error_information_log/_merged", _("NVMe Non-Persistent Error Information Log"));
 		p.section = StoragePropertySection::NvmeErrorLog;
 		p.reported_value = hz::string_join(lines, "\n");
 		p.value = p.reported_value;  // string-type value
@@ -388,7 +388,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_self
 	// Create this property only if supported, so that the UI can hide the tab if not needed.
 	if (get_node_exists(json_root_node, "nvme_self_test_log").value_or(false)) {
 		StorageProperty p;
-		p.set_name("nvme_self_test_log/_exists", "nvme_self_test_log/_exists", _("Self-tests supported"));
+		p.set_name("nvme_self_test_log/_exists", _("Self-tests supported"));
 		p.section = StoragePropertySection::SelftestLog;
 		p.value = true;
 		add_property(p);
@@ -396,8 +396,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_self
 
 	{
 		StorageProperty p;
-		p.set_name("nvme_self_test_log/current_self_test_operation/value/_decoded",
-				"nvme_self_test_log/current_self_test_operation/value/_decoded", _("Current Self-Test Operation"));
+		p.set_name("nvme_self_test_log/current_self_test_operation/value/_decoded", _("Current Self-Test Operation"));
 		p.section = StoragePropertySection::SelftestLog;
 
 		auto value_val = get_node_data<uint8_t>(json_root_node, "nvme_self_test_log/current_self_test_operation/value");
@@ -421,8 +420,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_self
 
 	{
 		StorageProperty p;
-		p.set_name("nvme_self_test_log/current_self_test_completion_percent",
-				"nvme_self_test_log/current_self_test_completion_percent", _("Current Self-Test Completion Percentage"));
+		p.set_name("nvme_self_test_log/current_self_test_completion_percent", _("Current Self-Test Completion Percentage"));
 		p.section = StoragePropertySection::SelftestLog;
 
 		auto value_val = get_node_data<uint8_t>(json_root_node, "nvme_self_test_log/current_self_test_completion_percent");
@@ -480,7 +478,9 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_self
 			}
 
 			StorageProperty p;
-			p.set_name(std::format("Self-test entry {}", entry.test_num));
+			std::string gen_name = std::format("{}/{}", table_key, entry_num);
+			std::string disp_name = std::format("Self-test entry {}", entry.test_num);
+			p.set_name(gen_name, disp_name);
 			p.section = StoragePropertySection::SelftestLog;
 			p.value = entry;
 			add_property(p);
@@ -507,7 +507,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme
 
 	bool section_properties_found = false;
 
-	const std::vector<std::tuple<std::string, std::string, PropertyRetrievalFunc>> health_keys = {
+	const std::vector<std::tuple<std::string, std::string, PropertyRetrievalFunc>> nvme_attr_keys = {
 			{"nvme_smart_health_information_log/temperature", _("Current Temperature"), integer_formatter<int64_t>("{}° Celsius")},
 			{"nvme_smart_health_information_log/available_spare", _("Available Spare"), integer_formatter<int64_t>("{}%")},
 			{"nvme_smart_health_information_log/available_spare_threshold", _("Available Spare Threshold"), integer_formatter<int64_t>("{}%")},
@@ -521,14 +521,12 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme
 			{"nvme_smart_health_information_log/power_on_hours", _("Power On Hours"), integer_formatter<int64_t>()},
 			{"nvme_smart_health_information_log/unsafe_shutdowns", _("Unsafe Shutdowns"), integer_formatter<int64_t>()},
 			{"nvme_smart_health_information_log/media_errors", _("Media and Data Integrity Errors"), integer_formatter<int64_t>()},
-			// TODO Display warning if this is > 0
 			{"nvme_smart_health_information_log/num_err_log_entries", _("Preserved Error Information Log Entries"), integer_formatter<int64_t>()},  // preserved across resets
-
-			{"nvme_smart_health_information_log/warning_temp_time", _("Warning  Comp. Temperature Time"), integer_formatter<int64_t>()},
-			{"nvme_smart_health_information_log/critical_comp_time", _("Critical Comp. Temperature Time"), integer_formatter<int64_t>()},
+			{"nvme_smart_health_information_log/warning_temp_time", _("Warning  Composite Temperature Time"), integer_formatter<int64_t>()},
+			{"nvme_smart_health_information_log/critical_comp_time", _("Critical Composite Temperature Time"), integer_formatter<int64_t>()},
 	};
 
-	for (const auto& [key, displayable_name, retrieval_func] : health_keys) {
+	for (const auto& [key, displayable_name, retrieval_func] : nvme_attr_keys) {
 		DBG_ASSERT(retrieval_func != nullptr);
 
 		auto p = retrieval_func(json_root_node, key, displayable_name);

@@ -62,6 +62,13 @@ target_sources(applib PRIVATE
 	storage_property.h
 	storage_property_descr.cpp
 	storage_property_descr.h
+	storage_property_descr_ata_attribute.cpp
+	storage_property_descr_ata_attribute.h
+	storage_property_descr_ata_statistic.cpp
+	storage_property_descr_ata_statistic.h
+	storage_property_descr_helpers.h
+	storage_property_descr_nvme_attribute.cpp
+	storage_property_descr_nvme_attribute.h
 	storage_property_repository.cpp
 	storage_property_repository.h
 	storage_settings.h

@@ -41,28 +41,27 @@ namespace {
 
 	/// Get storage property by checksum error name (which corresponds to
 	/// an output section).
-	inline StorageProperty app_get_checksum_error_property(const std::string& name)
+	inline StorageProperty app_get_checksum_error_property(const std::string& reported_section_name)
 	{
 		StorageProperty p;
+		std::string disp_name = "Error in " + reported_section_name + " structure";
 
-		if (name == "Attribute Data") {
+		if (reported_section_name == "Attribute Data") {
 			p.section = StoragePropertySection::AtaAttributes;
-			p.set_name(name, "_text_only/attribute_data_checksum_error");
+			p.set_name("_text_only/attribute_data_checksum_error", disp_name);
 
-		} else if (name == "Attribute Thresholds") {
+		} else if (reported_section_name == "Attribute Thresholds") {
 			p.section = StoragePropertySection::AtaAttributes;
-			p.set_name(name, "_text_only/attribute_thresholds_checksum_error");
+			p.set_name("_text_only/attribute_thresholds_checksum_error", disp_name);
 
-		} else if (name == "ATA Error Log") {
+		} else if (reported_section_name == "ATA Error Log") {
 			p.section = StoragePropertySection::AtaErrorLog;
-			p.set_name(name, "_text_only/ata_error_log_checksum_error");
+			p.set_name("_text_only/ata_error_log_checksum_error", disp_name);
 
-		} else if (name == "Self-Test Log") {
+		} else if (reported_section_name == "Self-Test Log") {
 			p.section = StoragePropertySection::SelftestLog;
-			p.set_name(name, "_text_only/selftest_log_checksum_error");
+			p.set_name("_text_only/selftest_log_checksum_error", disp_name);
 		}
-
-		p.displayable_name = "Error in " + name + " structure";
 
 		p.reported_value = "checksum error";
 		p.value = p.reported_value;  // string-type value
@@ -211,7 +210,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse(std::string_v
 
 	{
 		StorageProperty p;
-		p.set_name("Smartctl version", "smartctl/version/_merged", "Smartctl Version");
+		p.set_name("smartctl/version/_merged", _("Smartctl Version"));
 		p.reported_value = version;
 		p.value = p.reported_value;  // string-type value
 		p.section = StoragePropertySection::Info;  // add to info section
@@ -219,7 +218,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse(std::string_v
 	}
 	{
 		StorageProperty p;
-		p.set_name("Smartctl version", "smartctl/version/_merged_full", "Smartctl Version");
+		p.set_name("smartctl/version/_merged_full", _("Smartctl Version"));
 		p.reported_value = version_full;
 		p.value = p.reported_value;  // string-type value
 		p.section = StoragePropertySection::Info;  // add to info section
@@ -337,7 +336,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_info(
 				expecting_warning_lines = false;
 				StorageProperty p;
 				p.section = section;
-				p.set_name("Warning", "_text_only/info_warning", "Warning");
+				p.set_name("_text_only/info_warning", _("Warning"));
 				p.reported_value = warning_msg;
 				p.value = p.reported_value;  // string-type value
 				add_property(p);
@@ -399,7 +398,7 @@ http://knowledge.seagate.com/articles/en_US/FAQ/213891en
 
 			StorageProperty p;
 			p.section = section;
-			p.set_name(name);
+			p.set_name(name, name, name);
 			p.reported_value = value;
 
 			auto result = parse_section_info_property(p);  // set type and the typed value. may change generic_name too.
@@ -432,47 +431,47 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_info_
 
 
 	if (app_regex_partial_match("/^Model Family$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "model_family", "Model Family");
+		p.set_name("model_family", "Model Family", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^(?:Device Model|Device|Product)$/mi", p.reported_name)) {  // "Device" and "Product" are from scsi/usb
-		p.set_name(p.reported_name, "model_name", "Device Model");
+		p.set_name("model_name", "Device Model", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^Vendor$/mi", p.reported_name)) {  // From scsi/usb
-		p.set_name(p.reported_name, "vendor", "Vendor");
+		p.set_name("vendor", "Vendor", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^Revision$/mi", p.reported_name)) {  // From scsi/usb
-		p.set_name(p.reported_name, "revision", "Revision");
+		p.set_name("revision", "Revision", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^Device type$/mi", p.reported_name)) {  // From scsi/usb
-		p.set_name(p.reported_name, "device_type/name", "Device Type");
+		p.set_name("device_type/name", "Device Type", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^Compliance$/mi", p.reported_name)) {  // From scsi/usb
-		p.set_name(p.reported_name, "scsi_version", "Compliance");
+		p.set_name("scsi_version", "Compliance", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^Serial Number$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "serial_number", "Serial Number");
+		p.set_name("serial_number", "Serial Number", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^LU WWN Device Id$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "wwn/_merged", "World Wide Name");
+		p.set_name("wwn/_merged", "World Wide Name", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^Add. Product Id$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "ata_additional_product_id", "Additional Product ID");
+		p.set_name("ata_additional_product_id", "Additional Product ID", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^Firmware Version$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "firmware_version", "Firmware Version");
+		p.set_name("firmware_version", "Firmware Version", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^User Capacity$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "user_capacity/bytes", "Capacity");
+		p.set_name("user_capacity/bytes", "Capacity", p.reported_name);
 		int64_t v = 0;
 		p.readable_value = SmartctlTextParserHelper::parse_byte_size(p.reported_value, v, true);
 		if (p.readable_value.empty()) {
@@ -482,46 +481,46 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_info_
 		}
 
 	} else if (app_regex_partial_match("/^Sector Sizes$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "physical_block_size/_and/logical_block_size", "Sector Sizes");
+		p.set_name("physical_block_size/_and/logical_block_size", "Sector Sizes", p.reported_name);
 		// This contains 2 values (phys/logical, if they're different)
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^Sector Size$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "physical_block_size/_and/logical_block_size", "Sector Size");
+		p.set_name("physical_block_size/_and/logical_block_size", "Sector Size", p.reported_name);
 		// This contains a single value (if it's not 512)
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^Logical block size$/mi", p.reported_name)) {  // from scsi/usb
-		p.set_name(p.reported_name, "logical_block_size", "Logical Block Size");
+		p.set_name("logical_block_size", "Logical Block Size", p.reported_name);
 		// "512 bytes"
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^Rotation Rate$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "rotation_rate", "Rotation Rate");
+		p.set_name("rotation_rate", "Rotation Rate", p.reported_name);
 		p.value = hz::string_to_number_nolocale<int64_t>(p.reported_value, false);
 
 	} else if (app_regex_partial_match("/^Form Factor$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "form_factor/name", "Form Factor");
+		p.set_name("form_factor/name", "Form Factor", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^Device is$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "in_smartctl_database", "In Smartctl Database");
+		p.set_name("in_smartctl_database", "In Smartctl Database", p.reported_name);
 		p.value = (!app_regex_partial_match("/Not in /mi", p.reported_value));  // bool-type value
 
 	} else if (app_regex_partial_match("/^ATA Version is$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "ata_version/string", "ATA Version");
+		p.set_name("ata_version/string", "ATA Version", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^ATA Standard is$/mi", p.reported_name)) {  // old, not present in smartctl 7.2
-		p.set_name(p.reported_name, "ata_version/string", "ATA Standard");
+		p.set_name("ata_version/string", "ATA Standard", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^SATA Version is$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "sata_version/string", "SATA Version");
+		p.set_name("sata_version/string", "SATA Version", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^Local Time is$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "local_time/asctime", "Scanned on");
+		p.set_name("local_time/asctime", "Scanned on", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^SMART support is$/mi", p.reported_name)) {
@@ -529,67 +528,67 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_info_
 		// Don't put complete messages here - they change across smartctl versions.
 
 		if (app_regex_partial_match("/Available - device has/mi", p.reported_value)) {
-			p.set_name(p.reported_name, "smart_support/available", "SMART Supported");
+			p.set_name("smart_support/available", "SMART Supported", p.reported_name);
 			p.value = true;
 
 		} else if (app_regex_partial_match("/Enabled/mi", p.reported_value)) {
-			p.set_name(p.reported_name, "smart_support/enabled", "SMART Enabled");
+			p.set_name("smart_support/enabled", "SMART Enabled", p.reported_name);
 			p.value = true;
 
 		} else if (app_regex_partial_match("/Disabled/mi", p.reported_value)) {
-			p.set_name(p.reported_name, "smart_support/enabled", "SMART Enabled");
+			p.set_name("smart_support/enabled", "SMART Enabled", p.reported_name);
 			p.value = false;
 
 		} else if (app_regex_partial_match("/Unavailable/mi", p.reported_value)) {
-			p.set_name(p.reported_name, "smart_support/available", "SMART Supported");
+			p.set_name("smart_support/available", "SMART Supported", p.reported_name);
 			p.value = false;
 
 		// this should be the last - when ambiguous state is detected, usually smartctl
 		// retries with other methods and prints one of the above.
 		} else if (app_regex_partial_match("/Ambiguous/mi", p.reported_value)) {
-			p.set_name(p.reported_name, "smart_support/available", "SMART Supported");
+			p.set_name("smart_support/available", "SMART Supported", p.reported_name);
 			p.value = true;  // let's be optimistic - just hope that it doesn't hurt.
 		}
 
 	// "-g all" stuff
 	} else if (app_regex_partial_match("/^AAM feature is$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "ata_aam/enabled", "AAM Feature");
+		p.set_name("ata_aam/enabled", "AAM Feature", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^AAM level is$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "ata_aam/level", "AAM Level");
+		p.set_name("ata_aam/level", "AAM Level", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^APM feature is$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "ata_apm/enabled", "APM Feature");
+		p.set_name("ata_apm/enabled", "APM Feature", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^APM level is$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "ata_apm/level", "APM Level");
+		p.set_name("ata_apm/level", "APM Level", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^Rd look-ahead is$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "read_lookahead/enabled", "Read Look-Ahead");
+		p.set_name("read_lookahead/enabled", "Read Look-Ahead", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^Write cache is$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "write_cache/enabled", "Write Cache");
+		p.set_name("write_cache/enabled", "Write Cache", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^Wt Cache Reorder$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "_text_only/write_cache_reorder", "Write Cache Reorder");
+		p.set_name("_text_only/write_cache_reorder", "Write Cache Reorder", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^DSN feature is$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "ata_dsn/enabled", "DSN Feature");
+		p.set_name("ata_dsn/enabled", "DSN Feature", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^Power mode (?:was|is)$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "_text_only/power_mode", "Power Mode");
+		p.set_name("_text_only/power_mode", "Power Mode", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	} else if (app_regex_partial_match("/^ATA Security is$/mi", p.reported_name)) {
-		p.set_name(p.reported_name, "ata_security/string", "ATA Security");
+		p.set_name("ata_security/string", "ATA Security", p.reported_name);
 		p.value = p.reported_value;  // string-type value
 
 	// These are some debug warnings from smartctl on usb flash drives
@@ -935,7 +934,7 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 
 			// add as a time property
 			StorageProperty p(pt);
-			p.set_name(name);
+			p.set_name(name, name, name);
 			// well, not really as reported, but still...
 			p.reported_value.append(numvalue_orig).append(" | ").append(strvalue_orig);
 			p.value = std::chrono::seconds(numvalue);  // always in seconds
@@ -951,7 +950,7 @@ SCT capabilities: 	       (0x003d)	SCT Status supported.
 		} else {
 
 			StorageProperty p(pt);
-			p.set_name(name);
+			p.set_name(name, name, name);
 			// well, not really as reported, but still...
 			p.reported_value.append(numvalue_orig).append(" | ").append(strvalue_orig);
 
@@ -1067,7 +1066,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 		StorageProperty p;
 //		p.section = AtaStoragePropertySection::Internal;
 		p.section = StoragePropertySection::Capabilities;
-		p.set_name("ata_smart_data/self_test/status/_merged");
+		p.set_name("ata_smart_data/self_test/status/_merged", _("Self-test execution status"));
 
 		AtaStorageSelftestEntry sse;
 		sse.test_num = 0;
@@ -1179,54 +1178,54 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse_section_data_
 			std::string name, value;
 
 			if (app_regex_partial_match(re_offline_status, sv, {&name, &value})) {
-				p.set_name(name, "ata_smart_data/offline_data_collection/status/string");
+				p.set_name("ata_smart_data/offline_data_collection/status/string", name, name);
 				p.value = hz::string_trim_copy(value);  // string-type value
 
 			} else if (app_regex_partial_match(re_offline_enabled, sv, {&name, &value})) {
-				p.set_name(name, "ata_smart_data/offline_data_collection/status/value/_parsed");
+				p.set_name("ata_smart_data/offline_data_collection/status/value/_parsed", name, name);
 				p.value = (hz::string_trim_copy(value) == "Enabled");  // bool
 
 			} else if (app_regex_partial_match(re_offline_immediate, sv, &name)) {
-				p.set_name(name, "ata_smart_data/capabilities/exec_offline_immediate_supported");
+				p.set_name("ata_smart_data/capabilities/exec_offline_immediate_supported", name, name);
 				p.value = true;  // bool
 
 			} else if (app_regex_partial_match(re_offline_auto, sv, {&value, &name})
 					|| app_regex_partial_match(re_offline_auto2, sv, {&value, &name})) {
-				p.set_name(name, "_text_only/aodc_support", "Automatic Offline Data Collection toggle support");
+				p.set_name("_text_only/aodc_support", "Automatic Offline Data Collection toggle support", name);
 				p.value = (hz::string_trim_copy(value) != "No");  // bool
 
 			} else if (app_regex_partial_match(re_offline_suspend, sv, {&value, &name})) {
-				p.set_name(name, "ata_smart_data/capabilities/offline_is_aborted_upon_new_cmd", "Offline Data Collection suspends upon new command");
+				p.set_name("ata_smart_data/capabilities/offline_is_aborted_upon_new_cmd", "Offline Data Collection suspends upon new command", name);
 				p.value = (hz::string_trim_copy(value) == "Suspend");  // bool
 
 			} else if (app_regex_partial_match(re_offline_surface, sv, {&value, &name})) {
-				p.set_name(name, "ata_smart_data/capabilities/offline_surface_scan_supported");
+				p.set_name("ata_smart_data/capabilities/offline_surface_scan_supported", name, name);
 				p.value = (hz::string_trim_copy(value) != "No");  // bool
 
 
 			} else if (app_regex_partial_match(re_selftest_support, sv, {&value, &name})) {
-				p.set_name(name, "ata_smart_data/capabilities/self_tests_supported");
+				p.set_name("ata_smart_data/capabilities/self_tests_supported", name, name);
 				p.value = (hz::string_trim_copy(value) != "No");  // bool
 
 			} else if (app_regex_partial_match(re_conv_selftest_support, sv, {&value, &name})) {
-				p.set_name(name, "ata_smart_data/capabilities/conveyance_self_test_supported");
+				p.set_name("ata_smart_data/capabilities/conveyance_self_test_supported", name, name);
 				p.value = (hz::string_trim_copy(value) != "No");  // bool
 
 			} else if (app_regex_partial_match(re_selective_selftest_support, sv, {&value, &name})) {
-				p.set_name(name, "ata_smart_data/capabilities/selective_self_test_supported");
+				p.set_name("ata_smart_data/capabilities/selective_self_test_supported", name, name);
 				p.value = (hz::string_trim_copy(value) != "No");  // bool
 
 
 			} else if (app_regex_partial_match(re_sct_status, sv, &name)) {
-				p.set_name(name, "ata_sct_capabilities/value/_present");
+				p.set_name("ata_sct_capabilities/value/_present", name, name);
 				p.value = true;  // bool
 
 			} else if (app_regex_partial_match(re_sct_control, sv, &name)) {
-				p.set_name(name, "ata_sct_capabilities/feature_control_supported");
+				p.set_name("ata_sct_capabilities/feature_control_supported", name, name);
 				p.value = true;  // bool
 
 			} else if (app_regex_partial_match(re_sct_data, sv, &name)) {
-				p.set_name(name, "ata_sct_capabilities/data_table_supported");
+				p.set_name("ata_sct_capabilities/data_table_supported", name, name);
 				p.value = true;  // bool
 			}
 
@@ -1350,7 +1349,7 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 				hz::string_is_numeric_nolocale(value, value_num, false);
 
 				StorageProperty p(pt);
-				p.set_name(name, "ata_smart_attributes/revision");
+				p.set_name("ata_smart_attributes/revision", name, name);
 				p.reported_value = value;
 				p.value = value_num;  // integer-type value
 
@@ -1449,7 +1448,7 @@ ID# ATTRIBUTE_NAME          FLAGS    VALUE WORST THRESH FAIL RAW_VALUE
 			hz::string_is_numeric_nolocale(hz::string_trim_copy(raw_value), attr.raw_value_int, false);  // same as raw_value, but parsed as int.
 
 			StorageProperty p(pt);
-			p.set_name(hz::string_trim_copy(name));
+			p.set_name(hz::string_trim_copy(name), hz::string_trim_copy(name), hz::string_trim_copy(name));
 			p.reported_value = line;  // use the whole line here
 			p.value = attr;  // attribute-type value;
 
@@ -1493,7 +1492,7 @@ Address    Access  R/W   Size  Description
 	// the whole subsection
 	{
 		StorageProperty p(pt);
-		p.set_name("General Purpose Log Directory", "ata_log_directory/_merged");
+		p.set_name("ata_log_directory/_merged", "General Purpose Log Directory");
 		p.reported_value = sub;
 		p.value = p.reported_value;  // string-type value
 
@@ -1504,7 +1503,7 @@ Address    Access  R/W   Size  Description
 	// supported / unsupported
 	{
 		StorageProperty p(pt);
-		p.set_name("General Purpose Log Directory supported", "_text_only/directory_log_supported");
+		p.set_name("_text_only/directory_log_supported", "General Purpose Log Directory supported");
 
 		// p.reported_value;  // nothing
 		p.value = !app_regex_partial_match("/General Purpose Log Directory not supported/mi", sub);  // bool
@@ -1581,7 +1580,7 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 			StorageProperty p(pt);
 			// Note: For extended logs, the path has "extended".
 			// For standard logs, the path has "summary" (?)
-			p.set_name(name, "ata_smart_error_log/extended/revision");
+			p.set_name("ata_smart_error_log/extended/revision", name, name);
 			p.reported_value = value;
 
 			int64_t value_num = 0;
@@ -1599,7 +1598,7 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 
 		if (app_regex_partial_match(re, sub)) {
 			StorageProperty p(pt);
-			p.set_name("_text_only/ata_smart_error_log/_not_present");
+			p.set_name("_text_only/ata_smart_error_log/_not_present", "Error Log not supported");
 			p.displayable_name = "Warning";
 			p.readable_value = "Device does not support error logging";
 			add_property(p);
@@ -1619,7 +1618,7 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 			StorageProperty p(pt);
 			// Note: For Extended Error Log, the path has "extended".
 			// For simple error log, the path has "summary".
-			p.set_name("ATA Error Count", "ata_smart_error_log/extended/count");
+			p.set_name("ata_smart_error_log/extended/count", "ATA Error Count");
 			p.reported_value = value;
 
 			int64_t value_num = 0;
@@ -1662,7 +1661,8 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 			app_regex_partial_match(re_type, block, {&etypes_str, &emore});
 
 			StorageProperty p(pt);
-			p.set_name(hz::string_trim_copy(name));  // "Error 6"
+			std::string gen_name = hz::string_trim_copy(name);
+			p.set_name(gen_name, gen_name, gen_name);  // "Error 6"
 			p.reported_value = block;
 
 			AtaStorageErrorBlock eb;
@@ -1691,7 +1691,7 @@ Error 1 [0] occurred at disk power-on lifetime: 1 hours (0 days + 1 hours)
 	// the whole subsection
 	{
 		StorageProperty p(pt);
-		p.set_name("SMART Error Log", "ata_smart_error_log/_merged");
+		p.set_name("ata_smart_error_log/_merged", "SMART Error Log");
 		p.reported_value = sub;
 		p.value = p.reported_value;  // string-type value
 
@@ -1741,7 +1741,7 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 	// The whole subsection
 	{
 		StorageProperty p(pt);
-		p.set_name("SMART Self-Test Log", "ata_smart_self_test_log/_merged");
+		p.set_name("ata_smart_self_test_log/_merged", "SMART Self-Test Log");
 		p.reported_value = sub;
 		p.value = p.reported_value;  // string-type value
 
@@ -1756,7 +1756,7 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 
 		if (app_regex_partial_match(re, sub)) {
 			StorageProperty p(pt);
-			p.set_name("ata_smart_self_test_log/_present");
+			p.set_name("ata_smart_self_test_log/_present", "Self-test Log supported");
 			p.displayable_name = "Warning";
 			p.readable_value = "Device does not support self-test logging";
 			add_property(p);
@@ -1781,7 +1781,7 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 			hz::string_trim(value);
 
 			StorageProperty p(pt);
-			p.set_name(hz::string_trim_copy(name), "ata_smart_self_test_log/extended/revision");
+			p.set_name("ata_smart_self_test_log/extended/revision", hz::string_trim_copy(name));
 			p.reported_value = value;
 
 			int64_t value_num = 0;
@@ -1814,7 +1814,7 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 			const std::string lba = hz::string_trim_copy(it->str(7));
 
 			StorageProperty p(pt);
-			p.set_name("Self-test entry " + num);
+			p.set_name(std::format("ata_smart_self_test_log/entry/{}", num), "Self-test entry " + num);
 			p.reported_value = hz::string_trim_copy(line);
 
 			AtaStorageSelftestEntry sse;
@@ -1873,7 +1873,7 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 	// Note: "No self-tests have been logged" is sometimes absent, so don't rely on it.
 	{
 		StorageProperty p(pt);
-		p.set_name("Number of entries in self-test log", "ata_smart_self_test_log/extended/table/count");
+		p.set_name("ata_smart_self_test_log/extended/table/count", "Number of entries in self-test log");
 		// p.reported_value;  // nothing
 		p.value = test_count;  // integer
 
@@ -1920,7 +1920,7 @@ If Selective self-test is pending on power-up, resume after 0 minute delay.
 	// the whole subsection
 	{
 		StorageProperty p(pt);
-		p.set_name("SMART selective self-test log", "ata_smart_selective_self_test_log/_merged");
+		p.set_name("ata_smart_selective_self_test_log/_merged", "SMART selective self-test log");
 		p.reported_value = sub;
 		p.value = p.reported_value;  // string-type value
 
@@ -1931,7 +1931,7 @@ If Selective self-test is pending on power-up, resume after 0 minute delay.
 	// supported / unsupported
 	{
 		StorageProperty p(pt);
-		p.set_name("Selective self-tests supported", "ata_smart_data/capabilities/selective_self_test_supported");
+		p.set_name("ata_smart_data/capabilities/selective_self_test_supported", "Selective self-tests supported");
 
 		// p.reported_value;  // nothing
 		p.value = !app_regex_partial_match("/Device does not support Selective Self Tests\\/Logging/mi", sub);  // bool
@@ -1993,7 +1993,7 @@ Index    Estimated Time   Temperature Celsius
 	// the whole subsection
 	{
 		StorageProperty p(pt);
-		p.set_name("SCT temperature log", "ata_sct_status/_and/ata_sct_temperature_history/_merged");
+		p.set_name("ata_sct_status/_and/ata_sct_temperature_history/_merged", "SCT temperature log");
 		p.reported_value = sub;
 		p.value = p.reported_value;  // string-type value
 
@@ -2004,7 +2004,7 @@ Index    Estimated Time   Temperature Celsius
 	// supported / unsupported
 	{
 		StorageProperty p(pt);
-		p.set_name("SCT commands unsupported", "_text_only/ata_sct_status/_not_present");
+		p.set_name("_text_only/ata_sct_status/_not_present", "SCT commands unsupported");
 
 		// p.reported_value;  // nothing
 		p.value = app_regex_partial_match("/(SCT Commands not supported)|(SCT Data Table command not supported)/mi", sub);  // bool
@@ -2022,7 +2022,7 @@ Index    Estimated Time   Temperature Celsius
 		if (app_regex_partial_match("/^(Current Temperature):[ \\t]+(.*) Celsius$/mi", sub, {&name, &value})) {
 			StorageProperty p;
 			p.section = StoragePropertySection::TemperatureLog;
-			p.set_name("Current Temperature", "ata_sct_status/temperature/current");
+			p.set_name("ata_sct_status/temperature/current", "Current Temperature");
 			p.reported_value = value;
 			p.value = hz::string_to_number_nolocale<int64_t>(value);  // integer
 			add_property(p);
@@ -2056,7 +2056,7 @@ SCT Error Recovery Control:
 	// the whole subsection
 	{
 		StorageProperty p(pt);
-		p.set_name("SCT ERC log", "ata_sct_erc/_merged");
+		p.set_name("ata_sct_erc/_merged", "SCT ERC log");
 		p.reported_value = sub;
 		p.value = p.reported_value;  // string-type value
 
@@ -2067,7 +2067,7 @@ SCT Error Recovery Control:
 	// supported / unsupported
 	{
 		StorageProperty p(pt);
-		p.set_name("SCT ERC supported", "ata_sct_erc/_present");
+		p.set_name("ata_sct_erc/_present", "SCT ERC supported");
 
 		// p.reported_value;  // nothing
 		p.value = !app_regex_partial_match("/SCT Error Recovery Control command not supported/mi", sub);  // bool
@@ -2139,7 +2139,7 @@ Page Offset Size         Value  Description
 	bool supported = true;
 	{
 		StorageProperty p(pt);
-		p.set_name("Device statistics supported", "ata_device_statistics/_present");
+		p.set_name("ata_device_statistics/_present", "Device statistics supported");
 
 		// p.reported_value;  // nothing
 		supported = !app_regex_partial_match(R"(/Device Statistics \(GP\/SMART Log 0x04\) not supported/mi)", sub);
@@ -2241,7 +2241,8 @@ Page Offset Size         Value  Description
 		}
 
 		StorageProperty p(pt);
-		p.set_name(hz::string_trim_copy(description));
+		std::string gen_name = hz::string_trim_copy(description);
+		p.set_name(gen_name, gen_name, gen_name);
 		p.reported_value = line;  // use the whole line here
 		p.value = st;  // statistic-type value
 
@@ -2282,7 +2283,7 @@ ID      Size     Value  Description
 	// the whole subsection
 	{
 		StorageProperty p(pt);
-		p.set_name("SATA Phy log", "sata_phy_event_counters/_merged");
+		p.set_name("sata_phy_event_counters/_merged", "SATA Phy log");
 		p.reported_value = sub;
 		p.value = p.reported_value;  // string-type value
 
@@ -2293,7 +2294,7 @@ ID      Size     Value  Description
 	// supported / unsupported
 	{
 		StorageProperty p(pt);
-		p.set_name("SATA Phy log supported", "sata_phy_event_counters/_present");
+		p.set_name("sata_phy_event_counters/_present", "SATA Phy log supported");
 
 		// p.reported_value;  // nothing
 		p.value = !app_regex_partial_match("/SATA Phy Event Counters \\(GP Log 0x11\\) not supported/mi", sub)

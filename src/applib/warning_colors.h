@@ -91,17 +91,6 @@ inline std::string storage_property_get_warning_reason(const StorageProperty& p)
 
 
 
-/// Append warning text to description and set it on the property
-inline void storage_property_autoset_warning_descr(StorageProperty& p)
-{
-	std::string reason = storage_property_get_warning_reason(p);
-	p.set_description(p.get_description() + (reason.empty() ? "" : "\n\n" + reason));
-}
-
-
-
-
-
 
 #endif
 

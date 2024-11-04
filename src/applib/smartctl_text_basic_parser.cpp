@@ -52,7 +52,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	}
 	{
 		StorageProperty p;
-		p.set_name("Smartctl version", "smartctl/version/_merged", "Smartctl Version");
+		p.set_name("smartctl/version/_merged", "Smartctl Version");
 		p.reported_value = version;
 		p.value = p.reported_value;  // string-type value
 		p.section = StoragePropertySection::Info;  // add to info section
@@ -60,7 +60,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	}
 	{
 		StorageProperty p;
-		p.set_name("Smartctl version", "smartctl/version/_merged_full", "Smartctl Version");
+		p.set_name("smartctl/version/_merged_full", "Smartctl Version");
 		p.reported_value = version_full;
 		p.value = p.reported_value;  // string-type value
 		p.section = StoragePropertySection::Info;  // add to info section
@@ -78,7 +78,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	if (app_regex_partial_match("/this device: CD\\/DVD/mi", output)
 			|| app_regex_partial_match("/^Device type:\\s+CD\\/DVD/mi", output)) {
 		StorageProperty p;
-		p.set_name("Drive type", "_text_only/custom/parser_detected_drive_type", "Parser-Detected Drive Type");
+		p.set_name("_text_only/custom/parser_detected_drive_type", "Parser-Detected Drive Type");
 		p.reported_value = "CD/DVD";
 		p.value = StorageDeviceDetectedTypeExt::get_storable_name(StorageDeviceDetectedType::CdDvd);
 		p.readable_value = StorageDeviceDetectedTypeExt::get_displayable_name(StorageDeviceDetectedType::CdDvd);
@@ -90,7 +90,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	// Product:              Raid 5 Volume
 	} else if (app_regex_partial_match("/Product:[ \\t]*Raid/mi", output)) {
 		StorageProperty p;
-		p.set_name("Drive type", "_text_only/custom/parser_detected_drive_type", "Parser-Detected Drive Type");
+		p.set_name("_text_only/custom/parser_detected_drive_type", "Parser-Detected Drive Type");
 		p.reported_value = "RAID";
 		p.value = StorageDeviceDetectedTypeExt::get_storable_name(StorageDeviceDetectedType::UnsupportedRaid);
 		p.readable_value = StorageDeviceDetectedTypeExt::get_displayable_name(StorageDeviceDetectedType::UnsupportedRaid);
@@ -101,7 +101,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 
 	} else if (app_regex_partial_match("/ATA Version is:/mi", output)) {
 		StorageProperty p;
-		p.set_name("Drive type", "_text_only/custom/parser_detected_drive_type", "Parser-Detected Drive Type");
+		p.set_name("_text_only/custom/parser_detected_drive_type", "Parser-Detected Drive Type");
 		p.reported_value = "(S)ATA";
 		p.value = StorageDeviceDetectedTypeExt::get_storable_name(StorageDeviceDetectedType::AtaAny);
 		p.readable_value = StorageDeviceDetectedTypeExt::get_displayable_name(StorageDeviceDetectedType::AtaAny);
@@ -144,14 +144,14 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 
 	{
 		StorageProperty p;
-		p.set_name("SMART Supported", "smart_support/available", "SMART Supported");
+		p.set_name("smart_support/available", "SMART Supported");
 		p.value = smart_supported;
 		p.section = StoragePropertySection::Info;  // add to info section
 		add_property(p);
 	}
 	{
 		StorageProperty p;
-		p.set_name("SMART Enabled", "smart_support/enabled", "SMART Enabled");
+		p.set_name("smart_support/enabled", "SMART Enabled");
 		p.value = smart_enabled;
 		p.section = StoragePropertySection::Info;  // add to info section
 		add_property(p);
@@ -162,14 +162,14 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	if (app_regex_partial_match("/^Device Model:[ \\t]*(.*)$/mi", output, &model)) {  // HDDs and CDROMs
 		model = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(model), ' ');
 		StorageProperty p;
-		p.set_name("Device Model", "model_name", "Device Model");
+		p.set_name("model_name", "Device Model");
 		p.value = model;  // string-type value
 		add_property(p);
 
 	} else if (app_regex_partial_match("/^(?:Device|Product):[ \\t]*(.*)$/mi", output, &model)) {  // usb flash drives
 		model = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(model), ' ');
 		StorageProperty p;
-		p.set_name("Device Model", "model_name", "Device Model");
+		p.set_name("model_name", "Device Model");
 		p.value = model;
 		add_property(p);
 	}
@@ -179,7 +179,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	if (app_regex_partial_match("/^Model Family:[ \\t]*(.*)$/mi", output, &family)) {
 		family = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(family), ' ');
 		StorageProperty p;
-		p.set_name("Model Family", "model_family", "Model Family");
+		p.set_name("model_family", "Model Family");
 		p.value = family;
 		add_property(p);
 	}
@@ -188,7 +188,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	if (app_regex_partial_match("/^Serial Number:[ \\t]*(.*)$/mi", output, &serial)) {
 		serial = hz::string_remove_adjacent_duplicates_copy(hz::string_trim_copy(serial), ' ');
 		StorageProperty p;
-		p.set_name("Serial Number", "serial_number", "Serial Number");
+		p.set_name("serial_number", "Serial Number");
 		p.value = serial;
 		add_property(p);
 	}
@@ -196,7 +196,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 	std::string rpm_str;
 	if (app_regex_partial_match("/^Rotation Rate:[ \\t]*(.*)$/mi", output, &rpm_str)) {
 		StorageProperty p;
-		p.set_name("Rotation Rate", "rotation_rate", "Rotation Rate");
+		p.set_name("rotation_rate", "Rotation Rate");
 		p.reported_value = rpm_str;
 		p.value = hz::string_to_number_nolocale<int>(rpm_str, false);
 		p.section = StoragePropertySection::Info;  // add to info section
@@ -210,7 +210,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		int64_t bytes = 0;
 		const std::string readable_size = SmartctlTextParserHelper::parse_byte_size(size, bytes, false);
 		StorageProperty p;
-		p.set_name("User Capacity", "user_capacity/bytes/_short", "Capacity");
+		p.set_name("user_capacity/bytes/_short", "Capacity");
 		p.reported_value = size;
 		p.value = bytes;
 		p.readable_value = readable_size;

@@ -170,7 +170,7 @@ inline auto string_formatter()
 	{
 		if (auto jval = get_node_data<std::string>(root_node, key); jval) {
 			StorageProperty p;
-			p.set_name(key, key, displayable_name);
+			p.set_name(key, displayable_name);
 			// p.reported_value = jval.value();
 			p.readable_value = jval.value();
 			p.value = jval.value();
@@ -214,7 +214,7 @@ inline auto bool_formatter(const std::string_view& true_str, const std::string_v
 	{
 		if (auto jval = get_node_data<bool>(root_node, key); jval) {
 			StorageProperty p;
-			p.set_name(key, key, displayable_name);
+			p.set_name(key, displayable_name);
 			// p.reported_value = (jval.value() ? true_str : false_str);
 			p.readable_value = (jval.value() ? true_str : false_str);
 			p.value = jval.value();
@@ -236,7 +236,7 @@ auto integer_formatter(const std::string& format_string = "{}")
 	{
 		if (auto jval = get_node_data<IntegerType>(root_node, key); jval) {
 			StorageProperty p;
-			p.set_name(key, key, displayable_name);
+			p.set_name(key, displayable_name);
 			// p.reported_value = (jval.value() ? true_str : false_str);
 			std::string num_str = hz::number_to_string_locale(jval.value());
 			p.readable_value = std::vformat(format_string, std::make_format_args(num_str));
@@ -258,7 +258,7 @@ auto custom_string_formatter(std::function<std::string(Type value)> formatter)
 	{
 		if (auto jval = get_node_data<Type>(root_node, key); jval) {
 			StorageProperty p;
-			p.set_name(key, key, displayable_name);
+			p.set_name(key, displayable_name);
 			// p.reported_value = formatter(jval.value());
 			p.readable_value = formatter(jval.value());
 			p.value = jval.value();
@@ -295,14 +295,14 @@ auto custom_string_formatter(std::function<std::string(Type value)> formatter)
 	smartctl_version = std::format("{}.{}", json_ver->at(0), json_ver->at(1));
 
 	{
-		merged_property.set_name("Smartctl version", "smartctl/version/_merged", "Smartctl Version");
+		merged_property.set_name("smartctl/version/_merged", _("Smartctl Version"));
 		// p.reported_value = smartctl_version;
 		merged_property.readable_value = smartctl_version;
 		merged_property.value = smartctl_version;  // string-type value
 		merged_property.section = StoragePropertySection::Info;  // add to info section
 	}
 	{
-		full_property.set_name("Smartctl version", "smartctl/version/_merged_full", "Smartctl Version");
+		full_property.set_name("smartctl/version/_merged_full", _("Smartctl Version"));
 		full_property.readable_value = std::format("{}.{} r{} {} {}", json_ver->at(0), json_ver->at(1),
 				get_node_data<std::string>(json_root_node, "smartctl/svn_revision", {}).value_or(std::string()),
 				get_node_data<std::string>(json_root_node, "smartctl/platform_info", {}).value_or(std::string()),

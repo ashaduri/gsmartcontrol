@@ -477,13 +477,13 @@ class StorageProperty {
 		void set_description(const std::string& descr);
 
 
-		/// Set smartctl-reported name, generic (internal) name, readable name
-		void set_name(const std::string& rep_name, const std::string& gen_name = "", const std::string& read_name = "");
+		/// Set generic (internal) name, readable name, and smartctl-reported name (optional)
+		void set_name(const std::string& gen_name, const std::string& disp_name, const std::string& rep_name = "");
 
 
+		std::string generic_name;  ///< Generic (internal) name. May be the same as reported_name, or something more program-identifiable.
+		std::string displayable_name;  ///< Readable property name. May be the same as reported_name, or something more user-readable. Possibly translatable.
 		std::string reported_name;  ///< Property name as reported by smartctl. Mainly used by Text parser.
-		std::string generic_name;  ///< Generic (internal) name. May be same as reported_name, or something more program-identifiable.
-		std::string displayable_name;  ///< Readable property name. May be same as reported_name, or something more user-readable. Possibly translatable.
 
 		std::string description;  ///< Property description (for tooltips, etc.). May contain markup.
 

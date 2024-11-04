@@ -407,11 +407,13 @@ void StorageProperty::set_description(const std::string& descr)
 
 
 
-void StorageProperty::set_name(const std::string& rep_name, const std::string& gen_name, const std::string& read_name)
+void StorageProperty::set_name(const std::string& gen_name, const std::string& disp_name, const std::string& rep_name)
 {
+//	this->generic_name = (gen_name.empty() ? this->reported_name : gen_name);
+//	this->displayable_name = (read_name.empty() ? this->reported_name : read_name);
+	this->generic_name = gen_name;
+	this->displayable_name = disp_name;
 	this->reported_name = rep_name;
-	this->generic_name = (gen_name.empty() ? this->reported_name : gen_name);
-	this->displayable_name = (read_name.empty() ? this->reported_name : read_name);
 }
 
 
