@@ -23,7 +23,9 @@ set(CMAKE_FIND_ROOT_PATH "$ENV{MINGW_PREFIX}")
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
 
 # Increase optimizations of Release builds
-add_compile_options("$<$<CONFIG:RELEASE>:-g0 -O3 -s>")
+add_compile_options($<$<CONFIG:RELEASE>:-g0>)
+add_compile_options($<$<CONFIG:RELEASE>:-O3>)
+add_compile_options($<$<CONFIG:RELEASE>:-s>)
 
 # Enable common CPU optimizations
 add_compile_options(-mtune=generic)
