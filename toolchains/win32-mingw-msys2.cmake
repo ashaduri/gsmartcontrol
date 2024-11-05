@@ -19,8 +19,8 @@ set(CMAKE_CXX_COMPILER i686-w64-mingw32-g++)
 # The target environment. This is a path which is valid for msys2.
 set(CMAKE_FIND_ROOT_PATH "$ENV{MINGW_PREFIX}")
 
-# Enable LTO for Release build
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+# Enable LTO for Release build (does not work with mingw)
+#set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
 
 # Increase optimizations of Release builds
 add_compile_options("$<$<CONFIG:RELEASE>:-g0 -O3 -s>")

@@ -34,8 +34,8 @@ endif()
 #set(APP_NSIS_PATH /usr/bin/makensis)
 
 
-# Enable LTO for Release build
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+# Enable LTO for Release build (does not work with mingw)
+#set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
 
 # Increase optimizations of Release builds
 add_compile_options("$<$<CONFIG:RELEASE>:-g0 -O3 -s>")
