@@ -955,21 +955,26 @@ void GscMainWindow::run_update_drivedb()
 		return;
 	}
 
-	hz::fs::path update_binary_path = hz::fs_path_from_string("update-smart-drivedb");
-	if constexpr (BuildEnv::is_kernel_family_windows()) {
-		update_binary_path += ".ps1";
-	}
-	if (smartctl_binary.is_absolute()) {
-		update_binary_path = smartctl_binary.parent_path() / update_binary_path;
-	}
-	std::string update_binary = hz::fs_path_to_string(update_binary_path);
+	std::vector<std::string> argv;
 
-	if constexpr(!BuildEnv::is_kernel_family_windows()) {  // X11
-		update_binary = "xterm -hold -e " + update_binary;
+	if constexpr (BuildEnv::is_kernel_family_windows()) {
+		hz::fs::path update_binary_path = hz::fs_path_from_string("update-smart-drivedb.ps1");
+		if (smartctl_binary.is_absolute()) {
+			update_binary_path = smartctl_binary.parent_path() / update_binary_path;
+		}
+		argv = {"powershell.exe", "-ExecutionPolicy", "Bypass", "-File", hz::fs_path_to_string(update_binary_path)};
+
+	} else {  // X11
+		// TODO Wayland
+		hz::fs::path update_binary_path = hz::fs_path_from_string("update-smart-drivedb");
+		if (smartctl_binary.is_absolute()) {
+			update_binary_path = smartctl_binary.parent_path() / update_binary_path;
+		}
+		argv = {"xterm", "-hold", "-e", hz::fs_path_to_string(update_binary_path)};
 	}
 
 	try {
-		Glib::spawn_command_line_async(update_binary);
+		Glib::spawn_async(Glib::get_current_dir(), argv, Glib::SPAWN_SEARCH_PATH);
 	}
 	catch(Glib::Error& e) {
 		gui_show_error_dialog(_("Error Updating Drive Database"), e.what(), this);
