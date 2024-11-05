@@ -5,16 +5,16 @@ if (CMAKE_SIZEOF_VOID_P EQUAL 8)
 	set(WINDOWS_SUFFIX "win64")
 endif()
 configure_file("nsis/distribution.in.txt" "nsis/distribution.txt" ESCAPE_QUOTES @ONLY NEWLINE_STYLE DOS)
-configure_file("nsis/gsmartcontrol.in.nsi" "nsis/gsmartcontrol.nsi" ESCAPE_QUOTES @ONLY NEWLINE_STYLE DOS)
+# configure_file("nsis/gsmartcontrol.in.nsi" "nsis/gsmartcontrol.nsi" ESCAPE_QUOTES @ONLY NEWLINE_STYLE DOS)
 
 # NSIS helpers
 if (WIN32)
 	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/nsis/distribution.txt" TYPE DOC)
 
 	# nsis file, only for cross-compilation
-	if (NOT ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-		install(FILES "${CMAKE_CURRENT_BINARY_DIR}/nsis/gsmartcontrol.nsi" DESTINATION .)
-	endif()
+#	if (NOT ${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+#		install(FILES "${CMAKE_CURRENT_BINARY_DIR}/nsis/gsmartcontrol.nsi" DESTINATION .)
+#	endif()
 endif()
 
 
