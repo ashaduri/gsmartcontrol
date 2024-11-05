@@ -73,7 +73,5 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 A PARTICULAR PURPOSE. See the GNU General Public Licenses for more details.
 
-This product includes icons from Crystal Project,
-copyright 2006-2007 Everaldo Coelho [www.everaldo.com](https://www.everaldo.com).
-Crystal Project icons are licensed under [GNU LGPL](https://www.gnu.org/licenses/lgpl-3.0.en.html).
-
+This product includes icons from Oxygen Icons copyright [KDE](https://kde.org)
+and licenced under the [GNU LGPL version 3](https://www.gnu.org/licenses/lgpl-3.0.en.html) or later.

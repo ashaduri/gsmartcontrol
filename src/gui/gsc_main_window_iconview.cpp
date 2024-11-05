@@ -505,7 +505,7 @@ void GscMainWindowIconView::load_icon_pixbufs()
 		// nothing
 	}
 
-	default_icon_ = load_icon_pixbuf(default_icon_theme, "drive-harddisk", "icon_harddisk.png");
+	default_icon_ = load_icon_pixbuf(default_icon_theme, "drive-harddisk", "drive-harddisk.png");
 
 	for (auto type : StorageDeviceDetectedTypeExt::get_all_values()) {
 		Glib::RefPtr<Gdk::Pixbuf> type_icon;
@@ -515,7 +515,7 @@ void GscMainWindowIconView::load_icon_pixbufs()
 				break;
 			case StorageDeviceDetectedType::AtaAny:
 			case StorageDeviceDetectedType::AtaHdd:
-				type_icon = load_icon_pixbuf(default_icon_theme, "drive-harddisk", "icon_harddisk.png");
+				type_icon = load_icon_pixbuf(default_icon_theme, "drive-harddisk", "drive-harddisk.png");
 				break;
 			case StorageDeviceDetectedType::AtaSsd:
 			case StorageDeviceDetectedType::Nvme:
@@ -524,10 +524,10 @@ void GscMainWindowIconView::load_icon_pixbufs()
 				break;
 			case StorageDeviceDetectedType::BasicScsi:
 				// Most likely to be a flash drive
-				type_icon = load_icon_pixbuf(default_icon_theme, "drive-removable-media", "");
+				type_icon = load_icon_pixbuf(default_icon_theme, "drive-removable-media", "drive-removable-media-usb.png");
 				break;
 			case StorageDeviceDetectedType::CdDvd:
-				type_icon = load_icon_pixbuf(default_icon_theme, "drive-optical", "icon_optical.png");
+				type_icon = load_icon_pixbuf(default_icon_theme, "drive-optical", "drive-optical.png");
 				break;
 			case StorageDeviceDetectedType::UnsupportedRaid:
 				// Not in XDG, but available in some icon themes

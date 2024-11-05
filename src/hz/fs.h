@@ -455,7 +455,16 @@ inline fs::path fs_get_application_dir()
 	// In Windows the path is in utf-8.
 	wai_getExecutablePath(vpath.data(), int(path_len), &dirname_length);
 
-	return {vpath.begin(), vpath.begin() + dirname_length};
+	fs::path app_dir = {vpath.begin(), vpath.begin() + dirname_length};
+
+	// On Windows, the binary may be in the "bin" subdirectory, so remove that.
+#ifdef _WIN32
+	if (app_dir.filename() == "bin") {
+		app_dir = app_dir.parent_path();
+	}
+#endif
+
+	return app_dir;
 }
 
 

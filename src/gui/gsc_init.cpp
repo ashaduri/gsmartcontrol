@@ -457,19 +457,19 @@ bool app_init_and_loop(int& argc, char**& argv)
 	// Add data file search paths
 	if (is_from_source) {
 		if constexpr(BuildEnv::debug_build()) {
-			hz::data_file_add_search_directory("icons", hz::fs_path_from_string(BuildEnv::package_top_source_dir()) / "data");
-			hz::data_file_add_search_directory("ui", hz::fs_path_from_string(BuildEnv::package_top_source_dir()) / "src/gui/ui");
+			hz::data_file_add_search_directory("icons", hz::fs_path_from_string(BuildEnv::package_top_source_dir()) / "data" / "icons");
+			hz::data_file_add_search_directory("ui", hz::fs_path_from_string(BuildEnv::package_top_source_dir()) / "src" / "gui" / "ui");
 			hz::data_file_add_search_directory("doc", hz::fs_path_from_string(BuildEnv::package_top_source_dir()) / "doc");
 		} else {
 			// Assume the source is the parent directory (standard cmake build with the build directory as a subdirectory of source directory,
 			// and the executables placed directly in the build directory).
-			hz::data_file_add_search_directory("icons", application_dir.parent_path() / "data");
-			hz::data_file_add_search_directory("ui", application_dir.parent_path() / "src/gui/ui");
+			hz::data_file_add_search_directory("icons", application_dir.parent_path() / "data" / "icons");
+			hz::data_file_add_search_directory("ui", application_dir.parent_path() / "src" / "gui" / "ui");
 			hz::data_file_add_search_directory("doc", application_dir.parent_path() / "doc");
 		}
 	} else {
 		if constexpr(BuildEnv::is_kernel_family_windows()) {
-			hz::data_file_add_search_directory("icons", application_dir);
+			hz::data_file_add_search_directory("icons", application_dir / "icons");
 			hz::data_file_add_search_directory("ui", application_dir / "ui");
 			hz::data_file_add_search_directory("doc", application_dir / "doc");
 		} else {

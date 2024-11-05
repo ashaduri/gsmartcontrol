@@ -26,12 +26,17 @@ if (WIN32)
 	install(FILES gsmartcontrol.ico DESTINATION .)
 endif()
 
+set (DATA_ICONS
+	icons/drive-optical.png
+	icons/drive-harddisk.png
+	icons/drive-removable-media-usb.png
+)
+
 # Install internal icons
 if (WIN32)
-	install(FILES icon_optical.png icon_harddisk.png
-		DESTINATION .)
+	install(FILES ${DATA_ICONS} DESTINATION icons)
 else()
-	install(FILES icon_optical.png icon_harddisk.png
+	install(FILES ${DATA_ICONS}
 		DESTINATION "${CMAKE_INSTALL_DATADIR}/gsmartcontrol/icons")
 endif()
 
