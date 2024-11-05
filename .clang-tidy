@@ -14,6 +14,7 @@
 # cppcoreguidelines-pro-type-vararg is triggered by hz::string_sprintf().
 # cppcoreguidelines-pro-bounds-array-to-pointer-decay is triggered by va_start in hz::string_sprintf().
 # cppcoreguidelines-pro-bounds-pointer-arithmetic is useless (triggered by argv) until we have std::span.
+# misc-include-cleaner does not really work.
 # misc-no-recursion is too noisy.
 # modernize-raw-string-literal is very noisy.
 # modernize-use-trailing-return-type is contrary to our style.
@@ -56,6 +57,7 @@ Checks:          >
   -llvm-*,
   -llvmlibc-*,
   misc-*,
+  -misc-include-cleaner,
   -misc-no-recursion,
   modernize-*,
   -modernize-use-trailing-return-type,
