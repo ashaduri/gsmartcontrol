@@ -2432,25 +2432,26 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 	if (auto* test_stop_button = self->lookup_widget<Gtk::Button*>("test_stop_button"))
 		test_stop_button->set_sensitive(false);
 
-	Gtk::StockID stock_id = Gtk::Stock::DIALOG_ERROR;
+	std::string icon_name = "dialog-error";
 	if (severity == SelfTestStatusSeverity::None) {
-		stock_id = Gtk::Stock::DIALOG_INFO;
+		icon_name = "dialog-information";
 	} else if (severity == SelfTestStatusSeverity::Warning) {
-		stock_id = Gtk::Stock::DIALOG_WARNING;
+		icon_name = "dialog-warning";
 	}
 
 	// we use large icon size here because the icons we use are from dialogs.
 	// unfortunately, there are no non-dialog icons of this sort.
-	if (auto* test_result_image = self->lookup_widget<Gtk::Image*>("test_result_image"))
-		test_result_image->set(stock_id, Gtk::ICON_SIZE_DND);
+	if (auto* test_result_image = self->lookup_widget<Gtk::Image*>("test_result_image")) {
+		test_result_image->set_from_icon_name(icon_name, Gtk::ICON_SIZE_DND);
+	}
 
-
-	if (auto* test_result_label = self->lookup_widget<Gtk::Label*>("test_result_label"))
+	if (auto* test_result_label = self->lookup_widget<Gtk::Label*>("test_result_label")) {
 		test_result_label->set_markup(result_msg);
+	}
 
-	if (auto* test_result_hbox = self->lookup_widget<Gtk::Box*>("test_result_hbox"))
+	if (auto* test_result_hbox = self->lookup_widget<Gtk::Box*>("test_result_hbox")) {
 		test_result_hbox->show();
-
+	}
 
 	self->refresh_info(false);  // don't clear the tests tab
 
