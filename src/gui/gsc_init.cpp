@@ -479,11 +479,13 @@ bool app_init_and_loop(int& argc, char**& argv)
 		}
 	}
 
-	// Windows "Classic" theme is broken under GTK+3's "win32" theme.
+	// GTK+3's "win32" theme is broken when Windows "Classic" theme is used.
 	// Make sure we fall back to Adwaita (which works, but looks non-native)
 	// for platforms which support "Classic" theme - Windows Server and Windows Vista / 7.
 	// Windows 8 / 10 don't support "Classic" so native look is preferred.
-	{
+	// Note: Win32 theme is also incompatible with fractional scaling.
+	// Note: Win32 theme is disabled for now, and the default built-in Adwaita is used.
+/*	if constexpr(BuildEnv::is_kernel_family_windows()) {
 		Glib::RefPtr<Gtk::Settings> gtk_settings = Gtk::Settings::get_default();
 		if (gtk_settings) {
 			const Glib::ustring theme_name = gtk_settings->property_gtk_theme_name().get_value();
@@ -498,6 +500,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 			}
 		}
 	}
+*/
 
 	// The application is dpi-aware in Windows.
 	// However, Gtk3 does not support fractional scaling, so at 250% scaling in system settings, the UI will use 200%.
