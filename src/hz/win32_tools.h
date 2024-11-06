@@ -486,7 +486,7 @@ inline bool win32_redirect_stdio_to_files(const std::string& stdout_file, const 
 	}
 	internal::Win32RedirectHolder::stdout_file = wstdout_file;
 
-	std::wstring wstderr_file = nullptr;  // freed on cleanup
+	std::wstring wstderr_file;  // freed on cleanup
 	if (stderr_file.empty()) {
 		wstderr_file = internal::win32_get_std_output_file(L"stderr.txt");
 	} else {
