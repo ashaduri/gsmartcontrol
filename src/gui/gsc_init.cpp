@@ -479,8 +479,6 @@ bool app_init_and_loop(int& argc, char**& argv)
 		}
 	}
 
-
-
 	// Windows "Classic" theme is broken under GTK+3's "win32" theme.
 	// Make sure we fall back to Adwaita (which works, but looks non-native)
 	// for platforms which support "Classic" theme - Windows Server and Windows Vista / 7.
@@ -497,6 +495,30 @@ bool app_init_and_loop(int& argc, char**& argv)
 			if (windows_is_using_classic_theme && theme_name == "win32") {
 				debug_out_dump("app", "Windows with Classic theme support detected, switching to Adwaita theme.\n");
 				gtk_settings->property_gtk_theme_name().set_value("Adwaita");
+			}
+		}
+	}
+
+	// The application is dpi-aware in Windows.
+	// However, Gtk3 does not support fractional scaling, so at 250% scaling in system settings, the UI will use 200%.
+	//
+	if constexpr(BuildEnv::is_kernel_family_windows()) {
+		double h_ppi = 0;
+	#if _WIN32
+		// Get system DPI (we don't support per-monitor dpi)
+		HDC screen = GetDC(nullptr);
+		h_ppi = GetDeviceCaps(screen, LOGPIXELSX);
+		ReleaseDC(nullptr, screen);
+	#endif
+		if (h_ppi > 0) {
+			const double scale = h_ppi / 96.0;
+			debug_out_info("app", "Windows system DPI: " << h_ppi << ", scale: " << scale << "\n");
+			const int fraction_percent = static_cast<int>(std::round(scale * 100)) % 100;
+			if (fraction_percent != 0) {  // fractional scaling
+				// Increase the font size by fraction
+				debug_out_dump("app", "Fractional scaling detected, increasing font size by " << fraction_percent << "%.\n");
+				Gtk::Settings::get_default()->property_gtk_font_name()
+						.set_value("Segoe UI " + hz::number_to_string_nolocale(9 * (1. + fraction_percent/100.)));
 			}
 		}
 	}
