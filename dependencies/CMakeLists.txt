@@ -64,7 +64,7 @@ endif()
 
 # Gettext binaries and macros.
 # See https://cmake.org/cmake/help/v3.15/module/FindGettext.html
-find_package(Gettext REQUIRED)
+# find_package(Gettext REQUIRED)
 
 
 add_subdirectory(catch2)
