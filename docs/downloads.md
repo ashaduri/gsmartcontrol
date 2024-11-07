@@ -29,13 +29,13 @@ to install these packages.
 #### Windows Vista or Later
 
 - 32-bit installer **(use this if unsure)**:
-[gsmartcontrol-1.1.4-win32.exe](https://github.com/ashaduri/gsmartcontrol/releases/download/v1.1.4/gsmartcontrol-1.1.4-win32.exe).
+[gsmartcontrol-2.0.0-win32.exe](https://github.com/ashaduri/gsmartcontrol/releases/download/v2.0.0/gsmartcontrol-2.0.0-win32.exe).
 
-- 32-bit zip (portable): [gsmartcontrol-1.1.4-win32.zip](https://github.com/ashaduri/gsmartcontrol/releases/download/v1.1.4/gsmartcontrol-1.1.4-win32.zip).
+- 32-bit zip (portable): [gsmartcontrol-2.0.0-win32.zip](https://github.com/ashaduri/gsmartcontrol/releases/download/v2.0.0/gsmartcontrol-2.0.0-win32.zip).
 
-- 64-bit installer: [gsmartcontrol-1.1.4-win64.exe](https://github.com/ashaduri/gsmartcontrol/releases/download/v1.1.4/gsmartcontrol-1.1.4-win64.exe).
+- 64-bit installer: [gsmartcontrol-2.0.0-win64.exe](https://github.com/ashaduri/gsmartcontrol/releases/download/v2.0.0/gsmartcontrol-2.0.0-win64.exe).
 
-- 64-bit zip (portable): [gsmartcontrol-1.1.4.win64.zip](https://github.com/ashaduri/gsmartcontrol/releases/download/v1.1.4/gsmartcontrol-1.1.4-win64.zip).
+- 64-bit zip (portable): [gsmartcontrol-2.0.0.win64.zip](https://github.com/ashaduri/gsmartcontrol/releases/download/v2.0.0/gsmartcontrol-2.0.0-win64.zip).
 
 #### Outdated: Windows XP, 2000 and 2003
 
@@ -70,8 +70,8 @@ which includes GSmartControl.
 ## Source Code
 
 The latest source package:
-[gsmartcontrol-1.1.4.tar.bz2](https://github.com/ashaduri/gsmartcontrol/releases/download/v1.1.4/gsmartcontrol-1.1.4.tar.bz2) \
-SHA1 sum: 770705e2a9d3a8000c6ca7d675be3339aa5cee7a
+[gsmartcontrol-2.0.0.tar.bz2](https://github.com/ashaduri/gsmartcontrol/releases/download/v2.0.0/gsmartcontrol-2.0.0.tar.bz2) \
+SHA1 sum: 
 
 If you're interested in development, you can check the
 [GitHub Project](https://github.com/ashaduri/gsmartcontrol) page.
