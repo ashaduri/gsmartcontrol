@@ -5,10 +5,10 @@
 The following versions are supported with security updates:
 
 | Version  | Supported          |
-| -------- | ------------------ |
+|----------| ------------------ |
 | git main | :white_check_mark: |
-| 1.1.x    | :white_check_mark: |
-| <= 1.0   | :x:                |
+| 2.0.x    | :white_check_mark: |
+| < 2.0.0 | :x:                |
 
 ## Reporting a Vulnerability
 
