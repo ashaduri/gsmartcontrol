@@ -370,7 +370,7 @@ void GscPreferencesWindow::import_config()
 	if (auto* check = this->lookup_widget<Gtk::CheckButton*>("scan_on_startup_check"))
 		check->set_active(scan_on_startup);
 
-	bool show_smart_capable_only = rconfig::get_data<bool>("gui/scan_on_startup");
+	bool show_smart_capable_only = rconfig::get_data<bool>("gui/show_smart_capable_only");
 	if (auto* check = this->lookup_widget<Gtk::CheckButton*>("show_smart_capable_only_check"))
 		check->set_active(show_smart_capable_only);
 
