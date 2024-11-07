@@ -70,8 +70,8 @@ which includes GSmartControl.
 ## Source Code
 
 The latest source package:
-[gsmartcontrol-2.0.0.tar.bz2](https://github.com/ashaduri/gsmartcontrol/releases/download/v2.0.0/gsmartcontrol-2.0.0.tar.bz2) \
-SHA1 sum: 
+[gsmartcontrol-2.0.0.tar.gz](https://github.com/ashaduri/gsmartcontrol/archive/refs/tags/v2.0.0.tar.gz) \
+SHA1 sum: 081ec0c706180daad5c14f7bbfd7deb753ade69b
 
 If you're interested in development, you can check the
 [GitHub Project](https://github.com/ashaduri/gsmartcontrol) page.
