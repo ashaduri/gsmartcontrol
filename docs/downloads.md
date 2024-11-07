@@ -28,14 +28,13 @@ to install these packages.
 
 #### Windows Vista or Later
 
-- 32-bit installer **(use this if unsure)**:
-[gsmartcontrol-2.0.0-win32.exe](https://github.com/ashaduri/gsmartcontrol/releases/download/v2.0.0/gsmartcontrol-2.0.0-win32.exe).
-
-- 32-bit zip (portable): [gsmartcontrol-2.0.0-win32.zip](https://github.com/ashaduri/gsmartcontrol/releases/download/v2.0.0/gsmartcontrol-2.0.0-win32.zip).
-
-- 64-bit installer: [gsmartcontrol-2.0.0-win64.exe](https://github.com/ashaduri/gsmartcontrol/releases/download/v2.0.0/gsmartcontrol-2.0.0-win64.exe).
+- 64-bit installer **(use this if unsure)**: [gsmartcontrol-2.0.0-win64.exe](https://github.com/ashaduri/gsmartcontrol/releases/download/v2.0.0/gsmartcontrol-2.0.0-win64.exe).
 
 - 64-bit zip (portable): [gsmartcontrol-2.0.0.win64.zip](https://github.com/ashaduri/gsmartcontrol/releases/download/v2.0.0/gsmartcontrol-2.0.0-win64.zip).
+
+- 32-bit installer: [gsmartcontrol-2.0.0-win32.exe](https://github.com/ashaduri/gsmartcontrol/releases/download/v2.0.0/gsmartcontrol-2.0.0-win32.exe).
+
+- 32-bit zip (portable): [gsmartcontrol-2.0.0-win32.zip](https://github.com/ashaduri/gsmartcontrol/releases/download/v2.0.0/gsmartcontrol-2.0.0-win32.zip).
 
 #### Outdated: Windows XP, 2000 and 2003
 
