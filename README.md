@@ -41,8 +41,8 @@ all the available packages of GSmartControl.
 
 ### Supported Hardware
 
-GSmartControl supports ATA drives (both PATA and SATA), NVMe drives,
-various USB to ATA bridges, and drives behind some RAID controllers.
+GSmartControl supports SATA, PATA, and NVMe drives, as well as drives
+behind some USB bridges and RAID controllers.
 Please see the
 [Supported Hardware](https://gsmartcontrol.shaduri.dev/supported-hardware) page
 for more information.
