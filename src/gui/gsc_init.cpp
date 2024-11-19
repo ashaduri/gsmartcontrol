@@ -507,7 +507,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 	//
 	if constexpr(BuildEnv::is_kernel_family_windows()) {
 		double h_ppi = 0;
-	#if _WIN32
+	#ifdef _WIN32
 		// Get system DPI (we don't support per-monitor dpi)
 		HDC screen = GetDC(nullptr);
 		h_ppi = GetDeviceCaps(screen, LOGPIXELSX);
