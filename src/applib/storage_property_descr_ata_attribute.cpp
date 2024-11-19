@@ -1084,7 +1084,7 @@ namespace {
 			{
 				auto iter = id_db.find(id);
 				DBG_ASSERT(iter != id_db.end() && !iter->second.empty());
-				if (iter != id_db.end() || iter->second.empty()) {
+				if (iter != id_db.end() && !iter->second.empty()) {
 					AtaAttributeDescription attr = iter->second.front();
 					add(AtaAttributeDescription(id, type,
 							std::move(reported_name), std::move(attr.displayable_name), std::move(attr.generic_name), std::move(attr.description)));
