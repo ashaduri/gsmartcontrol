@@ -24,3 +24,6 @@ for more information.
 [more RAID Controllers](https://www.smartmontools.org/wiki/Supported_RAID-Controllers).
 The drives behind such controllers can be manually entered in GSmartControl using
 <tt>Add Device...</tt> functionality or `--add-device` command-line option.
+
+SCSI / SAS drives are **not** supported by GSmartControl, but the application
+may still display some information about them.
