@@ -6,7 +6,7 @@ permalink: /supported-hardware
 # Supported Hardware
 
 GSmartControl supports a wide range of hard disk and solid-state drives:
-- ATA (SATA and PATA) drives
+- ATA (both SATA and PATA) drives
 - NVMe drives
 - ATA and NVMe drives behind some USB bridges. See
 [USB Devices and Smartmontools](https://www.smartmontools.org/wiki/USB)
