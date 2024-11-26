@@ -294,7 +294,7 @@ if (WIN32)
 		libjpeg-*.dll
 		libjson-glib-*.dll
 		libjsoncpp-*.dll
-		libLerc-*.dll
+		libLerc*.dll
 		liblz4.dll
 		liblzma-*.dll
 		liblzo2-*.dll
@@ -339,7 +339,7 @@ if (WIN32)
 		libturbojpeg.dll
 		libunistring-*.dll
 		libuv-*.dll
-#		libwebp-*.dll
+		libwebp-*.dll
 #		libwebpdecoder-*.dll
 #		libwebpdemux-*.dll
 #		libwebpmux-*.dll
