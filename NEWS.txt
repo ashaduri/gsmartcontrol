@@ -1,3 +1,6 @@
+Version 2.0.1, released on 2024-11-26
+	Windows: Fixed a crash when opening a native file dialog (#67).
+
 Version 2.0.0, released on 2024-11-07
 	New JSON-based parser for smartctl output (requires smartctl 7.3+) (#4).
 	Support for NVMe drives (self-tests require smartctl 7.4+) (#4).
