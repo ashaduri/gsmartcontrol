@@ -70,7 +70,7 @@ which includes GSmartControl.
 
 The latest source package:
 [gsmartcontrol-2.0.1.tar.gz](https://github.com/ashaduri/gsmartcontrol/archive/refs/tags/v2.0.1.tar.gz) \
-SHA1 sum: 
+SHA1 sum: 5bdc1cdd9d47c31ffa2ff3162ca7291d8ae953b4
 
 If you're interested in development, you can check the
 [GitHub Project](https://github.com/ashaduri/gsmartcontrol) page.
