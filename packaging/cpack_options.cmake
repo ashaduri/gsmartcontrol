@@ -381,9 +381,8 @@ if (WIN32)
 	# Not present in msys2
 #	install(DIRECTORY "${APP_WINDOWS_SYSROOT}/share/themes" DESTINATION "share/")
 
-	# needed for file chooser
-	# Not present in msys2 (maybe use plain glib, not mingw64 variant?)
-#	install(DIRECTORY "${APP_WINDOWS_SYSROOT}/share/glib-2.0/schemas" DESTINATION "share/glib-2.0/")
+	# Without the "schemas, the Native File Chooser crashes the program.
+	install(DIRECTORY "${APP_WINDOWS_SYSROOT}/share/glib-2.0/schemas" DESTINATION "share/glib-2.0/")
 
 
 	set(APP_WINDOWS_INSTALL_GTK_ICONS true)
