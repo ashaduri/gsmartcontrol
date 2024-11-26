@@ -25,7 +25,8 @@ Copyright:
 	</ms_asmv2:trustInfo>
 
 	<!-- GTK3 applications on Windows do not support fractional scaling
-		(e.g. 250%), making them too small on such displays -->
+		(e.g. 250%), making them too small on such displays.
+		We try to compensate for this by increasing the font size in the application.-->
 	<asmv3:application>
 		<asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">
 			<dpiAware>true</dpiAware>
