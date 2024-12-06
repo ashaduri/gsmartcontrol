@@ -518,10 +518,10 @@ bool app_init_and_loop(int& argc, char**& argv)
 			debug_out_info("app", "Windows system DPI: " << h_ppi << ", scale: " << scale << "\n");
 			const int fraction_percent = static_cast<int>(std::round(scale * 100)) % 100;
 			if (fraction_percent != 0) {  // fractional scaling
-				// Increase the font size by fraction
+				// Increase the font size by fraction, but round down the size to match the Windows behavior (?)
 				debug_out_dump("app", "Fractional scaling detected, increasing font size by " << fraction_percent << "%.\n");
 				Gtk::Settings::get_default()->property_gtk_font_name()
-						.set_value("Segoe UI " + hz::number_to_string_nolocale(9 * (1. + fraction_percent/100.)));
+						.set_value("Segoe UI " + hz::number_to_string_nolocale(static_cast<int>(9 * (1. + fraction_percent/100.))));
 			}
 		}
 	}
