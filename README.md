@@ -15,7 +15,7 @@
 [GSmartControl](https://gsmartcontrol.shaduri.dev)
 is a graphical user interface for smartctl (from [smartmontools](https://www.smartmontools.org/)
 package), which is a tool for
-querying and controlling [SMART](https://en.wikipedia.org/wiki/S.M.A.R.T.)
+querying and controlling [SMART](https://en.wikipedia.org/wiki/Self-Monitoring,_Analysis_and_Reporting_Technology)
 (Self-Monitoring, Analysis, and Reporting
 Technology) data on modern hard disk and solid-state drives. It allows you to
 inspect the drive's SMART data to determine its health, as well as run various
