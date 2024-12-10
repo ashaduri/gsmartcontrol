@@ -65,7 +65,7 @@ namespace {
 				// "custom" means it's somewhere else.
 
 				// Descriptions are based on:
-				// http://en.wikipedia.org/wiki/S.M.A.R.T.
+				// https://en.wikipedia.org/wiki/Self-Monitoring,_Analysis_and_Reporting_Technology
 				// http://kb.acronis.com/taxonomy/term/1644
 				// http://www.ariolic.com/activesmart/smart-attributes/
 				// http://www.ocztechnologyforum.com/staff/ryderocz/misc/Sandforce.jpg
