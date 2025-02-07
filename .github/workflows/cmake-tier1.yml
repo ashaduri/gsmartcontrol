@@ -19,7 +19,8 @@ env:
 
 jobs:
 
-  linux-ubuntu:
+  linux-ubuntu-24_04:
+    # GCC 13
     runs-on: ubuntu-24.04
 
     steps:
@@ -40,6 +41,55 @@ jobs:
       env:
         CC: gcc-13
         CXX: g++-13
+      run: >
+        cmake $GITHUB_WORKSPACE
+        -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/toolchains/linux-dev.cmake"
+
+    - name: Build
+      shell: bash
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config $BUILD_TYPE
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      shell: bash
+      run: ctest -C $BUILD_TYPE --rerun-failed --output-on-failure
+
+    - name: Pack (cmake install and make binary package)
+      shell: bash
+      working-directory: ${{github.workspace}}/build
+      run: cpack -G TBZ2
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: Linux Packages
+        path: ${{github.workspace}}/build/gsmartcontrol-*-Linux*.*
+
+
+  linux-ubuntu-22_04:
+    # GCC 11
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Update Package Database
+      run: sudo apt-get update
+
+    - name: Install Dependencies
+      run: sudo apt-get install libgtkmm-3.0-dev gettext
+
+    - name: Create Build Directory
+      run: cmake -E make_directory build
+
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{github.workspace}}/build
+      env:
+        CC: gcc-11
+        CXX: g++-11
       run: >
         cmake $GITHUB_WORKSPACE
         -DCMAKE_BUILD_TYPE=$BUILD_TYPE
