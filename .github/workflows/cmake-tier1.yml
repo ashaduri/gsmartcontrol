@@ -110,11 +110,11 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: cpack -G TBZ2
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: Linux Packages
-        path: ${{github.workspace}}/build/gsmartcontrol-*-Linux*.*
+#    - name: Upload artifacts
+#      uses: actions/upload-artifact@v4
+#      with:
+#        name: Linux Packages
+#        path: ${{github.workspace}}/build/gsmartcontrol-*-Linux*.*
 
 
   windows-msys2:
