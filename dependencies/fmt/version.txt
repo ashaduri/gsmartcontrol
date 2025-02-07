@@ -1,0 +1,5 @@
+{fmt}
+11.1.3
+https://github.com/fmtlib/fmt
+
+only required files are present.

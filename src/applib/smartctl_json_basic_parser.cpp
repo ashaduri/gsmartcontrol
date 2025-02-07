@@ -14,11 +14,11 @@ Copyright:
 // #include <glibmm.h>
 //#include <clocale>  // localeconv
 #include <cstdint>
-#include <format>
 #include <string_view>
 #include <tuple>
 #include <vector>
 
+#include "fmt/format.h"
 // #include "hz/locale_tools.h"  // ScopedCLocale, locale_c_get().
 #include "hz/format_unit.h"
 #include "hz/string_algo.h"  // string_*
@@ -86,7 +86,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 						p.show_in_ui = false;
 						return p;
 					}
-					return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+					return hz::Unexpected(SmartctlParserError::KeyNotFound, fmt::format("Error getting key {} from JSON data.", key));
 				}
 			},
 
@@ -101,7 +101,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 						p.show_in_ui = false;
 						return p;
 					}
-					return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+					return hz::Unexpected(SmartctlParserError::KeyNotFound, fmt::format("Error getting key {} from JSON data.", key));
 				}
 			},
 
@@ -124,7 +124,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 			{"user_capacity/bytes", _("Capacity"),
 				custom_string_formatter<int64_t>([](int64_t value)
 				{
-					return std::format("{} [{}; {} bytes]",
+					return fmt::format("{} [{}; {} bytes]",
 						hz::format_size(static_cast<uint64_t>(value), true),
 						hz::format_size(static_cast<uint64_t>(value), false),
 						hz::number_to_string_locale(value));
@@ -143,7 +143,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 						p.show_in_ui = false;
 						return p;
 					}
-					return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", "user_capacity/bytes"));
+					return hz::Unexpected(SmartctlParserError::KeyNotFound, fmt::format("Error getting key {} from JSON data.", "user_capacity/bytes"));
 				}
 			},
 
@@ -153,10 +153,10 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 				{
 					std::vector<std::string> values;
 					if (auto jval1 = get_node_data<int64_t>(root_node, "logical_block_size"); jval1) {
-						values.emplace_back(std::format("{} bytes logical", jval1.value()));
+						values.emplace_back(fmt::format("{} bytes logical", jval1.value()));
 					}
 					if (auto jval2 = get_node_data<int64_t>(root_node, "physical_block_size"); jval2) {
-						values.emplace_back(std::format("{} bytes physical", jval2.value()));
+						values.emplace_back(fmt::format("{} bytes physical", jval2.value()));
 					}
 					if (!values.empty()) {
 						StorageProperty p;
@@ -165,7 +165,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 						p.value = p.readable_value;
 						return p;
 					}
-					return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+					return hz::Unexpected(SmartctlParserError::KeyNotFound, fmt::format("Error getting key {} from JSON data.", key));
 				}
 			},
 
@@ -183,10 +183,10 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 				{
 					std::vector<std::string> values;
 					if (auto jval1 = get_node_data<std::string>(root_node, "interface_speed/max/string"); jval1) {
-						values.emplace_back(std::format("Max: {}", jval1.value()));
+						values.emplace_back(fmt::format("Max: {}", jval1.value()));
 					}
 					if (auto jval2 = get_node_data<std::string>(root_node, "interface_speed/current/string"); jval2) {
-						values.emplace_back(std::format("Current: {}", jval2.value()));
+						values.emplace_back(fmt::format("Current: {}", jval2.value()));
 					}
 					if (!values.empty()) {
 						StorageProperty p;
@@ -195,7 +195,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonBasicParser::parse_section_bas
 						p.value = p.readable_value;
 						return p;
 					}
-					return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+					return hz::Unexpected(SmartctlParserError::KeyNotFound, fmt::format("Error getting key {} from JSON data.", key));
 				}
 			},
 

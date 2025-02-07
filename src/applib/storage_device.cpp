@@ -14,13 +14,13 @@ Copyright:
 #include <glibmm.h>
 #include <cctype>
 #include <cstdint>
-#include <format>
 #include <memory>
 #include <unordered_map>
 #include <utility>
 #include <string>
 #include <vector>
 
+#include "fmt/format.h"
 #include "rconfig/rconfig.h"
 #include "hz/string_algo.h"  // string_trim_copy, string_any_to_unix_copy
 #include "hz/fs.h"
@@ -164,7 +164,7 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::parse_basic_data()
 	if (!parse_status) {
 		std::string message = parse_status.error().message();
 		return hz::Unexpected(StorageDeviceError::ParseError,
-				std::vformat(_("Cannot parse smartctl output: {}"), std::make_format_args(message)));
+				fmt::format(fmt::runtime(_("Cannot parse smartctl output: {}")), message));
 	}
 
 	// See if we can narrow down the drive type from what was detected
@@ -375,7 +375,7 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::try_parse_data()
 		// return full parser's error messages - they are more detailed.
 		std::string message = basic_parse_status.error().message();
 		return hz::Unexpected(StorageDeviceError::ParseError,
-				std::vformat(_("Cannot parse smartctl output: {}"), std::make_format_args(message)));
+				fmt::format(fmt::runtime(_("Cannot parse smartctl output: {}")), message));
 	}
 
 	return {};  // return ok if at least the info was ok.
@@ -412,7 +412,7 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::parse_full_data(SmartctlPars
 
 	std::string message = parse_status.error().message();
 	return hz::Unexpected(StorageDeviceError::ParseError,
-			std::vformat(_("Cannot parse smartctl output: {}"), std::make_format_args(message)));
+			fmt::format(fmt::runtime(_("Cannot parse smartctl output: {}")), message));
 }
 
 
@@ -437,7 +437,7 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::parse_any_data_for_virtual()
 	if (!basic_parse_status) {
 		std::string message = basic_parse_status.error().message();
 		return hz::Unexpected(StorageDeviceError::ParseError,
-				std::vformat(_("Cannot parse smartctl output: {}"), std::make_format_args(message)));
+				fmt::format(fmt::runtime(_("Cannot parse smartctl output: {}")), message));
 	}
 
 	auto basic_property_repo = basic_parser->get_property_repository();

@@ -12,7 +12,6 @@ Copyright:
 #include "smartctl_json_nvme_parser.h"
 
 #include <cstdint>
-#include <format>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -20,6 +19,7 @@ Copyright:
 #include <vector>
 #include <chrono>
 
+#include "fmt/format.h"
 #include "nlohmann/json.hpp"
 
 #include "storage_property.h"
@@ -125,7 +125,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_info
 						p.show_in_ui = false;
 						return p;
 					}
-					return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+					return hz::Unexpected(SmartctlParserError::KeyNotFound, fmt::format("Error getting key {} from JSON data.", key));
 				}
 			},
 
@@ -140,7 +140,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_info
 						p.show_in_ui = false;
 						return p;
 					}
-					return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+					return hz::Unexpected(SmartctlParserError::KeyNotFound, fmt::format("Error getting key {} from JSON data.", key));
 				}
 			},
 
@@ -151,7 +151,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_info
 			{"nvme_total_capacity", _("Total Capacity"),
 				custom_string_formatter<int64_t>([](int64_t value)
 				{
-					return std::format("{} [{}; {} bytes]",
+					return fmt::format("{} [{}; {} bytes]",
 						hz::format_size(static_cast<uint64_t>(value), true),
 						hz::format_size(static_cast<uint64_t>(value), false),
 						hz::number_to_string_locale(value));
@@ -161,7 +161,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_info
 			{"nvme_unallocated_capacity", _("Unallocated Capacity"),
 				custom_string_formatter<int64_t>([](int64_t value)
 				{
-					return std::format("{} [{}; {} bytes]",
+					return fmt::format("{} [{}; {} bytes]",
 						hz::format_size(static_cast<uint64_t>(value), true),
 						hz::format_size(static_cast<uint64_t>(value), false),
 						hz::number_to_string_locale(value));
@@ -171,7 +171,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_info
 			{"user_capacity/bytes", _("Capacity"),
 				custom_string_formatter<int64_t>([](int64_t value)
 				{
-					return std::format("{} [{}; {} bytes]",
+					return fmt::format("{} [{}; {} bytes]",
 						hz::format_size(static_cast<uint64_t>(value), true),
 						hz::format_size(static_cast<uint64_t>(value), false),
 						hz::number_to_string_locale(value));
@@ -190,7 +190,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_info
 						p.show_in_ui = false;
 						return p;
 					}
-					return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", "user_capacity/bytes"));
+					return hz::Unexpected(SmartctlParserError::KeyNotFound, fmt::format("Error getting key {} from JSON data.", "user_capacity/bytes"));
 				}
 			},
 
@@ -250,7 +250,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_over
 
 	if (!section_properties_found) {
 		return hz::Unexpected(SmartctlParserError::NoSection,
-				std::format("No section {} parsed.", StoragePropertySectionExt::get_displayable_name(StoragePropertySection::OverallHealth)));
+				fmt::format("No section {} parsed.", StoragePropertySectionExt::get_displayable_name(StoragePropertySection::OverallHealth)));
 	}
 
 	return {};
@@ -289,7 +289,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme
 
 	if (!section_properties_found) {
 		return hz::Unexpected(SmartctlParserError::NoSection,
-				std::format("No section {} parsed.", StoragePropertySectionExt::get_displayable_name(StoragePropertySection::NvmeHealth)));
+				fmt::format("No section {} parsed.", StoragePropertySectionExt::get_displayable_name(StoragePropertySection::NvmeHealth)));
 	}
 
 	return {};
@@ -314,7 +314,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme
 		p.value = get_node_data<int64_t>(json_root_node, "nvme_error_information_log/size").value_or(0);
 		add_property(p);
 
-		lines.emplace_back(std::format("Non-Persistent Error Log Size: {}", p.get_value<int64_t>()));
+		lines.emplace_back(fmt::format("Non-Persistent Error Log Size: {}", p.get_value<int64_t>()));
 		section_properties_found = true;
 	}
 	if (get_node_exists(json_root_node, "nvme_error_information_log/read").value_or(false)) {
@@ -325,7 +325,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme
 		p.value = get_node_data<int64_t>(json_root_node, "nvme_error_information_log/size").value_or(0);
 		add_property(p);
 
-		lines.emplace_back(std::format("Number of Error Log Entries Read: {}", p.get_value<int64_t>()));
+		lines.emplace_back(fmt::format("Number of Error Log Entries Read: {}", p.get_value<int64_t>()));
 		section_properties_found = true;
 	}
 
@@ -344,7 +344,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme
 			const uint64_t lba = get_node_data<uint64_t>(table_entry, "lba/value").value_or(0);
 
 			// Error #, Command ID, LBA, Status
-			lines.emplace_back(std::format(
+			lines.emplace_back(fmt::format(
 					"Error {:3}    Command ID: {:04X}    LBA: {:020}    {}",
 					error_count,
 					command_id,
@@ -368,7 +368,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme
 
 	if (!section_properties_found) {
 		return hz::Unexpected(SmartctlParserError::NoSection,
-				std::format("No section {} parsed.", StoragePropertySectionExt::get_displayable_name(StoragePropertySection::NvmeErrorLog)));
+				fmt::format("No section {} parsed.", StoragePropertySectionExt::get_displayable_name(StoragePropertySection::NvmeErrorLog)));
 	}
 
 	return {};
@@ -426,7 +426,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_self
 		auto value_val = get_node_data<uint8_t>(json_root_node, "nvme_self_test_log/current_self_test_completion_percent");
 		if (value_val.has_value()) {
 			p.value = value_val.value();
-			p.readable_value = std::format("{} %", value_val.value());
+			p.readable_value = fmt::format("{} %", value_val.value());
 			add_property(p);
 		}
 	}
@@ -478,8 +478,8 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_self
 			}
 
 			StorageProperty p;
-			std::string gen_name = std::format("{}/{}", table_key, entry_num);
-			std::string disp_name = std::format("Self-test entry {}", entry.test_num);
+			std::string gen_name = fmt::format("{}/{}", table_key, entry_num);
+			std::string disp_name = fmt::format("Self-test entry {}", entry.test_num);
 			p.set_name(gen_name, disp_name);
 			p.section = StoragePropertySection::SelftestLog;
 			p.value = entry;
@@ -493,7 +493,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_self
 
 	if (!section_properties_found) {
 		return hz::Unexpected(SmartctlParserError::NoSection,
-				std::format("No section {} parsed.", StoragePropertySectionExt::get_displayable_name(StoragePropertySection::SelftestLog)));
+				fmt::format("No section {} parsed.", StoragePropertySectionExt::get_displayable_name(StoragePropertySection::SelftestLog)));
 	}
 
 	return {};
@@ -540,7 +540,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_nvme
 
 	if (!section_properties_found) {
 		return hz::Unexpected(SmartctlParserError::NoSection,
-				std::format("No section {} parsed.", StoragePropertySectionExt::get_displayable_name(StoragePropertySection::NvmeAttributes)));
+				fmt::format("No section {} parsed.", StoragePropertySectionExt::get_displayable_name(StoragePropertySection::NvmeAttributes)));
 	}
 
 	return {};

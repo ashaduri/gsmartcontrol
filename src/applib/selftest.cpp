@@ -16,13 +16,13 @@ Copyright:
 #include <cmath>  // std::floor
 #include <chrono>
 #include <cstdint>
-#include <format>
 #include <memory>
 #include <optional>
 #include <unordered_map>
 #include <string>
 #include <vector>
 
+#include "fmt/format.h"
 #include "smartctl_parser_types.h"
 #include "smartctl_parser.h"
 #include "storage_device_detected_type.h"
@@ -218,7 +218,7 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::start(const std::shared_ptr<C
 		// Translators: {} is a test name - Short test, etc.
 		std::string type_name = get_test_displayable_name(type_);
 		return hz::Unexpected(SelfTestExecutionError::UnsupportedTest,
-				std::vformat(_("{} is unsupported by this drive."), std::make_format_args(type_name)));
+				fmt::format(fmt::runtime(_("{} is unsupported by this drive.")), type_name));
 	}
 
 	std::string test_param;
@@ -239,7 +239,7 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::start(const std::shared_ptr<C
 	if (!execute_status.has_value()) {
 		std::string message = execute_status.error().message();
 		return hz::Unexpected(SelfTestExecutionError::CommandFailed,
-				std::vformat(_("Sending command to drive failed: {}"), std::make_format_args(message)));
+				fmt::format(fmt::runtime(_("Sending command to drive failed: {}")), message));
 	}
 
 	const bool ata_test_started = app_regex_partial_match(R"(/^Drive command .* successful\.\nTesting has begun\.$/mi)", output);
@@ -307,7 +307,7 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::force_stop(const std::shared_
 	if (!execute_status) {
 		std::string message = execute_status.error().message();
 		return hz::Unexpected(SelfTestExecutionError::CommandFailed,
-				std::vformat(_("Sending command to drive failed: {}"), std::make_format_args(message)));
+				fmt::format(fmt::runtime(_("Sending command to drive failed: {}")), message));
 	}
 
 	// this command prints success even if no test was running.
@@ -335,7 +335,7 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::force_stop(const std::shared_
 	if (!update_status) {  // update can error out too.
 		std::string message = update_status.error().message();
 		return hz::Unexpected(SelfTestExecutionError::UpdateError,
-				std::vformat(_("Error fetching test progress information: {}"), std::make_format_args(message)));
+				fmt::format(fmt::runtime(_("Error fetching test progress information: {}")), message));
 	}
 
 	return {};  // everything ok
@@ -372,7 +372,7 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::update(const std::shared_ptr<
 	if (!execute_status) {
 		std::string message = execute_status.error().message();
 		return hz::Unexpected(SelfTestExecutionError::CommandFailed,
-				std::vformat(_("Sending command to drive failed: {}"), std::make_format_args(message)));
+				fmt::format(fmt::runtime(_("Sending command to drive failed: {}")), message));
 	}
 
 
@@ -382,7 +382,7 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::update(const std::shared_ptr<
 	auto parse_status = parser->parse(output);
 	if (!parse_status) {
 		return hz::Unexpected(SelfTestExecutionError::ParseError,
-				std::vformat(_("Cannot parse smartctl output: {}"), std::make_format_args(parse_status.error().message())));
+				fmt::format(fmt::runtime(_("Cannot parse smartctl output: {}")), parse_status.error().message()));
 	}
 	const auto property_repo = StoragePropertyProcessor::process_properties(
 			parser->get_property_repository(), drive_->get_detected_type());

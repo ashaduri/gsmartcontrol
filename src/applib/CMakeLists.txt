@@ -84,6 +84,7 @@ target_link_libraries(applib
 		rconfig
 		app_gtkmm_interface
 		app_gettext_interface
+		fmt
 		build_config
 )
 

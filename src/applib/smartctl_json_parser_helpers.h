@@ -13,12 +13,12 @@ Copyright:
 #define SMARTCTL_JSON_PARSER_HELPERS_H
 
 #include <cstddef>
-#include <format>
 #include <functional>
 #include <string>
 #include <string_view>
 #include <vector>
 
+#include "fmt/format.h"
 #include "nlohmann/json.hpp"
 #include "hz/debug.h"
 #include "hz/string_algo.h"
@@ -62,7 +62,7 @@ get_node(const nlohmann::json& root, std::string_view path)
 
 		if (!curr->is_object()) {  // we can't have non-object values in the middle of a path
 			return hz::Unexpected(SmartctlJsonParserError::UnexpectedObjectInPath,
-					std::format("Cannot get node data \"{}\", component \"{}\" is not an object.", path, comp_name));
+					fmt::format("Cannot get node data \"{}\", component \"{}\" is not an object.", path, comp_name));
 		}
 		if (auto iter = curr->find(comp_name); iter != curr->end()) {  // path component exists
 			const auto& jval = iter.value();
@@ -74,7 +74,7 @@ get_node(const nlohmann::json& root, std::string_view path)
 
 		} else {  // path component doesn't exist
 			return hz::Unexpected(SmartctlJsonParserError::PathNotFound,
-					std::format("Cannot get node data \"{}\", component \"{}\" does not exist.", path, comp_name));
+					fmt::format("Cannot get node data \"{}\", component \"{}\" does not exist.", path, comp_name));
 		}
 	}
 
@@ -99,7 +99,7 @@ template<typename T>
 	}
 	catch (nlohmann::json::type_error& ex) {
 		return hz::Unexpected(SmartctlJsonParserError::TypeError,
-				std::format("Cannot get node data \"{}\", component has wrong type: {}.", path, ex.what()));
+				fmt::format("Cannot get node data \"{}\", component has wrong type: {}.", path, ex.what()));
 	}
 }
 
@@ -176,7 +176,7 @@ inline auto string_formatter()
 			p.value = jval.value();
 			return p;
 		}
-		return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+		return hz::Unexpected(SmartctlParserError::KeyNotFound, fmt::format("Error getting key {} from JSON data.", key));
 	};
 }
 
@@ -200,7 +200,7 @@ inline auto conditional_formatter(const std::string_view conditional_path, Stora
 			return return_property;
 		}
 
-		return hz::Unexpected(SmartctlParserError::InternalError, std::format("Error getting key {} from JSON data.", key));
+		return hz::Unexpected(SmartctlParserError::InternalError, fmt::format("Error getting key {} from JSON data.", key));
 	};
 }
 
@@ -220,7 +220,7 @@ inline auto bool_formatter(const std::string_view& true_str, const std::string_v
 			p.value = jval.value();
 			return p;
 		}
-		return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+		return hz::Unexpected(SmartctlParserError::KeyNotFound, fmt::format("Error getting key {} from JSON data.", key));
 	};
 }
 
@@ -239,11 +239,11 @@ auto integer_formatter(const std::string& format_string = "{}")
 			p.set_name(key, displayable_name);
 			// p.reported_value = (jval.value() ? true_str : false_str);
 			std::string num_str = hz::number_to_string_locale(jval.value());
-			p.readable_value = std::vformat(format_string, std::make_format_args(num_str));
+			p.readable_value = fmt::format(fmt::runtime(format_string), num_str);
 			p.value = jval.value();
 			return p;
 		}
-		return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+		return hz::Unexpected(SmartctlParserError::KeyNotFound, fmt::format("Error getting key {} from JSON data.", key));
 	};
 }
 
@@ -264,7 +264,7 @@ auto custom_string_formatter(std::function<std::string(Type value)> formatter)
 			p.value = jval.value();
 			return p;
 		}
-		return hz::Unexpected(SmartctlParserError::KeyNotFound, std::format("Error getting key {} from JSON data.", key));
+		return hz::Unexpected(SmartctlParserError::KeyNotFound, fmt::format("Error getting key {} from JSON data.", key));
 	};
 }
 
@@ -289,10 +289,10 @@ auto custom_string_formatter(std::function<std::string(Type value)> formatter)
 		if (json_ver->size() < 2) {
 			return hz::Unexpected(SmartctlParserError::DataError, "Error getting smartctl version from JSON data: Not enough version components.");
 		}
-		return hz::Unexpected(SmartctlParserError::DataError, std::format("Error getting smartctl version from JSON data: {}", json_ver.error().message()));
+		return hz::Unexpected(SmartctlParserError::DataError, fmt::format("Error getting smartctl version from JSON data: {}", json_ver.error().message()));
 	}
 
-	smartctl_version = std::format("{}.{}", json_ver->at(0), json_ver->at(1));
+	smartctl_version = fmt::format("{}.{}", json_ver->at(0), json_ver->at(1));
 
 	{
 		merged_property.set_name("smartctl/version/_merged", _("Smartctl Version"));
@@ -303,7 +303,7 @@ auto custom_string_formatter(std::function<std::string(Type value)> formatter)
 	}
 	{
 		full_property.set_name("smartctl/version/_merged_full", _("Smartctl Version"));
-		full_property.readable_value = std::format("{}.{} r{} {} {}", json_ver->at(0), json_ver->at(1),
+		full_property.readable_value = fmt::format("{}.{} r{} {} {}", json_ver->at(0), json_ver->at(1),
 				get_node_data<std::string>(json_root_node, "smartctl/svn_revision", {}).value_or(std::string()),
 				get_node_data<std::string>(json_root_node, "smartctl/platform_info", {}).value_or(std::string()),
 				get_node_data<std::string>(json_root_node, "smartctl/build_info", {}).value_or(std::string())

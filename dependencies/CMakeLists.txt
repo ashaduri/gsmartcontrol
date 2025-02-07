@@ -68,6 +68,7 @@ endif()
 
 
 add_subdirectory(catch2)
+add_subdirectory(fmt)
 add_subdirectory(nlohmann_json)
 add_subdirectory(whereami)
 add_subdirectory(tl_expected)

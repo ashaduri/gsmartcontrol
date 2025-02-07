@@ -21,6 +21,7 @@ Copyright:
 #include <utility>
 #include <vector>
 
+#include "fmt/format.h"
 // #include "hz/locale_tools.h"  // ScopedCLocale, locale_c_get().
 #include "storage_property.h"
 #include "hz/string_algo.h"  // string_*
@@ -1814,7 +1815,7 @@ Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA
 			const std::string lba = hz::string_trim_copy(it->str(7));
 
 			StorageProperty p(pt);
-			p.set_name(std::format("ata_smart_self_test_log/entry/{}", num), "Self-test entry " + num);
+			p.set_name(fmt::format("ata_smart_self_test_log/entry/{}", num), "Self-test entry " + num);
 			p.reported_value = hz::string_trim_copy(line);
 
 			AtaStorageSelftestEntry sse;
