@@ -41,6 +41,18 @@ jobs:
             make
             p7zip
 
+      - name: Downgrade Packages to support Windows 7
+        # librsvg 2.59 requires Windows 8.1 or later (confirmed by dependency walker).
+        # We need to downgrade to 2.58.
+        # This contains gdk_pixbuf loader as well, and re-runs the loader cache update.
+        # https://repo.msys2.org/mingw/mingw32/mingw-w64-i686-librsvg-2.58.0-1-any.pkg.tar.zst
+        # https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-librsvg-2.58.0-1-any.pkg.tar.zst
+        shell: msys2 {0}
+        working-directory: ${{github.workspace}}
+        run: |
+          wget https://repo.msys2.org/mingw/${{ matrix.urlpath }}/mingw-w64-${{ matrix.arch }}-librsvg-2.58.0-1-any.pkg.tar.zst
+          pacman -U --noconfirm mingw-w64-${{ matrix.arch }}-librsvg-2.58.0-1-any.pkg.tar.zst
+
       - name: Download Package Requirements
         shell: msys2 {0}
         working-directory: ${{github.workspace}}
