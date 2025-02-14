@@ -21,6 +21,7 @@ Copyright:
 #include "storage_property_descr_ata_attribute.h"
 //#include "warning_colors.h"
 #include "storage_property_descr_helpers.h"
+#include "hz/string_num.h"
 
 
 namespace {
@@ -1282,12 +1283,16 @@ void storage_property_ata_attribute_autoset_warning(StorageProperty& p)
 					"This could be an indication of future failures and/or potential data loss in bad sectors.";
 
 		// Temperature (for some it may be 10xTemp, so limit the upper bound.)
-		} else if (attr_match(p, "attr_temperature_celsius")
-				&& attr.raw_value_int > 50 && attr.raw_value_int <= 120) {  // 50C
-			w = WarningLevel::Notice;
-			reason = "The temperature of the drive is higher than 50 degrees Celsius. "
-					"This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
-
+		} else if (attr_match(p, "attr_temperature_celsius")) {
+			// Raw value may be 27, or 253403791387 (which encodes min/max values as well).
+			// Use string instead.
+			std::int64_t temp_int = 0;
+			if (hz::string_is_numeric_nolocale(attr.raw_value, temp_int, false)
+					&& temp_int > 50 && temp_int <= 120) {  // 50C
+				w = WarningLevel::Notice;
+				reason = "The temperature of the drive is higher than 50 degrees Celsius. "
+							"This may shorten its lifespan and cause damage under severe load. Please install a cooling solution.";
+			}
 		// Temperature (for some it may be 10xTemp, so limit the upper bound.)
 		} else if (attr_match(p, "attr_temperature_celsius_x10") && attr.raw_value_int > 500) {  // 50C
 			w = WarningLevel::Notice;

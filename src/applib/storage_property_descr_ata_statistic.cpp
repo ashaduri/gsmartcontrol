@@ -156,7 +156,7 @@ namespace {
 
 				// Temperature Statistics
 
-				add("Current Temperature", "Current Temperature (C)", "",
+				add("Current Temperature", "Current Temperature (C)", "stat_temperature_celsius",
 						"Drive temperature (Celsius)");
 
 				add("Average Short Term Temperature", "Average Short Term Temperature (C)", "",

@@ -1734,11 +1734,16 @@ void GscInfoWindow::fill_ui_temperature_log(const StoragePropertyRepository& pro
 
 	std::string temperature;
 	StorageProperty temp_property;
-	enum { temp_attr2 = 1, temp_attr1, temp_stat, temp_sct };  // less important to more important
+	enum { temp_attr2 = 1, temp_attr1, temp_stat, temp_sct, temp_info };  // less important to more important
 	int temp_prop_source = 0;
 
 	for (const auto& p : props) {
 		// Find temperature
+		if (temp_prop_source < temp_info && p.generic_name == "temperature/current") {  // Protocol-independent temperature
+			temperature = hz::number_to_string_locale(p.get_value<int64_t>());
+			temp_property = p;
+			temp_prop_source = temp_info;
+		}
 		if (temp_prop_source < temp_sct && p.generic_name == "ata_sct_status/temperature/current") {
 			temperature = hz::number_to_string_locale(p.get_value<int64_t>());
 			temp_property = p;
@@ -1750,9 +1755,14 @@ void GscInfoWindow::fill_ui_temperature_log(const StoragePropertyRepository& pro
 			temp_prop_source = temp_stat;
 		}
 		if (temp_prop_source < temp_attr1 && p.generic_name == "attr_temperature_celsius") {
-			temperature = hz::number_to_string_locale(p.get_value<AtaStorageAttribute>().raw_value_int);
-			temp_property = p;
-			temp_prop_source = temp_attr1;
+			// Note: raw value may encode min/max as well, leading to very large values.
+			// Instead, convert the string value (can be "27" or "27 (Min/Max 11/59)").
+			std::int64_t temp_int = 0;
+			if (hz::string_is_numeric_nolocale(p.get_value<AtaStorageAttribute>().raw_value, temp_int, false)) {
+				temperature = hz::number_to_string_locale(temp_int);
+				temp_property = p;
+				temp_prop_source = temp_attr1;
+			}
 		}
 		if (temp_prop_source < temp_attr2 && p.generic_name == "attr_temperature_celsius_x10") {
 			temperature = hz::number_to_string_locale(p.get_value<AtaStorageAttribute>().raw_value_int / 10);
@@ -1785,7 +1795,7 @@ void GscInfoWindow::fill_ui_temperature_log(const StoragePropertyRepository& pro
 	if (temperature.empty()) {
 		temperature = C_("value", "Unknown");
 	} else {
-		temperature = Glib::ustring::compose(C_("temperature", "%1 C"), temperature);
+		temperature = Glib::ustring::compose(C_("temperature", "%1° C"), temperature);
 	}
 	temp_property.set_description(_("Current drive temperature in Celsius."));  // overrides attribute description
 	label_strings.emplace_back(Glib::ustring::compose(_("Current temperature: %1"),

@@ -378,6 +378,11 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_info(
 			{"write_cache/enabled", _("Write Cache"), bool_formatter(_("Enabled"), _("Disabled"))},
 			{"ata_dsn/enabled", _("DSN Feature"), bool_formatter(_("Enabled"), _("Disabled"))},
 			{"ata_security/string", _("ATA Security"), string_formatter()},
+
+			// Protocol-independent JSON-only values
+			{"power_cycle_count", _("Number of Power Cycles"), integer_formatter<int64_t>()},
+			{"power_on_time/hours", _("Powered for"), integer_formatter<int64_t>("{} hours")},
+			{"temperature/current", _("Current Temperature"), integer_formatter<int64_t>("{}° Celsius")},
 	};
 
 	bool any_found = false;
@@ -1090,58 +1095,162 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_sctte
 	std::vector<std::string> lines;
 
 	if (get_node_exists(json_root_node, "ata_sct_status/format_version").value_or(false)) {
+		StorageProperty p;
+		p.set_name("ata_sct_status/format_version", _("SCT status version"));
+		p.section = StoragePropertySection::TemperatureLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_sct_status/format_version").value_or(0);
+		add_property(p);
+
 		lines.emplace_back(fmt::format("SCT status version: {}", get_node_data<int64_t>(json_root_node, "ata_sct_status/format_version").value_or(0)));
 	}
 	if (get_node_exists(json_root_node, "ata_sct_status/sct_version").value_or(false)) {
+		StorageProperty p;
+		p.set_name("ata_sct_status/sct_version", _("SCT format version"));
+		p.section = StoragePropertySection::TemperatureLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_sct_status/sct_version").value_or(0);
+		add_property(p);
+
 		lines.emplace_back(fmt::format("SCT format version: {}", get_node_data<int64_t>(json_root_node, "ata_sct_status/sct_version").value_or(0)));
 	}
-	if (get_node_exists(json_root_node, "ata_sct_status/device_state").value_or(false)) {
+	if (get_node_exists(json_root_node, "ata_sct_status/device_state/string").value_or(false)) {
+		StorageProperty p;
+		p.set_name("ata_sct_status/device_state/string", _("Device state"));
+		p.section = StoragePropertySection::TemperatureLog;
+		p.value = get_node_data<std::string>(json_root_node, "ata_sct_status/device_state/string").value_or(std::string());
+		add_property(p);
+
 		lines.emplace_back(fmt::format("Device state: {}", get_node_data<std::string>(json_root_node, "ata_sct_status/device_state/string").value_or(std::string())));
 	}
 	if (get_node_exists(json_root_node, "ata_sct_status/temperature/current").value_or(false)) {
+		StorageProperty p;
+		p.set_name("ata_sct_status/temperature/current", _("Current temperature (C)"));
+		p.section = StoragePropertySection::TemperatureLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/current").value_or(0);
+		add_property(p);
+
 		lines.emplace_back(fmt::format("Current temperature: {}° Celsius", get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/current").value_or(0)));
 	}
 	if (get_node_exists(json_root_node, "ata_sct_status/temperature/power_cycle_min").value_or(false)) {
+		StorageProperty p;
+		p.set_name("ata_sct_status/temperature/power_cycle_min", _("Power cycle min. temperature (C)"));
+		p.section = StoragePropertySection::TemperatureLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/power_cycle_min").value_or(0);
+		add_property(p);
+
 		lines.emplace_back(fmt::format("Power cycle min. temperature: {}° Celsius", get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/power_cycle_min").value_or(0)));
 	}
 	if (get_node_exists(json_root_node, "ata_sct_status/temperature/power_cycle_max").value_or(false)) {
+		StorageProperty p;
+		p.set_name("ata_sct_status/temperature/power_cycle_max", _("Power cycle max. temperature (C)"));
+		p.section = StoragePropertySection::TemperatureLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/power_cycle_max").value_or(0);
+		add_property(p);
+
 		lines.emplace_back(fmt::format("Power cycle max. temperature: {}° Celsius", get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/power_cycle_max").value_or(0)));
 	}
 	if (get_node_exists(json_root_node, "ata_sct_status/temperature/lifetime_min").value_or(false)) {
+		StorageProperty p;
+		p.set_name("ata_sct_status/temperature/lifetime_min", _("Lifetime min. temperature (C)"));
+		p.section = StoragePropertySection::TemperatureLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/lifetime_min").value_or(0);
+		add_property(p);
+
 		lines.emplace_back(fmt::format("Lifetime min. temperature: {}° Celsius", get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/lifetime_min").value_or(0)));
 	}
 	if (get_node_exists(json_root_node, "ata_sct_status/temperature/lifetime_max").value_or(false)) {
+		StorageProperty p;
+		p.set_name("ata_sct_status/temperature/lifetime_max", _("Lifetime max. temperature (C)"));
+		p.section = StoragePropertySection::TemperatureLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/lifetime_max").value_or(0);
+		add_property(p);
+
 		lines.emplace_back(fmt::format("Lifetime max. temperature: {}° Celsius", get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/lifetime_max").value_or(0)));
 	}
 	if (get_node_exists(json_root_node, "ata_sct_status/temperature/under_limit_count").value_or(false)) {
+		StorageProperty p;
+		p.set_name("ata_sct_status/temperature/under_limit_count", _("Under limit count"));
+		p.section = StoragePropertySection::TemperatureLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/under_limit_count").value_or(0);
+		add_property(p);
+
 		lines.emplace_back(fmt::format("Under limit count: {}", get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/under_limit_count").value_or(0)));
 	}
 	if (get_node_exists(json_root_node, "ata_sct_status/temperature/over_limit_count").value_or(false)) {
+		StorageProperty p;
+		p.set_name("ata_sct_status/temperature/over_limit_count", _("Over limit count"));
+		p.section = StoragePropertySection::TemperatureLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/over_limit_count").value_or(0);
+		add_property(p);
+
 		lines.emplace_back(fmt::format("Over limit count: {}", get_node_data<int64_t>(json_root_node, "ata_sct_status/temperature/over_limit_count").value_or(0)));
 	}
+
 	lines.emplace_back();
+
 	if (get_node_exists(json_root_node, "ata_sct_temperature_history/version").value_or(false)) {
+		StorageProperty p;
+		p.set_name("ata_sct_temperature_history/version", _("SCT temperature history version"));
+		p.section = StoragePropertySection::TemperatureLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/version").value_or(0);
+		add_property(p);
+
 		lines.emplace_back(fmt::format("SCT temperature history version: {}", get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/version").value_or(0)));
 	}
 	if (get_node_exists(json_root_node, "ata_sct_temperature_history/sampling_period_minutes").value_or(false)) {
+		StorageProperty p;
+		p.set_name("ata_sct_temperature_history/sampling_period_minutes", _("Temperature sampling period (min)"));
+		p.section = StoragePropertySection::TemperatureLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/sampling_period_minutes").value_or(0);
+		add_property(p);
+
 		lines.emplace_back(fmt::format("Temperature sampling period: {} min.", get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/sampling_period_minutes").value_or(0)));
 	}
 	if (get_node_exists(json_root_node, "ata_sct_temperature_history/logging_interval_minutes").value_or(false)) {
+		StorageProperty p;
+		p.set_name("ata_sct_temperature_history/logging_interval_minutes", _("Temperature logging interval (min)"));
+		p.section = StoragePropertySection::TemperatureLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/logging_interval_minutes").value_or(0);
+		add_property(p);
+
 		lines.emplace_back(fmt::format("Temperature logging interval: {} min.", get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/logging_interval_minutes").value_or(0)));
 	}
 	if (get_node_exists(json_root_node, "ata_sct_temperature_history/temperature/op_limit_min").value_or(false)) {
+		StorageProperty p;
+		p.set_name("ata_sct_temperature_history/temperature/op_limit_min", _("Recommended operating temperature (minimum) (C)"));
+		p.section = StoragePropertySection::TemperatureLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/temperature/op_limit_min").value_or(0);
+		add_property(p);
+
 		lines.emplace_back(fmt::format("Recommended operating temperature (minimum): {}° Celsius",
 				get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/temperature/op_limit_min").value_or(0)));
 	}
 	if (get_node_exists(json_root_node, "ata_sct_temperature_history/temperature/op_limit_max").value_or(false)) {
+		StorageProperty p;
+		p.set_name("ata_sct_temperature_history/temperature/op_limit_max", _("Recommended operating temperature (maximum) (C)"));
+		p.section = StoragePropertySection::TemperatureLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/temperature/op_limit_max").value_or(0);
+		add_property(p);
+
 		lines.emplace_back(fmt::format("Recommended operating temperature (maximum): {}° Celsius",
 				get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/temperature/op_limit_max").value_or(0)));
 	}
 	if (get_node_exists(json_root_node, "ata_sct_temperature_history/temperature/limit_min").value_or(false)) {
+		StorageProperty p;
+		p.set_name("ata_sct_temperature_history/temperature/limit_min", _("Allowed operating temperature (minimum) (C)"));
+		p.section = StoragePropertySection::TemperatureLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/temperature/limit_min").value_or(0);
+		add_property(p);
+
 		lines.emplace_back(fmt::format("Allowed operating temperature (minimum): {}° Celsius",
 				get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/temperature/limit_min").value_or(0)));
 	}
 	if (get_node_exists(json_root_node, "ata_sct_temperature_history/temperature/limit_max").value_or(false)) {
+		StorageProperty p;
+		p.set_name("ata_sct_temperature_history/temperature/limit_max", _("Allowed operating temperature (maximum) (C)"));
+		p.section = StoragePropertySection::TemperatureLog;
+		p.value = get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/temperature/limit_max").value_or(0);
+		add_property(p);
+
 		lines.emplace_back(fmt::format("Allowed operating temperature (maximum): {}° Celsius",
 				get_node_data<int64_t>(json_root_node, "ata_sct_temperature_history/temperature/limit_max").value_or(0)));
 	}
@@ -1230,8 +1339,8 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_devst
 
 			StorageProperty page_prop;
 			{
-				std::string gen_name = get_node_data<std::string>(page_entry, "name").value_or(std::string());
-				std::string disp_name = gen_name;  // TODO: Translate
+				const std::string gen_name = get_node_data<std::string>(page_entry, "name").value_or(std::string());
+				const std::string disp_name = gen_name;  // TODO: Translate
 				page_prop.set_name(gen_name, disp_name);
 				page_prop.section = StoragePropertySection::Statistics;
 				page_prop.value = page_stat;
@@ -1251,7 +1360,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_devst
 					s.offset = get_node_data<int64_t>(table_entry, "offset").value_or(0);
 
 					StorageProperty p;
-					std::string gen_name = get_node_data<std::string>(table_entry, "name").value_or(std::string());
+					const std::string gen_name = get_node_data<std::string>(table_entry, "name").value_or(std::string());
 					p.set_name(gen_name, gen_name, gen_name);  // The description database will correct this.
 					p.section = StoragePropertySection::Statistics;
 					p.value = s;
