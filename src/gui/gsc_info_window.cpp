@@ -1521,7 +1521,9 @@ void GscInfoWindow::fill_ui_self_test_log(const StoragePropertyRepository& prope
 			row[columns_->self_test_log_table_columns.log_entry_index] = entry.test_num;
 			row[columns_->self_test_log_table_columns.type] = Glib::Markup::escape_text(entry.type);
 			row[columns_->self_test_log_table_columns.status] = Glib::Markup::escape_text(entry.get_readable_status());
-			row[columns_->self_test_log_table_columns.percent] = Glib::Markup::escape_text(hz::number_to_string_locale(100 - entry.remaining_percent) + "%");
+			if (entry.remaining_percent != -1) {  // only extended log supports this
+				row[columns_->self_test_log_table_columns.percent] = Glib::Markup::escape_text(hz::number_to_string_locale(100 - entry.remaining_percent) + "%");
+			}
 			row[columns_->self_test_log_table_columns.hours] = Glib::Markup::escape_text(hz::number_to_string_locale(entry.lifetime_hours));
 			row[columns_->self_test_log_table_columns.lba] = Glib::Markup::escape_text(entry.lba_of_first_error);
 

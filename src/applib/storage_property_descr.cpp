@@ -140,7 +140,9 @@ bool storage_property_autoset_description(StorageProperty& p, StorageDeviceDetec
 
 			case StoragePropertySection::SelftestLog:
 				found = auto_set(p, "ata_smart_self_test_log/extended/revision", p.displayable_name.c_str())
-				|| auto_set(p, "ata_smart_self_test_log/extended/table/count", "Number of tests in selftest log. Note: The number of entries may be limited to the newest manual tests.");
+				|| auto_set(p, "ata_smart_self_test_log/standard/revision", p.displayable_name.c_str())
+				|| auto_set(p, "ata_smart_self_test_log/extended/count", "Number of tests in selftest log. Note: The number of entries may be limited to the newest manual tests.")
+				|| auto_set(p, "ata_smart_self_test_log/standard/count", "Number of tests in selftest log. Note: The number of entries may be limited to the newest manual tests.");
 		// 		|| auto_set(p, "ata_smart_self_test_log/_present", "This device does not support self-test logging.");  // the property text already says that
 				break;
 

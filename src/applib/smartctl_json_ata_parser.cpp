@@ -548,6 +548,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_capab
 						sse.status = status;
 
 						sse.remaining_percent = -1;  // unknown or n/a
+						// Present only when extended self-test log is supported
 						if (auto remaining_percent_val = get_node_data<int8_t>(root_node, "ata_smart_data/self_test/status/remaining_percent"); remaining_percent_val.has_value()) {
 							sse.remaining_percent = remaining_percent_val.value();
 						}
@@ -562,6 +563,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_capab
 				}
 			},
 
+			// Present only when extended self-test log is supported
 			{"ata_smart_data/self_test/status/remaining_percent", _("Self-test remaining percentage"), integer_formatter<int64_t>("{} %")},
 
 			{"ata_smart_data/capabilities/self_tests_supported", _("Self-tests supported"), bool_formatter(_("Yes"), _("No"))},
@@ -890,12 +892,15 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_selft
 
 	bool section_properties_found = false;
 
+	const bool extended = get_node_exists(json_root_node, "ata_smart_self_test_log/extended/revision").value_or(false);
+	const std::string log_key = extended ? "ata_smart_self_test_log/extended" : "ata_smart_self_test_log/standard";
+
 	// Revision
-	if (get_node_exists(json_root_node, "ata_smart_self_test_log/extended/revision").value_or(false)) {
+	if (get_node_exists(json_root_node, log_key + "/revision").value_or(false)) {
 		StorageProperty p;
-		p.set_name("ata_smart_self_test_log/extended/revision", _("SMART extended self-test log version"));
+		p.set_name(log_key + "/revision", extended ? _("SMART extended self-test log version") : _("SMART standard self-test log version"));
 		p.section = StoragePropertySection::SelftestLog;
-		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_self_test_log/extended/revision").value_or(0);
+		p.value = get_node_data<int64_t>(json_root_node, log_key + "/revision").value_or(0);
 		add_property(p);
 		section_properties_found = true;
 	}
@@ -905,9 +910,9 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_selft
 	// Count
 	{
 		StorageProperty p;
-		p.set_name("ata_smart_self_test_log/extended/count", _("Self-test count"));
+		p.set_name(log_key + "/count", _("Self-test count"));
 		p.section = StoragePropertySection::SelftestLog;
-		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_self_test_log/extended/count").value_or(0);
+		p.value = get_node_data<int64_t>(json_root_node, log_key + "/count").value_or(0);
 		p.show_in_ui = false;
 		add_property(p);
 		counts.emplace_back(fmt::format("Self-test entries: {}", p.get_value<int64_t>()));
@@ -915,9 +920,9 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_selft
 	// Error Count
 	{
 		StorageProperty p;
-		p.set_name("ata_smart_self_test_log/extended/error_count_total", _("Total error count"));
+		p.set_name(log_key + "/error_count_total", _("Total error count"));
 		p.section = StoragePropertySection::SelftestLog;
-		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_self_test_log/extended/error_count_total").value_or(0);
+		p.value = get_node_data<int64_t>(json_root_node, log_key + "/error_count_total").value_or(0);
 		p.show_in_ui = false;
 		add_property(p);
 		counts.emplace_back(fmt::format("Total error count: {}", p.get_value<int64_t>()));
@@ -925,9 +930,9 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_selft
 	// Outdated Error Count
 	{
 		StorageProperty p;
-		p.set_name("ata_smart_self_test_log/extended/error_count_outdated", _("Outdated error count"));
+		p.set_name(log_key + "/error_count_outdated", _("Outdated error count"));
 		p.section = StoragePropertySection::SelftestLog;
-		p.value = get_node_data<int64_t>(json_root_node, "ata_smart_self_test_log/extended/error_count_outdated").value_or(0);
+		p.value = get_node_data<int64_t>(json_root_node, log_key + "/error_count_outdated").value_or(0);
 		p.show_in_ui = false;
 		add_property(p);
 		counts.emplace_back(fmt::format("Outdated error count: {}", p.get_value<int64_t>()));
@@ -936,7 +941,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_selft
 	// Displayed Counts
 	if (!counts.empty()) {
 		StorageProperty p;
-		p.set_name("ata_smart_self_test_log/extended/_counts", _("Entries"));
+		p.set_name(log_key + "/_counts", _("Entries"));
 		p.section = StoragePropertySection::SelftestLog;
 		p.value = hz::string_join(counts, "; ");
 		add_property(p);
@@ -944,7 +949,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_selft
 		section_properties_found = true;
 	}
 
-	const std::string table_key = "ata_smart_self_test_log/extended/table";
+	const std::string table_key = log_key + "/table";
 	auto table_node = get_node(json_root_node, table_key);
 
 	// Entries
@@ -955,7 +960,7 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonAtaParser::parse_section_selft
 			entry.test_num = entry_num;
 			entry.type = get_node_data<std::string>(table_entry, "type/string").value_or(std::string());  // FIXME use type/value for i18n
 			entry.status_str = get_node_data<std::string>(table_entry, "status/string").value_or(std::string());
-			entry.remaining_percent = get_node_data<int8_t>(table_entry, "status/remaining_percent").value_or(0);
+			entry.remaining_percent = get_node_data<int8_t>(table_entry, "status/remaining_percent").value_or(-1);  // extended only
 			entry.lifetime_hours = get_node_data<uint32_t>(table_entry, "lifetime_hours").value_or(0);
 			entry.passed = get_node_data<bool>(table_entry, "status/passed").value_or(false);
 
