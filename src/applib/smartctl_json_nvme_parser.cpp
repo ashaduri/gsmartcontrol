@@ -114,6 +114,26 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_info
 
 	static const std::vector<std::tuple<std::string, std::string, PropertyRetrievalFunc>> json_keys = {
 
+			{"smartctl/output", _("Smartctl Text Output"),  // the old text format
+				[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
+						-> hz::ExpectedValue<StorageProperty, SmartctlParserError>
+				{
+					auto table_node = get_node(root_node, "smartctl/output");
+					if (table_node.has_value() && table_node->is_array() && !table_node.value().empty()) {
+						std::vector<std::string> lines;
+						for (const auto& entry : table_node.value()) {
+							lines.emplace_back(entry.get<std::string>());
+						}
+						StorageProperty p;
+						p.set_name(key, displayable_name);
+						p.value = hz::string_join(lines, "\n");
+						p.show_in_ui = false;
+						return p;
+					}
+					return hz::Unexpected(SmartctlParserError::KeyNotFound, fmt::format("Error getting key {} from JSON data.", key));
+				}
+			},
+
 			{"device/type", _("Smartctl Device Type"),  // nvme, sat, etc.
 				[](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
 						-> hz::ExpectedValue<StorageProperty, SmartctlParserError>

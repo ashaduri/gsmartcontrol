@@ -231,6 +231,16 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextAtaParser::parse(std::string_v
 		return hz::Unexpected(SmartctlParserError::IncompatibleVersion, "Incompatible smartctl version.");
 	}
 
+	// Full text output
+	{
+		StorageProperty p;
+		p.set_name("smartctl/output", "Smartctl Text Output");
+		p.reported_value = smartctl_output;
+		p.value = p.reported_value;  // string-type value
+		p.show_in_ui = false;
+		add_property(p);
+	}
+
 
 	// sections
 

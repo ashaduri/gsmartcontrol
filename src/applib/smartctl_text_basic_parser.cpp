@@ -67,6 +67,16 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlTextBasicParser::parse(std::string
 		add_property(p);
 	}
 
+	// Full text output
+	{
+		StorageProperty p;
+		p.set_name("smartctl/output", "Smartctl Text Output");
+		p.reported_value = output;
+		p.value = p.reported_value;  // string-type value
+		p.show_in_ui = false;
+		add_property(p);
+	}
+
 	bool is_raid = false;
 
 	// Detect type. note: we can't distinguish between sata and scsi (on linux, for -d ata switch).
