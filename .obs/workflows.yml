@@ -59,8 +59,6 @@ build_main_workflow:
 
           - name: openSUSE_Leap_15.6
             paths:
-#              - target_project: devel:gcc
-#                target_repository: openSUSE_Leap_15.6
               - target_project: openSUSE:Leap:15.6
                 target_repository: standard
             architectures:
@@ -96,7 +94,7 @@ build_main_workflow:
             paths:
               - target_project: openSUSE:Tools
                 target_repository: xUbuntu_24.04
-              - target_project: Ubuntu:21.10
+              - target_project: Ubuntu:24.04
                 target_repository: universe
             architectures:
               - x86_64
@@ -105,7 +103,16 @@ build_main_workflow:
             paths:
               - target_project: openSUSE:Tools
                 target_repository: xUbuntu_23.10
-              - target_project: Ubuntu:20.04
+              - target_project: Ubuntu:23.10
+                target_repository: universe
+            architectures:
+              - x86_64
+
+          - name: Ubuntu_22.04
+            paths:
+              - target_project: openSUSE:Tools
+                target_repository: xUbuntu_22.04
+              - target_project: Ubuntu:22.04
                 target_repository: universe
             architectures:
               - x86_64
@@ -118,6 +125,16 @@ build_main_workflow:
                 target_repository: standard
             architectures:
               - x86_64
+
+          - name: Fedora_41
+            paths:
+              - target_project: openSUSE:Tools
+                target_repository: Fedora_41
+              - target_project: Fedora:41
+                target_repository: standard
+            architectures:
+              - x86_64
+              - aarch64
 
           - name: Fedora_40
             paths:
