@@ -24,7 +24,7 @@ permalink: /software-requirements
 **Note:** These are required only if you're building GSmartControl from source code.
 * [GTK+ 3](https://www.gtk.org) library, version 3.4 or higher.
 * [Gtkmm](https://www.gtkmm.org) library, version 3.4 or higher.
-* C++20 Compiler (GCC 13 or later, Clang/libc++ 17 or later, Apple Clang 15 or later)
+* C++20 Compiler (GCC 11 or later, Clang/libc++ 17 or later, Apple Clang 15 or later)
 * [CMake](https://cmake.org), version 3.14 or higher.
 
 ### Building from Source
