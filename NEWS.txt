@@ -1,3 +1,21 @@
+Version 2.0.2, released on 2025-02-24
+	Support GCC 11 (and Ubuntu 22.04) by using and vendoring fmt library
+		(#77).
+	Support an option of saving smartctl output to text instead of JSON (#76).
+	Restored pre-2.0.0 runtime support for smartctl < 7.3 (based on Text
+		parser); this is an unsupported, old method without NVMe, provided
+		for compatibility only (#77).
+	Restored pre-2.0.0 support for standard (non-extended) self-test log found
+		in very old ATA drives; the new JSON parser did not support this
+		previously (#79).
+	Better support for temperature values in JSON parser; this fixes
+		unreasonably large temperature values (#78).
+	Add a tooltip explaining self-test "lifetime hours" wrapping behavior
+		(#73).
+	Windows: Fixed a crash on Windows 7 when opening drive information
+		by using Windows 7-compatible librsvg (#71).
+	Windows: Avoid using non-integer font sizes.
+
 Version 2.0.1, released on 2024-11-26
 	Windows: Fixed a crash when opening a native file dialog (#67).
 
