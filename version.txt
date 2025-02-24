@@ -1,5 +1,5 @@
 
 # This file is included from CMakeLists.txt
 
-set(CMAKE_PROJECT_VERSION "2.0.1")
+set(CMAKE_PROJECT_VERSION "2.0.2")
 
