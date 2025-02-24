@@ -45,7 +45,7 @@ class GscMainWindow : public AppBuilderWidget<GscMainWindow, false> {
 
 
 		/// Scan for devices and fill the iconview
-		void rescan_devices();
+		void rescan_devices(bool startup);
 
 
 		/// Execute update-smart-drivedb
@@ -111,13 +111,18 @@ class GscMainWindow : public AppBuilderWidget<GscMainWindow, false> {
 		bool create_widgets();
 
 		/// scan and populate iconview widget with drive icons
-		void populate_iconview(bool smartctl_valid);
+		void populate_iconview_on_startup(bool smartctl_valid);
 
 		/// Show "Add Device" window
 		void show_add_device_chooser();
 
 		/// Show "Load Virtual File" dialog
 		void show_load_virtual_file_chooser();
+
+
+		/// Check smartctl version and set default parser format accordingly.
+		/// An error dialog is shown if there is an error with smartctl.
+		bool check_smartctl_version_and_set_format();
 
 
 		/// Called when quit has been requested (by delete event or Quit action)

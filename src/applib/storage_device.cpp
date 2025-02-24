@@ -155,8 +155,17 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::parse_basic_data()
 	// Clear everything fetched before, except outputs and type
 	this->clear_parse_results();
 
+	// Detect the output format.
+	auto detect_status = SmartctlParser::detect_output_format(this->get_basic_output());
+	auto output_format = SmartctlOutputFormat::Text;
+	if (detect_status.has_value()) {
+		output_format = detect_status.value();
+	} else {
+		debug_out_warn("app", "Cannot detect smartctl output format. Assuming Text.\n");
+	}
+
 	// Parse using Basic parser. This supports all drive types.
-	auto basic_parser = SmartctlParser::create(SmartctlParserType::Basic, SmartctlOutputFormat::Json);
+	auto basic_parser = SmartctlParser::create(SmartctlParserType::Basic, output_format);
 	DBG_ASSERT_RETURN(basic_parser, hz::Unexpected(StorageDeviceError::ParseError, _("Cannot create parser")));
 
 	// This also fills the drive type properties.
@@ -189,7 +198,7 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::parse_basic_data()
 	// Note that this may try to parse data the second time (it may already have
 	// been parsed by parse_data() which failed at it).
 //	if (do_set_properties) {
-//		auto parser = SmartctlParser::create(SmartctlParserType::Ata, SmartctlOutputFormat::Json);
+//		auto parser = SmartctlParser::create(SmartctlParserType::Ata, output_format);
 //		DBG_ASSERT_RETURN(parser, hz::Unexpected(StorageDeviceError::ParseError, _("Cannot create parser")));
 //
 //		if (parser->parse(this->basic_output_)) {  // try to parse it

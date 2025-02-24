@@ -49,10 +49,18 @@ class SmartctlVersionParser {
 
 
 		/// Get default output format for a parser type.
+		static void set_default_format(SmartctlOutputFormat format);
+
+		/// Get default output format for a parser type.
 		static SmartctlOutputFormat get_default_format(SmartctlParserType parser_type);
+
 
 		/// Get default output format for a parser type.
 		static SmartctlParserType get_default_parser_type(StorageDeviceDetectedType detected_type);
+
+
+		// We require this version at runtime to support --get=all.
+		static constexpr double minimum_req_runtime_version = 5.43;
 
 
 	private:

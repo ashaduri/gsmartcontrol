@@ -69,17 +69,34 @@ bool SmartctlVersionParser::check_format_supported(SmartctlOutputFormat format, 
 
 
 
-SmartctlOutputFormat SmartctlVersionParser::get_default_format(SmartctlParserType parser_type)
+namespace {
+
+SmartctlOutputFormat s_smartctl_output_default_format = SmartctlOutputFormat::Json;
+
+}
+
+
+
+void SmartctlVersionParser::set_default_format(SmartctlOutputFormat format)
 {
-	switch (parser_type) {
-		case SmartctlParserType::Basic:
-			return SmartctlOutputFormat::Json;
-		case SmartctlParserType::Ata:
-			return SmartctlOutputFormat::Json;
-		case SmartctlParserType::Nvme:
-			return SmartctlOutputFormat::Json;
-	}
-	return SmartctlOutputFormat::Json;
+	s_smartctl_output_default_format = format;
+}
+
+
+
+SmartctlOutputFormat SmartctlVersionParser::get_default_format([[maybe_unused]] SmartctlParserType parser_type)
+{
+	// We no longer differentiate between parser types - they
+	// all either use Text, or Json.
+//	switch (parser_type) {
+//		case SmartctlParserType::Basic:
+//			return SmartctlOutputFormat::Json;
+//		case SmartctlParserType::Ata:
+//			return SmartctlOutputFormat::Json;
+//		case SmartctlParserType::Nvme:
+//			return SmartctlOutputFormat::Json;
+//	}
+	return s_smartctl_output_default_format;
 }
 
 

@@ -82,72 +82,10 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 
 
 	// Check if smartctl is executable
-
-	std::string error_msg;
-	bool show_output_button = true;
-
-	do {
-		const std::string smartctl_binary = hz::fs_path_to_string(get_smartctl_binary());
-
-		// Don't use default options here - they are used when invoked
-		// with a device option.
-// 		std::string smartctl_def_options = rconfig::get_data<std::string>("system/smartctl_options");
-
-		if (smartctl_binary.empty()) {
-			error_msg = _("Smartctl binary is not specified in configuration.");
-			show_output_button = false;
-			break;
-		}
-
-// 		if (!smartctl_def_options.empty())
-// 			smartctl_def_options += " ";
-
-		SmartctlExecutorGui ex;
-		ex.create_running_dialog(this);
-		ex.set_running_msg(_("Checking if smartctl is executable..."));
-
-		ex.set_command(smartctl_binary, {"-V"});  // --version
-
-		if (!ex.execute() || !ex.get_error_msg().empty()) {
-			error_msg = ex.get_error_msg();
-			break;
-		}
-
-		const std::string output = ex.get_stdout_str();
-		if (output.empty()) {
-			error_msg = _("Smartctl returned an empty output.");
-			break;
-		}
-
-		std::string version, version_full;
-		if (!SmartctlVersionParser::parse_version_text(output, version, version_full)) {
-			error_msg = _("Smartctl returned invalid output.");
-			break;
-		}
-
-		{
-			// We require this version at runtime to support --get=all.
-			const double minimum_req_version = 5.43;
-			double version_double = 0;
-			if (hz::string_is_numeric_nolocale<double>(version, version_double, false)) {
-				if (version_double < minimum_req_version) {
-					error_msg = Glib::ustring::compose(_("Smartctl version %1 found, %2 required."), version, hz::number_to_string_nolocale(minimum_req_version));
-					break;
-				}
-			}
-		}
-
-	} while (false);
-
-	const bool smartctl_valid = error_msg.empty();
-	if (!smartctl_valid) {
-		gsc_executor_error_dialog_show(_("There was an error while executing smartctl"),
-				error_msg + "\n\n<i>" + _("Please specify the correct smartctl binary in Preferences.") + "</i>",
-				this, true, show_output_button);
-	}
+	bool smartctl_valid = check_smartctl_version_and_set_format();
 
 	// Scan
-	populate_iconview(smartctl_valid);
+	populate_iconview_on_startup(smartctl_valid);
 }
 
 
@@ -163,7 +101,7 @@ GscMainWindow::~GscMainWindow()
 
 
 
-void GscMainWindow::populate_iconview(bool smartctl_valid)
+void GscMainWindow::populate_iconview_on_startup(bool smartctl_valid)
 {
 	if (!smartctl_valid) {
 		iconview_->set_empty_view_message(GscMainWindowIconView::Message::NoSmartctl);
@@ -173,7 +111,7 @@ void GscMainWindow::populate_iconview(bool smartctl_valid)
 
 	} else if (rconfig::get_data<bool>("gui/scan_on_startup")  // config option
 			&& !get_startup_settings().no_scan) {  // command-line option
-		rescan_devices();  // scan for devices and fill the iconview
+		rescan_devices(true);  // scan for devices and fill the iconview
 
 	} else {
 		iconview_->set_empty_view_message(GscMainWindowIconView::Message::ScanDisabled);
@@ -568,7 +506,7 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 			break;
 
 		case action_rescan_devices:
-			rescan_devices();
+			rescan_devices(false);
 			break;
 
 		case action_executor_log:
@@ -851,11 +789,20 @@ void GscMainWindow::update_status_widgets()
 
 
 
-void GscMainWindow::rescan_devices()
+void GscMainWindow::rescan_devices(bool startup)
 {
 	// ignore double-scan (may happen because we use gtk loop iterations here).
 	if (this->scanning_)
 		return;
+
+	// If we're not in startup, smartctl version may have changed (by specifying a different binary in Preferences)
+	// so we need to re-validate the output format:
+	if (!startup) {
+		// This shows an error dialog on error
+		if (!check_smartctl_version_and_set_format()) {
+			return;
+		}
+	}
 
 	// don't manipulate window sensitiveness here - it breaks things
 	// (cursors, gtk errors pop out, etc.)
@@ -1162,6 +1109,82 @@ void GscMainWindow::show_add_device_chooser()
 	window->set_main_window(this);
 	window->set_transient_for(*this);
 	window->show();
+}
+
+
+
+bool GscMainWindow::check_smartctl_version_and_set_format()
+{
+	std::string error_msg;
+	bool show_output_button = true;
+
+	do {
+		const std::string smartctl_binary = hz::fs_path_to_string(get_smartctl_binary());
+
+		// Don't use default options here - they are used when invoked
+		// with a device option.
+// 		std::string smartctl_def_options = rconfig::get_data<std::string>("system/smartctl_options");
+
+		if (smartctl_binary.empty()) {
+			error_msg = _("Smartctl binary is not specified in configuration.");
+			show_output_button = false;
+			break;
+		}
+
+// 		if (!smartctl_def_options.empty())
+// 			smartctl_def_options += " ";
+
+		SmartctlExecutorGui ex;
+		ex.create_running_dialog(this);
+		ex.set_running_msg(_("Checking if smartctl is executable..."));
+
+		ex.set_command(smartctl_binary, {"-V"});  // --version
+
+		if (!ex.execute() || !ex.get_error_msg().empty()) {
+			error_msg = ex.get_error_msg();
+			break;
+		}
+
+		const std::string output = ex.get_stdout_str();
+		if (output.empty()) {
+			error_msg = _("Smartctl returned an empty output.");
+			break;
+		}
+
+		std::string version, version_full;
+		if (!SmartctlVersionParser::parse_version_text(output, version, version_full)) {
+			error_msg = _("Smartctl returned invalid output.");
+			break;
+		}
+
+		// Check smartctl runtime version
+		if (double version_double = 0; hz::string_is_numeric_nolocale<double>(version, version_double, false)) {
+			if (version_double < SmartctlVersionParser::minimum_req_runtime_version) {
+				error_msg = Glib::ustring::compose(_("Smartctl version %1 found, %2 required."),
+						version,
+						hz::number_to_string_nolocale(SmartctlVersionParser::minimum_req_runtime_version));
+				break;
+			}
+		}
+
+		if (SmartctlVersionParser::check_format_supported(SmartctlOutputFormat::Json, version)) {
+			debug_out_info("app", "Smartctl JSON output format supported.\n");
+			SmartctlVersionParser::set_default_format(SmartctlOutputFormat::Json);
+		} else {
+			debug_out_warn("app", "Smartctl JSON output format not supported, falling back to Text output format.\n");
+			SmartctlVersionParser::set_default_format(SmartctlOutputFormat::Text);
+		}
+
+	} while (false);
+
+	const bool smartctl_valid = error_msg.empty();
+	if (!smartctl_valid) {
+		gsc_executor_error_dialog_show(_("There was an error while executing smartctl"),
+				error_msg + "\n\n<i>" + _("Please specify the correct smartctl binary in Preferences.") + "</i>",
+				this, true, show_output_button);
+	}
+
+	return smartctl_valid;
 }
 
 
