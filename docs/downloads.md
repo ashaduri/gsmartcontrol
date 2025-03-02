@@ -26,7 +26,7 @@ to install these packages.
 
 ### Windows
 
-#### Windows Vista or Later
+#### Windows 7 or Later
 
 - 64-bit installer **(use this if unsure)**: [gsmartcontrol-2.0.2-win64.exe](https://github.com/ashaduri/gsmartcontrol/releases/download/v2.0.2/gsmartcontrol-2.0.2-win64.exe).
 
@@ -36,9 +36,9 @@ to install these packages.
 
 - 32-bit zip (portable): [gsmartcontrol-2.0.2-win32.zip](https://github.com/ashaduri/gsmartcontrol/releases/download/v2.0.2/gsmartcontrol-2.0.2-win32.zip).
 
-#### Outdated: Windows XP, 2000 and 2003
+#### Outdated: Windows XP, Vista, 2000, 2003
 
-The last version of GSmartControl that supports Windows XP, 2000 and 2003
+The last version of GSmartControl that supports Windows XP, Vista, 2000, and 2003
 is **0.9.0**:
 - Outdated 32-bit installer: [gsmartcontrol-0.9.0.exe](https://github.com/ashaduri/gsmartcontrol/releases/download/v0.9.0/gsmartcontrol-0.9.0.exe).
 - Outdated 32-bit zip (portable): [gsmartcontrol-0.9.0-win32.zip](https://github.com/ashaduri/gsmartcontrol/releases/download/v0.9.0/gsmartcontrol-0.9.0-win32.zip).
