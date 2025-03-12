@@ -41,7 +41,7 @@ GenericName[zh_CN]=机械及固态硬盘健康检测
 # tooltip
 Comment=Monitor and control SMART data on hard disk and solid-state drives
 Comment[ca]=Monitoreu i controleu les dades SMART dels discs durs i dels discs sòlids.
-Comment[cs]=Sleduje a nastavuje SMART data na pevném disku a na polovodičových discíc
+Comment[cs]=Sleduje a nastavuje SMART data na pevném disku a na polovodičových discích
 Comment[es]=Monitorice y controle datos de SMART sobre discos duros y unidades de estado sólido
 Comment[fr]=Surveille et contrôle les données SMART des disques durs et des SSD
 Comment[id]=Pantau dan kendalikan data cerdas pada cakram keras dan SSD
