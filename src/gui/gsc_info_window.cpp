@@ -1490,7 +1490,7 @@ void GscInfoWindow::fill_ui_self_test_log(const StoragePropertyRepository& prope
 
 	model_columns.add(columns_->self_test_log_table_columns.hours);
 	num_tree_col = app_gtkmm_create_tree_view_column(columns_->self_test_log_table_columns.hours, *treeview,
-			_("Lifetime hours"), _("Hour of the drive's powered-on lifetime when the test completed or aborted.\nThe value wraps after 36535 hours."), true);
+			_("Lifetime hours"), _("Hour of the drive's powered-on lifetime when the test completed or aborted.\nThe value wraps after 65535 hours."), true);
 
 	model_columns.add(columns_->self_test_log_table_columns.lba);
 	num_tree_col = app_gtkmm_create_tree_view_column(columns_->self_test_log_table_columns.lba, *treeview,
