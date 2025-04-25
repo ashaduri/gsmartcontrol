@@ -122,7 +122,8 @@ jobs:
       matrix:
         include: [
           { msystem: MINGW64, arch: x86_64, platform: win64, urlpath: mingw64 },
-          { msystem: MINGW32, arch: i686, platform: win32, urlpath: mingw32 }
+          # MSYS2 no longer supports for 32-bit Windows.
+          # { msystem: MINGW32, arch: i686, platform: win32, urlpath: mingw32 }
         ]
 
     steps:
