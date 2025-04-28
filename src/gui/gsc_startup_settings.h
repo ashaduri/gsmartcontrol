@@ -20,6 +20,7 @@ struct GscStartupSettings {
 	bool no_scan = false;  ///< No scanning on startup
 	std::vector<std::string> load_virtuals;  ///< Virtual files to load
 	std::vector<std::string> add_devices;  ///< Devices to add (with options)
+	bool forget_manual_devices = false;  ///< Forget all manually added devices
 
 };
 

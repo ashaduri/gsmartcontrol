@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1 
+<!-- Generated with glade 3.40.0 
 
 Copyright (C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
 
@@ -25,65 +25,62 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
   <!-- interface-name GSmartControl -->
   <!-- interface-copyright 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com> -->
   <object class="GtkWindow" id="gsc_preferences_window">
-    <property name="can_focus">False</property>
-    <child>
-      <placeholder/>
-    </child>
+    <property name="can-focus">False</property>
     <child>
       <object class="GtkBox" id="vbox1">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="border_width">12</property>
+        <property name="can-focus">False</property>
+        <property name="border-width">12</property>
         <property name="orientation">vertical</property>
         <property name="spacing">12</property>
         <child>
           <object class="GtkBox" id="vbox2">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <child>
               <object class="GtkNotebook" id="notebook1">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="has_focus">True</property>
+                <property name="can-focus">True</property>
+                <property name="has-focus">True</property>
                 <child>
                   <object class="GtkBox" id="vbox3">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="border_width">5</property>
+                    <property name="can-focus">False</property>
+                    <property name="border-width">5</property>
                     <property name="orientation">vertical</property>
                     <property name="spacing">6</property>
                     <child>
                       <object class="GtkFrame" id="frame1">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label_xalign">0</property>
-                        <property name="shadow_type">none</property>
+                        <property name="can-focus">False</property>
+                        <property name="label-xalign">0</property>
+                        <property name="shadow-type">none</property>
                         <child>
                           <object class="GtkAlignment" id="alignment1">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="left_padding">12</property>
+                            <property name="can-focus">False</property>
+                            <property name="left-padding">12</property>
                             <child>
                               <object class="GtkBox" id="vbox5">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
+                                <property name="can-focus">False</property>
                                 <property name="orientation">vertical</property>
                                 <child>
                                   <object class="GtkBox" id="vbox6">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
+                                    <property name="can-focus">False</property>
                                     <property name="orientation">vertical</property>
                                     <property name="spacing">6</property>
                                     <child>
                                       <object class="GtkCheckButton" id="scan_on_startup_check">
                                         <property name="label" translatable="yes">Scan system for drives on startup</property>
                                         <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">False</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="receives-default">False</property>
                                         <property name="halign">start</property>
-                                        <property name="use_underline">True</property>
-                                        <property name="draw_indicator">True</property>
+                                        <property name="use-underline">True</property>
+                                        <property name="draw-indicator">True</property>
                                       </object>
                                       <packing>
                                         <property name="expand">True</property>
@@ -95,11 +92,11 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                       <object class="GtkCheckButton" id="show_smart_capable_only_check">
                                         <property name="label" translatable="yes">Show SMART-capable drives only</property>
                                         <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">False</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="receives-default">False</property>
                                         <property name="halign">start</property>
-                                        <property name="use_underline">True</property>
-                                        <property name="draw_indicator">True</property>
+                                        <property name="use-underline">True</property>
+                                        <property name="draw-indicator">True</property>
                                       </object>
                                       <packing>
                                         <property name="expand">True</property>
@@ -111,11 +108,11 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                       <object class="GtkCheckButton" id="show_device_name_under_icon_check">
                                         <property name="label" translatable="yes">Show device name under drive icon</property>
                                         <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">False</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="receives-default">False</property>
                                         <property name="halign">start</property>
-                                        <property name="use_underline">True</property>
-                                        <property name="draw_indicator">True</property>
+                                        <property name="use-underline">True</property>
+                                        <property name="draw-indicator">True</property>
                                       </object>
                                       <packing>
                                         <property name="expand">True</property>
@@ -127,11 +124,11 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                       <object class="GtkCheckButton" id="show_serial_number_under_icon_check">
                                         <property name="label" translatable="yes">Show serial number under drive icon</property>
                                         <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">False</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="receives-default">False</property>
                                         <property name="halign">start</property>
-                                        <property name="use_underline">True</property>
-                                        <property name="draw_indicator">True</property>
+                                        <property name="use-underline">True</property>
+                                        <property name="draw-indicator">True</property>
                                       </object>
                                       <packing>
                                         <property name="expand">True</property>
@@ -154,9 +151,9 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                         <child type="label">
                           <object class="GtkLabel" id="label1">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
+                            <property name="can-focus">False</property>
                             <property name="label" translatable="yes">&lt;b&gt;Program Settings&lt;/b&gt;</property>
-                            <property name="use_markup">True</property>
+                            <property name="use-markup">True</property>
                           </object>
                         </child>
                       </object>
@@ -170,35 +167,35 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                     <child>
                       <object class="GtkFrame" id="frame2">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label_xalign">0</property>
-                        <property name="shadow_type">none</property>
+                        <property name="can-focus">False</property>
+                        <property name="label-xalign">0</property>
+                        <property name="shadow-type">none</property>
                         <child>
                           <object class="GtkAlignment" id="alignment2">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="left_padding">12</property>
+                            <property name="can-focus">False</property>
+                            <property name="left-padding">12</property>
                             <child>
                               <object class="GtkBox" id="vbox7">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
+                                <property name="can-focus">False</property>
                                 <property name="orientation">vertical</property>
                                 <child>
                                   <object class="GtkBox" id="vbox12">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
+                                    <property name="can-focus">False</property>
                                     <property name="orientation">vertical</property>
                                     <property name="spacing">7</property>
                                     <child>
                                       <object class="GtkCheckButton" id="search_in_smartmontools_first_check">
                                         <property name="label" translatable="yes">Look for smartctl in smartmontools installation directory first</property>
                                         <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">False</property>
-                                        <property name="tooltip_text" translatable="yes">If smartmontools is installed, use its smartctl by default</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="receives-default">False</property>
+                                        <property name="tooltip-text" translatable="yes">If smartmontools is installed, use its smartctl by default</property>
                                         <property name="halign">start</property>
-                                        <property name="use_underline">True</property>
-                                        <property name="draw_indicator">True</property>
+                                        <property name="use-underline">True</property>
+                                        <property name="draw-indicator">True</property>
                                       </object>
                                       <packing>
                                         <property name="expand">True</property>
@@ -207,23 +204,24 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                       </packing>
                                     </child>
                                     <child>
+                                      <!-- n-columns=3 n-rows=3 -->
                                       <object class="GtkGrid">
                                         <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
-                                        <property name="row_spacing">6</property>
-                                        <property name="column_spacing">12</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="row-spacing">6</property>
+                                        <property name="column-spacing">12</property>
                                         <child>
                                           <object class="GtkBox" id="hbox4">
                                             <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
+                                            <property name="can-focus">False</property>
                                             <property name="spacing">6</property>
                                             <child>
                                               <object class="GtkEntry" id="smartctl_binary_entry">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">True</property>
-                                                <property name="activates_default">True</property>
-                                                <property name="primary_icon_activatable">False</property>
-                                                <property name="secondary_icon_activatable">False</property>
+                                                <property name="can-focus">True</property>
+                                                <property name="activates-default">True</property>
+                                                <property name="primary-icon-activatable">False</property>
+                                                <property name="secondary-icon-activatable">False</property>
                                               </object>
                                               <packing>
                                                 <property name="expand">True</property>
@@ -235,9 +233,9 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                               <object class="GtkButton" id="smartctl_binary_browse_button">
                                                 <property name="label" translatable="yes">Browse...</property>
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">True</property>
-                                                <property name="receives_default">True</property>
-                                                <property name="use_underline">True</property>
+                                                <property name="can-focus">True</property>
+                                                <property name="receives-default">True</property>
+                                                <property name="use-underline">True</property>
                                               </object>
                                               <packing>
                                                 <property name="expand">True</property>
@@ -247,50 +245,65 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                             </child>
                                           </object>
                                           <packing>
-                                            <property name="left_attach">1</property>
-                                            <property name="top_attach">0</property>
+                                            <property name="left-attach">1</property>
+                                            <property name="top-attach">0</property>
                                           </packing>
                                         </child>
                                         <child>
                                           <object class="GtkEntry" id="smartctl_options_entry">
                                             <property name="visible">True</property>
-                                            <property name="can_focus">True</property>
-                                            <property name="tooltip_text" translatable="yes">Global parameters for smartctl. These parameters will be used every time the program invokes smartctl. Must be shell-escaped.</property>
-                                            <property name="activates_default">True</property>
-                                            <property name="primary_icon_activatable">False</property>
-                                            <property name="secondary_icon_activatable">False</property>
+                                            <property name="can-focus">True</property>
+                                            <property name="tooltip-text" translatable="yes">Global parameters for smartctl. These parameters will be used every time the program invokes smartctl. Must be shell-escaped.</property>
+                                            <property name="activates-default">True</property>
+                                            <property name="primary-icon-activatable">False</property>
+                                            <property name="secondary-icon-activatable">False</property>
                                           </object>
                                           <packing>
-                                            <property name="left_attach">1</property>
-                                            <property name="top_attach">1</property>
+                                            <property name="left-attach">1</property>
+                                            <property name="top-attach">1</property>
                                           </packing>
                                         </child>
                                         <child>
                                           <object class="GtkLabel" id="label8">
                                             <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
-                                            <property name="tooltip_text" translatable="yes">Global parameters for smartctl. These parameters will be used every time the program invokes smartctl. Must be shell-escaped.</property>
+                                            <property name="can-focus">False</property>
+                                            <property name="tooltip-text" translatable="yes">Global parameters for smartctl. These parameters will be used every time the program invokes smartctl. Must be shell-escaped.</property>
                                             <property name="halign">start</property>
                                             <property name="label" translatable="yes">Smartctl parameters:</property>
-                                            <property name="use_underline">True</property>
+                                            <property name="use-underline">True</property>
                                           </object>
                                           <packing>
-                                            <property name="left_attach">0</property>
-                                            <property name="top_attach">1</property>
+                                            <property name="left-attach">0</property>
+                                            <property name="top-attach">1</property>
                                           </packing>
                                         </child>
                                         <child>
                                           <object class="GtkLabel" id="smartctl_binary_label">
                                             <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
+                                            <property name="can-focus">False</property>
                                             <property name="halign">start</property>
                                             <property name="label" translatable="yes">Smartctl binary:</property>
-                                            <property name="use_underline">True</property>
+                                            <property name="use-underline">True</property>
                                           </object>
                                           <packing>
-                                            <property name="left_attach">0</property>
-                                            <property name="top_attach">0</property>
+                                            <property name="left-attach">0</property>
+                                            <property name="top-attach">0</property>
                                           </packing>
+                                        </child>
+                                        <child>
+                                          <placeholder/>
+                                        </child>
+                                        <child>
+                                          <placeholder/>
+                                        </child>
+                                        <child>
+                                          <placeholder/>
+                                        </child>
+                                        <child>
+                                          <placeholder/>
+                                        </child>
+                                        <child>
+                                          <placeholder/>
                                         </child>
                                       </object>
                                       <packing>
@@ -314,9 +327,9 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                         <child type="label">
                           <object class="GtkLabel" id="label5">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
+                            <property name="can-focus">False</property>
                             <property name="label" translatable="yes">&lt;b&gt;Smartctl Invocation&lt;/b&gt;</property>
-                            <property name="use_markup">True</property>
+                            <property name="use-markup">True</property>
                           </object>
                         </child>
                       </object>
@@ -332,53 +345,53 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                 <child type="tab">
                   <object class="GtkLabel" id="label3">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="margin_top">3</property>
-                    <property name="margin_bottom">3</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-top">3</property>
+                    <property name="margin-bottom">3</property>
                     <property name="hexpand">True</property>
                     <property name="label" translatable="yes">_General</property>
-                    <property name="use_underline">True</property>
+                    <property name="use-underline">True</property>
                   </object>
                   <packing>
-                    <property name="tab_fill">False</property>
+                    <property name="tab-fill">False</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkBox" id="vbox4">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="border_width">5</property>
+                    <property name="can-focus">False</property>
+                    <property name="border-width">5</property>
                     <property name="orientation">vertical</property>
                     <property name="spacing">6</property>
                     <child>
                       <object class="GtkFrame" id="frame3">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label_xalign">0</property>
-                        <property name="shadow_type">none</property>
+                        <property name="can-focus">False</property>
+                        <property name="label-xalign">0</property>
+                        <property name="shadow-type">none</property>
                         <child>
                           <object class="GtkAlignment" id="alignment3">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="left_padding">12</property>
+                            <property name="can-focus">False</property>
+                            <property name="left-padding">12</property>
                             <child>
                               <object class="GtkBox" id="vbox9">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
+                                <property name="can-focus">False</property>
                                 <property name="orientation">vertical</property>
                                 <child>
                                   <object class="GtkBox" id="hbox6">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
+                                    <property name="can-focus">False</property>
                                     <property name="spacing">6</property>
                                     <child>
                                       <object class="GtkLabel" id="label6">
                                         <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
-                                        <property name="tooltip_text" translatable="yes">Semicolon-separated blacklist regular expression patterns for device search. For example, to blacklist all "/dev/sd*" devices, use "sd.{1}$". Simply listing them as "sda;sdb" will also work.</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="tooltip-text" translatable="yes">Semicolon-separated blacklist regular expression patterns for device search. For example, to blacklist all "/dev/sd*" devices, use "sd.{1}$". Simply listing them as "sda;sdb" will also work.</property>
                                         <property name="halign">start</property>
                                         <property name="label" translatable="yes">Device blacklist patterns:</property>
-                                        <property name="use_underline">True</property>
+                                        <property name="use-underline">True</property>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
@@ -389,11 +402,11 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                     <child>
                                       <object class="GtkEntry" id="device_blacklist_patterns_entry">
                                         <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="tooltip_text" translatable="yes">Semicolon-separated blacklist regular expression patterns for device search. For example, to blacklist all "/dev/sd*" devices, use "sd.$". Simply listing them as "sda;sdb" or "sd[ab]" will also work.</property>
-                                        <property name="activates_default">True</property>
-                                        <property name="primary_icon_activatable">False</property>
-                                        <property name="secondary_icon_activatable">False</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="tooltip-text" translatable="yes">Semicolon-separated blacklist regular expression patterns for device search. For example, to blacklist all "/dev/sd*" devices, use "sd.$". Simply listing them as "sda;sdb" or "sd[ab]" will also work.</property>
+                                        <property name="activates-default">True</property>
+                                        <property name="primary-icon-activatable">False</property>
+                                        <property name="secondary-icon-activatable">False</property>
                                       </object>
                                       <packing>
                                         <property name="expand">True</property>
@@ -416,7 +429,7 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                         <child type="label">
                           <object class="GtkLabel" id="label10">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
+                            <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Drive Search</property>
                             <attributes>
                               <attribute name="weight" value="bold"/>
@@ -434,28 +447,28 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                     <child>
                       <object class="GtkFrame" id="frame4">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label_xalign">0</property>
-                        <property name="shadow_type">none</property>
+                        <property name="can-focus">False</property>
+                        <property name="label-xalign">0</property>
+                        <property name="shadow-type">none</property>
                         <child>
                           <object class="GtkAlignment" id="alignment4">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="left_padding">12</property>
+                            <property name="can-focus">False</property>
+                            <property name="left-padding">12</property>
                             <child>
                               <object class="GtkBox" id="vbox8">
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
+                                <property name="can-focus">False</property>
                                 <property name="orientation">vertical</property>
                                 <child>
                                   <object class="GtkAlignment" id="alignment5">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
-                                    <property name="top_padding">12</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="top-padding">12</property>
                                     <child>
                                       <object class="GtkLabel" id="label7">
                                         <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
+                                        <property name="can-focus">False</property>
                                         <property name="halign">start</property>
                                         <property name="label" translatable="yes">Adding a drive here will make it use the specified parameters.</property>
                                       </object>
@@ -471,25 +484,25 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                 <child>
                                   <object class="GtkBox" id="hbox2">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
+                                    <property name="can-focus">False</property>
                                     <property name="spacing">12</property>
                                     <child>
                                       <object class="GtkBox" id="vbox10">
                                         <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
+                                        <property name="can-focus">False</property>
                                         <property name="orientation">vertical</property>
                                         <property name="spacing">6</property>
                                         <child>
                                           <object class="GtkScrolledWindow" id="scrolledwindow1">
                                             <property name="visible">True</property>
-                                            <property name="can_focus">True</property>
-                                            <property name="shadow_type">in</property>
+                                            <property name="can-focus">True</property>
+                                            <property name="shadow-type">in</property>
                                             <child>
                                               <object class="GtkTreeView" id="device_options_treeview">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">True</property>
-                                                <property name="tooltip_text" translatable="yes">Device list</property>
-                                                <property name="headers_clickable">False</property>
+                                                <property name="can-focus">True</property>
+                                                <property name="tooltip-text" translatable="yes">Device list</property>
+                                                <property name="headers-clickable">False</property>
                                                 <child internal-child="selection">
                                                   <object class="GtkTreeSelection"/>
                                                 </child>
@@ -505,17 +518,17 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                         <child>
                                           <object class="GtkBox" id="hbox3">
                                             <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
+                                            <property name="can-focus">False</property>
                                             <property name="spacing">6</property>
                                             <property name="homogeneous">True</property>
                                             <child>
                                               <object class="GtkButton" id="device_options_remove_device_button">
                                                 <property name="label">gtk-remove</property>
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">True</property>
-                                                <property name="receives_default">True</property>
-                                                <property name="tooltip_text" translatable="yes">Remove selected entry from device list</property>
-                                                <property name="use_stock">True</property>
+                                                <property name="can-focus">True</property>
+                                                <property name="receives-default">True</property>
+                                                <property name="tooltip-text" translatable="yes">Remove selected entry from device list</property>
+                                                <property name="use-stock">True</property>
                                               </object>
                                               <packing>
                                                 <property name="expand">True</property>
@@ -527,10 +540,10 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                               <object class="GtkButton" id="device_options_add_device_button">
                                                 <property name="label">gtk-add</property>
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">True</property>
-                                                <property name="receives_default">True</property>
-                                                <property name="tooltip_text" translatable="yes">Add a new entry to device list</property>
-                                                <property name="use_stock">True</property>
+                                                <property name="can-focus">True</property>
+                                                <property name="receives-default">True</property>
+                                                <property name="tooltip-text" translatable="yes">Add a new entry to device list</property>
+                                                <property name="use-stock">True</property>
                                               </object>
                                               <packing>
                                                 <property name="expand">True</property>
@@ -555,97 +568,98 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                     <child>
                                       <object class="GtkBox" id="vbox11">
                                         <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
+                                        <property name="can-focus">False</property>
                                         <property name="orientation">vertical</property>
                                         <child>
+                                          <!-- n-columns=3 n-rows=4 -->
                                           <object class="GtkGrid">
                                             <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
-                                            <property name="row_spacing">6</property>
-                                            <property name="column_spacing">12</property>
+                                            <property name="can-focus">False</property>
+                                            <property name="row-spacing">6</property>
+                                            <property name="column-spacing">12</property>
                                             <child>
                                               <object class="GtkLabel" id="label67">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
-                                                <property name="tooltip_text" translatable="yes">Smartctl parameters to add (for example, "-T permissive" or "-d usbsunplus")</property>
+                                                <property name="can-focus">False</property>
+                                                <property name="tooltip-text" translatable="yes">Smartctl parameters to add (for example, "-T permissive" or "-d usbsunplus")</property>
                                                 <property name="halign">start</property>
-                                                <property name="label" translatable="yes">Parameters:</property>
-                                                <property name="use_underline">True</property>
+                                                <property name="label" translatable="yes">Add parameters:</property>
+                                                <property name="use-underline">True</property>
                                               </object>
                                               <packing>
-                                                <property name="left_attach">0</property>
-                                                <property name="top_attach">3</property>
+                                                <property name="left-attach">0</property>
+                                                <property name="top-attach">3</property>
                                               </packing>
                                             </child>
                                             <child>
                                               <object class="GtkLabel" id="device_options_type_label">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
-                                                <property name="tooltip_text" translatable="yes">Match only this type of device (as used by the -d smartctl parameter). Leave empty for all types. This can be used to match a drive behind a RAID device, e.g. "areca,2".</property>
+                                                <property name="can-focus">False</property>
+                                                <property name="tooltip-text" translatable="yes">Match only this type of device (as used by the -d smartctl parameter). Leave empty for all types. This can be used to match a drive behind a RAID device, e.g. "areca,2".</property>
                                                 <property name="halign">start</property>
-                                                <property name="label" translatable="yes">Type:</property>
-                                                <property name="use_underline">True</property>
+                                                <property name="label" translatable="yes">Match type:</property>
+                                                <property name="use-underline">True</property>
                                               </object>
                                               <packing>
-                                                <property name="left_attach">0</property>
-                                                <property name="top_attach">2</property>
+                                                <property name="left-attach">0</property>
+                                                <property name="top-attach">2</property>
                                               </packing>
                                             </child>
                                             <child>
                                               <object class="GtkLabel" id="device_options_device_label">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
+                                                <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
-                                                <property name="label" translatable="yes">Device:</property>
-                                                <property name="use_underline">True</property>
+                                                <property name="label" translatable="yes">Match device:</property>
+                                                <property name="use-underline">True</property>
                                               </object>
                                               <packing>
-                                                <property name="left_attach">0</property>
-                                                <property name="top_attach">1</property>
+                                                <property name="left-attach">0</property>
+                                                <property name="top-attach">1</property>
                                               </packing>
                                             </child>
                                             <child>
                                               <object class="GtkEntry" id="device_options_parameter_entry">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">True</property>
-                                                <property name="tooltip_text" translatable="yes">Smartctl parameters to add (for example, "-T permissive" or "-d usbsunplus")</property>
-                                                <property name="primary_icon_activatable">False</property>
-                                                <property name="secondary_icon_activatable">False</property>
+                                                <property name="can-focus">True</property>
+                                                <property name="tooltip-text" translatable="yes">Smartctl parameters to add (for example, "-T permissive" or "-d usbsunplus")</property>
+                                                <property name="primary-icon-activatable">False</property>
+                                                <property name="secondary-icon-activatable">False</property>
                                               </object>
                                               <packing>
-                                                <property name="left_attach">1</property>
-                                                <property name="top_attach">3</property>
+                                                <property name="left-attach">1</property>
+                                                <property name="top-attach">3</property>
                                               </packing>
                                             </child>
                                             <child>
                                               <object class="GtkEntry" id="device_options_type_entry">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">True</property>
-                                                <property name="tooltip_text" translatable="yes">Match only this type of device (as used by the -d smartctl parameter). Leave empty for all types. This can be used to match a drive behind a RAID device, e.g. "areca,2".</property>
-                                                <property name="primary_icon_activatable">False</property>
-                                                <property name="secondary_icon_activatable">False</property>
+                                                <property name="can-focus">True</property>
+                                                <property name="tooltip-text" translatable="yes">Match only this type of device (as used by the -d smartctl parameter). Leave empty for all types. This can be used to match a drive behind a RAID device, e.g. "areca,2".</property>
+                                                <property name="primary-icon-activatable">False</property>
+                                                <property name="secondary-icon-activatable">False</property>
                                               </object>
                                               <packing>
-                                                <property name="left_attach">1</property>
-                                                <property name="top_attach">2</property>
+                                                <property name="left-attach">1</property>
+                                                <property name="top-attach">2</property>
                                               </packing>
                                             </child>
                                             <child>
                                               <object class="GtkEntry" id="device_options_device_entry">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">True</property>
-                                                <property name="primary_icon_activatable">False</property>
-                                                <property name="secondary_icon_activatable">False</property>
+                                                <property name="can-focus">True</property>
+                                                <property name="primary-icon-activatable">False</property>
+                                                <property name="secondary-icon-activatable">False</property>
                                               </object>
                                               <packing>
-                                                <property name="left_attach">1</property>
-                                                <property name="top_attach">1</property>
+                                                <property name="left-attach">1</property>
+                                                <property name="top-attach">1</property>
                                               </packing>
                                             </child>
                                             <child>
                                               <object class="GtkLabel" id="label9">
                                                 <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
+                                                <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
                                                 <property name="label" translatable="yes">Drive Properties:</property>
                                                 <attributes>
@@ -653,10 +667,22 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                                                 </attributes>
                                               </object>
                                               <packing>
-                                                <property name="left_attach">0</property>
-                                                <property name="top_attach">0</property>
+                                                <property name="left-attach">0</property>
+                                                <property name="top-attach">0</property>
                                                 <property name="width">2</property>
                                               </packing>
+                                            </child>
+                                            <child>
+                                              <placeholder/>
+                                            </child>
+                                            <child>
+                                              <placeholder/>
+                                            </child>
+                                            <child>
+                                              <placeholder/>
+                                            </child>
+                                            <child>
+                                              <placeholder/>
                                             </child>
                                           </object>
                                           <packing>
@@ -687,8 +713,8 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                         <child type="label">
                           <object class="GtkLabel" id="label11">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Per-drive Smartctl Parameters</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">Per-Drive Smartctl Parameters</property>
                             <attributes>
                               <attribute name="weight" value="bold"/>
                             </attributes>
@@ -710,17 +736,17 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                 <child type="tab">
                   <object class="GtkLabel" id="label4">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="margin_left">6</property>
-                    <property name="margin_right">6</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-left">6</property>
+                    <property name="margin-right">6</property>
                     <property name="hexpand">True</property>
                     <property name="label" translatable="yes">_Drives</property>
-                    <property name="use_underline">True</property>
-                    <property name="width_chars">10</property>
+                    <property name="use-underline">True</property>
+                    <property name="width-chars">10</property>
                   </object>
                   <packing>
                     <property name="position">1</property>
-                    <property name="tab_fill">False</property>
+                    <property name="tab-fill">False</property>
                   </packing>
                 </child>
               </object>
@@ -740,17 +766,17 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
         <child>
           <object class="GtkBox" id="hbox1">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="spacing">6</property>
             <property name="homogeneous">True</property>
             <child>
               <object class="GtkButton" id="window_reset_all_button">
                 <property name="label" translatable="yes">_Reset all</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="tooltip_text" translatable="yes">Reset all program settings to their defaults</property>
-                <property name="use_underline">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Reset all program settings to their defaults</property>
+                <property name="use-underline">True</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -761,7 +787,7 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
             <child>
               <object class="GtkLabel" id="label2">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -773,9 +799,9 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
               <object class="GtkButton" id="window_cancel_button">
                 <property name="label">gtk-cancel</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="use-stock">True</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -787,12 +813,12 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
               <object class="GtkButton" id="window_ok_button">
                 <property name="label">gtk-ok</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="is_focus">True</property>
-                <property name="can_default">True</property>
-                <property name="has_default">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
+                <property name="can-focus">True</property>
+                <property name="is-focus">True</property>
+                <property name="can-default">True</property>
+                <property name="has-default">True</property>
+                <property name="receives-default">True</property>
+                <property name="use-stock">True</property>
               </object>
               <packing>
                 <property name="expand">True</property>

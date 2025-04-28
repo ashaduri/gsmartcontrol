@@ -44,7 +44,7 @@ Copyright:
 #include "applib/command_executor_factory.h"
 #include "gsc_startup_settings.h"
 #include "build_config.h"
-
+#include "applib/storage_settings.h"
 
 
 using namespace std::literals;
@@ -142,30 +142,17 @@ void GscMainWindow::populate_iconview_on_startup(bool smartctl_valid)
 					}
 				}
 				if (!file.empty()) {
-					add_device(file, type_arg, extra_args);
+					// Report any smartctl-related issues
+					add_device_interactive(file, type_arg, extra_args);
 				}
 			}
 		}
 
 		// Add auto-add devices stored in configuration
-		auto auto_add_devices = app_get_auto_add_devices();
-		for (const auto& [dev_type, options_str] : auto_add_devices.value) {
-			const auto& dev = dev_type.first;
-			const auto& type_arg = dev_type.second;
-			
-			if (!dev.empty()) {
-				std::vector<std::string> params;
-				if (!options_str.empty()) {
-					try {
-						params = Glib::shell_parse_argv(options_str);
-					}
-					catch(Glib::ShellError& e) {
-						// Skip this entry if we can't parse params
-						continue;
-					}
-				}
-				add_device(dev, type_arg, params);
-			}
+		if (get_startup_settings().forget_manual_devices) {
+			app_set_startup_manual_devices({});  // clear the list
+		} else {
+			add_startup_manual_devices();
 		}
 	}
 
@@ -504,8 +491,16 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 		case action_remove_device:
 			if (iconview_) {
 				StorageDevicePtr drive = iconview_->get_selected_drive();
-				if (drive && drive->get_is_manually_added() && !drive->get_test_is_active())
+				if (drive && drive->get_is_manually_added() && !drive->get_test_is_active()) {
 					iconview_->remove_selected_drive();
+
+					auto devices = app_get_startup_manual_devices();
+					std::erase_if(devices,
+							[drive](const AppAddDeviceOption& dev) {
+								return (dev.device == drive->get_device() && dev.type == drive->get_type_argument());
+							});
+					app_set_startup_manual_devices(devices);
+				}
 			}
 			break;
 
@@ -528,6 +523,7 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 
 		case action_rescan_devices:
 			rescan_devices(false);
+			add_startup_manual_devices();
 			break;
 
 		case action_executor_log:
@@ -914,6 +910,29 @@ void GscMainWindow::rescan_devices(bool startup)
 
 
 
+void GscMainWindow::add_startup_manual_devices()
+{
+	auto auto_add_devices = app_get_startup_manual_devices();
+	for (const auto& dev : auto_add_devices) {
+		if (!dev.device.empty()) {
+			std::vector<std::string> params;
+			if (!dev.options.empty()) {
+				try {
+					params = Glib::shell_parse_argv(dev.options);
+				}
+				catch(Glib::ShellError& e) {
+					// Skip this entry if we can't parse params
+					continue;
+				}
+			}
+			// Ignore errors here so that the devices can be removed manually
+			add_device_silent(dev.device, dev.type, params);
+		}
+	}
+}
+
+
+
 void GscMainWindow::run_update_drivedb()
 {
 	auto smartctl_binary = get_smartctl_binary();
@@ -951,18 +970,34 @@ void GscMainWindow::run_update_drivedb()
 
 
 
-bool GscMainWindow::add_device(const std::string& file, const std::string& type_arg, const std::vector<std::string>& extra_args)
+bool GscMainWindow::add_device_interactive(const std::string& file, const std::string& type_arg, const std::vector<std::string>& extra_args)
 {
 	// win32 doesn't have device files, so skip the check in Windows.
 	if constexpr(!BuildEnv::is_kernel_family_windows()) {
 		std::error_code ec;
 		if (!hz::fs::exists(hz::fs_path_from_string(file), ec)) {
 			gui_show_error_dialog(_("Cannot add device"),
-					(ec.message().empty() ? Glib::ustring::compose(_("Device \"%1\" doesn't exist."), file).raw() : ec.message()), this);
+					(!ec ? Glib::ustring::compose(_("Device \"%1\" doesn't exist."), file).raw() : ec.message()), this);
 			return false;
 		}
 	}
 
+	return add_device(false, file, type_arg, extra_args);
+}
+
+
+
+bool GscMainWindow::add_device_silent(const std::string& file, const std::string& type_arg, const std::vector<std::string>& extra_args)
+{
+	// We want the manual add to always succeed even if there are errors,
+	// so that it can be removed as well.
+	return add_device(true, file, type_arg, extra_args);
+}
+
+
+
+bool GscMainWindow::add_device(bool silent, const std::string& file, const std::string& type_arg, const std::vector<std::string>& extra_args)
+{
 	auto drive = std::make_shared<StorageDevice>(file);
 	drive->set_type_argument(type_arg);
 	drive->set_extra_arguments(extra_args);
@@ -973,9 +1008,10 @@ bool GscMainWindow::add_device(const std::string& file, const std::string& type_
 	std::vector<StorageDevicePtr> tmp_drives;
 	tmp_drives.push_back(drive);
 
+	// Don't report errors here, just add the drive to the list.
 	StorageDetector sd;
 	auto fetch_error = sd.fetch_basic_data(tmp_drives, ex_factory, true);  // return its first error
-	if (!fetch_error) {
+	if (!silent && !fetch_error) {
 		gsc_executor_error_dialog_show(_("An error occurred while adding the device"), fetch_error.error().message(), this);
 
 	} else {

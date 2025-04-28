@@ -48,7 +48,7 @@ inline void init_default_settings()
 
 	rconfig::set_default_data("system/smartctl_options", "");  // default options on ALL commands
 	rconfig::set_default_data("system/smartctl_device_options", "");  // dev1:val1;dev2:val2;... format, each bin2ascii-encoded.
-	rconfig::set_default_data("system/auto_add_devices", "");  // Auto-add devices on startup
+	rconfig::set_default_data("system/startup_manual_devices", "");  // Auto-add devices on startup
 
 	rconfig::set_default_data("system/linux_udev_byid_path", "/dev/disk/by-id");  // linux hard disk device links here
 	rconfig::set_default_data("system/linux_proc_partitions_path", "/proc/partitions");  // file in linux /proc/partitions format

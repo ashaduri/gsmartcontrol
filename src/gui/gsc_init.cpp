@@ -206,6 +206,7 @@ namespace {
 		gboolean arg_locale = TRUE;  ///< if false, disable using system locale
 		gboolean arg_version = FALSE;  ///< if true, show version and exit
 		gboolean arg_scan = TRUE;  ///< if false, don't scan the system for drives on startup
+		gboolean arg_forget_manual_devices = FALSE;  ///< if true, forget all manually added devices
 		gchar** arg_add_virtual = nullptr;  ///< load smartctl data from these files as virtual drives
 		gchar** arg_add_device = nullptr;  ///< add these device files manually
 		double arg_gdk_scale = std::numeric_limits<double>::quiet_NaN();  ///< The value of GDK_SCALE environment variable
@@ -230,6 +231,8 @@ namespace {
 					N_("Add this device to device list. The format of the device is \"<device>::<type>::<extra_args>\", where type and extra_args are optional."
 					" This option is useful with --no-scan to list certain drives only. You can specify this option multiple times."
 					" Example: --add-device /dev/sda --add-device /dev/twa0::3ware,2 --add-device '/dev/sdb::::-T permissive'"), nullptr },
+			{ "forget-devices", '\0', 0, G_OPTION_ARG_NONE, &(args.arg_forget_manual_devices),
+					N_("Forget all previously manually added devices."), nullptr },
 #ifndef _WIN32
 			// X11-specific
 			{ "gdk-scale", 'l', 0, G_OPTION_ARG_DOUBLE, &(args.arg_gdk_scale),
@@ -556,6 +559,9 @@ bool app_init_and_loop(int& argc, char**& argv)
 
 	// add devices to the list on startup if specified.
 	get_startup_settings().add_devices = load_devices;
+
+	// forget all manually added devices on startup if specified.
+	get_startup_settings().forget_manual_devices = bool(args.arg_forget_manual_devices);
 
 
 	// Create executor log window, but don't show it.

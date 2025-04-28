@@ -20,7 +20,7 @@ Copyright:
 #include "gsc_add_device_window.h"
 #include "gsc_main_window.h"
 #include "build_config.h"
-
+#include "applib/storage_settings.h"
 
 
 
@@ -148,6 +148,7 @@ void GscAddDeviceWindow::on_window_ok_button_clicked()
 {
 	std::string dev, type;
 	std::vector<std::string> params;
+	std::string params_str;
 	if (auto* entry = lookup_widget<Gtk::Entry*>("device_name_entry")) {
 		dev = entry->get_text();
 	}
@@ -155,7 +156,7 @@ void GscAddDeviceWindow::on_window_ok_button_clicked()
 		type = type_combo->get_entry_text();
 	}
 	if (auto* entry = lookup_widget<Gtk::Entry*>("smartctl_params_entry")) {
-		auto params_str = entry->get_text();
+		params_str = entry->get_text();
 		if (!params_str.empty()) {
 			try {
 				params = Glib::shell_parse_argv(params_str);
@@ -166,35 +167,29 @@ void GscAddDeviceWindow::on_window_ok_button_clicked()
 			}
 		}
 	}
-	
-	// Check if the auto-add checkbox is checked
-	bool auto_add = false;
-	if (auto* check = lookup_widget<Gtk::CheckButton*>("auto_add_device_check")) {
-		auto_add = check->get_active();
-	}
 
-	// If auto-add is checked, save the device info to config
-	if (auto_add && !dev.empty()) {
-		// Get existing auto-add devices
-		AppDeviceOptionMap auto_add_devices = app_config_get_auto_add_device_map();
-		
-		// Create params string from vector
-		std::string params_str;
-		for (const auto& param : params) {
-			if (!params_str.empty())
-				params_str += " ";
-			params_str += param;
-		}
-		
-		// Add or update this device in the map
-		auto_add_devices.value.insert_or_assign({dev, type}, params_str);
-		
-		// Save the updated map back to config
-		rconfig::set_data("system/auto_add_devices", auto_add_devices);
-	}
-
+	bool added = false;
 	if (main_window_ && !dev.empty()) {
-		main_window_->add_device(dev, type, params);
+		added = main_window_->add_device_interactive(dev, type, params);
+	}
+
+	if (added) {
+		bool auto_add = false;
+		if (auto* check = lookup_widget<Gtk::CheckButton*>("auto_add_device_check")) {
+			auto_add = check->get_active();
+		}
+
+		// If auto-add is checked, save the device info to config
+		if (auto_add && !dev.empty()) {
+			// Get existing auto-add devices
+			auto devices = app_get_startup_manual_devices();
+
+			// Add or update this device in the map
+			devices.emplace(dev, type, params_str);
+
+			// Save the updated map back to config
+			app_set_startup_manual_devices(devices);
+		}
 	}
 
 	destroy_instance();

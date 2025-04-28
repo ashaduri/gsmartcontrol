@@ -48,13 +48,28 @@ class GscMainWindow : public AppBuilderWidget<GscMainWindow, false> {
 		void rescan_devices(bool startup);
 
 
+		/// Add manually added devices to the icon view.
+		void add_startup_manual_devices();
+
+
 		/// Execute update-smart-drivedb
 		void run_update_drivedb();
 
 
-		/// Manually add device file to icon list
-		bool add_device(const std::string& file, const std::string& type_arg, const std::vector<std::string>& extra_args);
+		/// Add device file to icon list, interactively showing errors if any.
+		bool add_device_interactive(const std::string& file, const std::string& type_arg, const std::vector<std::string>& extra_args);
 
+		/// Add device file to icon list silently, ignoring errors.
+		bool add_device_silent(const std::string& file, const std::string& type_arg, const std::vector<std::string>& extra_args);
+
+
+	private:
+
+		/// Add device file to icon list
+		bool add_device(bool silent, const std::string& file, const std::string& type_arg, const std::vector<std::string>& extra_args);
+
+
+	public:
 
 		/// Read smartctl data from file, add it as a virtual drive to icon list
 		bool add_virtual_drive(const std::string& file);

@@ -43,6 +43,8 @@ Example:
 `--add-device /dev/sda --add-device /dev/twa0::3ware,2 --add-device
 '/dev/sdb::::-T permissive'`.
 
+`--forget-devices` - Forget all previously manually added devices.
+
 `-v`, `--verbose` - Enable verbose logging; same as `--verbosity-level 5`.
 
 `-q`, `--quiet` - Disable logging; same as `--verbosity-level 0`.
