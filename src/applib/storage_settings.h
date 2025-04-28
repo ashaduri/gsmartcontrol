@@ -81,7 +81,11 @@ inline AppDeviceOptionMap app_config_get_device_option_map()
 	return rconfig::get_data<AppDeviceOptionMap>("system/smartctl_device_options");
 }
 
-
+/// Get auto-add device option map from config
+inline AppDeviceOptionMap app_config_get_auto_add_device_map()
+{
+	return rconfig::get_data<AppDeviceOptionMap>("system/auto_add_devices");
+}
 
 /// Read device option map from config and get the options for (dev, type_arg) pair.
 inline std::vector<std::string> app_get_device_options(const std::string& dev, const std::string& type_arg)
@@ -106,9 +110,11 @@ inline std::vector<std::string> app_get_device_options(const std::string& dev, c
 	return {};
 }
 
-
-
-
+/// Read auto-add devices from configuration
+inline AppDeviceOptionMap app_get_auto_add_devices()
+{
+	return app_config_get_auto_add_device_map();
+}
 
 #endif
 

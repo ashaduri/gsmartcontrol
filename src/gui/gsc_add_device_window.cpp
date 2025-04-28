@@ -166,6 +166,33 @@ void GscAddDeviceWindow::on_window_ok_button_clicked()
 			}
 		}
 	}
+	
+	// Check if the auto-add checkbox is checked
+	bool auto_add = false;
+	if (auto* check = lookup_widget<Gtk::CheckButton*>("auto_add_device_check")) {
+		auto_add = check->get_active();
+	}
+
+	// If auto-add is checked, save the device info to config
+	if (auto_add && !dev.empty()) {
+		// Get existing auto-add devices
+		AppDeviceOptionMap auto_add_devices = app_config_get_auto_add_device_map();
+		
+		// Create params string from vector
+		std::string params_str;
+		for (const auto& param : params) {
+			if (!params_str.empty())
+				params_str += " ";
+			params_str += param;
+		}
+		
+		// Add or update this device in the map
+		auto_add_devices.value.insert_or_assign({dev, type}, params_str);
+		
+		// Save the updated map back to config
+		rconfig::set_data("system/auto_add_devices", auto_add_devices);
+	}
+
 	if (main_window_ && !dev.empty()) {
 		main_window_->add_device(dev, type, params);
 	}

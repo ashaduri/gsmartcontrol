@@ -146,6 +146,27 @@ void GscMainWindow::populate_iconview_on_startup(bool smartctl_valid)
 				}
 			}
 		}
+
+		// Add auto-add devices stored in configuration
+		auto auto_add_devices = app_get_auto_add_devices();
+		for (const auto& [dev_type, options_str] : auto_add_devices.value) {
+			const auto& dev = dev_type.first;
+			const auto& type_arg = dev_type.second;
+			
+			if (!dev.empty()) {
+				std::vector<std::string> params;
+				if (!options_str.empty()) {
+					try {
+						params = Glib::shell_parse_argv(options_str);
+					}
+					catch(Glib::ShellError& e) {
+						// Skip this entry if we can't parse params
+						continue;
+					}
+				}
+				add_device(dev, type_arg, params);
+			}
+		}
 	}
 
 	for (auto&& virt : get_startup_settings().load_virtuals) {

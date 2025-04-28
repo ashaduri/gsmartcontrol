@@ -187,7 +187,6 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">start</property>
-                <property name="label" translatable="yes">Note: To make this change permanent, you'll have to add the gsmartcontrol --add-device command line option to its shortcut.</property>
                 <property name="wrap">True</property>
               </object>
               <packing>
@@ -195,6 +194,22 @@ along with GSmartControl.  If not, see <http://www.gnu.org/licenses/>.
                 <property name="fill">True</property>
                 <property name="padding">6</property>
                 <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="auto_add_device_check">
+                <property name="label" translatable="yes">Automatically add this device on startup</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="halign">start</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="padding">0</property>
+                <property name="position">3</property>
               </packing>
             </child>
           </object>
