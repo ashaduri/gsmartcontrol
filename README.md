@@ -59,7 +59,7 @@ for more information.
 
 ## Copyright and Licensing
 
-GSmartControl is Copyright (C) 2008 - 2024 Alexander Shaduri [ashaduri@gmail.com](mailto:ashaduri@gmail.com) and contributors.
+GSmartControl is Copyright (C) 2008 - 2025 Alexander Shaduri [ashaduri@gmail.com](mailto:ashaduri@gmail.com) and contributors.
 
 GSmartControl is licensed under the terms of
 [GNU General Public License Version 3](https://www.gnu.org/licenses/gpl-3.0.en.html).
@@ -73,4 +73,4 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
 A PARTICULAR PURPOSE. See the GNU General Public Licenses for more details.
 
 This product includes icons from Oxygen Icons copyright [KDE](https://kde.org)
-and licenced under the [GNU LGPL version 3](https://www.gnu.org/licenses/lgpl-3.0.en.html) or later.
+and licensed under the [GNU LGPL version 3](https://www.gnu.org/licenses/lgpl-3.0.en.html) or later.

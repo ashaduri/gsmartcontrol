@@ -2,7 +2,7 @@
  *****************************************************************************
  License: GNU General Public License v3.0 only
  Copyright:
- 	(C) 2024 Alexander Shaduri <ashaduri@gmail.com>
+ 	(C) 2008 - 2025 Alexander Shaduri <ashaduri@gmail.com>
  *****************************************************************************
  */
 /// \file
@@ -287,7 +287,7 @@ namespace {
 		std::string warningtext = std::string("\n") + _("Warning: GSmartControl comes with ABSOLUTELY NO WARRANTY.\n"
 				"See LICENSE.txt file for details.") + "\n\n";
 		/// %1 is years, %2 is email address
-		warningtext += Glib::ustring::compose(_("Copyright (C) %1 Alexander Shaduri %2"), "2008 - 2024",
+		warningtext += Glib::ustring::compose(_("Copyright (C) %1 Alexander Shaduri %2"), "2008 - 2025",
 				"<ashaduri@gmail.com>") + "\n\n";
 
 		std::cout << versiontext << warningtext;

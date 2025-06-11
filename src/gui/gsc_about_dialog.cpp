@@ -1,7 +1,7 @@
 /******************************************************************************
 License: GNU General Public License v3.0 only
 Copyright:
-	(C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+	(C) 2008 - 2025 Alexander Shaduri <ashaduri@gmail.com>
 ******************************************************************************/
 /// \file
 /// \author Alexander Shaduri
@@ -40,7 +40,7 @@ GscAboutDialog::GscAboutDialog(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builde
 
 	// spammers go away
 	set_copyright(Glib::ustring::compose("Copyright (C) %1",
-			"2008 - 2024 Alexander Shaduri <ashaduri@gmail.com>"));
+			"2008 - 2025 Alexander Shaduri <ashaduri@gmail.com>"));
 
 	// set_authors({"Alexander Shaduri <ashaduri@gmail.com>"});
 	// set_documenters({"Alexander Shaduri <ashaduri@gmail.com>"});
