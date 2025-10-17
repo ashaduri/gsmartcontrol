@@ -12,7 +12,8 @@ Copyright:
 <policyconfig>
 
   <action id="org.gsmartcontrol">
-    <message>Authentication is required to run GSmartControl</message>
+    <message>Authentication is required to run GSmartControl as root</message>
+    <message xml:lang="ru">Требуется аутентификация для запуска GSmartControl от root</message>
     <icon_name>gsmartcontrol</icon_name>
     <defaults>
       <allow_any>auth_admin</allow_any>
