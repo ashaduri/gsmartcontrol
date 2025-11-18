@@ -5,6 +5,7 @@
 /win64*
 /cmake-build-*
 /build*
+/_codeql_build_dir
 
 # Non-project files
 /TODO
