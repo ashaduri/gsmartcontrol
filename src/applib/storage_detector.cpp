@@ -83,7 +83,7 @@ hz::ExpectedVoid<StorageDetectorError> StorageDetector::detect(std::vector<Stora
 	}
 
 	// Sort the drives, because their order is not quite defined.
-	// TODO Sort using natural sort
+	// Natural sort is implemented in the StorageDevicePtr comparison operator.
 	std::sort(drives.begin(), drives.end());
 
 	debug_out_info("app", DBG_FUNC_MSG << "Drive detection finished.\n");

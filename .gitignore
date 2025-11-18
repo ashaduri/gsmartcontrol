@@ -4,6 +4,7 @@
 /win32*
 /win64*
 /cmake-build-*
+/build*
 
 # Non-project files
 /TODO
