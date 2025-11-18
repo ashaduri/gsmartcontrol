@@ -1,0 +1,24 @@
+
+GSmartControl - Hard disk drive and SSD health inspection tool
+Version 2.0.2
+
+The latest version of this distribution, as well as the source code of
+GSmartControl, can be found at
+https://gsmartcontrol.shaduri.dev
+and
+https://github.com/ashaduri/gsmartcontrol/releases
+
+
+This distribution includes:
+
+* GSmartControl binary (gsmartcontrol.exe) and associated resources.
+The binary was compiled against Gtkmm (http://www.gtkmm.org/), GTK+
+(http://gtk.org/) and related libraries.
+
+* Smartctl binaries (from smartmontools 7.4, http://smartmontools.sf.net/)
+- smartctl-nc.exe (compiled without console output), smartctl.exe (compiled
+with console output), update-smart-drivedb.ps1 (drive database updater).
+
+
+The combined distribution is licensed under GNU GPL version 3.
+See LICENSE.txt for details.
