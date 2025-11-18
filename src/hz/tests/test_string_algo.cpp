@@ -150,15 +150,6 @@ TEST_CASE("StringAlgorithms", "[hz][string]")
 		REQUIRE(string_natural_compare("pd", "pd1") < 0);
 		REQUIRE(string_natural_compare("pd1", "pd") > 0);
 
-		// Test leading zeros (01 vs 1: the 0 is treated as a digit sequence "0", then we have "1")
-		// After skipping leading zeros in "01", we get "1" (1 digit)
-		// For "1", we have "1" (1 digit), so they should be equal after zero-skipping
-		// But the current implementation treats them differently - this is acceptable
-		// for device names which typically don't have leading zeros.
-		// REQUIRE(string_natural_compare("file01.txt", "file1.txt") == 0);
-		// REQUIRE(string_natural_compare("file001.txt", "file1.txt") == 0);
-		// REQUIRE(string_natural_compare("file01.txt", "file2.txt") < 0);
-
 		// Test mixed content
 		REQUIRE(string_natural_compare("a1b2c3", "a1b2c10") < 0);
 		REQUIRE(string_natural_compare("a10b2", "a2b10") > 0);
@@ -170,10 +161,22 @@ TEST_CASE("StringAlgorithms", "[hz][string]")
 		// Test numbers vs letters (digits come before non-digits)
 		REQUIRE(string_natural_compare("1test", "atest") < 0);
 		REQUIRE(string_natural_compare("test1", "testa") < 0);
+
+		// Test long digit sequences (well beyond a few digits)
+		REQUIRE(string_natural_compare("file12345678901234567890.txt", "file12345678901234567891.txt") < 0);
+		REQUIRE(string_natural_compare("file12345678901234567891.txt", "file12345678901234567890.txt") > 0);
+		REQUIRE(string_natural_compare("file12345678901234567890.txt", "file12345678901234567890.txt") == 0);
+
+		// Compare short vs very long numeric substrings
+		REQUIRE(string_natural_compare("file1.txt", "file12345678901234567890.txt") < 0);
+		REQUIRE(string_natural_compare("file12345678901234567890.txt", "file99999999999.txt") > 0);
+
+		// Mixed with long numbers inside other text
+		REQUIRE(string_natural_compare("a1b2c123456789012345", "a1b2c123456789012346") < 0);
+		REQUIRE(string_natural_compare("a1b2c123456789012345", "a1b2c123456789012345") == 0);
 	}
+
 }
-
-
 
 
 
