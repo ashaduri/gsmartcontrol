@@ -1,0 +1,66 @@
+###############################################################################
+# License: BSD Zero Clause License file
+# Copyright:
+#   (C) 2008 - 2021 Alexander Shaduri <ashaduri@gmail.com>
+###############################################################################
+
+[Desktop Entry]
+
+# desktop file version
+Version=1.0
+Type=Application
+
+Categories=System;Monitor;
+
+Name=GSmartControl
+Name[ca]=GSControlIntel
+Name[cs]=GSmartControl
+Name[es]=GSmartControl
+Name[id]=GSmartControl
+Name[it]=GSmartControl
+Name[ja]=GSmartControl
+Name[pt_BR]=GSmartControl
+Name[ru]=GSmartControl
+Name[sk]=GSmartControl
+Name[sv]=GSmartControl
+Name[zh_CN]=GSmartControl
+# short description, usually shown in parentheses after Name
+GenericName=Hard Disk and SSD Health Inspection
+GenericName[ca]=Inspecció de salut del disc dur i de l'SSD
+GenericName[cs]=Prohlídka zdraví pevných a SSD disků
+GenericName[es]=Inspección de la salud de discos duros y SSD
+GenericName[fr]=Inspecteur de santé de disque dur et de SSD
+GenericName[id]=Pemeriksaan Kesehatan Cakram Keras dan SSD
+GenericName[it]=Ispezione della salute del disco rigido e dell'SSD
+GenericName[ja]=ハードディスクと SSD の健全状態の調査
+GenericName[pt_BR]=Inspeção da integridade de disco rígido e SSD
+GenericName[ru]=Проверка состояния жёстких и твердотельных дисков
+GenericName[sk]=Zdravotná inšpekcia pevného disku a SSD
+GenericName[zh_CN]=机械及固态硬盘健康检测
+
+# tooltip
+Comment=Monitor and control SMART data on hard disk and solid-state drives
+Comment[ca]=Monitoreu i controleu les dades SMART dels discs durs i dels discs sòlids.
+Comment[cs]=Sleduje a nastavuje SMART data na pevném disku a na polovodičových discích
+Comment[es]=Monitorice y controle datos de SMART sobre discos duros y unidades de estado sólido
+Comment[fr]=Surveille et contrôle les données SMART des disques durs et des SSD
+Comment[id]=Pantau dan kendalikan data cerdas pada cakram keras dan SSD
+Comment[it]=Monitora e controlla i dati SMART sui dischi rigidi e a stato solido
+Comment[ja]=ハードディスクや SSD 内の SMART データの監視と制御
+Comment[pt_BR]=Monitorar e controlar dados do SMART em discos rígidos e unidades de estado sólido
+Comment[ru]=Мониторинг и контроль данных SMART на жёстких и твердотельных дисках
+Comment[sk]=Monitorovanie a kontrola údajov SMART na pevných diskoch a diskoch SSD
+Comment[zh_CN]=监测及控制机械硬盘和固态硬盘上的SMART数据
+
+# If it's a name only, it looks for "name.[png|xpm]" file in
+# $XDG_DATA_DIRS/icons.
+# An absolute file path is also supported.
+Icon=gsmartcontrol
+
+# Run with root permissions. This should work with newer GNOME too.
+# It _should_ work with kde, but it hangs on mine, so use plain kdesu.
+#X-KDE-SubstituteUID=true
+#X-KDE-RootOnly=true
+
+# Run with root permissions.
+Exec="/usr/local/bin/gsmartcontrol-root"

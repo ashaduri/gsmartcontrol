@@ -884,6 +884,76 @@ inline std::string string_to_upper_copy(std::string_view s)
 
 
 
+// --------------------------------------------- Natural Sort
+
+
+/// Compare two strings using natural (alphanumeric) sort order.
+/// Natural sort order treats consecutive digits as numbers, so "file2.txt" comes before "file10.txt".
+/// This is useful for sorting filenames, device names, etc.
+/// Returns: < 0 if a < b, 0 if a == b, > 0 if a > b
+inline int string_natural_compare(std::string_view a, std::string_view b)
+{
+	std::size_t i = 0;
+	std::size_t j = 0;
+	const std::size_t a_size = a.size();
+	const std::size_t b_size = b.size();
+
+	while (i < a_size && j < b_size) {
+		const bool a_is_digit = std::isdigit(static_cast<unsigned char>(a[i]));
+		const bool b_is_digit = std::isdigit(static_cast<unsigned char>(b[j]));
+
+		if (a_is_digit && b_is_digit) {
+			// Both are digits, compare as numbers
+			// Skip leading zeros
+			while (i < a_size && a[i] == '0') {
+				++i;
+			}
+			while (j < b_size && b[j] == '0') {
+				++j;
+			}
+
+			// Count the number of digits
+			std::size_t a_digit_start = i;
+			std::size_t b_digit_start = j;
+			while (i < a_size && std::isdigit(static_cast<unsigned char>(a[i]))) {
+				++i;
+			}
+			while (j < b_size && std::isdigit(static_cast<unsigned char>(b[j]))) {
+				++j;
+			}
+
+			const std::size_t a_digit_count = i - a_digit_start;
+			const std::size_t b_digit_count = j - b_digit_start;
+
+			// Compare by length first (longer number is greater)
+			if (a_digit_count != b_digit_count) {
+				return static_cast<int>(a_digit_count) - static_cast<int>(b_digit_count);
+			}
+
+			// Same length, compare digit by digit
+			for (std::size_t k = 0; k < a_digit_count; ++k) {
+				if (a[a_digit_start + k] != b[b_digit_start + k]) {
+					return static_cast<int>(a[a_digit_start + k]) - static_cast<int>(b[b_digit_start + k]);
+				}
+			}
+
+		} else if (a_is_digit != b_is_digit) {
+			// One is digit, one is not - digit comes before non-digit
+			return a_is_digit ? -1 : 1;
+
+		} else {
+			// Both are non-digits, compare as characters
+			if (a[i] != b[j]) {
+				return static_cast<int>(static_cast<unsigned char>(a[i])) - static_cast<int>(static_cast<unsigned char>(b[j]));
+			}
+			++i;
+			++j;
+		}
+	}
+
+	// If one string is a prefix of the other, the shorter one comes first
+	return static_cast<int>(a_size) - static_cast<int>(b_size);
+}
 
 
 }  // ns

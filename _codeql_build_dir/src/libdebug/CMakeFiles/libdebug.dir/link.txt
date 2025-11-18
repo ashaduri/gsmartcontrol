@@ -1,0 +1,2 @@
+/usr/bin/ar qc liblibdebug.a CMakeFiles/libdebug.dir/dchannel.cpp.o CMakeFiles/libdebug.dir/dcmdarg.cpp.o CMakeFiles/libdebug.dir/dflags.cpp.o CMakeFiles/libdebug.dir/dout.cpp.o CMakeFiles/libdebug.dir/dstate.cpp.o CMakeFiles/libdebug.dir/dstream.cpp.o
+/usr/bin/ranlib liblibdebug.a

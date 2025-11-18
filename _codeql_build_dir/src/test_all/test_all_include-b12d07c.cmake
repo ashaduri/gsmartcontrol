@@ -1,0 +1,5 @@
+if(EXISTS "/home/runner/work/gsmartcontrol/gsmartcontrol/_codeql_build_dir/src/test_all/test_all_tests-b12d07c.cmake")
+  include("/home/runner/work/gsmartcontrol/gsmartcontrol/_codeql_build_dir/src/test_all/test_all_tests-b12d07c.cmake")
+else()
+  add_test(test_all_NOT_BUILT-b12d07c test_all_NOT_BUILT-b12d07c)
+endif()

@@ -19,6 +19,7 @@ Copyright:
 #include <sigc++/sigc++.h>
 
 #include "hz/fs_ns.h"
+#include "hz/string_algo.h"
 #include "storage_property.h"
 #include "smartctl_text_ata_parser.h"  // prop_list_t
 #include "smartctl_executor.h"
@@ -325,12 +326,12 @@ inline bool operator< (const StorageDevicePtr& a, const StorageDevicePtr& b)
 		return int(a->get_is_virtual()) < int(b->get_is_virtual());
 	}
 	if (a->get_is_virtual()) {
-		return a->get_virtual_file() < b->get_virtual_file();
+		return hz::string_natural_compare(a->get_virtual_filename(), b->get_virtual_filename()) < 0;
 	}
 	if (a->get_device_base() != b->get_device_base()) {
-		return a->get_device_base() < b->get_device_base();
+		return hz::string_natural_compare(a->get_device_base(), b->get_device_base()) < 0;
 	}
-	return a->get_type_argument() < b->get_type_argument();
+	return hz::string_natural_compare(a->get_type_argument(), b->get_type_argument()) < 0;
 }
 
 
