@@ -824,6 +824,14 @@ void GscInfoWindow::on_view_output_button_clicked()
 
 	win->set_text_from_command(_("Smartctl Output"), output);
 
+	// Set text content for saving as .txt
+	if (auto p = this->drive_->get_property_repository().lookup_property("smartctl/output"); !p.empty()) {
+		const std::string text_output = p.get_value<std::string>();
+		if (!text_output.empty()) {
+			win->set_text_contents(text_output);
+		}
+	}
+
 	const std::string filename = drive_->get_save_filename();
 	if (!filename.empty())
 		win->set_save_filename(filename);
@@ -910,16 +918,17 @@ void GscInfoWindow::on_save_info_button_clicked()
 		case Gtk::RESPONSE_ACCEPT:
 		{
 			hz::fs::path file;
+			bool txt_selected = false;
 #if GTK_CHECK_VERSION(3, 20, 0)
 			file = hz::fs_path_from_string(app_string_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get()))));
 			last_dir = hz::fs_path_to_string(file.parent_path());
+			txt_selected = gtk_file_chooser_get_filter(GTK_FILE_CHOOSER(dialog.get())) == txt_filter->gobj();
 #else
 			file = hz::fs_path_from_string(dialog.get_filename());  // in fs encoding
 			last_dir = dialog.get_current_folder();  // save for the future
+			txt_selected = dialog.get_filter() == txt_filter;
 #endif
 			rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
-
-			bool txt_selected = gtk_file_chooser_get_filter(GTK_FILE_CHOOSER(dialog.get())) == txt_filter->gobj();
 
 			if (file.extension() != ".json" && file.extension() != ".txt") {
 				file += (txt_selected ? ".txt" : ".json");
