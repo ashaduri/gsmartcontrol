@@ -130,6 +130,13 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 		}
 
 
+		/// Set alternative text content for saving as .txt file
+		void set_text_contents(const std::string& text_contents)
+		{
+			text_contents_ = text_contents;
+		}
+
+
 	protected:
 
 
@@ -163,6 +170,14 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 			specific_filter->add_pattern("*.json");
 			specific_filter->add_pattern("*.txt");
 
+			Glib::RefPtr<Gtk::FileFilter> json_filter = Gtk::FileFilter::create();
+			json_filter->set_name(_("JSON Files"));
+			json_filter->add_pattern("*.json");
+
+			Glib::RefPtr<Gtk::FileFilter> txt_filter = Gtk::FileFilter::create();
+			txt_filter->set_name(_("Text Files"));
+			txt_filter->add_pattern("*.txt");
+
 			Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
 			all_filter->set_name(_("All Files"));
 			all_filter->add_pattern("*");
@@ -175,6 +190,8 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 			gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), TRUE);
 
 			gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), specific_filter->gobj());
+			gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), json_filter->gobj());
+			gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), txt_filter->gobj());
 			gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), all_filter->gobj());
 
 			if (!last_dir.empty())
@@ -196,6 +213,8 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 			dialog.set_do_overwrite_confirmation(true);
 
 			dialog.add_filter(specific_filter);
+			dialog.add_filter(json_filter);
+			dialog.add_filter(txt_filter);
 			dialog.add_filter(all_filter);
 
 			if (!last_dir.empty())
@@ -222,12 +241,18 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 #endif
 					rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
 
+					bool txt_selected = gtk_file_chooser_get_filter(GTK_FILE_CHOOSER(dialog.get())) == txt_filter->gobj();
+
 					if (file.extension() != ".json" && file.extension() != ".txt") {
-						file += ".json";
+						file += (txt_selected ? ".txt" : ".json");
 					}
 
+					bool save_txt = txt_selected || file.extension() == ".txt";
+
 					std::string text;
-					if (std::holds_alternative<std::string>(contents_)) {
+					if (save_txt && !text_contents_.empty()) {
+						text = text_contents_;
+					} else if (std::holds_alternative<std::string>(contents_)) {
 						text = std::get<std::string>(contents_);
 					} else {
 						text = std::get<Glib::ustring>(contents_);
@@ -268,6 +293,8 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 		> contents_;
 
 		std::string save_filename_;  ///< Default filename for Save As
+
+		std::string text_contents_;  ///< Alternative text content for saving as .txt file
 
 };
 

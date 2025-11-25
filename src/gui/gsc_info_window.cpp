@@ -824,6 +824,14 @@ void GscInfoWindow::on_view_output_button_clicked()
 
 	win->set_text_from_command(_("Smartctl Output"), output);
 
+	// Set text content for saving as .txt
+	if (auto p = this->drive_->get_property_repository().lookup_property("smartctl/output"); !p.empty()) {
+		const std::string text_output = p.get_value<std::string>();
+		if (!text_output.empty()) {
+			win->set_text_contents(text_output);
+		}
+	}
+
 	const std::string filename = drive_->get_save_filename();
 	if (!filename.empty())
 		win->set_save_filename(filename);
