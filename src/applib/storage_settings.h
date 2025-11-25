@@ -113,8 +113,8 @@ inline std::vector<std::string> app_get_device_options(const std::string& dev, c
 struct AppAddDeviceOption {
 	AppAddDeviceOption() = default;
 
-	AppAddDeviceOption(std::string device, std::string type, std::string options)
-			: device(std::move(device)), type(std::move(type)), options(std::move(options))
+	AppAddDeviceOption(std::string par_device, std::string par_type, std::string par_options)
+			: device(std::move(par_device)), type(std::move(par_type)), options(std::move(par_options))
 	{ }
 
 	std::string device;  ///< Device name, e.g. /dev/sda
