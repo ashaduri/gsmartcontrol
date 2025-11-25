@@ -232,16 +232,17 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 				case Gtk::RESPONSE_ACCEPT:
 				{
 					hz::fs::path file;
+					bool txt_selected = false;
 #if GTK_CHECK_VERSION(3, 20, 0)
 					file = hz::fs_path_from_string(app_string_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get()))));
 					last_dir = hz::fs_path_to_string(file.parent_path());
+					txt_selected = gtk_file_chooser_get_filter(GTK_FILE_CHOOSER(dialog.get())) == txt_filter->gobj();
 #else
 					file = hz::fs_path_from_string(dialog.get_filename());  // in fs encoding
 					last_dir = dialog.get_current_folder();  // save for the future
+					txt_selected = dialog.get_filter() == txt_filter;
 #endif
 					rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
-
-					bool txt_selected = gtk_file_chooser_get_filter(GTK_FILE_CHOOSER(dialog.get())) == txt_filter->gobj();
 
 					if (file.extension() != ".json" && file.extension() != ".txt") {
 						file += (txt_selected ? ".txt" : ".json");
