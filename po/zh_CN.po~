@@ -1,0 +1,466 @@
+# Chinese translations for larryw package
+# larryw 软件包的简体中文翻译.
+# Copyright (C) 2026 THE larryw'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the larryw package.
+# Larry Wei <larryw3i@yeah.net>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: larryw 3i\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-27 23:53+0800\n"
+"PO-Revision-Date: 2026-02-28 03:20+0800\n"
+"Last-Translator: Larry Wei <larryw3i@yeah.net>\n"
+"Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Gtranslator 49.0\n"
+
+#: src/gui/ui/gsc_add_device_window.glade:29
+msgid "Add Device - GSmartControl"
+msgstr "添加设备 — GSmartControl"
+
+#: src/gui/ui/gsc_add_device_window.glade:48
+msgid ""
+"The <a href=\"%1\">smartctl man page</a> contains information on what you "
+"can enter here."
+msgstr "该 <a href=\"%1\">smartctl 手册页</a> 包含你可以在此输入的信息。"
+
+#: src/gui/ui/gsc_add_device_window.glade:87
+#: src/gui/ui/gsc_preferences_window.glade:234
+msgid "Browse..."
+msgstr "浏览..."
+
+#: src/gui/ui/gsc_add_device_window.glade:110
+msgid "Device type:"
+msgstr "设备类型"
+
+#: src/gui/ui/gsc_add_device_window.glade:122
+#: src/gui/ui/gsc_add_device_window.glade:151
+msgid "Additional smartctl parameters"
+msgstr "附加的 smartctl 参数"
+
+#: src/gui/ui/gsc_add_device_window.glade:124
+#: src/gui/ui/gsc_preferences_window.glade:272
+msgid "Smartctl parameters:"
+msgstr "Smartctl 参数："
+
+#: src/gui/ui/gsc_add_device_window.glade:167
+msgid "Device name:"
+msgstr "设备名："
+
+#: src/gui/ui/gsc_add_device_window.glade:194
+msgid "Automatically add this device on startup"
+msgstr "启动时自动添加这个设备"
+
+#: src/gui/ui/gsc_info_window.glade:34
+msgid "These are dummy entries"
+msgstr "这些是 dummy entries"
+
+#: src/gui/ui/gsc_info_window.glade:37
+msgid "Immediate Offline"
+msgstr "立即离线"
+
+#: src/gui/ui/gsc_info_window.glade:40
+msgid "Short"
+msgstr "简短"
+
+#: src/gui/ui/gsc_info_window.glade:43
+msgid "Extended"
+msgstr "扩充"
+
+#: src/gui/ui/gsc_info_window.glade:46
+msgid "Conveyance"
+msgstr "输送"
+
+#: src/gui/ui/gsc_info_window.glade:52
+msgid "Device Information - GSmartControl"
+msgstr "设备信息 — GSmartControl"
+
+#: src/gui/ui/gsc_info_window.glade:169
+msgid "Drive identity and general health information"
+msgstr "设备身份及常用健康信息"
+
+#: src/gui/ui/gsc_info_window.glade:173
+#: src/gui/ui/gsc_preferences_window.glade:352
+msgid "_General"
+msgstr "常用（_G）"
+
+#: src/gui/ui/gsc_info_window.glade:238
+msgid "SMART attributes"
+msgstr "SMART 属性"
+
+#: src/gui/ui/gsc_info_window.glade:240
+msgid "Attributes"
+msgstr "属性"
+
+#: src/gui/ui/gsc_info_window.glade:306
+msgid "NVMe attributes"
+msgstr "NVMe 属性"
+
+#: src/gui/ui/gsc_info_window.glade:308
+msgid "NVMe Attributes"
+msgstr "NVMe 属性"
+
+#: src/gui/ui/gsc_info_window.glade:375
+msgid "Drive statistics"
+msgstr "设备统计"
+
+#: src/gui/ui/gsc_info_window.glade:377
+msgid "Statistics"
+msgstr "统计"
+
+#: src/gui/ui/gsc_info_window.glade:404
+msgid ""
+"Self-tests are built-in tests within the drive designed to recognize drive "
+"fault conditions. All self-tests are safe to user data. The tests can be "
+"performed during normal system operation, but will take longer to complete "
+"if the drive is not idle."
+msgstr ""
+"内置自检是驱动器内设计的测试功能，用于识别驱动器故障状况。所有自检对于用户数"
+"据来说均为安全。测试可在系统正常运行时执行，但若驱动器未处于闲置状态，则完成"
+"时间将延长。"
+
+#: src/gui/ui/gsc_info_window.glade:464
+msgid "Test progress"
+msgstr "测试进度"
+
+#: src/gui/ui/gsc_info_window.glade:481
+msgid "Abort the test"
+msgstr "终止测试"
+
+#: src/gui/ui/gsc_info_window.glade:500
+msgid "Test description"
+msgstr "测试描述"
+
+#: src/gui/ui/gsc_info_window.glade:521
+msgid "Perform selected test"
+msgstr "执行已选测试"
+
+#: src/gui/ui/gsc_info_window.glade:545
+msgid "Test type:"
+msgstr "测试类型："
+
+#: src/gui/ui/gsc_info_window.glade:560
+msgid "Choose a test type"
+msgstr "选择一个测试类型"
+
+#: src/gui/ui/gsc_info_window.glade:585
+msgid "Estimated test duration on idle drive"
+msgstr "（空闲设备）预计测试时长"
+
+#: src/gui/ui/gsc_info_window.glade:586
+msgid "Estimated duration:"
+msgstr "预计时长："
+
+#: src/gui/ui/gsc_info_window.glade:601
+msgid "Minimum test duration on idle drive"
+msgstr "（空闲设备）最小测试时长"
+
+#: src/gui/ui/gsc_info_window.glade:602
+msgid "N/A"
+msgstr "N/A"
+
+#: src/gui/ui/gsc_info_window.glade:716
+msgid "Self-Test Log"
+msgstr "自测试日志"
+
+#: src/gui/ui/gsc_info_window.glade:738
+msgid ""
+"Perform self-tests on the hard drive.\n"
+"Self-test log contains information about the most recent manually performed "
+"SMART self-tests."
+msgstr ""
+"在磁盘执行测试。\n"
+"自测试日志包含最近手动执行 SMART 测试的信息。"
+
+#: src/gui/ui/gsc_info_window.glade:741
+msgid "Self-Tests"
+msgstr "自测试"
+
+#: src/gui/ui/gsc_info_window.glade:821
+msgid "Complete error log information"
+msgstr "完成错误日志信息"
+
+#: src/gui/ui/gsc_info_window.glade:864
+msgid ""
+"SMART error log contains most recent non-trivial errors the hard drive has "
+"encountered"
+msgstr "SMART 错误日志包含硬盘最近遇到的大多数非严重错误"
+
+#: src/gui/ui/gsc_info_window.glade:866
+msgid "Error Log"
+msgstr "错误日志"
+
+#: src/gui/ui/gsc_info_window.glade:928
+msgid ""
+"NVMe error information log contains recent errors encountered by the drive.\n"
+"\n"
+"Note: The log is not preserved across power cycles or controller resets."
+msgstr ""
+"NVMe 错误信息日志包含该设备最近遇到的错误。\n"
+"注意：该日志在电源重启或控制器重置后不会被保留。"
+
+#: src/gui/ui/gsc_info_window.glade:932
+msgid "NVMe Error Log"
+msgstr "NVMe 错误日志"
+
+#: src/gui/ui/gsc_info_window.glade:992
+msgid "Current temperature and history"
+msgstr "最近的温度和历史记录"
+
+#: src/gui/ui/gsc_info_window.glade:994
+msgid "Temperature Log"
+msgstr "温度日志"
+
+#: src/gui/ui/gsc_info_window.glade:1037
+msgid "Capabilities"
+msgstr "容量"
+
+#: src/gui/ui/gsc_info_window.glade:1069
+msgid "Error Recovery"
+msgstr "错误恢复"
+
+#: src/gui/ui/gsc_info_window.glade:1102
+msgid "Selective Self-Test Log"
+msgstr "选择性自检日志"
+
+#: src/gui/ui/gsc_info_window.glade:1135
+msgid "Physical"
+msgstr "物理性质"
+
+#: src/gui/ui/gsc_info_window.glade:1168
+msgid "Directory"
+msgstr "目录"
+
+#: src/gui/ui/gsc_info_window.glade:1192
+msgid "Advanced parameters and logs"
+msgstr "高级参数及日志"
+
+#: src/gui/ui/gsc_info_window.glade:1194
+msgid "Advanced"
+msgstr "高级"
+
+#: src/gui/ui/gsc_info_window.glade:1229
+msgid "Re-read all the information"
+msgstr "重读所有信息"
+
+#: src/gui/ui/gsc_info_window.glade:1242
+msgid "_View Output"
+msgstr "查看输入（_V）"
+
+#: src/gui/ui/gsc_info_window.glade:1246
+msgid "View smartctl output"
+msgstr "查看 smartctl 输出"
+
+#: src/gui/ui/gsc_info_window.glade:1261
+msgid "Save the SMART information (smartctl output) to a text file"
+msgstr "保存 SMART 信息（smartctl 输出）到文本文件"
+
+#: src/gui/ui/gsc_info_window.glade:1288
+#: src/gui/ui/gsc_executor_log_window.glade:278
+#: src/gui/ui/gsc_text_window.glade:131
+msgid "Close this window"
+msgstr "关闭界面"
+
+#: src/gui/ui/gsc_executor_log_window.glade:29
+msgid "Execution Log - GSmartControl"
+msgstr "执行日志 — GSmartControl"
+
+#: src/gui/ui/gsc_executor_log_window.glade:63
+msgid "Commands executed"
+msgstr "命令已执行"
+
+#: src/gui/ui/gsc_executor_log_window.glade:99
+msgid "Clear command list"
+msgstr "清除命令列表"
+
+#: src/gui/ui/gsc_executor_log_window.glade:142
+msgid "Command:"
+msgstr "命令："
+
+#: src/gui/ui/gsc_executor_log_window.glade:154
+msgid "Command with parameters"
+msgstr "带参数命令"
+
+#: src/gui/ui/gsc_executor_log_window.glade:180
+msgid "Output:"
+msgstr "输出："
+
+#: src/gui/ui/gsc_executor_log_window.glade:197
+msgid "Complete output of the command"
+msgstr "完成该命令输出"
+
+#: src/gui/ui/gsc_executor_log_window.glade:233
+msgid "_Save Current"
+msgstr "保存当前输出（_S）"
+
+#: src/gui/ui/gsc_executor_log_window.glade:237
+msgid "Save currently shown output"
+msgstr "保存当前显示的输出"
+
+#: src/gui/ui/gsc_executor_log_window.glade:248
+msgid "Save _All"
+msgstr "保存全部（_A）"
+
+#: src/gui/ui/gsc_executor_log_window.glade:252
+msgid "Save complete log of command execution (useful when reporting bugs)"
+msgstr "保存命令执行的所有日志（常用于汇报缺陷）"
+
+#: src/gui/ui/gsc_main_window.glade:29 src/gui/ui/gsc_text_window.glade:29
+msgid "GSmartControl"
+msgstr "GSmartControl"
+
+#: src/gui/ui/gsc_main_window.glade:93
+msgid "Drive information:"
+msgstr "设备信息："
+
+#: src/gui/ui/gsc_main_window.glade:108
+msgid "Basic health check:"
+msgstr "基础健康检查："
+
+#: src/gui/ui/gsc_main_window.glade:123
+msgid "Model family:"
+msgstr "模型系列："
+
+#: src/gui/ui/gsc_preferences_window.glade:77
+msgid "Scan system for drives on startup"
+msgstr "启动时扫描系统设备"
+
+#: src/gui/ui/gsc_preferences_window.glade:93
+msgid "Show SMART-capable drives only"
+msgstr "仅显示支持 SMART 技术的硬盘"
+
+#: src/gui/ui/gsc_preferences_window.glade:109
+msgid "Show device name under drive icon"
+msgstr "在设备图标下显示设备名"
+
+#: src/gui/ui/gsc_preferences_window.glade:125
+msgid "Show serial number under drive icon"
+msgstr "在设备图标下显示设备序列号"
+
+#: src/gui/ui/gsc_preferences_window.glade:155
+msgid "<b>Program Settings</b>"
+msgstr "<b>程序设置</b>"
+
+#: src/gui/ui/gsc_preferences_window.glade:191
+msgid "Look for smartctl in smartmontools installation directory first"
+msgstr "先在 smartmontools 安装目录查找 smartctl"
+
+#: src/gui/ui/gsc_preferences_window.glade:195
+msgid "If smartmontools is installed, use its smartctl by default"
+msgstr "如果 smartmontools 已安装，默认使用它的 smartctl"
+
+#: src/gui/ui/gsc_preferences_window.glade:256
+#: src/gui/ui/gsc_preferences_window.glade:270
+msgid ""
+"Global parameters for smartctl. These parameters will be used every time the "
+"program invokes smartctl. Must be shell-escaped."
+msgstr ""
+"smartctl 的全局参数。在 smartctl 被调用的时候，这些参数都会被使用。必须是被转"
+"义的 shell 参数。"
+
+#: src/gui/ui/gsc_preferences_window.glade:285
+msgid "Smartctl binary:"
+msgstr "Smartctl 二进制："
+
+#: src/gui/ui/gsc_preferences_window.glade:331
+msgid "<b>Smartctl Invocation</b>"
+msgstr "<b>Smartctl 调用</b>"
+
+#: src/gui/ui/gsc_preferences_window.glade:391
+msgid ""
+"Semicolon-separated blacklist regular expression patterns for device search. "
+"For example, to blacklist all \"/dev/sd*\" devices, use \"sd.{1}$\". Simply "
+"listing them as \"sda;sdb\" will also work."
+msgstr ""
+"以分号分隔的设备搜索黑名单正则表达式模式。例如，要将所有“/dev/sd*”设备列入黑"
+"名单，请使用“sd.{1}$”。仅将它们列为“sda;sdb”也是可行的。"
+
+#: src/gui/ui/gsc_preferences_window.glade:393
+msgid "Device blacklist patterns:"
+msgstr "黑名单设备匹配："
+
+#: src/gui/ui/gsc_preferences_window.glade:406
+msgid ""
+"Semicolon-separated blacklist regular expression patterns for device search. "
+"For example, to blacklist all \"/dev/sd*\" devices, use \"sd.$\". Simply "
+"listing them as \"sda;sdb\" or \"sd[ab]\" will also work."
+msgstr ""
+"以分号分隔的设备搜索黑名单正则表达式模式。例如，要将所有 “/dev/sd*” 设备列入"
+"黑名单，请使用 “sd.$” 。仅将它们列为“sda;sdb”或“sd[ab]”也是可行的。"
+
+#: src/gui/ui/gsc_preferences_window.glade:433
+msgid "Drive Search"
+msgstr "设备搜索"
+
+#: src/gui/ui/gsc_preferences_window.glade:473
+msgid "Adding a drive here will make it use the specified parameters."
+msgstr "在此添加设备会使其应用指定参数。"
+
+#: src/gui/ui/gsc_preferences_window.glade:504
+msgid "Device list"
+msgstr "设备列表"
+
+#: src/gui/ui/gsc_preferences_window.glade:530
+msgid "Remove selected entry from device list"
+msgstr "从设备列表中移除选中的项"
+
+#: src/gui/ui/gsc_preferences_window.glade:545
+msgid "Add a new entry to device list"
+msgstr "添加一个项到设备列表"
+
+#: src/gui/ui/gsc_preferences_window.glade:584
+#: src/gui/ui/gsc_preferences_window.glade:625
+msgid ""
+"Smartctl parameters to add (for example, \"-T permissive\" or \"-d "
+"usbsunplus\")"
+msgstr "要添加的 Smartctl 参数（如：“-T permissive” 或者 “-d usbsunplus”）"
+
+#: src/gui/ui/gsc_preferences_window.glade:586
+msgid "Add parameters:"
+msgstr "添加参数："
+
+#: src/gui/ui/gsc_preferences_window.glade:598
+#: src/gui/ui/gsc_preferences_window.glade:638
+msgid ""
+"Match only this type of device (as used by the -d smartctl parameter). Leave "
+"empty for all types. This can be used to match a drive behind a RAID device, "
+"e.g. \"areca,2\"."
+msgstr ""
+"仅匹配此类设备（如 smartctl参数 所用的 “-d”）。留空则匹配所有类型。此选项可用"
+"于匹配 RAID 设备后的驱动设备，例如“areca,2”。"
+
+#: src/gui/ui/gsc_preferences_window.glade:600
+msgid "Match type:"
+msgstr "匹配类型："
+
+#: src/gui/ui/gsc_preferences_window.glade:613
+msgid "Match device:"
+msgstr "匹配设备："
+
+#: src/gui/ui/gsc_preferences_window.glade:664
+msgid "Drive Properties:"
+msgstr "设备属性："
+
+#: src/gui/ui/gsc_preferences_window.glade:717
+msgid "Per-Drive Smartctl Parameters"
+msgstr "“预设备” 的 Smartctl 参数"
+
+#: src/gui/ui/gsc_preferences_window.glade:743
+msgid "_Drives"
+msgstr "设备（_D）"
+
+#: src/gui/ui/gsc_preferences_window.glade:774
+msgid "_Reset all"
+msgstr "重置全部（_R）"
+
+#: src/gui/ui/gsc_preferences_window.glade:778
+msgid "Reset all program settings to their defaults"
+msgstr "重置所有程序设置到其默认值"
+
+#: src/gui/ui/gsc_text_window.glade:91
+msgid "Saved displayed text as..."
+msgstr "保存显示的文本为..."
