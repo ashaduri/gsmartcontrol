@@ -38,6 +38,6 @@ Thumbs.db
 /po/quot.sed
 /po/remove-potcdate.sin
 /po/Rules-quot
-/po/gsmartcontrol.pot
 /po/*.gmo
+/po/*.po~
 
