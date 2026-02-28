@@ -28,6 +28,8 @@ Thumbs.db
 /*.pcs
 /.idea
 /CMakeLists.txt.user
+# gnome-builder
+.buildconfig
 
 # Translations
 /po/boldquot.sed
@@ -40,4 +42,3 @@ Thumbs.db
 /po/Rules-quot
 /po/*.gmo
 /po/*.po~
-

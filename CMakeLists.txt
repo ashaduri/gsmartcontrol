@@ -74,6 +74,7 @@ add_subdirectory(data)
 add_subdirectory(dependencies)
 add_subdirectory(packaging)
 add_subdirectory(src)
+add_subdirectory(po)
 
 
 # Packaging support

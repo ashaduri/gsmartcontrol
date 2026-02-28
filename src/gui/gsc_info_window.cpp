@@ -1486,7 +1486,7 @@ void GscInfoWindow::fill_ui_self_test_log(const StoragePropertyRepository& prope
 
 	model_columns.add(columns_->self_test_log_table_columns.percent);
 	num_tree_col = app_gtkmm_create_tree_view_column(columns_->self_test_log_table_columns.percent, *treeview,
-			_("% Completed"), _("Percentage of the test completed. Instantly-aborted tests have 10%, while unsupported ones <i>may</i> have 100%."), true, false, true);
+			_("%1 Completed"), _("Percentage of the test completed. Instantly-aborted tests have 10%, while unsupported ones <i>may</i> have 100%."), true, false, true);
 
 	model_columns.add(columns_->self_test_log_table_columns.hours);
 	num_tree_col = app_gtkmm_create_tree_view_column(columns_->self_test_log_table_columns.hours, *treeview,

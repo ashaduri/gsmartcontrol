@@ -1,3 +1,6 @@
+Version `Unreleased`, released on `TBD`
+	Add zh_CN and zh_Hans localization.
+
 Version 2.0.2, released on 2025-02-24
 	Support GCC 11 (and Ubuntu 22.04) by using and vendoring fmt library
 		(#77).

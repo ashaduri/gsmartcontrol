@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: larryw 3i\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-28 03:27+0800\n"
-"PO-Revision-Date: 2026-02-28 04:27+0800\n"
+"POT-Creation-Date: 2026-03-01 01:44+0800\n"
+"PO-Revision-Date: 2026-03-01 02:16+0800\n"
 "Last-Translator: Larry Wei <larryw3i@yeah.net>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
@@ -65,15 +65,15 @@ msgstr "立即离线"
 
 #: src/gui/ui/gsc_info_window.glade:40
 msgid "Short"
-msgstr "简短"
+msgstr "简要"
 
 #: src/gui/ui/gsc_info_window.glade:43
 msgid "Extended"
-msgstr "扩充"
+msgstr "详尽"
 
 #: src/gui/ui/gsc_info_window.glade:46
 msgid "Conveyance"
-msgstr "输送"
+msgstr "传输"
 
 #: src/gui/ui/gsc_info_window.glade:52 src/gui/gsc_info_window.cpp:546
 msgid "Device Information - GSmartControl"
@@ -215,8 +215,8 @@ msgstr "最近的温度和历史记录"
 msgid "Temperature Log"
 msgstr "温度日志"
 
-#: src/gui/ui/gsc_info_window.glade:1037 src/gui/gsc_info_window.cpp:1866
-#: src/applib/storage_property.h:397
+#: src/gui/ui/gsc_info_window.glade:1037 src/applib/storage_property.h:397
+#: src/gui/gsc_info_window.cpp:1866
 msgid "Capabilities"
 msgstr "容量"
 
@@ -326,7 +326,7 @@ msgstr "基础健康检查："
 
 #: src/gui/ui/gsc_main_window.glade:123
 msgid "Model family:"
-msgstr "模型系列："
+msgstr "型号系列："
 
 #: src/gui/ui/gsc_preferences_window.glade:77
 msgid "Scan system for drives on startup"
@@ -468,6 +468,332 @@ msgstr "重置所有程序设置到其默认值"
 msgid "Saved displayed text as..."
 msgstr "保存显示的文本为..."
 
+#: src/applib/smartctl_executor.h:57
+msgid "An error occurred while executing smartctl:"
+msgstr "执行 smartctl 时发生错误："
+
+#: src/applib/smartctl_executor.h:77
+msgid "Command line did not parse."
+msgstr "命令行未解析。"
+
+#: src/applib/smartctl_executor.h:78
+msgid ""
+"Device open failed, or device did not return an IDENTIFY DEVICE structure."
+msgstr "设备打开失败，或设备未返回 设备身份 结构。"
+
+#: src/applib/smartctl_executor.h:79
+msgid ""
+"Some SMART command to the disk failed, or there was a checksum error in a "
+"SMART data structure"
+msgstr "对设备的某个SMART命令执行失败，或者SMART数据结构中存在校验和错误"
+
+#: src/applib/smartctl_executor.h:80
+msgid "SMART status check returned \"DISK FAILING\""
+msgstr "SMART 状态检查返回 “磁盘故障”"
+
+#: src/applib/smartctl_executor.h:81
+msgid ""
+"SMART status check returned \"DISK OK\" but some prefail Attributes are less "
+"than threshold."
+msgstr "SMART 状态检查返回“磁盘正常”，但某些预失效属性低于阈值。"
+
+#: src/applib/smartctl_executor.h:82
+msgid ""
+"SMART status check returned \"DISK OK\" but we found that some (usage or "
+"prefail) Attributes have been less than threshold at some time in the past."
+msgstr ""
+"SMART 状态检查返回“磁盘正常”，但我们发现过去某些时候，某些（使用情况或预故"
+"障）属性低于阈值。"
+
+#: src/applib/smartctl_executor.h:83
+msgid "The device error log contains records of errors."
+msgstr "设备错误日志包含错误记录。"
+
+#: src/applib/smartctl_executor.h:84
+msgid "The device self-test log contains records of errors."
+msgstr "设备自检日志包含错误记录。"
+
+#: src/applib/command_executor_areca.h:72
+msgid "An error occurred while executing Areca cli:"
+msgstr "执行 Areca 命令时发生错误："
+
+#: src/applib/storage_property_descr_helpers.h:24
+msgid ""
+"When a drive encounters a surface error, it marks that sector as "
+"\"unstable\" (also known as \"pending reallocation\"). If the sector is "
+"successfully read from or written to at some later point, it is unmarked. If "
+"the sector continues to be inaccessible, the drive reallocates (remaps) it "
+"to a specially reserved area as soon as it has a chance (usually during "
+"write request or successful read), transferring the data so that no changes "
+"are reported to the operating system. This is why you generally don't see "
+"\"bad blocks\" on modern drives - if you do, it means that either they have "
+"not been remapped yet, or the drive is out of reserved area.\n"
+"\n"
+"Note: SSDs reallocate blocks as part of their normal operation, so low "
+"reallocation counts are not critical for them."
+msgstr ""
+"当硬盘遇到表面错误时，它会将该扇区标记为“不稳定”（也称为“待重新分配”）。如果"
+"该扇区在稍后某个时间点被成功读取或写入，则会取消标记。如果该扇区仍然无法访"
+"问，硬盘会在有机会时（通常在写入请求或成功读取时）立即将其重新分配（重新映"
+"射）到专门保留的区域，并传输数据，以便不向操作系统报告任何更改。这就是为什么"
+"在现代硬盘上通常看不到“坏块”的原因——如果你看到了，那意味着要么它们尚未被重新"
+"映射，要么硬盘的保留区域已满。\n"
+"\n"
+"注意：固态硬盘（SSD）在正常运行过程中会重新分配数据块，因此低重新分配次数对它"
+"们来说并不关键。"
+
+#: src/applib/selftest.h:67 src/applib/storage_device_detected_type.h:49
+#: src/applib/storage_property.h:245 src/applib/storage_property.h:278
+#: src/applib/storage_property.h:318 src/applib/storage_property.h:394
+msgid "Unknown"
+msgstr "未知"
+
+#: src/applib/selftest.h:68
+msgid "In Progress"
+msgstr "正在进行"
+
+#: src/applib/selftest.h:69
+msgid "Manually Aborted"
+msgstr "已手动终止"
+
+#: src/applib/selftest.h:70
+msgid "Interrupted"
+msgstr "被中断"
+
+#: src/applib/selftest.h:71
+msgid "Completed Successfully"
+msgstr "已完成"
+
+#: src/applib/selftest.h:72
+msgid "Completed With Errors"
+msgstr "已完成，但有错误"
+
+#: src/applib/selftest.h:73
+msgid "Reserved"
+msgstr "被预留"
+
+#: src/applib/smartctl_parser_types.h:73
+msgid "Automatic"
+msgstr "自动化"
+
+#: src/applib/smartctl_parser_types.h:74
+msgid "JSON"
+msgstr "JSON"
+
+#: src/applib/smartctl_parser_types.h:75
+msgid "Text"
+msgstr "文本"
+
+#: src/applib/command_executor_3ware.h:71
+msgid "An error occurred while executing tw_cli:"
+msgstr "执行 tw_cli 命令时发生错误："
+
+#: src/applib/storage_detector_helpers.h:43
+msgid "tw_cli binary is not specified in configuration."
+msgstr "配置未指定 tw_cli 二进制。"
+
+#: src/applib/storage_detector_helpers.h:70
+msgid "tw_cli returned an empty output."
+msgstr "tw_cli 返回空白输出。"
+
+#: src/applib/warning_colors.h:79
+msgid "%1Notice:%2 %3"
+msgstr "%1 注意：%2 %3"
+
+#: src/applib/warning_colors.h:82
+msgid "%1Warning:%2 %3"
+msgstr "%1 警告：%2 %3"
+
+#: src/applib/warning_colors.h:85
+msgid "%1ALERT:%2 %3"
+msgstr "%1 严重：%2 %3"
+
+#: src/applib/smartctl_json_parser_helpers.h:298
+#: src/applib/smartctl_json_parser_helpers.h:305
+#: src/applib/smartctl_text_ata_parser.cpp:214
+#: src/applib/smartctl_text_ata_parser.cpp:222
+msgid "Smartctl Version"
+msgstr "Smartctl 版本"
+
+#: src/applib/storage_device_detected_type.h:50
+msgid "Needs Explicit Type"
+msgstr "需要明确类型"
+
+#: src/applib/storage_device_detected_type.h:51
+msgid "ATA Device (HDD or SSD)"
+msgstr "ATA 设备（机器硬盘 或 固态硬盘）"
+
+#: src/applib/storage_device_detected_type.h:52
+msgid "ATA HDD"
+msgstr "ATA 机器硬盘"
+
+#: src/applib/storage_device_detected_type.h:53
+msgid "ATA SSD"
+msgstr "ATA 固态硬盘"
+
+#: src/applib/storage_device_detected_type.h:54
+msgid "NVMe Device"
+msgstr "NVMe 设备"
+
+#: src/applib/storage_device_detected_type.h:55
+msgid "Basic SCSI Device"
+msgstr "基础 SCSI 设备"
+
+#: src/applib/storage_device_detected_type.h:56
+msgid "CD/DVD/Blu-Ray"
+msgstr "CD、DVD 或 蓝光"
+
+#: src/applib/storage_device_detected_type.h:57
+msgid "Unsupported RAID Controller or Volume"
+msgstr "不支持的 RAID 控制器 或 卷"
+
+#: src/applib/storage_detector_other.cpp:50
+msgid "Device directory path is not set."
+msgstr "设备目录路径未设置。"
+
+#: src/applib/storage_detector_other.cpp:57
+msgid "Device directory does not exist."
+msgstr "设备目录不存在。"
+
+#: src/applib/storage_detector_other.cpp:207
+#, c++-format
+msgid "Cannot list device directory entries: {}"
+msgstr "无法列出设备目录项：{}"
+
+#: src/applib/app_builder_widget.h:152
+msgid "Fatal error: Cannot get root widget from UI-resource-created hierarchy."
+msgstr "致命错误：无法从已创建 UI 资源的层次结构中获取 root 窗口小部件。"
+
+#: src/applib/app_builder_widget.h:165
+msgid "Fatal error: Cannot create UI-resource widgets: %1"
+msgstr "致命错误：无法创建 UI 资源小部件：%1"
+
+#: src/applib/storage_property.h:246
+msgid "None"
+msgstr "空"
+
+#: src/applib/storage_property.h:247
+msgid "Short Test in Progress"
+msgstr "简要自测试正在进行"
+
+#: src/applib/storage_property.h:248
+msgid "Extended Test in Progress"
+msgstr "详尽测试正在进行"
+
+#: src/applib/storage_property.h:249
+msgid "Vendor-Specific Test in Progress"
+msgstr "供应商指定测试正在进行"
+
+#: src/applib/storage_property.h:279
+msgid "Short Test"
+msgstr "简要测试"
+
+#: src/applib/storage_property.h:280
+msgid "Extended Test"
+msgstr "详尽测试"
+
+#: src/applib/storage_property.h:281
+msgid "Vendor-Specific Test"
+msgstr "供应商指定测试"
+
+#: src/applib/storage_property.h:319
+msgid "Completed Without Errors"
+msgstr "已完成，无错误"
+
+#: src/applib/storage_property.h:320
+msgid "Aborted: Self-Test Command"
+msgstr "终止：自测试命令"
+
+#: src/applib/storage_property.h:321
+msgid "Aborted: Controller Reset"
+msgstr "终止：控制器重置"
+
+#: src/applib/storage_property.h:322
+msgid "Aborted: Namespace Removed"
+msgstr "终止：命名空间被移除"
+
+#: src/applib/storage_property.h:323
+msgid "Aborted: Format NVM Command"
+msgstr "终止：格式化 NVM 命令。"
+
+#: src/applib/storage_property.h:324
+msgid "Fatal or Unknown Test Error"
+msgstr "严重或未知测试错误"
+
+#: src/applib/storage_property.h:325
+msgid "Completed: Unknown Failed Segment"
+msgstr "已完成：未知缺陷段"
+
+#: src/applib/storage_property.h:326
+msgid "Completed: Failed Segments"
+msgstr "已完成：缺陷段"
+
+#: src/applib/storage_property.h:327
+msgid "Aborted: Unknown Reason"
+msgstr "终止：原因未知"
+
+#: src/applib/storage_property.h:328
+msgid "Aborted: Sanitize Operation"
+msgstr "终止：净化操作"
+
+#: src/applib/storage_property.h:395
+msgid "Short Info"
+msgstr "简要信息"
+
+#: src/applib/storage_property.h:396
+msgid "Overall Health"
+msgstr "综合健康"
+
+#: src/applib/storage_property.h:401
+msgid "Self-test Log"
+msgstr "自测试日志"
+
+#: src/applib/storage_property.h:402
+msgid "Selective Self-test Log"
+msgstr "选择性自检"
+
+#: src/applib/storage_property.h:404
+msgid "Error Recovery Control Log"
+msgstr "错误恢复控制日志"
+
+#: src/applib/storage_property.h:405
+msgid "Phy Log"
+msgstr "Phy 日志"
+
+#: src/applib/storage_property.h:406
+msgid "Directory Log"
+msgstr "目录日志"
+
+#: src/applib/storage_property.h:407
+msgid "NVMe Health"
+msgstr "NVMe 健康"
+
+#: src/gui/gsc_text_window.h:162 src/gui/gsc_executor_log_window.cpp:205
+#: src/gui/gsc_main_window.cpp:1258 src/gui/gsc_info_window.cpp:847
+msgid "JSON and Text Files"
+msgstr "JSON 和文本文件"
+
+#: src/gui/gsc_text_window.h:167 src/gui/gsc_preferences_window.cpp:529
+#: src/gui/gsc_executor_log_window.cpp:210
+#: src/gui/gsc_executor_log_window.cpp:330 src/gui/gsc_main_window.cpp:1263
+#: src/gui/gsc_info_window.cpp:860
+msgid "All Files"
+msgstr "所有文件"
+
+#: src/gui/gsc_text_window.h:172 src/gui/gsc_text_window.h:189
+#: src/gui/gsc_executor_log_window.cpp:215
+#: src/gui/gsc_executor_log_window.cpp:231
+#: src/gui/gsc_executor_log_window.cpp:335
+#: src/gui/gsc_executor_log_window.cpp:351 src/gui/gsc_info_window.cpp:865
+#: src/gui/gsc_info_window.cpp:884
+msgid "Save Data As..."
+msgstr "保存数据为..."
+
+#: src/gui/gsc_text_window.h:237 src/gui/gsc_executor_log_window.cpp:272
+#: src/gui/gsc_executor_log_window.cpp:392
+msgid "Cannot save data to file"
+msgstr "无法保存数据到文件"
+
 #: src/applib/command_executor_gui.cpp:127
 msgid "Aborting..."
 msgstr "正在终止..."
@@ -545,7 +871,7 @@ msgstr "Smartctl 设备协议"
 #: src/applib/smartctl_json_basic_parser.cpp:136
 #: src/applib/smartctl_json_basic_parser.cpp:137
 msgid "Device Model"
-msgstr "设备模型"
+msgstr "设备型号"
 
 #: src/applib/smartctl_json_nvme_parser.cpp:168
 #: src/applib/smartctl_json_ata_parser.cpp:253
@@ -684,7 +1010,7 @@ msgstr "SMART 特性可用"
 #: src/applib/smartctl_json_ata_parser.cpp:433
 #: src/applib/smartctl_json_basic_parser.cpp:227
 msgid "Overall Health Self-Assessment Test"
-msgstr "整体健康自评估测试"
+msgstr "综合健康自评估测试"
 
 #: src/applib/smartctl_json_nvme_parser.cpp:256
 #: src/applib/smartctl_json_ata_parser.cpp:433
@@ -830,19 +1156,6 @@ msgstr "Smartctl 返回空白输出。"
 #: src/applib/storage_detector_win32.cpp:441
 msgid "Could not read Areca CLI output: No valid header found."
 msgstr "无法读取 Areca 命令行 输出：无效的头部内容。"
-
-#: src/applib/storage_detector_other.cpp:50
-msgid "Device directory path is not set."
-msgstr "设备目录路径未设置。"
-
-#: src/applib/storage_detector_other.cpp:57
-msgid "Device directory does not exist."
-msgstr "设备目录不存在。"
-
-#: src/applib/storage_detector_other.cpp:207
-#, c++-format
-msgid "Cannot list device directory entries: {}"
-msgstr "无法列出设备目录项：{}"
 
 #: src/applib/smartctl_executor.cpp:93
 msgid "Invalid device name specified."
@@ -1039,7 +1352,7 @@ msgstr "， "
 #: src/applib/smartctl_json_ata_parser.cpp:251
 #: src/applib/smartctl_json_basic_parser.cpp:134
 msgid "Model Family"
-msgstr "模型系列："
+msgstr "型号系列："
 
 #: src/applib/smartctl_json_ata_parser.cpp:255
 msgid "World Wide Name"
@@ -1218,7 +1531,7 @@ msgstr "选择性自测试支持"
 
 #: src/applib/smartctl_json_ata_parser.cpp:598
 msgid "Short self-test status recommended polling time"
-msgstr "短自测试状态建议轮询时间"
+msgstr "简要自测试状态建议轮询时间"
 
 #: src/applib/smartctl_json_ata_parser.cpp:613
 msgid "Extended self-test status recommended polling time"
@@ -1234,318 +1547,302 @@ msgstr "在进入省电模式前保存 SMART 数据"
 
 #: src/applib/smartctl_json_ata_parser.cpp:646
 msgid "Error logging supported"
-msgstr ""
+msgstr "错误日志支持"
 
 #: src/applib/smartctl_json_ata_parser.cpp:647
 msgid "General purpose logging supported"
-msgstr ""
+msgstr "通用日志支持"
 
 #: src/applib/smartctl_json_ata_parser.cpp:649
-#, fuzzy
 msgid "SCT capabilities supported"
-msgstr "容量"
+msgstr "SCT 特性支持"
 
 #: src/applib/smartctl_json_ata_parser.cpp:662
 msgid "SCT error recovery control supported"
-msgstr ""
+msgstr "SCT 错误恢复控制支持"
 
 #: src/applib/smartctl_json_ata_parser.cpp:663
 msgid "SCT feature control supported"
-msgstr ""
+msgstr "SCT 特性控制支持"
 
 #: src/applib/smartctl_json_ata_parser.cpp:664
 msgid "SCT data table supported"
-msgstr ""
+msgstr "SCT 数据表支持"
 
 #: src/applib/smartctl_json_ata_parser.cpp:699
 msgid "Data structure revision number"
-msgstr ""
+msgstr "数据结构版本号"
 
 #: src/applib/smartctl_json_ata_parser.cpp:767
 msgid "General purpose log directory version"
-msgstr ""
+msgstr "通用日志目录版本"
 
 #: src/applib/smartctl_json_ata_parser.cpp:777
 msgid "SMART log directory version"
-msgstr ""
+msgstr "SMART 日志目录版本"
 
 #: src/applib/smartctl_json_ata_parser.cpp:787
 msgid "Multi-sector log support"
-msgstr ""
+msgstr "多扇区日志支持"
 
 #: src/applib/smartctl_json_ata_parser.cpp:857
 msgid "SMART extended comprehensive error log version"
-msgstr ""
+msgstr "SMART 详尽综合错误日志版本"
 
 #: src/applib/smartctl_json_ata_parser.cpp:866
 msgid "ATA error count"
-msgstr ""
+msgstr "ATA 错误数"
 
 #: src/applib/smartctl_json_ata_parser.cpp:921
 msgid "SMART extended self-test log version"
-msgstr ""
+msgstr "SMART 详尽自检日志版本"
 
 #: src/applib/smartctl_json_ata_parser.cpp:921
 msgid "SMART standard self-test log version"
-msgstr ""
+msgstr "SMART 标准自检日志版本"
 
 #: src/applib/smartctl_json_ata_parser.cpp:933
-#, fuzzy
 msgid "Self-test count"
-msgstr "自测试日志"
+msgstr "自测试数量"
 
 #: src/applib/smartctl_json_ata_parser.cpp:943
 msgid "Total error count"
-msgstr ""
+msgstr "总错误数量"
 
 #: src/applib/smartctl_json_ata_parser.cpp:953
 msgid "Outdated error count"
-msgstr ""
+msgstr "过期错误数量"
 
 #: src/applib/smartctl_json_ata_parser.cpp:964
 msgid "Entries"
-msgstr ""
+msgstr "项"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1035
 msgid "SMART Selective self-test log data structure revision number"
-msgstr ""
+msgstr "SMART 选择性自检日志数据结构版本号"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1046
 msgid "If Selective self-test is pending on power-up, resume delay (minutes)"
-msgstr ""
+msgstr "如果上电时选择性自检处于挂起状态，则恢复延迟（分钟）"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1057
 msgid "After scanning selected spans, scan remainder of the drive"
-msgstr ""
+msgstr "扫描完所选范围后，扫描驱动器的剩余部分"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1092
-#, fuzzy
 msgid "SMART selective self-test log"
-msgstr "选择性自检日志"
+msgstr "SMART 选择性自检日志"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1124
 msgid "SCT status version"
-msgstr ""
+msgstr "SCT 状态版本"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1133
 msgid "SCT format version"
-msgstr ""
+msgstr "SCT 格式版本"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1142
-#, fuzzy
 msgid "Device state"
-msgstr "设备列表"
+msgstr "设备状态"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1151
-#, fuzzy
 msgid "Current temperature (C)"
-msgstr "最近的温度和历史记录"
+msgstr "最近的温度（°C）"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1160
 msgid "Power cycle min. temperature (C)"
-msgstr ""
+msgstr "通电周期最低温度（℃）"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1169
 msgid "Power cycle max. temperature (C)"
-msgstr ""
+msgstr "通电周期最高温度（℃）"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1178
 msgid "Lifetime min. temperature (C)"
-msgstr ""
+msgstr "通电最低温度（°C）"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1187
 msgid "Lifetime max. temperature (C)"
-msgstr ""
+msgstr "通电最高温度（°C）"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1196
 msgid "Under limit count"
-msgstr ""
+msgstr "在限制数量内"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1205
 msgid "Over limit count"
-msgstr ""
+msgstr "超过限制数量内"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1217
-#, fuzzy
 msgid "SCT temperature history version"
-msgstr "最近的温度和历史记录"
+msgstr "SCT 温度历史版本"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1226
 msgid "Temperature sampling period (min)"
-msgstr ""
+msgstr "温度采样周期（分钟）"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1235
 msgid "Temperature logging interval (min)"
-msgstr ""
+msgstr "温度记录间隔（分钟）"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1244
 msgid "Recommended operating temperature (minimum) (C)"
-msgstr ""
+msgstr "建议最低工作温度（℃）"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1254
 msgid "Recommended operating temperature (maximum) (C)"
-msgstr ""
+msgstr "建议最高工作温度（℃）"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1264
 msgid "Allowed operating temperature (minimum) (C)"
-msgstr ""
+msgstr "容许最低工作温度（℃）"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1274
 msgid "Allowed operating temperature (maximum) (C)"
-msgstr ""
+msgstr "容许最高工作温度（℃）"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1286
-#, fuzzy
 msgid "Temperature log"
 msgstr "温度日志"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1330
-#, fuzzy
 msgid "SCT error recovery log"
-msgstr "错误恢复"
+msgstr "SCT 错误恢复日志"
 
 #: src/applib/smartctl_json_ata_parser.cpp:1443
 msgid "SATA Phy Log"
-msgstr ""
+msgstr "SATA Phy 日志"
 
 #: src/applib/selftest.cpp:61
-#, fuzzy
 msgid "Short Self-Test"
-msgstr "自测试"
+msgstr "简要自测试"
 
 #: src/applib/selftest.cpp:62
-#, fuzzy
 msgid "Extended Self-Test"
-msgstr "自测试"
+msgstr "详细自测试"
 
 #: src/applib/selftest.cpp:63
-#, fuzzy
 msgid "Conveyance Self-Test"
-msgstr "输送"
+msgstr "传输自测试"
 
 #: src/applib/selftest.cpp:212 src/applib/selftest.cpp:284
 #: src/applib/selftest.cpp:353
 msgid "Internal Error: Drive must not be NULL."
-msgstr ""
+msgstr "内部错误：驱动器不能为NULL。"
 
 #: src/applib/selftest.cpp:215
 msgid "A test is already running on this drive."
-msgstr ""
+msgstr "此驱动器上已有一个测试正在运行。"
 
 #: src/applib/selftest.cpp:221
 #, c++-format
 msgid "{} is unsupported by this drive."
-msgstr ""
+msgstr "此驱动器不支持 {} 。"
 
 #: src/applib/selftest.cpp:233
 msgid "Invalid test specified."
-msgstr ""
+msgstr "指定了无效测试。"
 
 #: src/applib/selftest.cpp:242 src/applib/selftest.cpp:310
 #: src/applib/selftest.cpp:375
 #, c++-format
 msgid "Sending command to drive failed: {}"
-msgstr ""
+msgstr "无法发送命令到设备：{}"
 
 #: src/applib/selftest.cpp:250 src/applib/selftest.cpp:318
 msgid "Sending command to drive failed."
-msgstr ""
+msgstr "无法发送命令到设备。"
 
 #: src/applib/selftest.cpp:287
 msgid "No test is currently running on this drive."
-msgstr ""
+msgstr "此设备最近无测试正在进行。"
 
 #: src/applib/selftest.cpp:338
 #, c++-format
 msgid "Error fetching test progress information: {}"
-msgstr ""
+msgstr "获取测试进度信息时出错：{}"
 
 #: src/applib/selftest.cpp:413 src/applib/selftest.cpp:454
 msgid "The drive doesn't report the test status."
-msgstr ""
+msgstr "硬盘未报告测试状态。"
 
 #: src/applib/smartctl_json_basic_parser.cpp:128
 #: src/applib/smartctl_json_basic_parser.cpp:129
 msgid "Vendor"
-msgstr ""
+msgstr "供应商"
 
 #: src/applib/smartctl_json_basic_parser.cpp:131
 #: src/applib/smartctl_json_basic_parser.cpp:132
 msgid "Product"
-msgstr ""
+msgstr "产品"
 
 #: src/applib/smartctl_json_basic_parser.cpp:139
 #: src/applib/smartctl_json_basic_parser.cpp:140
 msgid "Revision"
-msgstr ""
+msgstr "版本"
 
 #: src/applib/smartctl_json_basic_parser.cpp:142
 msgid "SCSI Version"
-msgstr ""
-
-#: src/applib/smartctl_text_ata_parser.cpp:214
-#: src/applib/smartctl_text_ata_parser.cpp:222
-#: src/applib/smartctl_json_parser_helpers.h:298
-#: src/applib/smartctl_json_parser_helpers.h:305
-#, fuzzy
-msgid "Smartctl Version"
-msgstr "Smartctl 二进制："
+msgstr "SCSI 版本"
 
 #: src/applib/smartctl_text_ata_parser.cpp:350
 msgid "Warning"
-msgstr ""
+msgstr "警告"
 
 #: src/applib/storage_detector_linux.cpp:194
 msgid "Partitions file path is not set."
-msgstr ""
+msgstr "分区文件路径未设置。"
 
 #: src/applib/storage_detector_linux.cpp:219
 msgid "Devices file path is not set."
-msgstr ""
+msgstr "设备文件路径未设置。"
 
 #: src/applib/storage_detector_linux.cpp:246
 msgid "SCSI file path is not set."
-msgstr ""
+msgstr "SCSI 文件路进未设置。"
 
 #: src/applib/storage_detector_linux.cpp:293
 msgid "SCSI sg devices file path is not set."
-msgstr ""
+msgstr "SCSI sg 设备文件路径未设置。"
 
 #: src/gui/gsc_preferences_window.cpp:49
-#, fuzzy
 msgid "Device"
-msgstr "设备列表"
+msgstr "设备"
 
 #: src/gui/gsc_preferences_window.cpp:53 src/gui/gsc_info_window.cpp:1142
 #: src/gui/gsc_info_window.cpp:1480
 msgid "Type"
-msgstr ""
+msgstr "类型"
 
 #: src/gui/gsc_preferences_window.cpp:237
 msgid ""
 "A path to smartctl binary. If the path is not absolute, the binary will be "
 "looked for in user's PATH."
 msgstr ""
+"smartctl 二进制文件的路径。如果路径不是绝对路径，则会在用户的 PATH 环境变量中"
+"查找该二进制文件。"
 
 #: src/gui/gsc_preferences_window.cpp:239
 msgid ""
 "Note: smartctl.exe shows a console during execution, while smartctl-nc.exe "
 "(default) doesn't (nc means no-console)."
 msgstr ""
+"注意：smartctl.exe 在执行过程中会显示控制台，而 smartctl-nc.exe （默认）则不"
+"会（ nc 表示无控制台）。"
 
 #: src/gui/gsc_preferences_window.cpp:262
 msgid "A device name to match"
-msgstr ""
+msgstr "要匹配的设备名"
 
 #: src/gui/gsc_preferences_window.cpp:264
 msgid ""
 "A device name to match (for example, use \"pd0\" for the first physical "
 "drive)"
-msgstr ""
+msgstr "一个要匹配的设备名称（例如，第一个物理驱动器使用“pd0”）"
 
 #: src/gui/gsc_preferences_window.cpp:266
 msgid "A device name to match (for example, /dev/sda or /dev/twa0)"
-msgstr ""
+msgstr "要匹配的设备名称（例如，/dev/sda 或 /dev/twa0）"
 
 #: src/gui/gsc_preferences_window.cpp:479
 msgid ""
@@ -1554,273 +1851,246 @@ msgid ""
 "\n"
 "Do you want to continue?"
 msgstr ""
+"您在“每个驱动器的 Smartctl 参数”部分为一项或多项条目指定了空的“参数”字段。此"
+"类条目将被丢弃。\n"
+"\n"
+"你想继续吗？"
 
 #: src/gui/gsc_preferences_window.cpp:502
-#, fuzzy
 msgid "Are you sure you want to reset all program settings to their defaults?"
-msgstr "重置所有程序设置到其默认值"
+msgstr "您确定要将所有程序设置重置为其默认值吗？"
 
 #: src/gui/gsc_preferences_window.cpp:525
 msgid "Executable Files"
-msgstr ""
-
-#: src/gui/gsc_preferences_window.cpp:529
-#: src/gui/gsc_executor_log_window.cpp:210
-#: src/gui/gsc_executor_log_window.cpp:330 src/gui/gsc_main_window.cpp:1263
-#: src/gui/gsc_info_window.cpp:860 src/gui/gsc_text_window.h:167
-msgid "All Files"
-msgstr ""
+msgstr "可执行文件"
 
 #: src/gui/gsc_preferences_window.cpp:535
 #: src/gui/gsc_preferences_window.cpp:549
-#, fuzzy
 msgid "Choose Smartctl Binary..."
-msgstr "Smartctl 二进制："
+msgstr "选择 Smartctl 二进制文件..."
 
 #: src/gui/gsc_main_window_iconview.cpp:40
 msgid "[error - invalid message]"
-msgstr ""
+msgstr "[错误 — 无效消息]"
 
 #: src/gui/gsc_main_window_iconview.cpp:41
 msgid ""
 "Automatic scanning is disabled.\n"
 "Press Ctrl+R to scan manually."
 msgstr ""
+"自动扫描已禁用。\n"
+"按 Ctrl+R 手动扫描。"
 
 #: src/gui/gsc_main_window_iconview.cpp:42
 msgid "Scanning system, please wait..."
-msgstr ""
+msgstr "正在扫描系统，请稍候..."
 
 #: src/gui/gsc_main_window_iconview.cpp:43
 msgid "No drives found."
-msgstr ""
+msgstr "未找到设备。"
 
 #: src/gui/gsc_main_window_iconview.cpp:44
 msgid ""
 "Please specify the correct smartctl binary in\n"
 "Preferences and press Ctrl-R to re-scan."
 msgstr ""
+"请在偏好设置指定正确的 smartctl 二进制文件，\n"
+"然后按Ctrl-R重新扫描。"
 
 #: src/gui/gsc_main_window_iconview.cpp:45
 msgid ""
 "Preferences changed.\n"
 "Press Ctrl-R to re-scan."
 msgstr ""
+"偏好设置已个更改。\n"
+"按 Ctrl-R 重新扫描。"
 
 #: src/gui/gsc_main_window_iconview.cpp:263
 msgid "Loaded from: %1"
-msgstr ""
+msgstr "从 %1 加载"
 
 #: src/gui/gsc_main_window_iconview.cpp:265
 msgid "Scanned on: "
-msgstr ""
+msgstr "扫描于："
 
 #: src/gui/gsc_main_window_iconview.cpp:268
-#, fuzzy
 msgid "Device: %1"
-msgstr "设备列表"
+msgstr "设备：%1"
 
 #: src/gui/gsc_main_window_iconview.cpp:272
-#, fuzzy
 msgid "Drive letters: %1"
-msgstr "设备属性："
+msgstr "驱动符：%1"
 
 #: src/gui/gsc_main_window_iconview.cpp:276
 msgid "Serial number: %1"
-msgstr ""
+msgstr "序列号：%1"
 
 #: src/gui/gsc_main_window_iconview.cpp:278
-#, fuzzy
 msgid "SMART status: %1"
-msgstr "SMART 属性"
+msgstr "SMART 状态：%1"
 
 #: src/gui/gsc_main_window_iconview.cpp:315 src/gui/gsc_main_window.cpp:786
 msgid "View details for more information."
-msgstr ""
+msgstr "查看更多信息。"
 
 #: src/gui/gsc_executor_log_window.cpp:70
 msgid "# of executed command"
-msgstr ""
+msgstr "# 已执行的命令"
 
 #: src/gui/gsc_executor_log_window.cpp:74
-#, fuzzy
 msgid "Command"
-msgstr "命令："
-
-#: src/gui/gsc_executor_log_window.cpp:205 src/gui/gsc_main_window.cpp:1258
-#: src/gui/gsc_info_window.cpp:847 src/gui/gsc_text_window.h:162
-msgid "JSON and Text Files"
-msgstr ""
-
-#: src/gui/gsc_executor_log_window.cpp:215
-#: src/gui/gsc_executor_log_window.cpp:231
-#: src/gui/gsc_executor_log_window.cpp:335
-#: src/gui/gsc_executor_log_window.cpp:351 src/gui/gsc_info_window.cpp:865
-#: src/gui/gsc_info_window.cpp:884 src/gui/gsc_text_window.h:172
-#: src/gui/gsc_text_window.h:189
-msgid "Save Data As..."
-msgstr ""
-
-#: src/gui/gsc_executor_log_window.cpp:272
-#: src/gui/gsc_executor_log_window.cpp:392 src/gui/gsc_text_window.h:237
-msgid "Cannot save data to file"
-msgstr ""
+msgstr "命令"
 
 #: src/gui/gsc_executor_log_window.cpp:326 src/gui/gsc_info_window.cpp:856
 msgid "Text Files"
-msgstr ""
+msgstr "文本文件"
 
 #: src/gui/gsc_main_window.cpp:251
 msgid "_File"
-msgstr ""
+msgstr "文件（_F）"
 
 #: src/gui/gsc_main_window.cpp:257
-#, fuzzy
 msgid "_Device"
-msgstr "设备列表"
+msgstr "设备（_D）"
 
 #: src/gui/gsc_main_window.cpp:259
 msgid "_View details"
-msgstr ""
+msgstr "查看详细（_V）"
 
 #: src/gui/gsc_main_window.cpp:260
-#, fuzzy
 msgid "View detailed information"
-msgstr "重读所有信息"
+msgstr "查看详细信息"
 
 #: src/gui/gsc_main_window.cpp:264
 msgid "Enable SMART"
-msgstr ""
+msgstr "SMART 可用"
 
 #: src/gui/gsc_main_window.cpp:265
 msgid ""
 "Toggle SMART status. The status will be preserved at least until reboot "
 "(unless you toggle it again)."
-msgstr ""
+msgstr "切换 SMART 状态。该状态至少会保留至重启（除非您再次切换）。"
 
 #: src/gui/gsc_main_window.cpp:270
 msgid "Re-read Data"
-msgstr ""
+msgstr "重新读取数据"
 
 #: src/gui/gsc_main_window.cpp:271
 msgid "Re-read basic SMART data"
-msgstr ""
+msgstr "重新读取基本 SMART 数据"
 
 #: src/gui/gsc_main_window.cpp:275
 msgid "Perform _Tests..."
-msgstr ""
+msgstr "执行测试（_T）..."
 
 #: src/gui/gsc_main_window.cpp:276
 msgid "Perform various self-tests on the drive"
-msgstr ""
+msgstr "对硬盘进行多个自测试"
 
 #: src/gui/gsc_main_window.cpp:280
 msgid "Re_move Added Device"
-msgstr ""
+msgstr "移除被添加的设备（_m）"
 
 #: src/gui/gsc_main_window.cpp:281
 msgid "Remove previously added device"
-msgstr ""
+msgstr "移除原先被添加的设备"
 
 #: src/gui/gsc_main_window.cpp:285
 msgid "Re_move Virtual Device"
-msgstr ""
+msgstr "移除虚拟设备（_m）"
 
 #: src/gui/gsc_main_window.cpp:286
 msgid "Remove previously loaded virtual device"
-msgstr ""
+msgstr "移除原先加载的虚拟设备"
 
 #: src/gui/gsc_main_window.cpp:291
 msgid "_Add Device..."
-msgstr ""
+msgstr "添加设备（_A）"
 
 #: src/gui/gsc_main_window.cpp:292
-#, fuzzy
 msgid "Manually add device to device list"
-msgstr "添加一个项到设备列表"
+msgstr "手动添加一个设备到设备列表"
 
 #: src/gui/gsc_main_window.cpp:296
 msgid "_Load Smartctl Output as Virtual Device..."
-msgstr ""
+msgstr "加载 Smartctl 输出为虚拟设备（_L）"
 
 #: src/gui/gsc_main_window.cpp:297
 msgid "Load smartctl output from a text file as a read-only virtual device"
-msgstr ""
+msgstr "从文本文件加载 smartctl 输出为只读虚拟设备"
 
 #: src/gui/gsc_main_window.cpp:301
-#, fuzzy
 msgid "_Re-scan Device List"
-msgstr "设备列表"
+msgstr "重新扫描设备列表（_R）"
 
 #: src/gui/gsc_main_window.cpp:302
-#, fuzzy
 msgid "Re-scan device list"
-msgstr "设备列表"
+msgstr "重新扫描设备列表"
 
 #: src/gui/gsc_main_window.cpp:306
 msgid "_Options"
-msgstr ""
+msgstr "可选项（_O）"
 
 #: src/gui/gsc_main_window.cpp:308
 msgid "View Execution Log"
-msgstr ""
+msgstr "查看执行日志"
 
 #: src/gui/gsc_main_window.cpp:312
 msgid "Update Drive Database"
-msgstr ""
+msgstr "更新设备数据库"
 
 #: src/gui/gsc_main_window.cpp:320
 msgid "_Help"
-msgstr ""
+msgstr "帮助（_H）"
 
 #: src/gui/gsc_main_window.cpp:326
 msgid "Support"
-msgstr ""
+msgstr "支持"
 
 #: src/gui/gsc_main_window.cpp:391 src/gui/gsc_main_window.cpp:398
 #: src/gui/gsc_main_window.cpp:405 src/gui/gsc_main_window.cpp:741
 #: src/gui/gsc_main_window.cpp:743 src/gui/gsc_main_window.cpp:745
 msgid "No drive selected"
-msgstr ""
+msgstr "为选择设备"
 
 #: src/gui/gsc_main_window.cpp:424
 msgid "One of the drives is performing a test. Do you really want to quit?"
-msgstr ""
+msgstr "其中一个驱动器正在执行测试。您真的要退出吗？"
 
 #: src/gui/gsc_main_window.cpp:425
 msgid ""
 "The test will continue to run in the background, but you won't be able to "
 "monitor it using GSmartControl."
-msgstr ""
+msgstr "测试将继续在后台运行，但您将无法使用 GSmartControl 进行监控。"
 
 #: src/gui/gsc_main_window.cpp:613 src/gui/gsc_main_window.cpp:1108
 msgid "Cannot enable SMART"
-msgstr ""
+msgstr "无法启用 SMART"
 
 #: src/gui/gsc_main_window.cpp:613
 msgid "Cannot disable SMART"
-msgstr ""
+msgstr "无法禁用 SMART"
 
 #: src/gui/gsc_main_window.cpp:639 src/gui/gsc_main_window.cpp:1122
 #: src/gui/gsc_info_window.cpp:372
 msgid "Cannot retrieve SMART data"
-msgstr ""
+msgstr "无法检索 SMART 数据"
 
 #: src/gui/gsc_main_window.cpp:753
 msgid "Virtual: %1"
-msgstr ""
+msgstr "虚拟：%1"
 
 #: src/gui/gsc_main_window.cpp:756 src/gui/gsc_info_window.cpp:487
 msgid "Unknown model"
-msgstr ""
+msgstr "未知型号"
 
 #: src/gui/gsc_main_window.cpp:832
 msgid "This operation may abort any running tests. Do you wish to continue?"
-msgstr ""
+msgstr "此操作可能会终止任何正在运行的测试。您是否希望继续？"
 
 #: src/gui/gsc_main_window.cpp:877 src/gui/gsc_main_window.cpp:887
 msgid "An error occurred while scanning the system"
-msgstr ""
+msgstr "扫描系统时发生错误"
 
 #: src/gui/gsc_main_window.cpp:878
 msgid ""
@@ -1828,102 +2098,100 @@ msgid ""
 "<small>See \"Permission Problems\" section of the documentation, accessible "
 "through the Help menu.</small>"
 msgstr ""
+"看起来smartctl没有足够的权限来访问设备。\n"
+"<small>请参阅文档中的“权限问题”部分，该部分可通过“帮助”菜单访问。</small>"
 
 #: src/gui/gsc_main_window.cpp:941 src/gui/gsc_main_window.cpp:967
 msgid "Error Updating Drive Database"
-msgstr ""
+msgstr "更新驱动器数据库时出错"
 
 #: src/gui/gsc_main_window.cpp:979
-#, fuzzy
 msgid "Cannot add device"
-msgstr "匹配设备："
+msgstr "无法添加设备："
 
 #: src/gui/gsc_main_window.cpp:980
 msgid "Device \"%1\" doesn't exist."
-msgstr ""
+msgstr "设备 “%1” 不存在。"
 
 #: src/gui/gsc_main_window.cpp:1015
 msgid "An error occurred while adding the device"
-msgstr ""
+msgstr "添加设备时发生错误"
 
 #: src/gui/gsc_main_window.cpp:1034
 msgid "Cannot load data file"
-msgstr ""
+msgstr "无法加载数据文件"
 
 #: src/gui/gsc_main_window.cpp:1048
 msgid "Cannot interpret SMART data"
-msgstr ""
+msgstr "无法解析 SMART 数据。"
 
 #: src/gui/gsc_main_window.cpp:1081
 msgid "Please wait until the test is finished on this drive."
-msgstr ""
+msgstr "请等待此设备上的测试完成。"
 
 #: src/gui/gsc_main_window.cpp:1094
 msgid "This drive has SMART disabled. Do you want to enable it?"
-msgstr ""
+msgstr "此设备已禁用SMART功能。您想启用它吗？"
 
 #: src/gui/gsc_main_window.cpp:1095
 msgid "SMART will stay enabled at least until you reboot your computer."
-msgstr ""
+msgstr "SMART 将至少在您重新启动计算机之前一直处于启用状态。"
 
 #: src/gui/gsc_main_window.cpp:1096
 msgid ""
 "See \"Enable SMART Permanently\" section of the documentation, accessible "
 "through the Help menu."
-msgstr ""
+msgstr "请参阅文档中的“永久启用SMART”部分，该部分可通过“帮助”菜单访问。"
 
 #: src/gui/gsc_main_window.cpp:1132
 msgid "No additional information is available for this drive."
-msgstr ""
+msgstr "没有关于这个设备的更多信息。"
 
 #: src/gui/gsc_main_window.cpp:1133 src/gui/gsc_info_window.cpp:825
-#, fuzzy
 msgid "Smartctl Output"
-msgstr "查看 smartctl 输出"
+msgstr "Smartctl 输出"
 
 #: src/gui/gsc_main_window.cpp:1196
 msgid "Checking if smartctl is executable..."
-msgstr ""
+msgstr "检查 smartctl 是否可执行..."
 
 #: src/gui/gsc_main_window.cpp:1213
 msgid "Smartctl returned invalid output."
-msgstr ""
+msgstr "Smartctl 返回了无效的输出。"
 
 #: src/gui/gsc_main_window.cpp:1220
 msgid "Smartctl version %1 found, %2 required."
-msgstr ""
+msgstr "找到 %1 版本的 Smartctl，但是需要版本 %2 。"
 
 #: src/gui/gsc_main_window.cpp:1239
 msgid "There was an error while executing smartctl"
-msgstr ""
+msgstr "执行 smartctl 时发生一个错误"
 
 #: src/gui/gsc_main_window.cpp:1240
 msgid "Please specify the correct smartctl binary in Preferences."
-msgstr ""
+msgstr "请在偏好设置里指定正确的 smartctl 二进制文件。"
 
 #: src/gui/gsc_main_window.cpp:1268 src/gui/gsc_main_window.cpp:1283
 msgid "Load Data From..."
-msgstr ""
+msgstr "加载数据自..."
 
 #: src/gui/gsc_init.cpp:223
 msgid "Don't use system locale"
-msgstr ""
+msgstr "不要使用系统区域设置"
 
 #: src/gui/gsc_init.cpp:225
-#, fuzzy
 msgid "Display version information"
-msgstr "设备信息："
+msgstr "显示版本信息"
 
 #: src/gui/gsc_init.cpp:227
-#, fuzzy
 msgid "Don't scan devices on startup"
-msgstr "启动时自动添加这个设备"
+msgstr "启动时无法扫描设备"
 
 #: src/gui/gsc_init.cpp:229
 msgid ""
 "Load smartctl data from file, creating a virtual drive. You can specify this "
 "option multiple times."
-msgstr ""
+msgstr "从文件中加载 smartctl 数据，并创建一个虚拟驱动器。此选项可多次指定。"
 
 #: src/gui/gsc_init.cpp:231
 msgid ""
@@ -1933,74 +2201,78 @@ msgid ""
 "option multiple times. Example: --add-device /dev/sda --add-device /dev/"
 "twa0::3ware,2 --add-device '/dev/sdb::::-T permissive'"
 msgstr ""
+"将此设备添加到设备列表中。设备的格式为“<device>::<type>::<extra_args>”，其中 "
+"type 和 extra_args 是可选的。此选项与 --no-scan 一起使用时非常有用，可以仅列"
+"出特定的驱动器。您可以多次指定此选项。示例：--add-device /dev/sda --add-"
+"device /dev/twa0::3ware,2 --add-device '/dev/sdb::::-T permissive'"
 
 #: src/gui/gsc_init.cpp:235
 msgid "Forget all previously manually added devices."
-msgstr ""
+msgstr "忘记所有之前手动添加的设备。"
 
 #: src/gui/gsc_init.cpp:239
 msgid ""
 "The value of GDK_SCALE environment variable (useful when executing with "
 "pkexec)"
-msgstr ""
+msgstr "GDK_SCALE 环境变量的值（在通过 pkexec 执行时有用）"
 
 #: src/gui/gsc_init.cpp:241
 msgid ""
 "The value of GDK_DPI_SCALE environment variable (useful when executing with "
 "pkexec)"
-msgstr ""
+msgstr "GDK_DPI_SCALE 环境变量的值（在通过 pkexec 执行时有用）"
 
 #: src/gui/gsc_init.cpp:263
 msgid "Error parsing command-line options: %1"
-msgstr ""
+msgstr "解析命令行选项时出错：%1"
 
 #: src/gui/gsc_init.cpp:285
-#, fuzzy
 msgid "GSmartControl version %1"
-msgstr "GSmartControl"
+msgstr "GSmartControl 版本 %1"
 
 #: src/gui/gsc_init.cpp:287
 msgid ""
 "Warning: GSmartControl comes with ABSOLUTELY NO WARRANTY.\n"
 "See LICENSE.txt file for details."
 msgstr ""
+"警告：GSmartControl 绝对不提供任何保修服务。\n"
+"详情请参阅 LICENSE.txt 文件。"
 
 #: src/gui/gsc_init.cpp:290
 msgid "Copyright (C) %1 Alexander Shaduri %2"
-msgstr ""
+msgstr "版权所有 (C) %1 Alexander Shaduri %2"
 
 #: src/gui/gsc_add_device_window.cpp:46
-#, fuzzy
 msgid "Device name"
-msgstr "设备名："
+msgstr "设备名"
 
 #: src/gui/gsc_add_device_window.cpp:48
 msgid "Device name (for example, use \"pd0\" for the first physical drive)"
-msgstr ""
+msgstr "设备名称（例如，第一个物理驱动器使用“pd0”）"
 
 #: src/gui/gsc_add_device_window.cpp:50
 msgid "Device name (for example, /dev/sda or /dev/twa0)"
-msgstr ""
+msgstr "设备名称（例如，/dev/sda 或 /dev/twa0）"
 
 #: src/gui/gsc_add_device_window.cpp:63
-#, fuzzy
 msgid "Smartctl -d option parameter"
-msgstr "Smartctl 参数："
+msgstr "Smartctl -d 可选参数"
 
 #: src/gui/gsc_add_device_window.cpp:65
 msgid ""
 "Smartctl -d option parameter. For example, use areca,1 for the first drive "
 "behind Areca RAID controller."
 msgstr ""
+"Smartctl 的 -d 可选参数。例如，对于 Areca RAID 控制器 后的第一个驱动器，使用 "
+"“areca,1” 。"
 
 #: src/gui/gsc_add_device_window.cpp:212 src/gui/gsc_add_device_window.cpp:221
 msgid "Choose Device..."
-msgstr ""
+msgstr "选择设备..."
 
 #: src/gui/gsc_executor_error_dialog.cpp:51
-#, fuzzy
 msgid "_Show Output"
-msgstr "查看输入（_V）"
+msgstr "查看输出（_S）"
 
 #: src/gui/gsc_info_window.cpp:177 src/gui/gsc_info_window.cpp:250
 #: src/gui/gsc_info_window.cpp:254 src/gui/gsc_info_window.cpp:258
@@ -2011,99 +2283,99 @@ msgstr "查看输入（_V）"
 #: src/gui/gsc_info_window.cpp:733 src/gui/gsc_info_window.cpp:742
 #: src/gui/gsc_info_window.cpp:751 src/gui/gsc_info_window.cpp:760
 msgid "No data available"
-msgstr ""
+msgstr "无可用数据"
 
 #: src/gui/gsc_info_window.cpp:230
 msgid "Copy Selected Data"
-msgstr ""
+msgstr "复制选中数据"
 
 #: src/gui/gsc_info_window.cpp:383
 msgid "Cannot re-read information from virtual drive"
-msgstr ""
+msgstr "无法从虚拟设备重新读取信息"
 
 #: src/gui/gsc_info_window.cpp:491
-#, fuzzy
 msgid "Device Information - %1: %2 - GSmartControl"
-msgstr "设备信息 — GSmartControl"
+msgstr "设备信息 — %1: %2 — GSmartControl"
 
 #: src/gui/gsc_info_window.cpp:496
 msgid "<b>Device:</b> %1%2  <b>Model:</b> %3"
-msgstr ""
+msgstr "<b>设备：</b> %1%2  <b>型号：</b> %3"
 
 #: src/gui/gsc_info_window.cpp:793
 msgid "Self-Tests Not Supported"
-msgstr ""
+msgstr "不支持自测试"
 
 #: src/gui/gsc_info_window.cpp:793
 msgid "Self-tests are not supported on this drive."
-msgstr ""
+msgstr "该设备不支持自测试。"
 
 #: src/gui/gsc_info_window.cpp:852
 msgid "JSON Files"
-msgstr ""
+msgstr "JSON 文件"
 
 #: src/gui/gsc_info_window.cpp:945
 msgid "Cannot save SMART data to file"
-msgstr ""
+msgstr "无法保存 SMART 数据到文件"
 
 #: src/gui/gsc_info_window.cpp:965
 msgid "Please wait until all tests are finished."
-msgstr ""
+msgstr "请等待所有测试完成。"
 
 #: src/gui/gsc_info_window.cpp:1113
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #: src/gui/gsc_info_window.cpp:1113
-#, fuzzy
 msgid "Attribute ID"
-msgstr "属性"
+msgstr "属性 ID"
 
 #: src/gui/gsc_info_window.cpp:1117 src/gui/gsc_info_window.cpp:1858
 msgid "Name"
-msgstr ""
+msgstr "名称"
 
 #: src/gui/gsc_info_window.cpp:1117
 msgid ""
 "Attribute name (this is deduced from ID by smartctl and may be incorrect, as "
 "it's highly vendor-specific)"
 msgstr ""
+"属性名称（该名称由 smartctl 根据 ID 推断得出，可能并不准确，因为其具有高度的"
+"供应商特定性）"
 
 #: src/gui/gsc_info_window.cpp:1122
 msgid "Failed"
-msgstr ""
+msgstr "失败"
 
 #: src/gui/gsc_info_window.cpp:1122
 msgid ""
 "When failed (that is, the normalized value became equal to or less than "
 "threshold)"
-msgstr ""
+msgstr "当失败时（即标准值等于或小于阈值）"
 
 #: src/gui/gsc_info_window.cpp:1126
 msgid ""
 "Normalized value (highly vendor-specific; converted from Raw value by the "
 "drive's firmware)"
-msgstr ""
+msgstr "标准值（高度依赖于供应商；由硬盘固件从原始值转换而来）"
 
 #: src/gui/gsc_info_window.cpp:1130
 msgid ""
 "The worst normalized value recorded for this attribute during the drive's "
 "lifetime (with SMART enabled)"
-msgstr ""
+msgstr "在硬盘（启用 SMART 功能）的通电期间，该属性记录的最差标准值"
 
 #: src/gui/gsc_info_window.cpp:1134
 msgid ""
 "Threshold for normalized value. Normalized value should be greater than "
 "threshold (unless vendor thinks otherwise)."
-msgstr ""
+msgstr "标准值的阈值。标准值应大于阈值（除非供应商另有意见）。"
 
 #: src/gui/gsc_info_window.cpp:1138
 msgid "Raw value"
-msgstr ""
+msgstr "Raw 值"
 
 #: src/gui/gsc_info_window.cpp:1138
 msgid "Raw value as reported by drive. May or may not be sensible."
-msgstr ""
+msgstr "设备报告的原始值。该值可能合理，也可能不合理。"
 
 #: src/gui/gsc_info_window.cpp:1142
 msgid ""
@@ -2111,90 +2383,90 @@ msgid ""
 "to threshold. Type indicates whether it's a signal of drive's pre-failure "
 "time or just an old age."
 msgstr ""
+"当标准值小于或等于阈值时，即达到报警条件。类型表明它是驱动器预故障时间的信"
+"号，还是仅仅表示设备老化。"
 
 #: src/gui/gsc_info_window.cpp:1151 src/gui/gsc_info_window.cpp:1309
 #: src/gui/gsc_info_window.cpp:1862
 msgid "Flags"
-msgstr ""
+msgstr "标识"
 
 #: src/gui/gsc_info_window.cpp:1152
 msgid ""
 "If given in %1 format, the presence of each letter indicates that the flag "
 "is on."
-msgstr ""
+msgstr "如果以 %1 格式给定，则每个字母的出现都表示该标志处于开启状态。"
 
 #: src/gui/gsc_info_window.cpp:1153
 msgid ""
 "P: pre-failure attribute (if the attribute failed, the drive is failing)"
-msgstr ""
+msgstr "P：预故障属性（如果该属性出现故障，则驱动器即将发生故障）"
 
 #: src/gui/gsc_info_window.cpp:1154
 msgid ""
 "O: updated continuously (as opposed to updated on offline data collection)"
-msgstr ""
+msgstr "O：持续更新（与离线数据收集时更新相对）"
 
 #: src/gui/gsc_info_window.cpp:1155
 msgid "S: speed / performance attribute"
-msgstr ""
+msgstr "S：速度或性能属性"
 
 #: src/gui/gsc_info_window.cpp:1156
 msgid "R: error rate"
-msgstr ""
+msgstr "R：错误率"
 
 #: src/gui/gsc_info_window.cpp:1157
 msgid "C: event count"
-msgstr ""
+msgstr "C：事件计数"
 
 #: src/gui/gsc_info_window.cpp:1158
 msgid "K: auto-keep"
-msgstr ""
+msgstr "K：自动保持"
 
 #: src/gui/gsc_info_window.cpp:1159 src/gui/gsc_info_window.cpp:1314
 msgid "+: undocumented bits present"
-msgstr ""
+msgstr "+：存在未记录的位"
 
 #: src/gui/gsc_info_window.cpp:1238 src/gui/gsc_info_window.cpp:1300
-#, fuzzy
 msgid "Description"
-msgstr "测试描述"
+msgstr "描述"
 
 #: src/gui/gsc_info_window.cpp:1238 src/gui/gsc_info_window.cpp:1300
-#, fuzzy
 msgid "Entry description"
-msgstr "测试描述"
+msgstr "项描述"
 
 #: src/gui/gsc_info_window.cpp:1243 src/gui/gsc_info_window.cpp:1305
 #: src/gui/gsc_info_window.cpp:1869
 msgid "Value"
-msgstr ""
+msgstr "值"
 
 #: src/gui/gsc_info_window.cpp:1305
 msgid "Value (can be normalized if '%1' flag is present)"
-msgstr ""
+msgstr "值（如果存在 “%1” 标识，则可以进行标准处理）"
 
 #: src/gui/gsc_info_window.cpp:1310
 msgid "V: valid"
-msgstr ""
+msgstr "V：无效"
 
 #: src/gui/gsc_info_window.cpp:1311
 msgid "N: value is normalized"
-msgstr ""
+msgstr "N：值已标准化"
 
 #: src/gui/gsc_info_window.cpp:1312
 msgid "D: supports Device Statistics Notification (DSN)"
-msgstr ""
+msgstr "D：支持设备统计通知（DSN）"
 
 #: src/gui/gsc_info_window.cpp:1313
 msgid "C: monitored condition met"
-msgstr ""
+msgstr "C：监测条件已满足"
 
 #: src/gui/gsc_info_window.cpp:1318
 msgid "Page, Offset"
-msgstr ""
+msgstr "页码，偏移量"
 
 #: src/gui/gsc_info_window.cpp:1318
 msgid "Page and offset of the entry"
-msgstr ""
+msgstr "该项的页码和偏移量"
 
 #: src/gui/gsc_info_window.cpp:1420
 msgid ""
@@ -2206,495 +2478,214 @@ msgid ""
 "Note: On some drives this actually runs several consequent tests, which may "
 "cause the program to display the test progress incorrectly."
 msgstr ""
+"简要自测试包含一系列最有可能检测到驱动器问题的测试例程。其结果会在自检日志中"
+"报告。请注意，此测试绝非全面测试。其主要目的是在不进行全面表面扫描的情况下检"
+"测完全损坏的驱动器。\n"
+"注意：在某些硬盘上，此操作实际上会连续运行多个测试，这可能会导致程序错误地显"
+"示测试进度。"
 
 #: src/gui/gsc_info_window.cpp:1434
 msgid ""
 "Extended self-test examines complete disk surface and performs various test "
 "routines built into the drive. Its result is reported in the Self-Test Log."
 msgstr ""
+"详尽自测试会检查整个磁盘表面，并执行内置于硬盘中的各种测试程序。其结果会在自"
+"检日志中报告。"
 
 #: src/gui/gsc_info_window.cpp:1444
 msgid ""
 "Conveyance self-test is intended to identify damage incurred during "
 "transporting of the drive."
-msgstr ""
+msgstr "传输自测试旨在识别硬盘在传输过程中可能遭受的损坏。"
 
 #: src/gui/gsc_info_window.cpp:1476
-#, fuzzy
 msgid "Test #"
-msgstr "测试类型："
+msgstr "测试 #"
 
 #: src/gui/gsc_info_window.cpp:1476
 msgid "Test # (greater may mean newer or older depending on drive model)"
-msgstr ""
+msgstr "测试 #（根据设备型号，编号越大可能表示越新或越旧）"
 
 #: src/gui/gsc_info_window.cpp:1480
 msgid "Type of the test performed"
-msgstr ""
+msgstr "被执行的测试的类型"
 
 #: src/gui/gsc_info_window.cpp:1485
-#, fuzzy
 msgid "Status"
-msgstr "统计"
+msgstr "状态"
 
 #: src/gui/gsc_info_window.cpp:1485
 msgid "Test completion status"
-msgstr ""
+msgstr "测试完成状态"
 
 #: src/gui/gsc_info_window.cpp:1489
-#, c-format
-msgid "% Completed"
-msgstr ""
+msgid "%1 Completed"
+msgstr "已完成 %1"
 
 #: src/gui/gsc_info_window.cpp:1489
 msgid ""
 "Percentage of the test completed. Instantly-aborted tests have 10%, while "
 "unsupported ones <i>may</i> have 100%."
 msgstr ""
+"测试完成的百分比。立即中止的测试完成10% ，而未支持的测试<i>可能</i>完成"
+"100% 。"
 
 #: src/gui/gsc_info_window.cpp:1493 src/gui/gsc_info_window.cpp:1602
 msgid "Lifetime hours"
-msgstr ""
+msgstr "通电时长"
 
 #: src/gui/gsc_info_window.cpp:1493
 msgid ""
 "Hour of the drive's powered-on lifetime when the test completed or aborted.\n"
 "The value wraps after 65535 hours."
 msgstr ""
+"测试完成或中止时，设备通电时长的小时数。\n"
+"该值在超过65535小时后回绕。"
 
 #: src/gui/gsc_info_window.cpp:1497
 msgid "LBA of the first error"
-msgstr ""
+msgstr "第一个错误的 LBA"
 
 #: src/gui/gsc_info_window.cpp:1497
 msgid "LBA of the first error (if an LBA-related error happened)"
-msgstr ""
+msgstr "第一个错误的 LBA（如果发生了与 LBA 相关的错误）"
 
 #: src/gui/gsc_info_window.cpp:1598
-#, fuzzy
 msgid "Error #"
-msgstr "错误日志"
+msgstr "错误 #"
 
 #: src/gui/gsc_info_window.cpp:1598
 msgid "Error # in the error log (greater means newer)"
-msgstr ""
+msgstr "错误 # 日志中的错误编号（编号越大表示时间越新）"
 
 #: src/gui/gsc_info_window.cpp:1602
 msgid "Hour of the drive's powered-on lifetime when the error occurred"
-msgstr ""
+msgstr "错误发生时，设备通电后的使用时长"
 
 #: src/gui/gsc_info_window.cpp:1606
 msgid "Power state of the drive when the error occurred"
-msgstr ""
+msgstr "错误发生时设备的电源状态"
 
 #: src/gui/gsc_info_window.cpp:1610
 msgid "LBA"
-msgstr ""
+msgstr "LBA"
 
 #: src/gui/gsc_info_window.cpp:1610
 msgid "LBA Address"
-msgstr ""
+msgstr "LBA 地址"
 
 #: src/gui/gsc_info_window.cpp:1614
 msgid "Details"
-msgstr ""
+msgstr "详细"
 
 #: src/gui/gsc_info_window.cpp:1614
 msgid "Additional details"
-msgstr ""
+msgstr "更多详细"
 
 #: src/gui/gsc_info_window.cpp:1652
-#, fuzzy
 msgid "Complete error log: %1"
-msgstr "完成错误日志信息"
+msgstr "完成错误日志：%1"
 
 #: src/gui/gsc_info_window.cpp:1684
 msgid "(Note: The number of entries may be limited to the newest ones)"
-msgstr ""
+msgstr "（注：项数量可能仅限于最新项）"
 
 #: src/gui/gsc_info_window.cpp:1703
-#, fuzzy
 msgid "Error %1"
-msgstr "错误日志"
+msgstr "错误 %1"
 
 #: src/gui/gsc_info_window.cpp:1738
 msgid "NVMe Non-Persistent Error Information Log: %1"
-msgstr ""
+msgstr "NVMe 非持久性错误信息日志：%1"
 
 #: src/gui/gsc_info_window.cpp:1804
-#, fuzzy
 msgid "SCT temperature commands not supported."
-msgstr "最近的温度和历史记录"
+msgstr "不支持 SCT 温度命令。"
 
 #: src/gui/gsc_info_window.cpp:1813
 msgid "Complete SCT temperature log: %1"
-msgstr ""
+msgstr "完成 SCT 温度日志：%1"
 
 #: src/gui/gsc_info_window.cpp:1827
-#, fuzzy
 msgid "Current drive temperature in Celsius."
-msgstr "最近的温度和历史记录"
+msgstr "当前设备温度（°C）。"
 
 #: src/gui/gsc_info_window.cpp:1828
-#, fuzzy
 msgid "Current temperature: %1"
-msgstr "最近的温度和历史记录"
+msgstr "当前温度：%1"
 
 #: src/gui/gsc_info_window.cpp:1855
 msgid "#"
-msgstr ""
+msgstr "#"
 
 #: src/gui/gsc_info_window.cpp:1855
 msgid "Entry #"
-msgstr ""
+msgstr "项 #"
 
 #: src/gui/gsc_info_window.cpp:1953
 msgid "Complete SCT Error Recovery Control settings: %1"
-msgstr ""
+msgstr "完成 SCT 错误恢复控制设置：%1"
 
 #: src/gui/gsc_info_window.cpp:1985
-#, fuzzy
 msgid "Complete selective self-test log: %1"
-msgstr "选择性自检日志"
+msgstr "完成选择性自检日志：%1"
 
 #: src/gui/gsc_info_window.cpp:2017
 msgid "Complete phy log: %1"
-msgstr ""
+msgstr "完成 phy 日志：%1"
 
 #: src/gui/gsc_info_window.cpp:2049
-#, fuzzy
 msgid "Complete directory log: %1"
-msgstr "完成错误日志信息"
+msgstr "完成目录日志：%1"
 
 #: src/gui/gsc_info_window.cpp:2327
 msgid "Test completion: %1%%; ETA: %2"
-msgstr ""
+msgstr "测试完成：%1%%; 预计剩余时间： %2"
 
 #: src/gui/gsc_info_window.cpp:2392
 msgid "<b>Test aborted: %1</b>"
-msgstr ""
+msgstr "<b>测试中止：%1</b>"
 
 #: src/gui/gsc_info_window.cpp:2398
 msgid "Test was manually aborted."
-msgstr ""
+msgstr "测试被手动终止。"
 
 #: src/gui/gsc_info_window.cpp:2401
 msgid "<b>Test result: %1</b>."
-msgstr ""
+msgstr "<b>测试结果： %1</b> 。"
 
 #: src/gui/gsc_info_window.cpp:2412 src/gui/gsc_info_window.cpp:2422
 msgid "TEST ABORTED!"
-msgstr ""
+msgstr "测试已被终止！"
 
 #: src/gui/gsc_info_window.cpp:2416 src/gui/gsc_info_window.cpp:2434
 msgid "TEST STATUS UNKNOWN."
-msgstr ""
+msgstr "测试状态未知。"
 
 #: src/gui/gsc_info_window.cpp:2419
 msgid "TEST IN PROGRESS."
-msgstr ""
+msgstr "测试正在进行。"
 
 #: src/gui/gsc_info_window.cpp:2425
 msgid "TEST INTERRUPTED!"
-msgstr ""
+msgstr "测试中断！"
 
 #: src/gui/gsc_info_window.cpp:2428
 msgid "TEST SUCCESSFUL."
-msgstr ""
+msgstr "成功完成测试。"
 
 #: src/gui/gsc_info_window.cpp:2431
 msgid "TEST FAILED!"
-msgstr ""
+msgstr "测试失败！"
 
 #: src/gui/gsc_info_window.cpp:2443 src/gui/gsc_info_window.cpp:2449
 msgid "Check the Self-Test Log for more information."
-msgstr ""
+msgstr "查看测试日志了解更多信息。"
 
 #: src/gui/gsc_info_window.cpp:2526
 msgid "Cannot run %1"
-msgstr ""
+msgstr "无法运行 %1"
 
 #: src/gui/gsc_info_window.cpp:2587
 msgid "Cannot stop %1"
-msgstr ""
-
-#: src/applib/smartctl_executor.h:57
-msgid "An error occurred while executing smartctl:"
-msgstr ""
-
-#: src/applib/smartctl_executor.h:77
-#, fuzzy
-msgid "Command line did not parse."
-msgstr "带参数命令"
-
-#: src/applib/smartctl_executor.h:78
-msgid ""
-"Device open failed, or device did not return an IDENTIFY DEVICE structure."
-msgstr ""
-
-#: src/applib/smartctl_executor.h:79
-msgid ""
-"Some SMART command to the disk failed, or there was a checksum error in a "
-"SMART data structure"
-msgstr ""
-
-#: src/applib/smartctl_executor.h:80
-msgid "SMART status check returned \"DISK FAILING\""
-msgstr ""
-
-#: src/applib/smartctl_executor.h:81
-msgid ""
-"SMART status check returned \"DISK OK\" but some prefail Attributes are less "
-"than threshold."
-msgstr ""
-
-#: src/applib/smartctl_executor.h:82
-msgid ""
-"SMART status check returned \"DISK OK\" but we found that some (usage or "
-"prefail) Attributes have been less than threshold at some time in the past."
-msgstr ""
-
-#: src/applib/smartctl_executor.h:83
-msgid "The device error log contains records of errors."
-msgstr ""
-
-#: src/applib/smartctl_executor.h:84
-msgid "The device self-test log contains records of errors."
-msgstr ""
-
-#: src/applib/command_executor_areca.h:72
-msgid "An error occurred while executing Areca cli:"
-msgstr ""
-
-#: src/applib/storage_property_descr_helpers.h:24
-msgid ""
-"When a drive encounters a surface error, it marks that sector as "
-"\"unstable\" (also known as \"pending reallocation\"). If the sector is "
-"successfully read from or written to at some later point, it is unmarked. If "
-"the sector continues to be inaccessible, the drive reallocates (remaps) it "
-"to a specially reserved area as soon as it has a chance (usually during "
-"write request or successful read), transferring the data so that no changes "
-"are reported to the operating system. This is why you generally don't see "
-"\"bad blocks\" on modern drives - if you do, it means that either they have "
-"not been remapped yet, or the drive is out of reserved area.\n"
-"\n"
-"Note: SSDs reallocate blocks as part of their normal operation, so low "
-"reallocation counts are not critical for them."
-msgstr ""
-
-#: src/applib/selftest.h:67 src/applib/storage_device_detected_type.h:49
-#: src/applib/storage_property.h:245 src/applib/storage_property.h:278
-#: src/applib/storage_property.h:318 src/applib/storage_property.h:394
-msgid "Unknown"
-msgstr ""
-
-#: src/applib/selftest.h:68
-#, fuzzy
-msgid "In Progress"
-msgstr "测试进度"
-
-#: src/applib/selftest.h:69
-msgid "Manually Aborted"
-msgstr ""
-
-#: src/applib/selftest.h:70
-msgid "Interrupted"
-msgstr ""
-
-#: src/applib/selftest.h:71
-msgid "Completed Successfully"
-msgstr ""
-
-#: src/applib/selftest.h:72
-msgid "Completed With Errors"
-msgstr ""
-
-#: src/applib/selftest.h:73
-msgid "Reserved"
-msgstr ""
-
-#: src/applib/smartctl_parser_types.h:73
-msgid "Automatic"
-msgstr ""
-
-#: src/applib/smartctl_parser_types.h:74
-msgid "JSON"
-msgstr ""
-
-#: src/applib/smartctl_parser_types.h:75
-msgid "Text"
-msgstr ""
-
-#: src/applib/command_executor_3ware.h:71
-msgid "An error occurred while executing tw_cli:"
-msgstr ""
-
-#: src/applib/storage_detector_helpers.h:43
-msgid "tw_cli binary is not specified in configuration."
-msgstr ""
-
-#: src/applib/storage_detector_helpers.h:70
-msgid "tw_cli returned an empty output."
-msgstr ""
-
-#: src/applib/warning_colors.h:79
-msgid "%1Notice:%2 %3"
-msgstr ""
-
-#: src/applib/warning_colors.h:82
-msgid "%1Warning:%2 %3"
-msgstr ""
-
-#: src/applib/warning_colors.h:85
-msgid "%1ALERT:%2 %3"
-msgstr ""
-
-#: src/applib/storage_device_detected_type.h:50
-msgid "Needs Explicit Type"
-msgstr ""
-
-#: src/applib/storage_device_detected_type.h:51
-msgid "ATA Device (HDD or SSD)"
-msgstr ""
-
-#: src/applib/storage_device_detected_type.h:52
-msgid "ATA HDD"
-msgstr ""
-
-#: src/applib/storage_device_detected_type.h:53
-msgid "ATA SSD"
-msgstr ""
-
-#: src/applib/storage_device_detected_type.h:54
-msgid "NVMe Device"
-msgstr ""
-
-#: src/applib/storage_device_detected_type.h:55
-msgid "Basic SCSI Device"
-msgstr ""
-
-#: src/applib/storage_device_detected_type.h:56
-msgid "CD/DVD/Blu-Ray"
-msgstr ""
-
-#: src/applib/storage_device_detected_type.h:57
-msgid "Unsupported RAID Controller or Volume"
-msgstr ""
-
-#: src/applib/app_builder_widget.h:152
-msgid "Fatal error: Cannot get root widget from UI-resource-created hierarchy."
-msgstr ""
-
-#: src/applib/app_builder_widget.h:165
-msgid "Fatal error: Cannot create UI-resource widgets: %1"
-msgstr ""
-
-#: src/applib/storage_property.h:246
-msgid "None"
-msgstr ""
-
-#: src/applib/storage_property.h:247
-#, fuzzy
-msgid "Short Test in Progress"
-msgstr "测试进度"
-
-#: src/applib/storage_property.h:248
-#, fuzzy
-msgid "Extended Test in Progress"
-msgstr "测试进度"
-
-#: src/applib/storage_property.h:249
-msgid "Vendor-Specific Test in Progress"
-msgstr ""
-
-#: src/applib/storage_property.h:279
-#, fuzzy
-msgid "Short Test"
-msgstr "简短"
-
-#: src/applib/storage_property.h:280
-#, fuzzy
-msgid "Extended Test"
-msgstr "扩充"
-
-#: src/applib/storage_property.h:281
-msgid "Vendor-Specific Test"
-msgstr ""
-
-#: src/applib/storage_property.h:319
-msgid "Completed Without Errors"
-msgstr ""
-
-#: src/applib/storage_property.h:320
-msgid "Aborted: Self-Test Command"
-msgstr ""
-
-#: src/applib/storage_property.h:321
-#, fuzzy
-msgid "Aborted: Controller Reset"
-msgstr "终止测试"
-
-#: src/applib/storage_property.h:322
-msgid "Aborted: Namespace Removed"
-msgstr ""
-
-#: src/applib/storage_property.h:323
-msgid "Aborted: Format NVM Command"
-msgstr ""
-
-#: src/applib/storage_property.h:324
-msgid "Fatal or Unknown Test Error"
-msgstr ""
-
-#: src/applib/storage_property.h:325
-msgid "Completed: Unknown Failed Segment"
-msgstr ""
-
-#: src/applib/storage_property.h:326
-msgid "Completed: Failed Segments"
-msgstr ""
-
-#: src/applib/storage_property.h:327
-msgid "Aborted: Unknown Reason"
-msgstr ""
-
-#: src/applib/storage_property.h:328
-msgid "Aborted: Sanitize Operation"
-msgstr ""
-
-#: src/applib/storage_property.h:395
-#, fuzzy
-msgid "Short Info"
-msgstr "简短"
-
-#: src/applib/storage_property.h:396
-msgid "Overall Health"
-msgstr ""
-
-#: src/applib/storage_property.h:401
-#, fuzzy
-msgid "Self-test Log"
-msgstr "自测试日志"
-
-#: src/applib/storage_property.h:402
-#, fuzzy
-msgid "Selective Self-test Log"
-msgstr "选择性自检日志"
-
-#: src/applib/storage_property.h:404
-#, fuzzy
-msgid "Error Recovery Control Log"
-msgstr "错误恢复"
-
-#: src/applib/storage_property.h:405
-msgid "Phy Log"
-msgstr ""
-
-#: src/applib/storage_property.h:406
-#, fuzzy
-msgid "Directory Log"
-msgstr "目录"
-
-#: src/applib/storage_property.h:407
-msgid "NVMe Health"
-msgstr ""
+msgstr "无法停止 %1"
