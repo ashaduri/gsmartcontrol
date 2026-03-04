@@ -80,6 +80,10 @@ namespace {
 		return channel;
 	}
 
+
+	/// Storage for Windows fractional scaling percentage (0 if no fractional scaling)
+	inline int g_windows_fractional_scaling_percent = 0;
+
 }
 
 
@@ -87,6 +91,13 @@ namespace {
 std::string app_get_debug_buffer_str()
 {
 	return get_debug_buf_channel_stream().str();
+}
+
+
+
+int app_get_windows_fractional_scaling_percent()
+{
+	return g_windows_fractional_scaling_percent;
 }
 
 
@@ -521,6 +532,8 @@ bool app_init_and_loop(int& argc, char**& argv)
 			debug_out_info("app", "Windows system DPI: " << h_ppi << ", scale: " << scale << "\n");
 			const int fraction_percent = static_cast<int>(std::round(scale * 100)) % 100;
 			if (fraction_percent != 0) {  // fractional scaling
+				// Store for use in window sizing
+				g_windows_fractional_scaling_percent = fraction_percent;
 				// Increase the font size by fraction, but round down the size to match the Windows behavior (?)
 				debug_out_dump("app", "Fractional scaling detected, increasing font size by " << fraction_percent << "%.\n");
 				Gtk::Settings::get_default()->property_gtk_font_name()

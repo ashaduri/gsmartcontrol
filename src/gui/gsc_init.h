@@ -28,6 +28,11 @@ void app_quit();
 std::string app_get_debug_buffer_str();
 
 
+/// Get the fractional scaling percentage detected on Windows (0 if not detected).
+/// For example, at 150% scaling, this returns 50; at 125% scaling, this returns 25.
+int app_get_windows_fractional_scaling_percent();
+
+
 
 #endif
 

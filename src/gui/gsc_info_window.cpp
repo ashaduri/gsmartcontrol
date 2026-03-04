@@ -35,6 +35,7 @@ Copyright:
 #include "gsc_info_window.h"
 #include "gsc_executor_error_dialog.h"
 #include "gsc_startup_settings.h"
+#include "gsc_init.h"  // app_get_windows_fractional_scaling_percent()
 
 
 
@@ -164,8 +165,22 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 {
 	// Size
 	{
-		const int def_size_w = rconfig::get_data<int>("gui/info_window/default_size_w");
-		const int def_size_h = rconfig::get_data<int>("gui/info_window/default_size_h");
+		int def_size_w = rconfig::get_data<int>("gui/info_window/default_size_w");
+		int def_size_h = rconfig::get_data<int>("gui/info_window/default_size_h");
+
+		// Apply fractional scaling adjustment on Windows if no custom size is configured
+		// This compensates for GTK3's lack of fractional scaling support
+		const int fraction_percent = app_get_windows_fractional_scaling_percent();
+		if (fraction_percent > 0 && def_size_w == 0 && def_size_h == 0) {
+			// Get the default size from glade and scale it
+			int glade_w = 0, glade_h = 0;
+			get_default_size(glade_w, glade_h);
+			if (glade_w > 0 && glade_h > 0) {
+				def_size_w = static_cast<int>(glade_w * (1.0 + fraction_percent / 100.0));
+				def_size_h = static_cast<int>(glade_h * (1.0 + fraction_percent / 100.0));
+			}
+		}
+
 		if (def_size_w > 0 && def_size_h > 0) {
 			set_default_size(def_size_w, def_size_h);
 		}
