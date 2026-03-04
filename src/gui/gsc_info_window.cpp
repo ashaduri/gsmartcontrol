@@ -805,6 +805,38 @@ bool GscInfoWindow::on_delete_event([[maybe_unused]] GdkEventAny* e)
 
 
 
+bool GscInfoWindow::on_key_press_event(GdkEventKey* event)
+{
+	// Handle Ctrl+Tab and Ctrl+Shift+Tab for tab navigation
+	if ((event->state & GDK_CONTROL_MASK) && event->keyval == GDK_KEY_Tab) {
+		auto* notebook = lookup_widget<Gtk::Notebook*>("main_notebook");
+		if (notebook) {
+			const int n_pages = notebook->get_n_pages();
+			if (n_pages > 1) {
+				int current_page = notebook->get_current_page();
+				int next_page;
+
+				// Check if Shift is also pressed for backward navigation
+				if (event->state & GDK_SHIFT_MASK) {
+					// Ctrl+Shift+Tab: go to previous tab
+					next_page = (current_page - 1 + n_pages) % n_pages;
+				} else {
+					// Ctrl+Tab: go to next tab
+					next_page = (current_page + 1) % n_pages;
+				}
+
+				notebook->set_current_page(next_page);
+				return true;  // event handled
+			}
+		}
+	}
+
+	// Call base class handler for other keys
+	return Gtk::Window::on_key_press_event(event);
+}
+
+
+
 void GscInfoWindow::on_refresh_info_button_clicked()
 {
 	this->refresh_info();
