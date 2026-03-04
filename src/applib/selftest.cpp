@@ -97,7 +97,14 @@ std::chrono::seconds SelfTest::get_remaining_seconds() const
 	// since remaining_percent_ may be manually set to 100, we limit from the above.
 	const double rem_seconds_at_last_change = std::min(double(total.count()), gran * remaining_percent_ / 10.);
 	const double rem = rem_seconds_at_last_change - timer_.elapsed();
-	return std::chrono::seconds(std::max(int64_t(0), (int64_t)std::round(rem)));  // don't return negative values.
+	const auto rem_rounded = static_cast<int64_t>(std::round(rem));
+	// If the estimated time for the current percentage has elapsed but the drive hasn't
+	// progressed, the drive's estimate was inaccurate. Return -1 (unknown) instead of 0
+	// to avoid misleading "ETA: 0 sec" which could persist for hours.
+	if (rem_rounded < 0) {
+		return -1s;
+	}
+	return std::chrono::seconds(rem_rounded);
 }
 
 

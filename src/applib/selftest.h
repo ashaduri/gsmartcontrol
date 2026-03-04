@@ -126,7 +126,9 @@ class SelfTest {
 
 
 		/// Get estimated time of completion for the test.
-		/// \return -1 if N/A or unknown. Note that 0 is a valid value.
+		/// \return -1 if N/A or unknown (including when the drive's estimated duration has been
+		/// exceeded without a percentage change, which means the estimate was inaccurate).
+		/// Note that 0 is a valid value meaning the test is finishing right now.
 		[[nodiscard]] std::chrono::seconds get_remaining_seconds() const;
 
 
