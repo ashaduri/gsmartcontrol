@@ -29,6 +29,9 @@ Thumbs.db
 /.idea
 /CMakeLists.txt.user
 
+# Agents
+/.codebuddy
+
 # Translations
 /po/boldquot.sed
 /po/en@boldquot.header
