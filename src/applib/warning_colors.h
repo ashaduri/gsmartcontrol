@@ -13,9 +13,36 @@ Copyright:
 #define WARNING_COLORS_H
 
 #include <glibmm.h>
+#include <gtkmm.h>
 
 #include "storage_property.h"
 
+
+/// Check if a dark GTK theme is currently active
+inline bool is_dark_theme_active()
+{
+	// Try to get the GTK settings to check for dark theme preference
+	Glib::RefPtr<Gtk::Settings> settings = Gtk::Settings::get_default();
+	if (settings) {
+		// Check if the application prefers dark theme
+		bool prefer_dark = false;
+		settings->get_property("gtk-application-prefer-dark-theme", prefer_dark);
+		if (prefer_dark) {
+			return true;
+		}
+
+		// Check theme name for common dark theme identifiers
+		Glib::ustring theme_name;
+		settings->get_property("gtk-theme-name", theme_name);
+		std::string theme_str = theme_name.lowercase();
+		if (theme_str.find("dark") != std::string::npos ||
+		    theme_str.find("black") != std::string::npos) {
+			return true;
+		}
+	}
+
+	return false;
+}
 
 
 /// Get colors for tree rows according to warning severity.
@@ -45,14 +72,16 @@ inline bool app_property_get_row_highlight_colors(WarningLevel warning, std::str
 /// \return true if the color was changed.
 inline bool app_property_get_label_highlight_color(WarningLevel warning, std::string& fg)
 {
+	bool dark_theme = is_dark_theme_active();
+
 	if (warning == WarningLevel::Notice) {
-		fg = "#770000";  // very dark red
+		fg = dark_theme ? "#FF9999" : "#770000";  // lighter red for dark themes, very dark red for light themes
 
 	} else if (warning == WarningLevel::Warning) {
-		fg = "#C00000";  // dark red
+		fg = dark_theme ? "#FF6666" : "#C00000";  // lighter red for dark themes, dark red for light themes
 
 	} else if (warning == WarningLevel::Alert) {
-		fg = "#FF0000";  // red
+		fg = dark_theme ? "#FF4444" : "#FF0000";  // lighter/pink red for dark themes, bright red for light themes
 	}
 
 	return !(fg.empty());
