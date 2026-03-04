@@ -18,6 +18,7 @@ Copyright:
 #include <set>
 
 #include "rconfig/rconfig.h"
+#include "hz/debug.h"
 
 
 /// Device name, device type (optional)
@@ -100,7 +101,8 @@ inline std::vector<std::string> app_get_device_options(const std::string& dev, c
 		}
 		catch(Glib::ShellError& e)
 		{
-			// TODO report error
+			debug_out_warn("app", DBG_FUNC_MSG << "Cannot parse device options for \""
+					<< dev << "\": " << e.what() << "\n");
 			return {};
 		}
 	}

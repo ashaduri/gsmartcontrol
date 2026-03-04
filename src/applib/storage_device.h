@@ -21,7 +21,7 @@ Copyright:
 #include "hz/fs_ns.h"
 #include "hz/string_algo.h"
 #include "storage_property.h"
-#include "smartctl_text_ata_parser.h"  // prop_list_t
+#include "smartctl_parser_types.h"
 #include "smartctl_executor.h"
 #include "storage_property_repository.h"
 #include "storage_device_detected_type.h"
@@ -106,9 +106,6 @@ class StorageDevice {
 
 		/// Execute smartctl --all / -x (all sections), get output, parse it (basic data too), fill properties.
 		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> fetch_full_data_and_parse(const std::shared_ptr<CommandExecutor>& smartctl_ex);
-
-		/// Parse full info. If failed, try to parse it as basic info.
-//		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> try_parse_data();
 
 		/// Parse full info.
 		[[nodiscard]] hz::ExpectedVoid<StorageDeviceError> parse_full_data(SmartctlParserType parser_type, SmartctlOutputFormat format);

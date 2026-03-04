@@ -9,10 +9,6 @@ Copyright:
 /// \weakgroup applib_tests
 /// @{
 
-// Catch2 v3
-//#include "catch2/catch_test_macros.hpp"
-
-// Catch2 v2
 #include "catch2/catch.hpp"
 
 #include "applib/smartctl_parser.h"

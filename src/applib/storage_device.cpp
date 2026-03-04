@@ -35,6 +35,7 @@ Copyright:
 #include "smartctl_version_parser.h"
 #include "storage_property_descr.h"
 #include "build_config.h"
+#include "smartctl_parser.h"
 //#include "smartctl_text_parser_helper.h"
 //#include "ata_storage_property_descr.h"
 
@@ -325,71 +326,6 @@ hz::ExpectedVoid<StorageDeviceError> StorageDevice::fetch_full_data_and_parse(
 	this->full_output_ = output;
 	return this->parse_full_data(parser_type, parser_format);
 }
-
-
-/*
-hz::ExpectedVoid<StorageDeviceError> StorageDevice::try_parse_data()
-{
-	this->clear_fetched(false);  // clear everything fetched before, except outputs and disk type
-
-	auto parser_format = SmartctlParser::detect_output_format(this->full_output_);
-	if (!parser_format.has_value()) {
-		return hz::Unexpected(StorageDeviceError::ParseError, parser_format.error().message());
-	}
-
-//	auto basic_parser = SmartctlParser::create(SmartctlParserType::Basic, parser_format.value());
-//	if (!basic_parser) {
-//		return hz::Unexpected(StorageDeviceError::ParseError, _("Cannot create parser"));
-//	}
-
-	// TODO Choose format according to device type
-	SmartctlParserType parser_type = SmartctlParserType::Ata;
-
-	auto parser = SmartctlParser::create(parser_type, parser_format.value());
-	DBG_ASSERT_RETURN(parser, hz::Unexpected(StorageDeviceError::ParseError, _("Cannot create parser")));
-
-	// Try to parse it (parse only, set the properties after basic parsing).
-	const auto parse_status = parser->parse(this->full_output_);
-	if (parse_status.has_value()) {
-
-		// refresh basic info too
-		this->basic_output_ = this->full_output_;  // put data including version information
-
-		// note: this will clear the non-basic properties!
-		// this will parse some info that is already parsed by SmartctlAtaTextParser::parse(),
-		// but this one sets the StorageDevice class members, not properties.
-		static_cast<void>(this->parse_basic_data(false, false));  // don't emit signal, we're not complete yet.
-
-		// Call this after parse_basic_data(), since it sets parse status to "info".
-		this->set_parse_status(StorageDevice::ParseStatus::Full);
-
-		// set the full properties.
-		// copy to our drive, overwriting old data.
-		this->set_property_repository(StoragePropertyProcessor::process_properties(parser->get_property_repository(), disk_type));
-
-		signal_changed().emit(this);  // notify listeners
-
-		return {};
-	}
-
-	// Don't show any GUI warnings on parse failure - it may just be an unsupported
-	// drive (e.g. usb flash disk). Plus, it may flood the string. The data will be
-	// parsed again in Info window, and we show the warnings there.
-	debug_out_warn("app", DBG_FUNC_MSG << "Cannot parse smartctl output.\n");
-
-	// proper parsing failed. try to at least extract info section
-	this->basic_output_ = this->full_output_;  // complete output here. sometimes it's only the info section
-	auto basic_parse_status = this->parse_basic_data(true);  // will add some properties too. this will emit signal_changed().
-	if (!basic_parse_status) {
-		// return full parser's error messages - they are more detailed.
-		std::string message = basic_parse_status.error().message();
-		return hz::Unexpected(StorageDeviceError::ParseError,
-				fmt::format(fmt::runtime(_("Cannot parse smartctl output: {}")), message));
-	}
-
-	return {};  // return ok if at least the info was ok.
-}
-*/
 
 
 
