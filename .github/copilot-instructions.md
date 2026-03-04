@@ -17,7 +17,8 @@ cmake .. -G "MSYS Makefiles" \
          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
          -DCMAKE_TOOLCHAIN_FILE=../toolchains/win64-mingw-msys2.cmake
 
-cmake --build . --config RelWithDebInfo
+# Build on MSYS2/MinGW64 (from build dir)
+cmake --build . --target all -j 18
 ```
 
 The `configure-dev` script is a convenience wrapper: `./configure-dev -t <toolchain> -c <compiler> -b <build_type>`.
