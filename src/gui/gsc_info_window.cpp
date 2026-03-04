@@ -2444,7 +2444,10 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 			break;
 		case SelfTestStatusSeverity::Error:
 			if (!result_main_msg.empty()) {  // Highlight in red
-				result_main_msg = "<span color=\"#FF0000\">"s + result_main_msg + "</span>";
+				std::string alert_color;
+				// Use the same color as Alert level warnings for consistency
+				app_property_get_label_highlight_color(WarningLevel::Alert, alert_color);
+				result_main_msg = "<span color=\"" + alert_color + "\">"s + result_main_msg + "</span>";
 			}
 			result_details_msg += "\n"s + _("Check the Self-Test Log for more information.");
 			break;
