@@ -11,6 +11,8 @@ Copyright:
 
 #include "gui_utils.h"
 
+#include <cmath>
+
 
 namespace {
 
@@ -164,6 +166,59 @@ bool gui_show_text_entry_dialog(const std::string& title, const std::string& mes
 }
 
 
+
+namespace {
+
+	/// Storage for Windows fractional scaling percentage (0 if no fractional scaling)
+	int g_windows_fractional_scaling_percent = 0;
+
+}
+
+
+
+int app_get_windows_fractional_scaling_percent()
+{
+	return g_windows_fractional_scaling_percent;
+}
+
+
+
+void app_set_windows_fractional_scaling_percent(int percent)
+{
+	g_windows_fractional_scaling_percent = percent;
+}
+
+
+
+void app_apply_fractional_scaling_to_default_size(Gtk::Window* window, int config_size_w, int config_size_h)
+{
+	if (!window) {
+		return;
+	}
+
+	int size_w = config_size_w;
+	int size_h = config_size_h;
+
+	// Apply fractional scaling adjustment on Windows if no custom size is configured
+	// This compensates for GTK3's lack of fractional scaling support
+	const int full_percent = g_windows_fractional_scaling_percent;
+	if (full_percent > 0 && size_w == 0 && size_h == 0) {
+		// Get the default size from glade and scale it
+		int glade_w = 0, glade_h = 0;
+		window->get_default_size(glade_w, glade_h);
+		if (glade_w > 0 && glade_h > 0) {
+			const double system_scale = static_cast<double>(full_percent) / 100.0;
+			const int integer_ui_scale = full_percent / 100;  // GTK3 uses floor (integer) scaling
+			const double correction = system_scale / static_cast<double>(integer_ui_scale);
+			size_w = static_cast<int>(std::lround(glade_w * correction));
+			size_h = static_cast<int>(std::lround(glade_h * correction));
+		}
+	}
+
+	if (size_w > 0 && size_h > 0) {
+		window->set_default_size(size_w, size_h);
+	}
+}
 
 
 

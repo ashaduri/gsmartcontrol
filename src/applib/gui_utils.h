@@ -59,6 +59,23 @@ bool gui_show_text_entry_dialog(const std::string& title, const std::string& mes
 
 
 
+/// Get the fractional scaling percentage detected on Windows (0 if not detected or integer scale).
+/// For example, at 150% scaling, this returns 150; at 125% scaling, this returns 125; at 250% scaling, this returns 250.
+/// Returns 0 for exact integer scales (100%, 200%, etc.).
+int app_get_windows_fractional_scaling_percent();
+
+
+/// Set the fractional scaling percentage detected on Windows.
+/// This should only be called once during application initialization.
+void app_set_windows_fractional_scaling_percent(int percent);
+
+
+/// Apply fractional scaling to default window size if fractional scaling is detected.
+/// This compensates for GTK3's lack of fractional scaling support on Windows.
+/// \param window The window to apply scaling to
+/// \param config_size_w Configured width (0 if using glade default)
+/// \param config_size_h Configured height (0 if using glade default)
+void app_apply_fractional_scaling_to_default_size(Gtk::Window* window, int config_size_w, int config_size_h);
 
 
 
