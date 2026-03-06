@@ -13,8 +13,7 @@ Copyright:
 #define WARNING_COLORS_H
 
 #include <glibmm.h>
-#include <gtkmm/settings.h>
-#include <gtkmm/main.h>
+#include <gtkmm.h>
 
 #include "storage_property.h"
 
