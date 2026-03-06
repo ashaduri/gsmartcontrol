@@ -39,6 +39,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 # User-controlled build options
 option(APP_BUILD_EXAMPLES "Build examples" OFF)
 option(APP_BUILD_TESTS "Build tests" OFF)
+option(APP_BUILD_APPIMAGE "Build for AppImage (portable data file paths)" OFF)
 
 
 # Install documentation
