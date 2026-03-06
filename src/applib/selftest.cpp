@@ -522,11 +522,14 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::update(const std::shared_ptr<
 	// and reaches 00% on completion. That's 9 pieces.
 	if (status_ == SelfTestStatus::InProgress) {
 		if (remaining_percent_ != last_seen_percent_) {
-			// Record the duration of the completed segment for adaptive ETA calculation
-			if (last_seen_percent_ != -1 && last_seen_percent_ != 90) {
-				// Don't record the initial 100->90 transition (no real work done yet)
+			// Record the duration of the completed segment for adaptive ETA calculation.
+			// Skip the first segment (typically 90→80) as it may be instant or partially
+			// completed when monitoring begins, which would skew the average.
+			if (first_segment_seen_) {
 				const double elapsed = timer_.elapsed();
 				segment_durations_.push_back(elapsed);
+			} else {
+				first_segment_seen_ = true;  // Mark that we've seen the first transition
 			}
 			last_seen_percent_ = remaining_percent_;
 			timer_.start();  // restart the timer

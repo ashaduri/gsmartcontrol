@@ -189,7 +189,8 @@ class SelfTest {
 		std::chrono::seconds poll_in_seconds_ = std::chrono::seconds(-1);  ///< The user is asked to poll after this much seconds have passed.
 
 		Glib::Timer timer_;  ///< Counts time since the last percent change
-	std::vector<double> segment_durations_;  ///< Actual durations of completed 10% segments (in seconds), for adaptive ETA calculation
+		std::vector<double> segment_durations_;  ///< Actual durations of completed 10% segments (in seconds), for adaptive ETA calculation
+		bool first_segment_seen_ = false;  ///< Whether we've observed the first percentage change (to skip the potentially instant/partial first segment)
 
 };
 
