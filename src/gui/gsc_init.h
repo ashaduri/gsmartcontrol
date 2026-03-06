@@ -33,6 +33,14 @@ std::string app_get_debug_buffer_str();
 int app_get_windows_fractional_scaling_percent();
 
 
+/// Apply fractional scaling to default window size if fractional scaling is detected.
+/// This compensates for GTK3's lack of fractional scaling support on Windows.
+/// \param window The window to apply scaling to
+/// \param config_size_w Configured width (0 if using glade default)
+/// \param config_size_h Configured height (0 if using glade default)
+void app_apply_fractional_scaling_to_default_size(Gtk::Window* window, int config_size_w, int config_size_h);
+
+
 
 #endif
 

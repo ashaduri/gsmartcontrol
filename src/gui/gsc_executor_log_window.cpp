@@ -31,18 +31,8 @@ Copyright:
 GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui)
 		: AppBuilderWidget<GscExecutorLogWindow, false>(gtkcobj, std::move(ui))
 {
-	// Apply fractional scaling adjustment on Windows to default window size
-	// This compensates for GTK3's lack of fractional scaling support
-	const int fraction_percent = app_get_windows_fractional_scaling_percent();
-	if (fraction_percent > 0) {
-		int glade_w = 0, glade_h = 0;
-		get_default_size(glade_w, glade_h);
-		if (glade_w > 0 && glade_h > 0) {
-			const int scaled_w = static_cast<int>(glade_w * (1.0 + fraction_percent / 100.0));
-			const int scaled_h = static_cast<int>(glade_h * (1.0 + fraction_percent / 100.0));
-			set_default_size(scaled_w, scaled_h);
-		}
-	}
+	// Apply fractional scaling to default window size
+	app_apply_fractional_scaling_to_default_size(this, 0, 0);
 
 	// Connect callbacks
 
