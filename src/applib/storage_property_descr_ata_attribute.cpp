@@ -1388,15 +1388,15 @@ void storage_property_ata_attribute_humanize_ssd_writes(StorageProperty& p)
 	const std::string& name = p.reported_name;
 	std::optional<uint64_t> bytes;
 
+	// Write attributes - these need humanization most
 	// Attribute 199: Write_Sectors_Tot_Ct (Indilinx Barefoot SSDs)
 	// Total count of written sectors
 	if (id == 199 && name == "Write_Sectors_Tot_Ct") {
 		bytes = static_cast<uint64_t>(attr.raw_value_int) * bytes_per_sector;
 	}
-	// Attribute 246: Total_Host_Sector_Write (Crucial/Micron SSDs)
-	// Total number of sectors written by the host system
-	else if (id == 246 && name == "Total_Host_Sector_Write") {
-		bytes = static_cast<uint64_t>(attr.raw_value_int) * bytes_per_sector;
+	// Attribute 225: Host_Writes_32MiB (Intel SSDs)
+	else if (id == 225 && name == "Host_Writes_32MiB") {
+		bytes = static_cast<uint64_t>(attr.raw_value_int) * mib_32;
 	}
 	// Attribute 241: Host_Writes_32MiB (various SSDs)
 	// Raw value increased by 1 for every 32 MiB written
@@ -1419,6 +1419,11 @@ void storage_property_ata_attribute_humanize_ssd_writes(StorageProperty& p)
 	else if (id == 246 && name == "SLC_Writes_32MiB") {
 		bytes = static_cast<uint64_t>(attr.raw_value_int) * mib_32;
 	}
+	// Attribute 246: Total_Host_Sector_Write (Crucial/Micron SSDs)
+	// Total number of sectors written by the host system
+	else if (id == 246 && name == "Total_Host_Sector_Write") {
+		bytes = static_cast<uint64_t>(attr.raw_value_int) * bytes_per_sector;
+	}
 	// Attribute 249: NAND_Writes_1GiB (Intel SSDs)
 	// Note: The raw value is the count, not already in GiB
 	else if (id == 249 && name == "NAND_Writes_1GiB") {
@@ -1428,8 +1433,25 @@ void storage_property_ata_attribute_humanize_ssd_writes(StorageProperty& p)
 	else if (id == 249 && name == "Total_NAND_Prog_Ct_GiB") {
 		bytes = static_cast<uint64_t>(attr.raw_value_int) * gib;
 	}
+
+	// Read attributes - also humanize for consistency
+	// Attribute 198: Read_Sectors_Tot_Ct (Indilinx Barefoot SSDs)
+	else if (id == 198 && name == "Read_Sectors_Tot_Ct") {
+		bytes = static_cast<uint64_t>(attr.raw_value_int) * bytes_per_sector;
+	}
+	// Attribute 226: Host_Reads_32MiB (Intel SSDs)
+	else if (id == 226 && name == "Host_Reads_32MiB") {
+		bytes = static_cast<uint64_t>(attr.raw_value_int) * mib_32;
+	}
+	// Attribute 242: Host_Reads_32MiB (Intel SSDs)
+	else if (id == 242 && name == "Host_Reads_32MiB") {
+		bytes = static_cast<uint64_t>(attr.raw_value_int) * mib_32;
+	}
+	// Attribute 244: Flash_Reads_32MiB (Innodisk SSDs)
+	else if (id == 244 && name == "Flash_Reads_32MiB") {
+		bytes = static_cast<uint64_t>(attr.raw_value_int) * mib_32;
+	}
 	// Attribute 251: Total_NAND_Read_Ct_GiB (OCZ SSDs)
-	// Also humanize reads for consistency
 	else if (id == 251 && name == "Total_NAND_Read_Ct_GiB") {
 		bytes = static_cast<uint64_t>(attr.raw_value_int) * gib;
 	}
