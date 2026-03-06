@@ -6,12 +6,15 @@
 
 
 # Generate files
-configure_file("gsmartcontrol.appdata.in.xml" "gsmartcontrol.appdata.xml" ESCAPE_QUOTES @ONLY)
 if (APP_BUILD_APPIMAGE)
-	set(APPIMAGE_EXEC_LINE "Exec=\"@CMAKE_INSTALL_FULL_BINDIR@/gsmartcontrol\"")
+	set(APPIMAGE_DESKTOP_ID "dev.shaduri.gsmartcontrol")
+	set(APPIMAGE_EXEC_LINE "Exec=\"${CMAKE_INSTALL_FULL_BINDIR}/gsmartcontrol\"")
+	configure_file("gsmartcontrol.appdata.in.xml" "gsmartcontrol.appdata.xml" ESCAPE_QUOTES @ONLY)
 	configure_file("gsmartcontrol.in.desktop" "dev.shaduri.gsmartcontrol.desktop" ESCAPE_QUOTES @ONLY)
 else()
-	set(APPIMAGE_EXEC_LINE "Exec=\"@CMAKE_INSTALL_FULL_BINDIR@/gsmartcontrol-root\"")
+	set(APPIMAGE_DESKTOP_ID "gsmartcontrol")
+	set(APPIMAGE_EXEC_LINE "Exec=\"${CMAKE_INSTALL_FULL_BINDIR}/gsmartcontrol-root\"")
+	configure_file("gsmartcontrol.appdata.in.xml" "gsmartcontrol.appdata.xml" ESCAPE_QUOTES @ONLY)
 	configure_file("gsmartcontrol.in.desktop" "gsmartcontrol.desktop" ESCAPE_QUOTES @ONLY)
 endif()
 configure_file("gsmartcontrol-root.in.sh" "gsmartcontrol-root.sh" ESCAPE_QUOTES @ONLY)

@@ -26,12 +26,16 @@ jobs:
       run: sudo apt-get install libgtkmm-3.0-dev gettext wget file
 
     - name: Download linuxdeploy
+      # Note: Using 'continuous' release for latest version. For reproducible builds,
+      # pin to a specific release tag and verify SHA256 checksum.
       run: |
         wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
         chmod +x linuxdeploy-x86_64.AppImage
         sudo mv linuxdeploy-x86_64.AppImage /usr/local/bin/linuxdeploy
 
     - name: Download appimagetool
+      # Note: Using 'continuous' release for latest version. For reproducible builds,
+      # pin to a specific release tag and verify SHA256 checksum.
       run: |
         wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
         chmod +x appimagetool-x86_64.AppImage
@@ -107,7 +111,7 @@ jobs:
       id: version
       shell: bash
       run: |
-        VERSION=$(grep "CMAKE_PROJECT_VERSION" version.txt | cut -d'=' -f2 | tr -d ' ')
+        VERSION=$(sed -n 's/.*CMAKE_PROJECT_VERSION[[:space:]]*"\([^"]*\)".*/\1/p' version.txt)
         echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
         echo "Version: $VERSION"
 

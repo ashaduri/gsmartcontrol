@@ -36,6 +36,8 @@ fi
 
 if ! command -v linuxdeploy &> /dev/null; then
     echo -e "${YELLOW}Warning: linuxdeploy not found. Will attempt to download it.${NC}"
+    # Note: Using 'continuous' release for latest version. For reproducible builds,
+    # pin to a specific release tag and verify SHA256 checksum.
     LINUXDEPLOY_URL="https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-${ARCH}.AppImage"
     wget -N "$LINUXDEPLOY_URL" -O linuxdeploy
     chmod +x linuxdeploy
@@ -46,6 +48,8 @@ fi
 
 if ! command -v appimagetool &> /dev/null; then
     echo -e "${YELLOW}Warning: appimagetool not found. Will attempt to download it.${NC}"
+    # Note: Using 'continuous' release for latest version. For reproducible builds,
+    # pin to a specific release tag and verify SHA256 checksum.
     APPIMAGETOOL_URL="https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${ARCH}.AppImage"
     wget -N "$APPIMAGETOOL_URL" -O appimagetool
     chmod +x appimagetool
@@ -121,8 +125,8 @@ if [ -d "$APPDIR/usr/lib/gdk-pixbuf-2.0" ]; then
     gdk-pixbuf-query-loaders > "$APPDIR/usr/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache" 2>/dev/null || true
 fi
 
-# Get version from CMakeLists.txt
-VERSION=$(grep "CMAKE_PROJECT_VERSION" version.txt | cut -d'=' -f2 | tr -d ' ')
+# Get version from version.txt (extract quoted CMAKE_PROJECT_VERSION value)
+VERSION=$(sed -n 's/.*CMAKE_PROJECT_VERSION[[:space:]]*"\([^"]*\)".*/\1/p' version.txt | head -n1)
 
 # Create AppImage
 echo -e "${GREEN}Creating AppImage...${NC}"
