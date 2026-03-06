@@ -18,6 +18,7 @@ Copyright:
 #include <cstdint>
 #include <chrono>
 #include <unordered_map>
+#include <vector>
 
 #include "storage_device.h"
 #include "command_executor.h"
@@ -126,6 +127,12 @@ class SelfTest {
 
 
 		/// Get estimated time of completion for the test.
+		/// The estimation uses an adaptive algorithm:
+		/// - Initially uses the drive's reported test duration estimate
+		/// - After completing one or more 10% segments, switches to using the observed
+		///   average segment duration to predict remaining time
+		/// - This provides more accurate ETAs when the drive's estimate is inaccurate
+		///   (e.g., under load or with drives that consistently under/overestimate)
 		/// \return -1 if N/A or unknown (including when the drive's estimated duration has been
 		/// exceeded without a percentage change, which means the estimate was inaccurate).
 		/// Note that 0 is a valid value meaning the test is finishing right now.
@@ -182,6 +189,7 @@ class SelfTest {
 		std::chrono::seconds poll_in_seconds_ = std::chrono::seconds(-1);  ///< The user is asked to poll after this much seconds have passed.
 
 		Glib::Timer timer_;  ///< Counts time since the last percent change
+	std::vector<double> segment_durations_;  ///< Actual durations of completed 10% segments (in seconds), for adaptive ETA calculation
 
 };
 
