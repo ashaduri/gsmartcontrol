@@ -119,8 +119,9 @@ void app_apply_fractional_scaling_to_default_size(Gtk::Window* window, int confi
 		int glade_w = 0, glade_h = 0;
 		window->get_default_size(glade_w, glade_h);
 		if (glade_w > 0 && glade_h > 0) {
-			size_w = static_cast<int>(glade_w * (1.0 + fraction_percent / 100.0));
-			size_h = static_cast<int>(glade_h * (1.0 + fraction_percent / 100.0));
+			const double scale_factor = 1.0 + static_cast<double>(fraction_percent) / 100.0;
+			size_w = static_cast<int>(std::lround(glade_w * scale_factor));
+			size_h = static_cast<int>(std::lround(glade_h * scale_factor));
 		}
 	}
 

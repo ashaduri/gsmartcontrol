@@ -24,7 +24,7 @@ Copyright:
 
 #include "applib/app_builder_widget.h"
 #include "applib/app_gtkmm_tools.h"
-#include "gsc_init.h"  // app_get_windows_fractional_scaling_percent()
+#include "gsc_init.h"  // app_apply_fractional_scaling_to_default_size()
 
 
 

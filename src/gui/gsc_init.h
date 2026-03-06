@@ -15,6 +15,11 @@ Copyright:
 #include <string>
 
 
+namespace Gtk {
+	class Window;
+}
+
+
 /// Initialize the application and run the main loop
 bool app_init_and_loop(int& argc, char**& argv);
 

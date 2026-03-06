@@ -35,7 +35,7 @@ Copyright:
 #include "gsc_info_window.h"
 #include "gsc_executor_error_dialog.h"
 #include "gsc_startup_settings.h"
-#include "gsc_init.h"  // app_get_windows_fractional_scaling_percent()
+#include "gsc_init.h"  // app_apply_fractional_scaling_to_default_size()
 
 
 
