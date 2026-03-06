@@ -809,11 +809,34 @@ bool GscInfoWindow::on_key_press_event(GdkEventKey* event)
 {
 	// Handle Ctrl+Tab and Ctrl+Shift+Tab for tab navigation
 	if ((event->state & GDK_CONTROL_MASK) && event->keyval == GDK_KEY_Tab) {
-		auto* notebook = lookup_widget<Gtk::Notebook*>("main_notebook");
-		if (notebook) {
-			const int n_pages = notebook->get_n_pages();
+		auto* main_notebook = lookup_widget<Gtk::Notebook*>("main_notebook");
+		if (main_notebook) {
+			// Check if we're on the Advanced tab with sub-tabs
+			auto* advanced_notebook = lookup_widget<Gtk::Notebook*>("advanced_notebook");
+			if (advanced_notebook && advanced_notebook->get_visible()) {
+				const int n_pages = advanced_notebook->get_n_pages();
+				if (n_pages > 1) {
+					int current_page = advanced_notebook->get_current_page();
+					int next_page;
+
+					// Check if Shift is also pressed for backward navigation
+					if (event->state & GDK_SHIFT_MASK) {
+						// Ctrl+Shift+Tab: go to previous sub-tab
+						next_page = (current_page - 1 + n_pages) % n_pages;
+					} else {
+						// Ctrl+Tab: go to next sub-tab
+						next_page = (current_page + 1) % n_pages;
+					}
+
+					advanced_notebook->set_current_page(next_page);
+					return true;  // event handled
+				}
+			}
+
+			// Otherwise, cycle through main notebook tabs
+			const int n_pages = main_notebook->get_n_pages();
 			if (n_pages > 1) {
-				int current_page = notebook->get_current_page();
+				int current_page = main_notebook->get_current_page();
 				int next_page;
 
 				// Check if Shift is also pressed for backward navigation
@@ -825,7 +848,7 @@ bool GscInfoWindow::on_key_press_event(GdkEventKey* event)
 					next_page = (current_page + 1) % n_pages;
 				}
 
-				notebook->set_current_page(next_page);
+				main_notebook->set_current_page(next_page);
 				return true;  // event handled
 			}
 		}
