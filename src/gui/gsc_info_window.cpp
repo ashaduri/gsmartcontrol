@@ -2097,14 +2097,15 @@ void GscInfoWindow::cell_renderer_for_ata_attributes(Gtk::CellRenderer* cr,
 		if (column_index == columns_->ata_attribute_table_columns.displayable_name.index()) {
 			crt->property_weight() = Pango::WEIGHT_BOLD;
 		}
-		// Type column: no bold formatting needed
-		// if (column_index == columns_->ata_attribute_table_columns.type.index()) {
-		// 	if (attribute.attr_type == AtaStorageAttribute::AttributeType::Prefail) {
-		// 		crt->property_weight() = Pango::WEIGHT_BOLD;
-		// 	} else {  // reset to default value if reloading
-		// 		crt->property_weight().reset_value();
-		// 	}
-		// }
+		if (column_index == columns_->ata_attribute_table_columns.type.index()) {
+			// Bold only when attribute has failed AND it's pre-failure type
+			if (attribute.when_failed != AtaStorageAttribute::FailTime::None
+					&& attribute.attr_type == AtaStorageAttribute::AttributeType::Prefail) {
+				crt->property_weight() = Pango::WEIGHT_BOLD;
+			} else {  // reset to default value if reloading
+				crt->property_weight().reset_value();
+			}
+		}
 		if (column_index == columns_->ata_attribute_table_columns.when_failed.index()) {
 			if (attribute.when_failed != AtaStorageAttribute::FailTime::None) {
 				crt->property_weight() = Pango::WEIGHT_BOLD;
