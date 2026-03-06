@@ -13,7 +13,8 @@ Copyright:
 #define WARNING_COLORS_H
 
 #include <glibmm.h>
-#include <gtkmm.h>
+#include <gtkmm/settings.h>
+#include <gtkmm/main.h>
 
 #include "storage_property.h"
 
@@ -21,6 +22,12 @@ Copyright:
 /// Check if a dark GTK theme is currently active
 inline bool is_dark_theme_active()
 {
+	// Only check GTK settings if GTK has been initialized
+	// This avoids crashes/warnings in non-GUI executables
+	if (Gtk::Main::level() == 0) {
+		return false;  // Default to light theme if GTK not initialized
+	}
+
 	// Try to get the GTK settings to check for dark theme preference
 	Glib::RefPtr<Gtk::Settings> settings = Gtk::Settings::get_default();
 	if (settings) {
@@ -72,6 +79,11 @@ inline bool app_property_get_row_highlight_colors(WarningLevel warning, std::str
 /// \return true if the color was changed.
 inline bool app_property_get_label_highlight_color(WarningLevel warning, std::string& fg)
 {
+	// Return early for None to avoid unnecessary theme detection
+	if (warning == WarningLevel::None) {
+		return false;
+	}
+
 	bool dark_theme = is_dark_theme_active();
 
 	if (warning == WarningLevel::Notice) {
