@@ -115,6 +115,7 @@ bool storage_property_autoset_description(StorageProperty& p, StorageDeviceDetec
 				found = auto_set(p, "ata_smart_attributes/revision", p.displayable_name.c_str());
 				if (!found) {
 					auto_set_ata_attribute_description(p, device_type);
+					storage_property_ata_attribute_humanize_ssd_writes(p);
 					found = true;  // true, because auto_set_attr() may set "Unknown attribute", which is still "found".
 				}
 				break;

@@ -22,6 +22,7 @@ Copyright:
 //#include "warning_colors.h"
 #include "storage_property_descr_helpers.h"
 #include "hz/string_num.h"
+#include "hz/format_unit.h"  // format_size
 
 
 namespace {
@@ -1362,6 +1363,83 @@ void storage_property_ata_attribute_autoset_warning(StorageProperty& p)
 	}
 }
 
+
+
+void storage_property_ata_attribute_humanize_ssd_writes(StorageProperty& p)
+{
+	if (p.section != StoragePropertySection::AtaAttributes || !p.is_value_type<AtaStorageAttribute>()) {
+		return;
+	}
+
+	const auto& attr = p.get_value<AtaStorageAttribute>();
+
+	// Skip if readable_value is already set (e.g., by parser or for GiB attributes)
+	if (!p.readable_value.empty()) {
+		return;
+	}
+
+	// Standard sector size (512 bytes)
+	constexpr uint64_t bytes_per_sector = 512;
+	constexpr uint64_t mib_32 = 32ULL * 1024ULL * 1024ULL;
+	constexpr uint64_t gib = 1024ULL * 1024ULL * 1024ULL;
+
+	// Match attribute by ID and reported name to handle vendor-specific attributes
+	const int32_t id = attr.id;
+	const std::string& name = p.reported_name;
+	std::optional<uint64_t> bytes;
+
+	// Attribute 199: Write_Sectors_Tot_Ct (Indilinx Barefoot SSDs)
+	// Total count of written sectors
+	if (id == 199 && name == "Write_Sectors_Tot_Ct") {
+		bytes = static_cast<uint64_t>(attr.raw_value_int) * bytes_per_sector;
+	}
+	// Attribute 246: Total_Host_Sector_Write (Crucial/Micron SSDs)
+	// Total number of sectors written by the host system
+	else if (id == 246 && name == "Total_Host_Sector_Write") {
+		bytes = static_cast<uint64_t>(attr.raw_value_int) * bytes_per_sector;
+	}
+	// Attribute 241: Host_Writes_32MiB (various SSDs)
+	// Raw value increased by 1 for every 32 MiB written
+	else if (id == 241 && name == "Host_Writes_32MiB") {
+		bytes = static_cast<uint64_t>(attr.raw_value_int) * mib_32;
+	}
+	// Attribute 243: Host_Writes_32MiB (SanDisk SSDs)
+	else if (id == 243 && name == "Host_Writes_32MiB") {
+		bytes = static_cast<uint64_t>(attr.raw_value_int) * mib_32;
+	}
+	// Attribute 245: Flash_Writes_32MiB (Innodisk SSDs)
+	else if (id == 245 && name == "Flash_Writes_32MiB") {
+		bytes = static_cast<uint64_t>(attr.raw_value_int) * mib_32;
+	}
+	// Attribute 245: TLC_Writes_32MiB (SiliconMotion SSDs)
+	else if (id == 245 && name == "TLC_Writes_32MiB") {
+		bytes = static_cast<uint64_t>(attr.raw_value_int) * mib_32;
+	}
+	// Attribute 246: SLC_Writes_32MiB (SiliconMotion SSDs)
+	else if (id == 246 && name == "SLC_Writes_32MiB") {
+		bytes = static_cast<uint64_t>(attr.raw_value_int) * mib_32;
+	}
+	// Attribute 249: NAND_Writes_1GiB (Intel SSDs)
+	// Note: The raw value is the count, not already in GiB
+	else if (id == 249 && name == "NAND_Writes_1GiB") {
+		bytes = static_cast<uint64_t>(attr.raw_value_int) * gib;
+	}
+	// Attribute 249: Total_NAND_Prog_Ct_GiB (OCZ SSDs)
+	else if (id == 249 && name == "Total_NAND_Prog_Ct_GiB") {
+		bytes = static_cast<uint64_t>(attr.raw_value_int) * gib;
+	}
+	// Attribute 251: Total_NAND_Read_Ct_GiB (OCZ SSDs)
+	// Also humanize reads for consistency
+	else if (id == 251 && name == "Total_NAND_Read_Ct_GiB") {
+		bytes = static_cast<uint64_t>(attr.raw_value_int) * gib;
+	}
+
+	// Set readable_value if we determined the byte count
+	if (bytes.has_value() && bytes.value() > 0) {
+		// Use binary units (KiB, MiB, GiB, TiB) for consistency with existing attributes
+		p.readable_value = hz::format_size(bytes.value(), false);
+	}
+}
 
 
 
