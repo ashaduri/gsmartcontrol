@@ -21,13 +21,8 @@ Copyright:
 /// Check if a dark GTK theme is currently active
 inline bool is_dark_theme_active()
 {
-	// Only check GTK settings if GTK has been initialized
-	// This avoids crashes/warnings in non-GUI executables
-	if (Gtk::Main::level() == 0) {
-		return false;  // Default to light theme if GTK not initialized
-	}
-
-	// Try to get the GTK settings to check for dark theme preference
+	// Try to get the GTK settings to check for dark theme preference.
+	// If GTK is not available or not initialized, get_default() will return null.
 	Glib::RefPtr<Gtk::Settings> settings = Gtk::Settings::get_default();
 	if (settings) {
 		// Check if the application prefers dark theme
