@@ -864,10 +864,19 @@ bool GscInfoWindow::on_key_press_event(GdkEventKey* event)
 		auto* main_notebook = lookup_widget<Gtk::Notebook*>("main_notebook");
 		if (main_notebook) {
 			// Check if we're on the Advanced tab with sub-tabs
+			auto* advanced_tab_vbox = lookup_widget<Gtk::Box*>("advanced_tab_vbox");
 			auto* advanced_notebook = lookup_widget<Gtk::Notebook*>("advanced_notebook");
-			if (advanced_notebook && advanced_notebook->get_visible()) {
-				if (cycle_visible_pages(advanced_notebook)) {
-					return true;  // event handled
+
+			// Only handle sub-tab cycling if the Advanced tab is currently active
+			if (advanced_tab_vbox && advanced_notebook && advanced_notebook->get_visible()) {
+				const int advanced_page_num = main_notebook->page_num(*advanced_tab_vbox);
+				const int current_main_page = main_notebook->get_current_page();
+
+				// Advanced tab is active, so cycle through its sub-tabs
+				if (advanced_page_num >= 0 && advanced_page_num == current_main_page) {
+					if (cycle_visible_pages(advanced_notebook)) {
+						return true;  // event handled
+					}
 				}
 			}
 
