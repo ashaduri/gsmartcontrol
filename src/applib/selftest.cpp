@@ -89,13 +89,8 @@ std::chrono::seconds SelfTest::get_remaining_seconds() const
 {
 	using namespace std::literals;
 
-	const std::chrono::seconds total = get_min_duration_seconds();
-	if (total <= 0s)
-		return -1s;  // unknown
-
-	const double gran = (double(total.count()) / 9.);  // seconds per 10% (drive estimate)
-
-	// Use adaptive estimation if we have observed at least one completed segment
+	// Use adaptive estimation if we have observed at least one completed segment.
+	// This works for all drive types including NVMe (which may not report total duration).
 	if (!segment_durations_.empty()) {
 		// Calculate average duration of observed segments
 		double sum = 0.0;
@@ -117,6 +112,12 @@ std::chrono::seconds SelfTest::get_remaining_seconds() const
 	}
 
 	// Fall back to drive's initial estimate when we don't have observed data yet
+	const std::chrono::seconds total = get_min_duration_seconds();
+	if (total <= 0s)
+		return -1s;  // unknown
+
+	// seconds per 10% (drive estimate)
+	const double gran = (double(total.count()) / 9.);
 	// since remaining_percent_ may be manually set to 100, we limit from the above.
 	const double rem_seconds_at_last_change = std::min(double(total.count()), gran * remaining_percent_ / 10.);
 	const double rem = rem_seconds_at_last_change - timer_.elapsed();
