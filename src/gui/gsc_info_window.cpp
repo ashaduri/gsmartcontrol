@@ -831,46 +831,68 @@ bool GscInfoWindow::on_key_press_event(GdkEventKey* event)
 					const int current_page = advanced_notebook->get_current_page();
 
 					// Helper to find the next visible page in the given direction
-					const auto find_next_visible_page = [&](int start_index, int step) -> int {
-						int index = start_index;
-						for (int i = 0; i < n_pages; ++i) {
-							index = (index + step + n_pages) % n_pages;
-							if (auto* page = advanced_notebook->get_nth_page(index)) {
-								if (page->get_visible())
-									return index;
-							}
-						}
-						// Fallback: no other visible page found; stay on current
-						return start_index;
-					};
+		// Helper to cycle only across visible notebook pages
+		auto cycle_visible_pages = [&](Gtk::Notebook* notebook) -> bool {
+			if (!notebook) {
+				return false;
+			}
 
-					const bool backward = (event->state & GDK_SHIFT_MASK) != 0;
-					const int step = backward ? -1 : 1;
-					const int next_page = find_next_visible_page(current_page, step);
+			const int n_pages = notebook->get_n_pages();
+			std::vector<int> visible_pages;
+			visible_pages.reserve(n_pages);
 
-					if (next_page != current_page) {
-						advanced_notebook->set_current_page(next_page);
-						return true;  // event handled
+			for (int i = 0; i < n_pages; ++i) {
+				if (auto* page = notebook->get_nth_page(i)) {
+					if (page->get_visible()) {
+						visible_pages.push_back(i);
 					}
 				}
 			}
 
-			// Otherwise, cycle through main notebook tabs
-			const int n_pages = main_notebook->get_n_pages();
-			if (n_pages > 1) {
-				int current_page = main_notebook->get_current_page();
-				int next_page;
+			// Need at least two visible pages to make cycling meaningful
+			if (visible_pages.size() <= 1) {
+				return false;
+			}
 
-				// Check if Shift is also pressed for backward navigation
-				if (event->state & GDK_SHIFT_MASK) {
-					// Ctrl+Shift+Tab: go to previous tab
-					next_page = (current_page - 1 + n_pages) % n_pages;
-				} else {
-					// Ctrl+Tab: go to next tab
-					next_page = (current_page + 1) % n_pages;
+			const int current_page = notebook->get_current_page();
+			int visible_index = 0;
+
+			auto it = std::find(visible_pages.begin(), visible_pages.end(), current_page);
+			if (it != visible_pages.end()) {
+				visible_index = static_cast<int>(std::distance(visible_pages.begin(), it));
+			}
+
+			int next_visible_index = 0;
+
+			// Check if Shift is also pressed for backward navigation
+			if (event->state & GDK_SHIFT_MASK) {
+				// Ctrl+Shift+Tab: go to previous visible tab
+				next_visible_index =
+					(visible_index - 1 + static_cast<int>(visible_pages.size())) %
+					static_cast<int>(visible_pages.size());
+			} else {
+				// Ctrl+Tab: go to next visible tab
+				next_visible_index =
+					(visible_index + 1) %
+					static_cast<int>(visible_pages.size());
+			}
+
+			notebook->set_current_page(visible_pages[next_visible_index]);
+			return true;
+		};
+
+		auto* main_notebook = lookup_widget<Gtk::Notebook*>("main_notebook");
+		if (main_notebook) {
+			// Check if we're on the Advanced tab with sub-tabs
+			auto* advanced_notebook = lookup_widget<Gtk::Notebook*>("advanced_notebook");
+			if (advanced_notebook && advanced_notebook->get_visible()) {
+				if (cycle_visible_pages(advanced_notebook)) {
+					return true;  // event handled
 				}
+			}
 
-				main_notebook->set_current_page(next_page);
+			// Otherwise, cycle through main notebook tabs
+			if (cycle_visible_pages(main_notebook)) {
 				return true;  // event handled
 			}
 		}
