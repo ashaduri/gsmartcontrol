@@ -808,7 +808,8 @@ bool GscInfoWindow::on_delete_event([[maybe_unused]] GdkEventAny* e)
 bool GscInfoWindow::on_key_press_event(GdkEventKey* event)
 {
 	// Handle Ctrl+Tab and Ctrl+Shift+Tab for tab navigation
-	if ((event->state & GDK_CONTROL_MASK) && event->keyval == GDK_KEY_Tab) {
+	if (   (event->state & GDK_CONTROL_MASK)
+	    && (event->keyval == GDK_KEY_Tab || event->keyval == GDK_KEY_ISO_Left_Tab)) {
 		auto* main_notebook = lookup_widget<Gtk::Notebook*>("main_notebook");
 		if (main_notebook) {
 			// Check if we're on the Advanced tab with sub-tabs
