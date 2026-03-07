@@ -101,7 +101,7 @@ std::chrono::seconds SelfTest::get_remaining_seconds() const
 
 		// Estimate remaining time based on observed average and remaining segments
 		// remaining_percent_ goes from 100 (start) to 0 (end), in 10% decrements
-		const int8_t remaining_segments = (remaining_percent_ + 9) / 10;  // round up
+		const int remaining_segments = (remaining_percent_ + 9) / 10;  // round up
 		const double estimated_remaining = avg_segment_duration * remaining_segments - timer_.elapsed();
 
 		const auto rem_rounded = static_cast<int64_t>(std::round(estimated_remaining));
