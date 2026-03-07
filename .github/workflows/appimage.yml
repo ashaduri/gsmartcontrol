@@ -23,7 +23,7 @@ jobs:
       run: sudo apt-get update
 
     - name: Install Dependencies
-      run: sudo apt-get install libgtkmm-3.0-dev gettext wget file
+      run: sudo apt-get install libgtkmm-3.0-dev gettext wget file libfuse2
 
     - name: Download linuxdeploy
       # Note: Using 'continuous' release for latest version. For reproducible builds,

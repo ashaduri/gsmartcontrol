@@ -7,6 +7,13 @@
 
 # Script to build GSmartControl AppImage
 # This script should be run from the repository root directory
+#
+# Requirements:
+# - cmake, wget, file
+# - libgtkmm-3.0-dev (or equivalent GTK3 development packages)
+# - libfuse2 (required to run linuxdeploy and appimagetool AppImages)
+#   On Ubuntu/Debian: sudo apt-get install libfuse2
+#   On Ubuntu 24.04+: sudo apt-get install libfuse2t64
 
 set -e  # Exit on error
 set -u  # Exit on undefined variable
