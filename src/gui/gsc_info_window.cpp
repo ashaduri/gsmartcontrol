@@ -810,27 +810,7 @@ bool GscInfoWindow::on_key_press_event(GdkEventKey* event)
 	// Handle Ctrl+Tab and Ctrl+Shift+Tab for tab navigation
 	if (   (event->state & GDK_CONTROL_MASK)
 	    && (event->keyval == GDK_KEY_Tab || event->keyval == GDK_KEY_ISO_Left_Tab)) {
-		auto* main_notebook = lookup_widget<Gtk::Notebook*>("main_notebook");
-		if (main_notebook) {
-			// Check if we're on the Advanced tab with sub-tabs
-			auto* advanced_notebook = lookup_widget<Gtk::Notebook*>("advanced_notebook");
-			if (advanced_notebook && advanced_notebook->get_visible()) {
-				const int n_pages = advanced_notebook->get_n_pages();
 
-				// Count how many sub-tabs are actually visible
-				int visible_pages = 0;
-				for (int i = 0; i < n_pages; ++i) {
-					if (auto* page = advanced_notebook->get_nth_page(i)) {
-						if (page->get_visible())
-							++visible_pages;
-					}
-				}
-
-				// Only enable cycling when more than one sub-tab is visible
-				if (visible_pages > 1) {
-					const int current_page = advanced_notebook->get_current_page();
-
-					// Helper to find the next visible page in the given direction
 		// Helper to cycle only across visible notebook pages
 		auto cycle_visible_pages = [&](Gtk::Notebook* notebook) -> bool {
 			if (!notebook) {
