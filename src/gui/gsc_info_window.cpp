@@ -815,21 +815,42 @@ bool GscInfoWindow::on_key_press_event(GdkEventKey* event)
 			auto* advanced_notebook = lookup_widget<Gtk::Notebook*>("advanced_notebook");
 			if (advanced_notebook && advanced_notebook->get_visible()) {
 				const int n_pages = advanced_notebook->get_n_pages();
-				if (n_pages > 1) {
-					int current_page = advanced_notebook->get_current_page();
-					int next_page;
 
-					// Check if Shift is also pressed for backward navigation
-					if (event->state & GDK_SHIFT_MASK) {
-						// Ctrl+Shift+Tab: go to previous sub-tab
-						next_page = (current_page - 1 + n_pages) % n_pages;
-					} else {
-						// Ctrl+Tab: go to next sub-tab
-						next_page = (current_page + 1) % n_pages;
+				// Count how many sub-tabs are actually visible
+				int visible_pages = 0;
+				for (int i = 0; i < n_pages; ++i) {
+					if (auto* page = advanced_notebook->get_nth_page(i)) {
+						if (page->get_visible())
+							++visible_pages;
 					}
+				}
 
-					advanced_notebook->set_current_page(next_page);
-					return true;  // event handled
+				// Only enable cycling when more than one sub-tab is visible
+				if (visible_pages > 1) {
+					const int current_page = advanced_notebook->get_current_page();
+
+					// Helper to find the next visible page in the given direction
+					const auto find_next_visible_page = [&](int start_index, int step) -> int {
+						int index = start_index;
+						for (int i = 0; i < n_pages; ++i) {
+							index = (index + step + n_pages) % n_pages;
+							if (auto* page = advanced_notebook->get_nth_page(index)) {
+								if (page->get_visible())
+									return index;
+							}
+						}
+						// Fallback: no other visible page found; stay on current
+						return start_index;
+					};
+
+					const bool backward = (event->state & GDK_SHIFT_MASK) != 0;
+					const int step = backward ? -1 : 1;
+					const int next_page = find_next_visible_page(current_page, step);
+
+					if (next_page != current_page) {
+						advanced_notebook->set_current_page(next_page);
+						return true;  // event handled
+					}
 				}
 			}
 
