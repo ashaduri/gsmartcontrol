@@ -120,7 +120,7 @@ bool GscMainWindowIconView::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
 		return true;
 	}
 	if (empty_view_message_ != Message::None && this->num_icons_ == 0) {  // no icons
-		Glib::RefPtr<Pango::Layout> layout = this->create_pango_layout("");
+		const Glib::RefPtr<Pango::Layout> layout = this->create_pango_layout("");
 		layout->set_alignment(Pango::ALIGN_CENTER);
 		layout->set_markup(get_message_string(empty_view_message_));
 
@@ -130,6 +130,12 @@ bool GscMainWindowIconView::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
 		const int pos_x = (get_allocation().get_width() - layout_w) / 2;
 		const int pos_y = (get_allocation().get_height() - layout_h) / 2;
 		cr->move_to(pos_x, pos_y);
+
+		// Use the foreground color from the widget's style context so
+		// the text is visible in both light and dark themes.
+		const auto style_context = get_style_context();
+		const Gdk::RGBA fg_color = style_context->get_color(style_context->get_state());
+		cr->set_source_rgba(fg_color.get_red(), fg_color.get_green(), fg_color.get_blue(), fg_color.get_alpha());
 
 		layout->show_in_cairo_context(cr);
 

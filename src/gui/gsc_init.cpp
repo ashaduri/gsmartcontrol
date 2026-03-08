@@ -505,6 +505,32 @@ bool app_init_and_loop(int& argc, char**& argv)
 	}
 */
 
+	// Detect Windows dark mode and set GTK theme preference accordingly
+	if constexpr(BuildEnv::is_kernel_family_windows()) {
+		Glib::RefPtr<Gtk::Settings> gtk_settings = Gtk::Settings::get_default();
+		if (gtk_settings) {
+			bool use_dark_theme = false;
+		#ifdef _WIN32
+			// Check Windows registry for dark mode preference
+			// HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize
+			// AppsUseLightTheme = 0 means dark mode, 1 means light mode
+			DWORD apps_use_light_theme = 1;  // Default to light mode
+			if (hz::win32_get_registry_value_dword(HKEY_CURRENT_USER,
+					R"(Software\Microsoft\Windows\CurrentVersion\Themes\Personalize)",
+					"AppsUseLightTheme", apps_use_light_theme)) {
+				use_dark_theme = (apps_use_light_theme == 0);
+				debug_out_dump("app", "Windows theme detected: " << (use_dark_theme ? "dark" : "light") << "\n");
+			} else {
+				debug_out_dump("app", "Could not read Windows theme preference, defaulting to light mode.\n");
+			}
+		#endif
+			// Apply the dark theme preference to GTK
+			gtk_settings->property_gtk_application_prefer_dark_theme().set_value(use_dark_theme);
+			debug_out_dump("app", "GTK dark theme preference set to: " << (use_dark_theme ? "dark" : "light") << "\n");
+		}
+	}
+
+
 	// The application is dpi-aware in Windows.
 	// However, Gtk3 does not support fractional scaling, so at 250% scaling in system settings, the UI will use 200%.
 	//
