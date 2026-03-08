@@ -58,8 +58,8 @@ bool gui_show_text_entry_dialog(const std::string& title, const std::string& mes
 		std::string& result, const std::string& default_str, Gtk::Window* parent = nullptr, bool sec_msg_markup = false);
 
 
-
-
+/// Check if a dark GTK theme is currently active
+bool gui_is_dark_theme_active();
 
 
 #endif
