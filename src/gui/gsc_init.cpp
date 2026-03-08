@@ -526,7 +526,7 @@ bool app_init_and_loop(int& argc, char**& argv)
 		#endif
 			// Apply the dark theme preference to GTK
 			gtk_settings->property_gtk_application_prefer_dark_theme().set_value(use_dark_theme);
-			debug_out_dump("app", "GTK dark theme preference set to: " << use_dark_theme << "\n");
+			debug_out_dump("app", "GTK dark theme preference set to: " << (use_dark_theme ? "dark" : "light") << "\n");
 		}
 	}
 
