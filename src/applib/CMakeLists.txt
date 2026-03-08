@@ -72,6 +72,7 @@ target_sources(applib PRIVATE
 	storage_property_repository.cpp
 	storage_property_repository.h
 	storage_settings.h
+	warning_colors.cpp
 	warning_colors.h
 	warning_level.h
 	window_instance_manager.h

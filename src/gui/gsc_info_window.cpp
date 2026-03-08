@@ -81,6 +81,7 @@ namespace {
 // 			vbox->pack_start(*label, false, false);
 
 		} else {
+			const bool dark_mode = gui_is_dark_theme_active();
 
 			// add one label per element
 			for (const auto& label_string : label_strings) {
@@ -95,7 +96,7 @@ namespace {
 				label->set_can_focus(false);
 
 				std::string fg;
-				if (app_property_get_label_highlight_color(label_string.property->warning_level, fg)) {
+				if (app_property_get_label_highlight_color(dark_mode, label_string.property->warning_level, fg)) {
 					label->set_markup(
 							std::string("<span color=\"").append(fg).append("\">")
 							.append(label_text).append("</span>") );
@@ -129,7 +130,7 @@ namespace {
 		}
 
 		std::string fg;
-		if (app_property_get_label_highlight_color(warning, fg))
+		if (app_property_get_label_highlight_color(gui_is_dark_theme_active(), warning, fg))
 			label->set_markup_with_mnemonic("<span color=\"" + fg + "\">" + original_label + "</span>");
 	}
 
@@ -1038,6 +1039,7 @@ void GscInfoWindow::fill_ui_general(const StoragePropertyRepository& property_re
 	identity_table->hide();
 
 	WarningLevel max_tab_warning = WarningLevel::None;
+	const bool dark_mode = gui_is_dark_theme_active();
 	int row = 0;
 
 	for (auto&& p : general_props) {
@@ -1070,7 +1072,7 @@ void GscInfoWindow::fill_ui_general(const StoragePropertyRepository& property_re
 		value->set_markup(Glib::Markup::escape_text(p.format_value()));
 
 		std::string fg;
-		if (app_property_get_label_highlight_color(p.warning_level, fg)) {
+		if (app_property_get_label_highlight_color(dark_mode, p.warning_level, fg)) {
 			name->set_markup("<span color=\"" + fg + "\">" + name->get_label() + "</span>");
 			value->set_markup("<span color=\"" + fg + "\">" + value->get_label() + "</span>");
 		}
@@ -2067,7 +2069,7 @@ WarningLevel GscInfoWindow::fill_ui_directory(const StoragePropertyRepository& p
 inline void cell_renderer_set_warning_fg_bg(Gtk::CellRendererText* crt, const StorageProperty& p)
 {
 	std::string fg, bg;
-	if (app_property_get_row_highlight_colors(p.warning_level, fg, bg)) {
+	if (app_property_get_row_highlight_colors(gui_is_dark_theme_active(), p.warning_level, fg, bg)) {
 		// Note: property_cell_background makes horizontal tree lines disappear around it,
 		// but property_background doesn't play nice with sorted column color.
 		crt->property_cell_background() = bg;
@@ -2446,7 +2448,7 @@ gboolean GscInfoWindow::test_idle_callback(void* data)
 			if (!result_main_msg.empty()) {  // Highlight in red
 				std::string alert_color;
 				// Use the same color as Alert level warnings for consistency
-				if (app_property_get_label_highlight_color(WarningLevel::Alert, alert_color) && !alert_color.empty()) {
+				if (app_property_get_label_highlight_color(gui_is_dark_theme_active(), WarningLevel::Alert, alert_color) && !alert_color.empty()) {
 					result_main_msg = "<span color=\"" + alert_color + "\">"s + result_main_msg + "</span>";
 				}
 			}

@@ -165,6 +165,29 @@ bool gui_show_text_entry_dialog(const std::string& title, const std::string& mes
 
 
 
+bool gui_is_dark_theme_active()
+{
+	// Try to get the GTK settings to check for dark theme preference.
+	// If GTK is not available or not initialized, get_default() will return null.
+	const Glib::RefPtr<Gtk::Settings> settings = Gtk::Settings::get_default();
+	if (settings) {
+		// Check if the application prefers dark theme
+		if (settings->property_gtk_application_prefer_dark_theme().get_value()) {
+			return true;
+		}
+
+		// Check theme name for common dark theme identifiers
+		Glib::ustring theme_name;
+		settings->get_property("gtk-theme-name", theme_name);
+		const std::string theme_str = theme_name.lowercase();
+		if (theme_str.find("dark") != std::string::npos ||
+			theme_str.find("black") != std::string::npos) {
+			return true;
+		}
+	}
+
+	return false;
+}
 
 
 
