@@ -6,8 +6,17 @@
 
 
 # Generate files
-configure_file("gsmartcontrol.appdata.in.xml" "gsmartcontrol.appdata.xml" ESCAPE_QUOTES @ONLY)
-configure_file("gsmartcontrol.in.desktop" "gsmartcontrol.desktop" ESCAPE_QUOTES @ONLY)
+if (APP_BUILD_APPIMAGE)
+	set(APPIMAGE_DESKTOP_ID "dev.shaduri.gsmartcontrol")
+	set(APPIMAGE_EXEC_LINE "Exec=\"${CMAKE_INSTALL_FULL_BINDIR}/gsmartcontrol\"")
+	configure_file("gsmartcontrol.appdata.in.xml" "gsmartcontrol.appdata.xml" ESCAPE_QUOTES @ONLY)
+	configure_file("gsmartcontrol.in.desktop" "dev.shaduri.gsmartcontrol.desktop" ESCAPE_QUOTES @ONLY)
+else()
+	set(APPIMAGE_DESKTOP_ID "gsmartcontrol")
+	set(APPIMAGE_EXEC_LINE "Exec=\"${CMAKE_INSTALL_FULL_BINDIR}/gsmartcontrol-root\"")
+	configure_file("gsmartcontrol.appdata.in.xml" "gsmartcontrol.appdata.xml" ESCAPE_QUOTES @ONLY)
+	configure_file("gsmartcontrol.in.desktop" "gsmartcontrol.desktop" ESCAPE_QUOTES @ONLY)
+endif()
 configure_file("gsmartcontrol-root.in.sh" "gsmartcontrol-root.sh" ESCAPE_QUOTES @ONLY)
 configure_file("org.gsmartcontrol.in.policy" "org.gsmartcontrol.policy" ESCAPE_QUOTES @ONLY)
 
@@ -42,8 +51,13 @@ endif()
 
 # Desktop file
 if (NOT WIN32)
-	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/gsmartcontrol.desktop"
-		DESTINATION "${CMAKE_INSTALL_DATADIR}/applications/")
+	if (APP_BUILD_APPIMAGE)
+		install(FILES "${CMAKE_CURRENT_BINARY_DIR}/dev.shaduri.gsmartcontrol.desktop"
+			DESTINATION "${CMAKE_INSTALL_DATADIR}/applications/")
+	else()
+		install(FILES "${CMAKE_CURRENT_BINARY_DIR}/gsmartcontrol.desktop"
+			DESTINATION "${CMAKE_INSTALL_DATADIR}/applications/")
+	endif()
 
 	# Appdata file
 	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/gsmartcontrol.appdata.xml"
@@ -55,9 +69,13 @@ if (NOT WIN32)
 
 	# Man pages
 	install(FILES "man1/gsmartcontrol.1" DESTINATION "${CMAKE_INSTALL_MANDIR}/man1")
-	install(FILES "man1/gsmartcontrol.1" DESTINATION "${CMAKE_INSTALL_MANDIR}/man1" RENAME "gsmartcontrol-root.1")
+	if (NOT APP_BUILD_APPIMAGE)
+		install(FILES "man1/gsmartcontrol.1" DESTINATION "${CMAKE_INSTALL_MANDIR}/man1" RENAME "gsmartcontrol-root.1")
+	endif()
 
 	# Scripts (this goes to bin, not sbin, as it doesn't require root privileges before running)
-	install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/gsmartcontrol-root.sh" TYPE BIN RENAME "gsmartcontrol-root")
+	if (NOT APP_BUILD_APPIMAGE)
+		install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/gsmartcontrol-root.sh" TYPE BIN RENAME "gsmartcontrol-root")
+	endif()
 endif()
 

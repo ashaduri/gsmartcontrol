@@ -1,0 +1,128 @@
+name: Build AppImage
+
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  BUILD_TYPE: RelWithDebInfo
+
+jobs:
+  build-appimage:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Update Package Database
+      run: sudo apt-get update
+
+    - name: Install Dependencies
+      run: sudo apt-get install libgtkmm-3.0-dev gettext wget file libfuse2
+
+    - name: Download linuxdeploy
+      # Note: Using 'continuous' release for latest version. For reproducible builds,
+      # pin to a specific release tag and verify SHA256 checksum.
+      run: |
+        wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+        chmod +x linuxdeploy-x86_64.AppImage
+        sudo mv linuxdeploy-x86_64.AppImage /usr/local/bin/linuxdeploy
+
+    - name: Download appimagetool
+      # Note: Using 'continuous' release for latest version. For reproducible builds,
+      # pin to a specific release tag and verify SHA256 checksum.
+      run: |
+        wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+        chmod +x appimagetool-x86_64.AppImage
+        sudo mv appimagetool-x86_64.AppImage /usr/local/bin/appimagetool
+
+    - name: Create Build Directory
+      run: cmake -E make_directory build-appimage
+
+    - name: Configure CMake for AppImage
+      shell: bash
+      working-directory: ${{github.workspace}}/build-appimage
+      env:
+        CC: gcc-11
+        CXX: g++-11
+      run: >
+        cmake $GITHUB_WORKSPACE
+        -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        -DCMAKE_INSTALL_PREFIX=/usr
+        -DAPP_BUILD_APPIMAGE=ON
+        -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/toolchains/linux-dev.cmake"
+
+    - name: Build
+      shell: bash
+      working-directory: ${{github.workspace}}/build-appimage
+      run: cmake --build . --config $BUILD_TYPE -j$(nproc)
+
+    - name: Install to AppDir
+      shell: bash
+      working-directory: ${{github.workspace}}/build-appimage
+      run: DESTDIR=${{github.workspace}}/AppDir cmake --install .
+
+    - name: Setup AppDir structure
+      shell: bash
+      working-directory: ${{github.workspace}}
+      run: |
+        # Copy desktop file and icon to AppDir root
+        cp AppDir/usr/share/applications/dev.shaduri.gsmartcontrol.desktop AppDir/
+        cp AppDir/usr/share/icons/hicolor/256x256/apps/gsmartcontrol.png AppDir/
+
+        # Create AppRun script
+        cat > AppDir/AppRun << 'EOF'
+        #!/bin/bash
+        SELF=$(readlink -f "$0")
+        HERE=${SELF%/*}
+        export LD_LIBRARY_PATH="$HERE/usr/lib:${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+        export PATH="$HERE/usr/bin:${PATH:+:$PATH}"
+        export GSETTINGS_SCHEMA_DIR="$HERE/usr/share/glib-2.0/schemas:${GSETTINGS_SCHEMA_DIR:+:$GSETTINGS_SCHEMA_DIR}"
+        export GDK_PIXBUF_MODULEDIR="$HERE/usr/lib/gdk-pixbuf-2.0/2.10.0/loaders"
+        export GDK_PIXBUF_MODULE_FILE="$HERE/usr/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
+        exec "$HERE/usr/bin/gsmartcontrol" "$@"
+        EOF
+        chmod +x AppDir/AppRun
+
+    - name: Bundle dependencies with linuxdeploy
+      shell: bash
+      working-directory: ${{github.workspace}}
+      run: |
+        linuxdeploy --appdir AppDir \
+          --executable AppDir/usr/bin/gsmartcontrol \
+          --desktop-file AppDir/dev.shaduri.gsmartcontrol.desktop \
+          --icon-file AppDir/gsmartcontrol.png
+
+    - name: Update GDK pixbuf cache
+      shell: bash
+      working-directory: ${{github.workspace}}
+      continue-on-error: true
+      run: |
+        if [ -d "AppDir/usr/lib/gdk-pixbuf-2.0" ]; then
+          gdk-pixbuf-query-loaders > AppDir/usr/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache || true
+        fi
+
+    - name: Get version
+      id: version
+      shell: bash
+      run: |
+        VERSION=$(sed -n 's/.*CMAKE_PROJECT_VERSION[[:space:]]*"\([^"]*\)".*/\1/p' version.txt)
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "Version: $VERSION"
+
+    - name: Create AppImage
+      shell: bash
+      working-directory: ${{github.workspace}}
+      run: |
+        ARCH=x86_64 appimagetool AppDir GSmartControl-${{ steps.version.outputs.VERSION }}-x86_64.AppImage
+
+    - name: Upload AppImage artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: GSmartControl AppImage
+        path: ${{github.workspace}}/GSmartControl-*-x86_64.AppImage

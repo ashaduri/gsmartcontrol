@@ -82,6 +82,12 @@ elseif ("${CMAKE_SYSTEM_NAME}" MATCHES "QNX")
 	set(CONFIG_KERNEL_QNX TRUE)
 endif()
 
+# AppImage build configuration
+if (APP_BUILD_APPIMAGE)
+	set(CONFIG_APPIMAGE_BUILD TRUE)
+	message(STATUS "AppImage build enabled - using portable data file paths")
+endif()
+
 
 # Additionally, these macros are defined by OS / compilers:
 
