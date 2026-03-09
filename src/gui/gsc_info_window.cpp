@@ -35,6 +35,7 @@ Copyright:
 #include "gsc_info_window.h"
 #include "gsc_executor_error_dialog.h"
 #include "gsc_startup_settings.h"
+#include "gsc_init.h"  // app_apply_fractional_scaling_to_default_size()
 
 
 
@@ -167,9 +168,7 @@ GscInfoWindow::GscInfoWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 	{
 		const int def_size_w = rconfig::get_data<int>("gui/info_window/default_size_w");
 		const int def_size_h = rconfig::get_data<int>("gui/info_window/default_size_h");
-		if (def_size_w > 0 && def_size_h > 0) {
-			set_default_size(def_size_w, def_size_h);
-		}
+		app_apply_fractional_scaling_to_default_size(this, def_size_w, def_size_h);
 	}
 
 	// Create missing widgets

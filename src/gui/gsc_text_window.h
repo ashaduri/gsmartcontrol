@@ -24,6 +24,7 @@ Copyright:
 
 #include "applib/app_builder_widget.h"
 #include "applib/app_gtkmm_tools.h"
+#include "gsc_init.h"  // app_apply_fractional_scaling_to_default_size()
 
 
 
@@ -49,6 +50,9 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 		GscTextWindow(typename Gtk::Window::BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui)
 				: AppBuilderWidget<GscTextWindow<InstanceSwitch>, InstanceSwitch::multi_instance>(gtkcobj, std::move(ui))
 		{
+			// Apply fractional scaling to default window size
+			app_apply_fractional_scaling_to_default_size(this, 0, 0);
+
 			// Connect callbacks
 
 			Gtk::Button* save_as_button = nullptr;
