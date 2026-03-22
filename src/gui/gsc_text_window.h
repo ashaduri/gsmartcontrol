@@ -178,16 +178,22 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 						has_text = true;
 					}
 				}
-				// If we have full_output or basic_output, we have JSON
+				// Get the output - it could be JSON or text format
 				std::string output = storage_device_->get_full_output();
 				if (output.empty()) {
 					output = storage_device_->get_basic_output();
 				}
 				if (!output.empty()) {
-					has_json = true;
+					// If we have text in property repo, the output is JSON; otherwise it's text
+					if (has_text) {
+						has_json = true;
+					} else {
+						// No text in property means the output itself is text format
+						has_text = true;
+					}
 				}
 			} else {
-				// If no storage device is set, assume we have JSON (contents_)
+				// If no storage device is set, we only have the contents (assume JSON for backward compatibility)
 				has_json = true;
 			}
 
@@ -296,13 +302,13 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 						} else if (json_selected) {
 							file += ".json";
 						} else {
-							// "JSON and Text Files" or "All Files" selected - use extension from file.extension() or default
+							// "JSON and Text Files" or "All Files" selected - use user-provided extension or default
 							if (has_json && !has_text) {
 								file += ".json";
 							} else if (has_text && !has_json) {
 								file += ".txt";
 							} else {
-								// Both available, default to JSON
+								// Both available, default to JSON (per requirements)
 								file += ".json";
 							}
 						}
