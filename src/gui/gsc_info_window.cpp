@@ -1141,7 +1141,7 @@ void GscInfoWindow::fill_ui_ata_attributes(const StoragePropertyRepository& prop
 
 	model_columns.add(columns_->ata_attribute_table_columns.type);
 	num_tree_col = app_gtkmm_create_tree_view_column(columns_->ata_attribute_table_columns.type, *treeview,
-			_("Type"), _("Alarm condition is reached when normalized value becomes less than or equal to threshold. Type indicates whether it's a signal of drive's pre-failure time or just an old age."), false, true);
+			_("Type"), _("Indicates whether an alarm for this attribute signals drive failure (pre-failure) or normal wear from drive age (old age)."), false, true);
 
 	// Doesn't carry that much info. Advanced users can look at the flags.
 // 		model_columns.add(attribute_table_columns.updated);
@@ -2100,7 +2100,10 @@ void GscInfoWindow::cell_renderer_for_ata_attributes(Gtk::CellRenderer* cr,
 			crt->property_weight() = Pango::WEIGHT_BOLD;
 		}
 		if (column_index == columns_->ata_attribute_table_columns.type.index()) {
-			if (attribute.attr_type == AtaStorageAttribute::AttributeType::Prefail) {
+			// Bold only when attribute has failed AND it's pre-failure type
+			if ((attribute.when_failed == AtaStorageAttribute::FailTime::Past
+					|| attribute.when_failed == AtaStorageAttribute::FailTime::Now)
+					&& attribute.attr_type == AtaStorageAttribute::AttributeType::Prefail) {
 				crt->property_weight() = Pango::WEIGHT_BOLD;
 			} else {  // reset to default value if reloading
 				crt->property_weight().reset_value();
