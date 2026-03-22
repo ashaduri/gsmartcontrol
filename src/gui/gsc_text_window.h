@@ -172,10 +172,11 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 
 			if (storage_device_) {
 				// Check if we have text output in the property repository
+				bool has_text_property = false;
 				if (auto p = storage_device_->get_property_repository().lookup_property("smartctl/output"); !p.empty()) {
 					const std::string text_output = p.get_value<std::string>();
 					if (!text_output.empty()) {
-						has_text = true;
+						has_text_property = true;
 					}
 				}
 				// Get the output - it could be JSON or text format
@@ -184,12 +185,20 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 					output = storage_device_->get_basic_output();
 				}
 				if (!output.empty()) {
-					// If we have text in property repo, the output is JSON; otherwise it's text
-					if (has_text) {
+					// If we have text in property repo, the output is JSON with embedded text
+					if (has_text_property) {
 						has_json = true;
-					} else {
-						// No text in property means the output itself is text format
 						has_text = true;
+					} else {
+						// No text in property means either:
+						// 1. Output is JSON without embedded text, or
+						// 2. Output is text format (loaded text virtual drive)
+						// We check if output starts with '{' to detect JSON
+						if (!output.empty() && output[0] == '{') {
+							has_json = true;
+						} else {
+							has_text = true;
+						}
 					}
 				}
 			} else {
