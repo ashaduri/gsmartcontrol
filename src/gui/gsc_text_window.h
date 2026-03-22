@@ -24,6 +24,7 @@ Copyright:
 
 #include "applib/app_builder_widget.h"
 #include "applib/app_gtkmm_tools.h"
+#include "applib/storage_device.h"
 
 
 
@@ -130,6 +131,13 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 		}
 
 
+		/// Set the storage device to enable text/JSON format detection
+		void set_storage_device(std::shared_ptr<StorageDevice> device)
+		{
+			storage_device_ = std::move(device);
+		}
+
+
 	protected:
 
 
@@ -158,10 +166,58 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 			}
 			int result = 0;
 
+			// Determine if we have JSON and/or text data available
+			bool has_json = false;
+			bool has_text = false;
+
+			if (storage_device_) {
+				// Check if we have text output in the property repository
+				bool has_text_property = false;
+				if (auto p = storage_device_->get_property_repository().lookup_property("smartctl/output"); !p.empty()) {
+					const std::string text_output = p.get_value<std::string>();
+					if (!text_output.empty()) {
+						has_text_property = true;
+					}
+				}
+				// Get the output - it could be JSON or text format
+				std::string output = storage_device_->get_full_output();
+				if (output.empty()) {
+					output = storage_device_->get_basic_output();
+				}
+				if (!output.empty()) {
+					// If we have text in property repo, the output is JSON with embedded text
+					if (has_text_property) {
+						has_json = true;
+						has_text = true;
+					} else {
+						// No text in property means either:
+						// 1. Output is JSON without embedded text, or
+						// 2. Output is text format (loaded text virtual drive)
+						// We check if output starts with '{' to detect JSON
+						if (!output.empty() && output[0] == '{') {
+							has_json = true;
+						} else {
+							has_text = true;
+						}
+					}
+				}
+			} else {
+				// If no storage device is set, we only have the contents (assume JSON for backward compatibility)
+				has_json = true;
+			}
+
 			Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
 			specific_filter->set_name(_("JSON and Text Files"));
 			specific_filter->add_pattern("*.json");
 			specific_filter->add_pattern("*.txt");
+
+			Glib::RefPtr<Gtk::FileFilter> json_filter = Gtk::FileFilter::create();
+			json_filter->set_name(_("JSON Files"));
+			json_filter->add_pattern("*.json");
+
+			Glib::RefPtr<Gtk::FileFilter> txt_filter = Gtk::FileFilter::create();
+			txt_filter->set_name(_("Text Files"));
+			txt_filter->add_pattern("*.txt");
 
 			Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
 			all_filter->set_name(_("All Files"));
@@ -174,7 +230,16 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 
 			gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), TRUE);
 
-			gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), specific_filter->gobj());
+			// Add filters based on what data is available
+			if (has_json && has_text) {
+				gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), specific_filter->gobj());
+				gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), json_filter->gobj());
+				gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), txt_filter->gobj());
+			} else if (has_json) {
+				gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), json_filter->gobj());
+			} else if (has_text) {
+				gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), txt_filter->gobj());
+			}
 			gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), all_filter->gobj());
 
 			if (!last_dir.empty())
@@ -195,7 +260,16 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 
 			dialog.set_do_overwrite_confirmation(true);
 
-			dialog.add_filter(specific_filter);
+			// Add filters based on what data is available
+			if (has_json && has_text) {
+				dialog.add_filter(specific_filter);
+				dialog.add_filter(json_filter);
+				dialog.add_filter(txt_filter);
+			} else if (has_json) {
+				dialog.add_filter(json_filter);
+			} else if (has_text) {
+				dialog.add_filter(txt_filter);
+			}
 			dialog.add_filter(all_filter);
 
 			if (!last_dir.empty())
@@ -216,22 +290,62 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 #if GTK_CHECK_VERSION(3, 20, 0)
 					file = hz::fs_path_from_string(app_string_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get()))));
 					last_dir = hz::fs_path_to_string(file.parent_path());
+
+					// Detect which filter was selected
+					bool txt_selected = gtk_file_chooser_get_filter(GTK_FILE_CHOOSER(dialog.get())) == txt_filter->gobj();
+					bool json_selected = gtk_file_chooser_get_filter(GTK_FILE_CHOOSER(dialog.get())) == json_filter->gobj();
 #else
 					file = hz::fs_path_from_string(dialog.get_filename());  // in fs encoding
 					last_dir = dialog.get_current_folder();  // save for the future
+
+					// Detect which filter was selected
+					bool txt_selected = dialog.get_filter() == txt_filter;
+					bool json_selected = dialog.get_filter() == json_filter;
 #endif
 					rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
 
+					// Add extension if not present, based on selected filter
 					if (file.extension() != ".json" && file.extension() != ".txt") {
-						file += ".json";
+						if (txt_selected) {
+							file += ".txt";
+						} else if (json_selected) {
+							file += ".json";
+						} else {
+							// "JSON and Text Files" or "All Files" selected - use user-provided extension or default
+							if (has_json && !has_text) {
+								file += ".json";
+							} else if (has_text && !has_json) {
+								file += ".txt";
+							} else {
+								// Both available, default to JSON (per requirements)
+								file += ".json";
+							}
+						}
 					}
 
+					// Determine if we should save as text based on extension or filter
+					bool save_txt = txt_selected || file.extension() == ".txt";
+
 					std::string text;
-					if (std::holds_alternative<std::string>(contents_)) {
-						text = std::get<std::string>(contents_);
-					} else {
-						text = std::get<Glib::ustring>(contents_);
+					if (save_txt && storage_device_) {
+						// Try to get text output from property repository
+						if (auto p = storage_device_->get_property_repository().lookup_property("smartctl/output"); !p.empty()) {
+							const std::string text_output = p.get_value<std::string>();
+							if (!text_output.empty()) {
+								text = text_output;
+							}
+						}
 					}
+
+					// If we didn't get text output or not saving as text, use the contents
+					if (text.empty()) {
+						if (std::holds_alternative<std::string>(contents_)) {
+							text = std::get<std::string>(contents_);
+						} else {
+							text = std::get<Glib::ustring>(contents_);
+						}
+					}
+
 					auto ec = hz::fs_file_put_contents(file, text);
 					if (ec) {
 						gui_show_error_dialog(_("Cannot save data to file"), ec.message(), this);
@@ -268,6 +382,8 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 		> contents_;
 
 		std::string save_filename_;  ///< Default filename for Save As
+
+		std::shared_ptr<StorageDevice> storage_device_;  ///< Storage device for accessing text/JSON data
 
 };
 
