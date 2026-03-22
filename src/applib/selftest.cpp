@@ -89,15 +89,46 @@ std::chrono::seconds SelfTest::get_remaining_seconds() const
 {
 	using namespace std::literals;
 
+	// Use adaptive estimation if we have observed at least one completed segment.
+	// This works for all drive types including NVMe (which may not report total duration).
+	if (!segment_durations_.empty()) {
+		// Calculate average duration of observed segments
+		double sum = 0.0;
+		for (const auto& duration : segment_durations_) {
+			sum += duration;
+		}
+		const double avg_segment_duration = sum / segment_durations_.size();
+
+		// Estimate remaining time based on observed average and remaining segments
+		// remaining_percent_ goes from 100 (start) to 0 (end), in 10% decrements
+		const int remaining_segments = (remaining_percent_ + 9) / 10;  // round up
+		const double estimated_remaining = avg_segment_duration * remaining_segments - timer_.elapsed();
+
+		const auto rem_rounded = static_cast<int64_t>(std::round(estimated_remaining));
+		if (rem_rounded < 0) {
+			return -1s;  // estimate exhausted; return unknown
+		}
+		return std::chrono::seconds(rem_rounded);
+	}
+
+	// Fall back to drive's initial estimate when we don't have observed data yet
 	const std::chrono::seconds total = get_min_duration_seconds();
 	if (total <= 0s)
 		return -1s;  // unknown
 
-	const double gran = (double(total.count()) / 9.);  // seconds per 10%
+	// seconds per 10% (drive estimate)
+	const double gran = (double(total.count()) / 9.);
 	// since remaining_percent_ may be manually set to 100, we limit from the above.
 	const double rem_seconds_at_last_change = std::min(double(total.count()), gran * remaining_percent_ / 10.);
 	const double rem = rem_seconds_at_last_change - timer_.elapsed();
-	return std::chrono::seconds(std::max(int64_t(0), (int64_t)std::round(rem)));  // don't return negative values.
+	const auto rem_rounded = static_cast<int64_t>(std::round(rem));
+	// If the estimated time for the current percentage has elapsed but the drive hasn't
+	// progressed, the drive's estimate was inaccurate. Return -1 (unknown) instead of 0
+	// to avoid misleading "ETA: 0 sec" which could persist for hours.
+	if (rem_rounded < 0) {
+		return -1s;
+	}
+	return std::chrono::seconds(rem_rounded);
 }
 
 
@@ -492,6 +523,15 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::update(const std::shared_ptr<
 	// and reaches 00% on completion. That's 9 pieces.
 	if (status_ == SelfTestStatus::InProgress) {
 		if (remaining_percent_ != last_seen_percent_) {
+			// Record the duration of the completed segment for adaptive ETA calculation.
+			// Skip the first segment (typically 90→80) as it may be instant or partially
+			// completed when monitoring begins, which would skew the average.
+			if (first_segment_seen_) {
+				const double elapsed = timer_.elapsed();
+				segment_durations_.push_back(elapsed);
+			} else {
+				first_segment_seen_ = true;  // Mark that we've seen the first transition
+			}
 			last_seen_percent_ = remaining_percent_;
 			timer_.start();  // restart the timer
 		}
