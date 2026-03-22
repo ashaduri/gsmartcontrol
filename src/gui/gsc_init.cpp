@@ -80,6 +80,10 @@ namespace {
 		return channel;
 	}
 
+
+	/// Storage for Windows fractional scaling percentage (0 if no fractional scaling)
+	inline int g_windows_fractional_scaling_percent = 0;
+
 }
 
 
@@ -89,6 +93,44 @@ std::string app_get_debug_buffer_str()
 	return get_debug_buf_channel_stream().str();
 }
 
+
+
+int app_get_windows_fractional_scaling_percent()
+{
+	return g_windows_fractional_scaling_percent;
+}
+
+
+
+void app_apply_fractional_scaling_to_default_size(Gtk::Window* window, int config_size_w, int config_size_h)
+{
+	if (!window) {
+		return;
+	}
+
+	int size_w = config_size_w;
+	int size_h = config_size_h;
+
+	// Apply fractional scaling adjustment on Windows if no custom size is configured
+	// This compensates for GTK3's lack of fractional scaling support
+	const int full_percent = g_windows_fractional_scaling_percent;
+	if (full_percent > 0 && size_w == 0 && size_h == 0) {
+		// Get the default size from glade and scale it
+		int glade_w = 0, glade_h = 0;
+		window->get_default_size(glade_w, glade_h);
+		if (glade_w > 0 && glade_h > 0) {
+			const double system_scale = static_cast<double>(full_percent) / 100.0;
+			const int integer_ui_scale = full_percent / 100;  // GTK3 uses floor (integer) scaling
+			const double correction = system_scale / static_cast<double>(integer_ui_scale);
+			size_w = static_cast<int>(std::lround(glade_w * correction));
+			size_h = static_cast<int>(std::lround(glade_h * correction));
+		}
+	}
+
+	if (size_w > 0 && size_h > 0) {
+		window->set_default_size(size_w, size_h);
+	}
+}
 
 
 
@@ -545,10 +587,14 @@ bool app_init_and_loop(int& argc, char**& argv)
 		if (h_ppi > 0) {
 			const double scale = h_ppi / 96.0;
 			debug_out_info("app", "Windows system DPI: " << h_ppi << ", scale: " << scale << "\n");
-			const int fraction_percent = static_cast<int>(std::round(scale * 100)) % 100;
-			if (fraction_percent != 0) {  // fractional scaling
-				// Increase the font size by fraction, but round down the size to match the Windows behavior (?)
-				debug_out_dump("app", "Fractional scaling detected, increasing font size by " << fraction_percent << "%.\n");
+			const int full_scale_percent = static_cast<int>(std::lround(scale * 100.0));
+			const int integer_scale_percent = (full_scale_percent / 100) * 100;  // 250 -> 200, 150 -> 100
+			if (full_scale_percent != integer_scale_percent) {  // fractional scaling detected
+				// Store the full scale percent for use in window sizing
+				g_windows_fractional_scaling_percent = full_scale_percent;
+				// Increase the font size by the fractional amount
+				const int fraction_percent = full_scale_percent - integer_scale_percent;
+				debug_out_dump("app", "Fractional scaling detected (" << full_scale_percent << "%), increasing font size by " << fraction_percent << "%.\n");
 				Gtk::Settings::get_default()->property_gtk_font_name()
 						.set_value("Segoe UI " + hz::number_to_string_nolocale(static_cast<int>(9 * (1. + fraction_percent/100.))));
 			}

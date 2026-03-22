@@ -31,6 +31,9 @@ Copyright:
 GscExecutorLogWindow::GscExecutorLogWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder> ui)
 		: AppBuilderWidget<GscExecutorLogWindow, false>(gtkcobj, std::move(ui))
 {
+	// Apply fractional scaling to default window size
+	app_apply_fractional_scaling_to_default_size(this, 0, 0);
+
 	// Connect callbacks
 
 	Gtk::Button* window_close_button = nullptr;

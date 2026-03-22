@@ -15,6 +15,11 @@ Copyright:
 #include <string>
 
 
+namespace Gtk {
+	class Window;
+}
+
+
 /// Initialize the application and run the main loop
 bool app_init_and_loop(int& argc, char**& argv);
 
@@ -26,6 +31,20 @@ void app_quit();
 /// Return everything that went through libdebug's channels.
 /// Useful for showing logs.
 std::string app_get_debug_buffer_str();
+
+
+/// Get the fractional scaling percentage detected on Windows (0 if not detected or integer scale).
+/// For example, at 150% scaling, this returns 150; at 125% scaling, this returns 125; at 250% scaling, this returns 250.
+/// Returns 0 for exact integer scales (100%, 200%, etc.).
+int app_get_windows_fractional_scaling_percent();
+
+
+/// Apply fractional scaling to default window size if fractional scaling is detected.
+/// This compensates for GTK3's lack of fractional scaling support on Windows.
+/// \param window The window to apply scaling to
+/// \param config_size_w Configured width (0 if using glade default)
+/// \param config_size_h Configured height (0 if using glade default)
+void app_apply_fractional_scaling_to_default_size(Gtk::Window* window, int config_size_w, int config_size_h);
 
 
 
