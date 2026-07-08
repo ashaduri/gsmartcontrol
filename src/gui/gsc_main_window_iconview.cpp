@@ -554,10 +554,18 @@ Glib::RefPtr<Gdk::Pixbuf> GscMainWindowIconView::load_icon_pixbuf(Glib::RefPtr<G
 {
 	Glib::RefPtr<Gdk::Pixbuf> icon;
 
-	// Try XDG version first
+	// Try the icon theme first; fall back to the bundled icon if needed.
 	try {
 		if (default_icon_theme && !xdg_icon_name.empty()) {
 			icon = default_icon_theme->load_icon(xdg_icon_name, icon_size_, get_scale_factor(), Gtk::IconLookupFlags(0));
+
+			// Some icon themes may return an icon smaller than requested.
+			// In that case, fall back to the bundled icon.
+			if (icon &&
+			    (icon->get_width() < icon_size_ ||
+			     icon->get_height() < icon_size_)) {
+			  icon.reset();
+			}
 		}
 	} catch (...) { }  // ignore exceptions
 
