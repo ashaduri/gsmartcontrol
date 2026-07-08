@@ -765,7 +765,7 @@ void GscMainWindow::update_status_widgets()
 			+ (model.empty() ? "" : (", " + model));
 	if (name_label_) {
 		name_label_->set_markup(info_str);
-		app_gtkmm_set_widget_tooltip(*name_label_, info_str, false);  // in case it doesn't fit
+		app_gtkmm_set_widget_tooltip(*name_label_, info_str, true);  // in case it doesn't fit
 	}
 
 	const StorageProperty health_prop = drive->get_health_property();
@@ -793,8 +793,8 @@ void GscMainWindow::update_status_widgets()
 	}
 
 	if (family_label_) {
-		family_label_->set_text(family);
-		app_gtkmm_set_widget_tooltip(*family_label_, family, false);  // in case it doesn't fit
+		family_label_->set_markup(family);
+		app_gtkmm_set_widget_tooltip(*family_label_, family, true);  // in case it doesn't fit
 	}
 
 // 	std::string status_str = " " + device + (size.empty() ? "" : (", " + size)) + (family_fallback.empty() ? "" : (", " + family_fallback));
