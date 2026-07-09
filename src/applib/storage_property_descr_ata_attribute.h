@@ -26,6 +26,11 @@ void auto_set_ata_attribute_description(StorageProperty& p, StorageDeviceDetecte
 void storage_property_ata_attribute_autoset_warning(StorageProperty& p);
 
 
+/// Humanize SSD write statistics by converting raw values to readable byte counts.
+/// Sets the readable_value field for applicable write-related attributes.
+void storage_property_ata_attribute_humanize_ssd_writes(StorageProperty& p);
+
+
 #endif
 
 /// @}
