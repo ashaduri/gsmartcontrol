@@ -829,6 +829,9 @@ void GscInfoWindow::on_view_output_button_clicked()
 	if (!filename.empty())
 		win->set_save_filename(filename);
 
+	// Pass the storage device so the text window can access text/JSON data
+	win->set_storage_device(drive_);
+
 	win->show();
 }
 
