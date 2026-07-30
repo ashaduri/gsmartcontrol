@@ -26,6 +26,7 @@ Copyright:
 #cmakedefine CONFIG_KERNEL_SOLARIS
 #cmakedefine CONFIG_KERNEL_DARWIN
 #cmakedefine CONFIG_KERNEL_QNX
+#cmakedefine CONFIG_APPIMAGE_BUILD
 
 #if defined CONFIG_KERNEL_WINDOWS32 || defined CONFIG_KERNEL_WINDOWS64
 	#define CONFIG_KERNEL_FAMILY_WINDOWS
@@ -177,6 +178,16 @@ struct BuildEnv {
 	static constexpr bool is_kernel_qnx()
 	{
 	#ifdef CONFIG_KERNEL_QNX
+		return true;
+	#else
+		return false;
+	#endif
+	}
+
+	/// Check if this is an AppImage build (portable data file paths).
+	static constexpr bool is_appimage_build()
+	{
+	#ifdef CONFIG_APPIMAGE_BUILD
 		return true;
 	#else
 		return false;

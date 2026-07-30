@@ -475,7 +475,13 @@ bool app_init_and_loop(int& argc, char**& argv)
 			hz::data_file_add_search_directory("icons", application_dir / "icons");
 			hz::data_file_add_search_directory("ui", application_dir / "ui");
 			hz::data_file_add_search_directory("doc", application_dir / "doc");
+		} else if constexpr(BuildEnv::is_appimage_build()) {
+			// AppImage: Use relative paths from binary location (bin/../share/...)
+			hz::data_file_add_search_directory("icons", application_dir.parent_path() / "share" / BuildEnv::package_name() / "icons");
+			hz::data_file_add_search_directory("ui", application_dir.parent_path() / "share" / BuildEnv::package_name() / "ui");
+			hz::data_file_add_search_directory("doc", application_dir.parent_path() / "share" / "doc" / BuildEnv::package_name());
 		} else {
+			// Traditional Unix installation: Use absolute paths from BuildEnv
 			hz::data_file_add_search_directory("icons", hz::fs_path_from_string(BuildEnv::package_pkgdata_dir()) / BuildEnv::package_name() / "icons");  // /usr/share/program_name/icons
 			hz::data_file_add_search_directory("ui", hz::fs_path_from_string(BuildEnv::package_pkgdata_dir()) / BuildEnv::package_name() / "ui");  // /usr/share/program_name/ui
 			hz::data_file_add_search_directory("doc", hz::fs_path_from_string(BuildEnv::package_doc_dir()));  // /usr/share/doc/[packages/]gsmartcontrol

@@ -62,6 +62,8 @@ target_link_libraries(gsmartcontrol
 
 if (WIN32)
 	install(TARGETS gsmartcontrol DESTINATION .)
+elseif (APP_BUILD_APPIMAGE)
+	install(TARGETS gsmartcontrol DESTINATION "${CMAKE_INSTALL_BINDIR}/")
 else()
 	install(TARGETS gsmartcontrol DESTINATION "${CMAKE_INSTALL_SBINDIR}/")
 endif()
