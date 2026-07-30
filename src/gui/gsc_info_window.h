@@ -217,6 +217,10 @@ class GscInfoWindow : public AppBuilderWidget<GscInfoWindow, true> {
 		/// Reimplemented from Gtk::Window.
 		bool on_delete_event(GdkEventAny* e) override;
 
+		/// Handle key press events for keyboard navigation.
+		/// Reimplemented from Gtk::Window.
+		bool on_key_press_event(GdkEventKey* event) override;
+
 
 		// ---------- Other callbacks
 

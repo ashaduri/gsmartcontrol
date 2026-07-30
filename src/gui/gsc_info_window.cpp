@@ -806,6 +806,94 @@ bool GscInfoWindow::on_delete_event([[maybe_unused]] GdkEventAny* e)
 
 
 
+bool GscInfoWindow::on_key_press_event(GdkEventKey* event)
+{
+	// Handle Ctrl+Tab and Ctrl+Shift+Tab for tab navigation
+	if (   (event->state & GDK_CONTROL_MASK)
+	    && (event->keyval == GDK_KEY_Tab || event->keyval == GDK_KEY_ISO_Left_Tab)) {
+
+		// Helper to cycle only across visible notebook pages
+		auto cycle_visible_pages = [&](Gtk::Notebook* notebook) -> bool {
+			if (!notebook) {
+				return false;
+			}
+
+			const int n_pages = notebook->get_n_pages();
+			std::vector<int> visible_pages;
+			visible_pages.reserve(n_pages);
+
+			for (int i = 0; i < n_pages; ++i) {
+				if (auto* page = notebook->get_nth_page(i)) {
+					if (page->get_visible()) {
+						visible_pages.push_back(i);
+					}
+				}
+			}
+
+			// Need at least two visible pages to make cycling meaningful
+			if (visible_pages.size() <= 1) {
+				return false;
+			}
+
+			const int current_page = notebook->get_current_page();
+			int visible_index = 0;
+
+			auto it = std::find(visible_pages.begin(), visible_pages.end(), current_page);
+			if (it != visible_pages.end()) {
+				visible_index = static_cast<int>(std::distance(visible_pages.begin(), it));
+			}
+
+			int next_visible_index = 0;
+
+			// Check if Shift is also pressed for backward navigation
+			if (event->state & GDK_SHIFT_MASK) {
+				// Ctrl+Shift+Tab: go to previous visible tab
+				next_visible_index =
+					(visible_index - 1 + static_cast<int>(visible_pages.size())) %
+					static_cast<int>(visible_pages.size());
+			} else {
+				// Ctrl+Tab: go to next visible tab
+				next_visible_index =
+					(visible_index + 1) %
+					static_cast<int>(visible_pages.size());
+			}
+
+			notebook->set_current_page(visible_pages[next_visible_index]);
+			return true;
+		};
+
+		auto* main_notebook = lookup_widget<Gtk::Notebook*>("main_notebook");
+		if (main_notebook) {
+			// Check if we're on the Advanced tab with sub-tabs
+			auto* advanced_tab_vbox = lookup_widget<Gtk::Box*>("advanced_tab_vbox");
+			auto* advanced_notebook = lookup_widget<Gtk::Notebook*>("advanced_notebook");
+
+			// Only handle sub-tab cycling if the Advanced tab is currently active
+			if (advanced_tab_vbox && advanced_notebook && advanced_notebook->get_visible()) {
+				const int advanced_page_num = main_notebook->page_num(*advanced_tab_vbox);
+				const int current_main_page = main_notebook->get_current_page();
+
+				// Advanced tab is active, so cycle through its sub-tabs
+				if (advanced_page_num >= 0 && advanced_page_num == current_main_page) {
+					if (cycle_visible_pages(advanced_notebook)) {
+						return true;  // event handled
+					}
+				}
+			}
+
+			// Otherwise, cycle through main notebook tabs
+			if (cycle_visible_pages(main_notebook)) {
+				return true;  // event handled
+			}
+		}
+	}
+
+	// Call base class handler for other keys
+	return Gtk::Window::on_key_press_event(event);
+}
+
+
+
 void GscInfoWindow::on_refresh_info_button_clicked()
 {
 	this->refresh_info();
