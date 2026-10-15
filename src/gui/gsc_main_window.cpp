@@ -434,6 +434,17 @@ namespace {
 
 
 
+void GscMainWindow::launch_url_or_show_error(const std::string& url)
+{
+	const std::string error = hz::launch_url(gobj(), url);
+	if (!error.empty()) {
+		gui_show_error_dialog(_("Cannot open the link in a web browser"),
+				Glib::ustring::compose(_("Please open it manually:\n%1\n\n%2"), url, error), this);
+	}
+}
+
+
+
 // NOTE: Do NOT bind the Glib::RefPtr<Gtk::Action> parameter to this function.
 // Doing so causes valgrind errors on window destroy (and Send Report dialogs on win32).
 // Probably a gtkmm bug. Use action maps or Gtk::Action* instead.
@@ -552,13 +563,13 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 
 		case action_online_documentation:
 		{
-			hz::launch_url(gobj(), "https://gsmartcontrol.shaduri.dev/");
+			launch_url_or_show_error("https://gsmartcontrol.shaduri.dev/");
 			break;
 		}
 
 		case action_support:
 		{
-			hz::launch_url(gobj(), "https://gsmartcontrol.shaduri.dev/support");
+			launch_url_or_show_error("https://gsmartcontrol.shaduri.dev/support");
 			break;
 		}
 
