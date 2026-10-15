@@ -27,6 +27,8 @@ target_sources(gsmartcontrol PRIVATE
 	gsc_main_window_iconview.h
 	gsc_preferences_window.cpp
 	gsc_preferences_window.h
+	gsc_save_output_dialog.cpp
+	gsc_save_output_dialog.h
 	gsc_startup_settings.h
 	gsc_text_window.h
 )

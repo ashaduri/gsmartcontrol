@@ -34,6 +34,7 @@ Copyright:
 #include "gsc_text_window.h"
 #include "gsc_info_window.h"
 #include "gsc_executor_error_dialog.h"
+#include "gsc_save_output_dialog.h"
 #include "gsc_startup_settings.h"
 
 
@@ -891,7 +892,7 @@ void GscInfoWindow::on_view_output_button_clicked()
 		output = this->drive_->get_basic_output();
 	}
 
-	win->set_text_from_command(_("Smartctl Output"), output);
+	win->set_smartctl_output(_("Smartctl Output"), output);
 
 	const std::string filename = drive_->get_save_filename();
 	if (!filename.empty())
@@ -904,126 +905,11 @@ void GscInfoWindow::on_view_output_button_clicked()
 
 void GscInfoWindow::on_save_info_button_clicked()
 {
-	static std::string last_dir;
-	if (last_dir.empty()) {
-		last_dir = rconfig::get_data<std::string>("gui/drive_data_open_save_dir");
+	std::string output = this->drive_->get_full_output();
+	if (output.empty()) {
+		output = this->drive_->get_basic_output();
 	}
-	int result = 0;
-
-	const std::string filename = drive_->get_save_filename();
-
-	Glib::RefPtr<Gtk::FileFilter> specific_filter = Gtk::FileFilter::create();
-	specific_filter->set_name(_("JSON and Text Files"));
-	specific_filter->add_pattern("*.json");
-	specific_filter->add_pattern("*.txt");
-
-	Glib::RefPtr<Gtk::FileFilter> json_filter = Gtk::FileFilter::create();
-	json_filter->set_name(_("JSON Files"));
-	json_filter->add_pattern("*.json");
-
-	Glib::RefPtr<Gtk::FileFilter> txt_filter = Gtk::FileFilter::create();
-	txt_filter->set_name(_("Text Files"));
-	txt_filter->add_pattern("*.txt");
-
-	Glib::RefPtr<Gtk::FileFilter> all_filter = Gtk::FileFilter::create();
-	all_filter->set_name(_("All Files"));
-	all_filter->add_pattern("*");
-
-#if GTK_CHECK_VERSION(3, 20, 0)
-	std::unique_ptr<GtkFileChooserNative, decltype(&g_object_unref)> dialog(gtk_file_chooser_native_new(
-			_("Save Data As..."), this->gobj(), GTK_FILE_CHOOSER_ACTION_SAVE, nullptr, nullptr),
-			&g_object_unref);
-
-	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog.get()), TRUE);
-
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), specific_filter->gobj());
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), json_filter->gobj());
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), txt_filter->gobj());
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog.get()), all_filter->gobj());
-
-	if (!last_dir.empty())
-		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog.get()), last_dir.c_str());
-
-	if (!filename.empty())
-		gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog.get()), filename.c_str());
-
-	result = gtk_native_dialog_run(GTK_NATIVE_DIALOG(dialog.get()));
-
-#else
-	Gtk::FileChooserDialog dialog(*this, _("Save Data As..."),
-			Gtk::FILE_CHOOSER_ACTION_SAVE);
-
-	// Add response buttons the the dialog
-	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
-	dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_ACCEPT);
-
-	dialog.set_do_overwrite_confirmation(true);
-
-	dialog.add_filter(specific_filter);
-	dialog.add_filter(json_filter);
-	dialog.add_filter(txt_filter);
-	dialog.add_filter(all_filter);
-
-	if (!last_dir.empty())
-		dialog.set_current_folder(last_dir);
-
-	if (!filename.empty())
-		dialog.set_current_name(filename);
-
-	// Show the dialog and wait for a user response
-	result = dialog.run();  // the main cycle blocks here
-#endif
-
-	// Handle the response
-	switch (result) {
-		case Gtk::RESPONSE_ACCEPT:
-		{
-			hz::fs::path file;
-#if GTK_CHECK_VERSION(3, 20, 0)
-			file = hz::fs_path_from_string(app_string_from_gchar(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog.get()))));
-			last_dir = hz::fs_path_to_string(file.parent_path());
-#else
-			file = hz::fs_path_from_string(dialog.get_filename());  // in fs encoding
-			last_dir = dialog.get_current_folder();  // save for the future
-#endif
-			rconfig::set_data("gui/drive_data_open_save_dir", last_dir);
-
-			bool txt_selected = gtk_file_chooser_get_filter(GTK_FILE_CHOOSER(dialog.get())) == txt_filter->gobj();
-
-			if (file.extension() != ".json" && file.extension() != ".txt") {
-				file += (txt_selected ? ".txt" : ".json");
-			}
-
-			bool save_txt = txt_selected || file.extension() == ".txt";
-
-			std::string data = this->drive_->get_full_output();
-			if (data.empty()) {
-				data = this->drive_->get_basic_output();
-			}
-			if (save_txt) {
-				if (auto p = this->drive_->get_property_repository().lookup_property("smartctl/output"); !p.empty()) {
-					const std::string text_output = p.get_value<std::string>();
-					if (!text_output.empty()) {
-						data = text_output;
-					}
-				}
-			}
-
-			const std::error_code ec = hz::fs_file_put_contents(file, data);
-			if (ec) {
-				gui_show_error_dialog(_("Cannot save SMART data to file"), ec.message(), this);
-			}
-			break;
-		}
-
-		case Gtk::RESPONSE_CANCEL: case Gtk::RESPONSE_DELETE_EVENT:
-			// nothing, the dialog is closed already
-			break;
-
-		default:
-			debug_out_error("app", DBG_FUNC_MSG << "Unknown dialog response code: " << result << ".\n");
-			break;
-	}
+	gsc_show_save_smartctl_output_dialog(this, output, drive_->get_save_filename(), SmartctlOutputFormat::Json);
 }
 
 
