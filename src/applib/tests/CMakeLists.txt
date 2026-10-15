@@ -16,6 +16,7 @@ add_library(applib_tests OBJECT)
 target_sources(applib_tests PRIVATE
 	test_app_regex.cpp
 	test_fractional_scaling.cpp
+	test_selftest.cpp
 	test_smartctl_parser.cpp
 	test_smartctl_version_parser.cpp
 )

@@ -84,20 +84,84 @@ int8_t SelfTest::get_remaining_percent() const
 
 
 
+void SelfTestEtaEstimator::add_progress(int from_remaining_percent, int to_remaining_percent, double seconds)
+{
+	if (from_remaining_percent < 0 || to_remaining_percent < 0
+			|| to_remaining_percent >= from_remaining_percent || seconds < 0.) {
+		return;
+	}
+	observed_seconds_ += seconds;
+	observed_percent_ += from_remaining_percent - to_remaining_percent;
+}
+
+
+
+bool SelfTestEtaEstimator::has_data() const
+{
+	return observed_percent_ > 0;
+}
+
+
+
+std::chrono::seconds SelfTestEtaEstimator::estimate_remaining_seconds(int remaining_percent, double seconds_since_last_change) const
+{
+	using namespace std::literals;
+
+	if (!has_data() || remaining_percent < 0) {
+		return -1s;
+	}
+	const double seconds_per_percent = observed_seconds_ / observed_percent_;
+	const double rem = seconds_per_percent * remaining_percent - seconds_since_last_change;
+	const auto rem_rounded = static_cast<int64_t>(std::round(rem));
+	if (rem_rounded < 0) {
+		return -1s;  // estimate exceeded; unknown
+	}
+	return std::chrono::seconds(rem_rounded);
+}
+
+
+
+void SelfTestEtaEstimator::reset()
+{
+	observed_seconds_ = 0.;
+	observed_percent_ = 0;
+}
+
+
+
 // Returns estimated time of completion for the test. returns -1 if n/a or unknown. 0 is a valid value.
 std::chrono::seconds SelfTest::get_remaining_seconds() const
 {
 	using namespace std::literals;
 
+	if (remaining_percent_ < 0) {
+		return -1s;  // not running
+	}
+
+	// Use adaptive estimation if we have observed some progress.
+	// This works for all drive types including NVMe (which may not report total duration).
+	if (eta_estimator_.has_data()) {
+		return eta_estimator_.estimate_remaining_seconds(remaining_percent_, timer_.elapsed());
+	}
+
+	// Fall back to drive's initial estimate when we don't have observed data yet
 	const std::chrono::seconds total = get_min_duration_seconds();
 	if (total <= 0s)
 		return -1s;  // unknown
 
-	const double gran = (double(total.count()) / 9.);  // seconds per 10%
+	// seconds per 10% (drive estimate)
+	const double gran = (double(total.count()) / 9.);
 	// since remaining_percent_ may be manually set to 100, we limit from the above.
 	const double rem_seconds_at_last_change = std::min(double(total.count()), gran * remaining_percent_ / 10.);
 	const double rem = rem_seconds_at_last_change - timer_.elapsed();
-	return std::chrono::seconds(std::max(int64_t(0), (int64_t)std::round(rem)));  // don't return negative values.
+	const auto rem_rounded = static_cast<int64_t>(std::round(rem));
+	// If the estimated time for the current percentage has elapsed but the drive hasn't
+	// progressed, the drive's estimate was inaccurate. Return -1 (unknown) instead of 0
+	// to avoid misleading "ETA: 0 sec" which could persist for hours.
+	if (rem_rounded < 0) {
+		return -1s;
+	}
+	return std::chrono::seconds(rem_rounded);
 }
 
 
@@ -269,6 +333,8 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::start(const std::shared_ptr<C
 	last_seen_percent_ = 90;
 	poll_in_seconds_ = std::chrono::seconds(5);  // first update() in 5 seconds
 	timer_.start();
+	eta_estimator_.reset();
+	first_change_seen_ = false;
 
 	drive_->set_test_is_active(true);
 
@@ -492,6 +558,13 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::update(const std::shared_ptr<
 	// and reaches 00% on completion. That's 9 pieces.
 	if (status_ == SelfTestStatus::InProgress) {
 		if (remaining_percent_ != last_seen_percent_) {
+			// Record the observed progress speed for adaptive ETA calculation.
+			// Skip the first change, as it may be instant or partially completed
+			// (depending on the drive), which would skew the estimate.
+			if (first_change_seen_) {
+				eta_estimator_.add_progress(last_seen_percent_, remaining_percent_, timer_.elapsed());
+			}
+			first_change_seen_ = true;
 			last_seen_percent_ = remaining_percent_;
 			timer_.start();  // restart the timer
 		}
