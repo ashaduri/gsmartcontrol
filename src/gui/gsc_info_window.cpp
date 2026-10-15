@@ -804,6 +804,76 @@ bool GscInfoWindow::on_delete_event([[maybe_unused]] GdkEventAny* e)
 
 
 
+bool GscInfoWindow::on_key_press_event(GdkEventKey* event)
+{
+	// Handle Ctrl+Tab and Ctrl+Shift+Tab for tab navigation.
+	// The sub-tabs of the Advanced tab are part of the same sequence, so that
+	// all the tabs are reachable (e.g. General -> ... -> Advanced/Capabilities -> ... -> General).
+	const auto modifiers = event->state & gtk_accelerator_get_default_mod_mask();
+	if (   (modifiers & GDK_CONTROL_MASK) && !(modifiers & GDK_MOD1_MASK)
+	    && (event->keyval == GDK_KEY_Tab || event->keyval == GDK_KEY_ISO_Left_Tab)) {
+
+		auto* main_notebook = lookup_widget<Gtk::Notebook*>("main_notebook");
+		auto* advanced_tab_vbox = lookup_widget<Gtk::Box*>("advanced_tab_vbox");
+		auto* advanced_notebook = lookup_widget<Gtk::Notebook*>("advanced_notebook");
+
+		/// A navigation stop: main notebook page, and Advanced notebook sub-page (or -1).
+		struct TabStop {
+			int main_page = -1;
+			int sub_page = -1;
+		};
+		std::vector<TabStop> stops;
+		std::size_t current_stop = 0;
+
+		if (main_notebook) {
+			const int current_main_page = main_notebook->get_current_page();
+			for (int i = 0; i < main_notebook->get_n_pages(); ++i) {
+				auto* page = main_notebook->get_nth_page(i);
+				if (!page || !page->get_visible()) {
+					continue;
+				}
+				const std::size_t first_stop_of_page = stops.size();
+				if (page == advanced_tab_vbox && advanced_notebook && advanced_notebook->get_visible()) {
+					const int current_sub_page = advanced_notebook->get_current_page();
+					for (int j = 0; j < advanced_notebook->get_n_pages(); ++j) {
+						auto* sub_page = advanced_notebook->get_nth_page(j);
+						if (sub_page && sub_page->get_visible()) {
+							if (i == current_main_page && j == current_sub_page) {
+								current_stop = stops.size();
+							}
+							stops.push_back({i, j});
+						}
+					}
+				}
+				if (stops.size() == first_stop_of_page) {  // regular page, or Advanced without visible sub-pages
+					stops.push_back({i, -1});
+				}
+				if (i == current_main_page && (current_stop < first_stop_of_page || current_stop >= stops.size())) {
+					current_stop = first_stop_of_page;
+				}
+			}
+		}
+
+		// Need at least two stops to make cycling meaningful
+		if (stops.size() > 1) {
+			const bool backward = (modifiers & GDK_SHIFT_MASK) || event->keyval == GDK_KEY_ISO_Left_Tab;
+			const std::size_t next_stop = backward ? (current_stop + stops.size() - 1) % stops.size()
+					: (current_stop + 1) % stops.size();
+			const TabStop& stop = stops[next_stop];
+			if (stop.sub_page >= 0) {
+				advanced_notebook->set_current_page(stop.sub_page);
+			}
+			main_notebook->set_current_page(stop.main_page);
+			return true;  // event handled
+		}
+	}
+
+	// Call base class handler for other keys
+	return Gtk::Window::on_key_press_event(event);
+}
+
+
+
 void GscInfoWindow::on_refresh_info_button_clicked()
 {
 	this->refresh_info();
