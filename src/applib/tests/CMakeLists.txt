@@ -19,6 +19,7 @@ target_sources(applib_tests PRIVATE
 	test_selftest.cpp
 	test_smartctl_parser.cpp
 	test_smartctl_version_parser.cpp
+	test_storage_property_data_amount.cpp
 )
 target_link_libraries(applib_tests PRIVATE
 	applib

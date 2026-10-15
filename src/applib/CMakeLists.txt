@@ -60,6 +60,8 @@ target_sources(applib PRIVATE
 	storage_device.h
 	storage_property.cpp
 	storage_property.h
+	storage_property_data_amount.cpp
+	storage_property_data_amount.h
 	storage_property_descr.cpp
 	storage_property_descr.h
 	storage_property_descr_ata_attribute.cpp

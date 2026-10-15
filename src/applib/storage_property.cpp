@@ -103,6 +103,9 @@ std::string AtaStorageAttribute::format_raw_value() const
 			// something is wrong with system locale, can't do anything here.
 		}
 		ss << std::fixed << raw_value_int;
+		if (raw_value_bytes.has_value()) {
+			ss << " [" << hz::format_size(raw_value_bytes.value(), true) << "]";
+		}
 		return ss.str();
 	}
 	return raw_value;
@@ -143,6 +146,9 @@ std::string AtaStorageStatistic::format_value() const
 			// something is wrong with system locale, can't do anything here.
 		}
 		ss << std::fixed << value_int;
+		if (value_bytes.has_value()) {
+			ss << " [" << hz::format_size(value_bytes.value(), true) << "]";
+		}
 		return ss.str();
 	}
 	return value;
