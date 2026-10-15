@@ -109,6 +109,7 @@ class AtaStorageAttribute {
 		FailTime when_failed = FailTime::Unknown;  ///< When-failed type
 		std::string raw_value;  ///< Raw value as a string, as presented by smartctl (formatted).
 		std::int64_t raw_value_int = 0;  ///< Same as raw_value, but parsed as int64. original value is 6 bytes I think.
+		std::optional<std::uint64_t> raw_value_bytes;  ///< Raw value converted to bytes, if the attribute reports an amount of data (e.g. Total_LBAs_Written).
 
 };
 
@@ -127,13 +128,14 @@ class AtaStorageStatistic {
 		/// Whether the normalization flag is present
 		[[nodiscard]] bool is_normalized() const;
 
-		/// Format value with commas (if it's a number)
+		/// Format value with commas (if it's a number), adding a human-readable data amount if available
 		[[nodiscard]] std::string format_value() const;
 
 		bool is_header = false;  ///< If the line is a header
 		std::string flags;  ///< Flags in "NDC" / "---" format
 		std::string value;  ///< Value as a string, as presented by smartctl (formatted).
 		std::int64_t value_int = 0;  ///< Same as value, but parsed as int64.
+		std::optional<std::uint64_t> value_bytes;  ///< Value converted to bytes, if the statistic reports an amount of data (e.g. Logical Sectors Written).
 		std::int64_t page = 0;  ///< Page
 		std::int64_t offset = 0;  ///< Offset in page
 };
