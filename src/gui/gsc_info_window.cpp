@@ -1139,7 +1139,7 @@ void GscInfoWindow::fill_ui_ata_attributes(const StoragePropertyRepository& prop
 
 	model_columns.add(columns_->ata_attribute_table_columns.type);
 	num_tree_col = app_gtkmm_create_tree_view_column(columns_->ata_attribute_table_columns.type, *treeview,
-			_("Type"), _("Indicates whether an alarm for this attribute signals drive failure (pre-failure) or normal wear from drive age (old age)."), false, true);
+			_("Type"), _("If this attribute reaches an alarm condition, Type indicates whether the alarm signals drive failure (pre-failure) or normal wear from drive age (old age). The type by itself does not indicate a problem. Alarm condition is reached when normalized value becomes less than or equal to threshold."), false, true);
 
 	// Doesn't carry that much info. Advanced users can look at the flags.
 // 		model_columns.add(attribute_table_columns.updated);
