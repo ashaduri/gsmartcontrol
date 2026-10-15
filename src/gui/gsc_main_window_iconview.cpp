@@ -268,7 +268,7 @@ void GscMainWindowIconView::decorate_entry(Gtk::TreeModel::Row& row)
 		const std::string vfile = drive->get_virtual_filename();
 		tooltip_strs.push_back(Glib::ustring::compose(_("Loaded from: %1"), (vfile.empty() ? (Glib::ustring("[") + C_("name", "empty") + "]") : Glib::Markup::escape_text(vfile))));
 		if (!scan_time_prop.empty() && !scan_time_prop.get_value<std::string>().empty()) {
-			tooltip_strs.push_back(Glib::ustring::compose(_("Scanned on: "), Glib::Markup::escape_text(scan_time_prop.get_value<std::string>())));
+			tooltip_strs.push_back(Glib::ustring::compose(_("Scanned on: %1"),Glib::Markup::escape_text(scan_time_prop.get_value<std::string>())));
 		}
 	} else {
 		tooltip_strs.push_back(Glib::ustring::compose(_("Device: %1"), "<b>" + Glib::Markup::escape_text(drive->get_device_with_type()) + "</b>"));
