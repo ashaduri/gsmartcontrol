@@ -545,15 +545,13 @@ bool app_init_and_loop(int& argc, char**& argv)
 		ReleaseDC(nullptr, screen);
 	#endif
 		if (h_ppi > 0) {
-			const double scale = h_ppi / 96.0;
-			debug_out_info("app", "Windows system DPI: " << h_ppi << ", scale: " << scale << "\n");
-			const int full_scale_percent = static_cast<int>(std::lround(scale * 100.0));
-			const int integer_scale_percent = (full_scale_percent / 100) * 100;  // 250 -> 200, 150 -> 100
-			if (full_scale_percent != integer_scale_percent) {  // fractional scaling detected
+			const int full_scale_percent = app_compute_scaling_percent_from_dpi(h_ppi);
+			debug_out_info("app", "Windows system DPI: " << h_ppi << ", scale: " << full_scale_percent << "%\n");
+			if (app_is_fractional_scaling(full_scale_percent)) {
 				// Store the full scale percent for use in window sizing
 				app_set_windows_fractional_scaling_percent(full_scale_percent);
 				// Increase the font size by the fractional amount
-				const int fraction_percent = full_scale_percent - integer_scale_percent;
+				const int fraction_percent = app_get_fractional_scaling_part_percent(full_scale_percent);
 				debug_out_dump("app", "Fractional scaling detected (" << full_scale_percent << "%), increasing font size by " << fraction_percent << "%.\n");
 				Gtk::Settings::get_default()->property_gtk_font_name()
 						.set_value("Segoe UI " + hz::number_to_string_nolocale(static_cast<int>(9 * (1. + fraction_percent/100.))));
