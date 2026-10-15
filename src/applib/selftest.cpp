@@ -243,7 +243,7 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::start(const std::shared_ptr<C
 	}
 
 	const bool ata_test_started = app_regex_partial_match(R"(/^Drive command .* successful\.\nTesting has begun\.$/mi)", output);
-	const bool nvme_test_started = app_regex_partial_match(R"(/^Self-test has begun$/mi)", output);
+	const bool nvme_test_started = app_regex_partial_match(R"(/^Self-test has begun/mi)", output);
 	const bool nvme_test_running = app_regex_partial_match(R"(/^Can't start self-test without aborting current test/mi)", output);
 
 	if (!ata_test_started && !nvme_test_started && !nvme_test_running) {
