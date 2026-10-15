@@ -38,6 +38,8 @@ target_sources(applib PRIVATE
 	smartctl_executor.cpp
 	smartctl_executor_gui.h
 	smartctl_executor.h
+	smartctl_output_export.cpp
+	smartctl_output_export.h
 	smartctl_parser_types.h
 	smartctl_text_ata_parser.cpp
 	smartctl_text_ata_parser.h
