@@ -84,31 +84,64 @@ int8_t SelfTest::get_remaining_percent() const
 
 
 
+void SelfTestEtaEstimator::add_progress(int from_remaining_percent, int to_remaining_percent, double seconds)
+{
+	if (from_remaining_percent < 0 || to_remaining_percent < 0
+			|| to_remaining_percent >= from_remaining_percent || seconds < 0.) {
+		return;
+	}
+	observed_seconds_ += seconds;
+	observed_percent_ += from_remaining_percent - to_remaining_percent;
+}
+
+
+
+bool SelfTestEtaEstimator::has_data() const
+{
+	return observed_percent_ > 0;
+}
+
+
+
+std::chrono::seconds SelfTestEtaEstimator::estimate_remaining_seconds(int remaining_percent, double seconds_since_last_change) const
+{
+	using namespace std::literals;
+
+	if (!has_data() || remaining_percent < 0) {
+		return -1s;
+	}
+	const double seconds_per_percent = observed_seconds_ / observed_percent_;
+	const double rem = seconds_per_percent * remaining_percent - seconds_since_last_change;
+	const auto rem_rounded = static_cast<int64_t>(std::round(rem));
+	if (rem_rounded < 0) {
+		return -1s;  // estimate exceeded; unknown
+	}
+	return std::chrono::seconds(rem_rounded);
+}
+
+
+
+void SelfTestEtaEstimator::reset()
+{
+	observed_seconds_ = 0.;
+	observed_percent_ = 0;
+}
+
+
+
 // Returns estimated time of completion for the test. returns -1 if n/a or unknown. 0 is a valid value.
 std::chrono::seconds SelfTest::get_remaining_seconds() const
 {
 	using namespace std::literals;
 
-	// Use adaptive estimation if we have observed at least one completed segment.
+	if (remaining_percent_ < 0) {
+		return -1s;  // not running
+	}
+
+	// Use adaptive estimation if we have observed some progress.
 	// This works for all drive types including NVMe (which may not report total duration).
-	if (!segment_durations_.empty()) {
-		// Calculate average duration of observed segments
-		double sum = 0.0;
-		for (const auto& duration : segment_durations_) {
-			sum += duration;
-		}
-		const double avg_segment_duration = sum / segment_durations_.size();
-
-		// Estimate remaining time based on observed average and remaining segments
-		// remaining_percent_ goes from 100 (start) to 0 (end), in 10% decrements
-		const int remaining_segments = (remaining_percent_ + 9) / 10;  // round up
-		const double estimated_remaining = avg_segment_duration * remaining_segments - timer_.elapsed();
-
-		const auto rem_rounded = static_cast<int64_t>(std::round(estimated_remaining));
-		if (rem_rounded < 0) {
-			return -1s;  // estimate exhausted; return unknown
-		}
-		return std::chrono::seconds(rem_rounded);
+	if (eta_estimator_.has_data()) {
+		return eta_estimator_.estimate_remaining_seconds(remaining_percent_, timer_.elapsed());
 	}
 
 	// Fall back to drive's initial estimate when we don't have observed data yet
@@ -300,6 +333,8 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::start(const std::shared_ptr<C
 	last_seen_percent_ = 90;
 	poll_in_seconds_ = std::chrono::seconds(5);  // first update() in 5 seconds
 	timer_.start();
+	eta_estimator_.reset();
+	first_change_seen_ = false;
 
 	drive_->set_test_is_active(true);
 
@@ -523,15 +558,13 @@ hz::ExpectedVoid<SelfTestExecutionError> SelfTest::update(const std::shared_ptr<
 	// and reaches 00% on completion. That's 9 pieces.
 	if (status_ == SelfTestStatus::InProgress) {
 		if (remaining_percent_ != last_seen_percent_) {
-			// Record the duration of the completed segment for adaptive ETA calculation.
-			// Skip the first segment (typically 90→80) as it may be instant or partially
-			// completed when monitoring begins, which would skew the average.
-			if (first_segment_seen_) {
-				const double elapsed = timer_.elapsed();
-				segment_durations_.push_back(elapsed);
-			} else {
-				first_segment_seen_ = true;  // Mark that we've seen the first transition
+			// Record the observed progress speed for adaptive ETA calculation.
+			// Skip the first change, as it may be instant or partially completed
+			// (depending on the drive), which would skew the estimate.
+			if (first_change_seen_) {
+				eta_estimator_.add_progress(last_seen_percent_, remaining_percent_, timer_.elapsed());
 			}
+			first_change_seen_ = true;
 			last_seen_percent_ = remaining_percent_;
 			timer_.start();  // restart the timer
 		}

@@ -97,6 +97,80 @@ TEST_CASE("SelfTest basic functionality", "[selftest]")
 }
 
 
+TEST_CASE("SelfTest adaptive ETA estimation", "[selftest][eta]")
+{
+	using namespace std::literals;
+
+	SECTION("No data")
+	{
+		const SelfTestEtaEstimator eta;
+		REQUIRE_FALSE(eta.has_data());
+		REQUIRE(eta.estimate_remaining_seconds(80, 0.) == -1s);
+	}
+
+	SECTION("ATA 10% steps")
+	{
+		SelfTestEtaEstimator eta;
+		eta.add_progress(90, 80, 600.);  // 60 sec per percent
+		REQUIRE(eta.has_data());
+		REQUIRE(eta.estimate_remaining_seconds(80, 0.) == 4800s);
+		REQUIRE(eta.estimate_remaining_seconds(80, 100.) == 4700s);
+
+		eta.add_progress(80, 70, 1200.);  // slower segment, average is now 90 sec per percent
+		REQUIRE(eta.estimate_remaining_seconds(70, 0.) == 6300s);
+	}
+
+	SECTION("Several steps between polls count as several segments")
+	{
+		SelfTestEtaEstimator eta;
+		eta.add_progress(80, 60, 1200.);  // two segments, 60 sec per percent
+		REQUIRE(eta.estimate_remaining_seconds(60, 0.) == 3600s);
+	}
+
+	SECTION("NVMe 1% steps")
+	{
+		SelfTestEtaEstimator eta;
+		eta.add_progress(99, 98, 30.);  // 30 sec per percent
+		REQUIRE(eta.estimate_remaining_seconds(98, 0.) == 2940s);
+	}
+
+	SECTION("Estimate exceeded returns unknown, not 0")
+	{
+		SelfTestEtaEstimator eta;
+		eta.add_progress(90, 80, 600.);
+		REQUIRE(eta.estimate_remaining_seconds(10, 600.) == 0s);
+		REQUIRE(eta.estimate_remaining_seconds(10, 700.) == -1s);
+	}
+
+	SECTION("Invalid progress is ignored")
+	{
+		SelfTestEtaEstimator eta;
+		eta.add_progress(80, 80, 600.);  // no change
+		eta.add_progress(80, 90, 600.);  // remaining percentage increased
+		eta.add_progress(-1, 90, 600.);
+		eta.add_progress(90, -1, 600.);
+		eta.add_progress(90, 80, -1.);
+		REQUIRE_FALSE(eta.has_data());
+		REQUIRE(eta.estimate_remaining_seconds(80, 0.) == -1s);
+	}
+
+	SECTION("Invalid remaining percentage")
+	{
+		SelfTestEtaEstimator eta;
+		eta.add_progress(90, 80, 600.);
+		REQUIRE(eta.estimate_remaining_seconds(-1, 0.) == -1s);
+	}
+
+	SECTION("Reset")
+	{
+		SelfTestEtaEstimator eta;
+		eta.add_progress(90, 80, 600.);
+		eta.reset();
+		REQUIRE_FALSE(eta.has_data());
+	}
+}
+
+
 TEST_CASE("SelfTest EXT enum helpers", "[selftest][enum_helpers]")
 {
 	SECTION("Status enum to string conversion")

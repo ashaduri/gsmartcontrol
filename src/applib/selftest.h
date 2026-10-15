@@ -18,7 +18,6 @@ Copyright:
 #include <cstdint>
 #include <chrono>
 #include <unordered_map>
-#include <vector>
 
 #include "storage_device.h"
 #include "command_executor.h"
@@ -94,6 +93,43 @@ enum class SelfTestStatusSeverity {
 
 
 
+/// Estimates the remaining self-test time from the observed test progress speed.
+/// This compensates for inaccurate drive-reported test durations (e.g. when the drive is under load).
+class SelfTestEtaEstimator {
+	public:
+
+		/// Record that the reported remaining percentage changed from \c from_remaining_percent
+		/// to \c to_remaining_percent, which took \c seconds.
+		/// Changes that don't decrease the remaining percentage are ignored.
+		/// Works with any percentage granularity (10% for ATA, 1% for NVMe), and with
+		/// changes spanning several steps (e.g. 80% -> 60% between two polls).
+		void add_progress(int from_remaining_percent, int to_remaining_percent, double seconds);
+
+
+		/// Check if any progress has been recorded
+		[[nodiscard]] bool has_data() const;
+
+
+		/// Estimate the remaining time.
+		/// \param remaining_percent Currently reported remaining percentage.
+		/// \param seconds_since_last_change Seconds passed since the remaining percentage last changed.
+		/// \return -1 if unknown: no data, invalid percentage, or the estimate has been exceeded.
+		[[nodiscard]] std::chrono::seconds estimate_remaining_seconds(int remaining_percent, double seconds_since_last_change) const;
+
+
+		/// Forget all recorded progress
+		void reset();
+
+
+	private:
+
+		double observed_seconds_ = 0.;  ///< Total duration of the recorded progress
+		int observed_percent_ = 0;  ///< Total recorded progress, in percent
+
+};
+
+
+
 /// SMART self-test runner.
 class SelfTest {
 	public:
@@ -129,8 +165,8 @@ class SelfTest {
 		/// Get estimated time of completion for the test.
 		/// The estimation uses an adaptive algorithm:
 		/// - Initially uses the drive's reported test duration estimate
-		/// - After completing one or more 10% segments, switches to using the observed
-		///   average segment duration to predict remaining time
+		/// - Once some progress has been observed, switches to using the observed
+		///   progress speed to predict remaining time (see SelfTestEtaEstimator)
 		/// - This provides more accurate ETAs when the drive's estimate is inaccurate
 		///   (e.g., under load or with drives that consistently under/overestimate)
 		/// \return -1 if N/A or unknown (including when the drive's estimated duration has been
@@ -189,8 +225,8 @@ class SelfTest {
 		std::chrono::seconds poll_in_seconds_ = std::chrono::seconds(-1);  ///< The user is asked to poll after this much seconds have passed.
 
 		Glib::Timer timer_;  ///< Counts time since the last percent change
-		std::vector<double> segment_durations_;  ///< Actual durations of completed 10% segments (in seconds), for adaptive ETA calculation
-		bool first_segment_seen_ = false;  ///< Whether we've observed the first percentage change (to skip the potentially instant/partial first segment)
+		SelfTestEtaEstimator eta_estimator_;  ///< Observed progress speed, for adaptive ETA calculation
+		bool first_change_seen_ = false;  ///< Whether we've observed the first percentage change (to skip the potentially instant/partial first segment)
 
 };
 
