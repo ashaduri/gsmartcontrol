@@ -11,6 +11,9 @@ Copyright:
 
 #include "gui_utils.h"
 
+#include <cmath>
+#include <tuple>
+
 
 namespace {
 
@@ -187,6 +190,109 @@ bool gui_is_dark_theme_active()
 	}
 
 	return false;
+}
+
+
+
+namespace {
+
+	/// Storage for Windows fractional scaling percentage (0 if no fractional scaling)
+	int g_windows_fractional_scaling_percent = 0;
+
+}
+
+
+
+bool app_is_fractional_scaling(int full_scale_percent)
+{
+	// Scales below 100% are not handled (GTK3 never scales below 1x).
+	return full_scale_percent > 100 && full_scale_percent % 100 != 0;
+}
+
+
+
+int app_get_fractional_scaling_part_percent(int full_scale_percent)
+{
+	if (!app_is_fractional_scaling(full_scale_percent)) {
+		return 0;
+	}
+	return full_scale_percent % 100;  // 250 -> 50, 125 -> 25
+}
+
+
+
+double app_compute_fractional_scaling_correction(int full_scale_percent)
+{
+	if (!app_is_fractional_scaling(full_scale_percent)) {
+		return 0.0;
+	}
+	const double system_scale = static_cast<double>(full_scale_percent) / 100.0;
+	const int integer_ui_scale = full_scale_percent / 100;  // GTK3 uses floor (integer) scaling; >= 1 here
+	return system_scale / static_cast<double>(integer_ui_scale);
+}
+
+
+
+std::pair<int, int> app_apply_fractional_scaling_to_size(int base_w, int base_h, double correction)
+{
+	if (correction <= 0.0 || base_w <= 0 || base_h <= 0) {
+		return {base_w, base_h};
+	}
+	return {
+		static_cast<int>(std::lround(base_w * correction)),
+		static_cast<int>(std::lround(base_h * correction))
+	};
+}
+
+
+
+int app_compute_scaling_percent_from_dpi(double h_ppi)
+{
+	if (h_ppi <= 0.0) {
+		return 0;
+	}
+	return static_cast<int>(std::lround(h_ppi / 96.0 * 100.0));
+}
+
+
+
+int app_get_windows_fractional_scaling_percent()
+{
+	return g_windows_fractional_scaling_percent;
+}
+
+
+
+void app_set_windows_fractional_scaling_percent(int percent)
+{
+	g_windows_fractional_scaling_percent = percent;
+}
+
+
+
+void app_apply_fractional_scaling_to_default_size(Gtk::Window* window, int config_size_w, int config_size_h)
+{
+	if (!window) {
+		return;
+	}
+
+	int size_w = config_size_w;
+	int size_h = config_size_h;
+
+	// Apply fractional scaling adjustment on Windows if no custom size is configured
+	// This compensates for GTK3's lack of fractional scaling support
+	const int full_percent = g_windows_fractional_scaling_percent;
+	if (full_percent > 0 && size_w == 0 && size_h == 0) {
+		// Get the default size from glade and scale it
+		int glade_w = 0, glade_h = 0;
+		window->get_default_size(glade_w, glade_h);
+		const double correction = app_compute_fractional_scaling_correction(full_percent);
+		std::tie(size_w, size_h) = app_apply_fractional_scaling_to_size(glade_w, glade_h, correction);
+	}
+
+	if (size_w > 0 && size_h > 0) {
+		window->set_default_size(size_w, size_h);
+	}
 }
 
 

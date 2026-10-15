@@ -22,6 +22,7 @@ Copyright:
 #include "hz/launch_url.h"
 #include "hz/fs.h"
 #include "rconfig/rconfig.h"
+
 #include "applib/storage_detector.h"
 #include "applib/gui_utils.h"  // gui_show_error_dialog
 #include "applib/smartctl_executor.h"  // get_smartctl_binary()
@@ -30,6 +31,8 @@ Copyright:
 #include "applib/warning_colors.h"  // app_property_get_label_highlight_color
 #include "applib/app_regex.h"
 #include "applib/smartctl_version_parser.h"
+#include "applib/command_executor_factory.h"
+#include "applib/storage_settings.h"
 
 #include "gsc_init.h"  // app_quit()
 #include "gsc_about_dialog.h"
@@ -37,14 +40,12 @@ Copyright:
 #include "gsc_preferences_window.h"
 #include "gsc_executor_log_window.h"
 #include "gsc_executor_error_dialog.h"  // gsc_executor_error_dialog_show
-
 #include "gsc_main_window_iconview.h"
 #include "gsc_main_window.h"
 #include "gsc_add_device_window.h"
-#include "applib/command_executor_factory.h"
 #include "gsc_startup_settings.h"
+
 #include "build_config.h"
-#include "applib/storage_settings.h"
 
 
 using namespace std::literals;
@@ -60,9 +61,7 @@ GscMainWindow::GscMainWindow(BaseObjectType* gtkcobj, Glib::RefPtr<Gtk::Builder>
 	{
 		const int def_size_w = rconfig::get_data<int>("gui/main_window/default_size_w");
 		const int def_size_h = rconfig::get_data<int>("gui/main_window/default_size_h");
-		if (def_size_w > 0 && def_size_h > 0) {
-			set_default_size(def_size_w, def_size_h);
-		}
+		app_apply_fractional_scaling_to_default_size(this, def_size_w, def_size_h);
 	}
 
 	// show the window first, scan later
