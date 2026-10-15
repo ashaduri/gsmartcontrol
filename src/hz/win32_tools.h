@@ -79,6 +79,14 @@ inline bool win32_set_registry_value_string(HKEY base,
 		const std::string& keydir, const std::string& key, const std::string& value);
 
 
+/// Get registry value as a DWORD.
+/// Base may be e.g. HKEY_CURRENT_USER.
+/// Note that this works only with REG_DWORD types.
+/// False is returned for all other types.
+inline bool win32_get_registry_value_dword(HKEY base,
+		const std::string& keydir, const std::string& key, DWORD& put_here);
+
+
 /// Redirect stdout and stderr to console window (if open). Requires winxp (at compile-time).
 /// \param create_if_none if true, create a new console if none was found and attach to it.
 /// \return false if failed or unsupported.
@@ -330,6 +338,49 @@ inline bool win32_set_registry_value_string(HKEY base,
 					reinterpret_cast<const BYTE*>(wvalue.data()),
 					DWORD(wvalue.size() + 1*sizeof(wchar_t))
 				) == ERROR_SUCCESS);
+	}
+
+	if (reg_key)
+		RegCloseKey(reg_key);
+
+	return status;
+}
+
+
+
+// Get registry value as a DWORD.
+// Note that this works only with REG_DWORD types.
+inline bool win32_get_registry_value_dword(HKEY base,
+		const std::string& keydir, const std::string& key, DWORD& put_here)
+{
+	std::wstring wkeydir = win32_utf8_to_utf16(keydir);
+	if (wkeydir.empty())
+		return false;
+
+	HKEY reg_key = nullptr;
+	bool open_status = (RegOpenKeyExW(base, wkeydir.c_str(), 0, KEY_QUERY_VALUE, &reg_key) == ERROR_SUCCESS);
+
+	if (!open_status)
+		return false;
+
+	bool ok = false;
+	std::wstring wkey = win32_utf8_to_utf16(key, &ok);
+	if (!ok) {  // conversion error. Note that an empty string is not an error.
+		if (reg_key)
+			RegCloseKey(reg_key);
+		return false;
+	}
+
+	DWORD type = 0;
+	DWORD value = 0;
+	DWORD nbytes = sizeof(DWORD);
+	bool status = (RegQueryValueExW(reg_key, wkey.c_str(), nullptr, &type,
+			reinterpret_cast<BYTE*>(&value), &nbytes) == ERROR_SUCCESS);
+
+	if (status && type == REG_DWORD) {
+		put_here = value;
+	} else {
+		status = false;
 	}
 
 	if (reg_key)

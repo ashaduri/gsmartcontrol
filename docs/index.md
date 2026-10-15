@@ -13,6 +13,12 @@ nav_order: 1
 
 ---
 
+**SCAM ALERT:** gsmartcontrol[.]com is a phishing site! Please don't download anything from there!
+
+Please always download GSmartControl from its official website [gsmartcontrol.shaduri.dev](https://gsmartcontrol.shaduri.dev) or the official GitHub repository [github.com/ashaduri/gsmartcontrol](https://github.com/ashaduri/gsmartcontrol).
+
+---
+
 [GSmartControl](https://gsmartcontrol.shaduri.dev)
 is a graphical user interface for smartctl (from [smartmontools](https://www.smartmontools.org/)
 package), which is a tool for

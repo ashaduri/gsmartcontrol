@@ -120,7 +120,7 @@ bool GscMainWindowIconView::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
 		return true;
 	}
 	if (empty_view_message_ != Message::None && this->num_icons_ == 0) {  // no icons
-		Glib::RefPtr<Pango::Layout> layout = this->create_pango_layout("");
+		const Glib::RefPtr<Pango::Layout> layout = this->create_pango_layout("");
 		layout->set_alignment(Pango::ALIGN_CENTER);
 		layout->set_markup(get_message_string(empty_view_message_));
 
@@ -130,6 +130,12 @@ bool GscMainWindowIconView::on_draw(const Cairo::RefPtr<Cairo::Context>& cr)
 		const int pos_x = (get_allocation().get_width() - layout_w) / 2;
 		const int pos_y = (get_allocation().get_height() - layout_h) / 2;
 		cr->move_to(pos_x, pos_y);
+
+		// Use the foreground color from the widget's style context so
+		// the text is visible in both light and dark themes.
+		const auto style_context = get_style_context();
+		const Gdk::RGBA fg_color = style_context->get_color(style_context->get_state());
+		cr->set_source_rgba(fg_color.get_red(), fg_color.get_green(), fg_color.get_blue(), fg_color.get_alpha());
 
 		layout->show_in_cairo_context(cr);
 
@@ -548,10 +554,18 @@ Glib::RefPtr<Gdk::Pixbuf> GscMainWindowIconView::load_icon_pixbuf(Glib::RefPtr<G
 {
 	Glib::RefPtr<Gdk::Pixbuf> icon;
 
-	// Try XDG version first
+	// Try the icon theme first; fall back to the bundled icon if needed.
 	try {
 		if (default_icon_theme && !xdg_icon_name.empty()) {
 			icon = default_icon_theme->load_icon(xdg_icon_name, icon_size_, get_scale_factor(), Gtk::IconLookupFlags(0));
+
+			// Some icon themes may return an icon smaller than requested.
+			// In that case, fall back to the bundled icon.
+			if (icon &&
+			    (icon->get_width() < icon_size_ ||
+			     icon->get_height() < icon_size_)) {
+			  icon.reset();
+			}
 		}
 	} catch (...) { }  // ignore exceptions
 
