@@ -23,11 +23,6 @@ Copyright:
 
 namespace {
 
-	/// Size of a logical sector (LBA) assumed for ATA counters.
-	/// SATA SSDs use 512-byte logical sectors (4Kn SATA SSDs are practically nonexistent),
-	/// and the attributes counting LBAs use 512-byte units regardless.
-	constexpr std::uint64_t ata_sector_size = 512;
-
 	/// NVMe data unit: 1000 units of 512 bytes (see NVMe specification, SMART / Health Information).
 	constexpr std::uint64_t nvme_data_unit_size = 512 * 1000;
 
@@ -63,32 +58,80 @@ std::optional<std::uint64_t> ata_attribute_get_data_unit_size(const std::string&
 		return count * unit;
 	}
 
-	// Sector / LBA counts: Total_LBAs_Written, Total_LBAs_Read, Write_Sectors_Tot_Ct, Total_Host_Sector_Write, ...
-	if (app_regex_partial_match("/(^|_)(LBAs?|Sectors?)_(Write|Written|Read)(_|$)/i", reported_name)
-			|| app_regex_partial_match("/(^|_)(Write|Written|Read)_(LBAs?|Sectors?)(_|$)/i", reported_name)) {
-		return ata_sector_size;
-	}
+	// Sector / LBA counts (Total_LBAs_Written, ...) are not converted: their units vary between vendors,
+	// devices and even firmware versions, so they can't be reliably converted to bytes without
+	// a drive database entry (which would give the attribute a unit suffix).
+	// Device Statistics provide the same information reliably.
 
 	return std::nullopt;
 }
 
 
 
-std::optional<std::uint64_t> ata_statistic_get_data_unit_size(const std::string& reported_name)
+std::optional<std::uint64_t> ata_statistic_get_data_unit_size(const std::string& reported_name,
+		const DataAmountUnitSizes& unit_sizes)
 {
-	if (reported_name == "Logical Sectors Written" || reported_name == "Logical Sectors Read") {
-		return ata_sector_size;
+	// These statistics count actual logical sectors. If smartctl reports the unit size, prefer it.
+	if (reported_name == "Logical Sectors Written") {
+		return unit_sizes.host_writes_unit_size ? unit_sizes.host_writes_unit_size : unit_sizes.logical_sector_size;
+	}
+	if (reported_name == "Logical Sectors Read") {
+		return unit_sizes.host_reads_unit_size ? unit_sizes.host_reads_unit_size : unit_sizes.logical_sector_size;
 	}
 	return std::nullopt;
 }
 
 
 
-std::optional<std::uint64_t> nvme_attribute_get_data_unit_size(const std::string& generic_name)
+std::optional<std::uint64_t> parse_logical_sector_size(const std::string& sector_size_str)
 {
-	if (generic_name == "nvme_smart_health_information_log/data_units_read"
-			|| generic_name == "nvme_smart_health_information_log/data_units_written") {
-		return nvme_data_unit_size;
+	// "512 bytes logical, 4096 bytes physical" (JSON, text "Sector Sizes"),
+	// "4096 bytes logical/physical" (text "Sector Size").
+	std::string size_str;
+	std::uint64_t size = 0;
+	if (app_regex_partial_match("/([0-9]+) bytes logical/i", sector_size_str, {&size_str})
+			&& hz::string_is_numeric_nolocale(size_str, size, false) && size > 0) {
+		return size;
+	}
+	return std::nullopt;
+}
+
+
+
+DataAmountUnitSizes storage_property_get_data_amount_unit_sizes(const StoragePropertyRepository& properties)
+{
+	DataAmountUnitSizes unit_sizes;
+
+	if (const auto p = properties.lookup_property("physical_block_size/_and/logical_block_size");
+			!p.empty() && p.is_value_type<std::string>()) {
+		unit_sizes.logical_sector_size = parse_logical_sector_size(p.get_value<std::string>());
+	}
+
+	auto get_unit_size = [&properties](const std::string& generic_name) -> std::optional<std::uint64_t>
+	{
+		const auto p = properties.lookup_property(generic_name);
+		if (!p.empty() && p.is_value_type<std::int64_t>() && p.get_value<std::int64_t>() > 0) {
+			return static_cast<std::uint64_t>(p.get_value<std::int64_t>());
+		}
+		return std::nullopt;
+	};
+	unit_sizes.host_writes_unit_size = get_unit_size("host_writes/bytes_per_unit");
+	unit_sizes.host_reads_unit_size = get_unit_size("host_reads/bytes_per_unit");
+
+	return unit_sizes;
+}
+
+
+
+std::optional<std::uint64_t> nvme_attribute_get_data_unit_size(const std::string& generic_name,
+		const DataAmountUnitSizes& unit_sizes)
+{
+	// If smartctl reports the unit size, prefer it.
+	if (generic_name == "nvme_smart_health_information_log/data_units_written") {
+		return unit_sizes.host_writes_unit_size.value_or(nvme_data_unit_size);
+	}
+	if (generic_name == "nvme_smart_health_information_log/data_units_read") {
+		return unit_sizes.host_reads_unit_size.value_or(nvme_data_unit_size);
 	}
 	return std::nullopt;
 }
@@ -109,7 +152,7 @@ std::optional<std::uint64_t> data_amount_to_bytes(std::int64_t count, std::uint6
 
 
 
-void storage_property_autoset_data_amount(StorageProperty& p)
+void storage_property_autoset_data_amount(StorageProperty& p, const DataAmountUnitSizes& unit_sizes)
 {
 	if (p.is_value_type<AtaStorageAttribute>()) {
 		auto& attr = std::get<AtaStorageAttribute>(p.value);
@@ -126,12 +169,12 @@ void storage_property_autoset_data_amount(StorageProperty& p)
 		if (stat.is_header || hz::number_to_string_nolocale(stat.value_int) != stat.value) {
 			return;
 		}
-		if (auto unit_size = ata_statistic_get_data_unit_size(p.reported_name)) {
+		if (auto unit_size = ata_statistic_get_data_unit_size(p.reported_name, unit_sizes)) {
 			stat.value_bytes = data_amount_to_bytes(stat.value_int, unit_size.value());
 		}
 
 	} else if (p.is_value_type<int64_t>()) {
-		if (auto unit_size = nvme_attribute_get_data_unit_size(p.generic_name)) {
+		if (auto unit_size = nvme_attribute_get_data_unit_size(p.generic_name, unit_sizes)) {
 			const auto count = p.get_value<int64_t>();
 			if (auto bytes = data_amount_to_bytes(count, unit_size.value())) {
 				p.readable_value = hz::number_to_string_locale(count) + " [" + hz::format_size(bytes.value(), true) + "]";

@@ -344,8 +344,9 @@ inline void storage_property_autoset_warning_descr(StorageProperty& p)
 StoragePropertyRepository StoragePropertyProcessor::process_properties(
 		StoragePropertyRepository properties, StorageDeviceDetectedType device_type)
 {
+	const auto data_amount_unit_sizes = storage_property_get_data_amount_unit_sizes(properties);
 	for (auto& p : properties.get_properties_ref()) {
-		storage_property_autoset_data_amount(p);
+		storage_property_autoset_data_amount(p, data_amount_unit_sizes);
 		storage_property_autoset_description(p, device_type);
 		storage_property_autoset_warning(p);
 		storage_property_autoset_warning_descr(p);  // append warning to description
