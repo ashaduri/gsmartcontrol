@@ -16,6 +16,7 @@ Copyright:
 #include <gtkmm.h>
 #include <gdk/gdk.h>  // GDK_KEY_Escape
 #include <memory>
+#include <optional>
 #include <variant>
 
 #include "hz/debug.h"
@@ -25,6 +26,9 @@ Copyright:
 #include "applib/app_builder_widget.h"
 #include "applib/app_gtkmm_tools.h"
 #include "applib/gui_utils.h"  // app_apply_fractional_scaling_to_default_size()
+#include "applib/smartctl_output_export.h"
+
+#include "gsc_save_output_dialog.h"
 
 
 
@@ -61,6 +65,9 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 			Gtk::Button* close_window_button = nullptr;
 			APP_BUILDER_AUTO_CONNECT(close_window_button, clicked);
 
+			Gtk::ComboBoxText* view_format_combo = nullptr;
+			APP_BUILDER_AUTO_CONNECT(view_format_combo, changed);
+
 
 			// Accelerators
 
@@ -83,6 +90,36 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 		}
 
 
+		/// Set smartctl output (JSON or text) to display.
+		/// If both JSON and text formats are available, the user can choose which one to display,
+		/// and Save As can save in either format.
+		void set_smartctl_output(const Glib::ustring& title, const std::string& output)
+		{
+			smartctl_output_ = output;
+			smartctl_output_variants_ = smartctl_output_get_variants(output);
+			displayed_format_ = smartctl_output_variants_->has(SmartctlOutputFormat::Json)
+					? SmartctlOutputFormat::Json : SmartctlOutputFormat::Text;
+			this->contents_ = smartctl_output_variants_->get(displayed_format_);
+			this->set_text_helper(title, true, true);
+
+			auto* view_format_combo = this->template lookup_widget<Gtk::ComboBoxText*>("view_format_combo");
+			if (view_format_combo) {
+				const bool has_both = smartctl_output_variants_->has(SmartctlOutputFormat::Json)
+						&& smartctl_output_variants_->has(SmartctlOutputFormat::Text);
+				populating_format_combo_ = true;
+				view_format_combo->remove_all();
+				if (has_both) {
+					view_format_combo->append(format_combo_json_id, C_("output_format", "JSON"));
+					view_format_combo->append(format_combo_text_id, C_("output_format", "Text"));
+					view_format_combo->set_active_id(displayed_format_ == SmartctlOutputFormat::Json
+							? format_combo_json_id : format_combo_text_id);
+				}
+				populating_format_combo_ = false;
+				view_format_combo->set_visible(has_both);
+			}
+		}
+
+
 		void set_text(const Glib::ustring& title, const Glib::ustring& contents,
 				bool save_visible = false, bool use_monospace = false)
 		{
@@ -95,6 +132,7 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 		void set_text_helper(const Glib::ustring& title,
 				bool save_visible = false, bool use_monospace = false)
 		{
+			title_ = title;
 			this->set_title(title + " - " + default_title_);  // something - gsmartcontrol
 
 			Gtk::TextView* textview = this->template lookup_widget<Gtk::TextView*>("main_textview");
@@ -108,8 +146,12 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 				}
 
 				if (use_monospace) {
-					Glib::RefPtr<Gtk::TextTag> tag = buffer->create_tag();
-					tag->property_family() = "Monospace";
+					// Reuse the tag, the text may be set multiple times.
+					Glib::RefPtr<Gtk::TextTag> tag = buffer->get_tag_table()->lookup("monospace");
+					if (!tag) {
+						tag = buffer->create_tag("monospace");
+						tag->property_family() = "Monospace";
+					}
 					buffer->apply_tag(tag, buffer->begin(), buffer->end());
 				}
 			}
@@ -153,9 +195,33 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 
 		// ---------- other callbacks
 
+		/// Combo change callback
+		void on_view_format_combo_changed()
+		{
+			auto* view_format_combo = this->template lookup_widget<Gtk::ComboBoxText*>("view_format_combo");
+			if (populating_format_combo_ || !view_format_combo || !smartctl_output_variants_) {
+				return;
+			}
+			const SmartctlOutputFormat format = (view_format_combo->get_active_id() == format_combo_text_id)
+					? SmartctlOutputFormat::Text : SmartctlOutputFormat::Json;
+			if (format == displayed_format_ || !smartctl_output_variants_->has(format)) {
+				return;
+			}
+			displayed_format_ = format;
+			this->contents_ = smartctl_output_variants_->get(format);
+			this->set_text_helper(title_, true, true);
+		}
+
+
 		/// Button click callback
 		void on_save_as_button_clicked()
 		{
+			// Smartctl output can be saved in JSON or text format
+			if (smartctl_output_variants_) {
+				gsc_show_save_smartctl_output_dialog(this, smartctl_output_, save_filename_, displayed_format_);
+				return;
+			}
+
 			static std::string last_dir;
 			if (last_dir.empty()) {
 				last_dir = rconfig::get_data<std::string>("gui/drive_data_open_save_dir");
@@ -272,6 +338,16 @@ class GscTextWindow : public AppBuilderWidget<GscTextWindow<InstanceSwitch>, Ins
 		> contents_;
 
 		std::string save_filename_;  ///< Default filename for Save As
+
+		Glib::ustring title_;  ///< Title passed to set_text_helper()
+
+		std::string smartctl_output_;  ///< Smartctl output, if set using set_smartctl_output()
+		std::optional<SmartctlOutputVariants> smartctl_output_variants_;  ///< Available formats of smartctl_output_
+		SmartctlOutputFormat displayed_format_ = SmartctlOutputFormat::Json;  ///< Currently displayed format of smartctl_output_
+		bool populating_format_combo_ = false;  ///< Ignore combo changes while filling it
+
+		static inline const Glib::ustring format_combo_json_id = "json";  ///< Format combo ID for JSON
+		static inline const Glib::ustring format_combo_text_id = "text";  ///< Format combo ID for text
 
 };
 
