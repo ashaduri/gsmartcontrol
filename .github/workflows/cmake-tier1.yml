@@ -121,9 +121,11 @@ jobs:
     strategy:
       matrix:
         include: [
-          { msystem: MINGW64, arch: x86_64, platform: win64, urlpath: mingw64 },
-          # MSYS2 no longer supports for 32-bit Windows.
-          # { msystem: MINGW32, arch: i686, platform: win32, urlpath: mingw32 }
+          # MSYS2 has deprecated the MINGW64 (msvcrt) and MINGW32 environments and removed
+          # most of their packages (including gtkmm3). UCRT64 is the recommended replacement.
+          { msystem: UCRT64, arch: x86_64, platform: win64, pkgprefix: mingw-w64-ucrt-x86_64 },
+          # { msystem: MINGW64, arch: x86_64, platform: win64, pkgprefix: mingw-w64-x86_64 },
+          # { msystem: MINGW32, arch: i686, platform: win32, pkgprefix: mingw-w64-i686 }
         ]
 
     steps:
@@ -136,26 +138,17 @@ jobs:
           msystem: ${{ matrix.msystem }}
           update: true
           install: >-
-            mingw-w64-${{ matrix.arch }}-gtkmm3
-            mingw-w64-${{ matrix.arch }}-pkg-config
-            mingw-w64-${{ matrix.arch }}-cmake
-            mingw-w64-${{ matrix.arch }}-gcc
-            mingw-w64-${{ matrix.arch }}-fontconfig
-            mingw-w64-${{ matrix.arch }}-nsis
+            ${{ matrix.pkgprefix }}-gtkmm3
+            ${{ matrix.pkgprefix }}-pkg-config
+            ${{ matrix.pkgprefix }}-cmake
+            ${{ matrix.pkgprefix }}-gcc
+            ${{ matrix.pkgprefix }}-fontconfig
+            ${{ matrix.pkgprefix }}-nsis
             make
             p7zip
 
-      - name: Downgrade Packages to support Windows 7
-        # librsvg 2.59 requires Windows 8.1 or later (confirmed by dependency walker).
-        # We need to downgrade to 2.58.
-        # This contains gdk_pixbuf loader as well, and re-runs the loader cache update.
-        # https://repo.msys2.org/mingw/mingw32/mingw-w64-i686-librsvg-2.58.0-1-any.pkg.tar.zst
-        # https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-librsvg-2.58.0-1-any.pkg.tar.zst
-        shell: msys2 {0}
-        working-directory: ${{github.workspace}}
-        run: |
-          wget https://repo.msys2.org/mingw/${{ matrix.urlpath }}/mingw-w64-${{ matrix.arch }}-librsvg-2.58.0-1-any.pkg.tar.zst
-          pacman -U --noconfirm mingw-w64-${{ matrix.arch }}-librsvg-2.58.0-1-any.pkg.tar.zst
+      # Note: The librsvg 2.58 downgrade step (for Windows 7 support) was removed,
+      # since the MSYS2 repository no longer provides librsvg 2.58 packages.
 
       - name: Download Package Requirements
         shell: msys2 {0}
@@ -166,7 +159,7 @@ jobs:
           wget $SMARTMONTOOLS_URL
 
       - name: Extract Package Requirements (64-bit)
-        if: ${{ matrix.msystem == 'MINGW64' }}
+        if: ${{ matrix.arch == 'x86_64' }}
         shell: msys2 {0}
         working-directory: ${{github.workspace}}/build/smartmontools
         run: >
@@ -177,7 +170,7 @@ jobs:
           bin/drivedb.h
 
       - name: Extract Package Requirements (32-bit)
-        if: ${{ matrix.msystem == 'MINGW32' }}
+        if: ${{ matrix.arch == 'i686' }}
         shell: msys2 {0}
         working-directory: ${{github.workspace}}/build/smartmontools
         run: >
@@ -190,8 +183,7 @@ jobs:
       - name: List installed files
         shell: msys2 {0}
         run: |
-          ls -1R /mingw64
-          ls -1R /mingw32
+          ls -1R "$MINGW_PREFIX"
 
       - name: List Files in Workspace
         shell: msys2 {0}
@@ -222,26 +214,26 @@ jobs:
         run: cpack -G ZIP
 
       - name: Package NSIS (64-bit)
-        if: ${{ matrix.msystem == 'MINGW64' }}
+        if: ${{ matrix.arch == 'x86_64' }}
         shell: msys2 {0}
         working-directory: ${{github.workspace}}/build
         run: cpack -G NSIS64
 
       - name: Package NSIS (32-bit)
-        if: ${{ matrix.msystem == 'MINGW32' }}
+        if: ${{ matrix.arch == 'i686' }}
         shell: msys2 {0}
         working-directory: ${{github.workspace}}/build
         run: cpack -G NSIS
 
       - name: Upload artifacts
-        if: ${{ matrix.msystem == 'MINGW64' }}
+        if: ${{ matrix.arch == 'x86_64' }}
         uses: actions/upload-artifact@v4
         with:
           name: Windows 64-Bit Packages
           path: ${{github.workspace}}/build/gsmartcontrol-*-win*.*
 
       - name: Upload artifacts
-        if: ${{ matrix.msystem == 'MINGW32' }}
+        if: ${{ matrix.arch == 'i686' }}
         uses: actions/upload-artifact@v4
         with:
           name: Windows 32-Bit Packages
