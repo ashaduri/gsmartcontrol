@@ -327,7 +327,7 @@ class Report:
 	def render_text(self):
 		"""All unique warnings in compiler format, for IDEs and grep."""
 		lines = []
-		for category, w in sorted(self.all_items(changed_only=False), key=lambda e: (e[1], e[0])):
+		for w in sorted({w for _, w in self.all_items(changed_only=False)}):
 			flag = f" [{w.flag}]" if w.flag else ""
 			lines.append(f"{w.file}:{w.line}:{w.col}: warning: {w.msg}{flag}")
 		return "\n".join(lines) + ("\n" if lines else "")
