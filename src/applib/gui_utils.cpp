@@ -11,8 +11,12 @@ Copyright:
 
 #include "gui_utils.h"
 
+#include <glibmm/i18n.h>
 #include <cmath>
+#include <memory>
 #include <tuple>
+
+#include "hz/launch_url.h"
 
 
 namespace {
@@ -77,6 +81,44 @@ void gui_show_info_dialog(const std::string& message, const std::string& sec_mes
 		Gtk::Window* parent, bool sec_msg_markup)
 {
 	show_dialog(message, sec_message, parent, Gtk::MESSAGE_INFO, sec_msg_markup);
+}
+
+
+
+namespace {
+
+	/// Show an error dialog for a URL that could not be opened
+	void show_launch_url_error(const std::string& url, const std::string& error, Gtk::Window* parent)
+	{
+		gui_show_error_dialog(_("Cannot open the link in a web browser"),
+				Glib::ustring::compose(_("Please open it manually:\n%1\n\n%2"), url, error), parent);
+	}
+
+}
+
+
+
+void gui_launch_url_or_show_error(const std::string& url, Gtk::Window* parent)
+{
+	// The error may be reported after the parent window is destroyed, so track it with a weak pointer.
+	auto weak_parent = std::shared_ptr<GtkWindow*>(new GtkWindow*(parent ? parent->gobj() : nullptr),
+			[](GtkWindow** window) {
+				if (*window) {
+					g_object_remove_weak_pointer(G_OBJECT(*window), reinterpret_cast<gpointer*>(window));
+				}
+				delete window;
+			});
+	if (*weak_parent) {
+		g_object_add_weak_pointer(G_OBJECT(*weak_parent), reinterpret_cast<gpointer*>(weak_parent.get()));
+	}
+
+	const std::string error = hz::launch_url((parent ? parent->gobj() : nullptr), url,
+			[url, weak_parent](const std::string& async_error) {
+				show_launch_url_error(url, async_error, (*weak_parent ? Glib::wrap(*weak_parent) : nullptr));
+			});
+	if (!error.empty()) {
+		show_launch_url_error(url, error, parent);
+	}
 }
 
 

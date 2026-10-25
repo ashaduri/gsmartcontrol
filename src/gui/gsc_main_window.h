@@ -168,9 +168,6 @@ class GscMainWindow : public AppBuilderWidget<GscMainWindow, false> {
 		/// Action callback
 		void on_action_reread_device_data();
 
-		/// Open URL in browser. On error, show it in a dialog, so that the user can open it manually.
-		void launch_url_or_show_error(const std::string& url);
-
 
 	private:
 

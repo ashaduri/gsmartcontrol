@@ -19,12 +19,11 @@ Copyright:
 #include "hz/string_algo.h"  // string_split
 #include "hz/string_num.h"
 #include "hz/debug.h"
-#include "hz/launch_url.h"
 #include "hz/fs.h"
 #include "rconfig/rconfig.h"
 
 #include "applib/storage_detector.h"
-#include "applib/gui_utils.h"  // gui_show_error_dialog
+#include "applib/gui_utils.h"  // gui_show_error_dialog, gui_launch_url_or_show_error
 #include "applib/smartctl_executor.h"  // get_smartctl_binary()
 #include "applib/smartctl_executor_gui.h"
 #include "applib/app_gtkmm_tools.h"  // app_gtkmm_*
@@ -434,17 +433,6 @@ namespace {
 
 
 
-void GscMainWindow::launch_url_or_show_error(const std::string& url)
-{
-	const std::string error = hz::launch_url(gobj(), url);
-	if (!error.empty()) {
-		gui_show_error_dialog(_("Cannot open the link in a web browser"),
-				Glib::ustring::compose(_("Please open it manually:\n%1\n\n%2"), url, error), this);
-	}
-}
-
-
-
 // NOTE: Do NOT bind the Glib::RefPtr<Gtk::Action> parameter to this function.
 // Doing so causes valgrind errors on window destroy (and Send Report dialogs on win32).
 // Probably a gtkmm bug. Use action maps or Gtk::Action* instead.
@@ -563,13 +551,13 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 
 		case action_online_documentation:
 		{
-			launch_url_or_show_error("https://gsmartcontrol.shaduri.dev/");
+			gui_launch_url_or_show_error("https://gsmartcontrol.shaduri.dev/", this);
 			break;
 		}
 
 		case action_support:
 		{
-			launch_url_or_show_error("https://gsmartcontrol.shaduri.dev/support");
+			gui_launch_url_or_show_error("https://gsmartcontrol.shaduri.dev/support", this);
 			break;
 		}
 
