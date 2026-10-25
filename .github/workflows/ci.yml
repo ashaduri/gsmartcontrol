@@ -62,11 +62,16 @@ jobs:
         > changed-files.txt
 
     - name: Generate report
+      env:
+        HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       run: |
         mkdir -p logs
         changed=()
         if [ -f changed-files.txt ]; then changed=(--changed-files changed-files.txt); fi
-        python3 .github/scripts/warnings_report.py --logs-dir logs "${changed[@]}" > report.md
+        python3 .github/scripts/warnings_report.py --logs-dir logs "${changed[@]}" \
+          --repo "$GITHUB_REPOSITORY" --sha "$HEAD_SHA" \
+          --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+          > report.md
         cat report.md >> "$GITHUB_STEP_SUMMARY"
 
     # The token is read-only for PRs from forks, so there the report is only in the job summary.

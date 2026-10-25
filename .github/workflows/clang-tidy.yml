@@ -53,3 +53,4 @@ jobs:
       with:
         id: clang-tidy-${{ env.LLVM_VERSION }}
         title: clang-tidy ${{ env.LLVM_VERSION }}
+        category: clang-tidy
