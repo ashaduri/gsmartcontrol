@@ -1,0 +1,40 @@
+name: Save build log
+description: >
+  Upload build.log (from the workspace root) as a "build-log-<id>" artifact, together with
+  the platform title, category and workspace path, for the warnings report in ci.yml.
+
+inputs:
+  id:
+    description: Unique artifact suffix
+    required: true
+  title:
+    description: Platform / compiler name shown in the report
+    required: true
+  category:
+    description: '"compiler" or "clang-tidy"'
+    required: false
+    default: compiler
+
+runs:
+  using: composite
+  steps:
+    - name: Collect build log
+      shell: bash
+      env:
+        TITLE: ${{ inputs.title }}
+        CATEGORY: ${{ inputs.category }}
+      run: |
+        mkdir -p build-log-artifact
+        if [ -f build.log ]; then mv build.log build-log-artifact/; fi
+        printf '%s\n' "$TITLE" > build-log-artifact/title.txt
+        printf '%s\n' "$CATEGORY" > build-log-artifact/category.txt
+        # Path as printed by the compiler (D:/a/... on Windows).
+        ws="$GITHUB_WORKSPACE"
+        if command -v cygpath > /dev/null; then ws=$(cygpath -m "$ws"); fi
+        printf '%s\n' "$ws" > build-log-artifact/workspace.txt
+
+    - uses: actions/upload-artifact@v7
+      with:
+        name: build-log-${{ inputs.id }}
+        path: build-log-artifact/
+        retention-days: 7

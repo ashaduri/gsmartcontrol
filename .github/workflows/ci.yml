@@ -1,0 +1,103 @@
+name: CI
+
+# Runs all builds, then posts a deduplicated warnings report from all of them
+# (compilers on every platform, and clang-tidy) as a PR comment, updated on each push.
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Cancel superseded runs of the same PR (pushes to main always run to completion).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+
+  tier1:
+    uses: ./.github/workflows/cmake-tier1.yml
+
+  tier2:
+    uses: ./.github/workflows/cmake-tier2.yml
+
+  sanitizers:
+    uses: ./.github/workflows/sanitizers.yml
+
+  clang-tidy:
+    uses: ./.github/workflows/clang-tidy.yml
+
+
+  warnings-report:
+    needs: [ tier1, tier2, sanitizers, clang-tidy ]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Download build logs
+      uses: actions/download-artifact@v8
+      with:
+        pattern: build-log-*
+        path: logs
+
+    - name: Get changed files
+      if: ${{ github.event_name == 'pull_request' }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: >
+        gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" -q '.[].filename'
+        > changed-files.txt
+
+    - name: Generate report
+      env:
+        # The commit that was built (for PRs, the merge of the PR into the base branch).
+        SOURCE_SHA: ${{ github.sha }}
+      run: |
+        mkdir -p logs
+        changed=()
+        if [ -f changed-files.txt ]; then changed=(--changed-files changed-files.txt); fi
+        mkdir -p warnings-report
+        python3 .github/scripts/warnings_report.py --logs-dir logs "${changed[@]}" \
+          --repo "$GITHUB_REPOSITORY" --sha "$SOURCE_SHA" \
+          --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+          --comment report.md \
+          --full warnings-report/warnings-report.md \
+          --text warnings-report/warnings.txt
+        # The full report (all warnings) is shown on the workflow run page.
+        cat warnings-report/warnings-report.md >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Upload full report
+      uses: actions/upload-artifact@v7
+      with:
+        name: warnings-report
+        path: warnings-report/
+        retention-days: 30
+
+    # The token is read-only for PRs from forks, so there the report is only in the job summary.
+    - name: Post or update PR comment
+      if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: |
+        marker='<!-- gsmartcontrol-warnings-report -->'
+        comment_id=$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+          -q ".[] | select(.user.login == \"github-actions[bot]\" and (.body | startswith(\"$marker\"))) | .id" | head -n 1)
+        if [ -n "$comment_id" ]; then
+          gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$comment_id" -F body=@report.md > /dev/null
+        else
+          gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" -F body=@report.md > /dev/null
+        fi

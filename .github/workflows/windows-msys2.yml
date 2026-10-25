@@ -1,0 +1,113 @@
+name: Windows Build (MSYS2)
+
+# Reusable workflow, called from cmake-tier1.yml and windows-release.yml.
+
+on:
+  workflow_call:
+    inputs:
+      build-type:
+        description: CMake build type (Release, Debug, RelWithDebInfo, etc.)
+        type: string
+        required: true
+
+
+permissions:
+  contents: read
+
+
+env:
+  BUILD_TYPE: ${{ inputs.build-type }}
+  SMARTMONTOOLS_INSTALLER: smartmontools-7.5.win32-setup.exe
+  SMARTMONTOOLS_URL: https://downloads.sourceforge.net/project/smartmontools/smartmontools/7.5/smartmontools-7.5.win32-setup.exe
+
+
+jobs:
+
+  build:
+    # MSYS2 has deprecated the MINGW64 (msvcrt) and MINGW32 environments and removed
+    # most of their packages (including gtkmm3), so we build with UCRT64.
+    # UCRT64 binaries require Windows 10 or later (or Windows 7 / 8.1 with the UCRT update).
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: msys2/setup-msys2@v2
+        # p7zip is needed to extract smartmontools
+        # fontconfig owns /etc/fonts
+        with:
+          msystem: UCRT64
+          update: true
+          pacboy: >-
+            gtkmm3:p
+            pkg-config:p
+            cmake:p
+            gcc:p
+            fontconfig:p
+            nsis:p
+          install: >-
+            make
+            p7zip
+
+      - name: Download smartmontools
+        run: |
+          mkdir -p build/smartmontools
+          cd build/smartmontools
+          wget "$SMARTMONTOOLS_URL"
+
+      - name: Extract smartmontools
+        working-directory: ${{github.workspace}}/build/smartmontools
+        run: >
+          7z -bb1 e "$SMARTMONTOOLS_INSTALLER"
+          bin/smartctl.exe
+          bin/smartctl-nc.exe
+          bin/update-smart-drivedb.ps1
+          bin/drivedb.h
+
+      - name: List installed files
+        run: ls -1R "$MINGW_PREFIX"
+
+      - name: List Files in Workspace
+        run: ls -1R .
+
+      - name: Configure CMake
+        run: >
+          cmake -B build -S "$GITHUB_WORKSPACE"
+          -G "MSYS Makefiles"
+          -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+          -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/toolchains/win64-mingw-msys2.cmake"
+
+      - name: Build
+        run: |
+          set -o pipefail
+          cmake --build build --config $BUILD_TYPE 2>&1 | tee build.log
+
+      - name: Save build log
+        if: ${{ always() }}
+        uses: ./.github/actions/save-build-log
+        with:
+          id: windows-ucrt64-${{ inputs.build-type }}
+          title: Windows UCRT64 (GCC)
+
+      - name: Test
+        working-directory: ${{github.workspace}}/build
+        run: ctest -C $BUILD_TYPE --rerun-failed --output-on-failure
+
+      - name: Package ZIP
+        working-directory: ${{github.workspace}}/build
+        run: cpack -G ZIP
+
+      - name: Package NSIS
+        working-directory: ${{github.workspace}}/build
+        run: cpack -G NSIS64
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: Windows 64-Bit Packages
+          path: ${{github.workspace}}/build/gsmartcontrol-*-win*.*

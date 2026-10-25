@@ -12,12 +12,12 @@ mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo \
          -DCMAKE_TOOLCHAIN_FILE=../toolchains/linux-dev.cmake
 
-# Windows (MSYS2/MinGW64)
+# Windows (MSYS2/UCRT64; also works with the legacy MINGW64 environment)
 cmake .. -G "MSYS Makefiles" \
          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
          -DCMAKE_TOOLCHAIN_FILE=../toolchains/win64-mingw-msys2.cmake
 
-# Build on MSYS2/MinGW64 (from build dir)
+# Build on MSYS2 (from build dir)
 cmake --build . --target all -j 18
 ```
 
