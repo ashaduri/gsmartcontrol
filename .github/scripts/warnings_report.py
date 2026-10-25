@@ -271,7 +271,7 @@ class Report:
 	def footer(self, full):
 		parts = []
 		if self.sha:
-			parts.append(f"Commit {self.sha[:10]}")
+			parts.append(f"Built from commit {self.sha[:10]}")
 		if self.run_url and not full:
 			parts.append(f"[Full report and build logs]({self.run_url})")
 		parts.append("Deduplicated across translation units and builds. "
@@ -345,7 +345,7 @@ def main():
 	parser.add_argument("--logs-dir", required=True, help="Directory with one subdirectory per build log")
 	parser.add_argument("--changed-files", help="File with one changed path (relative) per line")
 	parser.add_argument("--repo", help="owner/name, for links to source lines")
-	parser.add_argument("--sha", help="Commit SHA, for links to source lines")
+	parser.add_argument("--sha", help="SHA of the commit that was built, for links to source lines")
 	parser.add_argument("--run-url", help="URL of the workflow run")
 	parser.add_argument("--comment", default="-", help="Output file for the PR comment (default: stdout)")
 	parser.add_argument("--full", help="Output file for the full report (all warnings)")
