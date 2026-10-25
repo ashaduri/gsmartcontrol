@@ -54,4 +54,4 @@ jobs:
       uses: github/codeql-action/analyze@v4
       with:
         # Keep the category of the previous (autobuild) configuration, so that existing alerts carry over.
-        category: "/language:cpp"
+        category: ".github/workflows/codeql-analysis.yml:analyze/language:cpp"

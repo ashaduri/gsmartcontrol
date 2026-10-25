@@ -5,8 +5,7 @@
 #   (C) 2026 Alexander Shaduri <ashaduri@gmail.com>
 ###############################################################################
 
-"""
-Generate a Markdown report of compiler / clang-tidy warnings from CI build logs.
+"""Generate a Markdown report of compiler / clang-tidy warnings from CI build logs.
 
 Each build log directory (as saved by .github/actions/save-build-log) contains:
   build.log      - Build output.
@@ -51,14 +50,17 @@ COMPILER = "compiler"
 CLANG_TIDY = "clang-tidy"
 
 
-Warning = collections.namedtuple("Warning", "file line col msg flag")
+CompilerWarning = collections.namedtuple("CompilerWarning", "file line col msg flag")
 
 
 class BuildLog:
+	"""Warnings parsed from one build log."""
+
 	def __init__(self, title, category, warnings):
+		"""Store the build title, category and warnings (None if the log is missing)."""
 		self.title = title
 		self.category = category
-		self.warnings = warnings  # set of Warning, or None if the log is missing
+		self.warnings = warnings  # set of CompilerWarning, or None if the log is missing
 
 
 def normalize_path(path):
@@ -104,7 +106,7 @@ def parse_log(log_dir):
 		flag = (m.group("flag") or "").replace(",-warnings-as-errors", "")
 		if category == CLANG_TIDY and (flag.startswith("-W") or flag.startswith("clang-diagnostic-")):
 			continue  # compiler diagnostics; these are reported by the compiler builds
-		found.add(Warning(file, int(m.group("line")), int(m.group("col")), m.group("msg").strip(), flag))
+		found.add(CompilerWarning(file, int(m.group("line")), int(m.group("col")), m.group("msg").strip(), flag))
 	return BuildLog(title, category, found)
 
 
@@ -117,7 +119,10 @@ def plural(n, word):
 
 
 class Report:
+	"""Markdown warnings report for a set of build logs."""
+
 	def __init__(self, logs, changed, repo, sha, run_url):
+		"""Index the warnings of all logs by category."""
 		self.logs = logs
 		self.changed = changed
 		self.repo = repo
