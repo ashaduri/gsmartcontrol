@@ -1,0 +1,61 @@
+name: Sanitizers
+
+# Debug build with AddressSanitizer and UndefinedBehaviorSanitizer, running the tests.
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # Keep in sync with the job name below.
+  LLVM_VERSION: 22
+  SANITIZER_FLAGS: -fsanitize=address,undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer
+
+jobs:
+
+  asan-ubsan:
+    name: asan-ubsan (clang-22)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 45
+
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install libgtkmm-3.0-dev gettext
+
+    - name: Configure CMake
+      env:
+        CC: clang-${{ env.LLVM_VERSION }}
+        CXX: clang++-${{ env.LLVM_VERSION }}
+      run: >
+        cmake -B build -S "$GITHUB_WORKSPACE"
+        -DCMAKE_BUILD_TYPE=Debug
+        -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/toolchains/linux-dev.cmake"
+        -DCMAKE_C_FLAGS="$SANITIZER_FLAGS"
+        -DCMAKE_CXX_FLAGS="$SANITIZER_FLAGS"
+        -DCMAKE_EXE_LINKER_FLAGS="$SANITIZER_FLAGS"
+        -DCMAKE_SHARED_LINKER_FLAGS="$SANITIZER_FLAGS"
+
+    - name: Build
+      run: cmake --build build --parallel "$(nproc)"
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      env:
+        # GTK / GLib keep many intentional allocations alive until exit, so leak detection is too noisy.
+        ASAN_OPTIONS: detect_leaks=0:strict_string_checks=1:detect_stack_use_after_return=1
+        UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+      run: ctest -C Debug --output-on-failure

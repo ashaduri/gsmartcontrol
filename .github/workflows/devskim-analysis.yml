@@ -13,10 +13,18 @@ on:
   schedule:
     - cron: '25 22 * * 0'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: DevSkim
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     permissions:
       actions: read
       contents: read

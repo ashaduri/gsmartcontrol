@@ -10,6 +10,15 @@ on:
   workflow_dispatch:
 
 
+permissions:
+  contents: read
+
+# Cancel superseded runs of the same PR (pushes to main always run to completion).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: RelWithDebInfo
@@ -20,6 +29,7 @@ jobs:
   linux-ubuntu:
     name: linux-ubuntu-${{ matrix.os }} (gcc-${{ matrix.gcc }})
     runs-on: ubuntu-${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:

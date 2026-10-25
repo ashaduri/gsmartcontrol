@@ -11,10 +11,14 @@ on:
         required: true
 
 
+permissions:
+  contents: read
+
+
 env:
   BUILD_TYPE: ${{ inputs.build-type }}
-  SMARTMONTOOLS_INSTALLER: smartmontools-7.4-1.win32-setup.exe
-  SMARTMONTOOLS_URL: https://downloads.sourceforge.net/project/smartmontools/smartmontools/7.4/smartmontools-7.4-1.win32-setup.exe
+  SMARTMONTOOLS_INSTALLER: smartmontools-7.5.win32-setup.exe
+  SMARTMONTOOLS_URL: https://downloads.sourceforge.net/project/smartmontools/smartmontools/7.5/smartmontools-7.5.win32-setup.exe
 
 
 jobs:
@@ -24,6 +28,7 @@ jobs:
     # most of their packages (including gtkmm3), so we build with UCRT64.
     # UCRT64 binaries require Windows 10 or later (or Windows 7 / 8.1 with the UCRT update).
     runs-on: windows-latest
+    timeout-minutes: 60
 
     defaults:
       run:
