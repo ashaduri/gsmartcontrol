@@ -249,6 +249,24 @@ auto integer_formatter(const std::string& format_string = "{}")
 
 
 
+/// Return a lambda which retrieves a key value as an integer of type IntegerType,
+/// and sets it as a property which is not shown in UI (for internal use).
+template<typename IntegerType>
+auto hidden_integer_formatter()
+{
+	return [](const nlohmann::json& root_node, const std::string& key, const std::string& displayable_name)
+		-> hz::ExpectedValue<StorageProperty, SmartctlParserError>
+	{
+		auto p = integer_formatter<IntegerType>()(root_node, key, displayable_name);
+		if (p.has_value()) {
+			p->show_in_ui = false;
+		}
+		return p;
+	};
+}
+
+
+
 /// Return a lambda which retrieves a key value as a string (formatted using another lambda), and sets it as a property.
 template<typename Type>
 auto custom_string_formatter(std::function<std::string(Type value)> formatter)

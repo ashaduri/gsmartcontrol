@@ -218,6 +218,9 @@ hz::ExpectedVoid<SmartctlParserError> SmartctlJsonNvmeParser::parse_section_info
 			{"power_cycle_count", _("Number of Power Cycles"), integer_formatter<int64_t>()},
 			{"power_on_time/hours", _("Powered for"), integer_formatter<int64_t>("{} hours")},
 			{"temperature/current", _("Current Temperature"), integer_formatter<int64_t>("{}° Celsius")},
+			// Unit sizes of Data Units Written / Read (newer smartctl), used to convert them to bytes.
+			{"host_writes/bytes_per_unit", "Host Writes Unit Size", hidden_integer_formatter<int64_t>()},
+			{"host_reads/bytes_per_unit", "Host Reads Unit Size", hidden_integer_formatter<int64_t>()},
 
 			{"nvme_version/string", _("NVMe Version"), string_formatter()},
 			{"local_time/asctime", _("Scanned on"), string_formatter()},

@@ -21,6 +21,7 @@ Copyright:
 #include "storage_property_descr.h"
 #include "warning_colors.h"
 #include "storage_property_descr_ata_attribute.h"
+#include "storage_property_data_amount.h"
 #include "storage_property_descr_ata_statistic.h"
 #include "storage_property_descr_nvme_attribute.h"
 
@@ -343,7 +344,9 @@ inline void storage_property_autoset_warning_descr(StorageProperty& p)
 StoragePropertyRepository StoragePropertyProcessor::process_properties(
 		StoragePropertyRepository properties, StorageDeviceDetectedType device_type)
 {
+	const auto data_amount_unit_sizes = storage_property_get_data_amount_unit_sizes(properties);
 	for (auto& p : properties.get_properties_ref()) {
+		storage_property_autoset_data_amount(p, data_amount_unit_sizes);
 		storage_property_autoset_description(p, device_type);
 		storage_property_autoset_warning(p);
 		storage_property_autoset_warning_descr(p);  // append warning to description
