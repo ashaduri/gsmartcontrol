@@ -5,23 +5,22 @@
 #   (C) 2026 Alexander Shaduri <ashaduri@gmail.com>
 ###############################################################################
 
-"""Generate a Markdown report of compiler / clang-tidy warnings from CI build logs.
+"""Generate a Markdown report of compiler / clang-tidy warnings from CI build logs."""
 
-Each build log directory (as saved by .github/actions/save-build-log) contains:
-  build.log      - Build output.
-  title.txt      - Platform / compiler name shown in the report.
-  category.txt   - "compiler" or "clang-tidy".
-  workspace.txt  - Source root path, as printed by the compiler on that platform.
-
-Warnings are deduplicated (the same header warning is printed once per
-translation unit, and the same warning may be reported by several platforms),
-restricted to project files (dependencies, system headers and generated files
-are skipped), and split into "in files changed by the PR" and "total".
-
-Usage:
-  warnings_report.py --logs-dir DIR [--changed-files FILE]
-      [--repo OWNER/NAME --sha SHA] [--run-url URL] > report.md
-"""
+# Each build log directory (as saved by .github/actions/save-build-log) contains:
+#   build.log      - Build output.
+#   title.txt      - Platform / compiler name shown in the report.
+#   category.txt   - "compiler" or "clang-tidy".
+#   workspace.txt  - Source root path, as printed by the compiler on that platform.
+#
+# Warnings are deduplicated (the same header warning is printed once per
+# translation unit, and the same warning may be reported by several platforms),
+# restricted to project files (dependencies, system headers and generated files
+# are skipped), and split into "in files changed by the PR" and "total".
+#
+# Usage:
+#   warnings_report.py --logs-dir DIR [--changed-files FILE]
+#       [--repo OWNER/NAME --sha SHA] [--run-url URL] > report.md
 
 import argparse
 import collections
