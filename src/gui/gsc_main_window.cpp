@@ -19,12 +19,11 @@ Copyright:
 #include "hz/string_algo.h"  // string_split
 #include "hz/string_num.h"
 #include "hz/debug.h"
-#include "hz/launch_url.h"
 #include "hz/fs.h"
 #include "rconfig/rconfig.h"
 
 #include "applib/storage_detector.h"
-#include "applib/gui_utils.h"  // gui_show_error_dialog
+#include "applib/gui_utils.h"  // gui_show_error_dialog, gui_launch_url_or_show_error
 #include "applib/smartctl_executor.h"  // get_smartctl_binary()
 #include "applib/smartctl_executor_gui.h"
 #include "applib/app_gtkmm_tools.h"  // app_gtkmm_*
@@ -552,13 +551,13 @@ void GscMainWindow::on_action_activated(GscMainWindow::action_t action_type)
 
 		case action_online_documentation:
 		{
-			hz::launch_url(gobj(), "https://gsmartcontrol.shaduri.dev/");
+			gui_launch_url_or_show_error("https://gsmartcontrol.shaduri.dev/", this);
 			break;
 		}
 
 		case action_support:
 		{
-			hz::launch_url(gobj(), "https://gsmartcontrol.shaduri.dev/support");
+			gui_launch_url_or_show_error("https://gsmartcontrol.shaduri.dev/support", this);
 			break;
 		}
 

@@ -43,6 +43,7 @@
 #include "hz/win32_tools.h"  // win32_get_registry_value_string()
 #include "hz/env_tools.h"
 #include "hz/string_num.h"
+#include "hz/launch_url.h"  // launch_url_set_user_session_env()
 #include "build_config.h"  // BuildEnv
 
 #include "applib/window_instance_manager.h"
@@ -213,6 +214,7 @@ namespace {
 		gchar** arg_add_device = nullptr;  ///< add these device files manually
 		double arg_gdk_scale = std::numeric_limits<double>::quiet_NaN();  ///< The value of GDK_SCALE environment variable
 		double arg_gdk_dpi_scale = std::numeric_limits<double>::quiet_NaN();  ///< The value of GDK_DPI_SCALE environment variable
+		gchar** arg_user_env = nullptr;  ///< Environment of the user's desktop session (NAME=VALUE), passed by gsmartcontrol-root
 	};
 
 
@@ -241,6 +243,9 @@ namespace {
 					N_("The value of GDK_SCALE environment variable (useful when executing with pkexec)"), nullptr },
 			{ "gdk-dpi-scale", 'l', 0, G_OPTION_ARG_DOUBLE, &(args.arg_gdk_dpi_scale),
 					N_("The value of GDK_DPI_SCALE environment variable (useful when executing with pkexec)"), nullptr },
+			{ "user-env", '\0', 0, G_OPTION_ARG_STRING_ARRAY, &(args.arg_user_env),
+					N_("Environment variable of the user's desktop session, as NAME=VALUE. When running as root, it is used"
+					" to open links in the user's web browser. Set by gsmartcontrol-root. You can specify this option multiple times."), nullptr },
 #endif
 			{ nullptr, '\0', 0, G_OPTION_ARG_NONE, nullptr, nullptr, nullptr }
 		};
@@ -377,6 +382,14 @@ bool app_init_and_loop(int& argc, char**& argv)
 	}
 	const std::string load_devices_str = hz::string_join(load_devices, "; ");  // for display purposes only
 
+	std::vector<std::string> user_env;
+	if (args.arg_user_env) {
+		for (gchar** entry = args.arg_user_env; *entry != nullptr; ++entry) {
+			user_env.emplace_back(*entry);
+		}
+	}
+	const std::string user_env_str = hz::string_join(user_env, "; ");  // for display purposes only
+
 
 	// it's here because earlier there are no domains
 	debug_out_dump("app", "Application options:\n"
@@ -386,7 +399,8 @@ bool app_init_and_loop(int& argc, char**& argv)
 		<< "\targ_add_virtual: " << (load_virtuals_str.empty() ? "[empty]" : load_virtuals_str) << "\n"
 		<< "\targ_add_device: " << (load_devices_str.empty() ? "[empty]" : load_devices_str) << "\n"
 		<< "\targ_gdk_scale: " << args.arg_gdk_scale << "\n"
-		<< "\targ_gdk_dpi_scale: " << args.arg_gdk_dpi_scale << "\n");
+		<< "\targ_gdk_dpi_scale: " << args.arg_gdk_dpi_scale << "\n"
+		<< "\targ_user_env: " << (user_env_str.empty() ? "[empty]" : user_env_str) << "\n");
 
 	debug_out_dump("app", "LibDebug options:\n" << debug_get_cmd_args_dump());
 
@@ -397,6 +411,8 @@ bool app_init_and_loop(int& argc, char**& argv)
 		if (!std::isnan(args.arg_gdk_dpi_scale)) {
 			hz::env_set_value("GDK_DPI_SCALE", hz::number_to_string_nolocale(args.arg_gdk_dpi_scale));
 		}
+		// Used only for programs launched as the user (not applied to our environment).
+		hz::launch_url_set_user_session_env(user_env);
 	}
 
 

@@ -13,7 +13,7 @@ Copyright:
 
 #include "hz/debug.h"
 #include "hz/string_algo.h"  // hz::string_*
-#include "hz/launch_url.h"
+#include "applib/gui_utils.h"  // gui_launch_url_or_show_error
 #include "hz/data_file.h"
 
 #include "gsc_about_dialog.h"
@@ -86,9 +86,13 @@ void GscAboutDialog::on_response(int response_id)
 
 bool GscAboutDialog::on_activate_link(const std::string& uri)
 {
-	// The default handler, gtk_show_uri_on_window() doesn't work with mailto: URIs in Windows.
-	// Our handler does.
-	return hz::launch_url(GTK_WINDOW(this->gobj()), uri).empty();
+	// The default handler, gtk_show_uri_on_window() doesn't work with mailto: URIs in Windows,
+	// and it runs the browser as root when running as root. Our handler handles both.
+	// Always report the link as handled, so that the default handler is not tried on error.
+	// Errors may be reported after this dialog is closed, so show them over the main window.
+	Gtk::Window* parent = get_transient_for();
+	gui_launch_url_or_show_error(uri, (parent ? parent : this));
+	return true;
 }
 
 

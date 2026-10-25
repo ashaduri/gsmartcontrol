@@ -50,6 +50,26 @@ if [ "$DESKTOP" != "auto" ] && [ "$DESKTOP" != "kde" ] && \
 fi
 
 
+# Pass the user's desktop session environment, so that links (Help menu, About dialog) can be
+# opened in the user's web browser. Most su mechanisms (e.g. pkexec) remove it.
+# Since the command line is evaluated by a shell (possibly twice), only the values consisting
+# of safe characters are passed.
+safe_value_re='^[A-Za-z0-9_./:=,@+-]+$'
+user_env_args="";
+for var in DISPLAY XAUTHORITY WAYLAND_DISPLAY XDG_RUNTIME_DIR DBUS_SESSION_BUS_ADDRESS \
+		XDG_CURRENT_DESKTOP XDG_SESSION_TYPE XDG_SESSION_DESKTOP DESKTOP_SESSION \
+		KDE_FULL_SESSION KDE_SESSION_VERSION GNOME_DESKTOP_SESSION_ID \
+		XDG_DATA_HOME XDG_DATA_DIRS XDG_CONFIG_HOME XDG_CONFIG_DIRS \
+		PATH BROWSER LANG LANGUAGE LC_ALL LC_MESSAGES; do
+	value="${!var}";
+	if [ "$value" != "" ] && [[ "$value" =~ $safe_value_re ]]; then
+		user_env_args="$user_env_args --user-env=$var=$value";
+	fi
+done
+# Before the user's arguments, in case they contain "--".
+final_args_quoted="$user_env_args$final_args_quoted";
+
+
 # Auto-detect current desktop if auto was specified.
 if [ "$DESKTOP" = "auto" ]; then
 	# KDE_SESSION_UID is present on kde3 and kde4.
