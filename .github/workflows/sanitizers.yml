@@ -1,20 +1,14 @@
 name: Sanitizers
 
 # Debug build with AddressSanitizer and UndefinedBehaviorSanitizer, running the tests.
+# Called from ci.yml (on push / pull request), or run manually from the Actions tab.
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_call:
   workflow_dispatch:
 
 permissions:
   contents: read
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   # Keep in sync with the job name below.
@@ -50,7 +44,16 @@ jobs:
         -DCMAKE_SHARED_LINKER_FLAGS="$SANITIZER_FLAGS"
 
     - name: Build
-      run: cmake --build build --parallel "$(nproc)"
+      run: |
+        set -o pipefail
+        cmake --build build --parallel "$(nproc)" 2>&1 | tee build.log
+
+    - name: Save build log
+      if: ${{ always() }}
+      uses: ./.github/actions/save-build-log
+      with:
+        id: asan-ubsan-clang-${{ env.LLVM_VERSION }}
+        title: Ubuntu 26.04 (Clang ${{ env.LLVM_VERSION }}, ASan + UBSan)
 
     - name: Test
       working-directory: ${{github.workspace}}/build

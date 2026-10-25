@@ -1,22 +1,13 @@
 name: Build (Tier 1 platforms)
 
+# Called from ci.yml (on push / pull request), or run manually from the Actions tab.
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  # Allows you to run this workflow manually from the Actions tab
+  workflow_call:
   workflow_dispatch:
 
 
 permissions:
   contents: read
-
-# Cancel superseded runs of the same PR (pushes to main always run to completion).
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 
 env:
@@ -42,38 +33,37 @@ jobs:
     steps:
     - uses: actions/checkout@v7
 
-    - name: Update Package Database
-      run: sudo apt-get update
-
     - name: Install Dependencies
-      run: sudo apt-get install libgtkmm-3.0-dev gettext
-
-    - name: Create Build Directory
-      run: cmake -E make_directory build
+      run: |
+        sudo apt-get update
+        sudo apt-get install libgtkmm-3.0-dev gettext
 
     - name: Configure CMake
-      shell: bash
-      working-directory: ${{github.workspace}}/build
       env:
         CC: gcc-${{ matrix.gcc }}
         CXX: g++-${{ matrix.gcc }}
       run: >
-        cmake $GITHUB_WORKSPACE
+        cmake -B build -S "$GITHUB_WORKSPACE"
         -DCMAKE_BUILD_TYPE=$BUILD_TYPE
         -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/toolchains/linux-dev.cmake"
 
     - name: Build
-      shell: bash
-      working-directory: ${{github.workspace}}/build
-      run: cmake --build . --config $BUILD_TYPE
+      run: |
+        set -o pipefail
+        cmake --build build --config $BUILD_TYPE 2>&1 | tee build.log
+
+    - name: Save build log
+      if: ${{ always() }}
+      uses: ./.github/actions/save-build-log
+      with:
+        id: linux-ubuntu-${{ matrix.os }}-gcc-${{ matrix.gcc }}
+        title: Ubuntu ${{ matrix.os }} (GCC ${{ matrix.gcc }})
 
     - name: Test
       working-directory: ${{github.workspace}}/build
-      shell: bash
       run: ctest -C $BUILD_TYPE --rerun-failed --output-on-failure
 
     - name: Pack (cmake install and make binary package)
-      shell: bash
       working-directory: ${{github.workspace}}/build
       run: cpack -G TBZ2
 

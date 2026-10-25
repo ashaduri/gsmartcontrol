@@ -83,8 +83,16 @@ jobs:
           -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/toolchains/win64-mingw-msys2.cmake"
 
       - name: Build
-        working-directory: ${{github.workspace}}/build
-        run: cmake --build . --config $BUILD_TYPE
+        run: |
+          set -o pipefail
+          cmake --build build --config $BUILD_TYPE 2>&1 | tee build.log
+
+      - name: Save build log
+        if: ${{ always() }}
+        uses: ./.github/actions/save-build-log
+        with:
+          id: windows-ucrt64-${{ inputs.build-type }}
+          title: Windows UCRT64 (GCC)
 
       - name: Test
         working-directory: ${{github.workspace}}/build

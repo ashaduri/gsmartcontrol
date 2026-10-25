@@ -1,22 +1,13 @@
 name: Build (Tier 2 platforms)
 
+# Called from ci.yml (on push / pull request), or run manually from the Actions tab.
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  # Allows you to run this workflow manually from the Actions tab
+  workflow_call:
   workflow_dispatch:
 
 
 permissions:
   contents: read
-
-# Cancel superseded runs of the same PR (pushes to main always run to completion).
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 
 env:
@@ -33,7 +24,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        compiler: [ apple-clang, llvm ]
+        include: [
+          { compiler: apple-clang, title: "macOS (Apple Clang)" },
+          { compiler: llvm, title: "macOS (Homebrew LLVM 20)" },
+        ]
 
     env:
       LLVM_VERSION: 20
@@ -59,8 +53,16 @@ jobs:
         -DAPP_COMPILER_ENABLE_WARNINGS=ON
 
     - name: Build
-      working-directory: ${{github.workspace}}/build
-      run: cmake --build . --config $BUILD_TYPE
+      run: |
+        set -o pipefail
+        cmake --build build --config $BUILD_TYPE 2>&1 | tee build.log
+
+    - name: Save build log
+      if: ${{ always() }}
+      uses: ./.github/actions/save-build-log
+      with:
+        id: macos-${{ matrix.compiler }}
+        title: ${{ matrix.title }}
 
     - name: Test
       working-directory: ${{github.workspace}}/build
@@ -97,8 +99,16 @@ jobs:
         -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/toolchains/linux-dev.cmake"
 
     - name: Build
-      working-directory: ${{github.workspace}}/build
-      run: cmake --build . --config $BUILD_TYPE
+      run: |
+        set -o pipefail
+        cmake --build build --config $BUILD_TYPE 2>&1 | tee build.log
+
+    - name: Save build log
+      if: ${{ always() }}
+      uses: ./.github/actions/save-build-log
+      with:
+        id: linux-ubuntu-${{ matrix.os }}-clang-${{ matrix.clang }}
+        title: Ubuntu ${{ matrix.os }} (Clang ${{ matrix.clang }})
 
     - name: Test
       working-directory: ${{github.workspace}}/build
