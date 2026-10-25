@@ -66,8 +66,6 @@ def normalize_path(path):
 	path = path.replace("\\", "/")
 	if re.match(r"^[A-Za-z]:/", path):
 		path = path[0].lower() + path[1:]
-	elif re.match(r"^/[A-Za-z]/", path):  # msys-style /d/a/... -> d:/a/...
-		path = path[1].lower() + ":" + path[2:]
 	return posixpath.normpath(path)
 
 
@@ -111,6 +109,10 @@ def parse_log(log_dir):
 
 def escape(text):
 	return text.replace("|", "\\|").replace("`", "'").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def shorten(text, limit=300):
+	return text if len(text) <= limit else text[:limit - 1] + "…"
 
 
 def plural(n, word):
@@ -203,7 +205,7 @@ class Report:
 			rows.append(f"| **{total_label}** | " + " | ".join(cells) + " |")
 		return header + rows + [""]
 
-	def changed_files_section(self):
+	def changed_files_section(self, max_listed):
 		items = [(COMPILER, w) for w in self.in_changed(self.unique(COMPILER))]
 		items += [(CLANG_TIDY, w) for w in self.in_changed(self.unique(CLANG_TIDY))]
 		if not items:
@@ -220,14 +222,15 @@ class Report:
 			out += [f"<details open><summary><code>{escape(file)}</code> ({len(entries)})</summary>", "",
 					"| Line | Warning | Type | Reported by |", "|---|---|---|---|"]
 			for category, w in entries:
-				if listed >= MAX_LISTED:
+				if listed >= max_listed:
 					break
 				flag = f"`{w.flag}`" if w.flag else ""
-				out.append(f"| {self.link(w)} | {escape(w.msg)} | {flag} | {escape(self.reporters(category, w))} |")
+				out.append(f"| {self.link(w)} | {escape(shorten(w.msg))} | {flag} | {escape(self.reporters(category, w))} |")
 				listed += 1
 			out += ["", "</details>", ""]
-			if listed >= MAX_LISTED:
-				out += [f"_Only the first {MAX_LISTED} warnings are listed; see the workflow run for the full logs._", ""]
+			if listed >= max_listed:
+				out += [f"_Only the first {listed} of {len(items)} warnings are listed; "
+						"see the workflow run for the full build logs._", ""]
 				break
 		return out
 
@@ -269,24 +272,34 @@ class Report:
 				"Excludes `dependencies/`, system headers and generated files.")
 		return ["<sub>" + " · ".join(parts) + "</sub>"]
 
-	def render(self):
+	def render_with(self, max_listed, details=True):
 		out = [MARKER]
 		out += self.headline() + [""]
-		out += self.changed_files_section()
+		if details:
+			out += self.changed_files_section(max_listed)
 		compiler_table = self.platform_table(COMPILER, "All compilers (unique)")
 		if compiler_table:
 			out += ["#### Compiler warnings", ""] + compiler_table
 		tidy_table = self.platform_table(CLANG_TIDY, "All (unique)")
 		if tidy_table:
 			out += ["#### clang-tidy", ""] + tidy_table
-		out += self.breakdown_section()
+		if details:
+			out += self.breakdown_section()
+		else:
+			out += ["_The detailed report is too large for a PR comment; "
+					"see the workflow run for the full build logs._", ""]
 		out += self.footer()
+		return "\n".join(out)
 
-		text = "\n".join(out)
-		if len(text) > MAX_REPORT_SIZE:
-			cut = text.rfind("\n", 0, MAX_REPORT_SIZE)
-			text = text[:cut] + "\n\n_The report was truncated; see the workflow run for the full logs._\n" \
-				+ "\n".join(self.footer())
+	def render(self):
+		"""Render the report, listing fewer warnings until it fits into a PR comment."""
+		for max_listed in (MAX_LISTED, 100, 50, 20):
+			text = self.render_with(max_listed)
+			if len(text) <= MAX_REPORT_SIZE:
+				return text
+		text = self.render_with(0, details=False)
+		if len(text) > MAX_REPORT_SIZE:  # Only with an absurd number of builds
+			text = text[:text.rfind("\n", 0, MAX_REPORT_SIZE)] + "\n\n_The report was truncated._"
 		return text
 
 
