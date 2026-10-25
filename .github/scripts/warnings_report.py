@@ -19,8 +19,8 @@
 # are skipped), and split into "in files changed by the PR" and "total".
 #
 # Usage:
-#   warnings_report.py --logs-dir DIR [--changed-files FILE]
-#       [--repo OWNER/NAME --sha SHA] [--run-url URL] > report.md
+#   warnings_report.py --logs-dir DIR [--changed-files FILE] [--comment FILE] [--full FILE] [--text FILE]
+#       [--repo OWNER/NAME --sha SHA] [--run-url URL]
 
 import argparse
 import collections
@@ -40,8 +40,9 @@ EXCLUDED_PREFIXES = ("dependencies/", "build/")
 # Maximum number of warnings listed for changed files.
 MAX_LISTED = 200
 
-# GitHub's comment limit is 65536 characters.
+# GitHub's comment limit is 65536 characters; a job summary can be up to 1 MiB.
 MAX_REPORT_SIZE = 60000
+MAX_FULL_REPORT_SIZE = 1000000
 
 MARKER = "<!-- gsmartcontrol-warnings-report -->"
 
@@ -205,33 +206,38 @@ class Report:
 			rows.append(f"| **{total_label}** | " + " | ".join(cells) + " |")
 		return header + rows + [""]
 
-	def changed_files_section(self, max_listed):
-		items = [(COMPILER, w) for w in self.in_changed(self.unique(COMPILER))]
-		items += [(CLANG_TIDY, w) for w in self.in_changed(self.unique(CLANG_TIDY))]
+	def all_items(self, changed_only):
+		items = [(COMPILER, w) for w in self.unique(COMPILER)] + [(CLANG_TIDY, w) for w in self.unique(CLANG_TIDY)]
+		if changed_only:
+			items = [(category, w) for category, w in items if self.changed is not None and w.file in self.changed]
+		return items
+
+	def warnings_section(self, heading, items, max_listed, open_files):
+		"""List warnings grouped by file. max_listed=None lists all of them."""
 		if not items:
 			return []
-
 		by_file = collections.defaultdict(list)
 		for category, w in items:
 			by_file[w.file].append((category, w))
 
-		out = ["#### Warnings in changed files", ""]
+		out = [heading, ""]
 		listed = 0
 		for file in sorted(by_file):
+			if max_listed is not None and listed >= max_listed:
+				out += [f"_Only the first {listed} of {len(items)} warnings are listed here; "
+						"see the full report for all of them._", ""]
+				break
 			entries = sorted(by_file[file], key=lambda e: (e[1].line, e[1].col, e[0]))
-			out += [f"<details open><summary><code>{escape(file)}</code> ({len(entries)})</summary>", "",
+			out += [f"<details{' open' if open_files else ''}><summary><code>{escape(file)}</code> "
+					f"({len(entries)})</summary>", "",
 					"| Line | Warning | Type | Reported by |", "|---|---|---|---|"]
 			for category, w in entries:
-				if listed >= max_listed:
+				if max_listed is not None and listed >= max_listed:
 					break
 				flag = f"`{w.flag}`" if w.flag else ""
 				out.append(f"| {self.link(w)} | {escape(shorten(w.msg))} | {flag} | {escape(self.reporters(category, w))} |")
 				listed += 1
 			out += ["", "</details>", ""]
-			if listed >= max_listed:
-				out += [f"_Only the first {listed} of {len(items)} warnings are listed; "
-						"see the workflow run for the full build logs._", ""]
-				break
 		return out
 
 	def breakdown_section(self):
@@ -262,21 +268,32 @@ class Report:
 		out += ["", "</details>", ""]
 		return out
 
-	def footer(self):
+	def footer(self, full):
 		parts = []
 		if self.sha:
 			parts.append(f"Commit {self.sha[:10]}")
-		if self.run_url:
-			parts.append(f"[Workflow run and full build logs]({self.run_url})")
+		if self.run_url and not full:
+			parts.append(f"[Full report and build logs]({self.run_url})")
 		parts.append("Deduplicated across translation units and builds. "
 				"Excludes `dependencies/`, system headers and generated files.")
 		return ["<sub>" + " · ".join(parts) + "</sub>"]
 
-	def render_with(self, max_listed, details=True):
-		out = [MARKER]
+	def full_report_link(self):
+		total = len(self.all_items(changed_only=False))
+		if not self.run_url or not total:
+			return []
+		return [f"🔎 **[Inspect all {total} warnings]({self.run_url})**: the full report is in the workflow run's "
+				"summary; the `warnings-report` artifact has it as Markdown and as `warnings.txt` "
+				"(`file:line:col: warning: ...`, for IDEs).", ""]
+
+	def render_with(self, full, max_listed, details=True):
+		out = [] if full else [MARKER]
 		out += self.headline() + [""]
+		if not full:
+			out += self.full_report_link()
 		if details:
-			out += self.changed_files_section(max_listed)
+			out += self.warnings_section("#### Warnings in changed files", self.all_items(changed_only=True),
+					max_listed, open_files=True)
 		compiler_table = self.platform_table(COMPILER, "All compilers (unique)")
 		if compiler_table:
 			out += ["#### Compiler warnings", ""] + compiler_table
@@ -284,23 +301,43 @@ class Report:
 		if tidy_table:
 			out += ["#### clang-tidy", ""] + tidy_table
 		if details:
+			if full:
+				out += self.warnings_section("#### All warnings", self.all_items(changed_only=False),
+						max_listed, open_files=False)
 			out += self.breakdown_section()
 		else:
-			out += ["_The detailed report is too large for a PR comment; "
-					"see the workflow run for the full build logs._", ""]
-		out += self.footer()
+			out += ["_The detailed report is too large to show here; "
+					"see the `warnings-report` artifact of the workflow run._", ""]
+		out += self.footer(full)
 		return "\n".join(out)
 
-	def render(self):
-		"""Render the report, listing fewer warnings until it fits into a PR comment."""
-		for max_listed in (MAX_LISTED, 100, 50, 20):
-			text = self.render_with(max_listed)
-			if len(text) <= MAX_REPORT_SIZE:
+	def render(self, full):
+		"""Render the PR comment (or the full report), listing fewer warnings until it fits."""
+		max_size, limits = (MAX_FULL_REPORT_SIZE, (None, 5000, 2000, 1000, 500)) if full \
+			else (MAX_REPORT_SIZE, (MAX_LISTED, 100, 50, 20))
+		for max_listed in limits:
+			text = self.render_with(full, max_listed)
+			if len(text) <= max_size:
 				return text
-		text = self.render_with(0, details=False)
-		if len(text) > MAX_REPORT_SIZE:  # Only with an absurd number of builds
-			text = text[:text.rfind("\n", 0, MAX_REPORT_SIZE)] + "\n\n_The report was truncated._"
+		text = self.render_with(full, 0, details=False)
+		if len(text) > max_size:  # Only with an absurd number of builds
+			text = text[:text.rfind("\n", 0, max_size)] + "\n\n_The report was truncated._"
 		return text
+
+	def render_text(self):
+		"""All unique warnings in compiler format, for IDEs and grep."""
+		lines = []
+		for category, w in sorted(self.all_items(changed_only=False), key=lambda e: (e[1], e[0])):
+			flag = f" [{w.flag}]" if w.flag else ""
+			lines.append(f"{w.file}:{w.line}:{w.col}: warning: {w.msg}{flag}")
+		return "\n".join(lines) + ("\n" if lines else "")
+
+
+def write_output(path, text):
+	if path == "-":
+		sys.stdout.write(text + "\n")
+	else:
+		pathlib.Path(path).write_text(text + ("" if text.endswith("\n") else "\n"), encoding="utf-8")
 
 
 def main():
@@ -310,6 +347,9 @@ def main():
 	parser.add_argument("--repo", help="owner/name, for links to source lines")
 	parser.add_argument("--sha", help="Commit SHA, for links to source lines")
 	parser.add_argument("--run-url", help="URL of the workflow run")
+	parser.add_argument("--comment", default="-", help="Output file for the PR comment (default: stdout)")
+	parser.add_argument("--full", help="Output file for the full report (all warnings)")
+	parser.add_argument("--text", help="Output file for all warnings in compiler format")
 	args = parser.parse_args()
 
 	changed = None
@@ -322,7 +362,12 @@ def main():
 	logs.sort(key=lambda log: log.title.lower())
 
 	sys.stdout.reconfigure(encoding="utf-8")
-	print(Report(logs, changed, args.repo, args.sha, args.run_url).render())
+	report = Report(logs, changed, args.repo, args.sha, args.run_url)
+	write_output(args.comment, report.render(full=False))
+	if args.full:
+		write_output(args.full, report.render(full=True))
+	if args.text:
+		write_output(args.text, report.render_text())
 	return 0
 
 
